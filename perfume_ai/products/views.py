@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .services.search_service import search_products
 from .services.ai_service import ask_ai
+from .services.intent_service import extract_intent
 
 class ProductListView(ListAPIView):
     queryset = Product.objects.filter(is_active=True)
@@ -21,7 +22,9 @@ class ChatAPIView(APIView):
         if not message:
             return Response({"error": "message is required"}, status=400)
 
-        products = search_products(message)
+
+        intent = extract_intent(message)
+        products = search_products(intent)
         reply = ask_ai(message, products)
 
         return Response({

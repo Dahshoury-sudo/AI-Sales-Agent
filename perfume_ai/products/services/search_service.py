@@ -2,19 +2,20 @@ from django.db.models import Q
 from products.models import Product
 
 
-def search_products(message):
-
+def search_products(intent):
     queryset = Product.objects.filter(is_active=True)
 
-    text = message.lower()
+    if intent.gender:
+        queryset = queryset.filter(gender=intent.gender)
 
-    if "male" in text or "رجالي" in text:
-        queryset = queryset.filter(gender="male")
+    if intent.season:
+        queryset = queryset.filter(
+            season__icontains=intent.season
+        )
 
-    elif "female" in text or "حريمي" in text:
-        queryset = queryset.filter(gender="female")
-
-    elif "unisex" in text:
-        queryset = queryset.filter(gender="unisex")
+    if intent.max_price:
+        queryset = queryset.filter(
+            price__lte=intent.max_price
+        )
 
     return queryset[:5]
