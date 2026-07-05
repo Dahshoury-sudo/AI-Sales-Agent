@@ -1,21 +1,20 @@
-from django.db.models import Q
 from products.models import Product
 
 
 def search_products(intent):
     queryset = Product.objects.filter(is_active=True)
 
-    if intent.gender:
-        queryset = queryset.filter(gender=intent.gender)
+    gender = intent.get("gender")
+    season = intent.get("season")
+    max_price = intent.get("max_price")
 
-    if intent.season:
-        queryset = queryset.filter(
-            season__icontains=intent.season
-        )
+    if gender:
+        queryset = queryset.filter(gender=gender)
 
-    if intent.max_price:
-        queryset = queryset.filter(
-            price__lte=intent.max_price
-        )
+    if season:
+        queryset = queryset.filter(season__icontains=season)
 
-    return queryset[:5]
+    if max_price:
+        queryset = queryset.filter(price__lte=max_price)
+
+    return queryset
