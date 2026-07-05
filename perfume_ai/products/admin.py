@@ -1,10 +1,17 @@
 from django.contrib import admin
-from .models import Brand, Category, Product
+
+from .models import (
+    Brand,
+    Category,
+    Product,
+    Conversation,
+    Message,
+)
+
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "country")
-    search_fields = ("name",)
 
 
 @admin.register(Category)
@@ -19,22 +26,39 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "brand",
         "price",
-        "gender",
         "stock",
         "is_active",
     )
 
     list_filter = (
-        "gender",
         "brand",
-        "category",
+        "gender",
         "is_active",
     )
 
     search_fields = (
         "name",
         "description",
-        "top_notes",
-        "middle_notes",
-        "base_notes",
+    )
+
+
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "created_at",
+    )
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "conversation",
+        "role",
+        "created_at",
+    )
+
+    list_filter = (
+        "role",
     )
