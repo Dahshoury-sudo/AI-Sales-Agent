@@ -19,7 +19,7 @@ handoff: wanting to speak to a human, complaining, or showing frustration (e.g. 
 out_of_domain: questions entirely unrelated to perfumes, orders, or the store (e.g., programming, politics, medical advice, "مين رئيس امريكا", "اكتبلي كود").
 
 CRITICAL: If the user is asking about the PRICE ("عامل كام", "سعره كام", "بكام") of a specific perfume, MUST classify it as "product_info".
-CRITICAL: If the assistant in the previous message asked the user for their name, phone, or address to confirm an order, the user's reply MUST be classified as "order" regardless of what they typed.
+CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
 CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
 """
 
