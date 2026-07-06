@@ -31,24 +31,12 @@ Return ONLY valid JSON in this format:
         p1_name = ""
         p2_name = ""
 
-    products = Product.objects.filter(is_active=True)
-    if store:
-        products = products.filter(store=store)
+    from .product_resolver import resolve_product
+    
+    prod1 = resolve_product(p1_name, store)
+    prod2 = resolve_product(p2_name, store)
+
     matches = []
-
-    def find_product(name_str):
-        if not name_str: return None
-        query = Q()
-        for word in name_str.split():
-            if len(word) > 2:
-                query &= (Q(name__icontains=word) | Q(brand__name__icontains=word))
-        
-        if not query: return None
-        return products.filter(query).first()
-
-    prod1 = find_product(p1_name)
-    prod2 = find_product(p2_name)
-
     if prod1: matches.append(prod1)
     if prod2 and prod2 not in matches: matches.append(prod2)
 
