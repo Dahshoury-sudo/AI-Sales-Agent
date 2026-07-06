@@ -6,12 +6,17 @@ client = OpenAI(
 )
 
 
-def chat(messages, temperature=0.3):
-    response = client.chat.completions.create(
-        model=settings.OPENAI_MODEL,
-        messages=messages,
-        temperature=temperature,
-    )
+def chat(messages, temperature=0.3, response_format=None):
+    kwargs = {
+        "model": settings.OPENAI_MODEL,
+        "messages": messages,
+        "temperature": temperature,
+    }
+    
+    if response_format:
+        kwargs["response_format"] = response_format
+        
+    response = client.chat.completions.create(**kwargs)
 
     return response.choices[0].message.content
 

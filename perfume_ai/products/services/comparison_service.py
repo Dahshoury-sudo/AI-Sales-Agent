@@ -2,25 +2,58 @@ from django.db.models import Q
 
 from products.models import Product
 from .ai.client import chat
-from .ai.prompts import SYSTEM_PROMPT
+from .ai.prompts import get_system_prompt
 
 
-def compare_products(message):
+import json
+
+def compare_products(message, history=None, store=None):
+
+    prompt = """
+Extract the names of the two perfumes the user wants to compare from their message.
+Fix any spelling mistakes in the perfume names.
+Return ONLY valid JSON in this format:
+{
+  "perfume_1": "Name 1",
+  "perfume_2": "Name 2"
+}
+"""
+    try:
+        response = chat([
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": message}
+        ], response_format={"type": "json_object"})
+        
+        data = json.loads(response)
+        p1_name = data.get("perfume_1", "")
+        p2_name = data.get("perfume_2", "")
+    except Exception:
+        p1_name = ""
+        p2_name = ""
 
     products = Product.objects.filter(is_active=True)
+    if store:
+        products = products.filter(store=store)
+    matches = []
 
-    words = message.split()
+    def find_product(name_str):
+        if not name_str: return None
+        query = Q()
+        for word in name_str.split():
+            if len(word) > 2:
+                query &= (Q(name__icontains=word) | Q(brand__name__icontains=word))
+        
+        if not query: return None
+        return products.filter(query).first()
 
-    query = Q()
+    prod1 = find_product(p1_name)
+    prod2 = find_product(p2_name)
 
-    for word in words:
-        query |= Q(name__icontains=word)
-        query |= Q(brand__name__icontains=word)
+    if prod1: matches.append(prod1)
+    if prod2 and prod2 not in matches: matches.append(prod2)
 
-    matches = products.filter(query).distinct()[:2]
-
-    if matches.count() < 2:
-        return "من فضلك اذكر اسم العطرين اللذين تريد المقارنة بينهما."
+    if len(matches) < 2:
+        return "من فضلك اذكر اسم العطرين اللذين تريد المقارنة بينهما بوضوح، أو تأكد من توفرهما لدينا."
 
     context = ""
 
@@ -46,11 +79,15 @@ Description: {product.description}
     messages = [
         {
             "role": "system",
-            "content": SYSTEM_PROMPT,
-        },
-        {
-            "role": "user",
-            "content": f"""
+            "content": get_system_prompt(store),
+        }
+    ]
+    if history:
+        messages.extend(history)
+        
+    messages.append({
+        "role": "user",
+        "content": f"""
 Compare ONLY these perfumes.
 
 {context}
@@ -66,7 +103,7 @@ Explain:
 - Which one is better for whom
 - Which one offers better value
 """
-        }
-    ]
+    })
 
-    return chat(messages)
+    response = chat(messages)
+    return response, context
