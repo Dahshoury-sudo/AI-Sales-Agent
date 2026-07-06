@@ -86,9 +86,10 @@ def create_order_in_db(name, phone, address, products_data, store):
         # Search for exact product in store
         product = Product.objects.filter(store=store, name__iexact=p_name, is_active=True).first()
         
-        # Fallback partial search if exact fails
+        # Fallback to AI resolver if exact match fails (e.g., Arabic names or nicknames)
         if not product:
-            product = Product.objects.filter(store=store, name__icontains=p_name, is_active=True).first()
+            from .product_resolver import resolve_product
+            product = resolve_product(p_name, store)
             
         if product:
             price = product.price
