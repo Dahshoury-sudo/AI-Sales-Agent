@@ -6,7 +6,7 @@ client = OpenAI(
 )
 
 
-def chat(messages, temperature=0.3, response_format=None):
+def chat(messages, temperature=0.15, response_format=None):
     kwargs = {
         "model": settings.OPENAI_MODEL,
         "messages": messages,

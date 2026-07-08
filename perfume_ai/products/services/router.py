@@ -31,7 +31,7 @@ def route(message, history=None, store=None, conversation=None):
         
     elif request_type == "order":
         if not conversation:
-            return "عذراً، لا يمكن معالجة الطلب بدون محادثة نشطة.", ""
+            return "محتاج الأول تبدأ محادثة جديدة عشان أقدر أسجللك الطلب يا فندم.", ""
         return handle_order(message, history, store, conversation)
         
     elif request_type == "order_cancel":
@@ -52,7 +52,7 @@ def route(message, history=None, store=None, conversation=None):
         return "تم تحويل المحادثة لأحد ممثلي خدمة العملاء. سيتم الرد عليك في أقرب وقت ممكن. شكراً لانتظارك!", ""
         
     elif request_type == "out_of_domain":
-        return "أنا هنا لمساعدتك في كل ما يخص العطور والطلبات من متجرنا فقط. كيف يمكنني مساعدتك في اختيار عطر اليوم؟", ""
+        return "أنا هنا عشان أساعدك تختار عطر أو تطلب من متجرنا. قولي عايز ايه وهساعدك!", ""
 
     # Fallback for anything not explicitly matched
     from .general_service import handle_general

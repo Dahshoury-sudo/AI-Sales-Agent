@@ -1,0 +1,95 @@
+{
+  "exists": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": "عامل اي",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "أهلاً بيك يا فندم! كله تمام الحمد لله، تحت أمرك في أي عطر أو استفسار. بتحب العطور الفريش ولا الخشبية أكتر؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "ولا ده ولا ده",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "تمام، فهمتك. بتحب العطور اللي ريحتها مسكرة أكتر ولا هادية وناعمة؟ وكمان العطر ده ليك ولا هدية لحد؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "ليا وعايز حاجه فحوليه",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "بص يا فندم، أنسب اتنين ليك:\n\n1. Dior Sauvage بـ 9500 جنيه، ريحته فخمة وفحولية جداً وبتثبت جامد، مناسب لكل وقت وهيعجبك لو عايز حاجة رجالي قوية.\n2. Lattafa Asad بـ 1000 جنيه، ريحته دافية وتوابل مع لمسة تبغ، فحولية وسعره ممتاز جداً بالنسبة لجودته.\n\nتحب تجرب أي واحد فيهم أو عايز تعرف عنهم أكتر؟",
+      "internal_context": "\nName: Dior Sauvage\nBrand: Dior\nPrice: 9500.00 EGP\nVolume: 100 ml\nGender: male\nSeason: All Season\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n\nName: Bleu de Chanel\nBrand: Chanel\nPrice: 9000.00 EGP\nVolume: 100 ml\nGender: male\nSeason: All Season\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n\nName: Lattafa Asad\nBrand: Lattafa\nPrice: 1000.00 EGP\nVolume: 100 ml\nGender: male\nSeason: Fall & Winter\nOccasion: Evening, Casual, Winter\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Black Pepper, Pineapple, Tobacco\nMiddle Notes: Coffee, Patchouli, Iris\nBase Notes: Amber, Vanilla, Dry Woods, Benzoin\nDescription: Warm spicy fragrance inspired by high-end niche scents with excellent value.\n\n-------------------------\n\nName: Afnan 9PM\nBrand: Afnan\nPrice: 2000.00 EGP\nVolume: 100 ml\nGender: male\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n"
+    },
+    {
+      "role": "user",
+      "content": "كام ملي ؟",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "تقصد أي عطر بالظبط يا فندم؟ Dior Sauvage ولا Lattafa Asad؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "الاتنين",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "هسأل وأرد عليك يا فندم بالنسبة لحجم الاتنين وأبلغك أول ما أتأكد. تحب أحتفظلك بحاجة منهم لو لقيت الحجم المناسب؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "انت متعرفش حجمهم ؟",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "بصراحة يا فندم، مش متأكد من الأحجام دلوقتي. هسأل وأرد عليك أول ما أعرف التفاصيل. تحب أبلغك أول ما أتأكد؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "طيب ثباتهم قد اي",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "حضرتك بتسأل عن ثبات Dior Sauvage ولا Lattafa Asad؟ وضحلي أكتر عشان أجاوبك بدقة يا فندم.",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "الاتنين يعم",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "بص يا فندم، بالنسبة للثبات بالظبط، محتاج أتأكدلك لأن مش متوفر عندي المعلومة دلوقتي. أول ما أعرف هبلغك فوراً. تحب أتابعلك وأرد عليك؟",
+      "internal_context": ""
+    },
+    {
+      "role": "user",
+      "content": "امال انت تعرف اي",
+      "internal_context": ""
+    },
+    {
+      "role": "assistant",
+      "content": "تم تحويل المحادثة لأحد ممثلي خدمة العملاء. سيتم الرد عليك في أقرب وقت ممكن. شكراً لانتظارك!",
+      "internal_context": ""
+    }
+  ]
+}

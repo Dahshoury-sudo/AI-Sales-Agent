@@ -18,7 +18,7 @@ Rules:
 1. "customer_name": The customer's full name if provided.
 2. "customer_phone": The customer's phone number.
 3. "shipping_address": The customer's full delivery address.
-4. "products": A list of objects containing "name" (exact name from history) and "quantity" (an integer, return null if the user didn't explicitly mention the number of bottles). If no products were mentioned, return an empty list.
+4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. If the user adds a new product, or changes a quantity, update your list accordingly so it includes ALL previous items PLUS the new ones. Each object must contain "name" (exact name from history) and "quantity" (an integer, or 1 if not specified).
 5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). Otherwise, return false.
 
 Return valid JSON in this exact format:
@@ -42,10 +42,8 @@ Return valid JSON in this exact format:
         response = chat(messages, response_format={"type": "json_object"})
         data = json.loads(response)
     except Exception:
-        return "عذراً، لم أتمكن من فهم تفاصيل الطلب. هل يمكنك إعادة كتابة طلبك بوضوح؟", ""
+        return "مش فاهم تفاصيل الطلب كويس يا فندم. ممكن تقولي تاني عايز تطلب ايه بالظبط؟", ""
 
-    missing_fields = []
-    
     name = data.get("customer_name")
     phone = data.get("customer_phone")
     address = data.get("shipping_address")
@@ -53,26 +51,9 @@ Return valid JSON in this exact format:
     is_confirmed = data.get("is_confirmed", False)
 
     if not products_data:
-        return "لم تحدد العطر الذي ترغب في شرائه. أي عطر تود طلبه؟", ""
+        return "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟", ""
 
-    # Check for missing basic details
-    if not name:
-        missing_fields.append("الاسم الكريم")
-    if not phone:
-        missing_fields.append("رقم الهاتف")
-    if not address:
-        missing_fields.append("عنوان التوصيل بالتفصيل")
-
-    # Check for missing quantities
-    for p in products_data:
-        if not p.get("quantity"):
-            missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
-
-    if missing_fields:
-        missing_text = " و ".join(missing_fields)
-        return f"ممتاز! لتأكيد طلبك، أحتاج فقط إلى {missing_text}.", ""
-
-    # Resolve products to check stock and prices
+    # 1. Resolve products first to check stock and prices BEFORE asking for user info
     total_price = 0
     items_to_create = []
     context_data = []
@@ -90,7 +71,7 @@ Return valid JSON in this exact format:
             
         product = Product.objects.filter(store=store, name__iexact=p_name, is_active=True).first()
         if not product:
-            product = resolve_product(p_name, store)
+            product = resolve_product(message=p_name, store=store)
             
         if product:
             price = product.price
@@ -100,12 +81,34 @@ Return valid JSON in this exact format:
                 "quantity": qty,
                 "price": price
             })
+            # Also set the resolved name back so we can use it in missing fields
+            p_data["name"] = product.name
             context_data.append(f"{product.name} x {qty} ({price * qty} EGP)")
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 
+    # If the user asked for products but NONE were found in our store, stop immediately.
     if not items_to_create:
-        return "لم أتمكن من العثور على العطور المذكورة في متجرنا. يرجى التأكد من الأسماء.", context_str
+        return "مش لاقي العطر ده عندنا يا فندم. ممكن تقولي اسمه تاني أو تسأل عن عطر تاني؟", context_str
+
+    # 2. Check for missing basic details now that we know we have the products
+    missing_fields = []
+    if not name:
+        missing_fields.append("الاسم الكريم")
+    if not phone:
+        missing_fields.append("رقم الهاتف")
+    if not address:
+        missing_fields.append("عنوان التوصيل بالتفصيل")
+
+    # Check for missing quantities using the original data that passed resolution
+    for p in products_data:
+        # Only check quantities for products we actually found
+        if not p.get("quantity"):
+            missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
+
+    if missing_fields:
+        missing_text = " و ".join(missing_fields)
+        return f"ممتاز! لتأكيد طلبك، أحتاج فقط إلى {missing_text}.", ""
 
     if not is_confirmed:
         # Generate Summary
@@ -147,4 +150,4 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                 
         return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
     except Exception as e:
-        return "عذراً، حدث خطأ أثناء تسجيل الطلب. يرجى المحاولة مرة أخرى لاحقاً.", ""
+        return "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.", ""

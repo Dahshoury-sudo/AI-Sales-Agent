@@ -9,6 +9,7 @@ def _format_products(products):
 Name: {product.name}
 Brand: {product.brand.name}
 Price: {product.price} EGP
+Volume: {product.volume} ml
 Gender: {product.gender}
 Season: {product.season}
 Occasion: {product.occasion}
@@ -29,48 +30,44 @@ def recommend(message, products, history=None, alternatives=None, store=None):
     if products.exists():
         context = _format_products(products)
         user_content = f"""
-Customer Request:
-
+═══ طلب العميل ═══
 {message}
 
-Available Products:
-
+═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 
-Recommend the best options and explain why.
-Only recommend products from the list.
-
-CRITICAL SALESPERSON RULE: If the customer's request is very general or vague (like 'عايز عطر حلو', 'عندكو اي', 'ايه رأيك'), DO NOT just list all products like a robot! Instead:
-1. Recommend 1 or 2 of your best options quickly.
-2. ASK a clarifying question to understand their taste (e.g. "بتحب العطور الفريش ولا الخشبية؟", "عايزه لخروجة ولا استخدام يومي؟").
+═══ تعليمات الرد ═══
+1. اختر أفضل 1-2 منتج من القائمة يناسب طلب العميل.
+2. اشرح في جملة أو اتنين ليه المنتج ده يناسبه.
+3. اذكر السعر الحقيقي كما هو مكتوب أعلاه بالظبط — ممنوع تغييره.
+4. لو طلب العميل عام/غير محدد، اسأله سؤال ذكي عشان تضيّق الخيارات (مثلاً: بتحب الفريش ولا الخشبي؟).
+5. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
+6. ❌ ممنوع تخترع أي سعر أو معلومة.
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
     elif alternatives and alternatives.exists():
         context = _format_products(alternatives)
         user_content = f"""
-Customer Request:
-
+═══ طلب العميل ═══
 {message}
 
-IMPORTANT: No products matched the customer's exact criteria (e.g. budget).
-However, these similar products are available:
+═══ ملحوظة مهمة ═══
+لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 
 {context}
 
-Your job is to be a smart salesperson:
-1. Acknowledge that nothing matched their exact budget.
-2. Present these alternatives and highlight their value and why they're worth the price.
-3. If there are cheaper options in the list, mention them too.
-4. Be persuasive but honest. Never pressure the customer.
-
-CRITICAL SALESPERSON RULE: If the customer's request is very general or vague (like 'عايز عطر حلو', 'عندكو اي', 'ايه رأيك'), DO NOT just list all products like a robot! Instead:
-1. Recommend 1 or 2 of your best options quickly.
-2. ASK a clarifying question to understand their taste (e.g. "بتحب العطور الفريش ولا الخشبية؟", "عايزه لخروجة ولا استخدام يومي؟").
+═══ تعليمات الرد ═══
+1. ❌ إياك أن تقول للعميل "لا يوجد" أو "مفيش عطر مطابق لطلبك" أو "للأسف". البائع الماهر يركز على بيع الموجود والمتاح.
+2. ادخل في صلب الموضوع فوراً ورشح أفضل 1-2 منتج من القائمة وكأنها صنعت خصيصاً لطلبه.
+3. اشرح بشكل جذاب ومقنع لماذا هذه العطور تناسب طلبه.
+4. لو في القائمة شيء سعره اقتصادي ومناسب، اذكره كخيار ممتاز.
+5. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
+6. ❌ ممنوع تخترع أي سعر أو معلومة.
 """
 
     else:
-        return "للأسف لم أجد أي عطر مطابق لطلبك. جرب تغيير بعض المعايير وهحاول أساعدك!", ""
+        return "للأسف مش لاقي عطر يطابق طلبك بالظبط دلوقتي. ممكن تقولي أكتر عن ذوقك وأحاول أساعدك؟", ""
 
     messages = [
         {

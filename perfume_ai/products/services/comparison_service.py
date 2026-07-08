@@ -10,19 +10,21 @@ import json
 def compare_products(message, history=None, store=None):
 
     prompt = """
-Extract the names of the two perfumes the user wants to compare from their message.
-Fix any spelling mistakes in the perfume names.
+Extract the names of the two perfumes the user wants to compare from their message or conversation history.
+Fix any spelling mistakes in the perfume names. Translate Arabic names to English.
 Return ONLY valid JSON in this format:
 {
   "perfume_1": "Name 1",
   "perfume_2": "Name 2"
 }
 """
+    messages_for_extract = [{"role": "system", "content": prompt}]
+    if history:
+        messages_for_extract.extend(history)
+    messages_for_extract.append({"role": "user", "content": message})
+
     try:
-        response = chat([
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": message}
-        ], response_format={"type": "json_object"})
+        response = chat(messages_for_extract, response_format={"type": "json_object"})
         
         data = json.loads(response)
         p1_name = data.get("perfume_1", "")
@@ -33,15 +35,15 @@ Return ONLY valid JSON in this format:
 
     from .product_resolver import resolve_product
     
-    prod1 = resolve_product(p1_name, store)
-    prod2 = resolve_product(p2_name, store)
+    prod1 = resolve_product(p1_name, history, store)
+    prod2 = resolve_product(p2_name, history, store)
 
     matches = []
     if prod1: matches.append(prod1)
     if prod2 and prod2 not in matches: matches.append(prod2)
 
     if len(matches) < 2:
-        return "من فضلك اذكر اسم العطرين اللذين تريد المقارنة بينهما بوضوح، أو تأكد من توفرهما لدينا."
+        return "مش واضحلي العطرين اللي عايز تقارن بينهم يا فندم. ممكن تقولي أساميهم تاني؟", ""
 
     context = ""
 
@@ -50,7 +52,8 @@ Return ONLY valid JSON in this format:
         context += f"""
 Name: {product.name}
 Brand: {product.brand.name}
-Price: {product.price}
+Price: {product.price} EGP
+Volume: {product.volume} ml
 Gender: {product.gender}
 Season: {product.season}
 Occasion: {product.occasion}
@@ -76,20 +79,18 @@ Description: {product.description}
     messages.append({
         "role": "user",
         "content": f"""
-Compare ONLY these perfumes.
-
-{context}
-
-Customer Request:
-
+═══ طلب العميل ═══
 {message}
 
-Explain:
+═══ بيانات العطرين من قاعدة البيانات ═══
+{context}
 
-- Similarities
-- Differences
-- Which one is better for whom
-- Which one offers better value
+═══ تعليمات المقارنة ═══
+1. قارن بين العطرين بشكل مختصر وواضح.
+2. اذكر الفروقات الرئيسية (السعر، الثبات، المناسبة، النوع).
+3. انصح العميل أي واحد يناسبه أكتر بناءً على ذوقه أو سؤاله.
+4. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
+5. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
 """
     })
 

@@ -20,9 +20,11 @@ handoff: wanting to speak to a human, complaining, or showing frustration (e.g. 
 out_of_domain: questions entirely unrelated to perfumes, orders, or the store (e.g., programming, politics, medical advice, "مين رئيس امريكا", "اكتبلي كود").
 
 CRITICAL: If the user is asking about the PRICE ("عامل كام", "سعره كام", "بكام") of a specific perfume, MUST classify it as "product_info".
-CRITICAL: If the user is asking an opinion, detail, or question about a SPECIFIC, NAMED perfume (e.g. "هل عطر كذا حلو", "بتاع افنان ده هيعجب الناس"), MUST classify it as "product_info".
+CRITICAL: If the user is asking an opinion, detail, or question about a SPECIFIC, NAMED perfume (e.g. "هل عطر كذا حلو", "بتاع افنان ده هيعجب الناس", "ريحته عاملة ايه"), MUST classify it as "product_info".
+CRITICAL: Even if the user was previously making an order, if their LATEST message is asking a question about a product's details, smell, or performance, MUST classify as "product_info".
 CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
 CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
+CRITICAL: If the user insults the bot or uses bad words (e.g., "غبي", "زفت"), classify as "handoff" so a human can handle the frustrated customer.
 """
 
     messages = [

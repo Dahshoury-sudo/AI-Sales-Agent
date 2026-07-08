@@ -19,7 +19,7 @@ def search_products(intent, store=None):
     if gender:
         base = base.filter(gender=gender.lower())
     if season:
-        base = base.filter(season__icontains=season)
+        base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:
         base = base.filter(brand__name__icontains=brand)
 
