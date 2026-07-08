@@ -1,6 +1,7 @@
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.views.generic import TemplateView
 
 from django.db.models import Avg, Count
 from .models import Product, ConversationEvaluation, Order, Conversation
@@ -23,6 +24,8 @@ class ProductListView(ListAPIView):
     def get_queryset(self):
         return Product.objects.filter(store=self.request.store, is_active=True)
 
+class ChatDemoView(TemplateView):
+    template_name = 'products/chat.html'
 
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]

@@ -61,9 +61,8 @@ Your job is to be a smart salesperson:
 4. Be persuasive but honest. Never pressure the customer.
 """
 
-    # Case 3: Nothing at all
     else:
-        return "للأسف لم أجد أي عطر مطابق لطلبك. جرب تغيير بعض المعايير وهحاول أساعدك!"
+        return "للأسف لم أجد أي عطر مطابق لطلبك. جرب تغيير بعض المعايير وهحاول أساعدك!", ""
 
     messages = [
         {
