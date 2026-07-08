@@ -34,6 +34,17 @@ def route(message, history=None, store=None, conversation=None):
             return "عذراً، لا يمكن معالجة الطلب بدون محادثة نشطة.", ""
         return handle_order(message, history, store, conversation)
         
+    elif request_type == "order_cancel":
+        if conversation:
+            from products.models import Order
+            latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
+            if latest_order:
+                latest_order.status = "cancelled"
+                latest_order.bot_notes = "تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل."
+                latest_order.save()
+                return "تم الغاء الطلب اللي تم تسجيله بنجاح يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+        return "تم الغاء الطلب بنجاح يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+        
     elif request_type == "handoff":
         if conversation:
             conversation.needs_human = True

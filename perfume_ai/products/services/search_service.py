@@ -22,12 +22,7 @@ def search_products(intent, store=None):
         base = base.filter(season__icontains=season)
     if brand:
         base = base.filter(brand__name__icontains=brand)
-    for note in notes:
-        base = base.filter(
-            Q(top_notes__icontains=note) |
-            Q(middle_notes__icontains=note) |
-            Q(base_notes__icontains=note)
-        )
+
 
     # Soft filter: occasion
     if occasion:
@@ -35,11 +30,16 @@ def search_products(intent, store=None):
     else:
         with_occasion = base
 
-    # Tier 1: All filters (occasion + price)
+    # Tier 1: All filters (occasion + notes + price)
+    exact = with_occasion
+    for note in notes:
+        exact = exact.filter(
+            Q(top_notes__icontains=note) |
+            Q(middle_notes__icontains=note) |
+            Q(base_notes__icontains=note)
+        )
     if max_price:
-        exact = with_occasion.filter(price__lte=max_price)
-    else:
-        exact = with_occasion
+        exact = exact.filter(price__lte=max_price)
 
     if exact.exists():
         return {"products": exact, "alternatives": None}

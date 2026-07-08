@@ -39,6 +39,10 @@ Available Products:
 
 Recommend the best options and explain why.
 Only recommend products from the list.
+
+CRITICAL SALESPERSON RULE: If the customer's request is very general or vague (like 'عايز عطر حلو', 'عندكو اي', 'ايه رأيك'), DO NOT just list all products like a robot! Instead:
+1. Recommend 1 or 2 of your best options quickly.
+2. ASK a clarifying question to understand their taste (e.g. "بتحب العطور الفريش ولا الخشبية؟", "عايزه لخروجة ولا استخدام يومي؟").
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
@@ -59,6 +63,10 @@ Your job is to be a smart salesperson:
 2. Present these alternatives and highlight their value and why they're worth the price.
 3. If there are cheaper options in the list, mention them too.
 4. Be persuasive but honest. Never pressure the customer.
+
+CRITICAL SALESPERSON RULE: If the customer's request is very general or vague (like 'عايز عطر حلو', 'عندكو اي', 'ايه رأيك'), DO NOT just list all products like a robot! Instead:
+1. Recommend 1 or 2 of your best options quickly.
+2. ASK a clarifying question to understand their taste (e.g. "بتحب العطور الفريش ولا الخشبية؟", "عايزه لخروجة ولا استخدام يومي؟").
 """
 
     else:

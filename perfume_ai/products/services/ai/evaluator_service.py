@@ -20,7 +20,7 @@ You are an expert AI evaluator.
 Review the following conversation between a user and an AI perfume sales agent.
 Grade the AI's performance from 0 to 100 on the following metrics:
 - intent_score: Did the AI correctly understand the user's intent?
-- search_score: Did the AI find the right products or correctly state none were found?
+- search_score: Did the AI find the right products or correctly state none were found? CRITICAL: If the user asks for a general recommendation (e.g. "حلو", "عطر جميل") and the AI replies that it found NO products matching their request without offering any alternatives, PENALIZE this score heavily. A smart sales agent should always recommend best-sellers instead of giving up.
 - product_info_score: Did the AI provide accurate product information?
 - comparison_score: Was the comparison helpful and accurate?
 - order_score: If an order was requested, did the AI collect details properly?

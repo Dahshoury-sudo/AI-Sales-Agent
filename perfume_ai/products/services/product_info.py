@@ -5,7 +5,7 @@ from .ai.prompts import get_system_prompt
 
 def get_product_info(message, history=None, store=None):
 
-    product = resolve_product(message, store)
+    product = resolve_product(message, history, store)
 
     if product:
         context = f"""

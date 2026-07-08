@@ -121,10 +121,10 @@ Return valid JSON in this exact format:
         return summary, context_str
 
     # All details collected and confirmed! Let's process the order.
-    return create_order_in_db(store, name, phone, address, total_price, items_to_create, context_str)
+    return create_order_in_db(store, name, phone, address, total_price, items_to_create, context_str, conversation)
 
 
-def create_order_in_db(store, name, phone, address, total_price, items_to_create, context_str):
+def create_order_in_db(store, name, phone, address, total_price, items_to_create, context_str, conversation):
     try:
         with transaction.atomic():
             order = Order.objects.create(
@@ -133,7 +133,8 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                 customer_phone=phone,
                 shipping_address=address,
                 total_price=total_price,
-                status="pending"
+                status="pending",
+                conversation=conversation
             )
             
             for item in items_to_create:

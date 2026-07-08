@@ -24,6 +24,7 @@ Rules:
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), map it exactly to 'male', 'female', or 'unisex'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
+- CRITICAL: In Egyptian/Arabic dialect, "حلو" usually means "nice/good" (e.g. "عندكو اي حلو" = "what nice things do you have"). DO NOT translate "حلو" to the "sweet" note. Only add "sweet" to notes if the user explicitly says "عطر مسكر" or "عطر سويتي".
 """
 
     messages = [
