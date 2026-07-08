@@ -13,7 +13,7 @@ recommendation: asking for suggestions or a perfume that matches some criteria.
 product_info: asking for details, PRICE, ingredients, or info of a SPECIFIC perfume (e.g. "سعر سوفاج", "عامل كام", "بكام ده").
 comparison: comparing between two or more perfumes.
 order: wanting to buy, ordering a product, or providing their address/phone number/name to checkout. (e.g. "هاخد ده", "هاتلي واحد", "عايز اشتريه", "010...", "شارع كذا").
-order_cancel: wanting to cancel the order they are currently making (e.g. "الغي الاوردر", "مش عايز", "لا خلاص شكرا").
+order_cancel: wanting to cancel the order they are currently making (e.g. "الغي الاوردر", "مش عايز").
 greeting: saying hello, hi, etc.
 faq: general questions not related to a specific product's info (e.g., shipping, delivery, who are you).
 handoff: wanting to speak to a human, complaining, or showing frustration (e.g. "عايز اكلم حد حقيقي", "فين خدمة العملاء", "انت بوت").
@@ -23,6 +23,7 @@ CRITICAL: If the user is asking about the PRICE ("عامل كام", "سعره ك
 CRITICAL: If the user is asking an opinion, detail, or question about a SPECIFIC, NAMED perfume (e.g. "هل عطر كذا حلو", "بتاع افنان ده هيعجب الناس", "ريحته عاملة ايه"), MUST classify it as "product_info".
 CRITICAL: Even if the user was previously making an order, if their LATEST message is asking a question about a product's details, smell, or performance, MUST classify as "product_info".
 CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
+CRITICAL: If the assistant asked if the user wants to change/modify anything in their order (e.g., "في حاجة حابب تعدلها"), and the user replies with "لا", "لا شكرا", or "لا تمام", MUST classify as "order" because they want to proceed with confirmation, NOT "order_cancel".
 CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
 CRITICAL: If the user insults the bot or uses bad words (e.g., "غبي", "زفت"), classify as "handoff" so a human can handle the frustrated customer.
 """

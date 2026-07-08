@@ -19,7 +19,7 @@ Rules:
 2. "customer_phone": The customer's phone number.
 3. "shipping_address": The customer's full delivery address.
 4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. If the user adds a new product, or changes a quantity, update your list accordingly so it includes ALL previous items PLUS the new ones. Each object must contain "name" (exact name from history) and "quantity" (an integer, or 1 if not specified).
-5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). Otherwise, return false.
+5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
 {
