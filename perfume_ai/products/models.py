@@ -51,8 +51,6 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
 
     season = models.CharField(max_length=100, blank=True)
@@ -62,7 +60,6 @@ class Product(models.Model):
     projection = models.CharField(max_length=100, blank=True)
 
     concentration = models.CharField(max_length=50, blank=True)
-    volume = models.PositiveIntegerField()
 
     top_notes = models.TextField(blank=True)
     middle_notes = models.TextField(blank=True)
@@ -70,14 +67,26 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
-    stock = models.PositiveIntegerField(default=0)
-
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
+    volume = models.PositiveIntegerField(help_text="Volume in ml (e.g., 50, 80, 100)")
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['volume']
+        unique_together = ('product', 'volume')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.volume}ml"
 
 
 class Conversation(models.Model):
@@ -133,12 +142,12 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price_at_time_of_order = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.name} (Order #{self.order.id})"
+        return f"{self.quantity} x {self.variant.product.name} ({self.variant.volume}ml) (Order #{self.order.id})"
 
 class ConversationEvaluation(models.Model):
     conversation = models.OneToOneField(Conversation, on_delete=models.CASCADE, related_name="evaluation")

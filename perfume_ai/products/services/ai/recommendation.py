@@ -5,11 +5,13 @@ from .prompts import get_system_prompt
 def _format_products(products):
     context = ""
     for product in products:
+        variants = list(product.variants.all())
+        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
         context += f"""
 Name: {product.name}
 Brand: {product.brand.name}
-Price: {product.price} EGP
-Volume: {product.volume} ml
+Available Sizes & Prices:
+{variants_str}
 Gender: {product.gender}
 Season: {product.season}
 Occasion: {product.occasion}

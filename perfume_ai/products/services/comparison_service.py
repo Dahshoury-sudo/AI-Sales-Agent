@@ -48,12 +48,14 @@ Return ONLY valid JSON in this format:
     context = ""
 
     for product in matches:
+        variants = list(product.variants.all())
+        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
 
         context += f"""
 Name: {product.name}
 Brand: {product.brand.name}
-Price: {product.price} EGP
-Volume: {product.volume} ml
+Available Sizes & Prices:
+{variants_str}
 Gender: {product.gender}
 Season: {product.season}
 Occasion: {product.occasion}

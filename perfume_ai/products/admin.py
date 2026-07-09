@@ -4,6 +4,7 @@ from .models import (
     Brand,
     Category,
     Product,
+    ProductVariant,
     Conversation,
     Message,
     Store,
@@ -26,6 +27,10 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("store",)
 
 
+class ProductVariantInline(admin.TabularInline):
+    model = ProductVariant
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
@@ -33,8 +38,6 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "store",
         "brand",
-        "price",
-        "stock",
         "is_active",
     )
 
@@ -44,6 +47,8 @@ class ProductAdmin(admin.ModelAdmin):
         "gender",
         "is_active",
     )
+
+    inlines = [ProductVariantInline]
 
     search_fields = (
         "name",

@@ -18,7 +18,7 @@ Rules:
 1. "customer_name": The customer's full name if provided.
 2. "customer_phone": The customer's phone number.
 3. "shipping_address": The customer's full delivery address.
-4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. If the user adds a new product, or changes a quantity, update your list accordingly so it includes ALL previous items PLUS the new ones. Each object must contain "name" (exact name from history) and "quantity" (an integer, or 1 if not specified).
+4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. If the user adds a new product, or changes a quantity, update your list accordingly so it includes ALL previous items PLUS the new ones. Each object must contain "name" (exact name from history), "quantity" (an integer, or 1 if not specified), and "volume" (an integer representing the size in ml if specified by the user, e.g., 50, 80, 100, or null if not specified).
 5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
@@ -27,7 +27,7 @@ Return valid JSON in this exact format:
     "customer_phone": "...",
     "shipping_address": "...",
     "products": [
-        {"name": "...", "quantity": null or integer}
+        {"name": "...", "quantity": null or integer, "volume": null or integer}
     ],
     "is_confirmed": false
 }
@@ -62,6 +62,7 @@ Return valid JSON in this exact format:
         if not isinstance(p_data, dict): continue
         p_name = p_data.get("name")
         qty = p_data.get("quantity", 1)
+        req_volume = p_data.get("volume")
         
         if not p_name or not isinstance(p_name, str): continue
         try:
@@ -69,26 +70,47 @@ Return valid JSON in this exact format:
         except (ValueError, TypeError):
             qty = 1
             
-        product = Product.objects.filter(store=store, name__iexact=p_name, is_active=True).first()
+        product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
         if not product:
             product = resolve_product(message=p_name, store=store)
             
         if product:
-            price = product.price
+            variants = list(product.variants.all())
+            if not variants:
+                continue # Edge case: product has no variants
+                
+            selected_variant = None
+            if req_volume:
+                try:
+                    req_volume = int(req_volume)
+                    selected_variant = next((v for v in variants if v.volume == req_volume), None)
+                except (ValueError, TypeError):
+                    pass
+            
+            if not selected_variant:
+                # If there is only one variant, auto-select it. Otherwise, mark for missing field.
+                if len(variants) == 1:
+                    selected_variant = variants[0]
+                else:
+                    # Save the product in p_data to use for missing fields
+                    p_data["product_obj"] = product
+                    p_data["available_volumes"] = [v.volume for v in variants]
+                    continue
+                
+            price = selected_variant.price
             total_price += price * qty
             items_to_create.append({
-                "product": product,
+                "variant": selected_variant,
                 "quantity": qty,
                 "price": price
             })
-            # Also set the resolved name back so we can use it in missing fields
             p_data["name"] = product.name
-            context_data.append(f"{product.name} x {qty} ({price * qty} EGP)")
+            context_data.append(f"{product.name} ({selected_variant.volume}ml) x {qty} ({price * qty} EGP)")
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 
     # If the user asked for products but NONE were found in our store, stop immediately.
-    if not items_to_create:
+    if not items_to_create and all("product_obj" not in p for p in products_data if isinstance(p, dict)):
         return "مش لاقي العطر ده عندنا يا فندم. ممكن تقولي اسمه تاني أو تسأل عن عطر تاني؟", context_str
 
     # 2. Check for missing basic details now that we know we have the products
@@ -100,10 +122,16 @@ Return valid JSON in this exact format:
     if not address:
         missing_fields.append("عنوان التوصيل بالتفصيل")
 
-    # Check for missing quantities using the original data that passed resolution
+    # Check for missing quantities and sizes using the original data that passed resolution
     for p in products_data:
+        if not isinstance(p, dict): continue
+        
+        if "product_obj" in p:
+            vols = ", ".join(map(str, p["available_volumes"]))
+            missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح أحجام: {vols} مل)")
+            
         # Only check quantities for products we actually found
-        if not p.get("quantity"):
+        elif not p.get("quantity"):
             missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
 
     if missing_fields:
@@ -118,7 +146,7 @@ Return valid JSON in this exact format:
         summary += f"📍 العنوان: {address}\n\n"
         summary += "🛍️ المنتجات:\n"
         for item in items_to_create:
-            summary += f"- {item['quantity']} × {item['product'].name} (السعر: {item['price'] * item['quantity']} جنيه)\n"
+            summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
         summary += "\nهل تحب نأكد الطلب على كده ولا في حاجة حابب تعدلها؟"
         return summary, context_str
@@ -143,7 +171,7 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
             for item in items_to_create:
                 OrderItem.objects.create(
                     order=order,
-                    product=item["product"],
+                    variant=item["variant"],
                     quantity=item["quantity"],
                     price_at_time_of_order=item["price"]
                 )

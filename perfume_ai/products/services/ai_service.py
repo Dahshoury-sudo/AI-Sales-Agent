@@ -9,10 +9,13 @@ def ask_ai(message, products):
     context = ""
 
     for p in products:
+        variants = list(p.variants.all())
+        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants]) if variants else "No prices"
         context += f"""
 Name: {p.name}
 Brand: {p.brand}
-Price: {p.price}
+Available Sizes & Prices:
+{variants_str}
 Gender: {p.gender}
 Season: {p.season}
 Longevity: {p.longevity}
