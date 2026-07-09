@@ -15,10 +15,10 @@ Look at the conversation history and the latest message to extract the customer'
 If a detail is not provided, return null for it.
 
 Rules:
-1. "customer_name": The customer's full name if provided.
-2. "customer_phone": The customer's phone number.
-3. "shipping_address": The customer's full delivery address.
-4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. If the user adds a new product, or changes a quantity, update your list accordingly so it includes ALL previous items PLUS the new ones. Each object must contain "name" (exact name from history), "quantity" (an integer, or 1 if not specified), and "volume" (an integer representing the size in ml if specified by the user, e.g., 50, 80, 100, or null if not specified).
+1. "customer_name": The customer's full name if provided in the history.
+2. "customer_phone": The customer's phone number if provided in the history.
+3. "shipping_address": The customer's full delivery address if provided in the history.
+4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. 🚨 CRITICAL 🚨: If the assistant has ALREADY confirmed an order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), you MUST EMPTY your cart of any products mentioned BEFORE that confirmation. Only extract NEW products requested AFTER the last order was confirmed. If no new products were requested, return an empty list [].
 5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
