@@ -151,3 +151,67 @@ class AnalyticsAPIView(APIView):
             "conversion_rate": round((total_orders / total_convs * 100) if total_convs > 0 else 0, 1),
             "handoff_rate": round((handoff_convs / total_convs * 100) if total_convs > 0 else 0, 1)
         })
+
+
+class OrdersDashboardView(TemplateView):
+    template_name = 'products/orders_dashboard.html'
+
+
+class OrdersDashboardAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def get(self, request):
+        store = request.store
+        orders = Order.objects.filter(store=store).prefetch_related(
+            'items__variant__product'
+        ).order_by('-created_at')
+
+        orders_data = []
+        for order in orders:
+            items = []
+            for item in order.items.all():
+                items.append({
+                    "product_name": item.variant.product.name,
+                    "volume": item.variant.volume,
+                    "quantity": item.quantity,
+                    "unit_price": str(item.price_at_time_of_order),
+                    "line_total": str(item.price_at_time_of_order * item.quantity),
+                })
+            orders_data.append({
+                "id": order.id,
+                "customer_name": order.customer_name,
+                "customer_phone": order.customer_phone,
+                "shipping_address": order.shipping_address,
+                "total_price": str(order.total_price),
+                "status": order.status,
+                "bot_notes": order.bot_notes,
+                "created_at": order.created_at.isoformat(),
+                "items": items,
+            })
+
+        return Response({
+            "store_name": store.name,
+            "orders": orders_data,
+        })
+
+
+class OrderStatusUpdateView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def patch(self, request, order_id):
+        store = request.store
+        new_status = request.data.get("status")
+
+        valid_statuses = ["pending", "confirmed", "cancelled", "delivered"]
+        if new_status not in valid_statuses:
+            return Response({"error": "Invalid status"}, status=400)
+
+        try:
+            order = Order.objects.get(id=order_id, store=store)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=404)
+
+        order.status = new_status
+        order.save()
+
+        return Response({"id": order.id, "status": order.status})
