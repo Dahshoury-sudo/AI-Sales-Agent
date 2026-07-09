@@ -11,10 +11,13 @@ def get_product_info(message, history=None, store=None):
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
         for product in products:
             variants = list(product.variants.all())
-            variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
+            variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP ({'متوفر - المخزون: ' + str(v.stock) if v.stock > 0 else '❌ نفد من المخزون'})" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
+            all_out_of_stock = all(v.stock == 0 for v in variants) if variants else True
+            stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
             context += f"""
 Name: {product.name}
 Brand: {product.brand.name}
+Stock Status: {stock_status}
 Available Sizes & Prices:
 {variants_str}
 Gender: {product.gender}
@@ -35,6 +38,7 @@ Description: {product.description}
 3. لو العميل سأل عن الحجم أو الملي، اذكر الحجم كما هو مكتوب بالظبط.
 4. لو العميل سأل رأيك، اعطيه رأي مبني على البيانات الحقيقية (المكونات، الثبات، المناسبة).
 5. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
+6. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌) أو حجم معين نفد، أخبر العميل بذلك بشكل لطيف واقترح عليه إنه يسأل عن عطور تانية متوفرة أو اعرض عليه الأحجام المتوفرة إن وجدت.
 """
     else:
         context = ""

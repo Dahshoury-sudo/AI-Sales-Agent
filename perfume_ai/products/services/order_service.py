@@ -96,7 +96,35 @@ Return valid JSON in this exact format:
                     p_data["product_obj"] = product
                     p_data["available_volumes"] = [v.volume for v in variants]
                     continue
-                
+            
+            # Check stock availability
+            if selected_variant.stock == 0:
+                # Check if other sizes of the same product are in stock
+                in_stock_variants = [v for v in variants if v.stock > 0]
+                if in_stock_variants:
+                    sizes_available = ", ".join([f"{v.volume}ml" for v in in_stock_variants])
+                    return f"للأسف عطر {product.name} حجم {selected_variant.volume}ml نفد من المخزون حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
+                else:
+                    # All sizes out of stock — suggest similar products from store
+                    from products.models import ProductVariant
+                    similar = Product.objects.filter(
+                        store=store, is_active=True, gender=product.gender
+                    ).exclude(id=product.id).prefetch_related('variants')
+                    alternatives = []
+                    for alt in similar[:5]:
+                        alt_variants = [v for v in alt.variants.all() if v.stock > 0]
+                        if alt_variants:
+                            prices = ", ".join([f"{v.volume}ml بـ {v.price} جنيه" for v in alt_variants])
+                            alternatives.append(f"• {alt.name} ({alt.brand.name}) - {prices}")
+                    if alternatives:
+                        alts_text = "\n".join(alternatives)
+                        return f"للأسف عطر {product.name} نفد من المخزون حالياً بجميع أحجامه 😔\n\nبس عندنا عطور تانية ممتازة ممكن تعجبك:\n{alts_text}\n\nتحب تعرف تفاصيل أكتر عن أي واحد فيهم؟", ""
+                    else:
+                        return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔 ممكن تسأل عن عطر تاني وهنساعدك!", ""
+            
+            if selected_variant.stock < qty:
+                return f"للأسف الكمية المطلوبة من عطر {product.name} ({selected_variant.volume}ml) أكبر من المتوفر في المخزون. المتوفر حالياً {selected_variant.stock} قطعة فقط. تحب تطلب {selected_variant.stock} بدل {qty}؟", ""
+
             price = selected_variant.price
             total_price += price * qty
             items_to_create.append({

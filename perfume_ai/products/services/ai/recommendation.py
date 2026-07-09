@@ -6,10 +6,13 @@ def _format_products(products):
     context = ""
     for product in products:
         variants = list(product.variants.all())
-        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
+        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP ({'متوفر - المخزون: ' + str(v.stock) if v.stock > 0 else '❌ نفد من المخزون'})" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
+        all_out_of_stock = all(v.stock == 0 for v in variants) if variants else True
+        stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
         context += f"""
 Name: {product.name}
 Brand: {product.brand.name}
+Stock Status: {stock_status}
 Available Sizes & Prices:
 {variants_str}
 Gender: {product.gender}
@@ -45,6 +48,8 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 4. لو طلب العميل عام/غير محدد، اسأله سؤال ذكي عشان تضيّق الخيارات (مثلاً: بتحب الفريش ولا الخشبي؟).
 5. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
 6. ❌ ممنوع تخترع أي سعر أو معلومة.
+7. 🔴 لو المنتج اللي يناسب العميل نفد من المخزون (Stock Status = ❌)، قوله إن المنتج ده نفد حالياً وارشحله بديل متوفر من نفس القائمة يكون قريب منه في الخصائص.
+8. دائماً أعطِ الأولوية للمنتجات المتوفرة في المخزون.
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
@@ -66,6 +71,7 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 4. لو في القائمة شيء سعره اقتصادي ومناسب، اذكره كخيار ممتاز.
 5. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
 6. ❌ ممنوع تخترع أي سعر أو معلومة.
+7. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌)، تجاهله تماماً ورشح المنتجات المتوفرة فقط.
 """
 
     else:

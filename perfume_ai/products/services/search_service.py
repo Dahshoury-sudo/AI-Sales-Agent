@@ -1,11 +1,14 @@
-from django.db.models import Q
-from products.models import Product
+from django.db.models import Q, Sum
+from products.models import Product, ProductVariant
 
 
 def search_products(intent, store=None):
-    queryset = Product.objects.filter(is_active=True)
+    queryset = Product.objects.filter(is_active=True).prefetch_related('variants')
     if store:
         queryset = queryset.filter(store=store)
+    
+    # Exclude products where ALL variants have 0 stock
+    queryset = queryset.filter(variants__stock__gt=0).distinct()
 
     gender = intent.get("gender")
     season = intent.get("season")
@@ -39,7 +42,7 @@ def search_products(intent, store=None):
             Q(base_notes__icontains=note)
         )
     if max_price:
-        exact = exact.filter(price__lte=max_price)
+        exact = exact.filter(variants__price__lte=max_price).distinct()
 
     if exact.exists():
         return {"products": exact, "alternatives": None}
