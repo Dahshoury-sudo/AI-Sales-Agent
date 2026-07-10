@@ -159,6 +159,10 @@
         .card-analytics:hover { background: rgba(251,191,36,0.06); }
         .card-analytics .card-icon { background: linear-gradient(135deg, #fbbf24, #d97706); }
 
+        .card-handoff::before { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+        .card-handoff:hover { background: rgba(239,68,68,0.06); }
+        .card-handoff .card-icon { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
         /* Card content */
         .card-icon {
             width: 56px;
@@ -226,6 +230,7 @@
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
         .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
 
         @keyframes cardIn {
             from { opacity: 0; transform: translateY(30px); }
@@ -281,6 +286,14 @@
             <div class="card-icon">📊</div>
             <h3>التحليلات</h3>
             <p>تقييمات أداء البوت، نسبة التحويل، ومعدل الطلبات.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Handoff Dashboard -->
+        <a href="/api/handoff/" class="card card-handoff">
+            <div class="card-icon">🎧</div>
+            <h3>خدمة العملاء الحية</h3>
+            <p>لوحة التحكم في المحادثات العاجلة والرد المباشر على العملاء.</p>
             <span class="card-arrow">←</span>
         </a>
     </div>

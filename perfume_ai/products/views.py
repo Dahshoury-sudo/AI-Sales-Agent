@@ -299,3 +299,83 @@ class BulkImportTemplateView(APIView):
         )
         response["Content-Disposition"] = 'attachment; filename="products_template.xlsx"'
         return response
+
+class HandoffDashboardView(TemplateView):
+    template_name = 'products/handoff_dashboard.html'
+
+class HandoffConversationsAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def get(self, request):
+        store = request.store
+        convs = Conversation.objects.filter(store=store, needs_human=True).order_by('-created_at')
+        
+        data = []
+        for c in convs:
+            last_msg = c.messages.order_by('-created_at').first()
+            data.append({
+                "id": c.id,
+                "created_at": c.created_at.isoformat(),
+                "last_message": last_msg.content if last_msg else "No messages"
+            })
+            
+        return Response({"conversations": data})
+
+class HandoffMessagesAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def get(self, request, conversation_id):
+        store = request.store
+        try:
+            conv = Conversation.objects.get(id=conversation_id, store=store)
+        except Conversation.DoesNotExist:
+            return Response({"error": "Conversation not found"}, status=404)
+            
+        msgs = conv.messages.order_by('created_at')
+        data = []
+        for m in msgs:
+            data.append({
+                "role": m.role,
+                "content": m.content,
+                "created_at": m.created_at.isoformat()
+            })
+            
+        return Response({
+            "conversation_id": conv.id,
+            "needs_human": conv.needs_human,
+            "messages": data
+        })
+
+class HandoffReplyAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def post(self, request, conversation_id):
+        store = request.store
+        message = request.data.get("message")
+        
+        if not message:
+            return Response({"error": "Message is required"}, status=400)
+            
+        try:
+            conv = Conversation.objects.get(id=conversation_id, store=store)
+        except Conversation.DoesNotExist:
+            return Response({"error": "Conversation not found"}, status=404)
+            
+        save_message(conv, "assistant", message)
+        
+        return Response({"status": "Message sent"})
+
+class HandoffResolveAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def post(self, request, conversation_id):
+        store = request.store
+        try:
+            conv = Conversation.objects.get(id=conversation_id, store=store)
+        except Conversation.DoesNotExist:
+            return Response({"error": "Conversation not found"}, status=404)
+            
+        conv.needs_human = False
+        conv.save()
+        
+        return Response({"status": "Conversation resolved"})
