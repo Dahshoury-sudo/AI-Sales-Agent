@@ -33,6 +33,7 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
 DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.up.railway.app']
 
 
 
