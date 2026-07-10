@@ -154,6 +154,19 @@
             display: none;
         }
 
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--primary); }
+
         /* ═══ Dashboard ═══ */
         #dashboard {
             display: none;
@@ -710,6 +723,7 @@
 <!-- ═══ Login Screen ═══ -->
 <div id="login-screen">
     <div class="login-card">
+        <a href="/" class="back-link" style="justify-content: center; width: 100%;">→ الرجوع للصفحة الرئيسية</a>
         <div class="login-icon">📦</div>
         <h1>لوحة الطلبات</h1>
         <p>ادخل مفتاح API الخاص بمتجرك لعرض الطلبات</p>
@@ -725,6 +739,7 @@
 
 <!-- ═══ Dashboard ═══ -->
 <div id="dashboard">
+    <a href="/" class="back-link">→ الرجوع للصفحة الرئيسية</a>
     <div class="dashboard-header">
         <div class="brand">
             <div class="brand-icon">📦</div>
@@ -811,11 +826,20 @@
     let ALL_ORDERS = [];
     let currentFilter = 'all';
 
+    // Auto-load API key
+    const savedApiKey = localStorage.getItem('perfumeApiKey');
+    if (savedApiKey) {
+        document.getElementById('api-key-input').value = savedApiKey;
+        setTimeout(() => document.getElementById('login-btn').click(), 100);
+    }
+
     // ═══ Login ═══
     document.getElementById('login-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const key = document.getElementById('api-key-input').value.trim();
         if (!key) return;
+
+        localStorage.setItem('perfumeApiKey', key);
 
         const loginBtn = document.getElementById('login-btn');
         loginBtn.textContent = 'جاري التحقق...';

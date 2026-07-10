@@ -21,6 +21,19 @@
             margin: 0 auto;
         }
 
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #c4b5fd; }
+
         h1 {
             text-align: center;
             font-size: 2rem;
@@ -303,6 +316,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="/" class="back-link">→ الرجوع للصفحة الرئيسية</a>
         <h1>📦 إضافة منتجات جماعية</h1>
         <p class="subtitle">ارفع ملف Excel وأضف كل المنتجات دفعة واحدة</p>
 
@@ -391,7 +405,14 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const spinner = document.getElementById('spinner');
         const resultsDiv = document.getElementById('results');
+        const apiKeyInput = document.getElementById('apiKey');
         let selectedFile = null;
+
+        // Auto-load API key
+        const savedApiKey = localStorage.getItem('perfumeApiKey');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+        }
 
         // Click to open file picker
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -427,12 +448,15 @@
         }
 
         uploadBtn.addEventListener('click', async () => {
-            const apiKey = document.getElementById('apiKey').value.trim();
+            const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 alert('لازم تدخل مفتاح الـ API الأول!');
                 return;
             }
             if (!selectedFile) return;
+
+            // Save for future use
+            localStorage.setItem('perfumeApiKey', apiKey);
 
             uploadBtn.disabled = true;
             spinner.style.display = 'block';

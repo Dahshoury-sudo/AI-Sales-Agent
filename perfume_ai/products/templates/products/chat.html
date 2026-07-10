@@ -51,6 +51,19 @@
             overflow: hidden;
         }
 
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--primary); }
+
         /* Settings Modal (API Key) */
         #settings-modal {
             position: absolute;
@@ -104,9 +117,9 @@
 
         button.primary-btn:hover { background: var(--primary-hover); }
 
-        /* Header */
-        header {
-            padding: 1.5rem;
+         header {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-between;
@@ -114,12 +127,12 @@
         }
 
         header h1 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin: 0;
         }
 
         header h1 span {
@@ -238,6 +251,7 @@
         
         <!-- API Key Modal -->
         <div id="settings-modal">
+            <a href="/" class="back-link" style="position: absolute; top: 20px; right: 20px;">→ الرجوع للصفحة الرئيسية</a>
             <h2>Perfume AI 🤖</h2>
             <p>أدخل الـ API Key الخاص بالمتجر للبدء</p>
             <input type="text" id="api-key-input" placeholder="مثال: store_key_123..." autocomplete="off">
@@ -246,8 +260,9 @@
 
         <!-- Chat Header -->
         <header>
-            <h1><span></span> المساعد الذكي</h1>
-            <div style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" onclick="resetChat()">🔄 محادثة جديدة</div>
+            <a href="/" class="back-link" style="margin-bottom: 0; font-size: 0.8rem; flex-shrink: 0;">→ الرئيسية</a>
+            <h1 style="flex: 1; text-align: center; margin: 0 10px;"><span></span> المساعد الذكي</h1>
+            <div style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; flex-shrink: 0;" onclick="resetChat()">🔄 محادثة جديدة</div>
         </header>
 
         <!-- Chat Window -->
