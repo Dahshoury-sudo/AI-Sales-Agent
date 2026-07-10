@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحليلات - AI Perfume Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d0d2b 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #c4b5fd; }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.92rem;
+            margin-bottom: 32px;
+        }
+
+        /* API Key */
+        .api-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .api-section .field { flex: 1; }
+
+        .api-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #c4b5fd;
+            font-size: 0.9rem;
+        }
+
+        .api-section input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .api-section input:focus { border-color: #fbbf24; }
+
+        .btn {
+            padding: 11px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(251,191,36,0.3);
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .loading .spinner-ring {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(251,191,36,0.15);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Dashboard */
+        .dashboard { display: none; }
+
+        /* Overall Score */
+        .score-hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 6px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 6px solid transparent;
+            border-top-color: #fbbf24;
+            border-right-color: #fbbf24;
+            animation: spin 3s linear infinite;
+        }
+
+        .score-value {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        .score-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .metric-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-3px);
+        }
+
+        .metric-icon { font-size: 1.5rem; margin-bottom: 8px; }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .metric-name {
+            font-size: 0.78rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Color coding */
+        .score-good { color: #4ade80; }
+        .score-ok { color: #fbbf24; }
+        .score-bad { color: #f87171; }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #f1f5f9;
+        }
+
+        .stat-name {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        /* Hallucination */
+        .halluc-bar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 20px 24px;
+        }
+
+        .halluc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .halluc-header span { font-weight: 700; font-size: 0.95rem; }
+
+        .halluc-track {
+            height: 10px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .halluc-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* Error */
+        .error-msg {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 14px;
+            color: #f87171;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .api-section { flex-direction: column; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">→ الرجوع للصفحة الرئيسية</a>
+
+        <h1>📊 التحليلات</h1>
+        <p class="subtitle">تقييم أداء البوت الذكي ومتابعة الإحصائيات</p>
+
+        <!-- API Key -->
+        <div class="api-section">
+            <div class="field">
+                <label for="apiKey">🔑 مفتاح الـ API</label>
+                <input type="text" id="apiKey" placeholder="الصق مفتاح الـ API هنا...">
+            </div>
+            <button class="btn btn-primary" id="loadBtn">تحميل البيانات</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner-ring"></div>
+            <p>جاري تحميل البيانات...</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <!-- Overall Score -->
+            <div class="score-hero">
+                <div class="score-circle">
+                    <span class="score-value" id="overallScore">0</span>
+                </div>
+                <div class="score-label">التقييم العام لأداء البوت</div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-value" id="intentScore">0</div>
+                    <div class="metric-name">فهم النية</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🔍</div>
+                    <div class="metric-value" id="searchScore">0</div>
+                    <div class="metric-name">دقة البحث</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📋</div>
+                    <div class="metric-value" id="productScore">0</div>
+                    <div class="metric-name">معلومات المنتج</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">⚖️</div>
+                    <div class="metric-value" id="comparisonScore">0</div>
+                    <div class="metric-name">المقارنات</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🛒</div>
+                    <div class="metric-value" id="orderScore">0</div>
+                    <div class="metric-name">الطلبات</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(167,139,250,0.15);">💬</div>
+                    <div>
+                        <div class="stat-value" id="totalConvs">0</div>
+                        <div class="stat-name">إجمالي المحادثات</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(52,211,153,0.15);">📦</div>
+                    <div>
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-name">إجمالي الطلبات</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(251,191,36,0.15);">📈</div>
+                    <div>
+                        <div class="stat-value" id="conversionRate">0%</div>
+                        <div class="stat-name">نسبة التحويل</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(244,114,182,0.15);">🤝</div>
+                    <div>
+                        <div class="stat-value" id="handoffRate">0%</div>
+                        <div class="stat-name">تحويل لموظف</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hallucination -->
+            <div class="halluc-bar">
+                <div class="halluc-header">
+                    <span>🧠 نسبة الهلوسة (معلومات مخترعة)</span>
+                    <span id="hallucRate" class="score-good">0%</span>
+                </div>
+                <div class="halluc-track">
+                    <div class="halluc-fill" id="hallucFill" style="width: 0%; background: #4ade80;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loadBtn = document.getElementById('loadBtn');
+        const loading = document.getElementById('loading');
+        const dashboard = document.getElementById('dashboard');
+        const errorMsg = document.getElementById('errorMsg');
+
+        function scoreColor(val) {
+            if (val >= 80) return 'score-good';
+            if (val >= 50) return 'score-ok';
+            return 'score-bad';
+        }
+
+        function setMetric(id, value) {
+            const el = document.getElementById(id);
+            el.textContent = value;
+            el.className = 'metric-value ' + scoreColor(value);
+        }
+
+        loadBtn.addEventListener('click', async () => {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) { alert('لازم تدخل مفتاح الـ API الأول!'); return; }
+
+            loading.style.display = 'block';
+            dashboard.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/analytics/data/', {
+                    headers: { 'X-API-Key': apiKey }
+                });
+
+                if (!res.ok) {
+                    throw new Error(res.status === 403 ? 'مفتاح الـ API غير صحيح' : 'حصل خطأ في تحميل البيانات');
+                }
+
+                const data = await res.json();
+                loading.style.display = 'none';
+                dashboard.style.display = 'block';
+
+                // Overall
+                const overall = Math.round(data.overall_score || 0);
+                document.getElementById('overallScore').textContent = overall;
+                document.getElementById('overallScore').className = 'score-value ' + scoreColor(overall);
+
+                // Metrics
+                setMetric('intentScore', Math.round(data.metrics.intent_accuracy || 0));
+                setMetric('searchScore', Math.round(data.metrics.search_accuracy || 0));
+                setMetric('productScore', Math.round(data.metrics.product_info || 0));
+                setMetric('comparisonScore', Math.round(data.metrics.comparison || 0));
+                setMetric('orderScore', Math.round(data.metrics.orders || 0));
+
+                // Stats
+                document.getElementById('totalConvs').textContent = data.total_conversations || 0;
+                document.getElementById('totalOrders').textContent = data.total_orders || 0;
+                document.getElementById('conversionRate').textContent = (data.conversion_rate || 0) + '%';
+                document.getElementById('handoffRate').textContent = (data.handoff_rate || 0) + '%';
+
+                // Hallucination
+                const halluc = data.metrics.hallucination_rate || 0;
+                const hallucEl = document.getElementById('hallucRate');
+                const hallucFill = document.getElementById('hallucFill');
+                hallucEl.textContent = halluc + '%';
+                hallucFill.style.width = halluc + '%';
+
+                if (halluc <= 10) {
+                    hallucEl.className = 'score-good';
+                    hallucFill.style.background = '#4ade80';
+                } else if (halluc <= 30) {
+                    hallucEl.className = 'score-ok';
+                    hallucFill.style.background = '#fbbf24';
+                } else {
+                    hallucEl.className = 'score-bad';
+                    hallucFill.style.background = '#f87171';
+                }
+
+            } catch (err) {
+                loading.style.display = 'none';
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = '❌ ' + err.message;
+            }
+        });
+    </script>
+</body>
+</html>

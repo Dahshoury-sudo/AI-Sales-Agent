@@ -2,6 +2,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views.generic import TemplateView
+from django.http import HttpResponse
 
 from django.db.models import Avg, Count
 from .models import Product, ConversationEvaluation, Order, Conversation
@@ -26,6 +27,10 @@ class ProductListView(ListAPIView):
 
 class ChatDemoView(TemplateView):
     template_name = 'products/chat.html'
+
+
+class HomeView(TemplateView):
+    template_name = 'products/home.html'
 
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
@@ -215,3 +220,82 @@ class OrderStatusUpdateView(APIView):
         order.save()
 
         return Response({"id": order.id, "status": order.status})
+
+
+class BulkImportView(TemplateView):
+    template_name = 'products/bulk_import.html'
+
+
+class AnalyticsDashboardView(TemplateView):
+    template_name = 'products/analytics.html'
+
+
+class BulkImportAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+
+    def post(self, request):
+        store = request.store
+        file = request.FILES.get("file")
+
+        if not file:
+            return Response({"error": "لازم ترفع ملف Excel (.xlsx)"}, status=400)
+
+        if not file.name.endswith(".xlsx"):
+            return Response({"error": "الملف لازم يكون بصيغة .xlsx"}, status=400)
+
+        from .services.bulk_import import parse_excel
+
+        file_bytes = file.read()
+        results = parse_excel(file_bytes, store)
+
+        return Response(results)
+
+
+class BulkImportTemplateView(APIView):
+    """Download an empty Excel template with the correct headers."""
+
+    def get(self, request):
+        import openpyxl
+        from io import BytesIO
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Products"
+
+        headers = [
+            "name", "brand", "category", "gender",
+            "season", "occasion", "longevity", "projection",
+            "concentration", "top_notes", "middle_notes", "base_notes",
+            "description",
+            "volume_1 (ml)", "price_1", "stock_1",
+            "volume_2 (ml)", "price_2", "stock_2",
+            "volume_3 (ml)", "price_3", "stock_3",
+        ]
+        ws.append(headers)
+
+        # Example row
+        ws.append([
+            "Bleu de Chanel", "Chanel", "Perfume", "male",
+            "All Seasons", "Casual", "8 hours", "Moderate",
+            "EDP", "Citrus, Mint", "Jasmine, Ginger", "Cedar, Sandalwood",
+            "A fresh and woody fragrance",
+            50, 3500, 10,
+            100, 5200, 5,
+            150, 6800, 3,
+        ])
+
+        # Auto-size columns
+        for col in ws.columns:
+            max_length = max(len(str(cell.value or "")) for cell in col)
+            ws.column_dimensions[col[0].column_letter].width = max_length + 2
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="products_template.xlsx"'
+        return response

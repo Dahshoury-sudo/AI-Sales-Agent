@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة منتجات جماعية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d0d2b 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+
+        /* API Key Section */
+        .api-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .api-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #c4b5fd;
+        }
+
+        .api-section input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .api-section input:focus {
+            border-color: #a78bfa;
+        }
+
+        /* Steps */
+        .step-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s, border-color 0.3s;
+        }
+
+        .step-card:hover {
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .step-desc {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: #c4b5fd;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(167, 139, 250, 0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed rgba(167, 139, 250, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(167, 139, 250, 0.03);
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.08);
+        }
+
+        .upload-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone p {
+            color: #9ca3af;
+            font-size: 0.95rem;
+        }
+
+        .upload-zone .filename {
+            color: #a78bfa;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 8px;
+        }
+
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .result-card {
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .result-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+        }
+
+        .result-warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        .result-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .result-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .result-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .result-card ul li {
+            padding: 4px 0;
+            font-size: 0.88rem;
+            color: #d1d5db;
+        }
+
+        .result-card ul li::before {
+            content: "⚠ ";
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #a78bfa;
+            margin: 0 4px;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .spinner .dot:nth-child(2) { animation-delay: 0.16s; }
+        .spinner .dot:nth-child(3) { animation-delay: 0.32s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Table Preview */
+        .columns-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.82rem;
+        }
+
+        .columns-table th {
+            background: rgba(167, 139, 250, 0.15);
+            color: #c4b5fd;
+            padding: 8px 12px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .columns-table td {
+            padding: 7px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #9ca3af;
+        }
+
+        .columns-table tr:hover td {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .required { color: #f87171; font-weight: 700; }
+        .optional { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 إضافة منتجات جماعية</h1>
+        <p class="subtitle">ارفع ملف Excel وأضف كل المنتجات دفعة واحدة</p>
+
+        <!-- API Key -->
+        <div class="api-section">
+            <label for="apiKey">🔑 مفتاح الـ API الخاص بمتجرك</label>
+            <input type="text" id="apiKey" placeholder="الصق مفتاح الـ API هنا...">
+        </div>
+
+        <!-- Step 1: Download Template -->
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">حمّل النموذج الجاهز</div>
+            </div>
+            <p class="step-desc">
+                حمّل ملف Excel فيه كل العناوين جاهزة ومثال لمنتج واحد. كل اللي عليك تملا البيانات وترفعه.
+            </p>
+            <a href="/api/import/template/" class="btn btn-secondary" download>
+                📥 تحميل النموذج (Excel)
+            </a>
+
+            <details style="margin-top: 16px; cursor: pointer;">
+                <summary style="color: #a78bfa; font-weight: 600;">📋 شرح الأعمدة</summary>
+                <table class="columns-table">
+                    <tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th></tr>
+                    <tr><td>name</td><td>اسم العطر</td><td class="required">✅ مطلوب</td></tr>
+                    <tr><td>brand</td><td>اسم البراند</td><td class="required">✅ مطلوب</td></tr>
+                    <tr><td>category</td><td>التصنيف (مثلاً: Perfume)</td><td class="optional">اختياري</td></tr>
+                    <tr><td>gender</td><td>male / female / unisex</td><td class="optional">اختياري (الافتراضي: unisex)</td></tr>
+                    <tr><td>season</td><td>الموسم المناسب</td><td class="optional">اختياري</td></tr>
+                    <tr><td>occasion</td><td>المناسبة</td><td class="optional">اختياري</td></tr>
+                    <tr><td>longevity</td><td>مدة الثبات</td><td class="optional">اختياري</td></tr>
+                    <tr><td>projection</td><td>قوة الانتشار</td><td class="optional">اختياري</td></tr>
+                    <tr><td>concentration</td><td>التركيز (EDP, EDT...)</td><td class="optional">اختياري</td></tr>
+                    <tr><td>top_notes</td><td>النوتات العلوية</td><td class="optional">اختياري</td></tr>
+                    <tr><td>middle_notes</td><td>النوتات الوسطى</td><td class="optional">اختياري</td></tr>
+                    <tr><td>base_notes</td><td>النوتات القاعدية</td><td class="optional">اختياري</td></tr>
+                    <tr><td>description</td><td>وصف العطر</td><td class="optional">اختياري</td></tr>
+                    <tr><td>volume_1, price_1, stock_1</td><td>حجم/سعر/مخزون الحجم الأول</td><td class="optional">اختياري</td></tr>
+                    <tr><td>volume_2, price_2, stock_2</td><td>حجم/سعر/مخزون الحجم الثاني</td><td class="optional">اختياري</td></tr>
+                    <tr><td>volume_3, price_3, stock_3</td><td>حجم/سعر/مخزون الحجم الثالث</td><td class="optional">اختياري</td></tr>
+                </table>
+            </details>
+        </div>
+
+        <!-- Step 2: Upload -->
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">ارفع الملف</div>
+            </div>
+            <p class="step-desc">
+                بعد ما تملا البيانات، ارفع ملف الـ Excel هنا. النظام هيضيف كل المنتجات تلقائياً.
+            </p>
+
+            <div class="upload-zone" id="uploadZone">
+                <div class="icon">📁</div>
+                <p>اسحب الملف هنا أو اضغط لاختياره</p>
+                <div class="filename" id="fileName"></div>
+            </div>
+            <input type="file" id="fileInput" accept=".xlsx" style="display: none;">
+
+            <div style="margin-top: 16px; text-align: center;">
+                <button class="btn btn-primary" id="uploadBtn" disabled>
+                    🚀 ارفع وأضف المنتجات
+                </button>
+            </div>
+
+            <div class="spinner" id="spinner">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <p style="margin-top: 12px; color: #9ca3af;">جاري إضافة المنتجات...</p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const spinner = document.getElementById('spinner');
+        const resultsDiv = document.getElementById('results');
+        let selectedFile = null;
+
+        // Click to open file picker
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        // Drag & drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.xlsx')) {
+                alert('الملف لازم يكون بصيغة .xlsx');
+                return;
+            }
+            selectedFile = file;
+            fileName.textContent = `📄 ${file.name}`;
+            uploadBtn.disabled = false;
+        }
+
+        uploadBtn.addEventListener('click', async () => {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert('لازم تدخل مفتاح الـ API الأول!');
+                return;
+            }
+            if (!selectedFile) return;
+
+            uploadBtn.disabled = true;
+            spinner.style.display = 'block';
+            resultsDiv.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const res = await fetch('/api/import/upload/', {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey },
+                    body: formData,
+                });
+                const data = await res.json();
+
+                spinner.style.display = 'none';
+                resultsDiv.style.display = 'block';
+
+                let html = '';
+
+                if (data.error) {
+                    html += `<div class="result-card result-error"><h3>❌ خطأ</h3><p>${data.error}</p></div>`;
+                } else {
+                    if (data.created > 0) {
+                        html += `<div class="result-card result-success"><h3>✅ تم إضافة ${data.created} منتج بنجاح!</h3></div>`;
+                    }
+                    if (data.skipped > 0) {
+                        html += `<div class="result-card result-warning"><h3>⏭️ تم تخطي ${data.skipped} سطر</h3></div>`;
+                    }
+                    if (data.errors && data.errors.length > 0) {
+                        html += `<div class="result-card result-warning"><h3>⚠️ ملاحظات</h3><ul>`;
+                        data.errors.forEach(err => { html += `<li>${err}</li>`; });
+                        html += `</ul></div>`;
+                    }
+                    if (data.created === 0 && data.skipped === 0 && (!data.errors || data.errors.length === 0)) {
+                        html += `<div class="result-card result-warning"><h3>🤔 مفيش حاجة اتضافت - تأكد إن الملف فيه بيانات.</h3></div>`;
+                    }
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } catch (err) {
+                spinner.style.display = 'none';
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = `<div class="result-card result-error"><h3>❌ حصل خطأ في الاتصال</h3><p>${err.message}</p></div>`;
+            }
+
+            uploadBtn.disabled = false;
+        });
+    </script>
+</body>
+</html>
