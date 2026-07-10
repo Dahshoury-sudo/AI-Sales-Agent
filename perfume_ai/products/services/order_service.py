@@ -137,8 +137,17 @@ Return valid JSON in this exact format:
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 
-    # If the user asked for products but NONE were found in our store, stop immediately.
+    # If the user asked for products but NONE were found in our store, stop immediately and suggest alternatives.
     if not items_to_create and all("product_obj" not in p for p in products_data if isinstance(p, dict)):
+        from products.models import Product
+        alternatives = Product.objects.filter(store=store, is_active=True, variants__stock__gt=0).distinct().order_by('?')[:3]
+        if alternatives.exists():
+            alts_text = []
+            for alt in alternatives:
+                alts_text.append(f"• {alt.name} ({alt.brand.name})")
+            alts_str = "\n".join(alts_text)
+            return f"للأسف العطر ده مش متوفر عندنا يا فندم 😔\n\nبس عندنا عطور تانية مميزة ممكن تعجبك زي:\n{alts_str}\n\nتحب تعرف تفاصيل أكتر عن أي واحد فيهم؟", context_str
+        
         return "مش لاقي العطر ده عندنا يا فندم. ممكن تقولي اسمه تاني أو تسأل عن عطر تاني؟", context_str
 
     # 2. Check for missing basic details now that we know we have the products
