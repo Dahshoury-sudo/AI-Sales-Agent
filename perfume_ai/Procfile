@@ -1,0 +1,2 @@
+web: gunicorn --workers 3 --threads 10 perfume_ai.wsgi:application
+release: python manage.py migrate
