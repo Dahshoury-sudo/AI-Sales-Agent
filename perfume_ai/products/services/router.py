@@ -5,6 +5,8 @@ from .search_service import search_products
 from .product_info import get_product_info
 from .comparison_service import compare_products
 from .order_service import handle_order
+from .general_service import handle_general
+from products.models import Order
 
 
 def route(message, history=None, store=None, conversation=None):
@@ -25,7 +27,6 @@ def route(message, history=None, store=None, conversation=None):
         return compare_products(message, history, store)
 
     elif request_type in ["greeting", "faq"]:
-        from .general_service import handle_general
         return handle_general(message, history, store)
         
         
@@ -36,14 +37,13 @@ def route(message, history=None, store=None, conversation=None):
         
     elif request_type == "order_cancel":
         if conversation:
-            from products.models import Order
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
             if latest_order:
                 latest_order.status = "cancelled"
                 latest_order.bot_notes = "تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل."
                 latest_order.save()
                 return "تم الغاء الطلب اللي تم تسجيله بنجاح يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
-        return "تم الغاء الطلب بنجاح يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+        return "ولا يهمك يا فندم، نورتنا في أي وقت! ولو احتجت أي مساعدة إحنا موجودين 24 ساعة تحت أمرك.", ""
         
     elif request_type == "handoff":
         if conversation:
@@ -55,5 +55,4 @@ def route(message, history=None, store=None, conversation=None):
         return "أنا هنا عشان أساعدك تختار عطر أو تطلب من متجرنا. قولي عايز ايه وهساعدك!", ""
 
     # Fallback for anything not explicitly matched
-    from .general_service import handle_general
     return handle_general(message, history, store)

@@ -3,6 +3,7 @@ from django.db.models import Q
 from products.models import Product
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .product_resolver import resolve_product
 
 
 import json
@@ -33,7 +34,6 @@ Return ONLY valid JSON in this format:
         p1_name = ""
         p2_name = ""
 
-    from .product_resolver import resolve_product
     
     prod1 = resolve_product(p1_name, history, store)
     prod2 = resolve_product(p2_name, history, store)

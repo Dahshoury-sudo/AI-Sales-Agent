@@ -10,7 +10,7 @@ def get_conversation(conversation_id, store=None):
         if store:
             return Conversation.objects.get(id=conversation_id, store=store)
         return Conversation.objects.get(id=conversation_id)
-    except Conversation.DoesNotExist:
+    except (Conversation.DoesNotExist, ValueError, TypeError):
         return None
 
 

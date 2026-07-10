@@ -1,6 +1,7 @@
 import json
 from django.db.models import Q
 from products.models import Product
+from .ai.client import chat
 
 
 def resolve_products(message: str, history=None, store=None):
@@ -29,7 +30,6 @@ Output format MUST be valid JSON:
 {{"perfumes": ["Exact Name 1", "Exact Name 2"]}}  (Return an empty list if none found)
 """
     try:
-        from .ai.client import chat
         messages = [{"role": "system", "content": prompt}]
         if history:
             messages.extend(history)

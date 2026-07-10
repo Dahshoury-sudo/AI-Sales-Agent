@@ -1,7 +1,7 @@
 from .product_resolver import resolve_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-
+from products.models import Product
 
 def get_product_info(message, history=None, store=None):
 
@@ -42,7 +42,6 @@ Description: {product.description}
 """
     else:
         # Product not found, let's get some alternatives
-        from products.models import Product
         alternatives = Product.objects.filter(store=store, is_active=True, variants__stock__gt=0).distinct().order_by('?')[:3]
         
         context = "═══ المنتج غير موجود ═══\nلم يتم العثور على المنتج المطلوب.\n\n"

@@ -139,7 +139,10 @@ Return valid JSON in this exact format:
 
     # If the user asked for products but NONE were found in our store, stop immediately and suggest alternatives.
     if not items_to_create and all("product_obj" not in p for p in products_data if isinstance(p, dict)):
-        from products.models import Product
+        # Check if the AI returned null for the name, which means the user's request was ambiguous (e.g. "عايز واحد")
+        if any(not p.get("name") for p in products_data if isinstance(p, dict)):
+            return "عذراً يا فندم، تقصد أنهي عطر فيهم بالظبط عشان أقدر أسجلهولك في الطلب؟", context_str
+            
         alternatives = Product.objects.filter(store=store, is_active=True, variants__stock__gt=0).distinct().order_by('?')[:3]
         if alternatives.exists():
             alts_text = []

@@ -43,4 +43,7 @@ Rules:
 
     response = chat(messages, response_format={"type": "json_object"})
 
-    return json.loads(response)
+    try:
+        return json.loads(response)
+    except Exception:
+        return {}
