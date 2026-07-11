@@ -14,9 +14,12 @@ def get_product_info(message, history=None, store=None):
             variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP ({'متوفر - المخزون: ' + str(v.stock) if v.stock > 0 else '❌ نفد من المخزون'})" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
             all_out_of_stock = all(v.stock == 0 for v in variants) if variants else True
             stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
+            is_custom_blend = product.brand.name.lower() == "self"
+            brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
+
             context += f"""
 Name: {product.name}
-Brand: {product.brand.name}
+Brand: {brand_display}
 Stock Status: {stock_status}
 Available Sizes & Prices:
 {variants_str}
@@ -50,9 +53,12 @@ Description: {product.description}
             for alt in alternatives:
                 variants = list(alt.variants.filter(stock__gt=0))
                 variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants])
+                is_custom_blend = alt.brand.name.lower() == "self"
+                brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
+
                 context += f"""
 Name: {alt.name}
-Brand: {alt.brand.name}
+Brand: {brand_display}
 Available Sizes & Prices:
 {variants_str}
 Gender: {alt.gender}
