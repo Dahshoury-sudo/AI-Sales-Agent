@@ -18,7 +18,7 @@ Rules:
 1. "customer_name": The customer's full name if provided in the history.
 2. "customer_phone": The customer's phone number if provided in the history.
 3. "shipping_address": The customer's full delivery address if provided in the history.
-4. "products": A comprehensive list of ALL products the user wants to buy right now. You MUST read the entire history and maintain a running list of the shopping cart. 🚨 CRITICAL 🚨: If the assistant has ALREADY confirmed an order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), you MUST EMPTY your cart of any products mentioned BEFORE that confirmation. Only extract NEW products requested AFTER the last order was confirmed. If no new products were requested, return an empty list [].
+4. "products": A comprehensive list of ALL products the user wants to buy right now. For each product, extract "bottle_type" ("original", "normal", or null if they didn't specify). CRITICAL: If the user hasn't explicitly chosen the bottle type yet, YOU MUST return null. You MUST read the entire history and maintain a running list of the shopping cart. 🚨 CRITICAL 🚨: If the assistant has ALREADY confirmed an order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), you MUST EMPTY your cart of any products mentioned BEFORE that confirmation. Only extract NEW products requested AFTER the last order was confirmed. If no new products were requested, return an empty list [].
 5. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
@@ -27,7 +27,7 @@ Return valid JSON in this exact format:
     "customer_phone": "...",
     "shipping_address": "...",
     "products": [
-        {"name": "...", "quantity": null or integer, "volume": null or integer}
+        {"name": "...", "quantity": null or integer, "volume": null or integer, "bottle_type": null or "normal" or "original"}
     ],
     "is_confirmed": false
 }
@@ -87,15 +87,25 @@ Return valid JSON in this exact format:
                 except (ValueError, TypeError):
                     pass
             
+            bottle_type = p_data.get("bottle_type")
+            if not bottle_type:
+                if product.brand.name.lower() == "perfamix":
+                    bottle_type = "normal"
+                    p_data["bottle_type"] = "normal"
+                else:
+                    p_data["product_obj"] = product
+                    p_data["missing_bottle_type"] = True
+
             if not selected_variant:
                 # If there is only one variant, auto-select it. Otherwise, mark for missing field.
                 if len(variants) == 1:
                     selected_variant = variants[0]
                 else:
-                    # Save the product in p_data to use for missing fields
                     p_data["product_obj"] = product
                     p_data["available_volumes"] = [v.volume for v in variants]
-                    continue
+            
+            if not selected_variant or p_data.get("missing_bottle_type"):
+                continue
             
             # Check stock availability
             if selected_variant.stock == 0:
@@ -125,15 +135,20 @@ Return valid JSON in this exact format:
             if selected_variant.stock < qty:
                 return f"للأسف الكمية المطلوبة من عطر {product.name} ({selected_variant.volume}ml) أكبر من المتوفر في المخزون. المتوفر حالياً {selected_variant.stock} قطعة فقط. تحب تطلب {selected_variant.stock} بدل {qty}؟", ""
 
+            if bottle_type == "original" and product.original_bottles_stock < qty:
+                return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} المتوفرة حالياً {product.original_bottles_stock} زجاجة فقط. تحب نبعتلك في زجاجات المحل العادية؟", ""
+
             price = selected_variant.price
             total_price += price * qty
             items_to_create.append({
                 "variant": selected_variant,
                 "quantity": qty,
-                "price": price
+                "price": price,
+                "bottle_type": bottle_type
             })
             p_data["name"] = product.name
-            context_data.append(f"{product.name} ({selected_variant.volume}ml) x {qty} ({price * qty} EGP)")
+            bottle_text = " (زجاجة أوريجينال)" if bottle_type == "original" else " (زجاجة المحل)"
+            context_data.append(f"{product.name} ({selected_variant.volume}ml){bottle_text} x {qty} ({price * qty} EGP)")
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 
@@ -162,13 +177,16 @@ Return valid JSON in this exact format:
     if not address:
         missing_fields.append("عنوان التوصيل بالتفصيل")
 
-    # Check for missing quantities and sizes using the original data that passed resolution
+    # Check for missing quantities, sizes, and bottle types using the original data that passed resolution
     for p in products_data:
         if not isinstance(p, dict): continue
         
         if "product_obj" in p:
-            vols = ", ".join(map(str, p["available_volumes"]))
-            missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح أحجام: {vols} مل)")
+            if "available_volumes" in p:
+                vols = ", ".join(map(str, p["available_volumes"]))
+                missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح أحجام: {vols} مل)")
+            if p.get("missing_bottle_type"):
+                missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تعبئته في زجاجة أوريجينال أم زجاجة المحل؟)")
             
         # Only check quantities for products we actually found
         elif not p.get("quantity"):
@@ -186,7 +204,8 @@ Return valid JSON in this exact format:
         summary += f"📍 العنوان: {address}\n\n"
         summary += "🛍️ المنتجات:\n"
         for item in items_to_create:
-            summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) (السعر: {item['price'] * item['quantity']} جنيه)\n"
+            bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "عادية"
+            summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - زجاجة {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
         summary += "\nهل تحب نأكد الطلب على كده ولا في حاجة حابب تعدلها؟"
         return summary, context_str
@@ -213,8 +232,19 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                     order=order,
                     variant=item["variant"],
                     quantity=item["quantity"],
+                    bottle_type=item["bottle_type"],
                     price_at_time_of_order=item["price"]
                 )
+                
+                # Decrement variant stock
+                item["variant"].stock -= item["quantity"]
+                item["variant"].save()
+                
+                # Decrement original bottles stock if applicable
+                if item["bottle_type"] == "original":
+                    product = item["variant"].product
+                    product.original_bottles_stock -= item["quantity"]
+                    product.save()
                 
         return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
     except Exception as e:

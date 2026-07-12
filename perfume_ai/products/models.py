@@ -67,6 +67,8 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
+    original_bottles_stock = models.PositiveIntegerField(default=0, help_text="عدد الزجاجات الأوريجينال الفارغة المتاحة لهذا العطر")
+
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -141,9 +143,14 @@ class Order(models.Model):
         return f"Order #{self.id} - {self.customer_name}"
 
 class OrderItem(models.Model):
+    BOTTLE_CHOICES = (
+        ("normal", "عادية"),
+        ("original", "أوريجينال"),
+    )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    bottle_type = models.CharField(max_length=20, choices=BOTTLE_CHOICES, default="normal")
     price_at_time_of_order = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
