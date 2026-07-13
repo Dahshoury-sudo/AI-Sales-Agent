@@ -267,9 +267,12 @@ class BulkImportTemplateView(APIView):
             "season", "occasion", "longevity", "projection",
             "concentration", "top_notes", "middle_notes", "base_notes",
             "description",
-            "volume_1 (ml)", "price_1", "oil_stock_grams",
-            "volume_2 (ml)", "price_2", "original_bottles_stock",
-            "volume_3 (ml)", "price_3",
+            "oil_stock_grams", "concentration_percentage",
+            "norm_vol_1", "norm_price_1",
+            "norm_vol_2", "norm_price_2",
+            "norm_vol_3", "norm_price_3",
+            "orig_vol_1", "orig_price_1", "orig_stock_1",
+            "orig_vol_2", "orig_price_2", "orig_stock_2",
         ]
         ws.append(headers)
 
@@ -279,9 +282,12 @@ class BulkImportTemplateView(APIView):
             "All Seasons", "Casual", "8 hours", "Moderate",
             "EDP", "Citrus, Mint", "Jasmine, Ginger", "Cedar, Sandalwood",
             "A fresh and woody fragrance",
-            50, 3500, 1000,
-            100, 5200, 20,
-            150, 6800,
+            1000, 30,
+            50, 500,
+            100, 900,
+            150, 1200,
+            100, 5000, 5,
+            200, 9000, 2
         ])
 
         # Auto-size columns

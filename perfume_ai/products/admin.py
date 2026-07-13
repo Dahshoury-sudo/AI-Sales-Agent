@@ -29,6 +29,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
+    fields = ('bottle_type', 'volume', 'price', 'stock')
     extra = 1
 
 @admin.register(Product)
@@ -38,6 +39,8 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "store",
         "brand",
+        "oil_stock_grams",
+        "concentration_percentage",
         "is_active",
     )
 

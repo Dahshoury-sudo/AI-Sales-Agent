@@ -69,7 +69,6 @@ class Product(models.Model):
 
     oil_stock_grams = models.PositiveIntegerField(default=0, help_text="رصيد الزيت العطري بالجرام")
     concentration_percentage = models.PositiveIntegerField(default=30, help_text="نسبة الزيت للزجاجة (مثال: 30%)")
-    original_bottles_stock = models.PositiveIntegerField(default=0, help_text="عدد الزجاجات الأوريجينال الفارغة المتاحة لهذا العطر")
 
     is_active = models.BooleanField(default=True)
 
@@ -80,13 +79,21 @@ class Product(models.Model):
 
 
 class ProductVariant(models.Model):
+    BOTTLE_TYPE_CHOICES = (
+        ("normal", "زجاجة المحل"),
+        ("original", "أوريجينال"),
+    )
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
     volume = models.PositiveIntegerField(help_text="Volume in ml (e.g., 50, 80, 100)")
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    bottle_type = models.CharField(max_length=20, choices=BOTTLE_TYPE_CHOICES, default="normal")
+    stock = models.PositiveIntegerField(null=True, blank=True, help_text="مخزون الزجاجات (للأوريجينال فقط)")
 
     class Meta:
-        ordering = ['volume']
-        unique_together = ('product', 'volume')
+        ordering = ['bottle_type', 'volume']
+        unique_together = ('product', 'volume', 'bottle_type')
 
     def __str__(self):
         return f"{self.product.name} - {self.volume}ml"

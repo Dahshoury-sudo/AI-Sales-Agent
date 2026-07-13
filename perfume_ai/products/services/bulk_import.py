@@ -23,14 +23,20 @@ def parse_excel(file_bytes, store):
     K: middle_notes
     L: base_notes
     M: description
-    N: volume_1 (ml)
-    O: price_1
-    P: oil_stock_grams
-    Q: volume_2 (ml)
-    R: price_2
-    S: original_bottles_stock
-    T: volume_3 (ml)
-    U: price_3
+    N: oil_stock_grams
+    O: concentration_percentage (default: 30)
+    P: norm_vol_1 (ml)
+    Q: norm_price_1
+    R: norm_vol_2 (ml)
+    S: norm_price_2
+    T: norm_vol_3 (ml)
+    U: norm_price_3
+    V: orig_vol_1 (ml)
+    W: orig_price_1
+    X: orig_stock_1
+    Y: orig_vol_2 (ml)
+    Z: orig_price_2
+    AA: orig_stock_2
     """
     
     results = {"created": 0, "errors": [], "skipped": 0}
@@ -103,38 +109,57 @@ def parse_excel(file_bytes, store):
                 middle_notes=str(row[10]).strip() if row[10] else "",
                 base_notes=str(row[11]).strip() if row[11] else "",
                 description=str(row[12]).strip() if row[12] else "",
-                oil_stock_grams=int(float(str(row[15]))) if len(row) > 15 and row[15] else 0,
-                original_bottles_stock=int(float(str(row[18]))) if len(row) > 18 and row[18] else 0,
+                oil_stock_grams=int(float(str(row[13]))) if len(row) > 13 and row[13] else 0,
+                concentration_percentage=int(float(str(row[14]))) if len(row) > 14 and row[14] else 30,
             )
             
-            # Create variants (up to 3)
+            # Create normal variants (up to 3)
             variant_count = 0
             for i in range(3):
-                vol_idx = 13 + (i * 3)   # columns N, Q, T
-                price_idx = 14 + (i * 3)  # columns O, R, U
+                vol_idx = 15 + (i * 2)   # columns P, R, T (15, 17, 19)
+                price_idx = 16 + (i * 2)  # columns Q, S, U (16, 18, 20)
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
                 
                 if volume and price:
                     try:
-                        volume_int = int(float(str(volume)))
-                        price_dec = Decimal(str(price))
-                        
                         ProductVariant.objects.create(
                             product=product,
-                            volume=volume_int,
-                            price=price_dec,
+                            volume=int(float(str(volume))),
+                            price=Decimal(str(price)),
+                            bottle_type='normal'
                         )
                         variant_count += 1
                     except (ValueError, InvalidOperation) as e:
-                        results["errors"].append(
-                            f"سطر {row_idx}: خطأ في بيانات الحجم/السعر رقم {i+1} للمنتج '{name}': {e}"
+                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات التعبئة {i+1} للمنتج '{name}': {e}")
+            
+            # Create original variants (up to 2)
+            for i in range(2):
+                vol_idx = 21 + (i * 3)   # columns V, Y (21, 24)
+                price_idx = 22 + (i * 3)  # columns W, Z (22, 25)
+                stock_idx = 23 + (i * 3)  # columns X, AA (23, 26)
+                
+                volume = row[vol_idx] if vol_idx < len(row) else None
+                price = row[price_idx] if price_idx < len(row) else None
+                stock = row[stock_idx] if stock_idx < len(row) else None
+                
+                if volume and price:
+                    try:
+                        ProductVariant.objects.create(
+                            product=product,
+                            volume=int(float(str(volume))),
+                            price=Decimal(str(price)),
+                            stock=int(float(str(stock))) if stock else 0,
+                            bottle_type='original'
                         )
+                        variant_count += 1
+                    except (ValueError, InvalidOperation) as e:
+                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات الأوريجينال {i+1} للمنتج '{name}': {e}")
             
             if variant_count == 0:
                 results["errors"].append(
-                    f"سطر {row_idx}: المنتج '{name}' اتضاف بس من غير أحجام! ضيف أحجام يدوي."
+                    f"سطر {row_idx}: المنتج '{name}' اتضاف بس من غير أي أحجام! ضيف أحجام يدوي."
                 )
             
             results["created"] += 1
