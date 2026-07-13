@@ -67,6 +67,8 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
+    oil_stock_grams = models.PositiveIntegerField(default=0, help_text="رصيد الزيت العطري بالجرام")
+    concentration_percentage = models.PositiveIntegerField(default=30, help_text="نسبة الزيت للزجاجة (مثال: 30%)")
     original_bottles_stock = models.PositiveIntegerField(default=0, help_text="عدد الزجاجات الأوريجينال الفارغة المتاحة لهذا العطر")
 
     is_active = models.BooleanField(default=True)
@@ -81,7 +83,6 @@ class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
     volume = models.PositiveIntegerField(help_text="Volume in ml (e.g., 50, 80, 100)")
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['volume']

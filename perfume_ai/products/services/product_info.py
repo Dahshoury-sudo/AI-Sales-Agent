@@ -11,8 +11,20 @@ def get_product_info(message, history=None, store=None):
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
         for product in products:
             variants = list(product.variants.all())
-            variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP ({'متوفر - المخزون: ' + str(v.stock) if v.stock > 0 else '❌ نفد من المخزون'})" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
-            all_out_of_stock = all(v.stock == 0 for v in variants) if variants else True
+            variants_str_list = []
+            all_out_of_stock = True
+            for v in variants:
+                req_oil = (v.volume * product.concentration_percentage) / 100
+                is_available = product.oil_stock_grams >= req_oil or product.original_bottles_stock > 0
+                if is_available:
+                    all_out_of_stock = False
+                status = 'متوفر' if is_available else '❌ نفد من المخزون'
+                variants_str_list.append(f"- {v.volume}ml: {v.price} EGP ({status})")
+            
+            variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
+            if not variants and product.original_bottles_stock > 0:
+                all_out_of_stock = False
+            
             stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
             is_custom_blend = product.brand.name.lower() == "self"
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
@@ -45,14 +57,15 @@ Description: {product.description}
 """
     else:
         # Product not found, let's get some alternatives
-        alternatives = Product.objects.filter(store=store, is_active=True, variants__stock__gt=0).distinct().order_by('?')[:3]
+        alternatives = Product.objects.filter(store=store, is_active=True).exclude(oil_stock_grams=0, original_bottles_stock=0).distinct().order_by('?')[:3]
         
         context = "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives.exists():
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
             for alt in alternatives:
-                variants = list(alt.variants.filter(stock__gt=0))
-                variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in variants])
+                variants = list(alt.variants.all())
+                available_variants = [v for v in variants if alt.oil_stock_grams >= (v.volume * alt.concentration_percentage) / 100 or alt.original_bottles_stock > 0]
+                variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP" for v in available_variants])
                 is_custom_blend = alt.brand.name.lower() == "self"
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 

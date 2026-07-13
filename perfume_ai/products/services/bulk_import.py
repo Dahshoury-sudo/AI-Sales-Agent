@@ -25,13 +25,12 @@ def parse_excel(file_bytes, store):
     M: description
     N: volume_1 (ml)
     O: price_1
-    P: stock_1
+    P: oil_stock_grams
     Q: volume_2 (ml)
     R: price_2
-    S: stock_2
+    S: original_bottles_stock
     T: volume_3 (ml)
     U: price_3
-    V: stock_3
     """
     
     results = {"created": 0, "errors": [], "skipped": 0}
@@ -104,6 +103,8 @@ def parse_excel(file_bytes, store):
                 middle_notes=str(row[10]).strip() if row[10] else "",
                 base_notes=str(row[11]).strip() if row[11] else "",
                 description=str(row[12]).strip() if row[12] else "",
+                oil_stock_grams=int(float(str(row[15]))) if len(row) > 15 and row[15] else 0,
+                original_bottles_stock=int(float(str(row[18]))) if len(row) > 18 and row[18] else 0,
             )
             
             # Create variants (up to 3)
@@ -111,23 +112,19 @@ def parse_excel(file_bytes, store):
             for i in range(3):
                 vol_idx = 13 + (i * 3)   # columns N, Q, T
                 price_idx = 14 + (i * 3)  # columns O, R, U
-                stock_idx = 15 + (i * 3)  # columns P, S, V
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
-                stock = row[stock_idx] if stock_idx < len(row) else None
                 
                 if volume and price:
                     try:
                         volume_int = int(float(str(volume)))
                         price_dec = Decimal(str(price))
-                        stock_int = int(float(str(stock))) if stock else 0
                         
                         ProductVariant.objects.create(
                             product=product,
                             volume=volume_int,
                             price=price_dec,
-                            stock=max(0, stock_int),
                         )
                         variant_count += 1
                     except (ValueError, InvalidOperation) as e:

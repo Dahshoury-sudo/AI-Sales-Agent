@@ -49,8 +49,18 @@ Return ONLY valid JSON in this format:
 
     for product in matches:
         variants = list(product.variants.all())
-        variants_str = "\n".join([f"- {v.volume}ml: {v.price} EGP ({'متوفر - المخزون: ' + str(v.stock) if v.stock > 0 else '❌ نفد من المخزون'})" for v in variants]) if variants else "غير متوفر أسعار/أحجام حالياً"
-        all_out_of_stock = all(v.stock == 0 for v in variants) if variants else True
+        variants_str_list = []
+        all_out_of_stock = True
+        for v in variants:
+            req_oil = (v.volume * product.concentration_percentage) / 100
+            is_available = product.oil_stock_grams >= req_oil or product.original_bottles_stock > 0
+            if is_available:
+                all_out_of_stock = False
+            status = 'متوفر' if is_available else '❌ نفد من المخزون'
+            variants_str_list.append(f"- {v.volume}ml: {v.price} EGP ({status})")
+        variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
+        if not variants and product.original_bottles_stock > 0:
+            all_out_of_stock = False
         stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
         is_custom_blend = product.brand.name.lower() == "self"
         brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name

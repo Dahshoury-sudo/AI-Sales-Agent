@@ -108,35 +108,38 @@ Return valid JSON in this exact format:
                 continue
             
             # Check stock availability
-            if selected_variant.stock == 0:
-                # Check if other sizes of the same product are in stock
-                in_stock_variants = [v for v in variants if v.stock > 0]
-                if in_stock_variants:
-                    sizes_available = ", ".join([f"{v.volume}ml" for v in in_stock_variants])
-                    return f"للأسف عطر {product.name} حجم {selected_variant.volume}ml نفد من المخزون حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
-                else:
-                    # All sizes out of stock — suggest similar products from store
-                    from products.models import ProductVariant
-                    similar = Product.objects.filter(
-                        store=store, is_active=True, gender=product.gender
-                    ).exclude(id=product.id).prefetch_related('variants')
-                    alternatives = []
-                    for alt in similar[:5]:
-                        alt_variants = [v for v in alt.variants.all() if v.stock > 0]
-                        if alt_variants:
-                            prices = ", ".join([f"{v.volume}ml بـ {v.price} جنيه" for v in alt_variants])
-                            alternatives.append(f"• {alt.name} ({alt.brand.name}) - {prices}")
-                    if alternatives:
-                        alts_text = "\n".join(alternatives)
-                        return f"للأسف عطر {product.name} نفد من المخزون حالياً بجميع أحجامه 😔\n\nبس عندنا عطور تانية ممتازة ممكن تعجبك:\n{alts_text}\n\nتحب تعرف تفاصيل أكتر عن أي واحد فيهم؟", ""
-                    else:
-                        return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔 ممكن تسأل عن عطر تاني وهنساعدك!", ""
+            req_oil = (selected_variant.volume * product.concentration_percentage) / 100
             
-            if selected_variant.stock < qty:
-                return f"للأسف الكمية المطلوبة من عطر {product.name} ({selected_variant.volume}ml) أكبر من المتوفر في المخزون. المتوفر حالياً {selected_variant.stock} قطعة فقط. تحب تطلب {selected_variant.stock} بدل {qty}؟", ""
-
-            if bottle_type == "original" and product.original_bottles_stock < qty:
-                return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} المتوفرة حالياً {product.original_bottles_stock} زجاجة فقط. تحب نبعتلك في زجاجات المحل العادية؟", ""
+            if bottle_type == "normal":
+                if product.oil_stock_grams < req_oil:
+                    in_stock_variants = [v for v in variants if product.oil_stock_grams >= (v.volume * product.concentration_percentage) / 100]
+                    if in_stock_variants:
+                        sizes_available = ", ".join([f"{v.volume}ml" for v in in_stock_variants])
+                        return f"للأسف الزيت العطري لـ {product.name} لا يكفي لحجم {selected_variant.volume}ml حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
+                    else:
+                        similar = Product.objects.filter(
+                            store=store, is_active=True, gender=product.gender
+                        ).exclude(id=product.id).prefetch_related('variants')
+                        alternatives = []
+                        for alt in similar[:5]:
+                            alt_variants = [v for v in alt.variants.all() if alt.oil_stock_grams >= (v.volume * alt.concentration_percentage) / 100]
+                            if alt_variants:
+                                prices = ", ".join([f"{v.volume}ml بـ {v.price} جنيه" for v in alt_variants])
+                                alternatives.append(f"• {alt.name} ({alt.brand.name}) - {prices}")
+                        if alternatives:
+                            alts_text = "\n".join(alternatives)
+                            return f"للأسف عطر {product.name} نفد من المخزون حالياً بجميع أحجامه 😔\n\nبس عندنا عطور تانية ممتازة ممكن تعجبك:\n{alts_text}\n\nتحب تعرف تفاصيل أكتر عن أي واحد فيهم؟", ""
+                        else:
+                            return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔 ممكن تسأل عن عطر تاني وهنساعدك!", ""
+                elif product.oil_stock_grams < req_oil * qty:
+                    max_qty = int(product.oil_stock_grams / req_oil)
+                    return f"للأسف كمية الزيت المطلوبة من عطر {product.name} ({selected_variant.volume}ml) أكبر من المتوفر في المخزون. المتوفر حالياً يكفي لـ {max_qty} زجاجة فقط. تحب تطلب {max_qty} بدل {qty}؟", ""
+            
+            elif bottle_type == "original":
+                if product.original_bottles_stock == 0:
+                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} نفدت تماماً. تحب نبعتلك في زجاجات المحل العادية؟", ""
+                elif product.original_bottles_stock < qty:
+                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} المتوفرة حالياً {product.original_bottles_stock} زجاجة فقط. تحب نبعتلك الباقي في زجاجات المحل العادية أو تطلب {product.original_bottles_stock} بس؟", ""
 
             price = selected_variant.price
             total_price += price * qty
@@ -158,7 +161,7 @@ Return valid JSON in this exact format:
         if any(not p.get("name") for p in products_data if isinstance(p, dict)):
             return "عذراً يا فندم، تقصد أنهي عطر فيهم بالظبط عشان أقدر أسجلهولك في الطلب؟", context_str
             
-        alternatives = Product.objects.filter(store=store, is_active=True, variants__stock__gt=0).distinct().order_by('?')[:3]
+        alternatives = Product.objects.filter(store=store, is_active=True).exclude(oil_stock_grams=0, original_bottles_stock=0).distinct().order_by('?')[:3]
         if alternatives.exists():
             alts_text = []
             for alt in alternatives:
@@ -236,14 +239,14 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                     price_at_time_of_order=item["price"]
                 )
                 
-                # Decrement variant stock
-                item["variant"].stock -= item["quantity"]
-                item["variant"].save()
-                
-                # Decrement original bottles stock if applicable
+                # Decrement stock
+                product = item["variant"].product
                 if item["bottle_type"] == "original":
-                    product = item["variant"].product
                     product.original_bottles_stock -= item["quantity"]
+                    product.save()
+                elif item["bottle_type"] == "normal":
+                    req_oil = (item["variant"].volume * product.concentration_percentage) / 100
+                    product.oil_stock_grams -= int(req_oil * item["quantity"])
                     product.save()
                 
         return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
