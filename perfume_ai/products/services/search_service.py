@@ -15,16 +15,25 @@ def search_products(intent, store=None):
     max_price = intent.get("max_price")
     brand = intent.get("brand")
     occasion = intent.get("occasion")
+    longevity = intent.get("longevity")
+    projection = intent.get("projection")
+    exclude_name = intent.get("exclude_name")
     notes = intent.get("notes") or []
 
-    # Hard filters (gender, brand, season, notes)
+    # Hard filters (gender, brand, season, notes, longevity, projection)
     base = queryset
+    if exclude_name:
+        base = base.exclude(name__icontains=exclude_name)
     if gender:
         base = base.filter(gender=gender.lower())
     if season:
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:
         base = base.filter(brand__name__icontains=brand)
+    if longevity:
+        base = base.filter(longevity__icontains=longevity)
+    if projection:
+        base = base.filter(projection__icontains=projection)
 
 
     # Soft filter: occasion
