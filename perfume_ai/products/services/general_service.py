@@ -14,16 +14,16 @@ def handle_general(message, history=None, store=None):
         for msg in reversed(history):
             if msg.get("role") == "assistant":
                 recent_bot_msgs.append(msg["content"])
-            if len(recent_bot_msgs) >= 3:
+            if len(recent_bot_msgs) >= 4:
                 break
         
         if recent_bot_msgs:
-            anti_rep_context = "\n\n🔴 تنبيه مهم — ردودك السابقة (ممنوع تكررها أو تشابهها):\n"
+            anti_rep_context = "\n\n🔴 تنبيه مهم وعاجل — دي ردودك السابقة (ممنوع تكررها أو حتى تستخدم نفس الفكرة):\n"
             for i, prev in enumerate(recent_bot_msgs, 1):
                 # Truncate long messages to save tokens
                 truncated = prev[:150] + "..." if len(prev) > 150 else prev
                 anti_rep_context += f"{i}. \"{truncated}\"\n"
-            anti_rep_context += "🔴 لازم ردك الجديد يكون مختلف تماماً عن الردود دي. استخدم كلمات مختلفة وأسلوب مختلف.\n"
+            anti_rep_context += "🔴 لازم ردك الجديد يكون مختلف تماماً في الفكرة والأسلوب. غير الموضوع، اسأل سؤال جديد، أو اعرض حاجة مختلفة.\n"
 
     system_prompt = get_system_prompt(store) + anti_rep_context
 

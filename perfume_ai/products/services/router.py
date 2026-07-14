@@ -34,6 +34,36 @@ def _is_repetitive(new_response, history):
     return False
 
 
+def _detect_semantic_repetition(history):
+    """
+    Detect if the bot is saying the same IDEA even with different words.
+    Checks for repeated key phrases across recent bot messages.
+    """
+    if not history:
+        return 0
+    
+    bot_msgs = [msg["content"] for msg in history if msg.get("role") == "assistant"]
+    if len(bot_msgs) < 3:
+        return 0
+    
+    # Key phrases that indicate the bot is stuck in a pattern
+    stuck_phrases = [
+        "حولت طلبك", "حولت رسالتك", "حولت مشكلتك", "فريق خدمة العملاء", "هيتواصلوا معاك",
+        "تحت أمرك", "أنا موجود", "لو في أي حاجة",
+        "بتحب الفريش ولا", "عطر معين في بالك", "محتاج ترشيح",
+    ]
+    
+    # Count how many of the last 4 bot messages contain the same stuck phrase
+    recent = bot_msgs[-4:] if len(bot_msgs) >= 4 else bot_msgs
+    
+    max_repeat = 0
+    for phrase in stuck_phrases:
+        count = sum(1 for msg in recent if phrase in msg)
+        max_repeat = max(max_repeat, count)
+    
+    return max_repeat
+
+
 def _count_recent_repetitions(history):
     """
     Count how many times in a row the bot repeated similar messages.
@@ -61,29 +91,65 @@ def _was_already_handed_off(history):
     """Check if the conversation was already handed off to a human."""
     if not history:
         return False
-    for msg in reversed(history):
+    for msg in history:
         if msg.get("role") == "assistant":
             content = msg.get("content", "")
-            if "تم تحويل المحادثة" in content or "ممثلي خدمة العملاء" in content:
+            if "حولت" in content and ("خدمة العملاء" in content or "الفريق" in content):
                 return True
-            # Only check the last few bot messages
-            break
     return False
+
+
+def _is_goodbye_loop(history):
+    """
+    Detect if the user is repeating 'سلام' or goodbye messages.
+    Returns True if the user said goodbye 2+ times in a row.
+    """
+    if not history:
+        return False
+    
+    goodbye_words = ["سلام", "باي", "مع السلامة", "bye", "شكرا", "سلام عليكم"]
+    
+    consecutive_goodbyes = 0
+    for msg in reversed(history):
+        if msg.get("role") == "user":
+            content = msg["content"].strip()
+            if any(content.strip() == gw or content.strip().startswith(gw) for gw in goodbye_words) and len(content) < 30:
+                consecutive_goodbyes += 1
+            else:
+                break
+    
+    return consecutive_goodbyes >= 2
 
 
 def route(message, history=None, store=None, conversation=None):
     if history is None:
         history = []
 
+    # --- Goodbye loop detection ---
+    if _is_goodbye_loop(history):
+        goodbye_words = ["سلام", "باي", "مع السلامة", "bye", "شكرا"]
+        msg_clean = message.strip()
+        if any(msg_clean == gw or msg_clean.startswith(gw) for gw in goodbye_words) and len(msg_clean) < 30:
+            return "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك 24 ساعة. يوم سعيد!", ""
+
     request_type = classify(message, history)
 
-    # --- Anti-repetition: detect repetition loops ---
-    repetition_count = _count_recent_repetitions(history)
+    # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
+    semantic_rep = _detect_semantic_repetition(history)
+    text_rep = _count_recent_repetitions(history)
     
-    if repetition_count >= 3:
-        # Bot has been repeating itself 3+ times — force a conversation redirect
+    if text_rep >= 3 or semantic_rep >= 3:
+        # Bot has been repeating itself — force a conversation redirect
         return handle_general(
-            "العميل والبوت دخلوا في دور تكرار. غير الموضوع تماماً واسأل العميل سؤال جديد أو اقترح عليه عطر مميز. ممنوع تكرر أي حاجة اتقالت قبل كده.",
+            f"""العميل بعتلي: "{message}"
+
+⚠️ تنبيه: أنت كررت نفس الفكرة أكتر من 3 مرات. ممنوع تكرر نفس المحتوى تاني.
+
+لو العميل بيسأل عن حاجة مش في تخصصك (زي خصم أو تعويض أو شكوى)، قوله بوضوح: "للأسف أنا مش أقدر أعمل خصومات أو تعويضات، بس فريق خدمة العملاء هيتواصل معاك. في الأثناء تحب أساعدك تختار عطر جديد؟"
+
+لو العميل مش عايز حاجة وبيقول "سلام" بس، ودعه بشكل لطيف ومختصر جداً.
+
+غير الموضوع تماماً واعرض على العميل حاجة جديدة ومختلفة.""",
             history, store
         )
 
@@ -132,8 +198,16 @@ def route(message, history=None, store=None, conversation=None):
         
         if already_handed_off:
             # Already handed off before — don't repeat the same message
-            # Instead, handle it gracefully through the AI
-            return handle_general(message, history, store)
+            return handle_general(
+                f"""العميل بعتلي: "{message}"
+
+⚠️ العميل ده اتحول لخدمة العملاء قبل كده بالفعل. ممنوع تقوله "حولت طلبك" أو "فريق خدمة العملاء هيتواصل" تاني.
+بدل كده:
+- لو بيشتكي: قوله "فاهمك وفريقنا شغال على الموضوع" بشكل مختصر جداً (جملة واحدة بس) واعرض عليه يساعده في حاجة تانية.
+- لو بيسأل عن عطر: ساعده عادي.
+- لو مش عايز حاجة: ودعه بأدب.""",
+                history, store
+            )
         else:
             # First time handoff
             if conversation:

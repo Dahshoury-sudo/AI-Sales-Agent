@@ -26,6 +26,11 @@ Grade the AI's performance from 0 to 100 on the following metrics:
 - order_score: If an order was requested, did the AI collect details properly?
 - has_hallucination: True or False. Did the AI invent any product, price, or policy that wasn't provided in the [SYSTEM CONTEXT PROVIDED TO AI]? If the AI mentioned a product that is NOT in the system context, this MUST be True.
 
+CRITICAL EVALUATION RULES:
+1. OUT-OF-DOMAIN: If the user asks about non-perfume topics (cars, weather, medical advice), the bot MUST refuse to answer and steer the conversation back to perfumes. DO NOT penalize the bot for refusing to answer; instead, give it a high score for staying on-topic.
+2. DISCOUNTS/COMPENSATION: The bot is NOT authorized to give custom discounts or compensations. If it tells the user that "management/customer service will handle it", this is the PERFECT response. Do NOT penalize the bot for "not providing a direct solution". Give it a high score.
+3. REPEATED HANDOFFS: If the user repeatedly asks for a human, the bot should state it has forwarded the request ONCE, and then try to help with perfumes. Do NOT penalize the bot for not repeating the handoff message endlessly.
+
 Calculate an `overall_score` (0-100) based on the above.
 Add a brief `evaluation_notes` in Arabic explaining the scores.
 
