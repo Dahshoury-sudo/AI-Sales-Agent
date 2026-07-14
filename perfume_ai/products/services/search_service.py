@@ -8,7 +8,7 @@ def search_products(intent, store=None):
         queryset = queryset.filter(store=store)
     
     # Exclude products with no stock
-    queryset = queryset.filter(Q(oil_stock_grams__gt=0) | Q(original_bottles_stock__gt=0)).distinct()
+    queryset = queryset.filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct()
 
     gender = intent.get("gender")
     season = intent.get("season")

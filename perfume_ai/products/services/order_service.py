@@ -1,6 +1,6 @@
 import json
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from products.models import Order, OrderItem, Product
 from .ai.client import chat
 from .product_resolver import resolve_product
@@ -103,6 +103,23 @@ Return valid JSON in this exact format:
                     p_data["product_obj"] = product
                     p_data["missing_bottle_type"] = True
                     continue
+            else:
+                if bottle_type == "original":
+                    has_original = any(v.bottle_type == "original" for v in variants)
+                    if not has_original:
+                        if available_normal:
+                            return f"عذراً يا فندم، عطر {product.name} حصري للمتجر ولا يوجد منه زجاجات أوريجينال. متوفر فقط في زجاجة المحل. تحب تطلبه؟", ""
+                        else:
+                            return f"عذراً يا فندم، عطر {product.name} نفد من المخزون حالياً 😔.", ""
+                    elif not available_original:
+                        if available_normal:
+                            return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} نفدت من المخزون حالياً 😔. متوفر منه زجاجات المحل التعبئة. تحب تطلب زجاجة المحل؟", ""
+                        else:
+                            return f"عذراً يا فندم، عطر {product.name} نفد من المخزون تماماً 😔.", ""
+                elif bottle_type == "normal" and not available_normal:
+                    if available_original:
+                        return f"عذراً يا فندم، زجاجات المحل التعبئة لعطر {product.name} غير متوفرة حالياً 😔. متوفر منه الزجاجة الأوريجينال. تحب تطلبها؟", ""
+
 
             # Now filter the variants to only the selected bottle_type
             filtered_variants = [v for v in variants if v.bottle_type == bottle_type] if bottle_type else variants
@@ -165,7 +182,7 @@ Return valid JSON in this exact format:
         if any(not p.get("name") for p in products_data if isinstance(p, dict)):
             return "عذراً يا فندم، تقصد أنهي عطر فيهم بالظبط عشان أقدر أسجلهولك في الطلب؟", context_str
             
-        alternatives = Product.objects.filter(store=store, is_active=True).exclude(oil_stock_grams=0, original_bottles_stock=0).distinct().order_by('?')[:3]
+        alternatives = Product.objects.filter(store=store, is_active=True).filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct().order_by('?')[:3]
         if alternatives.exists():
             alts_text = []
             for alt in alternatives:

@@ -68,7 +68,7 @@ Return ONLY valid JSON in this format:
         
         variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
         stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-        is_custom_blend = product.brand.name.lower() == "self"
+        is_custom_blend = product.brand.name.lower() == "perfamix"
         brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
         context += f"""

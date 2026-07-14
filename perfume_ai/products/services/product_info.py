@@ -1,6 +1,7 @@
 from .product_resolver import resolve_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from django.db.models import Q
 from products.models import Product
 
 def get_product_info(message, history=None, store=None):
@@ -31,7 +32,7 @@ def get_product_info(message, history=None, store=None):
             variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
             
             stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-            is_custom_blend = product.brand.name.lower() == "self"
+            is_custom_blend = product.brand.name.lower() == "perfamix"
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
             context += f"""
@@ -62,7 +63,7 @@ Description: {product.description}
 """
     else:
         # Product not found, let's get some alternatives
-        alternatives = Product.objects.filter(store=store, is_active=True).exclude(oil_stock_grams=0, original_bottles_stock=0).distinct().order_by('?')[:3]
+        alternatives = Product.objects.filter(store=store, is_active=True).filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct().order_by('?')[:3]
         
         context = "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives.exists():
@@ -77,7 +78,7 @@ Description: {product.description}
                         available_variants.append(f"- زجاجة أوريجينال {v.volume}ml: {v.price} EGP")
                 
                 variants_str = "\n".join(available_variants)
-                is_custom_blend = alt.brand.name.lower() == "self"
+                is_custom_blend = alt.brand.name.lower() == "perfamix"
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 
                 context += f"""
