@@ -1,3 +1,5 @@
+import re
+
 from .client import chat
 from .prompts import get_system_prompt
 
@@ -48,7 +50,27 @@ Description: {product.description}
     return context
 
 
+def _get_previously_recommended(history):
+    """Extract product names already recommended in the conversation (from **bold** mentions)."""
+    if not history:
+        return []
+
+    recommended = []
+    for msg in history:
+        if msg.get("role") == "assistant":
+            names = re.findall(r'\*\*(.+?)\*\*', msg.get("content", ""))
+            recommended.extend(names)
+
+    return list(set(recommended))
+
+
 def recommend(message, products, history=None, alternatives=None, store=None):
+    # Get previously recommended products to avoid repetition
+    previously_recommended = _get_previously_recommended(history)
+    exclusion_note = ""
+    if previously_recommended:
+        exclusion_note = f"\n⚠️ المنتجات التالية سبق ترشيحها للعميل في المحادثة — ممنوع تذكرها تاني، اختار منتجات مختلفة تماماً من القائمة: {', '.join(previously_recommended)}\n"
+
     # Case 1: Exact matches found
     if products.exists():
         context = _format_products(products)
@@ -70,7 +92,7 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 6. ❌ ممنوع تخترع أي سعر أو معلومة.
 7. 🔴 لو المنتج اللي يناسب العميل نفد من المخزون (Stock Status = ❌)، قوله إن المنتج ده نفد حالياً وارشحله بديل متوفر من نفس القائمة يكون قريب منه في الخصائص.
 8. دائماً أعطِ الأولوية للمنتجات المتوفرة في المخزون.
-"""
+{exclusion_note}"""
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
     elif alternatives and alternatives.exists():
@@ -93,7 +115,7 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 6. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
 7. ❌ ممنوع تخترع أي سعر أو معلومة.
 8. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌)، تجاهله تماماً ورشح المنتجات المتوفرة فقط.
-"""
+{exclusion_note}"""
 
     else:
         return "للأسف مش لاقي عطر يطابق طلبك بالظبط دلوقتي. ممكن تقولي أكتر عن ذوقك وأحاول أساعدك؟", ""

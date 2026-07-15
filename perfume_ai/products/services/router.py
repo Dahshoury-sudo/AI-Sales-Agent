@@ -159,7 +159,9 @@ def route(message, history=None, store=None, conversation=None):
         response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store)
         
         if _is_repetitive(response, history):
-            response, context = handle_general(message, history, store)
+            # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
+            modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
+            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store)
         
         return response, context
 
