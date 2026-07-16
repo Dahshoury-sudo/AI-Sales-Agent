@@ -1,8 +1,12 @@
+import logging
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views.generic import TemplateView
 from django.http import HttpResponse
+from django.db import transaction
+
+logger = logging.getLogger(__name__)
 
 from django.db.models import Avg, Count
 from .models import Product, ConversationEvaluation, Order, Conversation
@@ -91,9 +95,9 @@ class ChatAPIView(APIView):
             })
 
         except Exception as e:
-
+            logger.exception(f"Chat error for store '{store.name}': {e}")
             return Response(
-                {"error": str(e)},
+                {"error": "حصل مشكلة غير متوقعة. لو المشكلة استمرت تواصل مع الدعم الفني."},
                 status=500
             )
 
@@ -216,9 +220,18 @@ class OrderStatusUpdateView(APIView):
         except Order.DoesNotExist:
             return Response({"error": "Order not found"}, status=404)
 
-        order.status = new_status
-        order.save()
+        old_status = order.status
 
+        with transaction.atomic():
+            order.status = new_status
+            order.save()
+
+            # Restore stock if the order is being cancelled (and wasn't already cancelled)
+            if new_status == "cancelled" and old_status != "cancelled":
+                from products.services.order_service import restore_stock
+                restore_stock(order)
+
+        logger.info(f"Order #{order.id} status changed: {old_status} -> {new_status} (store: {store.name})")
         return Response({"id": order.id, "status": order.status})
 
 

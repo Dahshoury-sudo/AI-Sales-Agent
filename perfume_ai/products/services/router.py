@@ -4,9 +4,10 @@ from .ai.recommendation import recommend
 from .search_service import search_products
 from .product_info import get_product_info
 from .comparison_service import compare_products
-from .order_service import handle_order
+from .order_service import handle_order, restore_stock
 from .general_service import handle_general
 from products.models import Order
+from django.db import transaction
 from difflib import SequenceMatcher
 
 
@@ -140,6 +141,30 @@ def route(message, history=None, store=None, conversation=None):
     
     if text_rep >= 3 or semantic_rep >= 3:
         # Bot has been repeating itself — force a conversation redirect
+        # Fetch real products from DB to prevent hallucination when suggesting alternatives
+        from products.models import Product
+        from django.db.models import Q
+        random_products = Product.objects.filter(
+            store=store, is_active=True
+        ).filter(
+            Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)
+        ).distinct().order_by('?')[:3]
+        
+        products_context = ""
+        if random_products.exists():
+            products_list = []
+            for p in random_products:
+                available_variants = []
+                for v in p.variants.all():
+                    if v.bottle_type == 'normal' and p.oil_stock_grams >= (v.volume * p.concentration_percentage) / 100:
+                        available_variants.append(f"{v.volume}ml بـ {v.price} جنيه")
+                    elif v.bottle_type == 'original' and (v.stock or 0) > 0:
+                        available_variants.append(f"{v.volume}ml أوريجينال بـ {v.price} جنيه")
+                if available_variants:
+                    products_list.append(f"• {p.name} ({', '.join(available_variants)})")
+            if products_list:
+                products_context = "\n\n═══ منتجات متوفرة يمكنك اقتراحها (ممنوع تذكر أي منتج غيرهم) ═══\n" + "\n".join(products_list)
+        
         return handle_general(
             f"""العميل بعتلي: "{message}"
 
@@ -149,7 +174,8 @@ def route(message, history=None, store=None, conversation=None):
 
 لو العميل مش عايز حاجة وبيقول "سلام" بس، ودعه بشكل لطيف ومختصر جداً.
 
-غير الموضوع تماماً واعرض على العميل حاجة جديدة ومختلفة.""",
+غير الموضوع تماماً واعرض على العميل حاجة جديدة ومختلفة.
+❌ ممنوع تذكر أي منتج أو سعر مش موجود في القائمة التالية.{products_context}""",
             history, store
         )
 
@@ -169,7 +195,9 @@ def route(message, history=None, store=None, conversation=None):
         response, context = get_product_info(message, history, store)
         
         if _is_repetitive(response, history):
-            response, context = handle_general(message, history, store)
+            # Re-try with anti-repetition hint instead of handle_general (which lacks product data and may hallucinate)
+            modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف تماماً."
+            response, context = get_product_info(modified_msg, history, store)
         
         return response, context
 
@@ -189,11 +217,15 @@ def route(message, history=None, store=None, conversation=None):
         if conversation:
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
             if latest_order:
-                latest_order.status = "cancelled"
-                latest_order.bot_notes = "تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل."
-                latest_order.save()
+                with transaction.atomic():
+                    latest_order.status = "cancelled"
+                    latest_order.bot_notes = "تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل."
+                    latest_order.save()
+                    restore_stock(latest_order)
                 return "تم الغاء الطلب اللي تم تسجيله بنجاح يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
-        return "ولا يهمك يا فندم، نورتنا في أي وقت! ولو احتجت أي مساعدة إحنا موجودين 24 ساعة تحت أمرك.", ""
+            else:
+                return "مفيش طلب نشط حالياً عشان ألغيه يا فندم. لو كنت حابب تعمل طلب جديد أو محتاج أي مساعدة، أنا تحت أمرك!", ""
+        return "مفيش طلب نشط حالياً عشان ألغيه يا فندم. لو كنت حابب تعمل طلب جديد أو محتاج أي مساعدة، أنا تحت أمرك!", ""
         
     elif request_type == "handoff":
         already_handed_off = _was_already_handed_off(history)

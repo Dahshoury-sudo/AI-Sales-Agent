@@ -56,7 +56,7 @@ def parse_excel(file_bytes, store):
     
     for row_idx, row in enumerate(rows, start=2):
         # Pad row to at least 22 columns
-        row = list(row) + [None] * (22 - len(row)) if len(row) < 22 else list(row)
+        row = list(row) + [None] * (27 - len(row)) if len(row) < 27 else list(row)
         
         name = str(row[0]).strip() if row[0] else ""
         brand_name = str(row[1]).strip() if row[1] else ""

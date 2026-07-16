@@ -1,9 +1,31 @@
 import json
+import logging
 from django.db import transaction
 from django.db.models import F, Q
-from products.models import Order, OrderItem, Product
+from products.models import Order, OrderItem, Product, ProductVariant
 from .ai.client import chat
 from .product_resolver import resolve_product
+
+logger = logging.getLogger(__name__)
+
+
+def restore_stock(order):
+    """
+    Restore stock for all items in a cancelled order.
+    Should be called inside a transaction.
+    """
+    for item in order.items.select_related('variant__product').all():
+        if item.bottle_type == "original":
+            ProductVariant.objects.filter(id=item.variant_id).update(
+                stock=F('stock') + item.quantity
+            )
+        elif item.bottle_type == "normal":
+            product = item.variant.product
+            req_oil = int((item.variant.volume * product.concentration_percentage) / 100 * item.quantity)
+            Product.objects.filter(id=product.id).update(
+                oil_stock_grams=F('oil_stock_grams') + req_oil
+            )
+    logger.info(f"Stock restored for cancelled order #{order.id}")
 
 def handle_order(message, history, store, conversation):
     """
@@ -241,6 +263,20 @@ Return valid JSON in this exact format:
 def create_order_in_db(store, name, phone, address, total_price, items_to_create, context_str, conversation):
     try:
         with transaction.atomic():
+            # Re-validate stock inside the transaction with select_for_update to prevent race conditions
+            for item in items_to_create:
+                product = item["variant"].product
+                if item["bottle_type"] == "normal":
+                    # Lock the product row to prevent concurrent stock modifications
+                    locked_product = Product.objects.select_for_update().get(id=product.id)
+                    req_oil = (item["variant"].volume * locked_product.concentration_percentage) / 100 * item["quantity"]
+                    if locked_product.oil_stock_grams < req_oil:
+                        return f"للأسف عطر {locked_product.name} نفد من المخزون أثناء تأكيد الطلب 😔 ممكن تجرب تاني.", ""
+                elif item["bottle_type"] == "original":
+                    locked_variant = ProductVariant.objects.select_for_update().get(id=item["variant"].id)
+                    if (locked_variant.stock or 0) < item["quantity"]:
+                        return f"للأسف الزجاجة الأوريجينال لعطر {item['variant'].product.name} نفدت أثناء تأكيد الطلب 😔 ممكن تجرب تاني.", ""
+
             order = Order.objects.create(
                 store=store,
                 customer_name=name,
@@ -260,10 +296,9 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                     price_at_time_of_order=item["price"]
                 )
                 
-                # Decrement stock atomically using F() to prevent race conditions
+                # Decrement stock atomically using F()
                 product = item["variant"].product
                 if item["bottle_type"] == "original":
-                    from products.models import ProductVariant
                     ProductVariant.objects.filter(id=item["variant"].id).update(
                         stock=F('stock') - item["quantity"]
                     )
@@ -273,6 +308,8 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                         oil_stock_grams=F('oil_stock_grams') - req_oil
                     )
                 
+        logger.info(f"Order #{order.id} created successfully for store '{store.name}'")
         return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
     except Exception as e:
+        logger.exception(f"Failed to create order for store '{store.name}': {e}")
         return "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.", ""

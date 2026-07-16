@@ -23,6 +23,6 @@ def save_message(conversation, role, content, internal_context=""):
     )
 
 
-def get_conversation_messages(conversation, limit=8):
+def get_conversation_messages(conversation, limit=12):
     messages = conversation.messages.order_by("-created_at")[:limit]
     return reversed(messages)
