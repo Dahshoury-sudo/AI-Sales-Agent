@@ -13,6 +13,7 @@ from .models import Product, ConversationEvaluation, Order, Conversation
 from .serializers import ProductSerializer
 from .auth import StoreAPIKeyAuthentication
 from .services.router import route
+from .throttles import ChatThrottle
 
 from .services.conversation_service import (
     create_conversation,
@@ -38,6 +39,7 @@ class HomeView(TemplateView):
 
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [ChatThrottle]
 
     def post(self, request):
 

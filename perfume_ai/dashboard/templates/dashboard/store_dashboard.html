@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - Perfume AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 25px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-brand small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 15px 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .nav-badge {
+            margin-right: auto;
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-right: 260px;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .stat-icon.green { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Settings form */
+        .settings-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .settings-card h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; }
+
+        /* Products table */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .products-table th, .products-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .products-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .products-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .badge-active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* API Key display */
+        .api-key-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+
+        .api-key-box .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        /* Notifications badge in sidebar */
+        .notification-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            display: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.4s ease;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Platform breakdown */
+        .platform-list {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .platform-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .platform-chip.whatsapp { background: rgba(37, 211, 102, 0.15); color: #25d366; }
+        .platform-chip.messenger { background: rgba(0, 132, 255, 0.15); color: #0084ff; }
+        .platform-chip.instagram { background: rgba(225, 48, 108, 0.15); color: #e1306c; }
+        .platform-chip.web { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h2><i class="fas fa-robot"></i> Perfume AI</h2>
+            <small id="sidebar-store-name"></small>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+                <i class="fas fa-chart-pie"></i> نظرة عامة
+            </div>
+            <div class="nav-item" onclick="showSection('products')" id="nav-products">
+                <i class="fas fa-box"></i> المنتجات
+            </div>
+            <div class="nav-item" onclick="showSection('settings')" id="nav-settings">
+                <i class="fas fa-cog"></i> الإعدادات
+            </div>
+            <div class="nav-item" onclick="showSection('meta')" id="nav-meta">
+                <i class="fab fa-meta"></i> ربط المنصات
+            </div>
+            <a class="nav-item" href="/api/handoff/" id="nav-handoff">
+                <i class="fas fa-headset"></i> خدمة العملاء
+                <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
+            </a>
+            <a class="nav-item" href="/api/orders/">
+                <i class="fas fa-shopping-bag"></i> الطلبات
+            </a>
+            <a class="nav-item" href="/api/analytics/">
+                <i class="fas fa-chart-bar"></i> التقييم
+            </a>
+            <div class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
+                <i class="fas fa-bell"></i> الإشعارات
+                <span class="nav-badge" id="notif-badge" style="display:none">0</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Overview Section -->
+        <div class="section active" id="section-overview">
+            <div class="page-header">
+                <h1>👋 أهلاً، <span id="owner-name"></span></h1>
+                <p>إليك ملخص نشاط متجرك</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
+                    <div class="stat-value" id="stat-conversations">—</div>
+                    <div class="stat-label">محادثة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-value" id="stat-orders">—</div>
+                    <div class="stat-label">طلب</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-coins"></i></div>
+                    <div class="stat-value" id="stat-revenue">—</div>
+                    <div class="stat-label">إيرادات (ج.م)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                    <div class="stat-value" id="stat-pending">—</div>
+                    <div class="stat-label">طلبات معلقة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-headset"></i></div>
+                    <div class="stat-value" id="stat-handoffs">—</div>
+                    <div class="stat-label">بحاجة لتدخل بشري</div>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-signal"></i> توزيع المنصات</h3>
+                <div class="platform-list" id="platform-breakdown"></div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div class="section" id="section-products">
+            <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h1>📦 المنتجات</h1>
+                    <p>إدارة منتجات متجرك</p>
+                </div>
+                <div>
+                    <input type="text" id="product-search" placeholder="🔍 بحث..."
+                           style="padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;color:white;font-family:inherit;outline:none;margin-left:10px;"
+                           onkeyup="debounceSearch()">
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>البراند</th>
+                            <th>الجنس</th>
+                            <th>المخزون (جرام)</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-tbody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+                <div style="text-align:center;margin-top:15px;">
+                    <button class="btn btn-sm btn-primary" id="load-more-btn" onclick="loadMoreProducts()" style="display:none;">
+                        تحميل المزيد
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="section" id="section-settings">
+            <div class="page-header">
+                <h1>⚙️ إعدادات المتجر</h1>
+                <p>تخصيص متجرك والبوت</p>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-key"></i> مفتاح API</h3>
+                <p style="color:var(--text-muted);margin-bottom:10px;">استخدم هذا المفتاح لربط متجرك بالبوت</p>
+                <div class="api-key-box">
+                    <span id="api-key-display">—</span>
+                    <button class="copy-btn" onclick="copyApiKey()"><i class="fas fa-copy"></i> نسخ</button>
+                </div>
+                <button class="btn btn-danger btn-sm" style="margin-top:15px;" onclick="regenerateApiKey()">
+                    <i class="fas fa-redo"></i> إعادة توليد المفتاح
+                </button>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-robot"></i> البرومبت الخاص</h3>
+                <div class="form-group">
+                    <label>System Prompt (تعليمات البوت)</label>
+                    <textarea id="setting-system-prompt" rows="5" placeholder="اكتب تعليمات خاصة للبوت هنا..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+            </div>
+        </div>
+
+        <!-- Meta Integration Section -->
+        <div class="section" id="section-meta">
+            <div class="page-header">
+                <h1>🔗 ربط المنصات</h1>
+                <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fab fa-whatsapp" style="color:#25d366;"></i> واتساب</h3>
+                <div class="form-group">
+                    <label>WhatsApp Phone Number ID</label>
+                    <input type="text" id="meta-wa-phone-id" placeholder="مثال: 1234567890">
+                </div>
+                <div class="form-group">
+                    <label>رقم واتساب</label>
+                    <input type="text" id="meta-wa-number" placeholder="مثال: +201234567890">
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fab fa-facebook-messenger" style="color:#0084ff;"></i> ماسنجر</h3>
+                <div class="form-group">
+                    <label>Facebook Page ID</label>
+                    <input type="text" id="meta-fb-page-id" placeholder="مثال: 1234567890">
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fab fa-instagram" style="color:#e1306c;"></i> انستجرام</h3>
+                <div class="form-group">
+                    <label>Instagram Account ID</label>
+                    <input type="text" id="meta-ig-id" placeholder="مثال: 1234567890">
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-shield-alt" style="color:#f59e0b;"></i> بيانات Meta API</h3>
+                <div class="form-group">
+                    <label>Verify Token (اختر كلمة سر للـ Webhook)</label>
+                    <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
+                </div>
+                <div class="form-group">
+                    <label>Access Token</label>
+                    <input type="password" id="meta-access-token" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>App Secret</label>
+                    <input type="password" id="meta-app-secret" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveMetaSettings()" style="margin-bottom:30px;">
+                <i class="fas fa-save"></i> حفظ إعدادات المنصات
+            </button>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="section" id="section-notifications">
+            <div class="page-header">
+                <h1>🔔 الإشعارات</h1>
+                <p>آخر التحديثات على متجرك</p>
+            </div>
+            <div id="notifications-list">
+                <div class="settings-card" style="text-align:center; color:var(--text-muted);">
+                    لا توجد إشعارات جديدة
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = '/dashboard/api';
+        let accessToken = localStorage.getItem('access_token');
+        let currentProductPage = 1;
+        let searchTimeout;
+
+        // Auth guard
+        if (!accessToken) {
+            window.location.href = '/dashboard/login/';
+        }
+
+        // Authenticated fetch wrapper with token refresh
+        async function authFetch(url, options = {}) {
+            if (!options.headers) options.headers = {};
+            options.headers['Authorization'] = `Bearer ${accessToken}`;
+            if (!(options.body instanceof FormData)) {
+                options.headers['Content-Type'] = 'application/json';
+            }
+
+            let res = await fetch(url, options);
+
+            if (res.status === 401) {
+                // Try refresh
+                const refreshRes = await fetch(`${API_BASE}/token/refresh/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
+                });
+
+                if (refreshRes.ok) {
+                    const data = await refreshRes.json();
+                    accessToken = data.access;
+                    localStorage.setItem('access_token', data.access);
+                    options.headers['Authorization'] = `Bearer ${accessToken}`;
+                    res = await fetch(url, options);
+                } else {
+                    logout();
+                    return null;
+                }
+            }
+
+            return res;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`section-${name}`).classList.add('active');
+            document.getElementById(`nav-${name}`).classList.add('active');
+
+            if (name === 'overview') loadOverview();
+            if (name === 'products') loadProducts();
+            if (name === 'settings') loadSettings();
+            if (name === 'meta') loadMetaSettings();
+            if (name === 'notifications') loadNotifications();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/dashboard/login/';
+        }
+
+        // ===== OVERVIEW =====
+        async function loadOverview() {
+            try {
+                const [overviewRes, profileRes] = await Promise.all([
+                    authFetch(`${API_BASE}/overview/`),
+                    authFetch(`${API_BASE}/profile/`)
+                ]);
+
+                if (!overviewRes || !profileRes) return;
+
+                const overview = await overviewRes.json();
+                const profile = await profileRes.json();
+
+                document.getElementById('owner-name').textContent = profile.full_name || profile.email;
+                document.getElementById('sidebar-store-name').textContent = profile.store.name;
+                document.getElementById('stat-conversations').textContent = overview.total_conversations;
+                document.getElementById('stat-orders').textContent = overview.total_orders;
+                document.getElementById('stat-revenue').textContent = parseFloat(overview.revenue).toLocaleString();
+                document.getElementById('stat-pending').textContent = overview.pending_orders;
+                document.getElementById('stat-handoffs').textContent = overview.pending_handoffs;
+
+                // Handoff badge
+                if (overview.pending_handoffs > 0) {
+                    document.getElementById('handoff-badge').textContent = overview.pending_handoffs;
+                    document.getElementById('handoff-badge').style.display = 'inline';
+                }
+
+                // Platform breakdown
+                const container = document.getElementById('platform-breakdown');
+                container.innerHTML = '';
+                const platformIcons = {
+                    whatsapp: 'fab fa-whatsapp',
+                    messenger: 'fab fa-facebook-messenger',
+                    instagram: 'fab fa-instagram',
+                    web: 'fas fa-globe'
+                };
+                const platformLabels = { whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'انستجرام', web: 'ويب' };
+
+                for (const [platform, count] of Object.entries(overview.platform_breakdown || {})) {
+                    const chip = document.createElement('div');
+                    chip.className = `platform-chip ${platform}`;
+                    chip.innerHTML = `<i class="${platformIcons[platform] || 'fas fa-question'}"></i> ${platformLabels[platform] || platform}: ${count}`;
+                    container.appendChild(chip);
+                }
+
+                if (Object.keys(overview.platform_breakdown || {}).length === 0) {
+                    container.innerHTML = '<span style="color:var(--text-muted)">لا توجد محادثات بعد</span>';
+                }
+
+                document.getElementById('api-key-display').textContent = profile.store.api_key;
+            } catch (e) {
+                console.error('Error loading overview:', e);
+            }
+        }
+
+        // ===== PRODUCTS =====
+        async function loadProducts(page = 1, append = false) {
+            const search = document.getElementById('product-search').value;
+            currentProductPage = page;
+
+            try {
+                const res = await authFetch(`${API_BASE}/products/?page=${page}&search=${encodeURIComponent(search)}`);
+                if (!res) return;
+                const data = await res.json();
+
+                const tbody = document.getElementById('products-tbody');
+                if (!append) tbody.innerHTML = '';
+
+                if (data.products.length === 0 && !append) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;">لا توجد منتجات</td></tr>';
+                }
+
+                data.products.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.brand}</td>
+                        <td>${p.gender === 'male' ? '👨 رجالي' : p.gender === 'female' ? '👩 نسائي' : '🧑 يونيسكس'}</td>
+                        <td>${p.oil_stock_grams}g</td>
+                        <td><span class="${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'نشط' : 'غير نشط'}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                const loadMoreBtn = document.getElementById('load-more-btn');
+                loadMoreBtn.style.display = page < data.total_pages ? 'inline-block' : 'none';
+            } catch (e) {
+                console.error('Error loading products:', e);
+            }
+        }
+
+        function loadMoreProducts() {
+            loadProducts(currentProductPage + 1, true);
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadProducts(1), 400);
+        }
+
+        // ===== SETTINGS =====
+        async function loadSettings() {
+            try {
+                const [settingsRes, profileRes] = await Promise.all([
+                    authFetch(`${API_BASE}/settings/`),
+                    authFetch(`${API_BASE}/profile/`)
+                ]);
+                if (!settingsRes || !profileRes) return;
+
+                const settings = await settingsRes.json();
+                const profile = await profileRes.json();
+
+                document.getElementById('setting-system-prompt').value = settings.system_prompt || '';
+                document.getElementById('api-key-display').textContent = profile.store.api_key;
+            } catch (e) {
+                console.error('Error loading settings:', e);
+            }
+        }
+
+        async function saveSettings() {
+            try {
+                const res = await authFetch(`${API_BASE}/settings/`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        system_prompt: document.getElementById('setting-system-prompt').value,
+                    })
+                });
+                if (res && res.ok) showToast('✅ تم حفظ الإعدادات');
+            } catch (e) {
+                console.error('Error saving settings:', e);
+            }
+        }
+
+        async function copyApiKey() {
+            const key = document.getElementById('api-key-display').textContent;
+            await navigator.clipboard.writeText(key);
+            showToast('📋 تم نسخ المفتاح');
+        }
+
+        async function regenerateApiKey() {
+            if (!confirm('هل أنت متأكد؟ المفتاح القديم لن يعمل بعد التغيير.')) return;
+            try {
+                const res = await authFetch(`${API_BASE}/settings/regenerate-key/`, { method: 'POST' });
+                if (!res) return;
+                const data = await res.json();
+                document.getElementById('api-key-display').textContent = data.api_key;
+                showToast('🔑 تم إعادة توليد المفتاح');
+            } catch (e) {
+                console.error('Error regenerating key:', e);
+            }
+        }
+
+        // ===== META SETTINGS =====
+        async function loadMetaSettings() {
+            try {
+                const res = await authFetch(`${API_BASE}/settings/`);
+                if (!res) return;
+                const s = await res.json();
+
+                document.getElementById('meta-wa-phone-id').value = s.whatsapp_phone_number_id || '';
+                document.getElementById('meta-wa-number').value = s.whatsapp_number || '';
+                document.getElementById('meta-fb-page-id').value = s.facebook_page_id || '';
+                document.getElementById('meta-ig-id').value = s.instagram_account_id || '';
+                document.getElementById('meta-verify-token').value = s.meta_verify_token || '';
+                document.getElementById('meta-access-token').value = s.meta_access_token || '';
+                document.getElementById('meta-app-secret').value = s.meta_app_secret || '';
+            } catch (e) {
+                console.error('Error loading meta settings:', e);
+            }
+        }
+
+        async function saveMetaSettings() {
+            try {
+                const res = await authFetch(`${API_BASE}/settings/`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        whatsapp_phone_number_id: document.getElementById('meta-wa-phone-id').value,
+                        whatsapp_number: document.getElementById('meta-wa-number').value,
+                        facebook_page_id: document.getElementById('meta-fb-page-id').value,
+                        instagram_account_id: document.getElementById('meta-ig-id').value,
+                        meta_verify_token: document.getElementById('meta-verify-token').value,
+                        meta_access_token: document.getElementById('meta-access-token').value,
+                        meta_app_secret: document.getElementById('meta-app-secret').value,
+                    })
+                });
+                if (res && res.ok) showToast('✅ تم حفظ إعدادات المنصات');
+            } catch (e) {
+                console.error('Error saving meta settings:', e);
+            }
+        }
+
+        // ===== NOTIFICATIONS =====
+        async function loadNotifications() {
+            try {
+                const res = await authFetch(`${API_BASE}/notifications/`);
+                if (!res) return;
+                const data = await res.json();
+
+                const container = document.getElementById('notifications-list');
+
+                if (!data.notifications || data.notifications.length === 0) {
+                    container.innerHTML = '<div class="settings-card" style="text-align:center;color:var(--text-muted);">لا توجد إشعارات جديدة 🎉</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                const typeIcons = { handoff: 'fas fa-headset', new_order: 'fas fa-shopping-cart', low_stock: 'fas fa-exclamation-triangle' };
+                const typeColors = { handoff: '#ef4444', new_order: '#22c55e', low_stock: '#f59e0b' };
+
+                data.notifications.forEach(n => {
+                    const card = document.createElement('div');
+                    card.className = 'settings-card';
+                    card.style.borderRight = `4px solid ${typeColors[n.type] || '#3b82f6'}`;
+                    card.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong><i class="${typeIcons[n.type] || 'fas fa-bell'}" style="color:${typeColors[n.type]}"></i> ${n.title}</strong>
+                                <p style="color:var(--text-muted);margin-top:5px;">${n.message}</p>
+                            </div>
+                            <small style="color:var(--text-muted);">${new Date(n.created_at).toLocaleString('ar-EG')}</small>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+                // Mark as read
+                if (data.unread_count > 0) {
+                    authFetch(`${API_BASE}/notifications/mark-read/`, { method: 'POST' });
+                }
+            } catch (e) {
+                console.error('Error loading notifications:', e);
+            }
+        }
+
+        // Initial load
+        loadOverview();
+    </script>
+</body>
+</html>

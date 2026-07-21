@@ -10,12 +10,14 @@ from products.models import StoreSettings
 from products.services.conversation_service import get_or_create_platform_conversation, get_conversation_messages, save_message
 from products.services.router import route
 from products.services.meta_service import send_platform_message
+from products.throttles import WebhookThrottle
 
 logger = logging.getLogger(__name__)
 
 class MetaWebhookView(APIView):
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [WebhookThrottle]
 
     def get(self, request):
         mode = request.GET.get("hub.mode")
@@ -52,7 +54,8 @@ class MetaWebhookView(APIView):
                                 logger.warning(f"No store found for WA phone number ID {receiving_id}")
                                 continue
                                 
-                            self.verify_signature(request, body, store_settings.meta_app_secret)
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                                return HttpResponse("Invalid signature", status=403)
                             
                             for message in value.get("messages", []):
                                 if message.get("type") == "text":
@@ -77,7 +80,8 @@ class MetaWebhookView(APIView):
                             logger.warning(f"No store found for recipient ID {recipient_id}")
                             continue
 
-                        self.verify_signature(request, body, store_settings.meta_app_secret)
+                        if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                            return HttpResponse("Invalid signature", status=403)
                         
                         if "message" in messaging_event and "text" in messaging_event["message"]:
                             text = messaging_event["message"]["text"]
@@ -88,9 +92,14 @@ class MetaWebhookView(APIView):
             return HttpResponse("NOT_FOUND", status=404)
 
     def verify_signature(self, request, body, app_secret):
+        """Verify the X-Hub-Signature-256 header. Returns True if valid or if no secret is configured."""
         signature = request.headers.get("X-Hub-Signature-256")
-        if not signature or not app_secret:
-            return
+        if not app_secret:
+            # No secret configured, skip validation
+            return True
+        if not signature:
+            logger.warning("Missing X-Hub-Signature-256 header")
+            return False
             
         expected_signature = "sha256=" + hmac.new(
             app_secret.encode("utf-8"), body, hashlib.sha256
@@ -98,23 +107,10 @@ class MetaWebhookView(APIView):
         
         if not hmac.compare_digest(expected_signature, signature):
             logger.warning("Invalid webhook signature")
+            return False
+        return True
 
     def process_message(self, store, platform, sender_id, text, store_settings):
-        conversation, created = get_or_create_platform_conversation(store, platform, sender_id)
-        
-        if conversation.needs_human:
-            save_message(conversation, "user", text)
-            return
-            
-        past_messages = get_conversation_messages(conversation)
-        history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
-        
-        save_message(conversation, "user", text)
-        
-        try:
-            reply, context = route(text, history, store, conversation)
-            save_message(conversation, "assistant", reply, internal_context=context)
-            send_platform_message(conversation, reply)
-        except Exception as e:
-            logger.exception(f"Error processing meta message: {e}")
-
+        """Dispatch message processing to a background thread for fast webhook response."""
+        from products.tasks import process_message_async
+        process_message_async(store.id, platform, sender_id, text)

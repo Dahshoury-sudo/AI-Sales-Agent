@@ -1,10 +1,13 @@
 import secrets
 from django.db import models
+from django.contrib.auth.models import User
+from .encryption import EncryptedCharField, EncryptedTextField
 
 def generate_api_key():
     return secrets.token_urlsafe(32)
 
 class Store(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="stores", null=True, blank=True)
     name = models.CharField(max_length=200)
     api_key = models.CharField(max_length=100, unique=True, default=generate_api_key)
     is_active = models.BooleanField(default=True)
@@ -18,10 +21,10 @@ class StoreSettings(models.Model):
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
     whatsapp_number = models.CharField(max_length=50, blank=True)
     
-    # Meta Integration Credentials
+    # Meta Integration Credentials (encrypted at rest)
     meta_verify_token = models.CharField(max_length=100, blank=True, help_text="Token for webhook verification")
-    meta_access_token = models.TextField(blank=True, help_text="Graph API Access Token")
-    meta_app_secret = models.CharField(max_length=200, blank=True, help_text="App Secret for signature validation")
+    meta_access_token = EncryptedTextField(blank=True, help_text="Graph API Access Token")
+    meta_app_secret = EncryptedCharField(max_length=500, blank=True, help_text="App Secret for signature validation")
     facebook_page_id = models.CharField(max_length=100, blank=True)
     instagram_account_id = models.CharField(max_length=100, blank=True)
     whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
@@ -203,3 +206,24 @@ class ConversationEvaluation(models.Model):
 
     def __str__(self):
         return f"Eval for Conversation #{self.conversation.id} - Score: {self.overall_score}%"
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = (
+        ("handoff", "Human Handoff Required"),
+        ("new_order", "New Order"),
+        ("low_stock", "Low Stock"),
+    )
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="notifications")
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.type}] {self.title} - {self.store.name}"

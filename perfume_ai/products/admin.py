@@ -12,6 +12,7 @@ from .models import (
     Order,
     OrderItem,
     ConversationEvaluation,
+    Notification,
 )
 
 
@@ -113,3 +114,9 @@ class OrderAdmin(admin.ModelAdmin):
 class ConversationEvaluationAdmin(admin.ModelAdmin):
     list_display = ("conversation", "overall_score", "has_hallucination", "created_at")
     list_filter = ("has_hallucination", "overall_score", "created_at")
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("id", "store", "type", "title", "is_read", "created_at")
+    list_filter = ("store", "type", "is_read")
+    search_fields = ("title", "message")
