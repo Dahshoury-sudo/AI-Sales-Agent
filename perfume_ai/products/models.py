@@ -17,6 +17,14 @@ class StoreSettings(models.Model):
     store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name="settings")
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
     whatsapp_number = models.CharField(max_length=50, blank=True)
+    
+    # Meta Integration Credentials
+    meta_verify_token = models.CharField(max_length=100, blank=True, help_text="Token for webhook verification")
+    meta_access_token = models.TextField(blank=True, help_text="Graph API Access Token")
+    meta_app_secret = models.CharField(max_length=200, blank=True, help_text="App Secret for signature validation")
+    facebook_page_id = models.CharField(max_length=100, blank=True)
+    instagram_account_id = models.CharField(max_length=100, blank=True)
+    whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return f"Settings for {self.store.name}"
@@ -100,7 +108,15 @@ class ProductVariant(models.Model):
 
 
 class Conversation(models.Model):
+    PLATFORM_CHOICES = (
+        ("web", "Web"),
+        ("whatsapp", "WhatsApp"),
+        ("messenger", "Messenger"),
+        ("instagram", "Instagram"),
+    )
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="conversations", null=True, blank=True)
+    platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, default="web")
+    platform_sender_id = models.CharField(max_length=255, blank=True, help_text="External user ID from the platform")
     needs_human = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

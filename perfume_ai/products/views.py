@@ -334,6 +334,7 @@ class HandoffConversationsAPIView(APIView):
             last_msg = c.messages.order_by('-created_at').first()
             data.append({
                 "id": c.id,
+                "platform": c.platform,
                 "created_at": c.created_at.isoformat(),
                 "last_message": last_msg.content if last_msg else "No messages"
             })
@@ -381,6 +382,13 @@ class HandoffReplyAPIView(APIView):
             return Response({"error": "Conversation not found"}, status=404)
             
         save_message(conv, "assistant", message)
+        
+        # Send reply back to the customer on their platform
+        from products.services.meta_service import send_platform_message
+        try:
+            send_platform_message(conv, message)
+        except Exception as e:
+            logger.exception(f"Failed to send handoff reply to {conv.platform}: {e}")
         
         return Response({"status": "Message sent"})
 

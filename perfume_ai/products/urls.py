@@ -6,6 +6,7 @@ from .views import (
     AnalyticsDashboardView, HandoffDashboardView, HandoffConversationsAPIView,
     HandoffMessagesAPIView, HandoffReplyAPIView, HandoffResolveAPIView,
 )
+from .views_meta import MetaWebhookView
 
 urlpatterns = [
     path("products/", ProductListView.as_view()),
@@ -24,4 +25,5 @@ urlpatterns = [
     path("handoff/conversations/<int:conversation_id>/messages/", HandoffMessagesAPIView.as_view(), name="handoff-messages"),
     path("handoff/conversations/<int:conversation_id>/reply/", HandoffReplyAPIView.as_view(), name="handoff-reply"),
     path("handoff/conversations/<int:conversation_id>/resolve/", HandoffResolveAPIView.as_view(), name="handoff-resolve"),
+    path("webhooks/meta/", MetaWebhookView.as_view(), name="meta-webhook"),
 ]

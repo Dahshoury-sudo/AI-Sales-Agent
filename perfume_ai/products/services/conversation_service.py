@@ -1,8 +1,16 @@
 from products.models import Conversation, Message
 
 
-def create_conversation(store=None):
-    return Conversation.objects.create(store=store)
+def create_conversation(store=None, platform="web", platform_sender_id=""):
+    return Conversation.objects.create(store=store, platform=platform, platform_sender_id=platform_sender_id)
+
+def get_or_create_platform_conversation(store, platform, sender_id):
+    conversation, created = Conversation.objects.get_or_create(
+        store=store,
+        platform=platform,
+        platform_sender_id=sender_id
+    )
+    return conversation, created
 
 
 def get_conversation(conversation_id, store=None):
