@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سياسة الخصوصية — Perfume AI</title>
+    <meta name="description" content="سياسة الخصوصية لخدمة Perfume AI — كيف نحمي بياناتك وبيانات عملائك.">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #06060f;
+            --bg-card: rgba(255,255,255,0.03);
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-purple: #c084fc;
+            --accent-emerald: #34d399;
+            --gradient-main: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            line-height: 1.8;
+        }
+
+        a { color: var(--accent-purple); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Background orbs */
+        .bg-orb {
+            position: fixed; border-radius: 50%;
+            pointer-events: none; filter: blur(80px); z-index: 0;
+        }
+        .bg-orb-1 {
+            top: -15%; right: -10%;
+            width: 500px; height: 500px;
+            background: rgba(124,58,237,0.08);
+        }
+        .bg-orb-2 {
+            bottom: -10%; left: -10%;
+            width: 400px; height: 400px;
+            background: rgba(96,165,250,0.06);
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; right: 0; left: 0; z-index: 100;
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(6,6,15,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.2rem; font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .nav-brand:hover { text-decoration: none; }
+        .nav-brand span { font-size: 1.4rem; }
+        .nav-back {
+            font-size: 0.88rem; font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+        .nav-back:hover { color: var(--text-primary); text-decoration: none; }
+
+        /* Content */
+        .content {
+            position: relative; z-index: 1;
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+
+        .page-header {
+            margin-bottom: 48px;
+        }
+        .page-header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .page-header .last-updated {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            padding: 20px 24px;
+            background: rgba(52,211,153,0.06);
+            border: 1px solid rgba(52,211,153,0.15);
+            border-radius: 14px;
+            margin-bottom: 40px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .highlight-box .h-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .highlight-box p {
+            font-size: 0.92rem;
+            color: var(--accent-emerald);
+            line-height: 1.7;
+        }
+
+        .legal-section {
+            margin-bottom: 40px;
+            padding: 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            transition: border-color 0.3s;
+        }
+        .legal-section:hover {
+            border-color: var(--border-hover);
+        }
+
+        .legal-section h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .legal-section h2 .section-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: rgba(124,58,237,0.15);
+            color: var(--accent-purple);
+            font-size: 0.8rem; font-weight: 700;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .legal-section p,
+        .legal-section li {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 12px;
+        }
+
+        .legal-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .legal-section ul li {
+            padding-right: 20px;
+            position: relative;
+        }
+        .legal-section ul li::before {
+            content: '◆';
+            position: absolute;
+            right: 0;
+            color: var(--accent-purple);
+            font-size: 0.6rem;
+            top: 6px;
+        }
+
+        /* Data table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.88rem;
+        }
+        .data-table th, .data-table td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .data-table th {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 0.82rem;
+            background: rgba(124,58,237,0.06);
+        }
+        .data-table td {
+            color: var(--text-secondary);
+        }
+        .data-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* Footer */
+        .footer {
+            position: relative; z-index: 1;
+            text-align: center;
+            padding: 32px 24px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .footer a { color: var(--text-muted); }
+        .footer a:hover { color: var(--text-primary); text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .content { padding: 100px 16px 60px; }
+            .legal-section { padding: 20px; }
+            .navbar { padding: 12px 16px; }
+            .data-table { font-size: 0.8rem; }
+            .data-table th, .data-table td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <span>🧴</span>
+            Perfume AI
+        </a>
+        <a href="/" class="nav-back">→ الرجوع للصفحة الرئيسية</a>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <h1>سياسة الخصوصية</h1>
+            <p class="last-updated">آخر تحديث: يوليو 2026</p>
+        </div>
+
+        <div class="highlight-box">
+            <span class="h-icon">🔒</span>
+            <p>نحن نأخذ خصوصية بياناتك على محمل الجد. بياناتك وبيانات عملائك مشفّرة ومحمية ولا نبيعها أو نشاركها مع أي طرف ثالث لأغراض تسويقية.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">1</span> البيانات التي نجمعها</h2>
+            <p>نجمع أنواع مختلفة من البيانات لتقديم خدمتنا بشكل فعال:</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>نوع البيانات</th>
+                        <th>الأمثلة</th>
+                        <th>الغرض</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>بيانات صاحب المتجر</td>
+                        <td>الاسم، البريد الإلكتروني، كلمة المرور</td>
+                        <td>إنشاء الحساب وتسجيل الدخول</td>
+                    </tr>
+                    <tr>
+                        <td>بيانات المتجر</td>
+                        <td>اسم المتجر، المنتجات، الأسعار</td>
+                        <td>تشغيل البوت وعرض المنتجات</td>
+                    </tr>
+                    <tr>
+                        <td>بيانات العملاء</td>
+                        <td>الاسم، رقم الهاتف، العنوان</td>
+                        <td>تسجيل الطلبات والتوصيل</td>
+                    </tr>
+                    <tr>
+                        <td>المحادثات</td>
+                        <td>رسائل العملاء وردود البوت</td>
+                        <td>تقديم الخدمة وتحسين الأداء</td>
+                    </tr>
+                    <tr>
+                        <td>بيانات المنصات</td>
+                        <td>رموز الوصول لـ Meta (مشفّرة)</td>
+                        <td>ربط واتساب/ماسنجر/انستجرام</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">2</span> كيف نستخدم بياناتك</h2>
+            <ul>
+                <li><strong>تقديم الخدمة:</strong> نستخدم بياناتك لتشغيل البوت والرد على العملاء وتسجيل الطلبات.</li>
+                <li><strong>تحسين الخدمة:</strong> نحلل أداء البوت (مثل دقة الردود ونسبة التحويل) لتحسين جودة الخدمة.</li>
+                <li><strong>التواصل:</strong> نرسل إشعارات مهمة عن حسابك (مثل طلبات جديدة أو تحديثات الخدمة).</li>
+                <li><strong>الأمان:</strong> نراقب الاستخدام لاكتشاف ومنع الأنشطة المشبوهة أو المخالفة.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">3</span> تخزين البيانات وحمايتها</h2>
+            <ul>
+                <li><strong>التشفير:</strong> البيانات الحساسة (مثل رموز وصول Meta وأسرار التطبيقات) مشفّرة باستخدام تشفير Fernet في قاعدة البيانات.</li>
+                <li><strong>كلمات المرور:</strong> يتم تخزين كلمات المرور بشكل مُجزّأ (hashed) ولا يمكن لأي شخص (بما فينا نحن) معرفة كلمة مرورك الأصلية.</li>
+                <li><strong>الاتصالات:</strong> جميع الاتصالات بين متصفحك وخوادمنا مشفّرة عبر SSL/TLS.</li>
+                <li><strong>قاعدة البيانات:</strong> بياناتك مخزنة في قاعدة بيانات PostgreSQL محمية بكلمة مرور على خوادم آمنة.</li>
+                <li><strong>مراقبة الأخطاء:</strong> نستخدم Sentry لمراقبة الأخطاء التقنية فقط، مع تعطيل إرسال البيانات الشخصية.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">4</span> الخدمات الخارجية</h2>
+            <p>نتعامل مع خدمات خارجية موثوقة لتقديم خدمتنا. كل خدمة لها سياسة خصوصية خاصة بها:</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>الخدمة</th>
+                        <th>الغرض</th>
+                        <th>البيانات المشاركة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OpenAI</td>
+                        <td>تشغيل الذكاء الاصطناعي</td>
+                        <td>نصوص المحادثات (بدون بيانات شخصية معرّفة)</td>
+                    </tr>
+                    <tr>
+                        <td>Meta (Facebook)</td>
+                        <td>واتساب / ماسنجر / انستجرام</td>
+                        <td>الرسائل المرسلة والمستقبلة</td>
+                    </tr>
+                    <tr>
+                        <td>Resend</td>
+                        <td>إرسال البريد الإلكتروني</td>
+                        <td>عنوان البريد الإلكتروني</td>
+                    </tr>
+                    <tr>
+                        <td>Sentry</td>
+                        <td>مراقبة الأخطاء التقنية</td>
+                        <td>بيانات الأخطاء فقط (بدون PII)</td>
+                    </tr>
+                    <tr>
+                        <td>Railway</td>
+                        <td>استضافة الخوادم</td>
+                        <td>البيانات المخزنة في قاعدة البيانات</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">5</span> مدة الاحتفاظ بالبيانات</h2>
+            <ul>
+                <li><strong>بيانات الحساب:</strong> نحتفظ بها طوال فترة نشاط حسابك.</li>
+                <li><strong>المحادثات:</strong> نحتفظ بسجل المحادثات لمدة 12 شهراً لأغراض التحليلات والدعم الفني.</li>
+                <li><strong>الطلبات:</strong> نحتفظ ببيانات الطلبات لمدة 24 شهراً للأغراض المحاسبية والقانونية.</li>
+                <li><strong>بعد إلغاء الحساب:</strong> يتم حذف جميع بياناتك خلال 30 يوماً من تاريخ إلغاء الحساب.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">6</span> حقوقك</h2>
+            <p>لك الحق في:</p>
+            <ul>
+                <li><strong>الوصول:</strong> طلب نسخة من جميع بياناتك المخزنة لدينا.</li>
+                <li><strong>التصحيح:</strong> تعديل أي بيانات غير صحيحة من خلال لوحة التحكم.</li>
+                <li><strong>الحذف:</strong> طلب حذف جميع بياناتك نهائياً.</li>
+                <li><strong>التقييد:</strong> طلب تقييد معالجة بياناتك في ظروف معينة.</li>
+                <li><strong>الاعتراض:</strong> الاعتراض على استخدام بياناتك لأغراض معينة.</li>
+            </ul>
+            <p>لممارسة أي من هذه الحقوق، تواصل معنا عبر البريد الإلكتروني: <a href="mailto:contact@webvitas.com">contact@webvitas.com</a></p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">7</span> ملفات تعريف الارتباط (Cookies)</h2>
+            <ul>
+                <li>نستخدم ملفات تعريف الارتباط الأساسية فقط لتشغيل الخدمة (مثل الحفاظ على تسجيل دخولك).</li>
+                <li>لا نستخدم ملفات تعريف ارتباط للتتبع أو الإعلانات.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">8</span> حماية بيانات الأطفال</h2>
+            <p>خدمتنا غير موجهة للأشخاص تحت سن 18 عاماً. لا نجمع عن علم بيانات شخصية من أطفال. إذا علمت أن طفلاً قدم بيانات شخصية لنا، تواصل معنا وسنقوم بحذفها فوراً.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">9</span> التغييرات على هذه السياسة</h2>
+            <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإخطارك بأي تغييرات جوهرية عبر البريد الإلكتروني أو إشعار في لوحة التحكم. ننصحك بمراجعة هذه السياسة دورياً.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">10</span> التواصل</h2>
+            <p>لأي استفسارات أو مخاوف بخصوص خصوصية بياناتك:</p>
+            <ul>
+                <li>البريد الإلكتروني: <a href="mailto:contact@webvitas.com">contact@webvitas.com</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 Perfume AI — جميع الحقوق محفوظة | <a href="/terms/">شروط الاستخدام</a></p>
+    </footer>
+</body>
+</html>

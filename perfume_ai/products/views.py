@@ -37,6 +37,18 @@ class ChatDemoView(TemplateView):
 class HomeView(TemplateView):
     template_name = 'products/home.html'
 
+
+class InternalDashboardView(TemplateView):
+    template_name = 'products/internal_dashboard.html'
+
+
+class TermsView(TemplateView):
+    template_name = 'products/terms.html'
+
+
+class PrivacyView(TemplateView):
+    template_name = 'products/privacy.html'
+
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
     throttle_classes = [ChatThrottle]

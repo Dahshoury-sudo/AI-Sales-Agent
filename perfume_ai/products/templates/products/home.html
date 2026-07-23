@@ -3,329 +3,1054 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - AI Perfume Agent</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Perfume AI — بوت مبيعات بالذكاء الاصطناعي لمتاجر العطور</title>
+    <meta name="description" content="حوّل متجر العطور بتاعك لمتجر ذكي مع Perfume AI. بوت مبيعات يشتغل 24 ساعة على واتساب وماسنجر وانستجرام. يرشّح عطور، يسجّل طلبات، ويتعامل مع العملاء زي البائع المحترف.">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ═══════════════════════════════════════ */
+        /* RESET & BASE                           */
+        /* ═══════════════════════════════════════ */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #06060f;
+            --bg-card: rgba(255,255,255,0.03);
+            --bg-card-hover: rgba(255,255,255,0.06);
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-purple: #c084fc;
+            --accent-indigo: #818cf8;
+            --accent-blue: #60a5fa;
+            --accent-emerald: #34d399;
+            --accent-amber: #fbbf24;
+            --gradient-main: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+            --gradient-emerald: linear-gradient(135deg, #34d399, #059669);
+            --shadow-glow: 0 0 80px rgba(124,58,237,0.15);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Cairo', sans-serif;
-            background: #06060f;
-            color: #e0e0e0;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
             min-height: 100vh;
             overflow-x: hidden;
+            line-height: 1.7;
         }
 
-        /* Animated background */
-        .bg-glow {
+        a { text-decoration: none; color: inherit; }
+
+        /* ═══════════════════════════════════════ */
+        /* ANIMATED BACKGROUND                    */
+        /* ═══════════════════════════════════════ */
+        .bg-orb {
             position: fixed;
-            top: -30%;
-            right: -20%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
-            animation: floatGlow 12s ease-in-out infinite;
+            filter: blur(80px);
+            z-index: 0;
         }
-
-        .bg-glow-2 {
-            position: fixed;
-            bottom: -20%;
-            left: -15%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(96,165,250,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: floatGlow 15s ease-in-out infinite reverse;
+        .bg-orb-1 {
+            top: -15%; right: -10%;
+            width: 600px; height: 600px;
+            background: rgba(124,58,237,0.12);
+            animation: orbFloat 14s ease-in-out infinite;
         }
-
-        @keyframes floatGlow {
+        .bg-orb-2 {
+            bottom: -10%; left: -10%;
+            width: 500px; height: 500px;
+            background: rgba(96,165,250,0.08);
+            animation: orbFloat 18s ease-in-out infinite reverse;
+        }
+        .bg-orb-3 {
+            top: 40%; left: 50%;
+            width: 400px; height: 400px;
+            background: rgba(52,211,153,0.06);
+            animation: orbFloat 20s ease-in-out infinite 2s;
+        }
+        @keyframes orbFloat {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(40px, 30px) scale(1.1); }
+            33% { transform: translate(30px, -20px) scale(1.05); }
+            66% { transform: translate(-20px, 30px) scale(0.95); }
         }
 
-        /* Header */
-        .header {
-            text-align: center;
-            padding: 60px 20px 20px;
+        /* ═══════════════════════════════════════ */
+        /* NAVBAR                                 */
+        /* ═══════════════════════════════════════ */
+        .navbar {
+            position: fixed; top: 0; right: 0; left: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(6,6,15,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.3s;
+        }
+        .navbar.scrolled {
+            padding: 12px 32px;
+            background: rgba(6,6,15,0.9);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.3rem; font-weight: 800;
+            color: var(--text-primary);
+        }
+        .nav-brand span { font-size: 1.6rem; }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-links a {
+            font-size: 0.9rem; font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.3s;
             position: relative;
         }
-
-        .logo-icon {
-            font-size: 3.5rem;
-            margin-bottom: 12px;
-            display: block;
-            animation: pulse 3s ease-in-out infinite;
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a::after {
+            content: '';
+            position: absolute; bottom: -4px; right: 0; left: 0;
+            height: 2px;
+            background: var(--gradient-main);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+            border-radius: 2px;
+        }
+        .nav-links a:hover::after { transform: scaleX(1); }
+        .nav-cta {
+            padding: 8px 24px;
+            background: var(--gradient-main);
+            color: #fff !important;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+        }
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(124,58,237,0.45);
+        }
+        .nav-cta::after { display: none !important; }
+        .mobile-toggle {
+            display: none;
+            background: none; border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem; cursor: pointer;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        /* ═══════════════════════════════════════ */
+        /* HERO                                   */
+        /* ═══════════════════════════════════════ */
+        .hero {
+            position: relative; z-index: 1;
+            text-align: center;
+            padding: 160px 24px 100px;
+            max-width: 900px; margin: 0 auto;
         }
-
-        .header h1 {
-            font-size: 2.4rem;
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 20px;
+            background: rgba(124,58,237,0.1);
+            border: 1px solid rgba(124,58,237,0.2);
+            border-radius: 50px;
+            font-size: 0.82rem; font-weight: 600;
+            color: var(--accent-purple);
+            margin-bottom: 28px;
+            animation: fadeInUp 0.6s ease;
+        }
+        .hero-badge .dot {
+            width: 8px; height: 8px;
+            background: var(--accent-emerald);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
             font-weight: 900;
-            background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+            line-height: 1.3;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+        .hero h1 .gradient-text {
+            background: var(--gradient-main);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             background-size: 200% 200%;
             animation: gradientShift 4s ease infinite;
-            margin-bottom: 8px;
         }
-
         @keyframes gradientShift {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-
-        .header p {
-            color: #6b7280;
-            font-size: 1rem;
-            max-width: 500px;
-            margin: 0 auto;
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 640px; margin: 0 auto 40px;
+            line-height: 1.9;
+            animation: fadeInUp 0.6s ease 0.2s both;
         }
-
-        /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 0 20px;
+        .hero-actions {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease 0.3s both;
         }
-
-        /* Cards */
-        .card {
-            position: relative;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 32px 28px;
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 36px;
+            background: var(--gradient-main);
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem; font-weight: 700;
+            border: none; border-radius: 50px;
             cursor: pointer;
-            text-decoration: none;
-            color: inherit;
+            transition: all 0.3s;
+            box-shadow: 0 4px 24px rgba(124,58,237,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 40px rgba(124,58,237,0.5);
+        }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 36px;
+            background: transparent;
+            color: var(--text-primary);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem; font-weight: 600;
+            border: 1px solid var(--border-hover);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 48px;
+            margin-top: 64px;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+        .stat { text-align: center; }
+        .stat-number {
+            font-size: 2rem; font-weight: 900;
+            color: var(--text-primary);
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* SECTIONS COMMON                        */
+        /* ═══════════════════════════════════════ */
+        .section {
+            position: relative; z-index: 1;
+            padding: 100px 24px;
+            max-width: 1100px; margin: 0 auto;
+        }
+        .section-label {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px;
+            background: rgba(124,58,237,0.08);
+            border: 1px solid rgba(124,58,237,0.15);
+            border-radius: 50px;
+            font-size: 0.78rem; font-weight: 600;
+            color: var(--accent-purple);
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 48px;
+        }
+        .section-center {
+            text-align: center;
+        }
+        .section-center .section-desc {
+            margin-left: auto; margin-right: auto;
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* FEATURES                               */
+        /* ═══════════════════════════════════════ */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .feature-card {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 32px 28px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden;
         }
-
-        .card::before {
+        .feature-card::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            position: absolute; top: 0; right: 0; left: 0;
             height: 3px;
-            border-radius: 20px 20px 0 0;
             opacity: 0;
             transition: opacity 0.4s;
         }
-
-        .card:hover {
+        .feature-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(255,255,255,0.12);
+            border-color: var(--border-hover);
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         }
+        .feature-card:hover::before { opacity: 1; }
 
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        .card:active {
-            transform: translateY(-2px);
-        }
-
-        /* Card colors */
-        .card-chat::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
-        .card-chat:hover { background: rgba(167,139,250,0.06); }
-        .card-chat .card-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
-
-        .card-orders::before { background: linear-gradient(90deg, #34d399, #059669); }
-        .card-orders:hover { background: rgba(52,211,153,0.06); }
-        .card-orders .card-icon { background: linear-gradient(135deg, #34d399, #059669); }
-
-        .card-import::before { background: linear-gradient(90deg, #60a5fa, #2563eb); }
-        .card-import:hover { background: rgba(96,165,250,0.06); }
-        .card-import .card-icon { background: linear-gradient(135deg, #60a5fa, #2563eb); }
-
-        .card-admin::before { background: linear-gradient(90deg, #f472b6, #db2777); }
-        .card-admin:hover { background: rgba(244,114,182,0.06); }
-        .card-admin .card-icon { background: linear-gradient(135deg, #f472b6, #db2777); }
-
-        .card-analytics::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
-        .card-analytics:hover { background: rgba(251,191,36,0.06); }
-        .card-analytics .card-icon { background: linear-gradient(135deg, #fbbf24, #d97706); }
-
-        .card-handoff::before { background: linear-gradient(90deg, #ef4444, #b91c1c); }
-        .card-handoff:hover { background: rgba(239,68,68,0.06); }
-        .card-handoff .card-icon { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-
-        .card-dashboard::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
-        .card-dashboard:hover { background: rgba(6,182,212,0.06); }
-        .card-dashboard .card-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
-
-        .card-webhook::before { background: linear-gradient(90deg, #8b5cf6, #6d28d9); }
-        .card-webhook:hover { background: rgba(139,92,246,0.06); }
-        .card-webhook .card-icon { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-
-        /* Card content */
-        .card-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
+        .feature-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
             margin-bottom: 20px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
-
-        .card h3 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #f1f5f9;
+        .feature-card h3 {
+            font-size: 1.1rem; font-weight: 800;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
-
-        .card p {
+        .feature-card p {
             font-size: 0.88rem;
-            color: #6b7280;
-            line-height: 1.65;
+            color: var(--text-muted);
+            line-height: 1.7;
         }
 
-        .card-arrow {
+        /* Card theme variations */
+        .fc-purple::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+        .fc-purple:hover { background: rgba(167,139,250,0.05); }
+        .fc-purple .feature-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+        .fc-emerald::before { background: linear-gradient(90deg, #34d399, #059669); }
+        .fc-emerald:hover { background: rgba(52,211,153,0.05); }
+        .fc-emerald .feature-icon { background: linear-gradient(135deg, #34d399, #059669); }
+
+        .fc-blue::before { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+        .fc-blue:hover { background: rgba(96,165,250,0.05); }
+        .fc-blue .feature-icon { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+
+        .fc-amber::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+        .fc-amber:hover { background: rgba(251,191,36,0.05); }
+        .fc-amber .feature-icon { background: linear-gradient(135deg, #fbbf24, #d97706); }
+
+        .fc-pink::before { background: linear-gradient(90deg, #f472b6, #db2777); }
+        .fc-pink:hover { background: rgba(244,114,182,0.05); }
+        .fc-pink .feature-icon { background: linear-gradient(135deg, #f472b6, #db2777); }
+
+        .fc-cyan::before { background: linear-gradient(90deg, #22d3ee, #0891b2); }
+        .fc-cyan:hover { background: rgba(34,211,238,0.05); }
+        .fc-cyan .feature-icon { background: linear-gradient(135deg, #22d3ee, #0891b2); }
+
+        /* ═══════════════════════════════════════ */
+        /* HOW IT WORKS                           */
+        /* ═══════════════════════════════════════ */
+        .steps {
+            display: flex; gap: 24px;
+            position: relative;
+        }
+        .steps::before {
+            content: '';
             position: absolute;
-            bottom: 28px;
-            left: 28px;
-            font-size: 1.3rem;
-            color: rgba(255,255,255,0.15);
+            top: 52px;
+            right: 15%; left: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(124,58,237,0.3), rgba(96,165,250,0.3), transparent);
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 900;
+            color: #fff;
+            margin: 0 auto 24px;
+            position: relative; z-index: 1;
+        }
+        .step:nth-child(1) .step-number {
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            box-shadow: 0 8px 30px rgba(124,58,237,0.35);
+        }
+        .step:nth-child(2) .step-number {
+            background: linear-gradient(135deg, #60a5fa, #2563eb);
+            box-shadow: 0 8px 30px rgba(37,99,235,0.35);
+        }
+        .step:nth-child(3) .step-number {
+            background: linear-gradient(135deg, #34d399, #059669);
+            box-shadow: 0 8px 30px rgba(5,150,105,0.35);
+        }
+        .step h3 {
+            font-size: 1.15rem; font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .step p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 280px; margin: 0 auto;
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* PLATFORMS BANNER                       */
+        /* ═══════════════════════════════════════ */
+        .platforms-banner {
+            position: relative; z-index: 1;
+            text-align: center;
+            padding: 60px 24px;
+            margin: 0 auto;
+            max-width: 900px;
+        }
+        .platforms-banner p {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+        .platform-icons {
+            display: flex; justify-content: center; gap: 40px;
+            flex-wrap: wrap;
+        }
+        .platform-item {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 10px;
+            opacity: 0.5;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .platform-item:hover { opacity: 1; transform: translateY(-4px); }
+        .platform-item .p-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+        }
+        .platform-item span:last-child {
+            font-size: 0.8rem; color: var(--text-muted);
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* PRICING                                */
+        /* ═══════════════════════════════════════ */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px 28px;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+        }
+        .pricing-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .pricing-card.featured {
+            border-color: rgba(124,58,237,0.3);
+            background: rgba(124,58,237,0.05);
+            box-shadow: 0 0 60px rgba(124,58,237,0.1);
+        }
+        .pricing-popular {
+            position: absolute;
+            top: -12px; left: 50%; transform: translateX(-50%);
+            padding: 4px 20px;
+            background: var(--gradient-main);
+            color: #fff;
+            font-size: 0.75rem; font-weight: 700;
+            border-radius: 50px;
+            white-space: nowrap;
+        }
+        .pricing-card h3 {
+            font-size: 1.2rem; font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .pricing-card .price {
+            font-size: 2.6rem; font-weight: 900;
+            color: var(--text-primary);
+            margin: 16px 0 4px;
+        }
+        .pricing-card .price-currency {
+            font-size: 1rem; font-weight: 600;
+            color: var(--text-muted);
+        }
+        .pricing-card .price-period {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+        .pricing-features {
+            list-style: none;
+            text-align: right;
+            margin-bottom: 28px;
+        }
+        .pricing-features li {
+            padding: 8px 0;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .pricing-features li .check {
+            color: var(--accent-emerald);
+            font-weight: bold;
+        }
+        .pricing-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem; font-weight: 700;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
             transition: all 0.3s;
         }
-
-        .card:hover .card-arrow {
-            color: rgba(255,255,255,0.5);
-            transform: translateX(-6px);
+        .pricing-btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-hover);
+        }
+        .pricing-btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .pricing-btn-primary {
+            background: var(--gradient-main);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+        }
+        .pricing-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(124,58,237,0.45);
         }
 
-        /* Footer */
-        .footer {
+        /* ═══════════════════════════════════════ */
+        /* FAQ                                    */
+        /* ═══════════════════════════════════════ */
+        .faq-list {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .faq-item {
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .faq-question {
+            width: 100%;
+            background: none; border: none;
+            padding: 20px 0;
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.02rem; font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: right;
+            transition: color 0.3s;
+        }
+        .faq-question:hover { color: var(--accent-purple); }
+        .faq-icon {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+            flex-shrink: 0;
+            margin-right: 16px;
+        }
+        .faq-item.active .faq-icon { transform: rotate(45deg); }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding-bottom: 20px;
+        }
+        .faq-answer p {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* FINAL CTA                              */
+        /* ═══════════════════════════════════════ */
+        .cta-section {
+            position: relative; z-index: 1;
             text-align: center;
-            padding: 40px 20px;
-            color: #374151;
+            padding: 80px 24px;
+            margin: 40px auto;
+            max-width: 800px;
+        }
+        .cta-box {
+            background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(96,165,250,0.08));
+            border: 1px solid rgba(124,58,237,0.2);
+            border-radius: 28px;
+            padding: 60px 40px;
+        }
+        .cta-box h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+        .cta-box p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* FOOTER                                 */
+        /* ═══════════════════════════════════════ */
+        .footer {
+            position: relative; z-index: 1;
+            border-top: 1px solid var(--border-subtle);
+            padding: 48px 24px 32px;
+            max-width: 1100px; margin: 0 auto;
+        }
+        .footer-grid {
+            display: flex; justify-content: space-between;
+            flex-wrap: wrap; gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 {
+            font-size: 0.95rem; font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+        .footer-col a {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            padding: 4px 0;
+            transition: color 0.3s;
+        }
+        .footer-col a:hover { color: var(--text-primary); }
+        .footer-bottom {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
             font-size: 0.82rem;
+            color: var(--text-muted);
         }
 
-        .footer a {
-            color: #6b7280;
-            text-decoration: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            .header h1 { font-size: 1.8rem; }
-            .grid { grid-template-columns: 1fr; gap: 16px; }
-            .card { padding: 24px 20px; }
-        }
-
-        /* Staggered entrance animation */
-        .card { opacity: 0; animation: cardIn 0.5s ease forwards; }
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.15s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-        .card:nth-child(4) { animation-delay: 0.25s; }
-        .card:nth-child(5) { animation-delay: 0.3s; }
-        .card:nth-child(6) { animation-delay: 0.35s; }
-        .card:nth-child(7) { animation-delay: 0.4s; }
-        .card:nth-child(8) { animation-delay: 0.45s; }
-
-        @keyframes cardIn {
+        /* ═══════════════════════════════════════ */
+        /* ANIMATIONS                             */
+        /* ═══════════════════════════════════════ */
+        @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ═══════════════════════════════════════ */
+        /* RESPONSIVE                             */
+        /* ═══════════════════════════════════════ */
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+            .steps { flex-direction: column; gap: 40px; }
+            .steps::before { display: none; }
+        }
+        @media (max-width: 640px) {
+            .navbar { padding: 12px 16px; }
+            .nav-links { 
+                display: none;
+                position: fixed; top: 60px; right: 0; left: 0;
+                background: rgba(6,6,15,0.95);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 24px;
+                gap: 20px;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+            .nav-links.open { display: flex; }
+            .mobile-toggle { display: block; }
+            .features-grid { grid-template-columns: 1fr; }
+            .hero { padding: 120px 16px 60px; }
+            .hero-stats { gap: 24px; }
+            .stat-number { font-size: 1.5rem; }
+            .section { padding: 60px 16px; }
+            .platform-icons { gap: 20px; }
+            .cta-box { padding: 40px 20px; }
+            .footer-grid { flex-direction: column; gap: 24px; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
-    <div class="bg-glow-2"></div>
+    <!-- Background orbs -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
 
-    <div class="header">
-        <span class="logo-icon">🧴</span>
-        <h1>AI Perfume Agent</h1>
-        <p>لوحة التحكم الرئيسية — اختر من الخيارات التالية</p>
+    <!-- ═══ NAVBAR ═══ -->
+    <nav class="navbar" id="navbar">
+        <a href="/" class="nav-brand">
+            <span>🧴</span>
+            Perfume AI
+        </a>
+        <button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="فتح القائمة">☰</button>
+        <div class="nav-links">
+            <a href="#features">المميزات</a>
+            <a href="#how-it-works">طريقة العمل</a>
+            <a href="#pricing">الأسعار</a>
+            <a href="#faq">الأسئلة الشائعة</a>
+            <a href="/dashboard/login/">تسجيل الدخول</a>
+            <a href="/dashboard/register/" class="nav-cta">ابدأ مجاناً</a>
+        </div>
+    </nav>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            متاح الآن — ابدأ في دقائق
+        </div>
+        <h1>
+            بوت مبيعات <span class="gradient-text">بالذكاء الاصطناعي</span><br>
+            لمتجر العطور بتاعك
+        </h1>
+        <p>
+            خلّي البوت الذكي يبيع عنّك 24 ساعة على واتساب وماسنجر وانستجرام.
+            يرشّح عطور، يسجّل طلبات، ويتعامل مع العملاء زي البائع المحترف.
+        </p>
+        <div class="hero-actions">
+            <a href="/dashboard/register/" class="btn-primary">
+                ابدأ مجاناً ←
+            </a>
+            <a href="#how-it-works" class="btn-secondary">
+                ▶ شاهد طريقة العمل
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">شغّال بدون توقف</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">4+</span>
+                <span class="stat-label">منصات مدعومة</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">90%</span>
+                <span class="stat-label">رضا العملاء</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ PLATFORMS BANNER ═══ -->
+    <div class="platforms-banner reveal">
+        <p>يشتغل على كل المنصات اللي عملاءك عليها</p>
+        <div class="platform-icons">
+            <div class="platform-item">
+                <div class="p-icon">💬</div>
+                <span>واتساب</span>
+            </div>
+            <div class="platform-item">
+                <div class="p-icon">📱</div>
+                <span>ماسنجر</span>
+            </div>
+            <div class="platform-item">
+                <div class="p-icon">📸</div>
+                <span>انستجرام</span>
+            </div>
+            <div class="platform-item">
+                <div class="p-icon">🌐</div>
+                <span>الموقع الإلكتروني</span>
+            </div>
+        </div>
     </div>
 
-    <div class="grid">
-        <!-- Chat Demo -->
-        <a href="/api/demo/" class="card card-chat">
-            <div class="card-icon">💬</div>
-            <h3>شات البوت</h3>
-            <p>جرّب محادثة مباشرة مع البوت الذكي واختبر أداءه في الترشيحات والطلبات.</p>
-            <span class="card-arrow">←</span>
-        </a>
+    <!-- ═══ FEATURES ═══ -->
+    <section class="section section-center" id="features">
+        <div class="reveal">
+            <span class="section-label">✨ المميزات</span>
+            <h2 class="section-title">كل اللي محتاجه متجرك في مكان واحد</h2>
+            <p class="section-desc">بوت ذكي مش بس بيرد على الرسائل — بيبيع، بيرشّح، بيسجّل طلبات، وبيحوّل للبشر لما يحتاج.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fc-purple reveal">
+                <div class="feature-icon">🤖</div>
+                <h3>محادثات ذكية بالعربي</h3>
+                <p>البوت بيتكلم مصري طبيعي، بيفهم ذوق العميل، وبيرشّح عطور تناسبه بالظبط. مش مجرد ردود جاهزة.</p>
+            </div>
+            <div class="feature-card fc-emerald reveal">
+                <div class="feature-icon">📦</div>
+                <h3>إدارة الطلبات آلياً</h3>
+                <p>العميل يطلب من الشات مباشرة. البوت بياخد الاسم والعنوان والتليفون ويسجّل الطلب ويخصم من المخزون تلقائي.</p>
+            </div>
+            <div class="feature-card fc-blue reveal">
+                <div class="feature-icon">🔗</div>
+                <h3>ربط كل المنصات</h3>
+                <p>وصّل واتساب وماسنجر وانستجرام في خطوات بسيطة. كل الرسائل في مكان واحد والبوت يرد تلقائي.</p>
+            </div>
+            <div class="feature-card fc-amber reveal">
+                <div class="feature-icon">📊</div>
+                <h3>تحليلات متقدمة</h3>
+                <p>تابع أداء البوت، نسبة التحويل، عدد الطلبات، والإيرادات من لوحة تحكم واحدة.</p>
+            </div>
+            <div class="feature-card fc-pink reveal">
+                <div class="feature-icon">🎧</div>
+                <h3>تحويل لخدمة العملاء</h3>
+                <p>لما العميل يحتاج تدخل بشري، البوت بيحوّل المحادثة تلقائي وبيبعتلك إشعار فوري.</p>
+            </div>
+            <div class="feature-card fc-cyan reveal">
+                <div class="feature-icon">📥</div>
+                <h3>استيراد المنتجات بالجملة</h3>
+                <p>ارفع ملف Excel بكل منتجاتك دفعة واحدة. البوت هيبقى جاهز يبيعهم في ثواني.</p>
+            </div>
+        </div>
+    </section>
 
-        <!-- Orders -->
-        <a href="/api/orders/" class="card card-orders">
-            <div class="card-icon">📦</div>
-            <h3>الطلبات</h3>
-            <p>تابع كل الطلبات اللي وصلت، حالتها، وتفاصيل العملاء والمنتجات.</p>
-            <span class="card-arrow">←</span>
-        </a>
+    <!-- ═══ HOW IT WORKS ═══ -->
+    <section class="section section-center" id="how-it-works">
+        <div class="reveal">
+            <span class="section-label">🚀 طريقة العمل</span>
+            <h2 class="section-title">ابدأ البيع في 3 خطوات بس</h2>
+            <p class="section-desc">مش محتاج خبرة تقنية. سجّل، أضف منتجاتك، والبوت يعمل الباقي.</p>
+        </div>
+        <div class="steps reveal">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>سجّل متجرك</h3>
+                <p>أنشئ حساب مجاني في دقيقة واحدة. ادخل اسم متجرك وبياناتك وابدأ على طول.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>أضف منتجاتك</h3>
+                <p>ارفع منتجاتك يدوي أو بملف Excel. أضف الأسعار والأحجام والتفاصيل والبوت يحفظهم.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>البوت يبيع لك</h3>
+                <p>وصّل المنصات بتاعتك والبوت يبدأ يرد على العملاء ويبيع ويسجّل الطلبات 24 ساعة.</p>
+            </div>
+        </div>
+    </section>
 
-        <!-- Bulk Import -->
-        <a href="/api/import/" class="card card-import">
-            <div class="card-icon">📥</div>
-            <h3>إضافة منتجات جماعية</h3>
-            <p>ارفع ملف Excel وأضف كل المنتجات دفعة واحدة في ثواني.</p>
-            <span class="card-arrow">←</span>
-        </a>
+    <!-- ═══ PRICING ═══ -->
+    <section class="section section-center" id="pricing">
+        <div class="reveal">
+            <span class="section-label">💰 الأسعار</span>
+            <h2 class="section-title">خطط تناسب كل متجر</h2>
+            <p class="section-desc">ابدأ مجاناً وكبّر مع نمو متجرك. بدون عقود أو التزامات.</p>
+        </div>
+        <div class="pricing-grid reveal">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted);">للمتاجر اللي لسه بتبدأ</p>
+                <div class="price">299 <span class="price-currency">ج.م</span></div>
+                <div class="price-period">شهرياً</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 500 رسالة / شهر</li>
+                    <li><span class="check">✓</span> متجر واحد</li>
+                    <li><span class="check">✓</span> شات على الموقع</li>
+                    <li><span class="check">✓</span> لوحة تحكم أساسية</li>
+                    <li><span class="check">✓</span> دعم بالإيميل</li>
+                </ul>
+                <a href="/dashboard/register/" class="pricing-btn pricing-btn-outline">ابدأ الآن</a>
+            </div>
+            <!-- Growth -->
+            <div class="pricing-card featured">
+                <span class="pricing-popular">⭐ الأكثر طلباً</span>
+                <h3>Growth</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted);">للمتاجر اللي بتكبر</p>
+                <div class="price">699 <span class="price-currency">ج.م</span></div>
+                <div class="price-period">شهرياً</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 3,000 رسالة / شهر</li>
+                    <li><span class="check">✓</span> متجر واحد</li>
+                    <li><span class="check">✓</span> واتساب + ماسنجر</li>
+                    <li><span class="check">✓</span> تحليلات متقدمة</li>
+                    <li><span class="check">✓</span> تحويل خدمة العملاء</li>
+                    <li><span class="check">✓</span> دعم أولوية</li>
+                </ul>
+                <a href="/dashboard/register/" class="pricing-btn pricing-btn-primary">ابدأ الآن</a>
+            </div>
+            <!-- Pro -->
+            <div class="pricing-card">
+                <h3>Pro</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted);">للمتاجر الكبيرة</p>
+                <div class="price">1,499 <span class="price-currency">ج.م</span></div>
+                <div class="price-period">شهرياً</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 10,000 رسالة / شهر</li>
+                    <li><span class="check">✓</span> متجر واحد</li>
+                    <li><span class="check">✓</span> كل المنصات</li>
+                    <li><span class="check">✓</span> تحليلات + تقارير</li>
+                    <li><span class="check">✓</span> تخصيص البوت</li>
+                    <li><span class="check">✓</span> دعم مخصص</li>
+                </ul>
+                <a href="/dashboard/register/" class="pricing-btn pricing-btn-outline">ابدأ الآن</a>
+            </div>
+        </div>
+    </section>
 
-        <!-- Admin -->
-        <a href="/admin/" class="card card-admin">
-            <div class="card-icon">⚙️</div>
-            <h3>لوحة التحكم (Admin)</h3>
-            <p>أضف وعدّل المنتجات والبراندات والإعدادات من لوحة تحكم Django.</p>
-            <span class="card-arrow">←</span>
-        </a>
+    <!-- ═══ FAQ ═══ -->
+    <section class="section section-center" id="faq">
+        <div class="reveal">
+            <span class="section-label">❓ أسئلة شائعة</span>
+            <h2 class="section-title">عندك سؤال؟</h2>
+            <p class="section-desc">أجوبة لأكثر الأسئلة اللي بتيجيلنا.</p>
+        </div>
+        <div class="faq-list reveal">
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    هل محتاج خبرة تقنية عشان أستخدم Perfume AI؟
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>أبداً! Perfume AI مصمم عشان يكون بسيط جداً. سجّل حسابك، أضف منتجاتك (يدوي أو بملف Excel)، ووصّل المنصات بتاعتك — وخلاص! البوت يبدأ يشتغل لوحده.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    إزاي البوت بيعرف يرشّح عطور للعملاء؟
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>البوت بيستخدم الذكاء الاصطناعي عشان يفهم ذوق العميل من كلامه (مثلاً: بيحب فريش ولا خشبي؟ للشغل ولا لخروجة؟). بعدين بيبحث في منتجاتك ويرشّح اللي يناسبه بالظبط.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    هل بيانات عملائي في أمان؟
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>طبعاً! كل البيانات الحساسة مشفّرة. بنستخدم تشفير Fernet للبيانات المخزنة وSSL لكل الاتصالات. بياناتك وبيانات عملاءك في أمان تام.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    إيه اللي بيحصل لما العميل يحتاج يتكلم مع حد بشري؟
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>البوت ذكي كفاية إنه يعرف امتى العميل محتاج تدخل بشري. في الحالة دي بيحوّل المحادثة تلقائي لفريقك وبيبعتلك إشعار. تقدر ترد على العميل من لوحة التحكم مباشرة.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    أقدر أجرّب قبل ما أدفع؟
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>أكيد! تقدر تسجّل حساب وتجرّب كل المميزات. ابدأ النهاردة واتأكد إن Perfume AI هو اللي متجرك محتاجه.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <!-- Analytics -->
-        <a href="/api/analytics/" class="card card-analytics">
-            <div class="card-icon">📊</div>
-            <h3>التحليلات</h3>
-            <p>تقييمات أداء البوت، نسبة التحويل، ومعدل الطلبات.</p>
-            <span class="card-arrow">←</span>
-        </a>
-
-        <!-- Handoff Dashboard -->
-        <a href="/api/handoff/" class="card card-handoff">
-            <div class="card-icon">🎧</div>
-            <h3>خدمة العملاء الحية</h3>
-            <p>لوحة التحكم في المحادثات العاجلة والرد المباشر على العملاء.</p>
-            <span class="card-arrow">←</span>
-        </a>
-
-        <!-- Store Owner Dashboard -->
-        <a href="/dashboard/" class="card card-dashboard">
-            <div class="card-icon">🏪</div>
-            <h3>لوحة تحكم المتجر</h3>
-            <p>إدارة متجرك، إعداداتك، ربط المنصات، الإشعارات، ومتابعة الأداء.</p>
-            <span class="card-arrow">←</span>
-        </a>
-
-        <!-- Register / Login -->
-        <a href="/dashboard/register/" class="card card-webhook">
-            <div class="card-icon">🚀</div>
-            <h3>تسجيل متجر جديد</h3>
-            <p>أنشئ حساب جديد لمتجرك وابدأ البيع بالذكاء الاصطناعي في دقائق.</p>
-            <span class="card-arrow">←</span>
-        </a>
+    <!-- ═══ FINAL CTA ═══ -->
+    <div class="cta-section reveal">
+        <div class="cta-box">
+            <h2>جاهز تخلّي البوت يبيع عنّك؟</h2>
+            <p>انضم لمتاجر العطور اللي بتستخدم Perfume AI وابدأ تبيع أكتر بمجهود أقل.</p>
+            <a href="/dashboard/register/" class="btn-primary">
+                ابدأ مجاناً الآن ←
+            </a>
+        </div>
     </div>
 
-    <div class="footer">
-        AI Perfume Agent &copy; 2026 — Powered by AI
-    </div>
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>🧴 Perfume AI</h4>
+                <p style="font-size:0.85rem; color:var(--text-muted); max-width:280px; line-height:1.8;">
+                    بوت مبيعات بالذكاء الاصطناعي مصمم خصيصاً لمتاجر العطور. بيبيع، بيرشّح، وبيسجّل طلبات — 24 ساعة بدون توقف.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>روابط سريعة</h4>
+                <a href="#features">المميزات</a>
+                <a href="#pricing">الأسعار</a>
+                <a href="#faq">الأسئلة الشائعة</a>
+                <a href="/dashboard/register/">إنشاء حساب</a>
+                <a href="/dashboard/login/">تسجيل الدخول</a>
+            </div>
+            <div class="footer-col">
+                <h4>قانوني</h4>
+                <a href="/terms/">شروط الاستخدام</a>
+                <a href="/privacy/">سياسة الخصوصية</a>
+            </div>
+            <div class="footer-col">
+                <h4>تواصل معنا</h4>
+                <a href="mailto:contact@webvitas.com">contact@webvitas.com</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 Perfume AI — جميع الحقوق محفوظة</span>
+            <span>صنع بـ ❤️ في مصر</span>
+        </div>
+    </footer>
+
+    <!-- ═══ SCRIPTS ═══ -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Reveal on scroll
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        revealElements.forEach(el => revealObserver.observe(el));
+    </script>
 </body>
 </html>

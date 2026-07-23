@@ -6,6 +6,7 @@ from .product_info import get_product_info
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock
 from .general_service import handle_general
+from .notification_service import notify_handoff
 from products.models import Order
 from django.db import transaction
 from difflib import SequenceMatcher
@@ -247,6 +248,7 @@ def route(message, history=None, store=None, conversation=None):
             if conversation:
                 conversation.needs_human = True
                 conversation.save()
+                notify_handoff(conversation)  # Notify store owner in dashboard
             return handle_general(
                 f"""العميل بعتلي الرسالة دي: "{message}"
 

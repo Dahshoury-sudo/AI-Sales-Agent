@@ -34,11 +34,11 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
 # Set DEBUG=True in .env for development
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # CORS configuration — set CORS_ALLOWED_ORIGINS in .env for production (comma-separated)
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if os.environ.get('CORS_ALLOWED_ORIGINS') else []
-CORS_ALLOW_ALL_ORIGINS = not bool(CORS_ALLOWED_ORIGINS)  # Only allow all if no specific origins set
+CORS_ALLOW_ALL_ORIGINS = True if DEBUG and not CORS_ALLOWED_ORIGINS else False
 
 CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.up.railway.app']
 

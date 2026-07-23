@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شروط الاستخدام — Perfume AI</title>
+    <meta name="description" content="شروط استخدام خدمة Perfume AI — بوت مبيعات بالذكاء الاصطناعي لمتاجر العطور.">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #06060f;
+            --bg-card: rgba(255,255,255,0.03);
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-purple: #c084fc;
+            --gradient-main: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            line-height: 1.8;
+        }
+
+        a { color: var(--accent-purple); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Background orbs */
+        .bg-orb {
+            position: fixed; border-radius: 50%;
+            pointer-events: none; filter: blur(80px); z-index: 0;
+        }
+        .bg-orb-1 {
+            top: -15%; right: -10%;
+            width: 500px; height: 500px;
+            background: rgba(124,58,237,0.08);
+        }
+        .bg-orb-2 {
+            bottom: -10%; left: -10%;
+            width: 400px; height: 400px;
+            background: rgba(96,165,250,0.06);
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; right: 0; left: 0; z-index: 100;
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(6,6,15,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.2rem; font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .nav-brand:hover { text-decoration: none; }
+        .nav-brand span { font-size: 1.4rem; }
+        .nav-back {
+            font-size: 0.88rem; font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+        .nav-back:hover { color: var(--text-primary); text-decoration: none; }
+
+        /* Content */
+        .content {
+            position: relative; z-index: 1;
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+
+        .page-header {
+            margin-bottom: 48px;
+        }
+        .page-header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .page-header .last-updated {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .legal-section {
+            margin-bottom: 40px;
+            padding: 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            transition: border-color 0.3s;
+        }
+        .legal-section:hover {
+            border-color: var(--border-hover);
+        }
+
+        .legal-section h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .legal-section h2 .section-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: rgba(124,58,237,0.15);
+            color: var(--accent-purple);
+            font-size: 0.8rem; font-weight: 700;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .legal-section p,
+        .legal-section li {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 12px;
+        }
+
+        .legal-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .legal-section ul li {
+            padding-right: 20px;
+            position: relative;
+        }
+        .legal-section ul li::before {
+            content: '◆';
+            position: absolute;
+            right: 0;
+            color: var(--accent-purple);
+            font-size: 0.6rem;
+            top: 6px;
+        }
+
+        /* Footer */
+        .footer {
+            position: relative; z-index: 1;
+            text-align: center;
+            padding: 32px 24px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .footer a { color: var(--text-muted); }
+        .footer a:hover { color: var(--text-primary); text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .content { padding: 100px 16px 60px; }
+            .legal-section { padding: 20px; }
+            .navbar { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <span>🧴</span>
+            Perfume AI
+        </a>
+        <a href="/" class="nav-back">→ الرجوع للصفحة الرئيسية</a>
+    </nav>
+
+    <div class="content">
+        <div class="page-header">
+            <h1>شروط الاستخدام</h1>
+            <p class="last-updated">آخر تحديث: يوليو 2026</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">1</span> مقدمة</h2>
+            <p>مرحباً بك في Perfume AI. باستخدامك لخدماتنا فإنك توافق على هذه الشروط والأحكام. يرجى قراءتها بعناية.</p>
+            <p>Perfume AI هي خدمة برمجيات كخدمة (SaaS) تقدم بوت مبيعات بالذكاء الاصطناعي مصمم خصيصاً لمتاجر العطور. الخدمة تتيح لأصحاب المتاجر أتمتة محادثات البيع مع العملاء عبر منصات متعددة.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">2</span> إنشاء الحساب</h2>
+            <ul>
+                <li>يجب أن يكون عمرك 18 سنة أو أكثر لإنشاء حساب.</li>
+                <li>أنت مسؤول عن تقديم معلومات دقيقة وصحيحة عند التسجيل.</li>
+                <li>أنت مسؤول عن الحفاظ على سرية بيانات تسجيل الدخول ومفتاح API الخاص بمتجرك.</li>
+                <li>أنت مسؤول عن جميع الأنشطة التي تتم من خلال حسابك.</li>
+                <li>يحق لنا تعليق أو إلغاء حسابك في حالة مخالفة هذه الشروط.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">3</span> استخدام الخدمة</h2>
+            <p>تتضمن خدمة Perfume AI:</p>
+            <ul>
+                <li>بوت مبيعات بالذكاء الاصطناعي يتحدث مع عملاء متجرك.</li>
+                <li>لوحة تحكم لإدارة المنتجات والطلبات والمحادثات.</li>
+                <li>ربط مع منصات التواصل (واتساب، ماسنجر، انستجرام).</li>
+                <li>واجهة برمجة تطبيقات (API) للتكامل مع أنظمتك.</li>
+                <li>تحليلات وتقارير أداء البوت.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">4</span> الاستخدامات المحظورة</h2>
+            <p>يُحظر استخدام الخدمة في أي من الأغراض التالية:</p>
+            <ul>
+                <li>بيع منتجات غير قانونية أو مخالفة للقوانين المصرية.</li>
+                <li>إرسال رسائل مزعجة (spam) أو استخدام الخدمة للاحتيال.</li>
+                <li>محاولة اختراق أو تعطيل الخدمة أو الوصول غير المصرح به لبيانات مستخدمين آخرين.</li>
+                <li>استخدام الخدمة بطريقة تنتهك حقوق الملكية الفكرية لأي طرف ثالث.</li>
+                <li>مشاركة مفتاح API الخاص بك مع أطراف غير مصرح لها.</li>
+                <li>تجاوز حدود الاستخدام (Rate Limits) المحددة لخطتك بشكل متعمد.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">5</span> حدود الاستخدام</h2>
+            <ul>
+                <li>كل خطة اشتراك لها حد أقصى لعدد الرسائل الشهرية.</li>
+                <li>واجهة API محدودة بـ 30 طلب/دقيقة لنقطة الشات و60 طلب/دقيقة للخدمات الأخرى.</li>
+                <li>في حالة تجاوز حدود الاستخدام، قد يتم تقييد الخدمة مؤقتاً حتى بداية الدورة الجديدة.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">6</span> الدفع والاشتراكات</h2>
+            <ul>
+                <li>الأسعار معروضة بالجنيه المصري وتشمل جميع الضرائب المطبقة.</li>
+                <li>الاشتراكات تتجدد تلقائياً ما لم يتم إلغاؤها قبل نهاية الفترة.</li>
+                <li>يمكنك إلغاء اشتراكك في أي وقت. يظل حسابك نشطاً حتى نهاية الفترة المدفوعة.</li>
+                <li>لا نقدم استرداد للمبالغ المدفوعة للفترات التي بدأت بالفعل.</li>
+                <li>نحتفظ بالحق في تعديل الأسعار مع إخطار مسبق لا يقل عن 30 يوماً.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">7</span> ملكية البيانات</h2>
+            <ul>
+                <li>أنت تملك جميع بيانات منتجاتك وطلباتك ومحادثات عملائك.</li>
+                <li>نحن لا نبيع أو نشارك بياناتك مع أطراف ثالثة لأغراض تسويقية.</li>
+                <li>نستخدم بياناتك فقط لتقديم الخدمة وتحسينها.</li>
+                <li>يمكنك طلب تصدير أو حذف بياناتك في أي وقت عبر التواصل مع الدعم الفني.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">8</span> الذكاء الاصطناعي</h2>
+            <ul>
+                <li>البوت يستخدم نماذج ذكاء اصطناعي متقدمة لتوليد الردود. نبذل أقصى جهد لضمان دقة الردود ومنع الهلوسة (hallucination)، لكن لا نضمن دقة 100% في جميع الأوقات.</li>
+                <li>أنت مسؤول عن مراجعة إعدادات البوت والتأكد من أن الأسعار والمعلومات المعروضة صحيحة.</li>
+                <li>نحن نوفر آلية تحويل تلقائي للمحادثات لموظف بشري عند اكتشاف حالات تحتاج تدخل بشري.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">9</span> توفر الخدمة</h2>
+            <ul>
+                <li>نسعى لتوفير الخدمة على مدار الساعة، لكن قد تحدث فترات صيانة أو انقطاع مؤقت.</li>
+                <li>سنبذل جهدنا لإخطارك مسبقاً بأي صيانة مجدولة.</li>
+                <li>لا نتحمل مسؤولية أي خسائر ناتجة عن انقطاع الخدمة بسبب ظروف خارجة عن سيطرتنا.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">10</span> حدود المسؤولية</h2>
+            <ul>
+                <li>الخدمة مقدمة "كما هي" بدون أي ضمانات صريحة أو ضمنية.</li>
+                <li>لا نتحمل مسؤولية أي خسائر مباشرة أو غير مباشرة ناتجة عن استخدام الخدمة، بما في ذلك خسائر الأرباح أو البيانات.</li>
+                <li>مسؤوليتنا القصوى لا تتجاوز المبلغ الذي دفعته لنا في آخر 3 أشهر.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">11</span> إنهاء الخدمة</h2>
+            <ul>
+                <li>يمكنك إلغاء حسابك في أي وقت من لوحة التحكم.</li>
+                <li>نحتفظ بالحق في تعليق أو إنهاء حسابك في حالة مخالفة هذه الشروط.</li>
+                <li>عند إلغاء الحساب، سيتم حذف بياناتك خلال 30 يوماً ما لم يُطلب خلاف ذلك.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">12</span> تعديل الشروط</h2>
+            <p>نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سنقوم بإخطارك بأي تغييرات جوهرية عبر البريد الإلكتروني أو من خلال إشعار في لوحة التحكم. استمرارك في استخدام الخدمة بعد التعديلات يعني موافقتك عليها.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="section-num">13</span> التواصل</h2>
+            <p>لأي استفسارات بخصوص هذه الشروط، تواصل معنا عبر:</p>
+            <ul>
+                <li>البريد الإلكتروني: <a href="mailto:contact@webvitas.com">contact@webvitas.com</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 Perfume AI — جميع الحقوق محفوظة | <a href="/privacy/">سياسة الخصوصية</a></p>
+    </footer>
+</body>
+</html>

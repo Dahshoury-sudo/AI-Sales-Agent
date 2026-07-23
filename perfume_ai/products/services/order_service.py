@@ -5,6 +5,7 @@ from django.db.models import F, Q
 from products.models import Order, OrderItem, Product, ProductVariant
 from .ai.client import chat
 from .product_resolver import resolve_product
+from .notification_service import notify_new_order
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +310,7 @@ def create_order_in_db(store, name, phone, address, total_price, items_to_create
                     )
                 
         logger.info(f"Order #{order.id} created successfully for store '{store.name}'")
+        notify_new_order(order)  # Notify store owner in dashboard
         return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
     except Exception as e:
         logger.exception(f"Failed to create order for store '{store.name}': {e}")

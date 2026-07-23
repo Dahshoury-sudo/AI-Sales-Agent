@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - AI Perfume Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #06060f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-glow {
+            position: fixed;
+            top: -30%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatGlow 12s ease-in-out infinite;
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            bottom: -20%;
+            left: -15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(96,165,250,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatGlow 15s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, 30px) scale(1.1); }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 60px 20px 20px;
+            position: relative;
+        }
+
+        .logo-icon {
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            display: block;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradientShift 4s ease infinite;
+            margin-bottom: 8px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Cards */
+        .card {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 32px 28px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 20px 20px 0 0;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:active {
+            transform: translateY(-2px);
+        }
+
+        /* Card colors */
+        .card-chat::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+        .card-chat:hover { background: rgba(167,139,250,0.06); }
+        .card-chat .card-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+        .card-orders::before { background: linear-gradient(90deg, #34d399, #059669); }
+        .card-orders:hover { background: rgba(52,211,153,0.06); }
+        .card-orders .card-icon { background: linear-gradient(135deg, #34d399, #059669); }
+
+        .card-import::before { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+        .card-import:hover { background: rgba(96,165,250,0.06); }
+        .card-import .card-icon { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+
+        .card-admin::before { background: linear-gradient(90deg, #f472b6, #db2777); }
+        .card-admin:hover { background: rgba(244,114,182,0.06); }
+        .card-admin .card-icon { background: linear-gradient(135deg, #f472b6, #db2777); }
+
+        .card-analytics::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+        .card-analytics:hover { background: rgba(251,191,36,0.06); }
+        .card-analytics .card-icon { background: linear-gradient(135deg, #fbbf24, #d97706); }
+
+        .card-handoff::before { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+        .card-handoff:hover { background: rgba(239,68,68,0.06); }
+        .card-handoff .card-icon { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+        .card-dashboard::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+        .card-dashboard:hover { background: rgba(6,182,212,0.06); }
+        .card-dashboard .card-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+        .card-webhook::before { background: linear-gradient(90deg, #8b5cf6, #6d28d9); }
+        .card-webhook:hover { background: rgba(139,92,246,0.06); }
+        .card-webhook .card-icon { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+        /* Card content */
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 0.88rem;
+            color: #6b7280;
+            line-height: 1.65;
+        }
+
+        .card-arrow {
+            position: absolute;
+            bottom: 28px;
+            left: 28px;
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.15);
+            transition: all 0.3s;
+        }
+
+        .card:hover .card-arrow {
+            color: rgba(255,255,255,0.5);
+            transform: translateX(-6px);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #374151;
+            font-size: 0.82rem;
+        }
+
+        .footer a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header h1 { font-size: 1.8rem; }
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .card { padding: 24px 20px; }
+        }
+
+        /* Staggered entrance animation */
+        .card { opacity: 0; animation: cardIn 0.5s ease forwards; }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.15s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.25s; }
+        .card:nth-child(5) { animation-delay: 0.3s; }
+        .card:nth-child(6) { animation-delay: 0.35s; }
+        .card:nth-child(7) { animation-delay: 0.4s; }
+        .card:nth-child(8) { animation-delay: 0.45s; }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="header">
+        <span class="logo-icon">🧴</span>
+        <h1>AI Perfume Agent</h1>
+        <p>لوحة التحكم الرئيسية — اختر من الخيارات التالية</p>
+    </div>
+
+    <div class="grid">
+        <!-- Chat Demo -->
+        <a href="/api/demo/" class="card card-chat">
+            <div class="card-icon">💬</div>
+            <h3>شات البوت</h3>
+            <p>جرّب محادثة مباشرة مع البوت الذكي واختبر أداءه في الترشيحات والطلبات.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Orders -->
+        <a href="/api/orders/" class="card card-orders">
+            <div class="card-icon">📦</div>
+            <h3>الطلبات</h3>
+            <p>تابع كل الطلبات اللي وصلت، حالتها، وتفاصيل العملاء والمنتجات.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Bulk Import -->
+        <a href="/api/import/" class="card card-import">
+            <div class="card-icon">📥</div>
+            <h3>إضافة منتجات جماعية</h3>
+            <p>ارفع ملف Excel وأضف كل المنتجات دفعة واحدة في ثواني.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Admin -->
+        <a href="/admin/" class="card card-admin">
+            <div class="card-icon">⚙️</div>
+            <h3>لوحة التحكم (Admin)</h3>
+            <p>أضف وعدّل المنتجات والبراندات والإعدادات من لوحة تحكم Django.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Analytics -->
+        <a href="/api/analytics/" class="card card-analytics">
+            <div class="card-icon">📊</div>
+            <h3>التحليلات</h3>
+            <p>تقييمات أداء البوت، نسبة التحويل، ومعدل الطلبات.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Handoff Dashboard -->
+        <a href="/api/handoff/" class="card card-handoff">
+            <div class="card-icon">🎧</div>
+            <h3>خدمة العملاء الحية</h3>
+            <p>لوحة التحكم في المحادثات العاجلة والرد المباشر على العملاء.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Store Owner Dashboard -->
+        <a href="/dashboard/" class="card card-dashboard">
+            <div class="card-icon">🏪</div>
+            <h3>لوحة تحكم المتجر</h3>
+            <p>إدارة متجرك، إعداداتك، ربط المنصات، الإشعارات، ومتابعة الأداء.</p>
+            <span class="card-arrow">←</span>
+        </a>
+
+        <!-- Register / Login -->
+        <a href="/dashboard/register/" class="card card-webhook">
+            <div class="card-icon">🚀</div>
+            <h3>تسجيل متجر جديد</h3>
+            <p>أنشئ حساب جديد لمتجرك وابدأ البيع بالذكاء الاصطناعي في دقائق.</p>
+            <span class="card-arrow">←</span>
+        </a>
+    </div>
+
+    <div class="footer">
+        AI Perfume Agent &copy; 2026 — Powered by AI
+    </div>
+</body>
+</html>
