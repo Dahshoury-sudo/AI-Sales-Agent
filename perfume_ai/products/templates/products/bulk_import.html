@@ -512,5 +512,11 @@
             uploadBtn.disabled = false;
         });
     </script>
+<script>
+    // Hide back links if loaded inside an iframe
+    if(window.self !== window.top) {
+        document.querySelectorAll('.back-link').forEach(el => el.style.display = 'none');
+    }
+</script>
 </body>
 </html>

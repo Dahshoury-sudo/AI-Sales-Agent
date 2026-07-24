@@ -419,22 +419,25 @@
             <div class="nav-item" onclick="showSection('products')" id="nav-products">
                 <i class="fas fa-box"></i> المنتجات
             </div>
+            <div class="nav-item" onclick="showSection('orders')" id="nav-orders">
+                <i class="fas fa-shopping-bag"></i> الطلبات
+            </div>
+            <div class="nav-item" onclick="showSection('handoff')" id="nav-handoff">
+                <i class="fas fa-headset"></i> خدمة العملاء
+                <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
+            </div>
+            <div class="nav-item" onclick="showSection('chat_demo')" id="nav-chat_demo">
+                <i class="fas fa-comment-dots"></i> شات تجريبي
+            </div>
+            <div class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
+                <i class="fas fa-file-upload"></i> رفع جماعي
+            </div>
             <div class="nav-item" onclick="showSection('settings')" id="nav-settings">
                 <i class="fas fa-cog"></i> الإعدادات
             </div>
             <div class="nav-item" onclick="showSection('meta')" id="nav-meta">
                 <i class="fab fa-meta"></i> ربط المنصات
             </div>
-            <a class="nav-item" href="/api/handoff/" id="nav-handoff">
-                <i class="fas fa-headset"></i> خدمة العملاء
-                <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
-            </a>
-            <a class="nav-item" href="/api/orders/">
-                <i class="fas fa-shopping-bag"></i> الطلبات
-            </a>
-            <a class="nav-item" href="/api/analytics/">
-                <i class="fas fa-chart-bar"></i> التقييم
-            </a>
             <div class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
                 <i class="fas fa-bell"></i> الإشعارات
                 <span class="nav-badge" id="notif-badge" style="display:none">0</span>
@@ -515,6 +518,7 @@
                             <th>الجنس</th>
                             <th>المخزون (جرام)</th>
                             <th>الحالة</th>
+                            <th>إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="products-tbody">
@@ -558,6 +562,33 @@
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
             </div>
+        </div>
+
+
+        <!-- Orders Section -->
+        <div class="section" id="section-orders">
+            <div class="page-header">
+                <h1>🛍️ الطلبات</h1>
+                <p>إدارة طلبات متجرك</p>
+            </div>
+            <div class="settings-card" style="min-height: 400px; padding: 0;">
+                <iframe id="iframe-orders" src="" style="width:100%; height:800px; border:none; border-radius: 16px;"></iframe>
+            </div>
+        </div>
+
+        <!-- Handoff Section -->
+        <div class="section" id="section-handoff" style="height: 100vh;">
+            <iframe id="iframe-handoff" src="" style="width:100%; height:100%; border:none;"></iframe>
+        </div>
+
+        <!-- Chat Demo Section -->
+        <div class="section" id="section-chat_demo" style="height: 100vh;">
+            <iframe id="iframe-chat_demo" src="" style="width:100%; height:100%; border:none;"></iframe>
+        </div>
+
+        <!-- Bulk Import Section -->
+        <div class="section" id="section-bulk_import" style="height: 100vh;">
+            <iframe id="iframe-bulk_import" src="" style="width:100%; height:100%; border:none;"></iframe>
         </div>
 
         <!-- Meta Integration Section -->
@@ -636,6 +667,7 @@
         const API_BASE = '/dashboard/api';
         let accessToken = localStorage.getItem('access_token');
         let currentProductPage = 1;
+        window.PRODUCTS_DATA = {};
         let searchTimeout;
 
         // Auth guard
@@ -688,12 +720,39 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(`section-${name}`).classList.add('active');
             document.getElementById(`nav-${name}`).classList.add('active');
+            
+            // Adjust padding for iframes so they take full height
+            const mainContent = document.querySelector('.main-content');
+            if (['orders', 'handoff', 'chat_demo', 'bulk_import'].includes(name)) {
+                mainContent.style.padding = '0';
+            } else {
+                mainContent.style.padding = '30px';
+            }
 
             if (name === 'overview') loadOverview();
             if (name === 'products') loadProducts();
             if (name === 'settings') loadSettings();
             if (name === 'meta') loadMetaSettings();
             if (name === 'notifications') loadNotifications();
+
+            // Load iframes with API Key in localStorage to bypass prompt
+            if (window.STORE_API_KEY) {
+                localStorage.setItem('perfume_api_key', window.STORE_API_KEY);
+                localStorage.setItem('store_api_key', window.STORE_API_KEY);
+            }
+
+            if(name === 'orders' && !document.getElementById('iframe-orders').getAttribute('src')) {
+                document.getElementById('iframe-orders').src = "/api/orders/";
+            }
+            if(name === 'handoff' && !document.getElementById('iframe-handoff').getAttribute('src')) {
+                document.getElementById('iframe-handoff').src = "/api/handoff/";
+            }
+            if(name === 'chat_demo' && !document.getElementById('iframe-chat_demo').getAttribute('src')) {
+                document.getElementById('iframe-chat_demo').src = "/api/demo/";
+            }
+            if(name === 'bulk_import' && !document.getElementById('iframe-bulk_import').getAttribute('src')) {
+                document.getElementById('iframe-bulk_import').src = "/api/import/";
+            }
         }
 
         function logout() {
@@ -760,6 +819,7 @@
         async function loadProducts(page = 1, append = false) {
             const search = document.getElementById('product-search').value;
             currentProductPage = page;
+            if(!window.PRODUCTS_DATA) window.PRODUCTS_DATA = {};
 
             try {
                 const res = await authFetch(`${API_BASE}/products/?page=${page}&search=${encodeURIComponent(search)}`);
@@ -774,6 +834,7 @@
                 }
 
                 data.products.forEach(p => {
+                    window.PRODUCTS_DATA[p.id] = p;
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><strong>${p.name}</strong></td>
@@ -781,6 +842,10 @@
                         <td>${p.gender === 'male' ? '👨 رجالي' : p.gender === 'female' ? '👩 نسائي' : '🧑 يونيسكس'}</td>
                         <td>${p.oil_stock_grams}g</td>
                         <td><span class="${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'نشط' : 'غير نشط'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -937,6 +1002,202 @@
 
         // Initial load
         loadOverview();
-    </script>
+    
+        function openEditModal(id) {
+            const p = window.PRODUCTS_DATA[id];
+            document.getElementById('edit-product-id').value = id;
+            document.getElementById('edit-product-name').value = p.name;
+            document.getElementById('edit-product-stock').value = p.oil_stock_grams;
+            document.getElementById('edit-product-desc').value = p.description || '';
+            document.getElementById('edit-product-top').value = p.top_notes || '';
+            document.getElementById('edit-product-mid').value = p.middle_notes || '';
+            document.getElementById('edit-product-base').value = p.base_notes || '';
+            document.getElementById('edit-product-season').value = p.season || '';
+            document.getElementById('edit-product-occasion').value = p.occasion || '';
+            document.getElementById('edit-product-longevity').value = p.longevity || '';
+            document.getElementById('edit-product-projection').value = p.projection || '';
+            document.getElementById('edit-product-concentration').value = p.concentration || '';
+            document.getElementById('edit-product-conc-perc').value = p.concentration_percentage || 30;
+            
+            const vContainer = document.getElementById('edit-variants-container');
+            vContainer.innerHTML = '';
+            
+            if(p.variants && p.variants.length > 0) {
+                p.variants.forEach(v => {
+                    vContainer.innerHTML += `
+                        <div class="variant-edit-row" data-id="${v.id}" style="display:flex; gap:8px; margin-bottom:8px;">
+                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); color:white; border-radius:6px; text-align:center;">
+                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; border-radius:6px;">
+                        </div>
+                    `;
+                });
+            } else {
+                vContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem;">لا توجد أحجام مسجلة لهذا المنتج</div>';
+            }
+            
+            document.getElementById('edit-product-modal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-product-modal').style.display = 'none';
+        }
+
+        async function saveProductEdit() {
+            const id = document.getElementById('edit-product-id').value;
+            const name = document.getElementById('edit-product-name').value;
+            const stock = document.getElementById('edit-product-stock').value;
+            const desc = document.getElementById('edit-product-desc').value;
+            const top = document.getElementById('edit-product-top').value;
+            const mid = document.getElementById('edit-product-mid').value;
+            const base = document.getElementById('edit-product-base').value;
+            const season = document.getElementById('edit-product-season').value;
+            const occasion = document.getElementById('edit-product-occasion').value;
+            const longevity = document.getElementById('edit-product-longevity').value;
+            const projection = document.getElementById('edit-product-projection').value;
+            const concentration = document.getElementById('edit-product-concentration').value;
+            const conc_perc = document.getElementById('edit-product-conc-perc').value;
+            
+            const variants = [];
+            document.querySelectorAll('.variant-edit-row').forEach(row => {
+                variants.push({
+                    id: row.getAttribute('data-id'),
+                    price: row.querySelector('.var-price').value
+                });
+            });
+
+            try {
+                const res = await fetch(`/dashboard/api/products/${id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        oil_stock_grams: stock,
+                        description: desc,
+                        top_notes: top,
+                        middle_notes: mid,
+                        base_notes: base,
+                        season: season,
+                        occasion: occasion,
+                        longevity: longevity,
+                        projection: projection,
+                        concentration: concentration,
+                        concentration_percentage: conc_perc,
+                        variants: variants
+                    })
+                });
+
+                if(res.ok) {
+                    showToast('تم تحديث المنتج بنجاح');
+                    closeEditModal();
+                    loadProducts(true); // reload list
+                } else {
+                    showToast('فشل في التحديث');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('حدث خطأ');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+            try {
+                const res = await fetch(`/dashboard/api/products/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                if(res.ok) {
+                    showToast('تم حذف المنتج');
+                    loadProducts(1);
+                } else {
+                    showToast('فشل الحذف');
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+</script>
+
+    <!-- Edit Product Modal -->
+    <div id="edit-product-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:var(--bg-color); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-bottom:20px;">تعديل المنتج</h2>
+            <input type="hidden" id="edit-product-id">
+            
+            <div style="display:flex; gap:15px;">
+                <div class="form-group" style="margin-bottom:15px; flex:1;">
+                    <label>الاسم</label>
+                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1;">
+                    <label>مخزون الزيت العام (جرام)</label>
+                    <input type="number" id="edit-product-stock" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>الوصف</label>
+                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="margin-bottom:15px; flex:1;">
+                    <label>افتتاحية العطر</label>
+                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1;">
+                    <label>قلب العطر</label>
+                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1;">
+                    <label>قاعدة العطر</label>
+                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>الموسم</label>
+                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>المناسبة</label>
+                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>الثبات</label>
+                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>الفوحان</label>
+                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>التركيز</label>
+                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
+                    <label>نسبة الزيت %</label>
+                    <input type="number" id="edit-product-conc-perc" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>تعديل أسعار الأحجام (Variants)</label>
+                <div id="edit-variants-container" style="max-height:150px; overflow-y:auto; padding-right:5px;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer;">إلغاء</button>
+                <button onclick="saveProductEdit()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer;">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

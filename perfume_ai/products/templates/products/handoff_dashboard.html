@@ -347,7 +347,8 @@
 
         let activeConversationId = null;
         let activeConversationPlatform = null;
-        let lastMessageCount = 0;
+        let lastConversationsJSON = "";
+        let lastMessagesJSON = "";
 
         const platformConfig = {
             whatsapp:  { icon: 'fab fa-whatsapp',       label: 'واتساب',    css: 'whatsapp' },
@@ -374,6 +375,10 @@
                 if(!res.ok) return;
                 const data = await res.json();
                 
+                const currentJSON = JSON.stringify(data.conversations);
+                if (currentJSON === lastConversationsJSON) return;
+                lastConversationsJSON = currentJSON;
+                
                 const list = document.getElementById('conv-list');
                 list.innerHTML = '';
                 
@@ -384,7 +389,12 @@
                 data.conversations.forEach(conv => {
                     const div = document.createElement('div');
                     div.className = `conv-item ${activeConversationId === conv.id ? 'active' : ''}`;
-                    div.onclick = () => openConversation(conv.id, conv.platform);
+                    // Update active item immediately on click without waiting for fetch
+                    div.onclick = () => {
+                        document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+                        div.classList.add('active');
+                        openConversation(conv.id, conv.platform);
+                    };
                     
                     div.innerHTML = `
                         <div class="conv-header">
@@ -401,6 +411,7 @@
         }
 
         async function openConversation(id, platform) {
+            if (activeConversationId === id) return; // Ignore clicking the same chat
             activeConversationId = id;
             activeConversationPlatform = platform;
             document.getElementById('no-selection').style.display = 'none';
@@ -409,11 +420,12 @@
             document.getElementById('current-platform-badge').innerHTML = getPlatformBadgeHTML(platform);
             document.getElementById('btn-resolve').style.display = 'block';
             
-            // Highlight sidebar
-            fetchConversations();
+            // Clear messages instantly and show loading state
+            const msgContainer = document.getElementById('chat-messages');
+            msgContainer.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top:20px;">جاري تحميل المحادثة... <i class="fas fa-circle-notch fa-spin"></i></div>';
             
-            // Fetch messages immediately
-            lastMessageCount = 0;
+            // Reset JSON cache to force re-render
+            lastMessagesJSON = "";
             await fetchMessages();
         }
 
@@ -427,26 +439,31 @@
                 if(!res.ok) return;
                 const data = await res.json();
                 
-                // Only update DOM if new messages arrived
-                if (data.messages.length > lastMessageCount) {
-                    const msgContainer = document.getElementById('chat-messages');
-                    msgContainer.innerHTML = '';
-                    
-                    data.messages.forEach(msg => {
-                        const div = document.createElement('div');
-                        div.className = `message ${msg.role}`;
-                        // Add line breaks
-                        const formattedContent = msg.content.replace(/\\n/g, '<br>');
-                        div.innerHTML = `
-                            <div>${formattedContent}</div>
-                            <div class="message-time">${formatDate(msg.created_at)}</div>
-                        `;
-                        msgContainer.appendChild(div);
-                    });
-                    
-                    msgContainer.scrollTop = msgContainer.scrollHeight;
-                    lastMessageCount = data.messages.length;
+                const currentJSON = JSON.stringify(data.messages);
+                if (currentJSON === lastMessagesJSON) return;
+                lastMessagesJSON = currentJSON;
+                
+                const msgContainer = document.getElementById('chat-messages');
+                msgContainer.innerHTML = '';
+                
+                if (data.messages.length === 0) {
+                    msgContainer.innerHTML = '<div style="text-align:center; color: #94a3b8; margin-top:20px;">لا توجد رسائل سابقة.</div>';
                 }
+
+                data.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role}`;
+                    // Add line breaks
+                    const formattedContent = msg.content ? msg.content.replace(/\\n/g, '<br>') : '';
+                    div.innerHTML = `
+                        <div>${formattedContent}</div>
+                        <div class="message-time">${formatDate(msg.created_at)}</div>
+                    `;
+                    msgContainer.appendChild(div);
+                });
+                
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+                
             } catch(e) {
                 console.error("Error fetching messages", e);
             }
@@ -463,15 +480,20 @@
             
             // Optimistically add message
             const msgContainer = document.getElementById('chat-messages');
+            
+            // If it was empty, clear the "no messages" text
+            if (msgContainer.innerHTML.includes('لا توجد رسائل سابقة')) {
+                msgContainer.innerHTML = '';
+            }
+            
             const div = document.createElement('div');
             div.className = `message assistant`;
             div.innerHTML = `
-                <div>${text}</div>
+                <div>${text.replace(/\\n/g, '<br>')}</div>
                 <div class="message-time">الآن (أنت)</div>
             `;
             msgContainer.appendChild(div);
             msgContainer.scrollTop = msgContainer.scrollHeight;
-            lastMessageCount++; // To avoid flicker
 
             try {
                 await fetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
@@ -483,6 +505,8 @@
                     body: JSON.stringify({ message: text })
                 });
                 
+                // Reset JSON cache to force update on next fetch
+                lastMessagesJSON = "";
                 fetchMessages();
             } catch(e) {
                 console.error("Error sending message", e);
@@ -510,17 +534,19 @@
                 document.getElementById('no-selection').style.display = 'flex';
                 document.getElementById('chat-area').style.display = 'none';
                 
+                // Force update on conversations
+                lastConversationsJSON = "";
                 fetchConversations();
             } catch(e) {
                 console.error("Error resolving conversation", e);
             }
         }
 
-        // Poll every 3 seconds
+        // Poll every 10 seconds to avoid hitting rate limits (429)
         setInterval(() => {
             fetchConversations();
             fetchMessages();
-        }, 3000);
+        }, 10000);
 
         // Initial load
         fetchConversations();

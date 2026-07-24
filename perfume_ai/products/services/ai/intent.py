@@ -25,6 +25,7 @@ Schema:
 
 Rules:
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
+- If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), map it exactly to 'male', 'female', or 'unisex'.
 - If the user asks for a perfume similar to a specific known perfume (e.g. "عايز حاجة زي كريد" or "بديل سوفاج"), use your general knowledge to extract the main olfactory notes of that famous perfume and put them in the 'notes' array (e.g. ["pineapple", "birch"] or ["ambroxan", "citrus"]). ALSO, set 'exclude_name' to the name of that perfume so we don't recommend the exact same one back. Do NOT put the famous perfume's name in the 'brand' field unless the user explicitly wants to buy from that brand.
 - If the user asks for high longevity (e.g. "ثبات عالي", "ثباته يومين"), set 'longevity' to 'long-lasting' or 'eternal'.

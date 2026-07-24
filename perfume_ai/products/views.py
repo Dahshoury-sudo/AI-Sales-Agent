@@ -13,7 +13,7 @@ from .models import Product, ConversationEvaluation, Order, Conversation
 from .serializers import ProductSerializer
 from .auth import StoreAPIKeyAuthentication
 from .services.router import route
-from .throttles import ChatThrottle
+from .throttles import ChatThrottle, StoreKeyThrottle
 
 from .services.conversation_service import (
     create_conversation,
@@ -338,6 +338,7 @@ class HandoffDashboardView(TemplateView):
 
 class HandoffConversationsAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [StoreKeyThrottle]
 
     def get(self, request):
         store = request.store
@@ -357,6 +358,7 @@ class HandoffConversationsAPIView(APIView):
 
 class HandoffMessagesAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [StoreKeyThrottle]
 
     def get(self, request, conversation_id):
         store = request.store
@@ -382,6 +384,7 @@ class HandoffMessagesAPIView(APIView):
 
 class HandoffReplyAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
         store = request.store
@@ -408,6 +411,7 @@ class HandoffReplyAPIView(APIView):
 
 class HandoffResolveAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
         store = request.store

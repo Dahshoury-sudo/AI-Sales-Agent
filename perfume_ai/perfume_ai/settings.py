@@ -193,3 +193,5 @@ if SENTRY_DSN and not DEBUG:
         traces_sample_rate=0.2,
         send_default_pii=False,
     )
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

@@ -21,10 +21,11 @@ Available Perfumes in Database:
 {product_names}
 
 Rules:
-1. Translate Arabic names and fix spelling mistakes (e.g., 'بلو شانيل' -> 'Bleu de Chanel').
-2. Check if the requested perfumes exist in the Available Perfumes list.
-3. If the perfumes exist in the list, return their exact names from the list.
-4. CRITICAL: If a requested perfume is NOT in the list, ignore it. Do NOT return a different perfume just because they share the same brand.
+1. Translate Arabic names to English and fix spelling mistakes to match the exact names in the database.
+2. Be HIGHLY tolerant of phonetic Arabic transliterations and typos (e.g., 'فريساتشي يورس' or 'ايروس' -> 'Versace Eros', 'ديور سيفاج' -> 'Dior Sauvage').
+3. Check if the requested perfumes exist in the Available Perfumes list.
+4. If the perfumes exist in the list, return their exact names from the list.
+5. CRITICAL: If a requested perfume is absolutely NOT in the list, ignore it. Do NOT return a different perfume just because they share the same brand.
 
 Output format MUST be valid JSON:
 {{"perfumes": ["Exact Name 1", "Exact Name 2"]}}  (Return an empty list if none found)
