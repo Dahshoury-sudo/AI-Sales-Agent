@@ -2,12 +2,13 @@ from .client import chat
 
 
 def classify(message: str, history=None):
+    import json
     system_prompt = """
 You are a request classifier.
 
 Read the conversation history (if any), but ONLY classify the user's LATEST message.
 
-Return ONLY one of these words that best describes the user's latest request:
+Return ONLY a JSON object with a single key "intent" whose value is EXACTLY one of these words that best describes the user's latest request:
 
 recommendation: asking for suggestions or a perfume that matches some criteria.
 product_info: asking for details, PRICE, ingredients, or info of a SPECIFIC perfume (e.g. "سعر سوفاج", "عامل كام", "بكام ده").
@@ -50,6 +51,10 @@ CRITICAL: If the user insults the bot or uses bad words (e.g., "غبي", "زفت
         "content": message
     })
 
-    response = chat(messages)
-
-    return response.strip().lower()
+    try:
+        response = chat(messages, response_format={"type": "json_object"})
+        data = json.loads(response)
+        return data.get("intent", "").strip().lower()
+    except Exception:
+        # Fallback gracefully
+        return "faq"
