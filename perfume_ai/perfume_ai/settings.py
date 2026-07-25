@@ -29,6 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
+OPENAI_TEMPERATURE = float(os.environ.get("OPENAI_TEMPERATURE", 1.0))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Set DEBUG=True in .env for development

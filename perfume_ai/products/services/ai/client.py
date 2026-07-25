@@ -6,7 +6,10 @@ client = OpenAI(
 )
 
 
-def chat(messages, temperature=0.15, response_format=None):
+def chat(messages, temperature=None, response_format=None):
+    if temperature is None:
+        temperature = getattr(settings, 'OPENAI_TEMPERATURE', 1)
+        
     kwargs = {
         "model": settings.OPENAI_MODEL,
         "messages": messages,
