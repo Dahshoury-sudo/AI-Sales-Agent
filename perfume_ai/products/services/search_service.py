@@ -30,20 +30,18 @@ def search_products(intent, store=None):
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:
         base = base.filter(brand__name__icontains=brand)
-    if longevity:
-        base = base.filter(longevity__icontains=longevity)
-    if projection:
-        base = base.filter(projection__icontains=projection)
 
-
-    # Soft filter: occasion
+    # Soft filters: occasion, longevity, projection
+    soft_filters = base
     if occasion:
-        with_occasion = base.filter(occasion__icontains=occasion)
-    else:
-        with_occasion = base
+        soft_filters = soft_filters.filter(occasion__icontains=occasion)
+    if longevity:
+        soft_filters = soft_filters.filter(longevity__icontains=longevity)
+    if projection:
+        soft_filters = soft_filters.filter(projection__icontains=projection)
 
     # Tier 1: All filters (occasion + notes + price)
-    exact = with_occasion
+    exact = soft_filters
     for note in notes:
         exact = exact.filter(
             Q(top_notes__icontains=note) |
