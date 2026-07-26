@@ -312,6 +312,34 @@
 
         .required { color: #f87171; font-weight: 700; }
         .optional { color: #6b7280; }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+            .step-card {
+                padding: 20px;
+            }
+            .upload-zone {
+                padding: 25px 15px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+            .columns-table th, .columns-table td {
+                white-space: nowrap;
+            }
+        }
     </style>
 </head>
 <body>
@@ -341,29 +369,31 @@
 
             <details style="margin-top: 16px; cursor: pointer;">
                 <summary style="color: #a78bfa; font-weight: 600;">📋 شرح الأعمدة</summary>
-                <table class="columns-table">
-                    <tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th></tr>
-                    <tr><td>name</td><td>اسم العطر</td><td class="required">✅ مطلوب</td></tr>
-                    <tr><td>brand</td><td>اسم البراند</td><td class="required">✅ مطلوب</td></tr>
-                    <tr><td>category</td><td>التصنيف (مثلاً: Perfume)</td><td class="optional">اختياري</td></tr>
-                    <tr><td>gender</td><td>male / female / unisex</td><td class="optional">اختياري (الافتراضي: unisex)</td></tr>
-                    <tr><td>season</td><td>الموسم المناسب</td><td class="optional">اختياري</td></tr>
-                    <tr><td>occasion</td><td>المناسبة</td><td class="optional">اختياري</td></tr>
-                    <tr><td>longevity</td><td>مدة الثبات</td><td class="optional">اختياري</td></tr>
-                    <tr><td>projection</td><td>قوة الانتشار</td><td class="optional">اختياري</td></tr>
-                    <tr><td>concentration</td><td>التركيز (EDP, EDT...)</td><td class="optional">اختياري</td></tr>
-                    <tr><td>top_notes</td><td>النوتات العلوية</td><td class="optional">اختياري</td></tr>
-                    <tr><td>middle_notes</td><td>النوتات الوسطى</td><td class="optional">اختياري</td></tr>
-                    <tr><td>base_notes</td><td>النوتات القاعدية</td><td class="optional">اختياري</td></tr>
-                    <tr><td>description</td><td>وصف العطر</td><td class="optional">اختياري</td></tr>
-                    <tr><td>oil_stock_grams</td><td>رصيد الزيت بالجرامات</td><td class="optional">اختياري</td></tr>
-                    <tr><td>concentration_percentage</td><td>نسبة تركيز الزيت (الافتراضي: 30%)</td><td class="optional">اختياري</td></tr>
-                    <tr><td>norm_vol_1, norm_price_1</td><td>حجم/سعر تعبئة المحل 1</td><td class="optional">اختياري</td></tr>
-                    <tr><td>norm_vol_2, norm_price_2</td><td>حجم/سعر تعبئة المحل 2</td><td class="optional">اختياري</td></tr>
-                    <tr><td>norm_vol_3, norm_price_3</td><td>حجم/سعر تعبئة المحل 3</td><td class="optional">اختياري</td></tr>
-                    <tr><td>orig_vol_1, orig_price_1, orig_stock_1</td><td>حجم/سعر/رصيد الأوريجينال 1</td><td class="optional">اختياري</td></tr>
-                    <tr><td>orig_vol_2, orig_price_2, orig_stock_2</td><td>حجم/سعر/رصيد الأوريجينال 2</td><td class="optional">اختياري</td></tr>
-                </table>
+                <div class="table-responsive">
+                    <table class="columns-table">
+                        <tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th></tr>
+                        <tr><td>name</td><td>اسم العطر</td><td class="required">✅ مطلوب</td></tr>
+                        <tr><td>brand</td><td>اسم البراند</td><td class="required">✅ مطلوب</td></tr>
+                        <tr><td>category</td><td>التصنيف (مثلاً: Perfume)</td><td class="optional">اختياري</td></tr>
+                        <tr><td>gender</td><td>male / female / unisex</td><td class="optional">اختياري (الافتراضي: unisex)</td></tr>
+                        <tr><td>season</td><td>الموسم المناسب</td><td class="optional">اختياري</td></tr>
+                        <tr><td>occasion</td><td>المناسبة</td><td class="optional">اختياري</td></tr>
+                        <tr><td>longevity</td><td>مدة الثبات</td><td class="optional">اختياري</td></tr>
+                        <tr><td>projection</td><td>قوة الانتشار</td><td class="optional">اختياري</td></tr>
+                        <tr><td>concentration</td><td>التركيز (EDP, EDT...)</td><td class="optional">اختياري</td></tr>
+                        <tr><td>top_notes</td><td>النوتات العلوية</td><td class="optional">اختياري</td></tr>
+                        <tr><td>middle_notes</td><td>النوتات الوسطى</td><td class="optional">اختياري</td></tr>
+                        <tr><td>base_notes</td><td>النوتات القاعدية</td><td class="optional">اختياري</td></tr>
+                        <tr><td>description</td><td>وصف العطر</td><td class="optional">اختياري</td></tr>
+                        <tr><td>oil_stock_grams</td><td>رصيد الزيت بالجرامات</td><td class="optional">اختياري</td></tr>
+                        <tr><td>concentration_percentage</td><td>نسبة تركيز الزيت (الافتراضي: 30%)</td><td class="optional">اختياري</td></tr>
+                        <tr><td>norm_vol_1, norm_price_1</td><td>حجم/سعر تعبئة المحل 1</td><td class="optional">اختياري</td></tr>
+                        <tr><td>norm_vol_2, norm_price_2</td><td>حجم/سعر تعبئة المحل 2</td><td class="optional">اختياري</td></tr>
+                        <tr><td>norm_vol_3, norm_price_3</td><td>حجم/سعر تعبئة المحل 3</td><td class="optional">اختياري</td></tr>
+                        <tr><td>orig_vol_1, orig_price_1, orig_stock_1</td><td>حجم/سعر/رصيد الأوريجينال 1</td><td class="optional">اختياري</td></tr>
+                        <tr><td>orig_vol_2, orig_price_2, orig_stock_2</td><td>حجم/سعر/رصيد الأوريجينال 2</td><td class="optional">اختياري</td></tr>
+                    </table>
+                </div>
             </details>
         </div>
 

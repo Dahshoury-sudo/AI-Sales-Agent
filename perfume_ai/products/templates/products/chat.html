@@ -243,6 +243,18 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        @media (max-width: 768px) {
+            #app {
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+                max-width: 100%;
+            }
+            .message {
+                max-width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
