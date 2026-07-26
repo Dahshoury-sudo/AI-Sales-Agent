@@ -27,7 +27,7 @@ CRITICAL: Even if the user was previously making an order, if their LATEST messa
 CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
 CRITICAL: If the assistant asked if the user wants to change/modify anything in their order (e.g., "في حاجة حابب تعدلها"), and the user replies with "لا", "لا شكرا", or "لا تمام", MUST classify as "order" because they want to proceed with confirmation, NOT "order_cancel".
 CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
-CRITICAL: If the user insults the bot or uses bad words (e.g., "غبي", "زفت"), classify as "handoff" so a human can handle the frustrated customer.
+CRITICAL: Do NOT classify insults or bad words (e.g., "غبي", "زفت") as "handoff" UNLESS the user explicitly asks to speak to a human (e.g., "عايز اكلم حد حقيقي"). If the user is just frustrated but in the middle of an order or a conversation, classify based on the current context (e.g., "order" or "product_info"). If it's just an isolated insult, classify as "faq" so the bot can apologize gracefully and continue the sale.
 CRITICAL: If the user replies with a short confirmation (e.g., "اه", "ايوة", "تمام") or denial (e.g., "لا") to a question the assistant just asked in the previous message, YOU MUST look at the assistant's LAST message context. If the assistant offered to provide product details (e.g., "تحب اقولك مناسب لايه"), classify as "product_info". If the assistant offered a recommendation, classify as "recommendation".
 
 🔴 HANDOFF ANTI-LOOP RULES (VERY IMPORTANT):
