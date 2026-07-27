@@ -690,10 +690,37 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Responsive */
+        /* Responsive — Laptop (small screens ≤ 1366px) */
+        @media (max-width: 1366px) {
+            #dashboard { padding: 20px; }
+            .stat-card { padding: 16px 18px; }
+            .stat-card .stat-value { font-size: 1.7rem; }
+            .orders-table thead th { padding: 12px 14px; font-size: 0.74rem; }
+            .orders-table tbody td { padding: 12px 14px; font-size: 0.88rem; }
+            .modal { max-width: 560px; }
+        }
+
+        /* Responsive — Small laptop / large tablet (≤ 1024px) */
+        @media (max-width: 1024px) {
+            #dashboard { padding: 16px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .stat-card .stat-value { font-size: 1.5rem; }
+            .dashboard-header h1 { font-size: 1.2rem; }
+            .filter-bar { gap: 8px; }
+            .filter-btn { padding: 6px 14px; font-size: 0.82rem; }
+            .search-input { min-width: 150px; }
+            .orders-table thead th { padding: 10px 12px; }
+            .orders-table tbody td { padding: 10px 12px; font-size: 0.85rem; }
+            .modal { max-width: 500px; }
+            .modal-header { padding: 18px 22px 14px; }
+            .modal-body { padding: 18px 22px; }
+        }
+
+        /* Responsive — Mobile (≤ 768px) */
         @media (max-width: 768px) {
             #dashboard { padding: 16px; }
             .dashboard-header { flex-direction: column; align-items: flex-start; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
             .orders-table thead { display: none; }
             .orders-table tbody tr {
                 display: flex;
@@ -715,6 +742,18 @@
                 letter-spacing: 0.5px;
             }
             .stat-card .stat-value { font-size: 1.5rem; }
+            .modal { max-width: 95%; border-radius: 18px; }
+            .modal-header { padding: 16px 18px 12px; }
+            .modal-body { padding: 16px 18px; }
+            .filter-bar { gap: 6px; }
+            .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
+        }
+
+        /* Responsive — Small mobile (≤ 480px) */
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .stat-card .stat-value { font-size: 1.3rem; }
+            .login-card { padding: 32px 24px; }
         }
     </style>
 </head>
@@ -749,6 +788,7 @@
             </div>
         </div>
         <button class="btn-logout" id="btn-logout" onclick="logout()">🚪 تسجيل خروج</button>
+        <span id="orders-last-updated" style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-right:10px;"></span>
     </div>
 
     <!-- Stats -->
@@ -1090,6 +1130,90 @@
             console.error('Error changing status:', err);
         }
     }
+
+    // ═══ Background Polling ═══
+
+    // ID of the order currently open in the modal (null = closed)
+    let _openModalOrderId = null;
+
+    // Track modal open/close to avoid re-rendering while user is editing
+    const _origOpenModal  = openModal;
+    const _origCloseModal = closeModal;
+    openModal  = function(id)  { _openModalOrderId = id;   _origOpenModal(id);  };
+    closeModal = function()    { _openModalOrderId = null; _origCloseModal();   };
+
+    // Update the "last updated" timestamp in the UI
+    function _setLastUpdated() {
+        const el = document.getElementById('orders-last-updated');
+        if (el) el.textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-EG');
+    }
+
+    // Silent fetch: pull fresh orders from server & merge
+    async function _fetchOrders() {
+        if (!API_KEY) return; // Not logged in yet
+        try {
+            const res = await fetch('/api/orders/dashboard/', {
+                headers: { 'X-API-Key': API_KEY }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const newOrders = data.orders || [];
+
+            // Detect if anything actually changed (by comparing JSON length / new IDs)
+            const hadChange = (
+                newOrders.length !== ALL_ORDERS.length ||
+                newOrders.some(n => !ALL_ORDERS.find(o => o.id === n.id && o.status === n.status))
+            );
+
+            ALL_ORDERS = newOrders;
+
+            if (hadChange) {
+                renderStats();
+                filterOrders();
+
+                // If modal is open, refresh it with updated data
+                if (_openModalOrderId !== null) {
+                    _origOpenModal(_openModalOrderId);
+                }
+            }
+
+            _setLastUpdated();
+        } catch (e) {
+            // Silent fail — network error during polling shouldn't crash the page
+        }
+    }
+
+    // Start polling every 30 seconds (same interval as notifications)
+    function _startOrdersPolling() {
+        setInterval(_fetchOrders, 30_000);
+    }
+
+    // Kick off polling after successful login (patching login form submit)
+    const _loginForm = document.getElementById('login-form');
+    const _origLoginSubmit = _loginForm.onsubmit;
+    // We use a flag to start polling only once after first successful auth
+    let _pollingStarted = false;
+
+    // Wrap the existing login flow to hook in polling start
+    const _origLoginHandler = _loginForm._loginHandler;
+    document.addEventListener('dashboardReady', () => {
+        if (!_pollingStarted) {
+            _pollingStarted = true;
+            _startOrdersPolling();
+        }
+    });
+
+    // Patch renderOrders to fire a custom event so polling starts after login
+    const _origRenderOrders = renderOrders;
+    renderOrders = function(orders) {
+        _origRenderOrders(orders);
+        if (!_pollingStarted && API_KEY) {
+            _pollingStarted = true;
+            _startOrdersPolling();
+            _setLastUpdated();
+        }
+    };
 </script>
 
 </body>
