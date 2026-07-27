@@ -29,6 +29,7 @@ CRITICAL: If the assistant asked if the user wants to change/modify anything in 
 CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
 CRITICAL: Do NOT classify insults or bad words (e.g., "غبي", "زفت") as "handoff" UNLESS the user explicitly asks to speak to a human (e.g., "عايز اكلم حد حقيقي"). If the user is just frustrated but in the middle of an order or a conversation, classify based on the current context (e.g., "order" or "product_info"). If it's just an isolated insult, classify as "faq" so the bot can apologize gracefully and continue the sale.
 CRITICAL: If the user replies with a short confirmation (e.g., "اه", "ايوة", "تمام") or denial (e.g., "لا") to a question the assistant just asked in the previous message, YOU MUST look at the assistant's LAST message context. If the assistant offered to provide product details (e.g., "تحب اقولك مناسب لايه"), classify as "product_info". If the assistant offered a recommendation, classify as "recommendation".
+CRITICAL: If the user asks about suppliers, oil manufacturers, trade secrets, or companies like "لوزي", "أرجفيل", "جيفودان", "مان", MUST classify as "faq", NOT "recommendation", even if they use words like "ترشيح" or "أحسن".
 
 🔴 HANDOFF ANTI-LOOP RULES (VERY IMPORTANT):
 - If the assistant ALREADY handed off the conversation to a human (e.g. the last assistant message says "تم تحويل المحادثة" or similar), and the user sends a NEW message:
