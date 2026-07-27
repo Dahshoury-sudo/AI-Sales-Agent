@@ -56,13 +56,13 @@ Return ONLY valid JSON in this format:
                 req_oil = (v.volume * product.concentration_percentage) / 100
                 is_available = product.oil_stock_grams >= req_oil
                 status = 'متوفر' if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة تعبئة {v.volume}ml: {v.price} EGP ({status})")
+                variants_str_list.append(f"- زجاجة تعبئة {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
                     all_out_of_stock = False
             elif v.bottle_type == 'original':
                 is_available = (v.stock or 0) > 0
                 status = f"متوفر ({v.stock} زجاجة)" if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة أوريجينال {v.volume}ml: {v.price} EGP ({status})")
+                variants_str_list.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
                     all_out_of_stock = False
         
@@ -112,8 +112,9 @@ Description: {product.description}
 1. قارن بين العطرين بشكل مختصر وواضح.
 2. اذكر الفروقات الرئيسية (السعر، الثبات، المناسبة، النوع).
 3. انصح العميل أي واحد يناسبه أكتر بناءً على ذوقه أو سؤاله.
-4. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
-5. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
+4. ⭐ نظّم شكل المقارنة عشان تكون سهلة القراءة (استخدم نقاط ومسافات). افصل أسعار وأحجام كل عطر في سطر لوحده لتجنب تداخل الكلام الإنجليزي مع العربي (ممنوع تحط أسعار العطرين جنب بعض في نفس السطر).
+5. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
+6. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
 """
     })
 

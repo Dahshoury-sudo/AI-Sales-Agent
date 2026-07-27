@@ -15,13 +15,13 @@ def _format_products(products):
                 req_oil = (v.volume * product.concentration_percentage) / 100
                 is_available = product.oil_stock_grams >= req_oil
                 status = 'متوفر' if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة تعبئة {v.volume}ml: {v.price} EGP ({status})")
+                variants_str_list.append(f"- زجاجة تعبئة {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
                     all_out_of_stock = False
             elif v.bottle_type == 'original':
                 is_available = (v.stock or 0) > 0
                 status = f"متوفر ({v.stock} زجاجة)" if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة أوريجينال {v.volume}ml: {v.price} EGP ({status})")
+                variants_str_list.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
                     all_out_of_stock = False
         variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
@@ -85,7 +85,7 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 1. اختر أفضل 1-2 منتج من القائمة يناسب طلب العميل.
 2. اشرح في جملة أو اتنين ليه المنتج ده يناسبه.
 3. ⭐ لكل منتج تذكره، لازم تذكر **كل الأحجام والأسعار المتاحة** — ممنوع تختار حجم واحد وتسيب الباقي. اكتبهم بالشكل ده:
-   "متوفر بأحجام: الـ 40ml بـ 400 جنيه، والـ 70ml بـ 600 جنيه، والـ 130ml بـ 900 جنيه"
+   "متوفر بأحجام: الـ 40 ملي بـ 400 جنيه، والـ 70 ملي بـ 600 جنيه، والـ 130 ملي بـ 900 جنيه"
    (يعني في سطر واحد مفصولين بفاصلة، مش قائمة تحت بعض).
 4. لو طلب العميل عام/غير محدد، اسأله سؤال ذكي عشان تضيّق الخيارات (مثلاً: بتحب الفريش ولا الخشبي؟).
 5. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
@@ -110,7 +110,7 @@ def recommend(message, products, history=None, alternatives=None, store=None):
 1. ❌ إياك أن تقول للعميل "لا يوجد" أو "مفيش عطر مطابق لطلبك" أو "للأسف". البائع الماهر يركز على بيع الموجود والمتاح.
 2. ادخل في صلب الموضوع فوراً ورشح أفضل 1-2 منتج من القائمة وكأنها صنعت خصيصاً لطلبه.
 3. اشرح بشكل جذاب ومقنع لماذا هذه العطور تناسب طلبه.
-4. ⭐ لكل منتج تذكره، لازم تذكر **كل الأحجام والأسعار المتاحة** في سطر واحد مفصولين بفاصلة (مثال: "الـ 40ml بـ 400 جنيه، والـ 70ml بـ 600 جنيه") — ممنوع تختار حجم واحد وتسيب الباقي.
+4. ⭐ لكل منتج تذكره، لازم تذكر **كل الأحجام والأسعار المتاحة** في سطر واحد مفصولين بفاصلة (مثال: "الـ 40 ملي بـ 400 جنيه، والـ 70 ملي بـ 600 جنيه") — ممنوع تختار حجم واحد وتسيب الباقي.
 5. لو في القائمة شيء سعره اقتصادي ومناسب، اذكره كخيار ممتاز.
 6. ❌ ممنوع تذكر أي منتج مش موجود في القائمة أعلاه.
 7. ❌ ممنوع تخترع أي سعر أو معلومة.

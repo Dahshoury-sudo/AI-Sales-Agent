@@ -170,20 +170,20 @@ Return valid JSON in this exact format:
                 req_oil = (selected_variant.volume * product.concentration_percentage) / 100
                 if product.oil_stock_grams < req_oil:
                     if available_normal:
-                        sizes_available = ", ".join([f"{v.volume}ml" for v in available_normal])
-                        return f"للأسف الزيت العطري لـ {product.name} لا يكفي لحجم {selected_variant.volume}ml حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
+                        sizes_available = ", ".join([f"{v.volume} ملي" for v in available_normal])
+                        return f"للأسف الزيت العطري لـ {product.name} لا يكفي لحجم {selected_variant.volume} ملي حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
                     else:
                         return f"للأسف عطر {product.name} (تعبئة) نفد من المخزون حالياً 😔", ""
                 elif product.oil_stock_grams < req_oil * qty:
                     max_qty = int(product.oil_stock_grams / req_oil)
-                    return f"للأسف كمية الزيت المطلوبة من عطر {product.name} ({selected_variant.volume}ml) أكبر من المتوفر في المخزون. المتوفر حالياً يكفي لـ {max_qty} زجاجة فقط. تحب تطلب {max_qty} بدل {qty}؟", ""
+                    return f"للأسف كمية الزيت المطلوبة من عطر {product.name} ({selected_variant.volume} ملي) أكبر من المتوفر في المخزون. المتوفر حالياً يكفي لـ {max_qty} زجاجة فقط. تحب تطلب {max_qty} بدل {qty}؟", ""
             
             elif bottle_type == "original":
                 stock = selected_variant.stock or 0
                 if stock == 0:
-                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} حجم {selected_variant.volume}ml نفدت تماماً.", ""
+                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} حجم {selected_variant.volume} ملي نفدت تماماً.", ""
                 elif stock < qty:
-                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} المتوفرة حالياً {stock} زجاجة فقط من حجم {selected_variant.volume}ml. تحب تطلب {stock} بس؟", ""
+                    return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} المتوفرة حالياً {stock} زجاجة فقط من حجم {selected_variant.volume} ملي. تحب تطلب {stock} بس؟", ""
 
             price = selected_variant.price
             total_price += price * qty
@@ -195,7 +195,7 @@ Return valid JSON in this exact format:
             })
             p_data["name"] = product.name
             bottle_text = " (زجاجة أوريجينال)" if bottle_type == "original" else " (زجاجة المحل)"
-            context_data.append(f"{product.name} ({selected_variant.volume}ml){bottle_text} x {qty} ({price * qty} EGP)")
+            context_data.append(f"{product.name} ({selected_variant.volume} ملي){bottle_text} x {qty} ({price * qty} EGP)")
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 

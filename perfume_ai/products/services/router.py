@@ -158,9 +158,9 @@ def route(message, history=None, store=None, conversation=None):
                 available_variants = []
                 for v in p.variants.all():
                     if v.bottle_type == 'normal' and p.oil_stock_grams >= (v.volume * p.concentration_percentage) / 100:
-                        available_variants.append(f"{v.volume}ml بـ {v.price} جنيه")
+                        available_variants.append(f"{v.volume} ملي بـ {v.price} جنيه")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
-                        available_variants.append(f"{v.volume}ml أوريجينال بـ {v.price} جنيه")
+                        available_variants.append(f"{v.volume} ملي أوريجينال بـ {v.price} جنيه")
                 if available_variants:
                     products_list.append(f"• {p.name} ({', '.join(available_variants)})")
             if products_list:
