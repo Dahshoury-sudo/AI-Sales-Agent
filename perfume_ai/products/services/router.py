@@ -182,6 +182,37 @@ def route(message, history=None, store=None, conversation=None):
 
     if request_type == "recommendation":
         intent = extract_intent(message, history)
+        
+        # Check if gender is missing and not inferable from conversation history
+        if not intent.get("gender"):
+            # Check if gender was mentioned in recent conversation history
+            gender_mentioned = False
+            if history:
+                gender_keywords_male = ["رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي","شبابي","شاب","رجاله"]
+                gender_keywords_female = ["حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي","بنت","بنات"]
+                for msg in history:
+                    content = msg.get("content", "").lower()
+                    if any(kw in content for kw in gender_keywords_male + gender_keywords_female):
+                        gender_mentioned = True
+                        break
+            
+            # Also check the current message
+            msg_lower = message.lower()
+            gender_keywords_all = ["رجالي", "رجالى", "للرجال", "male", "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "يونيسيكس", "unisex", "بناتي", "ولادي"]
+            if any(kw in msg_lower for kw in gender_keywords_all):
+                gender_mentioned = True
+            
+            if not gender_mentioned:
+                # Gender not known — ask the customer first before recommending
+                return handle_general(
+                    f"""العميل بعتلي: "{message}"
+
+العميل ده عايز ترشيح عطر بس مش واضح عايز رجالي ولا حريمي.
+اسأله سؤال واحد مختصر: بتدور على عطر رجالي ولا حريمي؟
+ممنوع ترشح أي عطر قبل ما تعرف الإجابة. سؤال واحد بس ومتطولش.""",
+                    history, store
+                )
+        
         results = search_products(intent, store)
         response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store)
         
