@@ -23,8 +23,12 @@ def get_product_info(message, history=None, store=None):
                     if is_available:
                         all_out_of_stock = False
                 elif v.bottle_type == 'original':
-                    is_available = (v.stock or 0) > 0
-                    status = f"متوفر ({v.stock} زجاجة)" if is_available else '❌ نفد من المخزون'
+                    stock_num = v.stock or 0
+                    is_available = stock_num > 0
+                    if is_available:
+                        status = f"متوفر ({stock_num} زجاجة فقط)" if stock_num <= 3 else "متوفر"
+                    else:
+                        status = '❌ نفد من المخزون'
                     variants_str_list.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP ({status})")
                     if is_available:
                         all_out_of_stock = False

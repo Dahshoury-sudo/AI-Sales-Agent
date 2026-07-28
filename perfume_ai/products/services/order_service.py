@@ -222,12 +222,16 @@ Return valid JSON in this exact format:
     missing_fields = []
     if not name:
         missing_fields.append("الاسم")
-    if not phone:
-        missing_fields.append("رقم الهاتف الأساسي")
-    if not secondary_phone:
-        missing_fields.append("رقم هاتف احتياطي/بديل")
+        
+    if not phone and not secondary_phone:
+        missing_fields.append("رقمين للموبايل")
+    elif not phone:
+        missing_fields.append("رقم الموبايل الأساسي")
+    elif not secondary_phone:
+        missing_fields.append("رقم موبايل بديل")
+        
     if not address:
-        missing_fields.append("عنوان التوصيل بالتفصيل")
+        missing_fields.append("عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل")
 
     # Check for missing quantities, sizes, and bottle types using the original data that passed resolution
     for p in products_data:
