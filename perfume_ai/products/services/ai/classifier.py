@@ -20,6 +20,7 @@ faq: general questions not related to a specific product's info (e.g., shipping,
 handoff: wanting to speak to a human, complaining, or showing frustration (e.g. "عايز اكلم حد حقيقي", "فين خدمة العملاء", "انت بوت").
 out_of_domain: questions entirely unrelated to perfumes, orders, or the store (e.g., programming, politics, medical advice, "مين رئيس امريكا", "اكتبلي كود").
 
+CRITICAL RULE (HIGHEST PRIORITY): If the assistant's LAST message says "تم تأكيد طلبك بنجاح", the order is ALREADY finalized. Therefore, the user's next message MUST NOT be classified as "order" UNLESS they explicitly request a NEW perfume. If they object to the deposit (e.g., "مش عايز ادفع عربون", "الدفع عند الاستلام"), send a payment screenshot, ask about shipping, or complain, classify it as "faq". If they want to cancel, classify as "order_cancel". NEVER classify as "order".
 CRITICAL: If the user is asking about the PRICE ("عامل كام", "سعره كام", "بكام") of a specific perfume, MUST classify it as "product_info".
 CRITICAL: If the user is asking an opinion, detail, or question about a SPECIFIC, NAMED perfume (e.g. "هل عطر كذا حلو", "بتاع افنان ده هيعجب الناس", "ريحته عاملة ايه"), MUST classify it as "product_info".
 CRITICAL: If the user is asking about a BRAND in general without specifying a perfume (e.g. "عندك حاجة من ديور", "براند شانيل"), MUST classify it as "recommendation" to suggest perfumes from that brand.
