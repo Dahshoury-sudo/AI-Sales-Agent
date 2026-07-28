@@ -188,17 +188,17 @@ def route(message, history=None, store=None, conversation=None):
             # Check if gender was mentioned in recent conversation history
             gender_mentioned = False
             if history:
-                gender_keywords_male = ["رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي","شبابي","شاب","رجاله"]
-                gender_keywords_female = ["حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي","بنت","بنات"]
+                gender_keywords_male = ["رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي", "شبابي", "شاب", "رجاله", "عريس", "لصاحبي", "لأخويا", "لأبويا", "لخطيبي", "لجوزي", "لابني", "لعمي", "لخالي", "أنا راجل"]
+                gender_keywords_female = ["حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي", "بنت", "بنات", "عروسة", "عروسه", "لصاحبتي", "لأختي", "لماما", "لخطيبتي", "لمراتي", "لبنتي", "لطنطي", "لخالتي", "أنا بنت"]
                 for msg in history:
-                    content = msg.get("content", "").lower()
+                    content = msg.get("content", "")
                     if any(kw in content for kw in gender_keywords_male + gender_keywords_female):
                         gender_mentioned = True
                         break
             
             # Also check the current message
-            msg_lower = message.lower()
-            gender_keywords_all = ["رجالي", "رجالى", "للرجال", "male", "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "يونيسيكس", "unisex", "بناتي", "ولادي"]
+            msg_lower = message
+            gender_keywords_all = ["رجالي", "رجالى", "للرجال", "male", "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "يونيسيكس", "unisex", "بناتي", "ولادي", "شبابي", "شاب", "رجاله", "عريس", "عروسة", "عروسه", "لصاحبي", "لصاحبتي", "لأخويا", "لأختي", "لأبويا", "لماما", "لخطيبي", "لخطيبتي", "لجوزي", "لمراتي", "لابني", "لبنتي", "أنا راجل", "أنا بنت"]
             if any(kw in msg_lower for kw in gender_keywords_all):
                 gender_mentioned = True
             
