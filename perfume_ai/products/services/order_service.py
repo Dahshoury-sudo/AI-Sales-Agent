@@ -224,7 +224,7 @@ Return valid JSON in this exact format:
         missing_fields.append("الاسم")
         
     if not phone and not secondary_phone:
-        missing_fields.append("رقمين للموبايل")
+        missing_fields.append("رقمين للموبايل واحد اساسي وواحد بديل")
     elif not phone:
         missing_fields.append("رقم الموبايل الأساسي")
     elif not secondary_phone:
@@ -322,7 +322,17 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                 
         logger.info(f"Order #{order.id} created successfully for store '{store.name}'")
         notify_new_order(order)  # Notify store owner in dashboard
-        return f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\nسيقوم فريق المبيعات بالتواصل معك قريباً لتحديد موعد التسليم.", context_str
+        final_message = (
+            f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\n"
+            f"سيقوم فريق المبيعات بالتواصل معك قريباً.\n\n"
+            f"📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n"
+            f"⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n"
+            f"💳 طرق التحويل:\n"
+            f"إنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n"
+            f"(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\n"
+            f"برجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن."
+        )
+        return final_message, context_str
     except Exception as e:
         logger.exception(f"Failed to create order for store '{store.name}': {e}")
         return "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.", ""
