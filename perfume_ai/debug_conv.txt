@@ -1,0 +1,45 @@
+user: اكد
+Internal Context: 
+---
+assistant: آسف حصل لبس في كلامي قبل كده — زجاجات التعبئة عندنا فعلاً متوفرة 50 و90 مل، فالسوفاج 90 مل تعبئة الستور متوفر. تحب أأكد الطلب؟
+Internal Context: 
+---
+assistant: ممتاز! لتأكيد طلبك، أحتاج فقط إلى الاسم الكريم و رقم الهاتف الأساسي و رقم هاتف احتياطي/بديل و عنوان التوصيل بالتفصيل و الكمية المطلوبة من عطر Dior Sauvage.
+Internal Context: 
+---
+user: عايز سوفاج 90 ملي ازازه المحل
+Internal Context: 
+---
+assistant: ممتاز! لتأكيد طلبك، أحتاج فقط إلى الاسم الكريم و رقم الهاتف الأساسي و رقم هاتف احتياطي/بديل و عنوان التوصيل بالتفصيل و الحجم المطلوب من عطر سوفاج (متاح أحجام: 60, 100, 200 مل).
+Internal Context: 
+---
+user: مفيش 90 ملي ؟
+Internal Context: 
+---
+assistant: أيوه متوفر. Dior Sauvage زجاجة تعبئة 90 ملي بـ944.00 EGP. عندنا كمان تعبئة 50 مل بـ642.00 EGP، وأوريجينال 60 مل بـ456.00 EGP، 100 مل بـ815.00 EGP، 200 مل بـ1623.00 EGP. تحب أأكدلك الطلب؟
+Internal Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name: Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Available Sizes & Prices:
+- زجاجة تعبئة 50 ملي: 642.00 EGP (متوفر)
+- زجاجة تعبئة 90 ملي: 944.00 EGP (متوفر)
+- زجاجة أوريجينال 60 ملي: 456.00 EGP (متوفر (18 زجاجة))
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (متوفر (19 زجاجة))
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP (متوفر (14 زجاجة))
+Gender: male
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+---
+user: امال ليه قولت متاح احجام 60 و 100 و200 بس
+Internal Context: 
+---

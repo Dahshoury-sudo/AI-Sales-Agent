@@ -1,0 +1,14 @@
+{
+    "customer_name": "محمد فؤاد احمد",
+    "customer_phone": "01153032052",
+    "shipping_address": "المقطم شارع 9 امام قسم المقطم",
+    "products": [
+        {
+            "name": "سوفاج",
+            "quantity": 1,
+            "volume": 90,
+            "bottle_type": "normal"
+        }
+    ],
+    "is_confirmed": false
+}

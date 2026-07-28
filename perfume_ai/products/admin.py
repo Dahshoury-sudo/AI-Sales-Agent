@@ -105,9 +105,9 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "store", "customer_name", "customer_phone", "total_price", "status", "created_at")
+    list_display = ("id", "store", "customer_name", "customer_phone", "secondary_phone", "total_price", "status", "created_at")
     list_filter = ("store", "status")
-    search_fields = ("customer_name", "customer_phone")
+    search_fields = ("customer_name", "customer_phone", "secondary_phone")
     inlines = [OrderItemInline]
 
 @admin.register(ConversationEvaluation)

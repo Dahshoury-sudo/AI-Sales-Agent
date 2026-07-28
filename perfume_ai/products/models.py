@@ -159,6 +159,7 @@ class Order(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="orders")
     customer_name = models.CharField(max_length=200)
     customer_phone = models.CharField(max_length=50)
+    secondary_phone = models.CharField(max_length=50, blank=True)
     shipping_address = models.TextField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")

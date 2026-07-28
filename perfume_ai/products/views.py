@@ -204,6 +204,7 @@ class OrdersDashboardAPIView(APIView):
                 "id": order.id,
                 "customer_name": order.customer_name,
                 "customer_phone": order.customer_phone,
+                "secondary_phone": order.secondary_phone,
                 "shipping_address": order.shipping_address,
                 "total_price": str(order.total_price),
                 "status": order.status,

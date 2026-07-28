@@ -988,7 +988,7 @@
                 <tr onclick="openModal(${order.id})">
                     <td data-label="رقم الطلب"><span class="order-id">#${order.id}</span></td>
                     <td data-label="العميل"><span class="customer-name">${order.customer_name}</span></td>
-                    <td data-label="الهاتف"><span class="customer-phone">${order.customer_phone}</span></td>
+                    <td data-label="الهاتف"><span class="customer-phone">${order.customer_phone}${order.secondary_phone ? '<br><small style="color:var(--text-dim)">' + order.secondary_phone + '</small>' : ''}</span></td>
                     <td data-label="المنتجات" title="${productsSummary}">${shortProducts || '—'}</td>
                     <td data-label="الإجمالي"><span class="order-total">${parseFloat(order.total_price).toLocaleString()} EGP</span></td>
                     <td data-label="الحالة"><span class="status-badge status-${order.status}">${statusAr[order.status] || order.status}</span></td>
@@ -1046,9 +1046,15 @@
                     <span class="detail-value">${order.customer_name}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">الهاتف</span>
+                    <span class="detail-label">الهاتف الأساسي</span>
                     <span class="detail-value phone">${order.customer_phone}</span>
                 </div>
+                ${order.secondary_phone ? `
+                <div class="detail-row">
+                    <span class="detail-label">الهاتف الاحتياطي</span>
+                    <span class="detail-value phone">${order.secondary_phone}</span>
+                </div>
+                ` : ''}
             </div>
 
             <div class="detail-section">
