@@ -17,13 +17,18 @@ def search_products(intent, store=None):
     occasion = intent.get("occasion")
     longevity = intent.get("longevity")
     projection = intent.get("projection")
-    exclude_name = intent.get("exclude_name")
+    exclude_names = intent.get("exclude_names") or []
+    # Fallback to single exclude_name if present (backward compatibility)
+    old_exclude = intent.get("exclude_name")
+    if old_exclude and old_exclude not in exclude_names:
+        exclude_names.append(old_exclude)
+
     notes = intent.get("notes") or []
 
     # Hard filters (gender, brand, season, notes, longevity, projection)
     base = queryset
-    if exclude_name:
-        base = base.exclude(name__icontains=exclude_name)
+    for name in exclude_names:
+        base = base.exclude(name__icontains=name)
     if gender:
         base = base.filter(gender=gender.lower())
     if season:

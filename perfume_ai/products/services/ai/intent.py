@@ -19,7 +19,7 @@ Schema:
     "max_price": float or null,
     "longevity": "like 'long-lasting', 'moderate', 'eternal' or null",
     "projection": "like 'strong', 'moderate', 'intimate' or null",
-    "exclude_name": "perfume name to exclude if user wants alternatives, e.g. 'Sauvage', or null",
+    "exclude_names": ["perfume1", "perfume2"] or [],
     "notes": ["note1", "note2"] or []
 }
 
@@ -27,7 +27,8 @@ Rules:
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), map it exactly to 'male', 'female', or 'unisex'.
-- If the user asks for a perfume similar to a specific known perfume (e.g. "عايز حاجة زي كريد" or "بديل سوفاج"), use your general knowledge to extract the main olfactory notes of that famous perfume and put them in the 'notes' array (e.g. ["pineapple", "birch"] or ["ambroxan", "citrus"]). ALSO, set 'exclude_name' to the name of that perfume so we don't recommend the exact same one back. Do NOT put the famous perfume's name in the 'brand' field unless the user explicitly wants to buy from that brand.
+- If the user asks for a perfume similar to a specific known perfume (e.g. "عايز حاجة زي كريد" or "بديل سوفاج"), use your general knowledge to extract the main olfactory notes of that famous perfume and put them in the 'notes' array (e.g. ["pineapple", "birch"]). ALSO, add the name of that perfume to 'exclude_names' so we don't recommend the exact same one back. Do NOT put the famous perfume's name in the 'brand' field unless the user explicitly wants to buy from that brand.
+- If the user asks for alternatives (e.g. "في حاجة تانية", "عندك ايه تاني", "ايه تاني"), you MUST read the history and extract the names of ALL perfumes the assistant previously recommended, and add them to the 'exclude_names' array. This ensures we don't recommend the exact same perfumes again.
 - If the user asks for high longevity (e.g. "ثبات عالي", "ثباته يومين"), set 'longevity' to 'long-lasting' or 'eternal'.
 - If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
