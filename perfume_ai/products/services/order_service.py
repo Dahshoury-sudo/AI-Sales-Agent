@@ -123,8 +123,7 @@ Return valid JSON in this exact format:
                     bottle_type = "original"
                     p_data["bottle_type"] = "original"
                 elif not available_normal and not available_original:
-                    # Everything is out of stock, let it fall through to error handling
-                    pass
+                    return f"للأسف عطر {product.name} نفد من المخزون بجميع أحجامه حالياً 😔", ""
                 else:
                     p_data["product_obj"] = product
                     p_data["missing_bottle_type"] = True
@@ -147,8 +146,13 @@ Return valid JSON in this exact format:
                         return f"عذراً يا فندم، زجاجات البراند التركيب لعطر {product.name} غير متوفرة حالياً 😔. متوفر منه الزجاجة الأوريجينال. تحب تطلبها؟", ""
 
 
-            # Now filter the variants to only the selected bottle_type
-            filtered_variants = [v for v in variants if v.bottle_type == bottle_type] if bottle_type else variants
+            # Now filter to only AVAILABLE variants of the selected bottle_type
+            if bottle_type == "normal":
+                filtered_variants = available_normal
+            elif bottle_type == "original":
+                filtered_variants = available_original
+            else:
+                filtered_variants = available_normal + available_original
             
             if req_volume:
                 try:
@@ -160,12 +164,20 @@ Return valid JSON in this exact format:
                 selected_variant = None
 
             if not selected_variant:
+                if not filtered_variants:
+                    return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔", ""
                 # If there is only one variant of this type, auto-select it. Otherwise, mark for missing field.
                 if len(filtered_variants) == 1:
                     selected_variant = filtered_variants[0]
                 else:
                     p_data["product_obj"] = product
-                    p_data["available_volumes"] = [v.volume for v in filtered_variants]
+                    avail_vols_display = []
+                    for v in filtered_variants:
+                        if v.bottle_type == "original":
+                            avail_vols_display.append(f"{v.volume} ملي (زجاجة أوريجينال)")
+                        else:
+                            avail_vols_display.append(f"{v.volume} ملي")
+                    p_data["available_volumes_display"] = avail_vols_display
                     continue
             
             # Check stock availability for the selected variant
@@ -238,9 +250,9 @@ Return valid JSON in this exact format:
         if not isinstance(p, dict): continue
         
         if "product_obj" in p:
-            if "available_volumes" in p:
-                vols = ", ".join(map(str, p["available_volumes"]))
-                missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح أحجام: {vols} مل)")
+            if "available_volumes_display" in p:
+                vols = "، ".join(p["available_volumes_display"])
+                missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح: {vols})")
             if p.get("missing_bottle_type"):
                 missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تركيبه في زجاجة أوريجينال أم زجاجة البراند؟)")
             
@@ -261,7 +273,7 @@ Return valid JSON in this exact format:
         summary += f"📍 العنوان: {address}\n\n"
         summary += "🛍️ المنتجات:\n"
         for item in items_to_create:
-            bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "عادية"
+            bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "البراند"
             summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - زجاجة {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
         summary += "\nهل تحب نأكد الطلب على كده ولا في حاجة حابب تعدلها؟"
