@@ -49,28 +49,30 @@ Return ONLY valid JSON in this format:
 
     for product in matches:
         variants = list(product.variants.all())
-        variants_str_list = []
+        available_variants = []
+        out_of_stock_variants = []
         all_out_of_stock = True
         for v in variants:
             if v.bottle_type == 'normal':
                 req_oil = (v.volume * product.concentration_percentage) / 100
                 is_available = product.oil_stock_grams >= req_oil
-                status = 'متوفر' if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- الـ {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
+                    available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP")
                     all_out_of_stock = False
+                else:
+                    out_of_stock_variants.append(f"الـ {v.volume} ملي")
             elif v.bottle_type == 'original':
                 stock_num = v.stock or 0
                 is_available = stock_num > 0
                 if is_available:
-                    status = f"متوفر ({stock_num} زجاجة فقط)" if stock_num <= 3 else "متوفر"
-                else:
-                    status = '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP ({status})")
-                if is_available:
+                    status = f" ({stock_num} زجاجة فقط)" if stock_num <= 3 else ""
+                    available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP{status}")
                     all_out_of_stock = False
+                else:
+                    out_of_stock_variants.append(f"زجاجة أوريجينال {v.volume} ملي")
         
-        variants_str = "\n".join(variants_str_list) if variants else "غير متوفر أسعار/أحجام حالياً"
+        avail_str = "\n".join(available_variants) if available_variants else "لا توجد أحجام متوفرة حالياً"
+        oos_str = "، ".join(out_of_stock_variants) if out_of_stock_variants else "لا يوجد"
         stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
         is_custom_blend = product.brand.name.lower() == "perfamix"
         brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
@@ -80,7 +82,9 @@ Name: {product.name}
 Brand: {brand_display}
 Stock Status: {stock_status}
 Available Sizes & Prices:
-{variants_str}
+{avail_str}
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+{oos_str}
 Gender: {product.gender}
 Season: {product.season}
 Occasion: {product.occasion}
