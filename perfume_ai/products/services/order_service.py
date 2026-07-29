@@ -166,8 +166,10 @@ Return valid JSON in this exact format:
             if not selected_variant:
                 if not filtered_variants:
                     return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔", ""
-                # If there is only one variant of this type, auto-select it. Otherwise, mark for missing field.
-                if len(filtered_variants) == 1:
+                # Only auto-select if there's truly one variant total for this type.
+                # If other sizes exist but are out of stock, always ask the customer.
+                all_type_variants = [v for v in variants if v.bottle_type == bottle_type] if bottle_type else variants
+                if len(filtered_variants) == 1 and len(all_type_variants) == 1:
                     selected_variant = filtered_variants[0]
                 else:
                     p_data["product_obj"] = product
@@ -230,38 +232,43 @@ Return valid JSON in this exact format:
         
         return "مش لاقي العطر ده عندنا يا فندم. ممكن تقولي اسمه تاني أو تسأل عن عطر تاني؟", context_str
 
-    # 2. Check for missing basic details now that we know we have the products
-    missing_fields = []
-    if not name:
-        missing_fields.append("الاسم")
-        
-    if not phone and not secondary_phone:
-        missing_fields.append("رقمين للموبايل واحد اساسي وواحد بديل")
-    elif not phone:
-        missing_fields.append("رقم الموبايل الأساسي")
-    elif not secondary_phone:
-        missing_fields.append("رقم موبايل بديل")
-        
-    if not address:
-        missing_fields.append("عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل")
-
-    # Check for missing quantities, sizes, and bottle types using the original data that passed resolution
+    # 2. Check for missing product details FIRST (size, bottle type, quantity)
+    product_missing_fields = []
     for p in products_data:
         if not isinstance(p, dict): continue
         
         if "product_obj" in p:
             if "available_volumes_display" in p:
                 vols = "، ".join(p["available_volumes_display"])
-                missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح: {vols})")
+                product_missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح: {vols})")
             if p.get("missing_bottle_type"):
-                missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تركيبه في زجاجة أوريجينال أم زجاجة البراند؟)")
+                product_missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تركيبه في زجاجة أوريجينال أم زجاجة البراند؟)")
             
         # Only check quantities for products we actually found
         elif not p.get("quantity"):
-            missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
+            product_missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
 
-    if missing_fields:
-        missing_text = " و ".join(missing_fields)
+    if product_missing_fields:
+        missing_text = " و ".join(product_missing_fields)
+        return f"ممتاز! بس محتاج أعرف {missing_text}.", ""
+
+    # 3. Product details are complete — now check for missing personal info
+    personal_missing_fields = []
+    if not name:
+        personal_missing_fields.append("الاسم")
+        
+    if not phone and not secondary_phone:
+        personal_missing_fields.append("رقمين للموبايل واحد اساسي وواحد بديل")
+    elif not phone:
+        personal_missing_fields.append("رقم الموبايل الأساسي")
+    elif not secondary_phone:
+        personal_missing_fields.append("رقم موبايل بديل")
+        
+    if not address:
+        personal_missing_fields.append("عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل")
+
+    if personal_missing_fields:
+        missing_text = " و ".join(personal_missing_fields)
         return f"ممتاز! لتأكيد طلبك، أحتاج فقط إلى {missing_text}.", ""
 
     if not is_confirmed:
