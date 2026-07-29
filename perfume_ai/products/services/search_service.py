@@ -11,6 +11,7 @@ def search_products(intent, store=None):
     queryset = queryset.filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct()
 
     gender = intent.get("gender")
+    perfume_type = intent.get("perfume_type")
     season = intent.get("season")
     max_price = intent.get("max_price")
     brand = intent.get("brand")
@@ -31,6 +32,8 @@ def search_products(intent, store=None):
         base = base.exclude(name__icontains=name)
     if gender:
         base = base.filter(gender=gender.lower())
+    if perfume_type:
+        base = base.filter(perfume_type=perfume_type.lower())
     if season:
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:

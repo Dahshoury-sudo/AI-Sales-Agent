@@ -25,6 +25,7 @@ CRITICAL: If the user is asking a general question (e.g. "ممكن اسأل عن
 CRITICAL: If the user is asking about the PRICE ("عامل كام", "سعره كام", "بكام") of a specific perfume, MUST classify it as "product_info".
 CRITICAL: If the user is asking an opinion, detail, or question about a SPECIFIC, NAMED perfume (e.g. "هل عطر كذا حلو", "بتاع افنان ده هيعجب الناس", "ريحته عاملة ايه"), MUST classify it as "product_info".
 CRITICAL: If the user is asking about a BRAND in general without specifying a perfume (e.g. "عندك حاجة من ديور", "براند شانيل"), MUST classify it as "recommendation" to suggest perfumes from that brand.
+CRITICAL: If the user is asking about a CATEGORY or TYPE of perfume (e.g. "عايز عطور شرقية", "عندك الترا نيش", "عطور نيش", "عطور غربية"), MUST classify it as "recommendation".
 CRITICAL: Even if the user was previously making an order, if their LATEST message is asking a question about a product's details, smell, or performance, MUST classify as "product_info".
 CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
 CRITICAL: If the assistant asked if the user wants to change/modify anything in their order (e.g., "في حاجة حابب تعدلها"), and the user replies with "لا", "لا شكرا", or "لا تمام", MUST classify as "order" because they want to proceed with confirmation, NOT "order_cancel".

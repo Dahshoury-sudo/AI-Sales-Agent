@@ -57,12 +57,20 @@ class Product(models.Model):
         ("unisex", "Unisex"),
     ]
 
+    PERFUME_TYPE_CHOICES = [
+        ("oriental", "عطور شرقية"),
+        ("western", "عطور غربية"),
+        ("niche", "نيش"),
+        ("ultra_niche", "الترا نيش (بريميوم)"),
+    ]
+
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
     name = models.CharField(max_length=200)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES)
+    perfume_type = models.CharField(max_length=20, choices=PERFUME_TYPE_CHOICES, blank=True, null=True)
 
     season = models.CharField(max_length=100, blank=True)
     occasion = models.CharField(max_length=100, blank=True)
