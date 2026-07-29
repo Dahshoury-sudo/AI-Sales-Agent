@@ -43,7 +43,7 @@ Rules:
 2. "customer_phone": The customer's phone number if provided in the history.
 3. "shipping_address": The customer's full delivery address if provided in the history.
 4. "customer_secondary_phone": The customer's alternative or secondary phone number if provided in the history.
-5. "products": A comprehensive list of ALL products the user wants to buy in the CURRENT active order. For each product, extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة المحل/تعبئة/زجاجة الاستور). CRITICAL: If the user hasn't explicitly chosen the bottle type yet, YOU MUST return null. You MUST read the entire history and reconstruct the FULL pending shopping cart every time. Do NOT return an empty list if there is a pending unconfirmed order, even if the user's latest message doesn't explicitly mention the product (like when they just say "تمام" to confirm). 🚨 CRITICAL 🚨: If the assistant has ALREADY finalized a previous order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), that order is CLOSED. You must start a NEW empty cart for any products requested AFTER that confirmation. If no NEW products have been requested yet, return an empty list [].
+5. "products": A comprehensive list of ALL products the user wants to buy in the CURRENT active order. For each product, extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل). CRITICAL: If the user hasn't explicitly chosen the bottle type yet, YOU MUST return null. You MUST read the entire history and reconstruct the FULL pending shopping cart every time. Do NOT return an empty list if there is a pending unconfirmed order, even if the user's latest message doesn't explicitly mention the product (like when they just say "تمام" to confirm). 🚨 CRITICAL 🚨: If the assistant has ALREADY finalized a previous order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), that order is CLOSED. You must start a NEW empty cart for any products requested AFTER that confirmation. If no NEW products have been requested yet, return an empty list [].
 6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
@@ -134,17 +134,17 @@ Return valid JSON in this exact format:
                     has_original = any(v.bottle_type == "original" for v in variants)
                     if not has_original:
                         if available_normal:
-                            return f"عذراً يا فندم، عطر {product.name} حصري للمتجر ولا يوجد منه زجاجات أوريجينال. متوفر فقط في زجاجة المحل. تحب تطلبه؟", ""
+                            return f"عذراً يا فندم، عطر {product.name} حصري للمتجر ولا يوجد منه زجاجات أوريجينال. متوفر فقط في زجاجة البراند. تحب تطلبه؟", ""
                         else:
                             return f"عذراً يا فندم، عطر {product.name} نفد من المخزون حالياً 😔.", ""
                     elif not available_original:
                         if available_normal:
-                            return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} نفدت من المخزون حالياً 😔. متوفر منه زجاجات المحل التعبئة. تحب تطلب زجاجة المحل؟", ""
+                            return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} نفدت من المخزون حالياً 😔. متوفر منه زجاجات البراند التركيب. تحب تطلب زجاجة البراند؟", ""
                         else:
                             return f"عذراً يا فندم، عطر {product.name} نفد من المخزون تماماً 😔.", ""
                 elif bottle_type == "normal" and not available_normal:
                     if available_original:
-                        return f"عذراً يا فندم، زجاجات المحل التعبئة لعطر {product.name} غير متوفرة حالياً 😔. متوفر منه الزجاجة الأوريجينال. تحب تطلبها؟", ""
+                        return f"عذراً يا فندم، زجاجات البراند التركيب لعطر {product.name} غير متوفرة حالياً 😔. متوفر منه الزجاجة الأوريجينال. تحب تطلبها؟", ""
 
 
             # Now filter the variants to only the selected bottle_type
@@ -176,7 +176,7 @@ Return valid JSON in this exact format:
                         sizes_available = ", ".join([f"{v.volume} ملي" for v in available_normal])
                         return f"للأسف الزيت العطري لـ {product.name} لا يكفي لحجم {selected_variant.volume} ملي حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
                     else:
-                        return f"للأسف عطر {product.name} (تعبئة) نفد من المخزون حالياً 😔", ""
+                        return f"للأسف عطر {product.name} (تركيب) نفد من المخزون حالياً 😔", ""
                 elif product.oil_stock_grams < req_oil * qty:
                     max_qty = int(product.oil_stock_grams / req_oil)
                     return f"للأسف كمية الزيت المطلوبة من عطر {product.name} ({selected_variant.volume} ملي) أكبر من المتوفر في المخزون. المتوفر حالياً يكفي لـ {max_qty} زجاجة فقط. تحب تطلب {max_qty} بدل {qty}؟", ""
@@ -197,7 +197,7 @@ Return valid JSON in this exact format:
                 "bottle_type": bottle_type
             })
             p_data["name"] = product.name
-            bottle_text = " (زجاجة أوريجينال)" if bottle_type == "original" else " (زجاجة المحل)"
+            bottle_text = " (زجاجة أوريجينال)" if bottle_type == "original" else " (زجاجة البراند)"
             context_data.append(f"{product.name} ({selected_variant.volume} ملي){bottle_text} x {qty} ({price * qty} EGP)")
             
     context_str = ", ".join(context_data) if context_data else "No products found"
@@ -242,7 +242,7 @@ Return valid JSON in this exact format:
                 vols = ", ".join(map(str, p["available_volumes"]))
                 missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح أحجام: {vols} مل)")
             if p.get("missing_bottle_type"):
-                missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تعبئته في زجاجة أوريجينال أم زجاجة المحل؟)")
+                missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تركيبه في زجاجة أوريجينال أم زجاجة البراند؟)")
             
         # Only check quantities for products we actually found
         elif not p.get("quantity"):

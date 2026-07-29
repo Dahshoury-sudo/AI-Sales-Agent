@@ -132,7 +132,7 @@ def parse_excel(file_bytes, store):
                         )
                         variant_count += 1
                     except (ValueError, InvalidOperation) as e:
-                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات التعبئة {i+1} للمنتج '{name}': {e}")
+                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات التركيب {i+1} للمنتج '{name}': {e}")
             
             # Create original variants (up to 2)
             for i in range(2):

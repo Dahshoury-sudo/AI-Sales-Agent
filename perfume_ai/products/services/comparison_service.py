@@ -56,7 +56,7 @@ Return ONLY valid JSON in this format:
                 req_oil = (v.volume * product.concentration_percentage) / 100
                 is_available = product.oil_stock_grams >= req_oil
                 status = 'متوفر' if is_available else '❌ نفد من المخزون'
-                variants_str_list.append(f"- زجاجة تعبئة {v.volume} ملي: {v.price} EGP ({status})")
+                variants_str_list.append(f"- زجاجة تركيب {v.volume} ملي: {v.price} EGP ({status})")
                 if is_available:
                     all_out_of_stock = False
             elif v.bottle_type == 'original':

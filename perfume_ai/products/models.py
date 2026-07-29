@@ -91,7 +91,7 @@ class Product(models.Model):
 
 class ProductVariant(models.Model):
     BOTTLE_TYPE_CHOICES = (
-        ("normal", "زجاجة المحل"),
+        ("normal", "زجاجة البراند"),
         ("original", "أوريجينال"),
     )
 

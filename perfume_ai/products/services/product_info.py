@@ -19,7 +19,7 @@ def get_product_info(message, history=None, store=None):
                     req_oil = (v.volume * product.concentration_percentage) / 100
                     is_available = product.oil_stock_grams >= req_oil
                     status = 'متوفر' if is_available else '❌ نفد من المخزون'
-                    variants_str_list.append(f"- زجاجة تعبئة {v.volume} ملي: {v.price} EGP ({status})")
+                    variants_str_list.append(f"- زجاجة تركيب {v.volume} ملي: {v.price} EGP ({status})")
                     if is_available:
                         all_out_of_stock = False
                 elif v.bottle_type == 'original':
@@ -81,7 +81,7 @@ Description: {product.description}
                 available_variants = []
                 for v in variants:
                     if v.bottle_type == 'normal' and alt.oil_stock_grams >= (v.volume * alt.concentration_percentage) / 100:
-                        available_variants.append(f"- زجاجة تعبئة {v.volume} ملي: {v.price} EGP")
+                        available_variants.append(f"- زجاجة تركيب {v.volume} ملي: {v.price} EGP")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
                         available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP")
                 
