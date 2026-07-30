@@ -238,8 +238,76 @@ def route(message, history=None, store=None, conversation=None):
 
     elif request_type in ["greeting", "faq"]:
         return handle_general(message, history, store)
-        
-        
+
+    elif request_type == "promotion":
+        msg_clean = message.strip().lower()
+
+        # Detect if user is insisting the bot execute the offer
+        insistence_keywords = [
+            "انت تنفذ", "انت نفذ", "نفذلي", "نفذه", "طبق العرض", "طبقلي", "حطلي الخصم",
+            "اضف الخصم", "ضيف الخصم", "عايزك تعمل الخصم", "اعمل الخصم", "انت بقى اعمل",
+            "لا انا عايزك", "انا عايزك انت", "بس انت", "مش عايز مندوب", "مش محتاج مندوب"
+        ]
+        is_insisting = any(kw in msg_clean for kw in insistence_keywords)
+
+        # Also detect insistence from context: last bot message was about promotions, user is pushing back
+        last_bot_was_promotion = False
+        if history:
+            for msg in reversed(history):
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", "")
+                    if any(w in content for w in ["تحب أحولك لمندوب", "مندوب من فريقنا", "مش بتقدر تطبق", "المندوب البشري"]):
+                        last_bot_was_promotion = True
+                    break
+
+        # Check if the user is accepting the handoff offer
+        acceptance_words = ["آه", "اه", "ايوه", "ايوا", "أيوه", "تمام", "اوك", "ok", "يلا", "ماشي", "حوّلني", "حولني", "اتصل بيا", "اتصلوا بيا"]
+
+        if last_bot_was_promotion and any(w in msg_clean for w in acceptance_words) and not is_insisting:
+            # Customer accepted handoff for promotion — treat as handoff
+            if conversation:
+                conversation.needs_human = True
+                conversation.save()
+                notify_handoff(conversation)
+            return handle_general(
+                f"""العميل وافق على التحويل لمندوب عشان يتابع عرض معاه.
+اعتذرله بلطف وقوله إنك حولت المحادثة لفريق المبيعات وإنهم هيتواصلوا معاه في أقرب وقت.
+ممنوع تكرر نفس الصيغة — نوّع في أسلوبك.""",
+                history, store
+            )
+
+        if is_insisting:
+            # Customer is insisting the bot execute the offer — firm, clear refusal
+            return handle_general(
+                f"""العميل بعتلي: "{message}"
+
+العميل ده بيصرّ إن أنا (كبوت) أطبقله العرض أو الخصم بنفسي.
+
+ردك لازم يكون واضح وحازم بأسلوب محترم:
+1. وضّح بشكل قاطع إنك كمساعد آلي **مش في إمكانياتك** تطبق أو تنفذ أي عرض أو خصم — ده مش خيار، ده حقيقة تقنية.
+2. اعتذر بلطف على عدم قدرتك على تنفيذ هذا الطلب.
+3. اعرض عليه مرة تانية التحويل لمندوب بشري هو الوحيد القادر يطبق العرض فعلاً.
+❌ ممنوع توهمه إنك هتطبق الخصم أو إنك ممكن تعمله في الطلب.
+❌ ممنوع تعتذر وتسيب الموضوع — لازم تعرضله المندوب كحل بديل فعلي.""",
+                history, store
+            )
+
+
+        # First-time promotion inquiry — show offers + disclaimer
+        return handle_general(
+            f"""العميل بعتلي: "{message}"
+
+العميل ده سأل عن عروض أو خصومات أو أوفر.
+
+تعليماتك:
+1. اعرض عليه العروض الموجودة في الـ Store Custom Instructions بشكل واضح ومنظم. لو مفيش عروض في التعليمات، قوله: "مفيش عروض حالياً يا فندم."
+2. وضّح بوضوح وبشكل صريح في ردك إنك كمساعد آلي **مش بتقدر تطبق أو تنفذ** أي عرض بنفسك — ده بيعمله المندوب البشري بس.
+3. اعرض عليه إنك تحوله لمندوب بشري عشان يتابع العرض معاه ويطبقه فعلاً.
+❌ ممنوع تقول إنك هتطبق الخصم أو هتضيفه للطلب.""",
+            history, store
+        )
+
+
     elif request_type == "order":
         if not conversation:
             return "محتاج الأول تبدأ محادثة جديدة عشان أقدر أسجللك الطلب يا فندم.", ""
