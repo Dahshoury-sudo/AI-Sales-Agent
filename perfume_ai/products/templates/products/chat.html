@@ -324,10 +324,20 @@
             if (e.key === 'Enter') sendMessage();
         }
 
-        function appendMessage(sender, text) {
+        function appendMessage(sender, text, imageUrl = null) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender}`;
             msgDiv.textContent = text;
+            
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '12px';
+                img.style.marginTop = '10px';
+                msgDiv.appendChild(img);
+            }
+            
             chatWindow.appendChild(msgDiv);
             scrollToBottom();
         }
@@ -386,7 +396,7 @@
                     if (data.needs_human) {
                         appendMessage('ai', "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء."));
                     } else {
-                        appendMessage('ai', data.reply);
+                        appendMessage('ai', data.reply, data.image_url);
                     }
                 } else {
                     appendMessage('ai', "❌ خطأ: " + (data.error || "حدث خطأ غير متوقع."));

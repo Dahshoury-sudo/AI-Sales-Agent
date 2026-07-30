@@ -96,6 +96,11 @@ class ChatAPIView(APIView):
 
             reply, context = route(message, history, store, conversation)
 
+            image_url = None
+            if "[SEND_BOTTLE_IMAGE]" in reply:
+                reply = reply.replace("[SEND_BOTTLE_IMAGE]", "").strip()
+                image_url = "https://res.cloudinary.com/dtssxxfra/image/upload/v1785375186/WhatsApp_Image_2026-07-28_at_10.39.44_PM_enqvw9.jpg"
+
             save_message(
                 conversation,
                 "assistant",
@@ -105,7 +110,8 @@ class ChatAPIView(APIView):
 
             return Response({
                 "conversation_id": conversation.id,
-                "reply": reply
+                "reply": reply,
+                "image_url": image_url
             })
 
         except Exception as e:
