@@ -18,6 +18,7 @@ order_cancel: wanting to cancel the order they are currently making (e.g. "ال�
 greeting: saying hello, hi, etc.
 faq: general questions not related to a specific product's info (e.g., shipping, delivery, who are you, how to make perfume, bulk buying).
 promotion: asking about deals, discounts, offers, bundles, or special prices (e.g. "عندكم عروض", "في خصومات", "فيه أوفر", "أي عروض عندكم", "الأوفر إيه", "عرض خاص", "كومبو").
+musk_mix_product: asking specifically about musk (مسك/مسكات) or mix (ميكس/ميكسات) as a STANDALONE product to buy or inquire about — NOT as a fragrance note inside a perfume (e.g. "عندكم مسكات", "بكام الميكس", "عايز مسك", "مسك بكام", "هاخد ميكس", "عندكم ميكس").
 handoff: wanting to speak to a human, complaining, or showing frustration (e.g. "عايز اكلم حد حقيقي", "فين خدمة العملاء").
 out_of_domain: questions entirely unrelated to perfumes, orders, or the store (e.g., programming, politics, medical advice, "مين رئيس امريكا", "اكتبلي كود").
 
@@ -35,6 +36,12 @@ CRITICAL: Do NOT classify insults or bad words (e.g., "غبي", "زفت") as "ha
 CRITICAL: If the user replies with a short confirmation (e.g., "اه", "ايوة", "تمام") or denial (e.g., "لا") to a question the assistant just asked in the previous message, YOU MUST look at the assistant's LAST message context. If the assistant offered to provide product details (e.g., "تحب اقولك مناسب لايه"), classify as "product_info". If the assistant offered a recommendation, classify as "recommendation".
 CRITICAL: If the user is asking about suppliers, oil manufacturers, trade secrets, or companies like "لوزي", "أرجفيل", "جيفودان", "مان", MUST classify as "faq", NOT "recommendation", even if they use words like "ترشيح" or "أحسن".
 CRITICAL — PROMOTION CONTEXT RULE: If the assistant's LAST message mentioned an offer/promotion (contains words like "عرض", "خصم", "أوفر", "مندوب من فريقنا", "تحولك لمندوب"), and the user is INSISTING the bot apply/execute the offer (e.g. "لا انا عايزك انت تنفذه", "بس طبق العرض", "نفذلي العرض", "انت بقى اعمل الخصم", "حطلي الخصم", "عايز الخصم"), MUST classify as "promotion" NOT "order". The user is asking the bot to do something it cannot do (apply offers), not placing a normal product order.
+CRITICAL — MUSK/MIX PRODUCT vs NOTE RULE (VERY IMPORTANT):
+- If the user is asking for musk (مسك/مسكات/musk) or mix (ميكس/ميكسات/mix) as a STANDALONE product they want to buy or inquire about → classify as "musk_mix_product".
+  Examples: "عندكم مسكات", "بكام الميكس", "عايز مسك", "هاخد ميكس", "فيه مسكات", "أنواع الميكس عندكم".
+- If the user is asking for a PERFUME that contains musk as one of its fragrance notes → classify as "recommendation".
+  Examples: "عايز عطر فيه مسك", "عطر مسكي", "فيه نوتة مسك", "ريحته فيها مسك".
+- Key distinction: if the user says "مسك" alone or "مسكات" or "ميكس" as the main subject → "musk_mix_product". If they say "عطر" + "فيه مسك" → "recommendation".
 
 🔴 HANDOFF ANTI-LOOP RULES (VERY IMPORTANT):
 - If the assistant ALREADY handed off the conversation to a human (e.g. the last assistant message says "تم تحويل المحادثة" or similar), and the user sends a NEW message:

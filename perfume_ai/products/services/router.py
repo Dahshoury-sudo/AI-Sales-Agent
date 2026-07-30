@@ -239,6 +239,46 @@ def route(message, history=None, store=None, conversation=None):
     elif request_type in ["greeting", "faq"]:
         return handle_general(message, history, store)
 
+    elif request_type == "musk_mix_product":
+        msg_clean = message.strip().lower()
+
+        # Check if user is accepting a previous handoff offer
+        acceptance_words = ["آه", "اه", "ايوه", "ايوا", "أيوه", "تمام", "اوك", "ok", "يلا", "ماشي", "حوّلني", "حولني", "اتصل بيا", "اتصلوا بيا"]
+        last_bot_was_musk = False
+        if history:
+            for msg in reversed(history):
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", "")
+                    if any(w in content for w in ["تخصص المندوب", "مندوب بشري", "تحولك لمندوب", "مش في تخصصي"]):
+                        last_bot_was_musk = True
+                    break
+
+        if last_bot_was_musk and any(w in msg_clean for w in acceptance_words):
+            # Customer accepted handoff
+            if conversation:
+                conversation.needs_human = True
+                conversation.save()
+                notify_handoff(conversation)
+            return handle_general(
+                """العميل وافق على التحويل لمندوب عشان يتابع معاه طلب المسك أو الميكس.
+اعتذرله بلطف وقوله إنك حولت المحادثة لفريق المبيعات وإنهم هيتواصلوا معاه في أقرب وقت.
+ممنوع تكرر نفس الصيغة — نوّع في أسلوبك.""",
+                history, store
+            )
+
+        return handle_general(
+            f"""العميل بعتلي: "{message}"
+
+العميل ده بيسأل عن مسكات أو ميكسات كمنتج قائم بذاته.
+
+تعليماتك:
+1. وضّح بأسلوب لطيف إن المسكات والميكسات دي من تخصص المندوب البشري عندنا — أنت كمساعد آلي متخصص في عطور البرفان بس.
+2. اعرض عليه إنك تحوله لمندوب بشري من الفريق يساعده في الموضوع ده.
+❌ ممنوع تحاول تجاوب على أسئلة المسك أو الميكس أو تعمل ترشيح منهم.
+❌ ممنوع تخترع معلومات عن منتجات المسك أو الميكس.""",
+            history, store
+        )
+
     elif request_type == "promotion":
         msg_clean = message.strip().lower()
 
