@@ -291,7 +291,7 @@ class BulkImportTemplateView(APIView):
         ws.title = "Products"
 
         headers = [
-            "name", "brand", "category", "gender",
+            "name", "brand", "category", "gender", "perfume_type",
             "season", "occasion", "longevity", "projection",
             "concentration", "top_notes", "middle_notes", "base_notes",
             "description",
@@ -306,7 +306,7 @@ class BulkImportTemplateView(APIView):
 
         # Example row
         ws.append([
-            "Bleu de Chanel", "Chanel", "Perfume", "male",
+            "Bleu de Chanel", "Chanel", "Perfume", "male", "western",
             "All Seasons", "Casual", "8 hours", "Moderate",
             "EDP", "Citrus, Mint", "Jasmine, Ginger", "Cedar, Sandalwood",
             "A fresh and woody fragrance",

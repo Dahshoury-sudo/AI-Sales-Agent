@@ -14,29 +14,30 @@ def parse_excel(file_bytes, store):
     B: brand (required - will be created if not found)
     C: category (optional)
     D: gender (male/female/unisex - default: unisex)
-    E: season
-    F: occasion
-    G: longevity
-    H: projection
-    I: concentration
-    J: top_notes
-    K: middle_notes
-    L: base_notes
-    M: description
-    N: oil_stock_grams
-    O: concentration_percentage (default: 30)
-    P: norm_vol_1 (ml)
-    Q: norm_price_1
-    R: norm_vol_2 (ml)
-    S: norm_price_2
-    T: norm_vol_3 (ml)
-    U: norm_price_3
-    V: orig_vol_1 (ml)
-    W: orig_price_1
-    X: orig_stock_1
-    Y: orig_vol_2 (ml)
-    Z: orig_price_2
-    AA: orig_stock_2
+    E: perfume_type (oriental/western/niche/ultra_niche)
+    F: season
+    G: occasion
+    H: longevity
+    I: projection
+    J: concentration
+    K: top_notes
+    L: middle_notes
+    M: base_notes
+    N: description
+    O: oil_stock_grams
+    P: concentration_percentage (default: 30)
+    Q: norm_vol_1 (ml)
+    R: norm_price_1
+    S: norm_vol_2 (ml)
+    T: norm_price_2
+    U: norm_vol_3 (ml)
+    V: norm_price_3
+    W: orig_vol_1 (ml)
+    X: orig_price_1
+    Y: orig_stock_1
+    Z: orig_vol_2 (ml)
+    AA: orig_price_2
+    AB: orig_stock_2
     """
     
     results = {"created": 0, "errors": [], "skipped": 0}
@@ -55,8 +56,8 @@ def parse_excel(file_bytes, store):
         return results
     
     for row_idx, row in enumerate(rows, start=2):
-        # Pad row to at least 22 columns
-        row = list(row) + [None] * (27 - len(row)) if len(row) < 27 else list(row)
+        # Pad row to at least 28 columns
+        row = list(row) + [None] * (28 - len(row)) if len(row) < 28 else list(row)
         
         name = str(row[0]).strip() if row[0] else ""
         brand_name = str(row[1]).strip() if row[1] else ""
@@ -93,6 +94,11 @@ def parse_excel(file_bytes, store):
         if gender not in ("male", "female", "unisex"):
             gender = "unisex"
         
+        # Perfume Type validation
+        perfume_type = str(row[4]).strip().lower() if row[4] else None
+        if perfume_type and perfume_type not in ("oriental", "western", "niche", "ultra_niche"):
+            perfume_type = None
+
         try:
             product = Product.objects.create(
                 store=store,
@@ -100,24 +106,25 @@ def parse_excel(file_bytes, store):
                 brand=brand,
                 category=category,
                 gender=gender,
-                season=str(row[4]).strip() if row[4] else "",
-                occasion=str(row[5]).strip() if row[5] else "",
-                longevity=str(row[6]).strip() if row[6] else "",
-                projection=str(row[7]).strip() if row[7] else "",
-                concentration=str(row[8]).strip() if row[8] else "",
-                top_notes=str(row[9]).strip() if row[9] else "",
-                middle_notes=str(row[10]).strip() if row[10] else "",
-                base_notes=str(row[11]).strip() if row[11] else "",
-                description=str(row[12]).strip() if row[12] else "",
-                oil_stock_grams=int(float(str(row[13]))) if len(row) > 13 and row[13] else 0,
-                concentration_percentage=int(float(str(row[14]))) if len(row) > 14 and row[14] else 30,
+                perfume_type=perfume_type,
+                season=str(row[5]).strip() if row[5] else "",
+                occasion=str(row[6]).strip() if row[6] else "",
+                longevity=str(row[7]).strip() if row[7] else "",
+                projection=str(row[8]).strip() if row[8] else "",
+                concentration=str(row[9]).strip() if row[9] else "",
+                top_notes=str(row[10]).strip() if row[10] else "",
+                middle_notes=str(row[11]).strip() if row[11] else "",
+                base_notes=str(row[12]).strip() if row[12] else "",
+                description=str(row[13]).strip() if row[13] else "",
+                oil_stock_grams=int(float(str(row[14]))) if len(row) > 14 and row[14] else 0,
+                concentration_percentage=int(float(str(row[15]))) if len(row) > 15 and row[15] else 30,
             )
             
             # Create normal variants (up to 3)
             variant_count = 0
             for i in range(3):
-                vol_idx = 15 + (i * 2)   # columns P, R, T (15, 17, 19)
-                price_idx = 16 + (i * 2)  # columns Q, S, U (16, 18, 20)
+                vol_idx = 16 + (i * 2)   # columns Q, S, U (16, 18, 20)
+                price_idx = 17 + (i * 2)  # columns R, T, V (17, 19, 21)
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
@@ -136,9 +143,9 @@ def parse_excel(file_bytes, store):
             
             # Create original variants (up to 2)
             for i in range(2):
-                vol_idx = 21 + (i * 3)   # columns V, Y (21, 24)
-                price_idx = 22 + (i * 3)  # columns W, Z (22, 25)
-                stock_idx = 23 + (i * 3)  # columns X, AA (23, 26)
+                vol_idx = 22 + (i * 3)   # columns W, Z (22, 25)
+                price_idx = 23 + (i * 3)  # columns X, AA (23, 26)
+                stock_idx = 24 + (i * 3)  # columns Y, AB (24, 27)
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
