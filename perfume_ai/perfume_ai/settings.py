@@ -196,3 +196,23 @@ if SENTRY_DSN and not DEBUG:
     )
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# ---------------------------------------------------------------------------
+# Celery Configuration
+# ---------------------------------------------------------------------------
+# REDIS_URL is automatically set by Railway when you add a Redis service.
+# On a VPS, set it manually in your .env: REDIS_URL=redis://localhost:6379/0
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+
+# Acknowledge tasks only after completion (prevents message loss on worker crash)
+CELERY_TASK_ACKS_LATE = True
+
+# One retry attempt won't hog the worker — keep concurrency reasonable
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
