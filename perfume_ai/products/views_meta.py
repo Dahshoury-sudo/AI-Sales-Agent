@@ -34,9 +34,13 @@ class MetaWebhookView(APIView):
 
     def post(self, request):
         body = request.body
+        print("====== WEBHOOK RECEIVED ======")
+        print(f"BODY: {body.decode('utf-8')[:500]}")  # Print first 500 chars
+
         try:
             data = json.loads(body)
         except json.JSONDecodeError:
+            print("ERROR: Invalid JSON")
             return Response("Invalid JSON", status=400)
             
         if data.get("object") in ["whatsapp_business_account", "page", "instagram"]:
@@ -51,11 +55,15 @@ class MetaWebhookView(APIView):
                             receiving_id = value.get("metadata", {}).get("phone_number_id")
                             store_settings = StoreSettings.objects.filter(whatsapp_phone_number_id=receiving_id).first()
                             if not store_settings:
+                                print(f"WARNING: No store found for WA phone number ID '{receiving_id}'")
                                 logger.warning(f"No store found for WA phone number ID {receiving_id}")
                                 continue
                                 
                             if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                                print("ERROR: Invalid signature from Meta!")
                                 return HttpResponse("Invalid signature", status=403)
+                            
+                            print("SUCCESS: Message verified and passed to process_message_async")
                             
                             for message in value.get("messages", []):
                                 if message.get("type") == "text":
