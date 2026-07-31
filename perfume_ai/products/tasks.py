@@ -1,6 +1,5 @@
 import logging
-
-from celery import shared_task
+import threading
 
 from products.models import Store
 from products.services.conversation_service import (
@@ -14,21 +13,10 @@ from products.services.meta_service import send_platform_message
 logger = logging.getLogger(__name__)
 
 
-@shared_task(
-    bind=True,
-    max_retries=3,
-    default_retry_delay=15,          # wait 15 s before retrying
-    name='products.tasks.process_incoming_message',
-    acks_late=True,                   # only ack after the task succeeds
-)
-def process_incoming_message(self, store_id, platform, sender_id, text):
+def process_incoming_message(store_id, platform, sender_id, text):
     """
     Process an incoming message from a Meta platform (WhatsApp / Messenger / Instagram).
-    Runs inside a Celery worker so the webhook endpoint returns 200 immediately.
-
-    Retry behaviour:
-      - Retries up to 3 times with a 15-second delay on any unhandled exception.
-      - Uses acks_late so the message is never lost if the worker crashes mid-task.
+    Runs inside a background thread so the webhook endpoint returns 200 immediately.
     """
     try:
         store = Store.objects.get(id=store_id)
@@ -49,19 +37,17 @@ def process_incoming_message(self, store_id, platform, sender_id, text):
         send_platform_message(conversation, reply)
 
     except Exception as exc:
-        logger.exception(
-            f"Error processing message — store={store_id}, platform={platform}, "
-            f"attempt={self.request.retries + 1}/{self.max_retries + 1}: {exc}"
-        )
-        # Re-raise so Celery can retry automatically
-        raise self.retry(exc=exc)
+        logger.exception(f"Error processing background message (store={store_id}, platform={platform}): {exc}")
 
 
 def process_message_async(store_id, platform, sender_id, text):
     """
-    Enqueue process_incoming_message as a Celery task.
-
-    The calling view (views_meta.py) stays unchanged — it still calls
-    process_message_async() and returns 200 to Meta immediately.
+    Launch process_incoming_message in a background thread.
+    This allows the webhook to return 200 to Meta immediately without needing a separate Celery worker.
     """
-    process_incoming_message.delay(store_id, platform, sender_id, text)
+    thread = threading.Thread(
+        target=process_incoming_message,
+        args=(store_id, platform, sender_id, text),
+        daemon=True,
+    )
+    thread.start()
