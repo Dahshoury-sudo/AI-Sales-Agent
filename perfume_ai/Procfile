@@ -1,3 +1,3 @@
-web: gunicorn --workers 3 --threads 4 perfume_ai.wsgi:application
+web: gunicorn --workers 3 --threads 4 --access-logfile - perfume_ai.wsgi:application
 worker: celery -A perfume_ai worker --loglevel=info --concurrency=2 -E
 release: python manage.py migrate
