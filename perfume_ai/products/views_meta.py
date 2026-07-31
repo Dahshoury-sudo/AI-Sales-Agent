@@ -3,6 +3,8 @@ import hashlib
 import json
 import logging
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -14,6 +16,7 @@ from products.throttles import WebhookThrottle
 
 logger = logging.getLogger(__name__)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class MetaWebhookView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -49,9 +52,14 @@ class MetaWebhookView(APIView):
                         value = change.get("value", {})
                         if "messages" in value:
                             receiving_id = value.get("metadata", {}).get("phone_number_id")
+                            logger.info(f"[WhatsApp Webhook] Received message for phone_number_id={receiving_id}")
                             store_settings = StoreSettings.objects.filter(whatsapp_phone_number_id=receiving_id).first()
                             if not store_settings:
-                                logger.warning(f"No store found for WA phone number ID {receiving_id}")
+                                all_ids = list(StoreSettings.objects.values_list('whatsapp_phone_number_id', flat=True))
+                                logger.warning(
+                                    f"[WhatsApp Webhook] No store found for phone_number_id={receiving_id}. "
+                                    f"IDs in DB: {all_ids}"
+                                )
                                 continue
                                 
                             if not self.verify_signature(request, body, store_settings.meta_app_secret):
