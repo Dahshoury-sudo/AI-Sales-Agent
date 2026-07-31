@@ -19,9 +19,16 @@ def _get_fernet():
         return None
 
 
+def is_encrypted(value):
+    """Check if a string looks like a Fernet token."""
+    if not isinstance(value, str):
+        return False
+    return value.startswith('gAAAAA')
+
+
 def encrypt_value(value):
-    """Encrypt a string value. Returns the original value if no key is configured."""
-    if not value:
+    """Encrypt a string value. Returns the original value if no key is configured or already encrypted."""
+    if not value or is_encrypted(value):
         return value
     fernet = _get_fernet()
     if not fernet:
@@ -62,6 +69,11 @@ class EncryptedTextField(models.TextField):
         """Decrypt when reading from DB."""
         return decrypt_value(value)
 
+    def to_python(self, value):
+        if isinstance(value, str) and is_encrypted(value):
+            return decrypt_value(value)
+        return value
+
 
 class EncryptedCharField(models.CharField):
     """A CharField that encrypts data at rest using Fernet."""
@@ -74,3 +86,8 @@ class EncryptedCharField(models.CharField):
     def from_db_value(self, value, expression, connection):
         """Decrypt when reading from DB."""
         return decrypt_value(value)
+
+    def to_python(self, value):
+        if isinstance(value, str) and is_encrypted(value):
+            return decrypt_value(value)
+        return value
