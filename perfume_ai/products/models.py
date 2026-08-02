@@ -1,7 +1,7 @@
 import secrets
 from django.db import models
 from django.contrib.auth.models import User
-from .encryption import EncryptedCharField, EncryptedTextField
+
 
 def generate_api_key():
     return secrets.token_urlsafe(32)
@@ -23,8 +23,8 @@ class StoreSettings(models.Model):
     
     # Meta Integration Credentials (encrypted at rest)
     meta_verify_token = models.CharField(max_length=100, blank=True, help_text="Token for webhook verification")
-    meta_access_token = EncryptedTextField(blank=True, help_text="Graph API Access Token")
-    meta_app_secret = EncryptedCharField(max_length=500, blank=True, help_text="App Secret for signature validation")
+    meta_access_token = models.TextField(blank=True, help_text="Graph API Access Token")
+    meta_app_secret = models.CharField(max_length=500, blank=True, help_text="App Secret for signature validation")
     facebook_page_id = models.CharField(max_length=100, blank=True)
     instagram_account_id = models.CharField(max_length=100, blank=True)
     whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
