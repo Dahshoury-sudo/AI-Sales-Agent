@@ -12,6 +12,8 @@ from django.db.models import Avg, Count
 from .models import Product, ConversationEvaluation, Order, Conversation
 from .serializers import ProductSerializer
 from .auth import StoreAPIKeyAuthentication
+from dashboard.auth_backend import StoreOwnerAuthentication
+from rest_framework.permissions import IsAuthenticated
 from .services.router import route
 from .throttles import ChatThrottle, StoreKeyThrottle
 
@@ -122,7 +124,8 @@ class ChatAPIView(APIView):
             )
 
 class AnalyticsAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         store = request.store
@@ -187,7 +190,8 @@ class OrdersDashboardView(TemplateView):
 
 
 class OrdersDashboardAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         store = request.store
@@ -226,7 +230,8 @@ class OrdersDashboardAPIView(APIView):
 
 
 class OrderStatusUpdateView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request, order_id):
         store = request.store
@@ -265,7 +270,8 @@ class AnalyticsDashboardView(TemplateView):
 
 
 class BulkImportAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         store = request.store
@@ -344,16 +350,18 @@ class HandoffDashboardView(TemplateView):
     template_name = 'products/handoff_dashboard.html'
 
 class HandoffConversationsAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
     throttle_classes = [StoreKeyThrottle]
 
     def get(self, request):
         store = request.store
-        convs = Conversation.objects.filter(store=store, needs_human=True).order_by('-created_at')
+        convs = Conversation.objects.filter(store=store, needs_human=True).prefetch_related('messages').order_by('-created_at')
         
         data = []
         for c in convs:
-            last_msg = c.messages.order_by('-created_at').first()
+            msgs = list(c.messages.all())
+            last_msg = sorted(msgs, key=lambda m: m.created_at, reverse=True)[0] if msgs else None
             data.append({
                 "id": c.id,
                 "platform": c.platform,
@@ -365,7 +373,8 @@ class HandoffConversationsAPIView(APIView):
         return Response({"conversations": data})
 
 class HandoffMessagesAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
     throttle_classes = [StoreKeyThrottle]
 
     def get(self, request, conversation_id):
@@ -391,7 +400,8 @@ class HandoffMessagesAPIView(APIView):
         })
 
 class HandoffReplyAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
     throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
@@ -418,7 +428,8 @@ class HandoffReplyAPIView(APIView):
         return Response({"status": "Message sent"})
 
 class HandoffResolveAPIView(APIView):
-    authentication_classes = [StoreAPIKeyAuthentication]
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
     throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
@@ -432,3 +443,31 @@ class HandoffResolveAPIView(APIView):
         conv.save()
         
         return Response({"status": "Conversation resolved"})
+
+class ChatHistoryDashboardView(TemplateView):
+    template_name = 'products/chat_history.html'
+
+class ChatHistoryConversationsAPIView(APIView):
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [StoreKeyThrottle]
+
+    def get(self, request):
+        store = request.store
+        # Get all conversations for this store, ordered by newest first
+        convs = Conversation.objects.filter(store=store).prefetch_related('messages').order_by('-created_at')
+        
+        data = []
+        for c in convs:
+            msgs = list(c.messages.all())
+            last_msg = sorted(msgs, key=lambda m: m.created_at, reverse=True)[0] if msgs else None
+            data.append({
+                "id": c.id,
+                "platform": c.platform,
+                "platform_sender_id": c.platform_sender_id,
+                "needs_human": c.needs_human,
+                "created_at": c.created_at.isoformat(),
+                "last_message": last_msg.content if last_msg else "No messages"
+            })
+            
+        return Response({"conversations": data})

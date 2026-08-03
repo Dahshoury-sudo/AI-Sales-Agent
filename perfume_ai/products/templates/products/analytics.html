@@ -411,19 +411,11 @@
     </div>
 
     <script>
-        const loadBtn = document.getElementById('loadBtn');
         const loading = document.getElementById('loading');
         const dashboard = document.getElementById('dashboard');
         const errorMsg = document.getElementById('errorMsg');
-        const apiKeyInput = document.getElementById('apiKey');
-
-        // Auto-load API key from localStorage
-        const savedApiKey = localStorage.getItem('perfumeApiKey');
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
-            // Optionally auto-load data if key exists
-            setTimeout(() => loadBtn.click(), 100);
-        }
+        // Use JWT token from dashboard localStorage (no API key needed)
+        const ACCESS_TOKEN = localStorage.getItem('access_token');
 
         function scoreColor(val) {
             if (val >= 80) return 'score-good';
@@ -437,24 +429,18 @@
             el.className = 'metric-value ' + scoreColor(value);
         }
 
-        loadBtn.addEventListener('click', async () => {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) { alert('لازم تدخل مفتاح الـ API الأول!'); return; }
-
-            // Save for future use
-            localStorage.setItem('perfumeApiKey', apiKey);
-
+        async function loadAnalytics() {
             loading.style.display = 'block';
             dashboard.style.display = 'none';
             errorMsg.style.display = 'none';
 
             try {
                 const res = await fetch('/api/analytics/data/', {
-                    headers: { 'X-API-Key': apiKey }
+                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
                 });
 
                 if (!res.ok) {
-                    throw new Error(res.status === 403 ? 'مفتاح الـ API غير صحيح' : 'حصل خطأ في تحميل البيانات');
+                    throw new Error('حصل خطأ في تحميل البيانات');
                 }
 
                 const data = await res.json();
@@ -502,7 +488,10 @@
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = '❌ ' + err.message;
             }
-        });
+        }
+
+        // Auto-load on page open
+        loadAnalytics();
     </script>
 </body>
 </html>

@@ -440,14 +440,9 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const spinner = document.getElementById('spinner');
         const resultsDiv = document.getElementById('results');
-        const apiKeyInput = document.getElementById('apiKey');
+        // Use JWT token from dashboard localStorage (no API key needed)
+        const ACCESS_TOKEN = localStorage.getItem('access_token');
         let selectedFile = null;
-
-        // Auto-load API key
-        const savedApiKey = localStorage.getItem('perfumeApiKey');
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
-        }
 
         // Click to open file picker
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -483,15 +478,7 @@
         }
 
         uploadBtn.addEventListener('click', async () => {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                alert('لازم تدخل مفتاح الـ API الأول!');
-                return;
-            }
             if (!selectedFile) return;
-
-            // Save for future use
-            localStorage.setItem('perfumeApiKey', apiKey);
 
             uploadBtn.disabled = true;
             spinner.style.display = 'block';
@@ -503,7 +490,7 @@
             try {
                 const res = await fetch('/api/import/upload/', {
                     method: 'POST',
-                    headers: { 'X-API-Key': apiKey },
+                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` },
                     body: formData,
                 });
                 const data = await res.json();

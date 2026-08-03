@@ -861,65 +861,46 @@
 </div>
 
 <script>
-    let API_KEY = '';
+    // Use JWT token from dashboard localStorage (no API key needed)
+    const ACCESS_TOKEN = localStorage.getItem('access_token');
     let STORE_NAME = '';
     let ALL_ORDERS = [];
     let currentFilter = 'all';
 
-    // Auto-load API key
-    const savedApiKey = localStorage.getItem('perfumeApiKey');
-    if (savedApiKey) {
-        document.getElementById('api-key-input').value = savedApiKey;
-        setTimeout(() => document.getElementById('login-btn').click(), 100);
-    }
-
-    // ═══ Login ═══
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const key = document.getElementById('api-key-input').value.trim();
-        if (!key) return;
-
-        localStorage.setItem('perfumeApiKey', key);
-
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.textContent = 'جاري التحقق...';
-        loginBtn.disabled = true;
-
+    // Auto-load orders using JWT on page load
+    async function autoLogin() {
+        if (!ACCESS_TOKEN) {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            return;
+        }
         try {
             const res = await fetch('/api/orders/dashboard/', {
-                headers: { 'X-API-Key': key }
+                headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
             });
-
             if (res.ok) {
                 const data = await res.json();
-                API_KEY = key;
                 STORE_NAME = data.store_name;
                 ALL_ORDERS = data.orders;
-
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('store-name-display').textContent = STORE_NAME;
-
                 renderStats();
                 renderOrders(ALL_ORDERS);
             } else {
-                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('login-screen').style.display = 'flex';
             }
         } catch (err) {
-            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('login-screen').style.display = 'flex';
         }
+    }
 
-        loginBtn.textContent = 'دخول';
-        loginBtn.disabled = false;
-    });
+    autoLogin();
 
     function logout() {
-        API_KEY = '';
         ALL_ORDERS = [];
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('api-key-input').value = '';
-        document.getElementById('login-error').style.display = 'none';
     }
 
     // ═══ Stats ═══
@@ -1115,7 +1096,7 @@
             const res = await fetch(`/api/orders/${orderId}/status/`, {
                 method: 'PATCH',
                 headers: {
-                    'X-API-Key': API_KEY,
+                    'Authorization': `Bearer ${ACCESS_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ status: newStatus })
@@ -1123,14 +1104,13 @@
 
             if (res.ok) {
                 const data = await res.json();
-                // Update local data
                 const order = ALL_ORDERS.find(o => o.id === orderId);
                 if (order) {
                     order.status = newStatus;
                 }
                 renderStats();
                 filterOrders();
-                openModal(orderId); // Refresh modal
+                openModal(orderId);
             }
         } catch (err) {
             console.error('Error changing status:', err);
@@ -1156,10 +1136,10 @@
 
     // Silent fetch: pull fresh orders from server & merge
     async function _fetchOrders() {
-        if (!API_KEY) return; // Not logged in yet
+        if (!ACCESS_TOKEN) return;
         try {
             const res = await fetch('/api/orders/dashboard/', {
-                headers: { 'X-API-Key': API_KEY }
+                headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
             });
             if (!res.ok) return;
             const data = await res.json();
@@ -1195,28 +1175,14 @@
         setInterval(_fetchOrders, 30_000);
     }
 
-    // Kick off polling after successful login (patching login form submit)
-    const _loginForm = document.getElementById('login-form');
-    const _origLoginSubmit = _loginForm.onsubmit;
-    // We use a flag to start polling only once after first successful auth
-    let _pollingStarted = false;
-
-    // Wrap the existing login flow to hook in polling start
-    const _origLoginHandler = _loginForm._loginHandler;
-    document.addEventListener('dashboardReady', () => {
-        if (!_pollingStarted) {
-            _pollingStarted = true;
-            _startOrdersPolling();
-        }
-    });
-
-    // Patch renderOrders to fire a custom event so polling starts after login
+    // Patch renderOrders to start polling after first load
     const _origRenderOrders = renderOrders;
+    let _pollingStarted = false;
     renderOrders = function(orders) {
         _origRenderOrders(orders);
-        if (!_pollingStarted && API_KEY) {
+        if (!_pollingStarted) {
             _pollingStarted = true;
-            _startOrdersPolling();
+            setInterval(_fetchOrders, 30_000);
             _setLastUpdated();
         }
     };
