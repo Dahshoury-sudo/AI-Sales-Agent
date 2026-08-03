@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from products.models import Conversation, Message
 
 
@@ -5,11 +7,30 @@ def create_conversation(store=None, platform="web", platform_sender_id=""):
     return Conversation.objects.create(store=store, platform=platform, platform_sender_id=platform_sender_id)
 
 def get_or_create_platform_conversation(store, platform, sender_id):
-    conversation, created = Conversation.objects.get_or_create(
+    # Get the latest conversation for this user
+    conversation = Conversation.objects.filter(
         store=store,
         platform=platform,
         platform_sender_id=sender_id
-    )
+    ).order_by('-created_at').first()
+
+    now = timezone.now()
+    created = False
+
+    if conversation:
+        # Check the last message in this conversation
+        last_message = conversation.messages.order_by('-created_at').first()
+        
+        # If there's a last message and it's older than 24 hours, create a new conversation
+        if last_message and (now - last_message.created_at) > timedelta(hours=24):
+            conversation = create_conversation(store, platform, sender_id)
+            created = True
+        # If there are no messages yet (edge case) or last message is recent, use the existing one
+    else:
+        # No previous conversation found, create a new one
+        conversation = create_conversation(store, platform, sender_id)
+        created = True
+
     return conversation, created
 
 

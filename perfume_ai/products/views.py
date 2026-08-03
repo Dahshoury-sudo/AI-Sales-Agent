@@ -357,6 +357,7 @@ class HandoffConversationsAPIView(APIView):
             data.append({
                 "id": c.id,
                 "platform": c.platform,
+                "platform_sender_id": c.platform_sender_id,
                 "created_at": c.created_at.isoformat(),
                 "last_message": last_msg.content if last_msg else "No messages"
             })

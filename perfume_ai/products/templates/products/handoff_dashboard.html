@@ -153,17 +153,17 @@
         }
 
         .message.user {
-            align-self: flex-start;
-            background: var(--user-msg);
-            border: 1px solid var(--primary);
-            border-bottom-right-radius: 0;
-        }
-
-        .message.assistant {
             align-self: flex-end;
             background: var(--bot-msg);
             border: 1px solid var(--glass-border);
             border-bottom-left-radius: 0;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--user-msg);
+            border: 1px solid var(--primary);
+            border-bottom-right-radius: 0;
         }
 
         .message-time {
@@ -356,6 +356,7 @@
                 <div class="chat-header-info">
                     <h3>محادثة رقم #<span id="current-conv-id"></span></h3>
                     <span id="current-platform-badge"></span>
+                    <span id="current-sender-info" style="font-size:0.85rem; color:var(--text-muted); background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:20px; border:1px solid var(--glass-border);"></span>
                 </div>
                 <button class="btn-resolve" id="btn-resolve" onclick="resolveConversation()">
                     <i class="fas fa-check"></i> إنهاء المحادثة (Resolved)
@@ -431,14 +432,19 @@
                     div.onclick = () => {
                         document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
                         div.classList.add('active');
-                        openConversation(conv.id, conv.platform);
+                        openConversation(conv.id, conv.platform, conv.platform_sender_id);
                     };
+
+                    const senderLine = conv.platform_sender_id
+                        ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${buildSenderInfo(conv.platform, conv.platform_sender_id)}</div>`
+                        : '';
                     
                     div.innerHTML = `
                         <div class="conv-header">
                             <span>عميل #${conv.id} ${getPlatformBadgeHTML(conv.platform)}</span>
                             <span>${formatDate(conv.created_at)}</span>
                         </div>
+                        ${senderLine}
                         <div class="conv-preview">${conv.last_message}</div>
                     `;
                     list.appendChild(div);
@@ -448,7 +454,30 @@
             }
         }
 
-        async function openConversation(id, platform) {
+        function formatWhatsAppNumber(phone) {
+            const digits = phone.replace(/\D/g, '');
+            // Egyptian numbers: 20 + 10-digit local (e.g. 201234567890 → 01234567890)
+            if (digits.startsWith('20') && digits.length === 12) {
+                return '0' + digits.slice(2);
+            }
+            // Already local format
+            if (digits.startsWith('0')) return digits;
+            // Generic: strip country code, keep last 10 digits and prepend 0
+            if (digits.length > 10) {
+                return '0' + digits.slice(-10);
+            }
+            return digits;
+        }
+
+        function buildSenderInfo(platform, senderId) {
+            if (!senderId) return '';
+            if (platform === 'whatsapp')  return `📞 ${formatWhatsAppNumber(senderId)}`;
+            if (platform === 'instagram') return `📸 @${senderId}`;
+            if (platform === 'messenger') return `💬 fb: ${senderId}`;
+            return `🔗 ${senderId}`;
+        }
+
+        async function openConversation(id, platform, senderInfo) {
             if (activeConversationId === id) return; // Ignore clicking the same chat
             activeConversationId = id;
             activeConversationPlatform = platform;
@@ -456,6 +485,9 @@
             document.getElementById('chat-area').style.display = 'flex';
             document.getElementById('current-conv-id').textContent = id;
             document.getElementById('current-platform-badge').innerHTML = getPlatformBadgeHTML(platform);
+            const senderEl = document.getElementById('current-sender-info');
+            senderEl.textContent = buildSenderInfo(platform, senderInfo);
+            senderEl.style.display = senderInfo ? 'inline-block' : 'none';
             document.getElementById('btn-resolve').style.display = 'block';
             
             // Clear messages instantly and show loading state
