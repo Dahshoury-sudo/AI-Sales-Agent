@@ -58,7 +58,6 @@ class Product(models.Model):
     ]
 
     PERFUME_TYPE_CHOICES = [
-        ("oriental", "عطور شرقية"),
         ("western", "عطور غربية"),
         ("niche", "نيش"),
         ("ultra_niche", "الترا نيش (بريميوم)"),
@@ -235,4 +234,4 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"[{self.type}] {self.title} - {self.store.name}"
+        return f"[{self.type}] {self.title} - {self.store.name}"
