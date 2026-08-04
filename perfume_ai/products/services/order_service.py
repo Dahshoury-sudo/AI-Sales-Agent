@@ -246,7 +246,7 @@ Return valid JSON in this exact format:
             
         # Only check quantities for products we actually found
         elif not p.get("quantity"):
-            product_missing_fields.append(f"الكمية المطلوبة من عطر {p.get('name')}")
+            product_missing_fields.append(f"كمية الزجاجات المطلوبة من عطر {p.get('name')}")
 
     if product_missing_fields:
         missing_text = " و ".join(product_missing_fields)
