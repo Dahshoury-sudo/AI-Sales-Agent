@@ -102,6 +102,7 @@ Return valid JSON in this exact format:
             product = resolve_product(message=p_name, store=store)
             
         if product:
+            p_data["name"] = product.name
             variants = list(product.variants.all())
             if not variants:
                 continue # Edge case: product has no variants

@@ -42,7 +42,7 @@ def get_product_info(message, history=None, store=None):
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
             context += f"""
-Name: {product.name}
+Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Stock Status: {stock_status}
 Available Sizes & Prices:
@@ -62,6 +62,7 @@ Description: {product.description}
 """
         instructions = """
 ═══ تعليمات صارمة ═══
+1. 🔴 استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل في كتابته.
 1. 🔴 فرّق بين نوع السؤال:
    • لو العميل بيسأل عن التوافر بس (زي "عندكم سوفاج؟" أو "فيه بلو دي شانيل؟" أو "موجود عندكم X؟") → رد بإجابة قصيرة جداً: "أيوه يا فندم عندنا" أو "أه متوفر عندنا". ممكن تعرض عليه يعرف الأسعار والأحجام بس متقولهمش من نفسك. متلقيش كل التفاصيل والأسعار إلا لو طلبها.
    • لو العميل سأل عن السعر أو الحجم صراحة (زي "بكام؟" أو "الأحجام إيه؟") → هنا اذكر الأسعار والأحجام.
@@ -94,7 +95,7 @@ Description: {product.description}
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 
                 context += f"""
-Name: {alt.name}
+Name (الاسم الصحيح): {alt.name}
 Brand: {brand_display}
 Available Sizes & Prices:
 {variants_str}
