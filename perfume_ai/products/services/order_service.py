@@ -113,7 +113,7 @@ Return valid JSON in this exact format:
             available_original = [v for v in variants if v.bottle_type == "original" and (v.stock or 0) > 0]
             
             if not bottle_type:
-                if product.brand.name.lower() == "perfamix":
+                if product.brand.name.lower() == store.name.lower():
                     bottle_type = "normal"
                     p_data["bottle_type"] = "normal"
                 elif not available_original and available_normal:

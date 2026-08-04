@@ -38,7 +38,7 @@ def get_product_info(message, history=None, store=None):
             oos_str = "، ".join(out_of_stock_variants) if out_of_stock_variants else "لا يوجد"
             
             stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-            is_custom_blend = product.brand.name.lower() == "perfamix"
+            is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
             context += f"""
@@ -90,7 +90,7 @@ Description: {product.description}
                         available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP")
                 
                 variants_str = "\n".join(available_variants)
-                is_custom_blend = alt.brand.name.lower() == "perfamix"
+                is_custom_blend = bool(alt.store and alt.brand.name.lower() == alt.store.name.lower())
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 
                 context += f"""

@@ -34,7 +34,7 @@ def _format_products(products):
         oos_str = "، ".join(out_of_stock_variants) if out_of_stock_variants else "لا يوجد"
         
         stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-        is_custom_blend = product.brand.name.lower() == "perfamix"
+        is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
         brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
         context += f"""
