@@ -237,16 +237,21 @@ Return valid JSON in this exact format:
     for p in products_data:
         if not isinstance(p, dict): continue
         
+        missing_for_this_product = []
         if "product_obj" in p:
             if "available_volumes_display" in p:
                 vols = "، ".join(p["available_volumes_display"])
-                product_missing_fields.append(f"الحجم المطلوب من عطر {p.get('name')} (متاح: {vols})")
+                missing_for_this_product.append(f"الحجم المطلوب (متاح: {vols})")
             if p.get("missing_bottle_type"):
-                product_missing_fields.append(f"نوع الزجاجة لعطر {p.get('name')} (هل تفضل تركيبه في زجاجة أوريجينال أم زجاجة البراند؟)")
+                missing_for_this_product.append("نوع الزجاجة (أوريجينال أم زجاجة البراند؟)")
             
-        # Only check quantities for products we actually found
-        elif not p.get("quantity"):
-            product_missing_fields.append(f"كمية الزجاجات المطلوبة من عطر {p.get('name')}")
+        # Check quantities for products
+        if not p.get("quantity"):
+            missing_for_this_product.append("كمية الزجاجات المطلوبة")
+            
+        if missing_for_this_product:
+            joined_missing = " و ".join(missing_for_this_product)
+            product_missing_fields.append(f"{joined_missing} من عطر {p.get('name')}")
 
     if product_missing_fields:
         missing_text = " و ".join(product_missing_fields)
