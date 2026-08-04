@@ -185,6 +185,51 @@
             background: rgba(255, 255, 255, 0.4);
         }
         
+        .chat-input-area {
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-send:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+        }
+        
         .badge {
             background: var(--danger);
             color: white;
@@ -302,6 +347,11 @@
             
             <div class="chat-messages" id="chat-messages">
                 <!-- Messages will be injected here -->
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="اكتب ردك للعميل هنا..." onkeypress="handleKeyPress(event)">
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
@@ -470,6 +520,59 @@
                 
             } catch(e) {
                 console.error("Error fetching messages", e);
+            }
+        }
+
+        async function sendMessage() {
+            if (!activeConversationId) return;
+            
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            input.value = '';
+            
+            // Optimistically add message
+            const msgContainer = document.getElementById('chat-messages');
+            
+            // If it was empty, clear the "no messages" text
+            if (msgContainer.innerHTML.includes('لا توجد رسائل سابقة')) {
+                msgContainer.innerHTML = '';
+            }
+            
+            const div = document.createElement('div');
+            div.className = `message assistant`;
+            div.innerHTML = `
+                <div>${text.replace(/\\n/g, '<br>')}</div>
+                <div class="message-time">الآن (أنت)</div>
+            `;
+            msgContainer.appendChild(div);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+
+            try {
+                await fetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ACCESS_TOKEN}`
+                    },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                // Reset JSON cache to force update on next fetch
+                lastMessagesJSON = "";
+                fetchMessages();
+                
+                // Also update the conversations list to show "Needs Human" badge immediately
+                fetchConversations();
+            } catch(e) {
+                console.error("Error sending message", e);
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
         }
 

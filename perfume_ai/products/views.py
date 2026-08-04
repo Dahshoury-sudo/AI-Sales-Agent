@@ -416,6 +416,10 @@ class HandoffReplyAPIView(APIView):
         except Conversation.DoesNotExist:
             return Response({"error": "Conversation not found"}, status=404)
             
+        if not conv.needs_human:
+            conv.needs_human = True
+            conv.save()
+            
         save_message(conv, "assistant", message)
         
         # Send reply back to the customer on their platform
