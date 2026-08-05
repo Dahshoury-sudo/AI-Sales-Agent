@@ -39,6 +39,7 @@ Rules:
 - If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
 - CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
+- STATE MANAGEMENT: Accumulate preferences from the history (e.g., if they asked for 'female' before, and now say 'Dior', return both). BUT if the user's latest message changes or overrides a previous preference (e.g., they wanted 'Xerjoff' before but now want 'Dior'), OVERRIDE the old preference and ONLY return the NEW one ('Dior'). Do NOT include outdated criteria from the history.
 """
 
     messages = [
