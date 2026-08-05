@@ -46,8 +46,13 @@ def match_static_faq(message: str, store) -> dict | None:
             for kw in faq.keywords.split(',')
             if kw.strip()
         ]
-        for keyword in keywords:
-            if keyword and keyword in normalized_msg:
-                return {"answer": faq.answer}
+        for keyword_group in keywords:
+            if '+' in keyword_group:
+                required_words = [w.strip() for w in keyword_group.split('+') if w.strip()]
+                if required_words and all(req_word in normalized_msg for req_word in required_words):
+                    return {"answer": faq.answer}
+            else:
+                if keyword_group and keyword_group in normalized_msg:
+                    return {"answer": faq.answer}
 
     return None
