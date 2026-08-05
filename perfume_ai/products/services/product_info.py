@@ -50,6 +50,7 @@ Available Sizes & Prices:
 Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
 {oos_str}
 Gender: {product.gender}
+Perfume Type: {product.get_perfume_type_display() if product.perfume_type else 'غير محدد'}
 Season: {product.season}
 Occasion: {product.occasion}
 Longevity: {product.longevity}
@@ -100,6 +101,7 @@ Brand: {brand_display}
 Available Sizes & Prices:
 {variants_str}
 Gender: {alt.gender}
+Perfume Type: {alt.get_perfume_type_display() if alt.perfume_type else 'غير محدد'}
 Description: {alt.description}
 -----------------------
 """
