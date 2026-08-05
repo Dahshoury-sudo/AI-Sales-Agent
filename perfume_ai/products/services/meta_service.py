@@ -1,5 +1,6 @@
 import logging
 import requests
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -147,8 +148,8 @@ def send_platform_message(conversation, text):
         should_send_image = True
         text = text.replace("[SEND_BOTTLE_IMAGE]", "").strip()
         
-        # TODO: Replace this URL with your actual image URL
-        BOTTLE_IMAGE_URL = "https://res.cloudinary.com/dtssxxfra/image/upload/v1785375186/WhatsApp_Image_2026-07-28_at_10.39.44_PM_enqvw9.jpg"
+        
+        BOTTLE_IMAGE_URL = settings.BOTTLE_IMAGE_URL
 
     # Send the image first if requested
     if should_send_image:

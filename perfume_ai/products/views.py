@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.db import transaction
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ class ChatAPIView(APIView):
             image_url = None
             if "[SEND_BOTTLE_IMAGE]" in reply:
                 reply = reply.replace("[SEND_BOTTLE_IMAGE]", "").strip()
-                image_url = "https://res.cloudinary.com/dtssxxfra/image/upload/v1785375186/WhatsApp_Image_2026-07-28_at_10.39.44_PM_enqvw9.jpg"
+                image_url = settings.BOTTLE_IMAGE_URL
 
             save_message(
                 conversation,
