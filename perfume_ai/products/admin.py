@@ -13,6 +13,7 @@ from .models import (
     OrderItem,
     ConversationEvaluation,
     Notification,
+    StaticFAQ,
 )
 
 
@@ -120,3 +121,10 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = ("id", "store", "type", "title", "is_read", "created_at")
     list_filter = ("store", "type", "is_read")
     search_fields = ("title", "message")
+
+@admin.register(StaticFAQ)
+class StaticFAQAdmin(admin.ModelAdmin):
+    list_display = ("question", "store", "priority", "is_active", "created_at")
+    list_filter = ("store", "is_active")
+    search_fields = ("question", "keywords", "answer")
+    list_editable = ("priority", "is_active")

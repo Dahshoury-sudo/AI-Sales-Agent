@@ -7,6 +7,7 @@ from .views_store import StoreSettingsView, StoreAPIKeyView
 from .views_products import ProductListView, ProductDetailView, ProductCreateView
 from .views_analytics import DashboardOverviewView, AnalyticsView
 from .views_notifications import NotificationListView, NotificationMarkReadView
+from .views_faq import FAQListCreateView, FAQDetailView
 
 urlpatterns = [
     # --- Page views ---
@@ -40,4 +41,8 @@ urlpatterns = [
     # --- Notifications API ---
     path("api/notifications/", NotificationListView.as_view(), name="dashboard-api-notifications"),
     path("api/notifications/mark-read/", NotificationMarkReadView.as_view(), name="dashboard-api-notifications-mark-read"),
+
+    # --- FAQ API ---
+    path("api/faqs/", FAQListCreateView.as_view(), name="dashboard-api-faqs"),
+    path("api/faqs/<int:faq_id>/", FAQDetailView.as_view(), name="dashboard-api-faq-detail"),
 ]

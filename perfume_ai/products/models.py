@@ -235,4 +235,22 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"[{self.type}] {self.title} - {self.store.name}"
+        return f"[{self.type}] {self.title} - {self.store.name}"
+
+
+class StaticFAQ(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="static_faqs")
+    question = models.CharField(max_length=500, help_text="السؤال كما يظهر للإدارة")
+    keywords = models.TextField(help_text="كلمات مفتاحية مفصولة بفاصلة (مثال: شحن, توصيل, توصل)")
+    answer = models.TextField(help_text="الرد الثابت")
+    priority = models.IntegerField(default=0, help_text="أولوية أعلى = يتشيك الأول")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-priority', 'id']
+        verbose_name = "سؤال ثابت"
+        verbose_name_plural = "الأسئلة الثابتة"
+
+    def __str__(self):
+        return f"{self.question[:50]} ({self.store.name})"

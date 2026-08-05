@@ -127,6 +127,12 @@ def route(message, history=None, store=None, conversation=None):
     if history is None:
         history = []
 
+    # --- Static FAQ check (before AI — saves tokens) ---
+    from .static_faq_service import match_static_faq
+    faq_match = match_static_faq(message, store)
+    if faq_match:
+        return faq_match["answer"], ""
+
     # --- Goodbye loop detection ---
     if _is_goodbye_loop(history):
         goodbye_words = ["سلام", "باي", "مع السلامة", "bye", "شكرا"]
