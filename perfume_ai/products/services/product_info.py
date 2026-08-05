@@ -41,10 +41,14 @@ def get_product_info(message, history=None, store=None):
             is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
+            has_original_bottle = any(v.bottle_type == 'original' for v in variants)
+            original_bottle_status = "Available (see sizes below)" if has_original_bottle else "NOT AVAILABLE (DO NOT OFFER IT)"
+
             context += f"""
 Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Stock Status: {stock_status}
+Original Bottle: {original_bottle_status}
 Available Sizes & Prices:
 {avail_str}
 Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
@@ -95,9 +99,13 @@ Description: {product.description}
                 is_custom_blend = bool(alt.store and alt.brand.name.lower() == alt.store.name.lower())
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 
+                has_original_bottle = any(v.bottle_type == 'original' for v in variants)
+                original_bottle_status = "Available (see sizes below)" if has_original_bottle else "NOT AVAILABLE (DO NOT OFFER IT)"
+
                 context += f"""
 Name (الاسم الصحيح): {alt.name}
 Brand: {brand_display}
+Original Bottle: {original_bottle_status}
 Available Sizes & Prices:
 {variants_str}
 Gender: {alt.gender}

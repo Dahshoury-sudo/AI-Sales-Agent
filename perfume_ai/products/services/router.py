@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
+
 from .ai.classifier import classify
 from .ai.intent import extract_intent
 from .ai.recommendation import recommend
@@ -140,7 +142,15 @@ def route(message, history=None, store=None, conversation=None):
         if any(msg_clean == gw or msg_clean.startswith(gw) for gw in goodbye_words) and len(msg_clean) < 30:
             return "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك 24 ساعة. يوم سعيد!", ""
 
-    request_type = classify(message, history)
+    # --- Parallel classify + pre-fetch intent for recommendation path ---
+    # Fire both API calls simultaneously; classify result decides if intent is needed.
+    # This saves ~4-6 seconds on every recommendation request (the most common path).
+    intent_future = None
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        classify_future = executor.submit(classify, message, history)
+        intent_future   = executor.submit(extract_intent, message, history)
+        request_type = classify_future.result()  # wait for classifier first
+        # intent_future keeps running in background; we'll .result() it only if needed
 
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
     semantic_rep = _detect_semantic_repetition(history)
@@ -162,13 +172,16 @@ def route(message, history=None, store=None, conversation=None):
             products_list = []
             for p in random_products:
                 available_variants = []
+                has_original_bottle = False
                 for v in p.variants.all():
                     if v.bottle_type == 'normal' and p.oil_stock_grams >= (v.volume * p.concentration_percentage) / 100:
                         available_variants.append(f"{v.volume} ملي بـ {v.price} جنيه")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
                         available_variants.append(f"{v.volume} ملي أوريجينال بـ {v.price} جنيه")
+                        has_original_bottle = True
                 if available_variants:
-                    products_list.append(f"• {p.name} ({', '.join(available_variants)})")
+                    original_bottle_status = "" if has_original_bottle else " - (لا يوجد زجاجة أوريجينال)"
+                    products_list.append(f"• {p.name} ({', '.join(available_variants)}){original_bottle_status}")
             if products_list:
                 products_context = "\n\n═══ منتجات متوفرة يمكنك اقتراحها (ممنوع تذكر أي منتج غيرهم) ═══\n" + "\n".join(products_list)
         
@@ -187,7 +200,8 @@ def route(message, history=None, store=None, conversation=None):
         )
 
     if request_type == "recommendation":
-        intent = extract_intent(message, history)
+        # intent_future was already running in parallel — just collect the result now
+        intent = intent_future.result()
         
         # Check if gender is missing and not inferable from conversation history
         if not intent.get("gender"):

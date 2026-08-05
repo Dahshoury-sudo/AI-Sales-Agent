@@ -26,6 +26,7 @@ Rules:
 3. Check if the requested perfumes exist in the Available Perfumes list.
 4. If the perfumes exist in the list, return their exact names from the list.
 5. CRITICAL: If a requested perfume is absolutely NOT in the list, ignore it. Do NOT return a different perfume just because they share the same brand.
+6. CRITICAL: If the user's message is a short confirmation (e.g. "ماشي", "تمام", "ايوة", "اه", "قول سعرهم") in response to the assistant's offer to show prices or details, you MUST extract ALL the perfume names that the assistant explicitly recommended or mentioned in its IMMEDIATELY PRECEDING message.
 
 Output format MUST be valid JSON:
 {{"perfumes": ["Exact Name 1", "Exact Name 2"]}}  (Return an empty list if none found)
