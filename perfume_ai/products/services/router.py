@@ -233,6 +233,56 @@ def route(message, history=None, store=None, conversation=None):
                     history, store
                 )
         
+        # Check if the intent is too vague (only gender, nothing about taste/preferences)
+        # Ask about preferences before recommending blindly
+        has_taste_info = any([
+            intent.get("brand"),
+            intent.get("perfume_type"),
+            intent.get("season"),
+            intent.get("occasion"),
+            intent.get("longevity"),
+            intent.get("projection"),
+            intent.get("max_price"),
+            intent.get("notes"),
+        ])
+        
+        if not has_taste_info:
+            # Check if bot already asked about preferences recently (avoid looping)
+            already_asked_preferences = False
+            if history:
+                preference_indicators = [
+                    "بتحب", "تفضل", "ذوقك", "نوعية", "فريش", "عود", "خشبي",
+                    "سويت", "تقيل", "خفيف", "فواح", "هادي", "ريحة معينة",
+                    "ايه الريحة", "نوع العطر", "بتميل", "ستايلك",
+                ]
+                # Check last 3 bot messages only
+                bot_count = 0
+                for msg in reversed(history):
+                    if msg.get("role") == "assistant":
+                        content = msg.get("content", "")
+                        if any(ind in content for ind in preference_indicators):
+                            already_asked_preferences = True
+                            break
+                        bot_count += 1
+                        if bot_count >= 3:
+                            break
+            
+            if not already_asked_preferences:
+                return handle_general(
+                    f"""العميل بعتلي: "{message}"
+
+العميل ده عايز ترشيح عطر ({intent.get('gender', 'غير محدد')}) بس مقلش أي حاجة عن ذوقه أو تفضيلاته.
+
+اسأله سؤال واحد مختصر وودود عشان تفهم ذوقه قبل ما ترشح. مثلاً:
+- بتحب العطور الفريش والخفيفة ولا التقيلة والخشبية ؟
+- بتميل أكتر للعود ولا الريحة الأوروبية؟
+- في مناسبة معينة ولا للاستخدام اليومي؟
+
+⚠️ سؤال واحد بس مختصر (مش 3 أسئلة ورا بعض). الهدف تفهم ذوقه عشان ترشح صح.
+❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
+                    history, store
+                )
+        
         results = search_products(intent, store)
         response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store)
         
