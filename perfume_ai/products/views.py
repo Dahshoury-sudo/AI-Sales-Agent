@@ -311,7 +311,6 @@ class BulkImportTemplateView(APIView):
             "oil_stock_grams", "concentration_percentage",
             "norm_vol_1", "norm_price_1",
             "norm_vol_2", "norm_price_2",
-            "norm_vol_3", "norm_price_3",
             "orig_vol_1", "orig_price_1", "orig_stock_1",
             "orig_vol_2", "orig_price_2", "orig_stock_2",
         ]
@@ -325,8 +324,7 @@ class BulkImportTemplateView(APIView):
             "A fresh and woody fragrance",
             1000, 30,
             50, 500,
-            100, 900,
-            150, 1200,
+            90, 900,
             100, 5000, 5,
             200, 9000, 2
         ])
