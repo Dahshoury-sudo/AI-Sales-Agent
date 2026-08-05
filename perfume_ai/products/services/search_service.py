@@ -50,12 +50,19 @@ def search_products(intent, store=None):
 
     # Tier 1: All filters (occasion + notes + price)
     exact = soft_filters
+    sweet_notes = ["vanilla", "caramel", "tonka", "praline", "honey", "chocolate", "cacao", "marshmallow", "sugar", "cherry", "plum"]
     for note in notes:
-        exact = exact.filter(
-            Q(top_notes__icontains=note) |
-            Q(middle_notes__icontains=note) |
-            Q(base_notes__icontains=note)
-        )
+        if note.lower() in ["sweet", "gourmand", "مسكر", "سويتي"]:
+            query = Q()
+            for sn in sweet_notes:
+                query |= Q(top_notes__icontains=sn) | Q(middle_notes__icontains=sn) | Q(base_notes__icontains=sn)
+            exact = exact.filter(query)
+        else:
+            exact = exact.filter(
+                Q(top_notes__icontains=note) |
+                Q(middle_notes__icontains=note) |
+                Q(base_notes__icontains=note)
+            )
     if max_price:
         exact = exact.filter(variants__price__lte=max_price).distinct()
 
