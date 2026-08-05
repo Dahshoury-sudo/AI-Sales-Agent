@@ -22,10 +22,10 @@ Available Perfumes in Database:
 
 Rules:
 1. Translate Arabic names to English and fix spelling mistakes to match the exact names in the database.
-2. Be HIGHLY tolerant of phonetic Arabic transliterations and typos (e.g., 'فريساتشي يورس' or 'ايروس' -> 'Versace Eros', 'ديور سيفاج' -> 'Dior Sauvage').
+2. Be HIGHLY tolerant of phonetic Arabic transliterations and typos (e.g., 'فريساتشي يورس' or 'ايروس' -> 'Versace Eros', 'ديور سيفاج' -> 'Dior Sauvage', 'امبيرو' -> 'Ambero').
 3. Check if the requested perfumes exist in the Available Perfumes list.
 4. If the perfumes exist in the list, return their exact names from the list.
-5. CRITICAL: If a requested perfume is absolutely NOT in the list, ignore it. Do NOT return a different perfume just because they share the same brand.
+5. CRITICAL: If a requested perfume is absolutely NOT in the list, ignore it and DO NOT include it in the output. ❌ NEVER hallucinate or return a random/different perfume from the list just to fill the output. If you can't confidently map the user's word to a perfume in the list, return an empty list.
 6. CRITICAL: If the user's message is a short confirmation (e.g. "ماشي", "تمام", "ايوة", "اه", "قول سعرهم") in response to the assistant's offer to show prices or details, you MUST extract ALL the perfume names that the assistant explicitly recommended or mentioned in its IMMEDIATELY PRECEDING message.
 
 Output format MUST be valid JSON:
