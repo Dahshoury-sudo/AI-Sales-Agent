@@ -16,13 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from products.views import HomeView, InternalDashboardView, TermsView, PrivacyView, WidgetTestView
+from django.views.generic.base import RedirectView
+from products.views import InternalDashboardView, WidgetTestView
 
 urlpatterns = [
-    path("", HomeView.as_view(), name="home"),
+    # Redirect frontend pages to Vercel domain
+    path("", RedirectView.as_view(url="https://webvitas.com", permanent=True), name="home"),
+    path("terms/", RedirectView.as_view(url="https://webvitas.com/terms.html", permanent=True), name="terms"),
+    path("privacy/", RedirectView.as_view(url="https://webvitas.com/privacy.html", permanent=True), name="privacy"),
+    
     path("internal/", InternalDashboardView.as_view(), name="internal-dashboard"),
-    path("terms/", TermsView.as_view(), name="terms"),
-    path("privacy/", PrivacyView.as_view(), name="privacy"),
     path("widget-test/", WidgetTestView.as_view(), name="widget-test"),
     path("admin/", admin.site.urls),
     path("api/", include("products.urls")),
