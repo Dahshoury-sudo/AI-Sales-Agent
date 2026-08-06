@@ -509,7 +509,7 @@
       </div>
 
       <!-- Powered By -->
-      <div class="pfx-powered">Powered by <a href="#" onclick="return false;">Perfamix AI</a></div>
+      <div class="pfx-powered">Powered by <a href="https://webvitas.com" target="_blank" rel="noopener noreferrer">WebVitas AI</a></div>
     </div>
   `;
   shadow.appendChild(container);
