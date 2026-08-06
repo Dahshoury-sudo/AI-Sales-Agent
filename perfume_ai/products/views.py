@@ -56,6 +56,10 @@ class PrivacyView(TemplateView):
 class WidgetTestView(TemplateView):
     template_name = 'products/widget_test.html'
 
+from django.core.signing import Signer, BadSignature
+
+signer = Signer()
+
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
     throttle_classes = [ChatThrottle]
@@ -63,7 +67,7 @@ class ChatAPIView(APIView):
     def post(self, request):
 
         message = request.data.get("message")
-        conversation_id = request.data.get("conversation_id")
+        conversation_token = request.data.get("conversation_id")
         store = request.store
 
         if not message:
@@ -73,17 +77,23 @@ class ChatAPIView(APIView):
             )
 
         try:
+            conversation = None
+            history = []
 
-            if conversation_id:
-                conversation = get_conversation(conversation_id, store)
-                if not conversation:
-                    return Response(
-                        {"error": "Conversation not found or does not belong to this store"},
-                        status=404
-                    )
-                past_messages = get_conversation_messages(conversation)
-                history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
-            else:
+            if conversation_token:
+                try:
+                    # Verify the cryptographic signature (prevents ID guessing/tampering)
+                    real_conversation_id = signer.unsign_object(conversation_token)
+                    conversation = get_conversation(real_conversation_id, store)
+                except BadSignature:
+                    # If it's an old unsigned ID or tampered with, treat as new
+                    pass
+                
+                if conversation:
+                    past_messages = get_conversation_messages(conversation)
+                    history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
+
+            if not conversation:
                 conversation = create_conversation(store)
                 history = []
 
@@ -93,9 +103,11 @@ class ChatAPIView(APIView):
                 message
             )
 
+            signed_id = signer.sign_object(conversation.id)
+
             if conversation.needs_human:
                 return Response({
-                    "conversation_id": conversation.id,
+                    "conversation_id": signed_id,
                     "reply": "",
                     "needs_human": True,
                     "info": "This conversation is currently handed over to a human agent."
@@ -116,7 +128,7 @@ class ChatAPIView(APIView):
             )
 
             return Response({
-                "conversation_id": conversation.id,
+                "conversation_id": signed_id,
                 "reply": reply,
                 "image_url": image_url
             })
