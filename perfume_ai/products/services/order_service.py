@@ -133,8 +133,12 @@ Return valid JSON in this exact format:
                 if bottle_type == "original":
                     has_original = any(v.bottle_type == "original" for v in variants)
                     if not has_original:
+                        is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
                         if available_normal:
-                            return f"عذراً يا فندم، عطر {product.name} حصري للمتجر ولا يوجد منه زجاجات أوريجينال. متوفر فقط في زجاجة البراند. تحب تطلبه؟", ""
+                            if is_custom_blend:
+                                return f"عذراً يا فندم، عطر {product.name} من تصميمنا وابتكارنا ولا يوجد منه زجاجة أوريجينال. متوفر فقط في زجاجة البراند الخاصة بينا. تحب تطلبه؟", ""
+                            else:
+                                return f"عذراً يا فندم، غير متوفر زجاجات أوريجينال لعطر {product.name} حالياً. متوفر منه فقط زجاجة البراند التركيب بتاعتنا. تحب تطلبه؟", ""
                         else:
                             return f"عذراً يا فندم، عطر {product.name} نفد من المخزون حالياً 😔.", ""
                     elif not available_original:

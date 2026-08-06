@@ -42,7 +42,12 @@ def get_product_info(message, history=None, store=None):
             brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
             has_original_bottle = any(v.bottle_type == 'original' for v in variants)
-            original_bottle_status = "Available (see sizes below)" if has_original_bottle else "NOT AVAILABLE (DO NOT OFFER IT)"
+            if has_original_bottle:
+                original_bottle_status = "Available (see sizes below)"
+            elif is_custom_blend:
+                original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
+            else:
+                original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({product.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
 
             context += f"""
 Name (الاسم الصحيح): {product.name}
@@ -78,6 +83,7 @@ Description: {product.description}
 5. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
 6. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌) أو حجم معين نفد، أخبر العميل بذلك بشكل لطيف واقترح عليه إنه يسأل عن عطور تانية متوفرة أو اعرض عليه الأحجام المتوفرة إن وجدت.
 7. 🔴 ممنوع أسئلة فاضية (زي "عايز حاجة تانية؟"). مسموح بـ CTA بيعي بس مش كل مرة (زي "تحب تطلب؟" أو "تنورنا في الستور تجرب؟"). ❌ ممنوع توعد بحاجة مش تقدر تعملها (زي صور أو حجز معاد أو عينات).
+8. 🔴🔴 الزجاجة الأوريجينال: لو العميل سأل عن زجاجة أوريجينال، اقرأ خانة (Original Bottle) في بيانات المنتج وقول الرد المكتوب فيها بالحرف. ❌ ممنوع تقول على أي عطر إنه "حصري للمتجر" إلا لو مكتوب في الـ Brand بتاعه "عطر تركيب حصري خاص بالمتجر".
 """
     else:
         # Product not found, let's get some alternatives
@@ -100,7 +106,12 @@ Description: {product.description}
                 brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
 
                 has_original_bottle = any(v.bottle_type == 'original' for v in variants)
-                original_bottle_status = "Available (see sizes below)" if has_original_bottle else "NOT AVAILABLE (DO NOT OFFER IT)"
+                if has_original_bottle:
+                    original_bottle_status = "Available (see sizes below)"
+                elif is_custom_blend:
+                    original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
+                else:
+                    original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({alt.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
 
                 context += f"""
 Name (الاسم الصحيح): {alt.name}

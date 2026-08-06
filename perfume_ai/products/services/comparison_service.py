@@ -77,10 +77,19 @@ Return ONLY valid JSON in this format:
         is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
         brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
 
+        has_original_bottle = any(v.bottle_type == 'original' for v in variants)
+        if has_original_bottle:
+            original_bottle_status = "Available (see sizes below)"
+        elif is_custom_blend:
+            original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
+        else:
+            original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({product.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
+
         context += f"""
 Name: {product.name}
 Brand: {brand_display}
 Stock Status: {stock_status}
+Original Bottle: {original_bottle_status}
 Available Sizes & Prices:
 {avail_str}
 Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
