@@ -43,6 +43,20 @@ CORS_ALLOW_ALL_ORIGINS = True if DEBUG and not CORS_ALLOWED_ORIGINS else False
 
 CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.up.railway.app']
 
+# Allow the custom X-API-Key header from cross-origin widget requests
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-api-key',
+]
+
 
 # Application definition
 

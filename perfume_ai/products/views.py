@@ -52,6 +52,10 @@ class TermsView(TemplateView):
 class PrivacyView(TemplateView):
     template_name = 'products/privacy.html'
 
+
+class WidgetTestView(TemplateView):
+    template_name = 'products/widget_test.html'
+
 class ChatAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
     throttle_classes = [ChatThrottle]

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Simulation - Perfamix Widget Test</title>
+    <style>
+        /* Simulating a basic WordPress site to test widget isolation */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', serif;
+            background: #faf7f2;
+            color: #333;
+            line-height: 1.8;
+        }
+        header {
+            background: #2c1810;
+            color: white;
+            padding: 20px 40px;
+            text-align: center;
+        }
+        header h1 { font-size: 2rem; }
+        nav {
+            background: #3d2317;
+            padding: 10px 40px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        nav a {
+            color: #d4a574;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #2c1810, #5a3825);
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 10px; }
+        .hero p { font-size: 1.1rem; opacity: 0.8; }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .product-card h3 { font-size: 1.2rem; margin-bottom: 8px; color: #2c1810; }
+        .product-card .price { color: #8b5cf6; font-weight: bold; font-size: 1.3rem; }
+        .product-card p { font-size: 0.9rem; color: #666; margin: 8px 0; }
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #2c1810;
+            color: rgba(255,255,255,0.5);
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌸 Perfamix Store</h1>
+    </header>
+    <nav>
+        <a href="#">الرئيسية</a>
+        <a href="#">العطور الرجالية</a>
+        <a href="#">العطور النسائية</a>
+        <a href="#">العروض</a>
+        <a href="#">اتصل بنا</a>
+    </nav>
+
+    <div class="hero">
+        <h2>اكتشف عالم العطور الفاخرة</h2>
+        <p>مجموعة مميزة من أفخم العطور العالمية والشرقية</p>
+    </div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 24px; color: #2c1810;">أحدث العطور</h2>
+        <div class="products">
+            <div class="product-card">
+                <h3>Bleu de Chanel</h3>
+                <p>عطر رجالي فاخر بنفحات خشبية منعشة</p>
+                <div class="price">٥٠٠ ج.م</div>
+            </div>
+            <div class="product-card">
+                <h3>Baccarat Rouge 540</h3>
+                <p>عطر يونيسكس فاخر من ميزون فرانسيس كوركدجيان</p>
+                <div class="price">٩٠٠ ج.م</div>
+            </div>
+            <div class="product-card">
+                <h3>Oud Wood</h3>
+                <p>عطر شرقي فاخر بنفحات العود والتوابل</p>
+                <div class="price">٧٥٠ ج.م</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Perfamix Store — جميع الحقوق محفوظة</p>
+    </footer>
+
+    <!-- ============================================= -->
+    <!-- THIS IS THE ONLY LINE THE CLIENT NEEDS TO ADD -->
+    <!-- ============================================= -->
+    <script
+      src="/static/widget/perfume-chat.js"
+      data-api-key="PUT_YOUR_API_KEY_HERE"
+    ></script>
+</body>
+</html>
