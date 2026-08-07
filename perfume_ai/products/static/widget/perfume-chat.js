@@ -72,7 +72,7 @@
       --pfx-shadow: 0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px rgba(38, 78, 54, 0.12);
 
       /* Layout */
-      --pfx-bubble-size: 70px;
+      --pfx-bubble-size: 65px;
       --pfx-window-width: 400px;
       --pfx-window-height: 580px;
       --pfx-radius: 20px;
@@ -87,7 +87,7 @@
       width: var(--pfx-bubble-size);
       height: var(--pfx-bubble-size);
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, var(--pfx-primary-dark) 100%);
+      background: var(--pfx-primary);
       cursor: pointer;
       z-index: var(--pfx-z);
       display: flex;
