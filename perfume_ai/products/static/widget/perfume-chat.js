@@ -51,17 +51,27 @@
 
     /* ── Variables ─────────────────────────────────────────────── */
     :host {
-      --pfx-primary: #264e36;
-      --pfx-primary-hover: #1a3826;
-      --pfx-primary-light: rgba(38, 78, 54, 0.18);
-      --pfx-bg-dark: #0a0f0c;
-      --pfx-bg-glass: rgba(15, 28, 20, 0.97);
-      --pfx-bg-glass-light: rgba(30, 55, 38, 0.85);
-      --pfx-border: rgba(255, 255, 255, 0.08);
-      --pfx-border-light: rgba(255, 255, 255, 0.12);
-      --pfx-text: #f1f5f9;
-      --pfx-text-muted: #94a3b8;
-      --pfx-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+      /* Brand Green Palette */
+      --pfx-primary:        #4a7a55;          /* medium brand green */
+      --pfx-primary-dark:   #1e4030;          /* deep forest green */
+      --pfx-primary-hover:  #5a9068;
+      --pfx-primary-muted:  #6aaa77;
+      --pfx-primary-light:  rgba(74,122,85,0.20);
+      --pfx-primary-glow:   rgba(74,122,85,0.35);
+
+      /* Dark Background Palette — matches screenshot */
+      --pfx-bg-dark:        #112218;          /* main window bg — rich dark green */
+      --pfx-bg-glass:       rgba(17,34,24,0.98);
+      --pfx-bg-glass-light: #1a3022;          /* AI bubble / card bg */
+      --pfx-border:         #1e3a28;          /* subtle border */
+      --pfx-border-light:   #284d38;          /* slightly lighter border */
+      --pfx-text:           #e8f2ea;          /* off-white green-tinted text */
+      --pfx-text-muted:     #78a888;          /* muted green text */
+
+      /* Shadow */
+      --pfx-shadow: 0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px rgba(74,122,85,0.12);
+
+      /* Layout */
       --pfx-bubble-size: 70px;
       --pfx-window-width: 400px;
       --pfx-window-height: 580px;
@@ -77,20 +87,20 @@
       width: var(--pfx-bubble-size);
       height: var(--pfx-bubble-size);
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
+      background: linear-gradient(135deg, var(--pfx-primary) 0%, var(--pfx-primary-dark) 100%);
       cursor: pointer;
       z-index: var(--pfx-z);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 0 rgba(38, 78, 54, 0.4);
+      box-shadow: 0 8px 32px var(--pfx-primary-glow), 0 0 0 0 var(--pfx-primary-glow);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
       animation: pfx-pulse 2.5s infinite;
     }
 
     .pfx-bubble:hover {
       transform: scale(1.08);
-      box-shadow: 0 12px 40px rgba(38, 78, 54, 0.6);
+      box-shadow: 0 12px 40px var(--pfx-primary-glow);
       animation: none;
     }
 
@@ -189,7 +199,7 @@
       left: 0;
       right: 0;
       height: 120px;
-      background: linear-gradient(180deg, rgba(38, 78, 54, 0.12) 0%, transparent 100%);
+      background: linear-gradient(180deg, var(--pfx-primary-light) 0%, transparent 100%);
       pointer-events: none;
       z-index: 0;
     }
@@ -202,9 +212,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--pfx-bg-dark);
       border-bottom: 1px solid var(--pfx-border);
     }
 
@@ -259,11 +267,11 @@
 
     .pfx-header-btn {
       height: 34px;
-      padding: 0 12px;
-      border-radius: 10px;
-      border: 1px solid var(--pfx-border);
-      background: transparent;
-      color: var(--pfx-text-muted);
+      padding: 0 14px;
+      border-radius: 20px;
+      border: 1px solid var(--pfx-border-light);
+      background: var(--pfx-bg-glass-light);
+      color: var(--pfx-text);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -276,9 +284,8 @@
     }
 
     .pfx-header-btn:hover {
-      background: var(--pfx-primary-light);
-      color: var(--pfx-primary);
-      border-color: rgba(38, 78, 54, 0.4);
+      background: var(--pfx-border);
+      border-color: var(--pfx-text-muted);
     }
 
     /* ── Messages ─────────────────────────────────────────────── */
@@ -313,9 +320,11 @@
     }
 
     .pfx-msg.user {
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
+      background: var(--pfx-primary);
       align-self: flex-start;
       border-bottom-right-radius: 6px;
+      color: #ffffff;
+      box-shadow: 0 4px 12px var(--pfx-primary-light);
     }
 
     .pfx-msg.ai {
@@ -377,9 +386,7 @@
       gap: 10px;
       padding: 14px 16px;
       border-top: 1px solid var(--pfx-border);
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--pfx-bg-dark);
     }
 
     .pfx-input {
@@ -389,7 +396,7 @@
       padding: 12px 20px;
       font-size: 14px;
       color: var(--pfx-text);
-      background: rgba(30, 41, 59, 0.6);
+      background: var(--pfx-bg-glass-light);
       outline: none;
       font-family: 'Tajawal', 'Segoe UI', sans-serif;
       direction: rtl;
@@ -440,25 +447,73 @@
       transform: none;
     }
 
-    /* ── Powered By ───────────────────────────────────────────── */
+    /* ── Powered By ─────────────────────────────────────────────── */
     .pfx-powered {
       text-align: center;
-      padding: 8px;
+      padding: 10px 16px 12px;
       font-size: 11px;
-      color: rgba(180, 210, 190, 0.7);
-      opacity: 0.8;
-      background: rgba(10, 20, 14, 0.6);
-      border-top: 1px solid rgba(38, 78, 54, 0.3);
+      color: var(--pfx-text-muted);
+      background: var(--pfx-bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      letter-spacing: 0.02em;
+      position: relative;
+      direction: ltr;
+    }
+
+    /* gradient line at top */
+    .pfx-powered::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--pfx-border-light) 40%,
+        var(--pfx-primary-muted) 50%,
+        var(--pfx-border-light) 60%,
+        transparent
+      );
+    }
+
+    .pfx-powered .pfx-powered-icon {
+      font-size: 12px;
+      opacity: 0.6;
+      animation: pfx-sparkle 3s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    @keyframes pfx-sparkle {
+      0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+      50%       { opacity: 0.9; transform: scale(1.2) rotate(20deg); }
     }
 
     .pfx-powered a {
-      color: #4ade80;
+      color: var(--pfx-primary-hover);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 11.5px;
+      letter-spacing: 0.04em;
+      background: linear-gradient(
+        90deg,
+        var(--pfx-primary-hover) 0%,
+        var(--pfx-primary-muted) 50%,
+        var(--pfx-primary-hover) 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: background-position 0.5s ease;
     }
 
     .pfx-powered a:hover {
-      color: #86efac;
+      background-position: right center;
     }
 
 
@@ -499,7 +554,8 @@
         </div>
         <div class="pfx-header-actions">
           <button class="pfx-header-btn" id="pfxNewChat" title="محادثة جديدة">
-            <span>محادثة جديدة</span> 🔄
+            <span>محادثة جديدة</span>
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
         </div>
       </div>
@@ -521,7 +577,11 @@
       </div>
 
       <!-- Powered By -->
-      <div class="pfx-powered">Powered by <a href="https://webvitas.com" target="_blank" rel="noopener noreferrer">WebVitas AI</a></div>
+      <div class="pfx-powered">
+        <span class="pfx-powered-icon">✶</span>
+        <span>Powered by</span>
+        <a href="https://webvitas.com" target="_blank" rel="noopener noreferrer">WebVitas AI</a>
+      </div>
     </div>
   `;
   shadow.appendChild(container);
