@@ -521,11 +521,13 @@
     /* ── Mobile Responsive ────────────────────────────────────── */
     @media (max-width: 480px) {
       .pfx-window {
-        width: calc(100vw - 16px);
-        height: calc(100vh - 100px);
-        max-height: calc(100vh - 100px);
-        bottom: calc(24px + var(--pfx-bubble-size) + 12px);
-        ${POSITION === "right" ? "right: 8px;" : "left: 8px;"}
+        width: auto;
+        height: auto;
+        max-height: none;
+        top: 70px;
+        bottom: calc(24px + var(--pfx-bubble-size) + 16px);
+        left: 16px;
+        right: 16px;
         border-radius: 16px;
       }
     }
