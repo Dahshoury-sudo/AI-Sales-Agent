@@ -524,7 +524,7 @@
         width: auto;
         height: auto;
         max-height: none;
-        top: 70px;
+        top: 48px;
         bottom: calc(24px + var(--pfx-bubble-size) + 16px);
         left: 16px;
         right: 16px;
