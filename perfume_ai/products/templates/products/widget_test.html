@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -117,7 +118,7 @@
     <!-- THIS IS THE ONLY LINE THE CLIENT NEEDS TO ADD -->
     <!-- ============================================= -->
     <script
-      src="/static/widget/perfume-chat.js?v=2"
+      src="{% static 'widget/perfume-chat.js' %}"
       data-api-key="ODY6C4GKhg8qHBrbZDmGt0i6uiZtE3aXJUNzP5IEe5Q"
     ></script>
 </body>
