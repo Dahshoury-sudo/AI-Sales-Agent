@@ -10,7 +10,7 @@
     "";
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
-    "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الالي. اقدر اساعدك ازاي";
+    "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
@@ -51,18 +51,18 @@
 
     /* ── Variables ─────────────────────────────────────────────── */
     :host {
-      --pfx-primary: #8b5cf6;
-      --pfx-primary-hover: #7c3aed;
-      --pfx-primary-light: rgba(139, 92, 246, 0.15);
-      --pfx-bg-dark: #0f172a;
-      --pfx-bg-glass: rgba(30, 41, 59, 0.95);
-      --pfx-bg-glass-light: rgba(51, 65, 85, 0.8);
+      --pfx-primary: #264e36;
+      --pfx-primary-hover: #1a3826;
+      --pfx-primary-light: rgba(38, 78, 54, 0.18);
+      --pfx-bg-dark: #0a0f0c;
+      --pfx-bg-glass: rgba(15, 28, 20, 0.97);
+      --pfx-bg-glass-light: rgba(30, 55, 38, 0.85);
       --pfx-border: rgba(255, 255, 255, 0.08);
       --pfx-border-light: rgba(255, 255, 255, 0.12);
       --pfx-text: #f1f5f9;
       --pfx-text-muted: #94a3b8;
-      --pfx-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.05);
-      --pfx-bubble-size: 62px;
+      --pfx-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+      --pfx-bubble-size: 70px;
       --pfx-window-width: 400px;
       --pfx-window-height: 580px;
       --pfx-radius: 20px;
@@ -77,20 +77,20 @@
       width: var(--pfx-bubble-size);
       height: var(--pfx-bubble-size);
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
       cursor: pointer;
       z-index: var(--pfx-z);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 0 rgba(139, 92, 246, 0.4);
+      box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 0 rgba(38, 78, 54, 0.4);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
       animation: pfx-pulse 2.5s infinite;
     }
 
     .pfx-bubble:hover {
       transform: scale(1.08);
-      box-shadow: 0 12px 40px rgba(139, 92, 246, 0.5);
+      box-shadow: 0 12px 40px rgba(38, 78, 54, 0.6);
       animation: none;
     }
 
@@ -100,8 +100,8 @@
     }
 
     .pfx-bubble svg {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       fill: white;
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
     }
@@ -148,9 +148,9 @@
     }
 
     @keyframes pfx-pulse {
-      0% { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 0 rgba(139, 92, 246, 0.35); }
-      70% { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 18px rgba(139, 92, 246, 0); }
-      100% { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4), 0 0 0 0 rgba(139, 92, 246, 0); }
+      0% { box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 0 rgba(38, 78, 54, 0.4); }
+      70% { box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 18px rgba(38, 78, 54, 0); }
+      100% { box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 0 rgba(38, 78, 54, 0); }
     }
 
     /* ── Chat Window ──────────────────────────────────────────── */
@@ -189,7 +189,7 @@
       left: 0;
       right: 0;
       height: 120px;
-      background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(38, 78, 54, 0.12) 0%, transparent 100%);
       pointer-events: none;
       z-index: 0;
     }
@@ -218,7 +218,7 @@
       width: 40px;
       height: 40px;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -258,8 +258,8 @@
     }
 
     .pfx-header-btn {
-      width: 34px;
       height: 34px;
+      padding: 0 12px;
       border-radius: 10px;
       border: 1px solid var(--pfx-border);
       background: transparent;
@@ -267,15 +267,18 @@
       cursor: pointer;
       display: flex;
       align-items: center;
+      gap: 6px;
       justify-content: center;
       transition: all 0.2s ease;
-      font-size: 16px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 600;
     }
 
     .pfx-header-btn:hover {
       background: var(--pfx-primary-light);
       color: var(--pfx-primary);
-      border-color: rgba(139, 92, 246, 0.3);
+      border-color: rgba(38, 78, 54, 0.4);
     }
 
     /* ── Messages ─────────────────────────────────────────────── */
@@ -310,7 +313,7 @@
     }
 
     .pfx-msg.user {
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
       align-self: flex-start;
       border-bottom-right-radius: 6px;
     }
@@ -400,7 +403,7 @@
 
     .pfx-input:focus {
       border-color: var(--pfx-primary);
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+      box-shadow: 0 0 0 3px rgba(38, 78, 54, 0.2);
     }
 
     .pfx-send {
@@ -408,7 +411,7 @@
       height: 44px;
       border-radius: 50%;
       border: none;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -419,7 +422,7 @@
 
     .pfx-send:hover {
       transform: scale(1.06);
-      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+      box-shadow: 0 4px 16px rgba(38, 78, 54, 0.5);
     }
 
     .pfx-send:active { transform: scale(0.95); }
@@ -442,15 +445,22 @@
       text-align: center;
       padding: 8px;
       font-size: 11px;
-      color: var(--pfx-text-muted);
-      opacity: 0.5;
-      background: rgba(15, 23, 42, 0.5);
+      color: rgba(180, 210, 190, 0.7);
+      opacity: 0.8;
+      background: rgba(10, 20, 14, 0.6);
+      border-top: 1px solid rgba(38, 78, 54, 0.3);
     }
 
     .pfx-powered a {
-      color: var(--pfx-primary);
+      color: #4ade80;
       text-decoration: none;
+      font-weight: 600;
     }
+
+    .pfx-powered a:hover {
+      color: #86efac;
+    }
+
 
     /* ── Mobile Responsive ────────────────────────────────────── */
     @media (max-width: 480px) {
@@ -488,7 +498,9 @@
           </div>
         </div>
         <div class="pfx-header-actions">
-          <button class="pfx-header-btn" id="pfxNewChat" title="محادثة جديدة">🔄</button>
+          <button class="pfx-header-btn" id="pfxNewChat" title="محادثة جديدة">
+            <span>محادثة جديدة</span> 🔄
+          </button>
         </div>
       </div>
 
@@ -514,7 +526,7 @@
   `;
   shadow.appendChild(container);
 
-  // ─── DOM References ──────────────────────────────────────────────
+  // ─── DOM References ──────────────────────────────────────────────────
   const bubble = shadow.getElementById("pfxBubble");
   const badge = shadow.getElementById("pfxBadge");
   const chatWindow = shadow.getElementById("pfxWindow");
