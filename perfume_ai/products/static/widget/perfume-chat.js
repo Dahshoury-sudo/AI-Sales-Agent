@@ -520,6 +520,9 @@
 
     /* ── Mobile Responsive ────────────────────────────────────── */
     @media (max-width: 480px) {
+      :host {
+        --pfx-bubble-size: 55px;
+      }
       .pfx-window {
         width: auto;
         height: auto;
