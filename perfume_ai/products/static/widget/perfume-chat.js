@@ -299,7 +299,7 @@
       scroll-behavior: smooth;
       position: relative;
       z-index: 1;
-      background-color: #ffffff;
+      background-color: #f5f1f1ff;
     }
 
     .pfx-messages::-webkit-scrollbar { width: 4px; }
@@ -419,7 +419,7 @@
       height: 44px;
       border-radius: 50%;
       border: none;
-      background: linear-gradient(135deg, var(--pfx-primary) 0%, #1a3826 100%);
+      background: linear-gradient(135deg, #1b3725 0%, #152c1e 100%);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -495,16 +495,16 @@
     }
 
     .pfx-powered a {
-      color: var(--pfx-primary-hover);
+      color: #ffffff;
       text-decoration: none;
       font-weight: 700;
       font-size: 11.5px;
       letter-spacing: 0.04em;
       background: linear-gradient(
         90deg,
-        var(--pfx-primary-hover) 0%,
-        var(--pfx-primary-muted) 50%,
-        var(--pfx-primary-hover) 100%
+        #a8d5ba 0%,
+        #ffffff 50%,
+        #a8d5ba 100%
       );
       background-size: 200% auto;
       -webkit-background-clip: text;
