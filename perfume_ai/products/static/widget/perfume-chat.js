@@ -52,24 +52,24 @@
     /* ── Variables ─────────────────────────────────────────────── */
     :host {
       /* Brand Green Palette */
-      --pfx-primary:        #4a7a55;          /* medium brand green */
-      --pfx-primary-dark:   #1e4030;          /* deep forest green */
-      --pfx-primary-hover:  #5a9068;
-      --pfx-primary-muted:  #6aaa77;
-      --pfx-primary-light:  rgba(74,122,85,0.20);
-      --pfx-primary-glow:   rgba(74,122,85,0.35);
+      --pfx-primary:        #264e36;          /* Power Green */
+      --pfx-primary-dark:   #152c1e;          /* deep forest green */
+      --pfx-primary-hover:  #326647;
+      --pfx-primary-muted:  #43855d;
+      --pfx-primary-light:  rgba(38, 78, 54, 0.20);
+      --pfx-primary-glow:   rgba(38, 78, 54, 0.35);
 
-      /* Dark Background Palette — matches screenshot */
-      --pfx-bg-dark:        #112218;          /* main window bg — rich dark green */
-      --pfx-bg-glass:       rgba(17,34,24,0.98);
-      --pfx-bg-glass-light: #1a3022;          /* AI bubble / card bg */
-      --pfx-border:         #1e3a28;          /* subtle border */
-      --pfx-border-light:   #284d38;          /* slightly lighter border */
-      --pfx-text:           #e8f2ea;          /* off-white green-tinted text */
-      --pfx-text-muted:     #78a888;          /* muted green text */
+      /* Green Background Palette — Power Green Theme */
+      --pfx-bg-dark:        #264e36;          /* header/footer bg — Power Green */
+      --pfx-bg-glass:       rgba(38, 78, 54, 0.98);
+      --pfx-bg-glass-light: #152c1e;          /* AI bubble / input bg */
+      --pfx-border:         #152c1e;          /* subtle border */
+      --pfx-border-light:   #326647;          /* slightly lighter border */
+      --pfx-text:           #ffffff;          /* white text */
+      --pfx-text-muted:     #8ab29a;          /* muted green text */
 
       /* Shadow */
-      --pfx-shadow: 0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px rgba(74,122,85,0.12);
+      --pfx-shadow: 0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px rgba(38, 78, 54, 0.12);
 
       /* Layout */
       --pfx-bubble-size: 70px;
@@ -299,6 +299,7 @@
       scroll-behavior: smooth;
       position: relative;
       z-index: 1;
+      background-color: #ffffff;
     }
 
     .pfx-messages::-webkit-scrollbar { width: 4px; }
