@@ -6,7 +6,7 @@
   const API_KEY = scriptTag?.getAttribute("data-api-key") || "";
   const API_BASE =
     scriptTag?.getAttribute("data-api-base") ||
-    scriptTag?.src.replace(/\/static\/widget\/perfume-chat\.js.*$/, "") ||
+    scriptTag?.src.replace(/\/static\/widget\/perfume-chat.*\.js.*$/, "") ||
     "";
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
