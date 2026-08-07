@@ -329,7 +329,7 @@
     }
 
     .pfx-msg.ai {
-      background: var(--pfx-bg-glass-light);
+      background: #1b3725;
       align-self: flex-end;
       border-bottom-left-radius: 6px;
       border: 1px solid var(--pfx-border-light);
