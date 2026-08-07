@@ -110,8 +110,8 @@
     }
 
     .pfx-bubble svg {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       fill: white;
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
     }
