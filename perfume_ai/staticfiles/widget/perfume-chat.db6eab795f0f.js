@@ -1,7 +1,7 @@
-﻿(function () {
+(function () {
   "use strict";
 
-  // â”€â”€â”€ Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Configuration ───────────────────────────────────────────────
   const scriptTag = document.currentScript;
   const API_KEY = scriptTag?.getAttribute("data-api-key") || "";
   const API_BASE =
@@ -10,7 +10,7 @@
     "";
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
-    "Ø§Ù‡Ù„Ø§ ÙˆØ³Ù‡Ù„Ø§ Ø¨Ø­Ø¶Ø±ØªÙƒ ÙŠØ§ ÙÙ†Ø¯Ù… Ø§Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯ Perfamix Ø§Ù„Ø°ÙƒÙŠ. Ø§Ù‚Ø¯Ø± Ø§Ø³Ø§Ø¹Ø¯Ùƒ Ø§Ø²Ø§ÙŠ";
+    "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
@@ -20,19 +20,19 @@
     return;
   }
 
-  // â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── State ───────────────────────────────────────────────────────
   let conversationId = localStorage.getItem(STORAGE_KEY) || null;
   let isOpen = false;
   let unreadCount = 0;
 
-  // â”€â”€â”€ Create Host Element â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Create Host Element ─────────────────────────────────────────
   const host = document.createElement("div");
   host.id = "perfamix-chat-widget";
   document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "closed" });
 
-  // â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Styles ──────────────────────────────────────────────────────
   const styles = document.createElement("style");
   styles.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
@@ -49,7 +49,7 @@
       padding: 0;
     }
 
-    /* â”€â”€ Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Variables ─────────────────────────────────────────────── */
     :host {
       /* Brand Green Palette */
       --pfx-primary:        #4a7a55;          /* medium brand green */
@@ -59,8 +59,8 @@
       --pfx-primary-light:  rgba(74,122,85,0.20);
       --pfx-primary-glow:   rgba(74,122,85,0.35);
 
-      /* Dark Background Palette â€” matches screenshot */
-      --pfx-bg-dark:        #112218;          /* main window bg â€” rich dark green */
+      /* Dark Background Palette — matches screenshot */
+      --pfx-bg-dark:        #112218;          /* main window bg — rich dark green */
       --pfx-bg-glass:       rgba(17,34,24,0.98);
       --pfx-bg-glass-light: #1a3022;          /* AI bubble / card bg */
       --pfx-border:         #1e3a28;          /* subtle border */
@@ -79,7 +79,7 @@
       --pfx-z: 2147483640;
     }
 
-    /* â”€â”€ Bubble â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Bubble ────────────────────────────────────────────────── */
     .pfx-bubble {
       position: fixed;
       bottom: 24px;
@@ -163,7 +163,7 @@
       100% { box-shadow: 0 8px 32px rgba(38, 78, 54, 0.5), 0 0 0 0 rgba(38, 78, 54, 0); }
     }
 
-    /* â”€â”€ Chat Window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Chat Window ──────────────────────────────────────────── */
     .pfx-window {
       position: fixed;
       bottom: calc(24px + var(--pfx-bubble-size) + 16px);
@@ -204,7 +204,7 @@
       z-index: 0;
     }
 
-    /* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Header ───────────────────────────────────────────────── */
     .pfx-header {
       position: relative;
       z-index: 1;
@@ -288,7 +288,7 @@
       border-color: var(--pfx-text-muted);
     }
 
-    /* â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Messages ─────────────────────────────────────────────── */
     .pfx-messages {
       flex: 1;
       overflow-y: auto;
@@ -346,7 +346,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* â”€â”€ Typing Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Typing Indicator ─────────────────────────────────────── */
     .pfx-typing {
       align-self: flex-end;
       background: var(--pfx-bg-glass-light);
@@ -377,7 +377,7 @@
       40% { transform: scale(1); }
     }
 
-    /* â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Input ────────────────────────────────────────────────── */
     .pfx-input-area {
       position: relative;
       z-index: 1;
@@ -447,7 +447,7 @@
       transform: none;
     }
 
-    /* â”€â”€ Powered By â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Powered By ─────────────────────────────────────────────── */
     .pfx-powered {
       text-align: center;
       padding: 10px 16px 12px;
@@ -517,7 +517,7 @@
     }
 
 
-    /* â”€â”€ Mobile Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Mobile Responsive ────────────────────────────────────── */
     @media (max-width: 480px) {
       .pfx-window {
         width: calc(100vw - 16px);
@@ -531,11 +531,11 @@
   `;
   shadow.appendChild(styles);
 
-  // â”€â”€â”€ Build HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Build HTML ──────────────────────────────────────────────────
   const container = document.createElement("div");
   container.innerHTML = `
     <!-- Floating Bubble -->
-    <div class="pfx-bubble" id="pfxBubble" aria-label="ÙØªØ­ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø©">
+    <div class="pfx-bubble" id="pfxBubble" aria-label="فتح المحادثة">
       <svg class="pfx-icon-chat" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
       <svg class="pfx-icon-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       <div class="pfx-badge" id="pfxBadge">0</div>
@@ -546,15 +546,15 @@
       <!-- Header -->
       <div class="pfx-header">
         <div class="pfx-header-info">
-          <div class="pfx-avatar">ðŸ¤–</div>
+          <div class="pfx-avatar">🤖</div>
           <div class="pfx-header-text">
             <h3>Perfamix</h3>
-            <span>Ù…ØªØµÙ„ Ø§Ù„Ø¢Ù†</span>
+            <span>متصل الآن</span>
           </div>
         </div>
         <div class="pfx-header-actions">
-          <button class="pfx-header-btn" id="pfxNewChat" title="Ù…Ø­Ø§Ø¯Ø«Ø© Ø¬Ø¯ÙŠØ¯Ø©">
-            <span>Ù…Ø­Ø§Ø¯Ø«Ø© Ø¬Ø¯ÙŠØ¯Ø©</span>
+          <button class="pfx-header-btn" id="pfxNewChat" title="محادثة جديدة">
+            <span>محادثة جديدة</span>
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
         </div>
@@ -570,15 +570,15 @@
 
       <!-- Input -->
       <div class="pfx-input-area">
-        <input class="pfx-input" id="pfxInput" type="text" placeholder="Ø§ÙƒØªØ¨ Ø±Ø³Ø§Ù„ØªÙƒ Ù‡Ù†Ø§..." autocomplete="off" />
-        <button class="pfx-send" id="pfxSend" aria-label="Ø¥Ø±Ø³Ø§Ù„">
+        <input class="pfx-input" id="pfxInput" type="text" placeholder="اكتب رسالتك هنا..." autocomplete="off" />
+        <button class="pfx-send" id="pfxSend" aria-label="إرسال">
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
 
       <!-- Powered By -->
       <div class="pfx-powered">
-        <span class="pfx-powered-icon">âœ¶</span>
+        <span class="pfx-powered-icon">✶</span>
         <span>Powered by</span>
         <a href="https://webvitas.com" target="_blank" rel="noopener noreferrer">WebVitas AI</a>
       </div>
@@ -586,7 +586,7 @@
   `;
   shadow.appendChild(container);
 
-  // â”€â”€â”€ DOM References â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── DOM References ──────────────────────────────────────────────────
   const bubble = shadow.getElementById("pfxBubble");
   const badge = shadow.getElementById("pfxBadge");
   const chatWindow = shadow.getElementById("pfxWindow");
@@ -596,7 +596,7 @@
   const sendBtn = shadow.getElementById("pfxSend");
   const newChatBtn = shadow.getElementById("pfxNewChat");
 
-  // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Helpers ─────────────────────────────────────────────────────
   function scrollToBottom() {
     requestAnimationFrame(() => {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -611,7 +611,7 @@
     if (imageUrl) {
       const img = document.createElement("img");
       img.src = imageUrl;
-      img.alt = "ØµÙˆØ±Ø© Ø§Ù„Ù…Ù†ØªØ¬";
+      img.alt = "صورة المنتج";
       img.loading = "lazy";
       msg.appendChild(img);
     }
@@ -640,7 +640,7 @@
     appendMessage("ai", WELCOME_MESSAGE);
   }
 
-  // â”€â”€â”€ Toggle Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Toggle Chat ─────────────────────────────────────────────────
   let hasOpened = false;
 
   function toggleChat() {
@@ -661,7 +661,7 @@
 
   bubble.addEventListener("click", toggleChat);
 
-  // â”€â”€â”€ Send Message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Send Message ────────────────────────────────────────────────
   async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
@@ -695,7 +695,7 @@
         }
 
         if (data.needs_human) {
-          appendMessage("ai", "âš ï¸ " + (data.info || "ØªÙ… ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø© Ù„Ø®Ø¯Ù…Ø© Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡. Ø³ÙŠØªÙ… Ø§Ù„Ø±Ø¯ Ø¹Ù„ÙŠÙƒ ÙÙŠ Ø£Ù‚Ø±Ø¨ ÙˆÙ‚Øª."));
+          appendMessage("ai", "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء. سيتم الرد عليك في أقرب وقت."));
         } else {
           appendMessage("ai", data.reply, data.image_url);
         }
@@ -707,12 +707,12 @@
       } else {
         appendMessage(
           "ai",
-          "âŒ " + (data.error || "Ø­Ø¯Ø« Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹. Ø­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.")
+          "❌ " + (data.error || "حدث خطأ غير متوقع. حاول مرة أخرى.")
         );
       }
     } catch (err) {
       hideTyping();
-      appendMessage("ai", "âŒ Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ø§ØªØµØ§Ù„. ØªØ£ÙƒØ¯ Ù…Ù† Ø§ØªØµØ§Ù„Ùƒ Ø¨Ø§Ù„Ø¥Ù†ØªØ±Ù†Øª ÙˆØ­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.");
+      appendMessage("ai", "❌ خطأ في الاتصال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
     } finally {
       sendBtn.disabled = false;
       input.focus();
@@ -725,7 +725,7 @@
     if (e.key === "Enter") sendMessage();
   });
 
-  // â”€â”€â”€ New Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── New Chat ────────────────────────────────────────────────────
   newChatBtn.addEventListener("click", () => {
     conversationId = null;
     localStorage.removeItem(STORAGE_KEY);
@@ -734,4 +734,3 @@
     input.focus();
   });
 })();
-

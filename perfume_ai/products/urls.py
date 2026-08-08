@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ProductListView, ChatAPIView, AnalyticsAPIView, ChatDemoView,
-    OrdersDashboardView, OrdersDashboardAPIView, OrderStatusUpdateView,
+    PublicChatDemoView, OrdersDashboardView, OrdersDashboardAPIView, OrderStatusUpdateView,
     BulkImportView, BulkImportAPIView, BulkImportTemplateView,
     AnalyticsDashboardView, HandoffDashboardView, HandoffConversationsAPIView,
     HandoffMessagesAPIView, HandoffReplyAPIView, HandoffResolveAPIView,
@@ -15,6 +15,7 @@ urlpatterns = [
     path("analytics/data/", AnalyticsAPIView.as_view(), name="analytics-api"),
     path("analytics/", AnalyticsDashboardView.as_view(), name="analytics-dashboard"),
     path("demo/", ChatDemoView.as_view()),
+    path("public-demo/", PublicChatDemoView.as_view(), name="public-demo"),
     path("orders/", OrdersDashboardView.as_view(), name="orders-dashboard"),
     path("orders/dashboard/", OrdersDashboardAPIView.as_view(), name="orders-dashboard-api"),
     path("orders/<int:order_id>/status/", OrderStatusUpdateView.as_view(), name="order-status-update"),

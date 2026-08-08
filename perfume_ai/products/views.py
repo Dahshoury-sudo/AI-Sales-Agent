@@ -36,6 +36,9 @@ class ProductListView(ListAPIView):
 class ChatDemoView(TemplateView):
     template_name = 'products/chat.html'
 
+class PublicChatDemoView(TemplateView):
+    template_name = 'products/public_chat.html'
+
 
 class HomeView(TemplateView):
     template_name = 'products/home.html'
