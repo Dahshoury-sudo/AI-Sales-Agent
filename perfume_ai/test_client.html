@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر ديمو - لتجربة الشات</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #112218;
+            color: #fff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { margin: 0; font-size: 24px; color: #d4a574; }
+        .hero {
+            background-color: #e9ecef;
+            padding: 80px 40px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .hero h2 { font-size: 36px; color: #2c1810; margin-bottom: 15px; }
+        .hero p { font-size: 18px; color: #555; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        .content {
+            padding: 60px 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .card h3 { color: #4a7a55; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Perfamix Store (Demo)</h1>
+        <nav>الرئيسية | العطور | تواصل معنا</nav>
+    </header>
+
+    <div class="hero">
+        <h2>مرحباً بك في متجر العطور الفاخرة</h2>
+        <p>هذه الصفحة مصممة خصيصاً لتجربة الـ Widget الخاص بك كما سيراه عملائك على مواقعهم. لاحظ كيف ينسجم الشات مع الموقع!</p>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h3>عطر المساء</h3>
+            <p>عطر جذاب يتناسب مع ليالي الشتاء الباردة.</p>
+        </div>
+        <div class="card">
+            <h3>عطر الصباح</h3>
+            <p>انتعاش الحمضيات لبداية يوم مليء بالطاقة.</p>
+        </div>
+        <div class="card">
+            <h3>العود الملكي</h3>
+            <p>فخامة العود الأصلي للمناسبات الخاصة.</p>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- كود الـ Widget الديناميكي (بدون كاش للتجربة) -->
+    <!-- ============================================= -->
+    <script>
+      (function(){
+        // تحدث الكاش كل ساعة وهو نفس الكود الذي سيأخذه العميل
+        var hourlyVersion = Math.floor(new Date().getTime() / 3600000);
+        
+        var s = document.createElement("script");
+        // نربط بالسيرفر الخاص بك
+        s.src = "https://api.webvitas.com/static/widget/perfume-chat.js?v=" + hourlyVersion;
+        
+        // مفتاح الـ API
+        s.setAttribute("data-api-key", "ODY6C4GKhg8qHBrbZDmGt0i6uiZtE3aXJUNzP5IEe5Q");
+        
+        // اللوجو (إذا لم يعجبك يمكنك مسح هذا السطر)
+        s.setAttribute("data-logo", "https://res.cloudinary.com/dtssxxfra/image/upload/v1786119236/Perfamix_lerbcn.svg");
+        
+        document.body.appendChild(s);
+      })();
+    </script>
+</body>
+</html>

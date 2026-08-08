@@ -162,6 +162,7 @@ STORAGES = {
 
 # Widget JS must never be cached — clients embed it with a fixed URL
 WHITENOISE_MAX_AGE = 0
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
