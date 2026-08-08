@@ -11,7 +11,8 @@
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
     "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
-  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || "";
+  const DEFAULT_LOGO = "https://res.cloudinary.com/dtssxxfra/image/upload/v1786119236/Perfamix_lerbcn.svg";
+  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || DEFAULT_LOGO;
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
