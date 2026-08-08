@@ -534,6 +534,16 @@
         right: 16px;
         border-radius: 16px;
       }
+      /* When keyboard is open, switch to full-screen mode */
+      .pfx-window.keyboard-open {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        height: var(--pfx-keyboard-height, 100%);
+        max-height: var(--pfx-keyboard-height, 100%);
+      }
     }
   `;
   shadow.appendChild(styles);
@@ -742,4 +752,37 @@
     showWelcomeMessage();
     input.focus();
   });
+
+  // ─── Mobile Keyboard Handler ─────────────────────────────────────
+  // When the virtual keyboard opens on mobile, the viewport shrinks
+  // and the widget gets squished. We use visualViewport API to fix this.
+  if (window.visualViewport) {
+    function handleViewportResize() {
+      const viewport = window.visualViewport;
+      const isMobile = window.innerWidth <= 480;
+      if (!isMobile) return;
+
+      const viewportHeight = viewport.height;
+      const windowHeight = window.innerHeight;
+
+      // If viewport is significantly smaller than window, keyboard is open
+      const isKeyboardOpen = windowHeight - viewportHeight > 100;
+
+      if (isKeyboardOpen) {
+        // Set the available height as a CSS variable
+        host.style.setProperty("--pfx-keyboard-height", viewportHeight + "px");
+        chatWindow.classList.add("keyboard-open");
+        // Scroll to bottom so latest message is visible
+        requestAnimationFrame(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+      } else {
+        chatWindow.classList.remove("keyboard-open");
+        host.style.removeProperty("--pfx-keyboard-height");
+      }
+    }
+
+    window.visualViewport.addEventListener("resize", handleViewportResize);
+    window.visualViewport.addEventListener("scroll", handleViewportResize);
+  }
 })();
