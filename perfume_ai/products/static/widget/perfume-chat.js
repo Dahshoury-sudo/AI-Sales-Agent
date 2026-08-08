@@ -1,8 +1,21 @@
 (function () {
   "use strict";
 
-  // ─── Configuration ───────────────────────────────────────────────
-  const scriptTag = document.currentScript;
+  // Prevent duplicate initialization if script is included multiple times
+  if (document.getElementById("perfamix-chat-widget")) {
+    console.warn("[Perfamix Widget] Widget already initialized. Skipping duplicate.");
+    return;
+  }
+
+  // Find the correct script tag reliably
+  let scriptTag = document.currentScript;
+  if (!scriptTag || !scriptTag.getAttribute("data-api-key")) {
+    // Fallback: find any script tag containing perfume-chat
+    const scripts = document.querySelectorAll('script[src*="perfume-chat"]');
+    // Prefer the one that has data-logo if multiple exist
+    scriptTag = Array.from(scripts).find(s => s.getAttribute("data-logo")) || scripts[scripts.length - 1];
+  }
+
   const API_KEY = scriptTag?.getAttribute("data-api-key") || "";
   const API_BASE =
     scriptTag?.getAttribute("data-api-base") ||
@@ -11,8 +24,7 @@
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
     "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
-  const DEFAULT_LOGO = "https://res.cloudinary.com/dtssxxfra/image/upload/v1786119236/Perfamix_lerbcn.svg";
-  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || DEFAULT_LOGO;
+  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || "";
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
