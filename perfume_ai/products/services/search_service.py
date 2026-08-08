@@ -37,7 +37,10 @@ def search_products(intent, store=None):
     if season:
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:
-        base = base.filter(brand__name__icontains=brand)
+        if brand == "STORE_BRAND_EXCLUSIVE" and store:
+            base = base.filter(brand__name__iexact=store.name)
+        else:
+            base = base.filter(brand__name__icontains=brand)
 
     # Soft filters: occasion, longevity, projection
     soft_filters = base

@@ -3,15 +3,17 @@ import json
 from .client import chat
 
 
-def extract_intent(message: str, history=None):
-    system_prompt = """
+def extract_intent(message: str, history=None, store=None):
+    store_name_text = f"The name of the store is '{store.name}'." if store else ""
+    system_prompt = f"""
 You are an expert perfume intent extractor.
+{store_name_text}
 
 Analyze the user's latest message and conversation history to extract their search criteria.
 Return ONLY valid JSON.
 
 Schema:
-{
+{{
     "brand": "brand name or null",
     "gender": "must be 'male', 'female', 'unisex' or null",
     "perfume_type": "must be 'oriental', 'western', 'niche', 'ultra_niche' or null",
@@ -22,9 +24,10 @@ Schema:
     "projection": "like 'strong', 'moderate', 'intimate' or null",
     "exclude_names": ["perfume1", "perfume2"] or [],
     "notes": ["note1", "note2"] or []
-}
+}}
 
 Rules:
+- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), map it exactly to 'male', 'female', or 'unisex'.

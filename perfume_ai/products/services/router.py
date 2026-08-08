@@ -148,7 +148,7 @@ def route(message, history=None, store=None, conversation=None):
     intent_future = None
     with ThreadPoolExecutor(max_workers=2) as executor:
         classify_future = executor.submit(classify, message, history)
-        intent_future   = executor.submit(extract_intent, message, history)
+        intent_future   = executor.submit(extract_intent, message, history, store)
         request_type = classify_future.result()  # wait for classifier first
         # intent_future keeps running in background; we'll .result() it only if needed
 
