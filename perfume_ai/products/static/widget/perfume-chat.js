@@ -11,6 +11,7 @@
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
     "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
+  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || "";
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
@@ -552,9 +553,11 @@
       <!-- Header -->
       <div class="pfx-header">
         <div class="pfx-header-info">
-          <div class="pfx-avatar">🤖</div>
+          <div class="pfx-avatar" style="${BRAND_LOGO ? 'background: #fff; border-radius: 50%; overflow: hidden;' : ''}">
+            ${BRAND_LOGO ? `<img src="${BRAND_LOGO}" alt="Logo" style="width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box;">` : '🤖'}
+          </div>
           <div class="pfx-header-text">
-            <h3>Perfamix</h3>
+            <h3>Perfamix AI</h3>
             <span>متصل الآن</span>
           </div>
         </div>
