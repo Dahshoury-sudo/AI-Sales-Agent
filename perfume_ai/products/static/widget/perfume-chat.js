@@ -2,7 +2,8 @@
   "use strict";
 
   // ─── Configuration ───────────────────────────────────────────────
-  const scriptTag = document.currentScript;
+  // محاولة جلب السكريبت الحالي، ولو فشلت بنبحث عن أي سكريبت معاه data-api-key
+  const scriptTag = document.currentScript || document.querySelector('script[data-api-key]');
   const API_KEY = scriptTag?.getAttribute("data-api-key") || "";
   const API_BASE =
     scriptTag?.getAttribute("data-api-base") ||
@@ -11,7 +12,8 @@
   const WELCOME_MESSAGE =
     scriptTag?.getAttribute("data-welcome") ||
     "اهلا وسهلا بحضرتك يا فندم انا مساعد Perfamix الذكي. اقدر اساعدك ازاي";
-  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || "";
+  // لو اللوجو مش مبعوت، ممكن نحط لوجو Perfamix كاحتياطي دائم
+  const BRAND_LOGO = scriptTag?.getAttribute("data-logo") || "https://res.cloudinary.com/dtssxxfra/image/upload/v1786119236/Perfamix_lerbcn.svg";
   const POSITION = scriptTag?.getAttribute("data-position") || "right"; // left or right
   const STORAGE_KEY = "pfx_widget_conv_id";
   const STORAGE_KEY_OPEN = "pfx_widget_open";
