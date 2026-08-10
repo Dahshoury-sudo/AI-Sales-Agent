@@ -781,12 +781,13 @@
 
       if (isKeyboardOpen) {
         chatWindow.classList.add("keyboard-open");
-        // Position the window exactly over the visible viewport area.
-        // This handles both Android (viewport shrinks from bottom)
-        // and iOS (viewport shifts with keyboard).
-        chatWindow.style.position = "fixed";
-        chatWindow.style.top = offsetTop + "px";
-        chatWindow.style.height = viewportHeight + "px";
+        chatWindow.style.position  = "fixed";
+        chatWindow.style.top       = offsetTop + "px";
+        // Explicitly set left/right so iOS doesn't rely on CSS env()/max()
+        chatWindow.style.left      = "0";
+        chatWindow.style.right     = "0";
+        chatWindow.style.width     = "auto";
+        chatWindow.style.height    = viewportHeight + "px";
         chatWindow.style.maxHeight = viewportHeight + "px";
         // Scroll to bottom so latest message is visible
         requestAnimationFrame(() => {
@@ -794,17 +795,39 @@
         });
       } else {
         chatWindow.classList.remove("keyboard-open");
-        // Reset inline styles so CSS media query takes over again
-        chatWindow.style.position = "";
-        chatWindow.style.top = "";
-        chatWindow.style.height = "";
+        chatWindow.style.position  = "";
+        chatWindow.style.top       = "";
+        chatWindow.style.height    = "";
         chatWindow.style.maxHeight = "";
+        // Restore normal mobile margins (CSS env()/max() unreliable in Shadow DOM on iOS)
+        chatWindow.style.left  = "16px";
+        chatWindow.style.right = "16px";
+        chatWindow.style.width = "auto";
       }
     }
 
     window.visualViewport.addEventListener("resize", handleViewportResize);
     window.visualViewport.addEventListener("scroll", handleViewportResize);
   }
+
+  // ─── Mobile position init ─────────────────────────────────────────
+  // On page load (before any keyboard events), explicitly set left/right
+  // so mobile layout is correct from the very first render on iOS.
+  (function initMobilePosition() {
+    function set() {
+      if (window.innerWidth <= 480) {
+        chatWindow.style.left  = "16px";
+        chatWindow.style.right = "16px";
+        chatWindow.style.width = "auto";
+      } else {
+        chatWindow.style.left  = "";
+        chatWindow.style.right = "";
+        chatWindow.style.width = "";
+      }
+    }
+    set();
+    window.addEventListener("resize", set);
+  }());
 
   // ─── Prevent scroll bleed from chat messages to page ────────────
   // iOS Safari ignores overscroll-behavior on older versions, so we
