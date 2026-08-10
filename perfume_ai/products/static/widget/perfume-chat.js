@@ -540,10 +540,11 @@
         right: max(16px, env(safe-area-inset-right));
         border-radius: 16px;
       }
-      /* When keyboard is open — controlled via JS inline styles for iOS compatibility */
+      /* When keyboard is open — all positioning is applied via JS inline styles.
+         Do NOT set left/right/width here; iOS Safari's fixed positioning anchors
+         to the layout viewport, so we must use visualViewport.offsetLeft + width
+         explicitly in JS to stay within the visual viewport. */
       .pfx-window.keyboard-open {
-        left: 0;
-        right: 0;
         border-radius: 0;
       }
     }
@@ -783,10 +784,25 @@
         chatWindow.classList.add("keyboard-open");
         chatWindow.style.position  = "fixed";
         chatWindow.style.top       = offsetTop + "px";
-        // Explicitly set left/right so iOS doesn't rely on CSS env()/max()
-        chatWindow.style.left      = "0";
-        chatWindow.style.right     = "0";
-        chatWindow.style.width     = "auto";
+        // ─── iOS Safari fix ──────────────────────────────────────────────────
+        // On iOS, `position:fixed` elements are anchored to the *layout* viewport,
+        // not the visual viewport. Setting left:0 + right:0 + width:auto therefore
+        // spans the full layout viewport width, which may extend beyond the visible
+        // area when the page has been scrolled or zoomed — causing the widget to
+        // bleed off the left edge.
+        //
+        // Fix: read visualViewport.offsetLeft (the horizontal offset of the visual
+        // viewport inside the layout viewport) and visualViewport.width (the actual
+        // visible width) and convert them to layout-viewport coordinates using
+        // visualViewport.scale (which is 1 on most devices but can differ on zoom).
+        // This pins the widget exactly to the visible screen region on every iPhone.
+        const scale      = viewport.scale || 1;
+        const vpLeft     = (viewport.offsetLeft || 0) * scale;
+        const vpWidth    = viewport.width * scale;
+        chatWindow.style.left      = vpLeft + "px";
+        chatWindow.style.right     = "";
+        chatWindow.style.width     = vpWidth + "px";
+        chatWindow.style.maxWidth  = vpWidth + "px";
         chatWindow.style.height    = viewportHeight + "px";
         chatWindow.style.maxHeight = viewportHeight + "px";
         // Scroll to bottom so latest message is visible
@@ -799,6 +815,7 @@
         chatWindow.style.top       = "";
         chatWindow.style.height    = "";
         chatWindow.style.maxHeight = "";
+        chatWindow.style.maxWidth  = "";
         // Restore normal mobile margins (CSS env()/max() unreliable in Shadow DOM on iOS)
         chatWindow.style.left  = "16px";
         chatWindow.style.right = "16px";
