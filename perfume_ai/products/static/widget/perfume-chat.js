@@ -31,6 +31,23 @@
   // ─── Create Host Element ─────────────────────────────────────────
   const host = document.createElement("div");
   host.id = "perfamix-chat-widget";
+  // Fix: give the host a fixed viewport-covering frame with overflow:hidden.
+  // This prevents the host (a block div in <body>) from ever widening the
+  // document body and making the page horizontally scrollable — which is the
+  // root cause of iOS Safari's position:fixed elements drifting off-screen
+  // when the keyboard opens and Safari internally scrolls the layout viewport.
+  // pointer-events:none lets clicks pass through the transparent host area;
+  // interactive children restore pointer-events:auto individually.
+  host.style.cssText = [
+    "position:fixed",
+    "top:0",
+    "left:0",
+    "width:100%",
+    "height:100%",
+    "overflow:hidden",
+    "pointer-events:none",
+    "z-index:2147483640",
+  ].join(";");
   document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "closed" });
@@ -44,6 +61,18 @@
       all: initial;
       font-family: 'Tajawal', 'Segoe UI', sans-serif;
       direction: rtl;
+      /* The host is already position:fixed via inline style (set in JS).
+         Declare it here too so Shadow DOM inherits the layout context.
+         overflow:hidden on the host is the key guard against horizontal bleed. */
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 2147483640;
     }
 
     *, *::before, *::after {
@@ -99,6 +128,7 @@
       box-shadow: 0 8px 32px var(--pfx-primary-glow), 0 0 0 0 var(--pfx-primary-glow);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
       animation: pfx-pulse 2.5s infinite;
+      pointer-events: auto; /* restore interaction — host is pointer-events:none */
     }
 
     .pfx-bubble:hover {
@@ -193,7 +223,7 @@
     .pfx-window.open {
       opacity: 1;
       transform: translateY(0) scale(1);
-      pointer-events: auto;
+      pointer-events: auto; /* restore interaction — host is pointer-events:none */
     }
 
     /* Gradient overlay at top */
@@ -535,17 +565,25 @@
         max-height: none;
         top: env(safe-area-inset-top, 48px);
         bottom: calc(24px + var(--pfx-bubble-size) + 16px);
-        /* Use safe-area insets so content isn't hidden under the notch/home indicator */
+        /* Margins from screen edge — JS overrides these with pixel values
+           because env()/max() can be unreliable inside Shadow DOM on iOS. */
         left: max(16px, env(safe-area-inset-left));
         right: max(16px, env(safe-area-inset-right));
         border-radius: 16px;
       }
-      /* When keyboard is open — all positioning is applied via JS inline styles.
-         Do NOT set left/right/width here; iOS Safari's fixed positioning anchors
-         to the layout viewport, so we must use visualViewport.offsetLeft + width
-         explicitly in JS to stay within the visual viewport. */
+      /*
+       * keyboard-open: JS sets top/height/left/width/bottom as inline styles.
+       * Only CSS we need here is cosmetic (border-radius, transform).
+       *
+       * IMPORTANT — transform:none is required here:
+       * In Safari, applying a transform to a position:fixed element creates a
+       * new stacking/containing block and breaks fixed positioning geometry.
+       * Removing the transform while keyboard is open ensures the element is
+       * anchored correctly to the viewport coordinate system.
+       */
       .pfx-window.keyboard-open {
         border-radius: 0;
+        transform: none !important;
       }
     }
 
@@ -763,8 +801,43 @@
   });
 
   // ─── Mobile Keyboard Handler ─────────────────────────────────────
-  // Uses visualViewport API to correctly position the widget when the
-  // virtual keyboard opens — works on both Android and iOS Safari.
+  //
+  // Architecture overview (iOS Safari coordinate systems):
+  //
+  // 1. Layout viewport  — the full page canvas; position:fixed is anchored here.
+  //    Width = window.innerWidth. On iOS this does NOT shrink when the keyboard
+  //    opens (unlike Android where window.innerHeight shrinks).
+  //
+  // 2. Visual viewport  — the slice of the layout viewport that is actually
+  //    visible to the user. visualViewport.{width,height,offsetLeft,offsetTop}
+  //    are all in CSS pixels (NOT device pixels). offsetLeft/offsetTop tell us
+  //    where the top-left of the visual viewport sits inside the layout viewport.
+  //
+  // 3. Host element     — now position:fixed; top:0; left:0; width:100%;
+  //    height:100%; overflow:hidden. This means:
+  //    - It can NEVER widen <body> → no horizontal page scroll.
+  //    - Its bounding box equals the layout viewport.
+  //    - Shadow DOM children that are position:fixed are still anchored to the
+  //      layout viewport (not the host), which is correct for our purposes.
+  //
+  // 4. Keyboard opens   — iOS pushes the visual viewport UP by the keyboard
+  //    height. visualViewport.height shrinks; visualViewport.offsetTop grows.
+  //    The layout viewport stays the same. position:fixed elements stay where
+  //    they were in layout-viewport space UNLESS we reposition them.
+  //
+  // 5. Horizontal offset (the bug) — because the host is now overflow:hidden
+  //    and covers exactly the viewport, we can safely set left:0; width:100%
+  //    on the chat window. "100%" relative to the fixed host = visual viewport
+  //    width = no overflow. We do NOT need to use visualViewport.offsetLeft
+  //    because the host already clips to the viewport boundaries.
+  //    (The previous visualViewport.offsetLeft × scale approach was both
+  //    conceptually wrong — scale should NOT be applied since values are already
+  //    in CSS px — and insufficient because the body was still scrollable.)
+  //
+  // 6. Transform bug    — CSS `transform` on a position:fixed element creates a
+  //    new containing block in Safari, breaking fixed-positioning math. The CSS
+  //    .keyboard-open rule now forces transform:none to prevent this.
+  //
   if (window.visualViewport) {
     function handleViewportResize() {
       const viewport = window.visualViewport;
@@ -772,54 +845,56 @@
       if (!isMobile) return;
 
       const viewportHeight = viewport.height;
-      const windowHeight = window.innerHeight;
-      // On iOS, visualViewport.offsetTop tells us how far the viewport
-      // has been pushed down (or up) by the keyboard / scroll.
-      const offsetTop = viewport.offsetTop || 0;
+      const windowHeight   = window.innerHeight;
+      // On iOS, the visual viewport moves down (offsetTop > 0) when
+      // the keyboard opens and the page has scroll offset.
+      const offsetTop      = viewport.offsetTop || 0;
 
-      // If viewport is significantly smaller than window, keyboard is open
+      // Keyboard is open when the visual viewport is significantly
+      // shorter than the full window height.
       const isKeyboardOpen = windowHeight - viewportHeight > 100;
 
       if (isKeyboardOpen) {
         chatWindow.classList.add("keyboard-open");
+
+        // Position the chat window to exactly fill the visible viewport.
+        //
+        // top: offsetTop — visual viewport top in layout-viewport coords (CSS px).
+        // left: 0        — the host is overflow:hidden so this is already clipped
+        //                  to the visible left edge; no offsetLeft calc needed.
+        // width: 100%    — fills the host (= layout viewport width = screen width);
+        //                  the host's overflow:hidden clips the right side too.
+        //                  Using "100%" is more robust than px values because it
+        //                  re-evaluates on every repaint without stale references.
+        // bottom: ""     — MUST clear bottom; otherwise top+height fights with
+        //                  CSS's bottom rule and the window gets squashed/misplaced.
         chatWindow.style.position  = "fixed";
         chatWindow.style.top       = offsetTop + "px";
-        // ─── iOS Safari fix ──────────────────────────────────────────────────
-        // On iOS, `position:fixed` elements are anchored to the *layout* viewport,
-        // not the visual viewport. Setting left:0 + right:0 + width:auto therefore
-        // spans the full layout viewport width, which may extend beyond the visible
-        // area when the page has been scrolled or zoomed — causing the widget to
-        // bleed off the left edge.
-        //
-        // Fix: read visualViewport.offsetLeft (the horizontal offset of the visual
-        // viewport inside the layout viewport) and visualViewport.width (the actual
-        // visible width) and convert them to layout-viewport coordinates using
-        // visualViewport.scale (which is 1 on most devices but can differ on zoom).
-        // This pins the widget exactly to the visible screen region on every iPhone.
-        const scale      = viewport.scale || 1;
-        const vpLeft     = (viewport.offsetLeft || 0) * scale;
-        const vpWidth    = viewport.width * scale;
-        chatWindow.style.left      = vpLeft + "px";
+        chatWindow.style.bottom    = "";
+        chatWindow.style.left      = "0";
         chatWindow.style.right     = "";
-        chatWindow.style.width     = vpWidth + "px";
-        chatWindow.style.maxWidth  = vpWidth + "px";
+        chatWindow.style.width     = "100%";
+        chatWindow.style.maxWidth  = "none";
         chatWindow.style.height    = viewportHeight + "px";
-        chatWindow.style.maxHeight = viewportHeight + "px";
-        // Scroll to bottom so latest message is visible
+        chatWindow.style.maxHeight = "none";
+
         requestAnimationFrame(() => {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
+
       } else {
+        // Keyboard closed — reset ALL inline styles set above so that the
+        // CSS media query rules take full control again.
         chatWindow.classList.remove("keyboard-open");
         chatWindow.style.position  = "";
         chatWindow.style.top       = "";
+        chatWindow.style.bottom    = "";
+        chatWindow.style.left      = "16px";  // JS-applied fallback for iOS Shadow DOM
+        chatWindow.style.right     = "16px";
+        chatWindow.style.width     = "auto";
+        chatWindow.style.maxWidth  = "";
         chatWindow.style.height    = "";
         chatWindow.style.maxHeight = "";
-        chatWindow.style.maxWidth  = "";
-        // Restore normal mobile margins (CSS env()/max() unreliable in Shadow DOM on iOS)
-        chatWindow.style.left  = "16px";
-        chatWindow.style.right = "16px";
-        chatWindow.style.width = "auto";
       }
     }
 
@@ -828,11 +903,10 @@
   }
 
   // ─── Mobile position init ─────────────────────────────────────────
-  // Runs ONCE on load to fix left/right on iOS (where CSS env()/max()
-  // inside Shadow DOM can be unreliable).
-  // NOTE: No resize listener here — the keyboard handler owns left/right
-  // after this point to avoid conflicts on Android (keyboard open triggers
-  // a window resize which would override the keyboard handler's values).
+  // Apply JS-side left/right once on load as a robust fallback for iOS,
+  // where CSS env()/max() values inside Shadow DOM can be unreliable.
+  // The keyboard handler overwrites these when the keyboard is open and
+  // restores them when it closes.
   if (window.innerWidth <= 480) {
     chatWindow.style.left  = "16px";
     chatWindow.style.right = "16px";
