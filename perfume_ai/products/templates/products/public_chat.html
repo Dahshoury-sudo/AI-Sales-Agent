@@ -274,6 +274,39 @@
     </div>
 
     <script>
+        // --- Mobile Keyboard Fix ---
+        if (window.visualViewport) {
+            function handleViewportResize() {
+                const isMobile = window.innerWidth <= 768;
+                const app = document.getElementById('app');
+                
+                if (!isMobile) {
+                    app.style.position = '';
+                    app.style.top = '';
+                    app.style.height = '';
+                    app.style.left = '';
+                    app.style.width = '';
+                    return;
+                }
+                
+                app.style.position = 'fixed';
+                app.style.top = (window.visualViewport.offsetTop || 0) + 'px';
+                app.style.height = window.visualViewport.height + 'px';
+                app.style.left = '0';
+                app.style.width = '100%';
+                
+                // Scroll to bottom when resized
+                const chatWindow = document.getElementById('chat-window');
+                if (chatWindow) {
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }
+            }
+
+            window.visualViewport.addEventListener('resize', handleViewportResize);
+            window.visualViewport.addEventListener('scroll', handleViewportResize);
+            handleViewportResize();
+        }
+
         const apiKey = "0mnlTbJAJZlzchO55rB8qMXzWQMs-_ggvFT-6LvkqKo";
         let conversationId = localStorage.getItem('perfume_demo_conv_id') || null;
 
