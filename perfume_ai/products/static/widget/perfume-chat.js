@@ -172,6 +172,8 @@
       bottom: calc(24px + var(--pfx-bubble-size) + 16px);
       ${POSITION === "right" ? "right: 24px;" : "left: 24px;"}
       width: var(--pfx-window-width);
+      /* Never let the window overflow off the left/right edge of the screen */
+      max-width: min(var(--pfx-window-width), calc(100vw - 48px));
       height: var(--pfx-window-height);
       max-height: calc(100vh - 140px);
       background: var(--pfx-bg-dark);
@@ -528,12 +530,14 @@
       }
       .pfx-window {
         width: auto;
+        max-width: none;
         height: auto;
         max-height: none;
-        top: 48px;
+        top: env(safe-area-inset-top, 48px);
         bottom: calc(24px + var(--pfx-bubble-size) + 16px);
-        left: 16px;
-        right: 16px;
+        /* Use safe-area insets so content isn't hidden under the notch/home indicator */
+        left: max(16px, env(safe-area-inset-left));
+        right: max(16px, env(safe-area-inset-right));
         border-radius: 16px;
       }
       /* When keyboard is open — controlled via JS inline styles for iOS compatibility */
@@ -546,9 +550,8 @@
 
     /* ── Scroll containment (prevent page scroll bleed) ────────── */
     .pfx-messages {
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
+      overscroll-behavior: contain;       /* Chrome/Firefox + Safari 16+ */
+      -webkit-overflow-scrolling: touch;  /* older iOS */
     }
   `;
   shadow.appendChild(styles);
@@ -804,11 +807,26 @@
   }
 
   // ─── Prevent scroll bleed from chat messages to page ────────────
-  // On mobile, a touchmove on the messages container that reaches the
-  // top/bottom edge can bubble up and scroll the host page instead.
-  messagesContainer.addEventListener("touchmove", function (e) {
-    // Allow default scrolling inside the messages container;
-    // only stop propagation so the page doesn't scroll too.
-    e.stopPropagation();
+  // iOS Safari ignores overscroll-behavior on older versions, so we
+  // use touch event boundary detection to block page scroll manually.
+  let pfxTouchStartY = 0;
+
+  messagesContainer.addEventListener("touchstart", function (e) {
+    pfxTouchStartY = e.touches[0].clientY;
   }, { passive: true });
+
+  messagesContainer.addEventListener("touchmove", function (e) {
+    const el = messagesContainer;
+    const touchY = e.touches[0].clientY;
+    const delta = pfxTouchStartY - touchY; // positive = swiping up (scrolling down toward bottom)
+    const isAtTop    = el.scrollTop <= 0;
+    const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+
+    // At boundaries: block the OS from scrolling the page behind the widget
+    if ((isAtTop && delta < 0) || (isAtBottom && delta > 0)) {
+      e.preventDefault();
+    }
+    // Always stop the event from reaching the page
+    e.stopPropagation();
+  }, { passive: false }); // passive:false required to allow preventDefault()
 })();
