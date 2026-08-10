@@ -811,23 +811,16 @@
   }
 
   // ─── Mobile position init ─────────────────────────────────────────
-  // On page load (before any keyboard events), explicitly set left/right
-  // so mobile layout is correct from the very first render on iOS.
-  (function initMobilePosition() {
-    function set() {
-      if (window.innerWidth <= 480) {
-        chatWindow.style.left  = "16px";
-        chatWindow.style.right = "16px";
-        chatWindow.style.width = "auto";
-      } else {
-        chatWindow.style.left  = "";
-        chatWindow.style.right = "";
-        chatWindow.style.width = "";
-      }
-    }
-    set();
-    window.addEventListener("resize", set);
-  }());
+  // Runs ONCE on load to fix left/right on iOS (where CSS env()/max()
+  // inside Shadow DOM can be unreliable).
+  // NOTE: No resize listener here — the keyboard handler owns left/right
+  // after this point to avoid conflicts on Android (keyboard open triggers
+  // a window resize which would override the keyboard handler's values).
+  if (window.innerWidth <= 480) {
+    chatWindow.style.left  = "16px";
+    chatWindow.style.right = "16px";
+    chatWindow.style.width = "auto";
+  }
 
   // ─── Prevent scroll bleed from chat messages to page ────────────
   // iOS Safari ignores overscroll-behavior on older versions, so we
