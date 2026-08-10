@@ -536,16 +536,19 @@
         right: 16px;
         border-radius: 16px;
       }
-      /* When keyboard is open, switch to full-screen mode */
+      /* When keyboard is open — controlled via JS inline styles for iOS compatibility */
       .pfx-window.keyboard-open {
-        top: 0;
-        bottom: 0;
         left: 0;
         right: 0;
         border-radius: 0;
-        height: var(--pfx-keyboard-height, 100%);
-        max-height: var(--pfx-keyboard-height, 100%);
       }
+    }
+
+    /* ── Scroll containment (prevent page scroll bleed) ────────── */
+    .pfx-messages {
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
   `;
   shadow.appendChild(styles);
@@ -756,8 +759,8 @@
   });
 
   // ─── Mobile Keyboard Handler ─────────────────────────────────────
-  // When the virtual keyboard opens on mobile, the viewport shrinks
-  // and the widget gets squished. We use visualViewport API to fix this.
+  // Uses visualViewport API to correctly position the widget when the
+  // virtual keyboard opens — works on both Android and iOS Safari.
   if (window.visualViewport) {
     function handleViewportResize() {
       const viewport = window.visualViewport;
@@ -766,25 +769,46 @@
 
       const viewportHeight = viewport.height;
       const windowHeight = window.innerHeight;
+      // On iOS, visualViewport.offsetTop tells us how far the viewport
+      // has been pushed down (or up) by the keyboard / scroll.
+      const offsetTop = viewport.offsetTop || 0;
 
       // If viewport is significantly smaller than window, keyboard is open
       const isKeyboardOpen = windowHeight - viewportHeight > 100;
 
       if (isKeyboardOpen) {
-        // Set the available height as a CSS variable
-        host.style.setProperty("--pfx-keyboard-height", viewportHeight + "px");
         chatWindow.classList.add("keyboard-open");
+        // Position the window exactly over the visible viewport area.
+        // This handles both Android (viewport shrinks from bottom)
+        // and iOS (viewport shifts with keyboard).
+        chatWindow.style.position = "fixed";
+        chatWindow.style.top = offsetTop + "px";
+        chatWindow.style.height = viewportHeight + "px";
+        chatWindow.style.maxHeight = viewportHeight + "px";
         // Scroll to bottom so latest message is visible
         requestAnimationFrame(() => {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
       } else {
         chatWindow.classList.remove("keyboard-open");
-        host.style.removeProperty("--pfx-keyboard-height");
+        // Reset inline styles so CSS media query takes over again
+        chatWindow.style.position = "";
+        chatWindow.style.top = "";
+        chatWindow.style.height = "";
+        chatWindow.style.maxHeight = "";
       }
     }
 
     window.visualViewport.addEventListener("resize", handleViewportResize);
     window.visualViewport.addEventListener("scroll", handleViewportResize);
   }
+
+  // ─── Prevent scroll bleed from chat messages to page ────────────
+  // On mobile, a touchmove on the messages container that reaches the
+  // top/bottom edge can bubble up and scroll the host page instead.
+  messagesContainer.addEventListener("touchmove", function (e) {
+    // Allow default scrolling inside the messages container;
+    // only stop propagation so the page doesn't scroll too.
+    e.stopPropagation();
+  }, { passive: true });
 })();
