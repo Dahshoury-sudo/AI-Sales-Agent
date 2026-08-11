@@ -29,15 +29,26 @@
   let unreadCount = 0;
 
   // ─── Create Host Element ─────────────────────────────────────────
+  //
+  // The host is a position:fixed element that covers the entire layout
+  // viewport at all times. Its purpose:
+  //   1. It never adds to document width (overflow:hidden), so it can never
+  //      make the page horizontally scrollable — the root cause of the old
+  //      iOS "drifting" bug.
+  //   2. It is the containing block for position:absolute children when we
+  //      need them (keyboard-open state on mobile).
+  //   3. pointer-events:none lets all clicks pass through the transparent
+  //      host area; interactive children restore pointer-events:auto.
+  //
+  // HORIZONTAL sizing: the host always uses left:0 and width = window.innerWidth
+  // (= layout viewport width = actual screen width in CSS px). We NEVER use
+  // visualViewport.width or visualViewport.offsetLeft for horizontal sizing,
+  // because the keyboard never changes the horizontal dimension and
+  // visualViewport.width can differ from window.innerWidth on some Android/iOS
+  // builds, which would leave a gap on the right.
+  //
   const host = document.createElement("div");
   host.id = "perfamix-chat-widget";
-  // Fix: give the host a fixed viewport-covering frame with overflow:hidden.
-  // This prevents the host (a block div in <body>) from ever widening the
-  // document body and making the page horizontally scrollable — which is the
-  // root cause of iOS Safari's position:fixed elements drifting off-screen
-  // when the keyboard opens and Safari internally scrolls the layout viewport.
-  // pointer-events:none lets clicks pass through the transparent host area;
-  // interactive children restore pointer-events:auto individually.
   host.style.cssText = [
     "position:fixed",
     "top:0",
@@ -61,9 +72,6 @@
       all: initial;
       font-family: 'Tajawal', 'Segoe UI', sans-serif;
       direction: rtl;
-      /* The host is already position:fixed via inline style (set in JS).
-         Declare it here too so Shadow DOM inherits the layout context.
-         overflow:hidden on the host is the key guard against horizontal bleed. */
       display: block;
       position: fixed;
       top: 0;
@@ -580,25 +588,27 @@
         border-radius: 16px;
       }
       /*
-       * keyboard-open architecture (iOS Safari):
+       * keyboard-open state:
        *
-       * When the keyboard opens, the JS repositions the HOST element to
-       * exactly match the visual viewport (offsetLeft, offsetTop, width, height).
-       * The chat window is switched to position:absolute inside the host so that
-       * the host's overflow:hidden properly clips it. This is the only reliable
-       * way to prevent horizontal drift on a real iPhone — position:fixed children
-       * are NOT clipped by their ancestor's overflow:hidden per the CSS spec.
+       * JS repositions the HOST vertically to match the visual viewport height
+       * and offsetTop (the space above the keyboard). Horizontally the host
+       * always covers the full layout viewport width (left:0, width:100%) —
+       * never changed — so there can be no horizontal gap.
        *
-       * transform:none is still required: a transform on a position:fixed/absolute
-       * element creates a new stacking context in Safari that can break geometry.
+       * The chat window is switched to position:absolute so that the host's
+       * overflow:hidden clips it properly (position:fixed children escape
+       * overflow:hidden per the CSS spec; position:absolute children do not).
+       *
+       * transform:none prevents Safari from creating a new containing block
+       * that breaks fixed/absolute geometry calculations.
        */
       .pfx-window.keyboard-open {
         border-radius: 0;
         transform: none !important;
       }
-      /* Hide the bubble while keyboard is open — it is behind the full-screen
+      /* Hide the bubble while keyboard is open — it sits behind the full-screen
          chat window and its fixed position becomes unpredictable during viewport
-         transitions. JS adds/removes .pfx-bubble-hidden on the bubble element. */
+         transitions. JS adds/removes this class on the bubble element. */
       .pfx-bubble.pfx-bubble-hidden {
         opacity: 0;
         pointer-events: none;
@@ -821,82 +831,109 @@
 
   // ─── Mobile Keyboard Handler ─────────────────────────────────────
   //
-  // iOS Safari coordinate systems:
+  // Coordinate system overview:
   //
-  // 1. Layout viewport  — the full page canvas. position:fixed is anchored here.
-  //    Width = window.innerWidth. Does NOT shrink when the keyboard opens
-  //    (unlike Android where window.innerHeight shrinks instead).
+  // Layout viewport (window.innerWidth / window.innerHeight):
+  //   The full page canvas. position:fixed elements are anchored here.
+  //   On iOS, innerWidth NEVER changes when the keyboard opens.
+  //   On Android, innerHeight shrinks when the keyboard opens (in most modes).
+  //   innerWidth is ALWAYS the correct "full screen width in CSS pixels".
   //
-  // 2. Visual viewport  — the currently visible slice of the layout viewport.
-  //    visualViewport.{width, height, offsetLeft, offsetTop} are in CSS pixels.
-  //    offsetLeft/offsetTop = where the visual viewport's top-left sits inside
-  //    the layout viewport.
+  // Visual viewport (window.visualViewport):
+  //   The slice of the layout viewport currently visible to the user.
+  //   height → shrinks when keyboard opens (both iOS and Android)
+  //   offsetTop → distance from layout viewport top to visual viewport top
+  //   offsetLeft → usually 0 unless the page is zoomed horizontally
+  //   width → UNRELIABLE for our purposes: can differ from innerWidth on
+  //            some Android builds (scrollbar reservations, browser chrome)
+  //            and on iOS when scale != 1.
   //
-  // 3. Auto-zoom (the primary root cause of the horizontal shift bug):
-  //    When a focused <input> has font-size < 16px, iOS Safari automatically
-  //    zooms in. This raises visualViewport.scale above 1.0, SHRINKS
-  //    visualViewport.width (e.g. 375px → 280px), and shifts offsetLeft to a
-  //    non-zero value. A position:fixed element with left:0; width:100% is
-  //    anchored to the LAYOUT viewport (375px wide, starting at x=0), but the
-  //    user only sees the VISUAL viewport (280px wide, starting at x=offsetLeft).
-  //    Result: the left portion of the chat window is outside the visible area.
-  //    Fix: font-size ≥ 16px on the input prevents zoom from ever firing.
+  // Horizontal strategy — use layout viewport ONLY:
+  //   The keyboard NEVER changes the horizontal dimension. Using innerWidth
+  //   for the host width and left:0 guarantees exact screen coverage with
+  //   zero gap. We deliberately ignore visualViewport.width and
+  //   visualViewport.offsetLeft for horizontal sizing.
   //
-  // 4. overflow:hidden does NOT clip position:fixed descendants:
-  //    Per CSS spec, overflow:hidden only clips positioned descendants that are
-  //    contained by the element (i.e. position:absolute/relative). A
-  //    position:fixed child escapes to the initial containing block (viewport)
-  //    and is NOT clipped by any ancestor's overflow:hidden.
-  //    Fix: when keyboard is open, switch chat window to position:absolute
-  //    inside the host, AND reposition the host to match the visual viewport.
-  //    Then overflow:hidden on the host properly clips the chat window.
+  // Vertical strategy — use visual viewport:
+  //   The keyboard shrinks the available vertical space. We read
+  //   visualViewport.height for the available height above the keyboard,
+  //   and visualViewport.offsetTop for where the visible area starts
+  //   in layout-viewport coordinates.
   //
-  // 5. transform on position:fixed breaks geometry in Safari:
-  //    A CSS transform on a position:fixed element creates a new containing
-  //    block, causing the element to be positioned relative to the transformed
-  //    ancestor instead of the viewport. The .keyboard-open CSS rule forces
-  //    transform:none to prevent this.
+  // overflow:hidden on position:fixed children:
+  //   Per CSS spec, overflow:hidden on a containing element does NOT clip
+  //   position:fixed descendants (they escape to the initial containing block).
+  //   To make overflow:hidden work, the chat window must be position:absolute
+  //   inside the host when the keyboard is open.
   //
-  // Architecture when keyboard is OPEN:
-  //   host       → position:fixed; top/left/width/height = visual viewport rect
-  //   chat window → position:absolute; top:0; left:0; width:100%; height:100%
-  //   overflow:hidden on host → properly clips chat window → zero horizontal bleed
-  //
-  // Architecture when keyboard is CLOSED:
-  //   host       → position:fixed; full layout viewport (top:0; left:0; 100%×100%)
-  //   chat window → position:fixed; CSS-driven layout (media-query rules apply)
+  // transform on position:fixed/absolute:
+  //   A CSS transform on a fixed element creates a new containing block in
+  //   Safari, breaking positioning geometry. The .keyboard-open CSS rule
+  //   forces transform:none to prevent this.
   //
   if (window.visualViewport) {
     function handleViewportResize() {
-      const viewport    = window.visualViewport;
-      const isMobile    = window.innerWidth <= 480;
+      const vp      = window.visualViewport;
+      const isMobile = window.innerWidth <= 480;
       if (!isMobile) return;
 
-      const vvWidth  = viewport.width;
-      const vvHeight = viewport.height;
-      const vvLeft   = viewport.offsetLeft  || 0;  // CSS px from layout-vp left edge
-      const vvTop    = viewport.offsetTop   || 0;  // CSS px from layout-vp top edge
+      // ── Diagnostic log (remove in production if desired) ────────────────
+      // Uncomment to inspect values on a real device:
+      // console.log("[pfx viewport]", {
+      //   innerWidth:  window.innerWidth,
+      //   innerHeight: window.innerHeight,
+      //   clientWidth: document.documentElement.clientWidth,
+      //   clientHeight: document.documentElement.clientHeight,
+      //   scrollWidth: document.documentElement.scrollWidth,
+      //   vv: { width: vp.width, height: vp.height,
+      //          offsetLeft: vp.offsetLeft, offsetTop: vp.offsetTop,
+      //          scale: vp.scale }
+      // });
 
-      // Keyboard is open when the visual viewport is significantly
-      // shorter than the full window height (layout viewport height on iOS).
+      // ── Dimensions ──────────────────────────────────────────────────────
+      //
+      // Horizontal: always use window.innerWidth (layout viewport).
+      //   Reason: the keyboard never changes horizontal space, and
+      //   visualViewport.width can be slightly smaller than innerWidth on some
+      //   Android devices, creating the visible right-side gap we are fixing.
+      //
+      // Vertical: use visualViewport values.
+      //   offsetTop: how far down the visual viewport has been pushed (px).
+      //   height: the available height above the keyboard (px).
+      //
+      const fullWidth  = window.innerWidth;           // layout viewport width — always correct
+      const vvHeight   = vp.height;                   // visible height above keyboard
+      const vvTop      = vp.offsetTop || 0;           // layout-vp offset of visual-vp top edge
+
+      // Keyboard is open when the visual viewport is significantly shorter
+      // than the full window height (works on both iOS and Android).
       const isKeyboardOpen = window.innerHeight - vvHeight > 100;
 
       if (isKeyboardOpen) {
         chatWindow.classList.add("keyboard-open");
         bubble.classList.add("pfx-bubble-hidden");
 
-        // ── Step 1: Move the HOST to exactly cover the visible viewport ──────
-        // This makes the host a precise containing block for the chat window.
-        // All visual-viewport coordinates are in CSS px — no scale math needed.
-        host.style.top    = vvTop    + "px";
-        host.style.left   = vvLeft   + "px";
-        host.style.width  = vvWidth  + "px";
+        // ── Step 1: Resize HOST to cover only the visible viewport ───────
+        //
+        // Horizontal: left=0, width=fullWidth (layout viewport, never changes).
+        //   This guarantees the host exactly spans the screen — no gap on either side.
+        //
+        // Vertical: top=vvTop, height=vvHeight.
+        //   This positions the host to exactly fill the space above the keyboard.
+        //
+        host.style.top    = vvTop + "px";
+        host.style.left   = "0";
+        host.style.width  = fullWidth + "px";
         host.style.height = vvHeight + "px";
-        // overflow:hidden on the host now correctly clips its absolute children.
+        // The host's overflow:hidden now clips its position:absolute children
+        // to exactly the visible viewport rectangle.
 
-        // ── Step 2: Make chat window fill the host absolutely ─────────────────
-        // position:absolute children ARE clipped by their containing block's
-        // overflow:hidden, unlike position:fixed children.
+        // ── Step 2: Make chat window fill the host with position:absolute ─
+        //
+        // position:absolute is clipped by the host's overflow:hidden.
+        // position:fixed would escape the host and be anchored to the layout
+        // viewport instead — meaning it could extend outside the host bounds.
+        //
         chatWindow.style.position  = "absolute";
         chatWindow.style.top       = "0";
         chatWindow.style.left      = "0";
@@ -907,24 +944,23 @@
         chatWindow.style.height    = "100%";
         chatWindow.style.maxHeight = "none";
 
-        // ── Step 3: Lock page horizontal scroll ───────────────────────────────
-        // Prevents the user from swiping horizontally to reveal shifted content.
-        document.documentElement.style.overflowX = "hidden";
-
         requestAnimationFrame(() => {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
 
       } else {
-        // Keyboard closed — restore everything.
+        // ── Keyboard closed — restore everything ────────────────────────
 
-        // ── Step 1: Reset host to full layout viewport ────────────────────────
+        // Step 1: Reset host to cover the full layout viewport again.
         host.style.top    = "0";
         host.style.left   = "0";
         host.style.width  = "100%";
         host.style.height = "100%";
 
-        // ── Step 2: Reset chat window to CSS-driven position:fixed layout ─────
+        // Step 2: Reset chat window to CSS media-query-driven layout.
+        // Clear ALL inline styles that were set in the keyboard-open branch
+        // so that the CSS rules (position:fixed, left:16px, right:16px, etc.)
+        // take full effect without any overrides.
         chatWindow.classList.remove("keyboard-open");
         chatWindow.style.position  = "";
         chatWindow.style.top       = "";
@@ -935,9 +971,6 @@
         chatWindow.style.maxWidth  = "";
         chatWindow.style.height    = "";
         chatWindow.style.maxHeight = "";
-
-        // ── Step 3: Restore page horizontal scroll ────────────────────────────
-        document.documentElement.style.overflowX = "";
 
         bubble.classList.remove("pfx-bubble-hidden");
       }
