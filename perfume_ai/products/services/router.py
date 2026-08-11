@@ -203,6 +203,17 @@ def route(message, history=None, store=None, conversation=None):
         # intent_future was already running in parallel — just collect the result now
         intent = intent_future.result()
         
+        # Check if user explicitly insisted on multiple genders (rejected unisex)
+        if intent.get("gender") == "multiple":
+            return handle_general(
+                f"""العميل بعتلي: "{message}"
+
+العميل مُصر يشتري عطرين مختلفين (رجالي وحريمي) في نفس الوقت ومش عايز حاجة للجنسين.
+قوله بلطف شديد: "ممتاز جداً! عشان أقدر أركز وأجيبلك أحسن حاجة لكل واحد فيكم، خلينا نختارهم واحد واحد. تحب نبدأ بالرجالي ولا الحريمي الأول؟"
+❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يختار هيبدأ بإيه.""",
+                history, store
+            )
+
         # Check if gender is missing and not inferable from conversation history
         if not intent.get("gender"):
             # Check if gender was mentioned in recent conversation history

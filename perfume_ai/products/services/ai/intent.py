@@ -15,7 +15,7 @@ Return ONLY valid JSON.
 Schema:
 {{
     "brand": "brand name or null",
-    "gender": "must be 'male', 'female', 'unisex' or null",
+    "gender": "must be 'male', 'female', 'unisex', 'multiple', or null",
     "perfume_type": "must be 'oriental', 'western', 'niche', 'ultra_niche' or null",
     "season": "season like 'summer', 'winter' or null",
     "occasion": "like 'evening', 'office', 'party' or null",
@@ -36,6 +36,7 @@ Rules:
   • Male context: عريس, لصاحبي, لأخويا, لأبويا, لخطيبي, لجوزي, شاب, ولد, لابني, لعمي, لخالي, هدية لراجل, أنا راجل, أنا ولد
   • Female context: عروسة, عروسه, لصاحبتي, لأختي, لماما, لخطيبتي, لمراتي, بنت, لبنتي, لطنطي, لخالتي, هدية لبنت, أنا بنت, ست
   If any of these clues exist, set gender accordingly ('male' or 'female'). Only leave gender as null if there is absolutely NO clue about gender in the message or conversation history.
+- CRITICAL — Multiple Genders: If the user explicitly asks for BOTH male and female perfumes in the same message (e.g. "واحد ليا وواحد لمراتي", "رجالي وحريمي"), you MUST set 'gender' to 'unisex' to safely retrieve perfumes suitable for both. HOWEVER, if the user explicitly INSISTS on having separate distinct perfumes and REJECTS unisex (e.g. "مش عايز للجنسين عايز رجالي لوحده وحريمي لوحده"), you MUST set 'gender' to 'multiple'.
 - If the user EXPLICITLY asks for a perfume SIMILAR to a specific known perfume (e.g. "عايز حاجة زي كريد" or "بديل سوفاج", "شبه كذا"), use your general knowledge to extract the main olfactory notes of that famous perfume and put them in the 'notes' array (e.g. ["pineapple", "birch"]). ALSO, add the name of that perfume to 'exclude_names' so we don't recommend the exact same one back.
 - CRITICAL: DO NOT put a perfume in 'exclude_names' if the user just names it (e.g. "سوفاج", "عايز سوفاج"). Only exclude it if they explicitly ask for an ALTERNATIVE ("بديل", "زي", "شبه").
 - If the user asks for alternatives (e.g. "في حاجة تانية", "عندك ايه تاني", "ايه تاني"), you MUST read the history and extract the names of ALL perfumes the assistant previously recommended, and add them to the 'exclude_names' array. This ensures we don't recommend the exact same perfumes again.
