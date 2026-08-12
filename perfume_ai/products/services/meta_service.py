@@ -49,13 +49,11 @@ def reply_to_ig_comment(comment_id, message, token):
         return None
 
 
-def send_private_reply(page_id, comment_id, message, token):
+def send_private_reply(sender_endpoint_id, comment_id, message, token):
     """
-    Send a private Messenger reply to the person who made a Facebook comment.
-    Uses the modern Messenger Send API: POST /{page-id}/messages
-    with recipient set to comment_id.
+    Send a private Messenger/IG reply to the person who made a comment.
     """
-    url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
+    url = f"https://graph.facebook.com/v19.0/{sender_endpoint_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
@@ -76,23 +74,22 @@ def send_private_reply(page_id, comment_id, message, token):
         return None
 
 
-def fetch_post_content(post_id, token):
+def fetch_post_content(post_id, token, platform="facebook"):
     """
-    Fetch the text content of a Facebook Page post.
+    Fetch the text content of a Facebook Page or Instagram post.
     Used to give the AI context about which product/offer the commenter is referring to.
-    Returns the post message string, or None if unavailable.
     """
     url = f"https://graph.facebook.com/v19.0/{post_id}"
+    fields = "caption" if platform == "instagram" else "message,story"
     try:
         response = requests.get(
             url,
-            params={"fields": "message,story", "access_token": token},
+            params={"fields": fields, "access_token": token},
             timeout=10,
         )
         response.raise_for_status()
         data = response.json()
-        # 'message' is the post body; 'story' is used for share/link posts
-        return data.get("message") or data.get("story") or None
+        return data.get("message") or data.get("story") or data.get("caption") or None
     except requests.exceptions.RequestException as e:
         logger.warning(f"Could not fetch post {post_id}: {e}")
         return None

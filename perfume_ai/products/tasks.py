@@ -107,7 +107,7 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         # ── 3. Fetch post content for context ───────────────────────────────
         post_context = ""
         if post_id:
-            post_text = fetch_post_content(post_id, token)
+            post_text = fetch_post_content(post_id, token, platform)
             if post_text:
                 post_context = f"[سياق البوست المُعلَّق عليه]: {post_text}\n\n"
                 logger.info(f"Fetched post context for {post_id}: {post_text[:80]}...")
@@ -140,7 +140,8 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         logger.info(f"Posted public reply on {platform} comment {comment_id}: '{public_reply}'")
 
         # ── 7. Send private DM with the AI answer ───────────────────────────
-        send_private_reply(store_settings.facebook_page_id, comment_id, ai_reply, token)
+        sender_endpoint_id = store_settings.instagram_account_id if platform == "instagram" else store_settings.facebook_page_id
+        send_private_reply(sender_endpoint_id, comment_id, ai_reply, token)
         logger.info(f"Sent private reply for {platform} comment {comment_id}")
 
     except Exception as exc:
