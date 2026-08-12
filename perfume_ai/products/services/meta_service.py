@@ -96,7 +96,7 @@ def send_whatsapp_message(phone_number_id, recipient_id, text, token):
         return None
 
 def send_messenger_message(page_id, recipient_id, text, token):
-    url = f"https://graph.facebook.com/v19.0/me/messages"
+    url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
@@ -117,7 +117,7 @@ def send_messenger_message(page_id, recipient_id, text, token):
         return None
 
 def send_instagram_message(ig_account_id, recipient_id, text, token):
-    url = f"https://graph.facebook.com/v19.0/me/messages"
+    url = f"https://graph.facebook.com/v19.0/{ig_account_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
@@ -161,7 +161,7 @@ def send_whatsapp_image(phone_number_id, recipient_id, image_url, token):
         return None
 
 def send_messenger_image(page_id, recipient_id, image_url, token):
-    url = f"https://graph.facebook.com/v19.0/me/messages"
+    url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
