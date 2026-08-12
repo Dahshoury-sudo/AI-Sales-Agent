@@ -27,20 +27,24 @@ def reply_to_comment(comment_id, message, token):
         return None
 
 
-def send_private_reply(comment_id, message, token):
+def send_private_reply(page_id, comment_id, message, token):
     """
     Send a private Messenger reply to the person who made a Facebook comment.
-    Uses: POST /{comment-id}/private_replies
-    Requires: pages_manage_engagement permission + Page Access Token.
+    Uses the modern Messenger Send API: POST /{page-id}/messages
+    with recipient set to comment_id.
     """
-    url = f"https://graph.facebook.com/v19.0/{comment_id}/private_replies"
+    url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "recipient": {"comment_id": comment_id},
+        "message": {"text": message}
+    }
+    
     try:
-        response = requests.post(
-            url,
-            params={"access_token": token},
-            json={"message": message},
-            timeout=10,
-        )
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
