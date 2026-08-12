@@ -93,7 +93,30 @@ class MetaWebhookView(APIView):
                             if commenter_id == page_id:
                                 continue
 
-                            self.process_comment(store_settings.store.id, comment_id, commenter_id, comment_text, post_id)
+                            self.process_comment(store_settings.store.id, "facebook", comment_id, commenter_id, comment_text, post_id)
+
+                        # ── Instagram comment ───────────────────────────────
+                        elif field == "comments":
+                            ig_account_id = entry.get("id")
+                            store_settings = StoreSettings.objects.filter(instagram_account_id=ig_account_id).first()
+                            if not store_settings:
+                                logger.warning(f"No store found for IG account ID {ig_account_id}")
+                                continue
+
+                            comment_id = value.get("id")
+                            comment_text = value.get("text", "")
+                            commenter_id = value.get("from", {}).get("id")
+                            post_id = value.get("media", {}).get("id", "")
+
+                            if not comment_id or not comment_text or not commenter_id:
+                                logger.warning(f"Incomplete IG comment data: {value}")
+                                continue
+
+                            # Don't reply to the page's own comments
+                            if commenter_id == ig_account_id:
+                                continue
+
+                            self.process_comment(store_settings.store.id, "instagram", comment_id, commenter_id, comment_text, post_id)
 
                 elif "messaging" in entry:
                     for messaging_event in entry.get("messaging", []):
@@ -147,7 +170,7 @@ class MetaWebhookView(APIView):
         from products.tasks import process_message_async
         process_message_async(store.id, platform, sender_id, text)
 
-    def process_comment(self, store_id, comment_id, commenter_id, comment_text, post_id=""):
+    def process_comment(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
         """Dispatch comment processing to a background Celery task."""
         from products.tasks import process_comment_async
-        process_comment_async(store_id, comment_id, commenter_id, comment_text, post_id)
+        process_comment_async(store_id, platform, comment_id, commenter_id, comment_text, post_id)

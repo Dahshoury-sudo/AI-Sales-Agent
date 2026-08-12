@@ -14,6 +14,7 @@ from products.services.router import route
 from products.services.meta_service import (
     send_platform_message,
     reply_to_comment,
+    reply_to_ig_comment,
     send_private_reply,
     fetch_post_content,
 )
@@ -76,24 +77,20 @@ def process_message_async(store_id, platform, sender_id, text):
 
 # ── Comment Auto-Reply ──────────────────────────────────────────────────────
 
-@shared_task(
-    bind=True,
-    max_retries=3,
-    default_retry_delay=30,
-    name='products.tasks.process_comment_task',
-    acks_late=True,
-)
-def process_comment_task(self, store_id, comment_id, commenter_id, comment_text, post_id=""):
+@shared_task(bind=True, max_retries=3, default_retry_delay=60 * 5)
+def process_comment_task(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
     """
-    Handle a Facebook Page comment:
-      1. Wait a random 20-40s delay (anti-spam, looks human).
-      2. Fetch the post content to give the AI context (which product?).
-      3. Generate AI answer via the router.
-      4. Post a random public reply on the comment ("Check your DM" variation).
-      5. Send the AI answer as a Private Reply DM.
+    Background task to process a Facebook or Instagram comment.
+    Features:
+    - Waits random amount of time (20-40s) before replying to feel human
+    - Fetches context from the post (caption)
+    - Asks AI to generate a reply
+    - Picks a random pre-defined public reply message
+    - Posts the public reply
+    - Sends the AI answer as a private DM
     """
     try:
-        # ── 1. Random human-like delay ──────────────────────────────────────
+        # ── 1. Humanize Delay ───────────────────────────────────────────────
         delay = random.randint(20, 40)
         logger.info(f"Comment task: waiting {delay}s before replying to comment {comment_id}")
         time.sleep(delay)
@@ -119,7 +116,7 @@ def process_comment_task(self, store_id, comment_id, commenter_id, comment_text,
         enriched_text = f"{post_context}[تعليق العميل]: {comment_text}"
 
         # ── 4. Generate AI answer ───────────────────────────────────────────
-        conversation, _ = get_or_create_platform_conversation(store, "messenger", commenter_id)
+        conversation, _ = get_or_create_platform_conversation(store, platform, commenter_id)
         past_messages = get_conversation_messages(conversation)
         history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
         save_message(conversation, "user", comment_text)  # save original comment only
@@ -135,12 +132,16 @@ def process_comment_task(self, store_id, comment_id, commenter_id, comment_text,
         public_reply = random.choice(variations)
 
         # ── 6. Post public reply on the comment ─────────────────────────────
-        reply_to_comment(comment_id, public_reply, token)
-        logger.info(f"Posted public reply on comment {comment_id}: '{public_reply}'")
+        if platform == "instagram":
+            reply_to_ig_comment(comment_id, public_reply, token)
+        else:
+            reply_to_comment(comment_id, public_reply, token)
+            
+        logger.info(f"Posted public reply on {platform} comment {comment_id}: '{public_reply}'")
 
         # ── 7. Send private DM with the AI answer ───────────────────────────
         send_private_reply(store_settings.facebook_page_id, comment_id, ai_reply, token)
-        logger.info(f"Sent private reply for comment {comment_id}")
+        logger.info(f"Sent private reply for {platform} comment {comment_id}")
 
     except Exception as exc:
         logger.exception(
@@ -150,7 +151,7 @@ def process_comment_task(self, store_id, comment_id, commenter_id, comment_text,
         raise self.retry(exc=exc)
 
 
-def process_comment_async(store_id, comment_id, commenter_id, comment_text, post_id=""):
+def process_comment_async(store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
     """Enqueue process_comment_task — returns 200 to Facebook immediately."""
-    process_comment_task.delay(store_id, comment_id, commenter_id, comment_text, post_id)
+    process_comment_task.delay(store_id, platform, comment_id, commenter_id, comment_text, post_id)
 

@@ -27,6 +27,28 @@ def reply_to_comment(comment_id, message, token):
         return None
 
 
+def reply_to_ig_comment(comment_id, message, token):
+    """
+    Post a public reply to an Instagram comment.
+    Uses: POST /{ig-comment-id}/replies
+    """
+    url = f"https://graph.facebook.com/v19.0/{comment_id}/replies"
+    try:
+        response = requests.post(
+            url,
+            params={"access_token": token},
+            json={"message": message},
+            timeout=10,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error posting IG comment reply to {comment_id}: {e}")
+        if hasattr(e, "response") and e.response is not None:
+            logger.error(f"Response: {e.response.text}")
+        return None
+
+
 def send_private_reply(page_id, comment_id, message, token):
     """
     Send a private Messenger reply to the person who made a Facebook comment.
