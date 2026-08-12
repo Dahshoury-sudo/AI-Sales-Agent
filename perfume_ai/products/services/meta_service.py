@@ -49,6 +49,29 @@ def send_private_reply(comment_id, message, token):
             logger.error(f"Response: {e.response.text}")
         return None
 
+
+def fetch_post_content(post_id, token):
+    """
+    Fetch the text content of a Facebook Page post.
+    Used to give the AI context about which product/offer the commenter is referring to.
+    Returns the post message string, or None if unavailable.
+    """
+    url = f"https://graph.facebook.com/v19.0/{post_id}"
+    try:
+        response = requests.get(
+            url,
+            params={"fields": "message,story", "access_token": token},
+            timeout=10,
+        )
+        response.raise_for_status()
+        data = response.json()
+        # 'message' is the post body; 'story' is used for share/link posts
+        return data.get("message") or data.get("story") or None
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"Could not fetch post {post_id}: {e}")
+        return None
+
+
 def send_whatsapp_message(phone_number_id, recipient_id, text, token):
     url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
     headers = {

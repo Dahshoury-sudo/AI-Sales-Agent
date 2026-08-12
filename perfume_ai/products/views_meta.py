@@ -83,6 +83,7 @@ class MetaWebhookView(APIView):
                             comment_id = value.get("comment_id")
                             commenter_id = str(value.get("sender_id", "") or value.get("from", {}).get("id", ""))
                             comment_text = value.get("message", "")
+                            post_id = value.get("post_id", "")  # used to fetch post context
 
                             if not comment_id or not comment_text or not commenter_id:
                                 logger.warning(f"Incomplete comment data: {value}")
@@ -92,7 +93,7 @@ class MetaWebhookView(APIView):
                             if commenter_id == page_id:
                                 continue
 
-                            self.process_comment(store_settings.store.id, comment_id, commenter_id, comment_text)
+                            self.process_comment(store_settings.store.id, comment_id, commenter_id, comment_text, post_id)
 
                 elif "messaging" in entry:
                     for messaging_event in entry.get("messaging", []):
@@ -146,7 +147,7 @@ class MetaWebhookView(APIView):
         from products.tasks import process_message_async
         process_message_async(store.id, platform, sender_id, text)
 
-    def process_comment(self, store_id, comment_id, commenter_id, comment_text):
+    def process_comment(self, store_id, comment_id, commenter_id, comment_text, post_id=""):
         """Dispatch comment processing to a background Celery task."""
         from products.tasks import process_comment_async
-        process_comment_async(store_id, comment_id, commenter_id, comment_text)
+        process_comment_async(store_id, comment_id, commenter_id, comment_text, post_id)

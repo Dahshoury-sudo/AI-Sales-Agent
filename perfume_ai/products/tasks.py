@@ -15,6 +15,7 @@ from products.services.meta_service import (
     send_platform_message,
     reply_to_comment,
     send_private_reply,
+    fetch_post_content,
 )
 
 logger = logging.getLogger(__name__)
@@ -82,13 +83,14 @@ def process_message_async(store_id, platform, sender_id, text):
     name='products.tasks.process_comment_task',
     acks_late=True,
 )
-def process_comment_task(self, store_id, comment_id, commenter_id, comment_text):
+def process_comment_task(self, store_id, comment_id, commenter_id, comment_text, post_id=""):
     """
     Handle a Facebook Page comment:
       1. Wait a random 20-40s delay (anti-spam, looks human).
-      2. Generate AI answer via the router.
-      3. Post a random public reply on the comment ("Check your DM" variation).
-      4. Send the AI answer as a Private Reply DM.
+      2. Fetch the post content to give the AI context (which product?).
+      3. Generate AI answer via the router.
+      4. Post a random public reply on the comment ("Check your DM" variation).
+      5. Send the AI answer as a Private Reply DM.
     """
     try:
         # ── 1. Random human-like delay ──────────────────────────────────────
@@ -105,27 +107,38 @@ def process_comment_task(self, store_id, comment_id, commenter_id, comment_text)
             logger.warning(f"No Messenger token for store {store_id}, skipping comment reply.")
             return
 
-        # ── 3. Generate AI answer ───────────────────────────────────────────
+        # ── 3. Fetch post content for context ───────────────────────────────
+        post_context = ""
+        if post_id:
+            post_text = fetch_post_content(post_id, token)
+            if post_text:
+                post_context = f"[سياق البوست المُعلَّق عليه]: {post_text}\n\n"
+                logger.info(f"Fetched post context for {post_id}: {post_text[:80]}...")
+
+        # Build the enriched message: post context + customer's comment
+        enriched_text = f"{post_context}[تعليق العميل]: {comment_text}"
+
+        # ── 4. Generate AI answer ───────────────────────────────────────────
         conversation, _ = get_or_create_platform_conversation(store, "messenger", commenter_id)
         past_messages = get_conversation_messages(conversation)
         history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
-        save_message(conversation, "user", comment_text)
+        save_message(conversation, "user", comment_text)  # save original comment only
 
-        ai_reply, context = route(comment_text, history, store, conversation)
+        ai_reply, context = route(enriched_text, history, store, conversation)
         save_message(conversation, "assistant", ai_reply, internal_context=context)
 
-        # ── 4. Pick a random public reply message ───────────────────────────
+        # ── 5. Pick a random public reply message ───────────────────────────
         raw_messages = store_settings.comment_reply_messages or ""
         variations = [m.strip() for m in raw_messages.split("\n") if m.strip()]
         if not variations:
             variations = ["✅ Check your DM!"]
         public_reply = random.choice(variations)
 
-        # ── 5. Post public reply on the comment ─────────────────────────────
+        # ── 6. Post public reply on the comment ─────────────────────────────
         reply_to_comment(comment_id, public_reply, token)
         logger.info(f"Posted public reply on comment {comment_id}: '{public_reply}'")
 
-        # ── 6. Send private DM with the AI answer ───────────────────────────
+        # ── 7. Send private DM with the AI answer ───────────────────────────
         send_private_reply(comment_id, ai_reply, token)
         logger.info(f"Sent private reply for comment {comment_id}")
 
@@ -137,7 +150,7 @@ def process_comment_task(self, store_id, comment_id, commenter_id, comment_text)
         raise self.retry(exc=exc)
 
 
-def process_comment_async(store_id, comment_id, commenter_id, comment_text):
+def process_comment_async(store_id, comment_id, commenter_id, comment_text, post_id=""):
     """Enqueue process_comment_task — returns 200 to Facebook immediately."""
-    process_comment_task.delay(store_id, comment_id, commenter_id, comment_text)
+    process_comment_task.delay(store_id, comment_id, commenter_id, comment_text, post_id)
 
