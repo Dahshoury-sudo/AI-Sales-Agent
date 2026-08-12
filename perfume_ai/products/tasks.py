@@ -140,8 +140,8 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         logger.info(f"Posted public reply on {platform} comment {comment_id}: '{public_reply}'")
 
         # ── 7. Send private DM with the AI answer ───────────────────────────
-        sender_endpoint_id = store_settings.instagram_account_id if platform == "instagram" else store_settings.facebook_page_id
-        send_private_reply(sender_endpoint_id, comment_id, ai_reply, token)
+        # Private replies always go through the Facebook Page endpoint
+        send_private_reply(store_settings.facebook_page_id, comment_id, ai_reply, token)
         logger.info(f"Sent private reply for {platform} comment {comment_id}")
 
     except Exception as exc:
