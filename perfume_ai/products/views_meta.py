@@ -120,6 +120,12 @@ class MetaWebhookView(APIView):
 
                 elif "messaging" in entry:
                     for messaging_event in entry.get("messaging", []):
+                        # Skip echo, delivery, and read receipt events
+                        if messaging_event.get("message", {}).get("is_echo"):
+                            continue
+                        if "delivery" in messaging_event or "read" in messaging_event:
+                            continue
+
                         sender_id = messaging_event.get("sender", {}).get("id")
                         recipient_id = messaging_event.get("recipient", {}).get("id")
                         
