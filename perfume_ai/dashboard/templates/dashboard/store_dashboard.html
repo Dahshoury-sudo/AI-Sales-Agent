@@ -961,8 +961,12 @@
                     <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
                 </div>
                 <div class="form-group">
-                    <label>Access Token</label>
+                    <label><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Access Token</label>
                     <input type="password" id="meta-access-token" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label><i class="fab fa-facebook-messenger" style="color:#0084ff;"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
+                    <input type="password" id="messenger-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
                     <label>App Secret</label>
@@ -1390,6 +1394,7 @@
                 document.getElementById('meta-ig-id').value = s.instagram_account_id || '';
                 document.getElementById('meta-verify-token').value = s.meta_verify_token || '';
                 document.getElementById('meta-access-token').value = s.meta_access_token || '';
+                document.getElementById('messenger-access-token').value = s.messenger_access_token || '';
                 document.getElementById('meta-app-secret').value = s.meta_app_secret || '';
             } catch (e) {
                 console.error('Error loading meta settings:', e);
@@ -1407,6 +1412,7 @@
                         instagram_account_id: document.getElementById('meta-ig-id').value,
                         meta_verify_token: document.getElementById('meta-verify-token').value,
                         meta_access_token: document.getElementById('meta-access-token').value,
+                        messenger_access_token: document.getElementById('messenger-access-token').value,
                         meta_app_secret: document.getElementById('meta-app-secret').value,
                     })
                 });

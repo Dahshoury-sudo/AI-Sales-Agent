@@ -135,8 +135,15 @@ def send_platform_message(conversation, text):
         logger.error(f"No StoreSettings found for store {conversation.store_id}")
         return
 
-    token = store_settings.meta_access_token
     sender_id = conversation.platform_sender_id
+
+    # ── Pick the right token per platform ───────────────────────────────────
+    if conversation.platform == "whatsapp":
+        token = store_settings.meta_access_token
+    else:
+        # Messenger & Instagram use the Page Access Token.
+        # Fall back to meta_access_token for backward compatibility.
+        token = store_settings.messenger_access_token or store_settings.meta_access_token
 
     if not token or not sender_id:
         logger.warning(f"Missing token or sender_id for conversation {conversation.id}")
@@ -147,8 +154,6 @@ def send_platform_message(conversation, text):
     if "[SEND_BOTTLE_IMAGE]" in text:
         should_send_image = True
         text = text.replace("[SEND_BOTTLE_IMAGE]", "").strip()
-        
-        
         BOTTLE_IMAGE_URL = settings.BOTTLE_IMAGE_URL
 
     # Send the image first if requested
@@ -170,3 +175,4 @@ def send_platform_message(conversation, text):
             send_instagram_message(store_settings.instagram_account_id, sender_id, text, token)
         else:
             logger.warning(f"Unknown platform '{conversation.platform}' for conversation {conversation.id}")
+

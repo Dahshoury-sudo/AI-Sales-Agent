@@ -23,7 +23,8 @@ class StoreSettings(models.Model):
     
     # Meta Integration Credentials (encrypted at rest)
     meta_verify_token = models.CharField(max_length=100, blank=True, help_text="Token for webhook verification")
-    meta_access_token = EncryptedTextField(blank=True, help_text="Graph API Access Token")
+    meta_access_token = EncryptedTextField(blank=True, help_text="WhatsApp Graph API Access Token")
+    messenger_access_token = EncryptedTextField(blank=True, help_text="Messenger & Instagram Page Access Token")
     meta_app_secret = EncryptedCharField(max_length=500, blank=True, help_text="App Secret for signature validation")
     facebook_page_id = models.CharField(max_length=100, blank=True)
     instagram_account_id = models.CharField(max_length=100, blank=True)

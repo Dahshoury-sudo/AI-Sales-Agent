@@ -25,6 +25,7 @@ class StoreSettingsView(APIView):
             "whatsapp_number": settings.whatsapp_number,
             "meta_verify_token": settings.meta_verify_token,
             "meta_access_token": "••••••••" if settings.meta_access_token else "",
+            "messenger_access_token": "••••••••" if settings.messenger_access_token else "",
             "meta_app_secret": "••••••••" if settings.meta_app_secret else "",
             "facebook_page_id": settings.facebook_page_id,
             "instagram_account_id": settings.instagram_account_id,
@@ -40,8 +41,8 @@ class StoreSettingsView(APIView):
 
         updatable_fields = [
             "system_prompt", "whatsapp_number", "meta_verify_token",
-            "meta_access_token", "meta_app_secret", "facebook_page_id",
-            "instagram_account_id", "whatsapp_phone_number_id",
+            "meta_access_token", "messenger_access_token", "meta_app_secret",
+            "facebook_page_id", "instagram_account_id", "whatsapp_phone_number_id",
         ]
 
         for field in updatable_fields:
