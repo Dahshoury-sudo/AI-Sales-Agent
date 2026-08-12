@@ -1,0 +1,887 @@
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً يا فندم، تحت أمرك في أي استفسار عن عطور Perfamix.
+Context: 
+
+[user]: عامل اي
+Context: 
+
+[assistant]: تمام الحمد لله، تحت أمرك في اختيار العطر اللي يعجبك.
+Context: 
+
+[user]: عندكو سوفاج ؟؟
+Context: 
+
+[assistant]: أه متوفر عندنا Dior Sauvage يا فندم.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 642.00 EGP
+- الـ 90 ملي: 944.00 EGP
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+زجاجة أوريجينال 60 ملي
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+
+[user]: عامله كام
+Context: 
+
+[assistant]: الـ 50 ملي بـ 642 جنيه، والـ 90 ملي بـ 944 جنيه، والـ 100 ملي زجاجة أوريجينال بـ 815 جنيه (متوفر 2 زجاجة فقط)، والـ 200 ملي زجاجة أوريجينال بـ 1623 جنيه.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 642.00 EGP
+- الـ 90 ملي: 944.00 EGP
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+زجاجة أوريجينال 60 ملي
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+
+[user]: وريني صوره الازازه
+Context: 
+
+[assistant]: الصور اللي بنبعتها هنا خاصة بزجاجات البراند بتاعنا بس. لو حابب تشوف صور الزجاجات الأوريجينال لكل عطر هتلاقيها موجودة على موقعنا.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 642.00 EGP
+- الـ 90 ملي: 944.00 EGP
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+زجاجة أوريجينال 60 ملي
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+
+[user]: ماشي وريني
+Context: 
+
+[assistant]: تحت أمرك يا فندم، أقدر أساعدك إزاي في اختيار عطرك النهاردة؟
+Context: 
+
+[user]: وريني صوره الازازه بتاعت البراند
+Context: 
+
+[assistant]: [SEND_BOTTLE_IMAGE]
+Context: 
+
+[user]: شكل الزجاجة
+Context: 
+
+[assistant]: [SEND_BOTTLE_IMAGE]
+Context: 
+
+[user]: ازازه البراند
+Context: 
+
+[assistant]: [SEND_BOTTLE_IMAGE]
+Context: 
+
+[user]: عايز حاجه تنفع حريمي لديت
+Context: 
+
+[assistant]: 🔹 Black Opium: ريحته فيها قهوة وفانيليا تجنن، مناسبة جداً للديت في الخريف والشتا، ثباته قوي وفوحانه عالي.
+
+🔹 Good Girl: عطر جريء فيه لوز وقهوة وفانيليا، مناسب للسهرات والديت في المواسم الباردة، ثباته وفوحانه قويين.
+
+تحب تعرف أسعارهم والأحجام؟
+Context: 
+Name (الاسم الصحيح): Black Opium
+Brand: Yves Saint Laurent
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 677.00 EGP
+- الـ 90 ملي: 883.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Fall/Winter
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Pink Pepper, Orange Blossom
+Middle Notes: Coffee, Jasmine
+Base Notes: Vanilla, Patchouli, Cedar
+Description: An addictive gourmand fragrance blending coffee and vanilla
+
+-------------------------
+
+Name (الاسم الصحيح): Good Girl
+Brand: Carolina Herrera
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 650.00 EGP
+- الـ 90 ملي: 1083.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Fall/Winter
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Almond, Coffee, Bergamot
+Middle Notes: Tuberose, Jasmine
+Base Notes: Tonka Bean, Cacao, Vanilla
+Description: A daring duality of light and dark in one seductive scent
+
+-------------------------
+
+Name (الاسم الصحيح): Flowerbomb
+Brand: Viktor & Rolf
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 577.00 EGP
+- الـ 90 ملي: 928.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Bergamot, Tea
+Middle Notes: Jasmine, Orchid, Freesia
+Base Notes: Patchouli, Musk, Vanilla
+Description: An explosive floral bouquet with a warm, sweet base
+
+-------------------------
+
+
+[user]: لا مش عاجبني
+Context: 
+
+[assistant]: 🔹 Coco Mademoiselle: عطر شيك وأنيق مناسب لكل المواسم والمناسبات الرسمية، ريحته مزيج برتقالي وزهري مع لمسة فانيليا بتخليه جذاب جداً.
+
+🔹 Jasmino: عطر ناعم وأنيق مناسب للاستخدام اليومي وفي كل المواسم، فيه نوتات ياسمين وفانيليا بتدي إحساس دافي وشكله مناسب للديت.
+
+تحب تعرف أسعارهم والأحجام؟
+Context: 
+Name (الاسم الصحيح): Coco Mademoiselle
+Brand: Chanel
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 534.00 EGP
+- الـ 90 ملي: 1006.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Formal
+Longevity: 7 hours
+Projection: Moderate
+Top Notes: Orange, Bergamot, Mandarin
+Middle Notes: Jasmine, Rose, Mimosa
+Base Notes: Patchouli, Vetiver, Vanilla
+Description: An elegant, modern chypre with an oriental twist
+
+-------------------------
+
+Name (الاسم الصحيح): Chloe Eau de Parfum
+Brand: Chloe
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 692.00 EGP
+- الـ 90 ملي: 1058.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 6 hours
+Projection: Moderate
+Top Notes: Peony, Lychee, Freesia
+Middle Notes: Rose, Magnolia, Lily
+Base Notes: Amber, Musk, Cedar
+Description: A romantic, powdery-floral fragrance with rose at its heart
+
+-------------------------
+
+Name (الاسم الصحيح): Citrolo
+Brand: ⭐ عطر تركيب حصري خاص بالمتجر
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."
+Available Sizes & Prices:
+- الـ 50 ملي: 598.00 EGP
+- الـ 90 ملي: 943.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Daily
+Longevity: 5 hours
+Projection: Light
+Top Notes: Mandarin, Lemon, Bergamot
+Middle Notes: Orange Blossom, Freesia, Jasmine
+Base Notes: White Musk, Blonde Woods
+Description: A sunny, uplifting blend of citrus and white flowers. Light and effortless, it's designed for everyday wear when you want a fresh, clean signature scent.
+
+-------------------------
+
+Name (الاسم الصحيح): Libre
+Brand: Yves Saint Laurent
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 561.00 EGP
+- الـ 90 ملي: 927.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Formal
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Lavender, Mandarin, Ginger
+Middle Notes: Orange Blossom, Jasmine
+Base Notes: Vanilla, Musk, Cedar
+Description: A daring blend of lavender and orange blossom for the free-spirited
+
+-------------------------
+
+Name (الاسم الصحيح): Bloom
+Brand: Gucci
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 549.00 EGP
+- الـ 90 ملي: 1067.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 6 hours
+Projection: Moderate
+Top Notes: Jasmine Sambac, Tuberose
+Middle Notes: Rangoon Creeper
+Base Notes: Sandalwood, Musk
+Description: A rich white floral fragrance inspired by an English garden
+
+-------------------------
+
+Name (الاسم الصحيح): Light Blue
+Brand: Dolce & Gabbana
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 691.00 EGP
+- الـ 90 ملي: 852.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 5 hours
+Projection: Moderate
+Top Notes: Sicilian Lemon, Apple, Cedar
+Middle Notes: Bamboo, Jasmine, White Rose
+Base Notes: Musk, Amber, Cedar
+Description: A vibrant, fresh Mediterranean-inspired citrus fragrance
+
+-------------------------
+
+Name (الاسم الصحيح): La Vie Est Belle
+Brand: Lancome
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 669.00 EGP
+- الـ 90 ملي: 1046.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Casual
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Black Currant, Pear
+Middle Notes: Iris, Jasmine, Orange Blossom
+Base Notes: Praline, Vanilla, Patchouli
+Description: An iconic gourmand floral celebrating happiness and femininity
+
+-------------------------
+
+Name (الاسم الصحيح): Jasmino
+Brand: ⭐ عطر تركيب حصري خاص بالمتجر
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."
+Available Sizes & Prices:
+- الـ 50 ملي: 578.00 EGP
+- الـ 90 ملي: 1106.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Daily
+Longevity: 7 hours
+Projection: Moderate
+Top Notes: Bergamot, Green Notes, Mandarin
+Middle Notes: Jasmine Sambac, Tuberose, Ylang Ylang
+Base Notes: Sandalwood, White Musk, Vanilla
+Description: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.
+
+-------------------------
+
+Name (الاسم الصحيح): Rosalia
+Brand: ⭐ عطر تركيب حصري خاص بالمتجر
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."
+Available Sizes & Prices:
+- الـ 50 ملي: 575.00 EGP
+- الـ 90 ملي: 1030.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Daily
+Longevity: 6 hours
+Projection: Moderate
+Top Notes: Lychee, Pink Pepper, Bergamot
+Middle Notes: Turkish Rose, Peony, Jasmine
+Base Notes: White Musk, Cedarwood
+Description: A romantic bouquet centered on Turkish rose, brightened with juicy lychee and softened with delicate peony. Perfect for daytime wear when you want to feel effortlessly elegant.
+
+-------------------------
+
+Name (الاسم الصحيح): Flowerbomb
+Brand: Viktor & Rolf
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 577.00 EGP
+- الـ 90 ملي: 928.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Bergamot, Tea
+Middle Notes: Jasmine, Orchid, Freesia
+Base Notes: Patchouli, Musk, Vanilla
+Description: An explosive floral bouquet with a warm, sweet base
+
+-------------------------
+
+
+[user]: عايزه حاجه نيش
+Context: 
+
+[assistant]: للأسف يا فندم، العطور النيش مش متوفرة عندنا حالياً. تحب أرشحلك بديل يناسب ذوقك؟
+Context: 
+
+[user]: طب غربي
+Context: 
+
+[assistant]: أنصحك بـ Black Opium، ريحته مزيج قهوة وفانيليا جذاب وقوي، مناسب جداً للديت والسهرات في الخريف والشتا.
+
+وكمان Bloom من Gucci، عطر زهري ناعم مستوحى من حديقة إنجليزية، مناسب لفصول الربيع والصيف والاستخدام الكاجوال.
+
+تحب تعرف أسعارهم والأحجام؟
+Context: 
+Name (الاسم الصحيح): Black Opium
+Brand: Yves Saint Laurent
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 677.00 EGP
+- الـ 90 ملي: 883.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Fall/Winter
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Pink Pepper, Orange Blossom
+Middle Notes: Coffee, Jasmine
+Base Notes: Vanilla, Patchouli, Cedar
+Description: An addictive gourmand fragrance blending coffee and vanilla
+
+-------------------------
+
+Name (الاسم الصحيح): Bloom
+Brand: Gucci
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 549.00 EGP
+- الـ 90 ملي: 1067.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 6 hours
+Projection: Moderate
+Top Notes: Jasmine Sambac, Tuberose
+Middle Notes: Rangoon Creeper
+Base Notes: Sandalwood, Musk
+Description: A rich white floral fragrance inspired by an English garden
+
+-------------------------
+
+Name (الاسم الصحيح): Coco Mademoiselle
+Brand: Chanel
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 534.00 EGP
+- الـ 90 ملي: 1006.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Formal
+Longevity: 7 hours
+Projection: Moderate
+Top Notes: Orange, Bergamot, Mandarin
+Middle Notes: Jasmine, Rose, Mimosa
+Base Notes: Patchouli, Vetiver, Vanilla
+Description: An elegant, modern chypre with an oriental twist
+
+-------------------------
+
+Name (الاسم الصحيح): Libre
+Brand: Yves Saint Laurent
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 561.00 EGP
+- الـ 90 ملي: 927.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Formal
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Lavender, Mandarin, Ginger
+Middle Notes: Orange Blossom, Jasmine
+Base Notes: Vanilla, Musk, Cedar
+Description: A daring blend of lavender and orange blossom for the free-spirited
+
+-------------------------
+
+Name (الاسم الصحيح): Good Girl
+Brand: Carolina Herrera
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 650.00 EGP
+- الـ 90 ملي: 1083.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Fall/Winter
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Almond, Coffee, Bergamot
+Middle Notes: Tuberose, Jasmine
+Base Notes: Tonka Bean, Cacao, Vanilla
+Description: A daring duality of light and dark in one seductive scent
+
+-------------------------
+
+Name (الاسم الصحيح): Chloe Eau de Parfum
+Brand: Chloe
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 692.00 EGP
+- الـ 90 ملي: 1058.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 6 hours
+Projection: Moderate
+Top Notes: Peony, Lychee, Freesia
+Middle Notes: Rose, Magnolia, Lily
+Base Notes: Amber, Musk, Cedar
+Description: A romantic, powdery-floral fragrance with rose at its heart
+
+-------------------------
+
+Name (الاسم الصحيح): La Vie Est Belle
+Brand: Lancome
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 669.00 EGP
+- الـ 90 ملي: 1046.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Casual
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Black Currant, Pear
+Middle Notes: Iris, Jasmine, Orange Blossom
+Base Notes: Praline, Vanilla, Patchouli
+Description: An iconic gourmand floral celebrating happiness and femininity
+
+-------------------------
+
+Name (الاسم الصحيح): Light Blue
+Brand: Dolce & Gabbana
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 691.00 EGP
+- الـ 90 ملي: 852.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: Spring/Summer
+Occasion: Casual
+Longevity: 5 hours
+Projection: Moderate
+Top Notes: Sicilian Lemon, Apple, Cedar
+Middle Notes: Bamboo, Jasmine, White Rose
+Base Notes: Musk, Amber, Cedar
+Description: A vibrant, fresh Mediterranean-inspired citrus fragrance
+
+-------------------------
+
+Name (الاسم الصحيح): Flowerbomb
+Brand: Viktor & Rolf
+Stock Status: ✅ متوفر
+Original Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.
+Available Sizes & Prices:
+- الـ 50 ملي: 577.00 EGP
+- الـ 90 ملي: 928.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: female
+Season: All Seasons
+Occasion: Evening
+Longevity: 8 hours
+Projection: Strong
+Top Notes: Bergamot, Tea
+Middle Notes: Jasmine, Orchid, Freesia
+Base Notes: Patchouli, Musk, Vanilla
+Description: An explosive floral bouquet with a warm, sweet base
+
+-------------------------
+
+
+[user]: انت مين
+Context: 
+
+[assistant]: أنا مساعد Perfamix، خبير العطور في الستور، موجود عشان أساعدك تختار أفضل عطر يناسبك من منتجاتنا.
+Context: 
+
+[assistant]: اتفضل يا فندم معاك محمد
+Context: 
+
+[assistant]: انا شغال في الاستور عشان اساعدك عايز عرض اي ؟
+Context: 
+
+[user]: انت عامل اي
+Context: 
+
+[user]: هاي
+Context: 
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً يا فندم، تحت أمرك في أي استفسار عن عطور Perfamix.
+Context: 
+
+[user]: عامل اي
+Context: 
+
+[assistant]: تمام الحمد لله، تحت أمرك في أي استفسار عن عطورنا.
+Context: 
+
+[user]: انت مين
+Context: 
+
+[assistant]: أنا مساعد Perfamix، خبير العطور في الستور هنا عشان أساعدك تختار العطر المناسب.
+Context: 
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً بحضرتك، جاهز أساعدك في اختيار العطر اللي يناسب ذوقك.
+Context: 
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً يا فندم، تحت أمرك في كل حاجة تخص عطور Perfamix.
+Context: 
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلًا، ممكن أساعدك بحاجة معينة في عطورنا؟
+Context: 
+
+[user]: بكام سوفاج
+Context: 
+
+[assistant]: Dior Sauvage متوفر عندنا، والأسعار كالتالي: الـ 50 ملي بـ 642 جنيه، والـ 90 ملي بـ 944 جنيه، والـ 100 ملي زجاجة أوريجينال بـ 815 جنيه (2 زجاجة فقط)، والـ 200 ملي زجاجة أوريجينال بـ 1623 جنيه.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 642.00 EGP
+- الـ 90 ملي: 944.00 EGP
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+زجاجة أوريجينال 60 ملي
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً يا فندم، تحت أمرك في أي استفسار عن عطورنا.
+Context: 
+
+[user]: hm
+Context: 
+
+[assistant]: Bleu de Chanel متوفر عندنا يا فندم. تحب تعرف الأسعار والأحجام؟
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Bleu de Chanel
+Brand: Chanel
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 645.00 EGP
+- الـ 90 ملي: 1015.00 EGP
+- زجاجة أوريجينال 50 ملي: 326.00 EGP
+- زجاجة أوريجينال 100 ملي: 565.00 EGP
+- زجاجة أوريجينال 150 ملي: 1016.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Office, Formal, Daily
+Longevity: 8–10 hrs
+Projection: Moderate–Strong
+Top Notes: Grapefruit, Lemon, Mint
+Middle Notes: Ginger, Nutmeg, Jasmine
+Base Notes: Incense, Cedar, Sandalwood, Patchouli
+Description: Elegant, clean and luxurious with excellent versatility.
+-----------------------
+
+
+[user]: بكام
+Context: 
+
+[assistant]: عطر Dior Sauvage متوفر عندنا، والأسعار كالتالي: الـ 50 ملي بـ 642 جنيه، والـ 90 ملي بـ 944 جنيه، والـ 100 ملي زجاجة أوريجينال بـ 815 جنيه (2 زجاجة فقط)، والـ 200 ملي زجاجة أوريجينال بـ 1623 جنيه.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Dior Sauvage
+Brand: Dior
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 642.00 EGP
+- الـ 90 ملي: 944.00 EGP
+- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)
+- زجاجة أوريجينال 200 ملي: 1623.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+زجاجة أوريجينال 60 ملي
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Daily, Office, Dates
+Longevity: 8–10 hrs
+Projection: Strong
+Top Notes: Bergamot, Mandarin
+Middle Notes: Lavender, Nutmeg, Star Anise
+Base Notes: Ambroxan, Vanilla
+Description: Fresh, masculine, versatile and modern.
+-----------------------
+
+
+[user]: العنوان فين
+Context: 
+
+[assistant]: تقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)
+Context: 
+
+[user]: فاتحين امتي
+Context: 
+
+[assistant]: كل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه
+Context: 
+
+[user]: هاي
+Context: 
+
+[assistant]: أهلاً يا فندم، تحت أمرك في أي استفسار عن عطور Perfamix.
+Context: 
+
+[user]: المواعيد ؟
+Context: 
+
+[assistant]: كل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه
+Context: 
+
+[user]: حةىنحجىط
+Context: 
+
+[assistant]: يا فندم، الرسالة دي مش واضحة قوي، بس لو عايز نساعدك تختار عطر يخلي كلامك دا ريحة حلوة ومميزة، أنا موجود تحت أمرك!
+Context: 
+
+[user]: هاي بقولك اي
+Context: 
+
+[assistant]: تحت أمرك يا فندم، أقدر أساعدك إزاي في اختيار عطرك النهاردة؟
+Context: 
+
+[user]: في بلو دي شانيل ؟
+Context: 
+
+[assistant]: للأسف أنا مش أقدر أعمل خصومات أو تعويضات، بس فريق خدمة العملاء هيتواصل معاك. في الأثناء ممكن أهديك ترشيح لعطر مختلف زي Dior Homme Sport، متوفر 50 ملي بـ 450 جنيه و90 ملي بـ 1100 جنيه، وكمان في زجاجات أوريجينال بأحجام أكبر.
+Context: 
+
+[user]: بقول بلو دي شانيل مجبتش سيرة خصومات
+Context: 
+
+[assistant]: عندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.
+1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁
+2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه
+Context: 
+
+[user]: عندك بلو دي شانيل ؟
+Context: 
+
+[assistant]: أه متوفر عندنا Bleu de Chanel.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Bleu de Chanel
+Brand: Chanel
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 645.00 EGP
+- الـ 90 ملي: 1015.00 EGP
+- زجاجة أوريجينال 50 ملي: 326.00 EGP
+- زجاجة أوريجينال 100 ملي: 565.00 EGP
+- زجاجة أوريجينال 150 ملي: 1016.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Office, Formal, Daily
+Longevity: 8–10 hrs
+Projection: Moderate–Strong
+Top Notes: Grapefruit, Lemon, Mint
+Middle Notes: Ginger, Nutmeg, Jasmine
+Base Notes: Incense, Cedar, Sandalwood, Patchouli
+Description: Elegant, clean and luxurious with excellent versatility.
+-----------------------
+
+
+[user]: في بلو دي شانيل ؟
+Context: 
+
+[assistant]: أه متوفر عندنا Bleu de Chanel.
+Context: ═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══
+
+Name (الاسم الصحيح): Bleu de Chanel
+Brand: Chanel
+Stock Status: ✅ متوفر
+Original Bottle: Available (see sizes below)
+Available Sizes & Prices:
+- الـ 50 ملي: 645.00 EGP
+- الـ 90 ملي: 1015.00 EGP
+- زجاجة أوريجينال 50 ملي: 326.00 EGP
+- زجاجة أوريجينال 100 ملي: 565.00 EGP
+- زجاجة أوريجينال 150 ملي: 1016.00 EGP
+Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+لا يوجد
+Gender: male
+Perfume Type: عطور غربية
+Season: All Seasons
+Occasion: Office, Formal, Daily
+Longevity: 8–10 hrs
+Projection: Moderate–Strong
+Top Notes: Grapefruit, Lemon, Mint
+Middle Notes: Ginger, Nutmeg, Jasmine
+Base Notes: Incense, Cedar, Sandalwood, Patchouli
+Description: Elegant, clean and luxurious with excellent versatility.
+-----------------------
+
+
