@@ -120,8 +120,12 @@ def send_messenger_message(page_id, recipient_id, text, token):
             logger.error(f"Response: {e.response.text}")
         return None
 
-def send_instagram_message(ig_account_id, recipient_id, text, token):
-    url = f"https://graph.facebook.com/v19.0/{ig_account_id}/messages"
+def send_instagram_message(page_id, recipient_id, text, token):
+    """
+    Send an Instagram DM via the Messenger Send API using the Facebook Page ID.
+    Instagram Messaging API uses the Page ID (not Instagram Account ID) as sender.
+    """
+    url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
@@ -137,7 +141,7 @@ def send_instagram_message(ig_account_id, recipient_id, text, token):
         return response.json()
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Instagram message: {e}")
-        if e.response is not None:
+        if hasattr(e, 'response') and e.response is not None:
             logger.error(f"Response: {e.response.text}")
         return None
 
@@ -244,7 +248,7 @@ def send_platform_message(conversation, text):
         elif conversation.platform == "messenger":
             send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
         elif conversation.platform == "instagram":
-            send_instagram_message(store_settings.instagram_account_id, sender_id, text, token)
+            send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
         else:
             logger.warning(f"Unknown platform '{conversation.platform}' for conversation {conversation.id}")
 
