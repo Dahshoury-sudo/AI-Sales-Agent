@@ -974,6 +974,20 @@
                 </div>
             </div>
 
+            <div class="settings-card">
+                <h3><i class="fas fa-comment-dots" style="color:#10b981;"></i> ردود التعليقات التلقائية</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+                    كتب رسائل الرد العلني على التعليقات <strong>كل سطر رسالة</strong> — البوت يختار واحدة بشكل عشوائي لتجنب السبام بحد أقصى 5 رسائل.
+                </p>
+                <div class="form-group">
+                    <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,#1e293b); color:var(--text-primary,#f1f5f9); border:1px solid var(--border-color,#334155); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder="✅ تم الرد في الخاص، راجع رسائلك!
+📩 جاوبناك في الخاص، اتفضل شوف!
+تم الرد في الإنبوكس ✅
+Check your DM, we replied! 💬
+راجع رسائلك الخاصة، بعتنالك الرد 📬"></textarea>
+                </div>
+            </div>
+
             <button class="btn btn-primary" onclick="saveMetaSettings()" style="margin-bottom:30px;">
                 <i class="fas fa-save"></i> حفظ إعدادات المنصات
             </button>
@@ -1396,6 +1410,7 @@
                 document.getElementById('meta-access-token').value = s.meta_access_token || '';
                 document.getElementById('messenger-access-token').value = s.messenger_access_token || '';
                 document.getElementById('meta-app-secret').value = s.meta_app_secret || '';
+                document.getElementById('comment-reply-messages').value = s.comment_reply_messages || '';
             } catch (e) {
                 console.error('Error loading meta settings:', e);
             }
@@ -1414,6 +1429,7 @@
                         meta_access_token: document.getElementById('meta-access-token').value,
                         messenger_access_token: document.getElementById('messenger-access-token').value,
                         meta_app_secret: document.getElementById('meta-app-secret').value,
+                        comment_reply_messages: document.getElementById('comment-reply-messages').value,
                     })
                 });
                 if (res && res.ok) showToast('✅ تم حفظ إعدادات المنصات');

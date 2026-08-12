@@ -30,6 +30,7 @@ class StoreSettingsView(APIView):
             "facebook_page_id": settings.facebook_page_id,
             "instagram_account_id": settings.instagram_account_id,
             "whatsapp_phone_number_id": settings.whatsapp_phone_number_id,
+            "comment_reply_messages": settings.comment_reply_messages,
         })
 
     def put(self, request):
@@ -43,6 +44,7 @@ class StoreSettingsView(APIView):
             "system_prompt", "whatsapp_number", "meta_verify_token",
             "meta_access_token", "messenger_access_token", "meta_app_secret",
             "facebook_page_id", "instagram_account_id", "whatsapp_phone_number_id",
+            "comment_reply_messages",
         ]
 
         for field in updatable_fields:

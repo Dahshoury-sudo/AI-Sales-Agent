@@ -30,6 +30,13 @@ class StoreSettings(models.Model):
     instagram_account_id = models.CharField(max_length=100, blank=True)
     whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
 
+    # Comment Auto-Reply
+    comment_reply_messages = models.TextField(
+        blank=True,
+        default="✅ تم الرد في الخاص، راجع رسائلك!\n📩 جاوبناك في الخاص، اتفضل شوف!\nتم الرد في الإنبوكس ✅\nCheck your DM, we replied! 💬\nراجع رسائلك الخاصة، بعتنالك الرد 📬",
+        help_text="رسائل الرد على التعليقات — كل سطر رسالة منفصلة، البوت يختار عشوائياً (حد أقصى 5 رسائل)"
+    )
+
     def __str__(self):
         return f"Settings for {self.store.name}"
 

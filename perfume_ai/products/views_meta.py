@@ -44,24 +44,55 @@ class MetaWebhookView(APIView):
                 platform = "unknown"
                 
                 if "changes" in entry:
-                    platform = "whatsapp"
                     for change in entry.get("changes", []):
+                        field = change.get("field")
                         value = change.get("value", {})
-                        if "messages" in value:
+
+                        # ── WhatsApp messages ───────────────────────────────
+                        if field == "messages" and "messages" in value:
+                            platform = "whatsapp"
                             receiving_id = value.get("metadata", {}).get("phone_number_id")
                             store_settings = StoreSettings.objects.filter(whatsapp_phone_number_id=receiving_id).first()
                             if not store_settings:
                                 logger.warning(f"No store found for WA phone number ID {receiving_id}")
                                 continue
-                                
+
                             if not self.verify_signature(request, body, store_settings.meta_app_secret):
                                 return HttpResponse("Invalid signature", status=403)
-                            
+
                             for message in value.get("messages", []):
                                 if message.get("type") == "text":
                                     sender_id = message.get("from")
                                     text = message.get("text", {}).get("body")
                                     self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+
+                        # ── Facebook Page comment ───────────────────────────
+                        elif field == "feed":
+                            item = value.get("item")
+                            verb = value.get("verb")
+                            # Only handle new comments (not edits/deletions)
+                            if item != "comment" or verb != "add":
+                                continue
+
+                            page_id = entry.get("id")
+                            store_settings = StoreSettings.objects.filter(facebook_page_id=page_id).first()
+                            if not store_settings:
+                                logger.warning(f"No store found for FB page ID {page_id}")
+                                continue
+
+                            comment_id = value.get("comment_id")
+                            commenter_id = str(value.get("sender_id", "") or value.get("from", {}).get("id", ""))
+                            comment_text = value.get("message", "")
+
+                            if not comment_id or not comment_text or not commenter_id:
+                                logger.warning(f"Incomplete comment data: {value}")
+                                continue
+
+                            # Don't reply to the page's own comments (avoid loop)
+                            if commenter_id == page_id:
+                                continue
+
+                            self.process_comment(store_settings.store.id, comment_id, commenter_id, comment_text)
 
                 elif "messaging" in entry:
                     for messaging_event in entry.get("messaging", []):
@@ -114,3 +145,8 @@ class MetaWebhookView(APIView):
         """Dispatch message processing to a background thread for fast webhook response."""
         from products.tasks import process_message_async
         process_message_async(store.id, platform, sender_id, text)
+
+    def process_comment(self, store_id, comment_id, commenter_id, comment_text):
+        """Dispatch comment processing to a background Celery task."""
+        from products.tasks import process_comment_async
+        process_comment_async(store_id, comment_id, commenter_id, comment_text)

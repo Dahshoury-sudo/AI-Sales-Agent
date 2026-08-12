@@ -4,6 +4,51 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
+def reply_to_comment(comment_id, message, token):
+    """
+    Post a public reply to a Facebook comment.
+    Uses: POST /{comment-id}/comments
+    """
+    url = f"https://graph.facebook.com/v19.0/{comment_id}/comments"
+    try:
+        response = requests.post(
+            url,
+            params={"access_token": token},
+            json={"message": message},
+            timeout=10,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error posting public comment reply to {comment_id}: {e}")
+        if hasattr(e, "response") and e.response is not None:
+            logger.error(f"Response: {e.response.text}")
+        return None
+
+
+def send_private_reply(comment_id, message, token):
+    """
+    Send a private Messenger reply to the person who made a Facebook comment.
+    Uses: POST /{comment-id}/private_replies
+    Requires: pages_manage_engagement permission + Page Access Token.
+    """
+    url = f"https://graph.facebook.com/v19.0/{comment_id}/private_replies"
+    try:
+        response = requests.post(
+            url,
+            params={"access_token": token},
+            json={"message": message},
+            timeout=10,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error sending private reply for comment {comment_id}: {e}")
+        if hasattr(e, "response") and e.response is not None:
+            logger.error(f"Response: {e.response.text}")
+        return None
+
 def send_whatsapp_message(phone_number_id, recipient_id, text, token):
     url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
     headers = {
