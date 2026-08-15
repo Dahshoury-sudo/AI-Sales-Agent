@@ -113,6 +113,22 @@ Return valid JSON in this exact format:
             available_normal = [v for v in variants if v.bottle_type == "normal" and product.oil_stock_grams >= (v.volume * product.concentration_percentage) / 100]
             available_original = [v for v in variants if v.bottle_type == "original" and (v.stock or 0) > 0]
             
+            # If req_volume is present, try to infer bottle_type if it uniquely belongs to one type
+            if req_volume and not bottle_type:
+                try:
+                    vol = int(req_volume)
+                    has_normal_vol = any(v.volume == vol for v in available_normal)
+                    has_original_vol = any(v.volume == vol for v in available_original)
+                    
+                    if has_normal_vol and not has_original_vol:
+                        bottle_type = "normal"
+                        p_data["bottle_type"] = "normal"
+                    elif has_original_vol and not has_normal_vol:
+                        bottle_type = "original"
+                        p_data["bottle_type"] = "original"
+                except (ValueError, TypeError):
+                    pass
+
             if not bottle_type:
                 if product.brand.name.lower() == store.name.lower():
                     bottle_type = "normal"
@@ -171,7 +187,34 @@ Return valid JSON in this exact format:
             if not selected_variant:
                 if not filtered_variants:
                     return f"للأسف عطر {product.name} نفد من المخزون حالياً 😔", ""
-                # Only auto-select if there's truly one variant total for this type.
+                
+                # If the user explicitly asked for a volume but it wasn't found in the filtered variants
+                if req_volume:
+                    if bottle_type == "original":
+                        has_normal_vol = any(v.volume == req_volume for v in available_normal)
+                        avail_orig_vols = "، ".join([f"{v.volume} ملي" for v in filtered_variants])
+                        if has_normal_vol:
+                            return f"عذراً يا فندم، الـ {req_volume} ملي من عطر {product.name} متاح في زجاجات البراند الخاصة بينا فقط وليس الأوريجينال. (الأوريجينال متاح منه: {avail_orig_vols}). تحب تطلب زجاجة البراند؟", ""
+                        else:
+                            return f"عذراً يا فندم، حجم {req_volume} ملي غير متوفر من الزجاجات الأوريجينال لعطر {product.name}. (المتاح: {avail_orig_vols}). تحب تطلب حجم تاني؟", ""
+                    elif bottle_type == "normal":
+                        has_orig_vol = any(v.volume == req_volume for v in available_original)
+                        avail_normal_vols = "، ".join([f"{v.volume} ملي" for v in filtered_variants])
+                        if has_orig_vol:
+                            return f"عذراً يا فندم، الـ {req_volume} ملي من عطر {product.name} متاح كزجاجة أوريجينال فقط حالياً. (زجاجات البراند المتاح منها: {avail_normal_vols}). تحب تطلب الأوريجينال؟", ""
+                        else:
+                            return f"عذراً يا فندم، حجم {req_volume} ملي غير متوفر من زجاجات البراند لعطر {product.name}. (المتاح: {avail_normal_vols}). تحب تطلب حجم تاني؟", ""
+                    else:
+                        avail_vols_display = []
+                        for v in filtered_variants:
+                            if v.bottle_type == "original":
+                                avail_vols_display.append(f"{v.volume} ملي (زجاجة أوريجينال)")
+                            else:
+                                avail_vols_display.append(f"{v.volume} ملي (زجاجة البراند)")
+                        vols_str = "، ".join(avail_vols_display)
+                        return f"عذراً يا فندم، حجم {req_volume} ملي غير متوفر حالياً لعطر {product.name}. المتاح: {vols_str}. تحب تطلب حاجة منهم؟", ""
+
+                # Only auto-select if no explicit volume was requested AND there's truly one variant total for this type.
                 # If other sizes exist but are out of stock, always ask the customer.
                 all_type_variants = [v for v in variants if v.bottle_type == bottle_type] if bottle_type else variants
                 if len(filtered_variants) == 1 and len(all_type_variants) == 1:
