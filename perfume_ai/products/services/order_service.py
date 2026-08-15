@@ -279,21 +279,22 @@ Return valid JSON in this exact format:
 
     if personal_missing_fields:
         missing_text = " و ".join(personal_missing_fields)
-        return f"ممتاز! لتأكيد طلبك، أحتاج فقط إلى {missing_text}.", ""
+        return f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}.", ""
 
     if not is_confirmed:
         # Generate Summary
-        summary = "تفاصيل طلبك كالتالي:\n\n"
+        summary = "تمام، راجع معايا تفاصيل الطلب كده:\n\n"
         summary += f"👤 الاسم: {name}\n"
-        summary += f"📱 الهاتف الأساسي: {phone}\n"
-        summary += f"📞 الهاتف الاحتياطي: {secondary_phone}\n"
+        summary += f"📱 الموبايل: {phone}\n"
+        if secondary_phone:
+            summary += f"📞 موبايل بديل: {secondary_phone}\n"
         summary += f"📍 العنوان: {address}\n\n"
-        summary += "🛍️ المنتجات:\n"
+        summary += "🛍️ الطلب:\n"
         for item in items_to_create:
             bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "البراند"
             summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - زجاجة {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
-        summary += "\nهل تحب نأكد الطلب على كده ولا في حاجة حابب تعدلها؟"
+        summary += "\nلو تمام نأكد الطلب ولا حابب تعدل حاجة؟"
         return summary, context_str
 
     # All details collected and confirmed! Let's process the order.

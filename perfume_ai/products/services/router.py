@@ -288,12 +288,12 @@ def route(message, history=None, store=None, conversation=None):
                 )
         
         results = search_products(intent, store)
-        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store)
+        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent)
         
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
-            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store)
+            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent)
         
         return response, context
 
