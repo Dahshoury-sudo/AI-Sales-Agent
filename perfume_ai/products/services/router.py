@@ -252,14 +252,20 @@ def route(message, history=None, store=None, conversation=None):
             intent.get("notes"),
         ])
         
-        if not has_taste_info:
-            # Check if bot already asked about preferences recently (avoid looping)
+        has_budget = intent.get("max_price") is not None
+        
+        if not has_taste_info or not has_budget:
+            # Check if bot already asked about preferences or budget recently (avoid looping)
             already_asked_preferences = False
+            already_asked_budget = False
             if history:
                 preference_indicators = [
                     "بتحب", "تفضل", "ذوقك", "نوعية", "فريش", "عود", "خشبي",
                     "سويت", "تقيل", "خفيف", "فواح", "هادي", "ريحة معينة",
                     "ايه الريحة", "نوع العطر", "بتميل", "ستايلك",
+                ]
+                budget_indicators = [
+                    "ميزانيتك", "حدود كام", "السعر اللي", "في رينج", "بكام",
                 ]
                 # Check last 3 bot messages only
                 bot_count = 0
@@ -268,12 +274,13 @@ def route(message, history=None, store=None, conversation=None):
                         content = msg.get("content", "")
                         if any(ind in content for ind in preference_indicators):
                             already_asked_preferences = True
-                            break
+                        if any(ind in content for ind in budget_indicators):
+                            already_asked_budget = True
                         bot_count += 1
                         if bot_count >= 3:
                             break
             
-            if not already_asked_preferences:
+            if not has_taste_info and not already_asked_preferences:
                 return handle_general(
                     f"""العميل بعتلي: "{message}"
 
@@ -283,6 +290,18 @@ def route(message, history=None, store=None, conversation=None):
 "قولي ذوقك 😊 يعني بتحب الفريش والخفيف ولا التقيل والخشبي ولا العود؟ ولا بتحب الحاجات المسكرة مثلا؟ وميزانيتك في حدود كام؟"
 
 ⚠️ لازم تكون رسالة واحدة مختصرة فيها كل الاختيارات مع بعض (مش أسئلة منفصلة). الهدف تفهم ذوقه وميزانيته في رسالة واحدة.
+❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
+                    history, store
+                )
+                
+            if has_taste_info and not has_budget and not already_asked_budget:
+                return handle_general(
+                    f"""العميل بعتلي: "{message}"
+
+العميل ده عايز ترشيح عطر وقال تفضيلاته، بس لسه متحددش ميزانيته.
+اسأله سؤال واحد مختصر عن الميزانية عشان تقدر ترشحله أنسب حاجة، زي كده:
+"تمام 👌 ميزانيتك في حدود كام عشان أرشحلك أنسب حاجة؟"
+
 ❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
                     history, store
                 )

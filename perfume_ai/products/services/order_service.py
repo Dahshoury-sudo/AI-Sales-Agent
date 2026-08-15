@@ -259,8 +259,11 @@ Return valid JSON in this exact format:
             product_missing_fields.append(f"{joined_missing} من عطر {p.get('name')}")
 
     if product_missing_fields:
-        missing_text = " و ".join(product_missing_fields)
-        return f"تمام، بس محتاج أعرف {missing_text}.", ""
+        missing_text = " ولا ".join(product_missing_fields) if len(product_missing_fields) == 1 else " و ".join(product_missing_fields)
+        # If it's just one product and they're missing size, make it sound like a natural question
+        if len(product_missing_fields) == 1 and "الحجم" in product_missing_fields[0]:
+            return f"تمام 👌 تحب الـ50 ملي ولا الـ90 ملي؟", ""
+        return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
 
     # 3. Product details are complete — now check for missing personal info
     personal_missing_fields = []
@@ -294,7 +297,7 @@ Return valid JSON in this exact format:
             bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "البراند"
             summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - زجاجة {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
-        summary += "\nلو تمام نأكد الطلب ولا حابب تعدل حاجة؟"
+        summary += "\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟"
         return summary, context_str
 
     # All details collected and confirmed! Let's process the order.
