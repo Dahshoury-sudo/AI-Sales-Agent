@@ -260,7 +260,7 @@ Return valid JSON in this exact format:
 
     if product_missing_fields:
         missing_text = " و ".join(product_missing_fields)
-        return f"ممتاز! بس محتاج أعرف {missing_text}.", ""
+        return f"تمام، بس محتاج أعرف {missing_text}.", ""
 
     # 3. Product details are complete — now check for missing personal info
     personal_missing_fields = []
