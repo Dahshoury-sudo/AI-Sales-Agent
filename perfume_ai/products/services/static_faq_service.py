@@ -52,7 +52,10 @@ def match_static_faq(message: str, store) -> dict | None:
                 if required_words and all(req_word in normalized_msg for req_word in required_words):
                     return {"answer": faq.answer}
             else:
-                if keyword_group and keyword_group in normalized_msg:
+                # Single keyword — only match on short messages (likely direct FAQ questions)
+                # to avoid false positives in longer conversational messages
+                word_count = len(normalized_msg.split())
+                if keyword_group and keyword_group in normalized_msg and word_count <= 5:
                     return {"answer": faq.answer}
 
     return None
