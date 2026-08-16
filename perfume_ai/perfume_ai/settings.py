@@ -216,12 +216,54 @@ if SENTRY_DSN and not DEBUG:
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # ---------------------------------------------------------------------------
-# Celery Configuration
+# Meta webhook security
+# ---------------------------------------------------------------------------
+# Webhook payloads are authenticated by the X-Hub-Signature-256 header, checked
+# against each store's meta_app_secret. When a store has no secret configured
+# the request is let through so existing integrations keep working.
+#
+# Rollout: leave this False, deploy, and confirm the logs show no
+# "signature NOT verified" warnings — that means every live store has a secret
+# and real traffic is passing the check. Then set
+# META_REQUIRE_WEBHOOK_SIGNATURE=True to reject unsigned webhooks outright.
+META_REQUIRE_WEBHOOK_SIGNATURE = os.environ.get(
+    'META_REQUIRE_WEBHOOK_SIGNATURE', 'False'
+).lower() in ('true', '1', 'yes')
+
+# ---------------------------------------------------------------------------
+# Cache
 # ---------------------------------------------------------------------------
 # REDIS_URL is automatically set by Railway when you add a Redis service.
 # On a VPS, set it manually in your .env: REDIS_URL=redis://localhost:6379/0
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = os.environ.get('REDIS_URL')
+
+# DRF keeps its throttle counters in the default cache. With a per-process
+# backend every gunicorn worker counts separately, so the effective limit is
+# workers × rate and it resets on each deploy. Redis makes the counts shared.
+# ResilientRedisCache degrades to a no-op if Redis is down rather than 500ing
+# every throttled request — see products/cache.py.
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'products.cache.ResilientRedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    # No Redis configured — local development. Throttle counts are per-process
+    # here, which is fine for a single runserver but must not be relied on in
+    # production.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+
+# ---------------------------------------------------------------------------
+# Celery Configuration
+# ---------------------------------------------------------------------------
+CELERY_BROKER_URL = REDIS_URL or 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = REDIS_URL or 'redis://localhost:6379/0'
 
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

@@ -1,12 +1,16 @@
 import re
+from itertools import islice
 
 from .client import chat
 from .prompts import get_system_prompt
+from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
 def _format_products(products):
     context = ""
-    for product in products:
+    # search_products already applies the LIMIT; this second cap only bounds the
+    # prompt, so a caller passing an unsliced queryset can't blow up the request.
+    for product in islice(products, MAX_PRODUCTS_IN_CONTEXT):
         variants = list(product.variants.all())
         available_variants = []
         out_of_stock_variants = []

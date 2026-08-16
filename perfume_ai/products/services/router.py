@@ -1,5 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
-
 from .ai.classifier import classify
 from .ai.intent import extract_intent
 from .ai.recommendation import recommend
@@ -141,15 +139,13 @@ def route(message, history=None, store=None, conversation=None):
         if any(msg_clean == gw or msg_clean.startswith(gw) for gw in goodbye_words) and len(msg_clean) < 30:
             return "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك 24 ساعة. يوم سعيد!", ""
 
-    # --- Parallel classify + pre-fetch intent for recommendation path ---
-    # Fire both API calls simultaneously; classify result decides if intent is needed.
-    # This saves ~4-6 seconds on every recommendation request (the most common path).
-    intent_future = None
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        classify_future = executor.submit(classify, message, history)
-        intent_future   = executor.submit(extract_intent, message, history, store)
-        request_type = classify_future.result()  # wait for classifier first
-        # intent_future keeps running in background; we'll .result() it only if needed
+    # --- Classify the request ---
+    # Intent extraction is deliberately NOT started here. It is only needed by the
+    # recommendation branch below, and running it up-front cost one wasted LLM call
+    # on every other message. Firing it in a ThreadPoolExecutor did not help: the
+    # `with` block exits via shutdown(wait=True), so it blocked on both calls
+    # anyway.
+    request_type = classify(message, history)
 
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
     semantic_rep = _detect_semantic_repetition(history)
@@ -195,8 +191,8 @@ def route(message, history=None, store=None, conversation=None):
         )
 
     if request_type == "recommendation":
-        # intent_future was already running in parallel — just collect the result now
-        intent = intent_future.result()
+        # The only branch that needs the extracted intent.
+        intent = extract_intent(message, history, store)
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":

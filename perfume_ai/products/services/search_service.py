@@ -2,6 +2,25 @@ from django.db.models import Q, Sum
 from products.models import Product, ProductVariant
 
 
+# The AI only ever picks 1-2 perfumes out of whatever we hand it, but every
+# product costs ~15 lines of prompt text. Without a cap the "no exact match"
+# branch below serialises the entire filtered catalogue into a single request.
+MAX_PRODUCTS_IN_CONTEXT = 12
+
+
+def _shortlist(queryset):
+    """Trim a candidate queryset down to what fits comfortably in one prompt.
+
+    Ordered by oil stock descending so the perfumes most likely to be
+    fulfillable in any size come first — the prompts tell the model to skip
+    anything marked out of stock, so leading with empty shelves wastes the
+    shortlist. The `id` tie-break keeps it deterministic: the prompts also tell
+    the model to stay on a perfume once the customer shows interest, which a
+    shortlist that reshuffled between turns would undermine.
+    """
+    return queryset.order_by('-oil_stock_grams', 'id')[:MAX_PRODUCTS_IN_CONTEXT]
+
+
 def search_products(intent, store=None):
     queryset = Product.objects.filter(is_active=True).prefetch_related('variants')
     if store:
@@ -70,12 +89,12 @@ def search_products(intent, store=None):
         exact = exact.filter(variants__price__lte=max_price).distinct()
 
     if exact.exists():
-        return {"products": exact, "alternatives": None}
+        return {"products": _shortlist(exact), "alternatives": None}
 
-    # No exact match — give AI ALL base products so it can:
+    # No exact match — hand the AI the closest base products so it can:
     # 1. Upsell higher-price products that match the occasion
     # 2. Suggest cheaper products for different occasions
     if base.exists():
-        return {"products": base.none(), "alternatives": base}
+        return {"products": base.none(), "alternatives": _shortlist(base)}
 
     return {"products": base.none(), "alternatives": None}

@@ -2,6 +2,7 @@ import hmac
 import hashlib
 import json
 import logging
+from django.conf import settings
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -80,6 +81,9 @@ class MetaWebhookView(APIView):
                                 logger.warning(f"No store found for FB page ID {page_id}")
                                 continue
 
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                                return HttpResponse("Invalid signature", status=403)
+
                             comment_id = value.get("comment_id")
                             commenter_id = str(value.get("sender_id", "") or value.get("from", {}).get("id", ""))
                             comment_text = value.get("message", "")
@@ -102,6 +106,9 @@ class MetaWebhookView(APIView):
                             if not store_settings:
                                 logger.warning(f"No store found for IG account ID {ig_account_id}")
                                 continue
+
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                                return HttpResponse("Invalid signature", status=403)
 
                             comment_id = value.get("id")
                             comment_text = value.get("text", "")
@@ -153,19 +160,37 @@ class MetaWebhookView(APIView):
             return HttpResponse("NOT_FOUND", status=404)
 
     def verify_signature(self, request, body, app_secret):
-        """Verify the X-Hub-Signature-256 header. Returns True if valid or if no secret is configured."""
+        """Verify the X-Hub-Signature-256 header.
+
+        The signature covers the entire request body, so a failure means nothing
+        in the payload can be trusted and the caller rejects the whole request.
+
+        When a store has no app secret configured the request is allowed through
+        unless META_REQUIRE_WEBHOOK_SIGNATURE is set, which is the second step of
+        the rollout — see the setting's comment.
+        """
         signature = request.headers.get("X-Hub-Signature-256")
         if not app_secret:
-            # No secret configured, skip validation
+            if settings.META_REQUIRE_WEBHOOK_SIGNATURE:
+                logger.error(
+                    "Rejecting webhook: no meta_app_secret configured and "
+                    "META_REQUIRE_WEBHOOK_SIGNATURE is on."
+                )
+                return False
+            logger.warning(
+                "No meta_app_secret configured for this store — webhook "
+                "signature NOT verified. Anyone who knows the page ID can post "
+                "events here."
+            )
             return True
         if not signature:
             logger.warning("Missing X-Hub-Signature-256 header")
             return False
-            
+
         expected_signature = "sha256=" + hmac.new(
             app_secret.encode("utf-8"), body, hashlib.sha256
         ).hexdigest()
-        
+
         if not hmac.compare_digest(expected_signature, signature):
             logger.warning("Invalid webhook signature")
             return False
