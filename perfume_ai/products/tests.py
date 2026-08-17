@@ -21,6 +21,7 @@ from products.models import (
 from products.services.ai.prompts import get_system_prompt
 from products.services.ai.recommendation import _coerce_budget, _format_products
 from products.services.meta_service import send_platform_message
+from products.services.product_info import get_product_info
 from products.services.order_service import (
     PAYMENT_FALLBACK,
     _cart_context,
@@ -1181,3 +1182,60 @@ class MessengerDMWebhookTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         task.assert_not_called()
+
+
+class UnknownVersusUnclearTests(TestCase):
+    """A clear question the bot can't answer must not be called unclear.
+
+    Three separate questions all returned "مش فاهم قصد حضرتك" — "عندكم 90 ملي؟",
+    "بتحطوا كام جرام زيت؟" and "العطر أصلي ولا تركيب؟". All are perfectly clear;
+    they just name no perfume, so resolve_products found nothing and the not-found
+    branch treated that as an unintelligible message. Telling a customer you don't
+    understand a clear question reads as a brush-off.
+
+    These pin the prompt wording, since the behaviour itself depends on the model.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Fragrance")
+
+    def _not_found_instructions(self):
+        """The instructions used when no product resolves from the message."""
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_mock:
+            get_product_info("عندكم 200 ملي؟", [], self.store)
+        return chat_mock.call_args[0][0][-1]["content"]
+
+    def test_clear_store_questions_are_a_distinct_case(self):
+        instructions = self._not_found_instructions()
+
+        self.assertIn("سؤال واضح عن الستور", instructions)
+        for example in ("عندكم 90 ملي؟", "بتحطوا كام جرام زيت؟", "العطر أصلي ولا تركيب؟"):
+            self.assertIn(example, instructions)
+
+    def test_saying_i_dont_understand_to_a_clear_question_is_forbidden(self):
+        instructions = self._not_found_instructions()
+
+        self.assertIn("ممنوع تماماً ترد على السؤال ده بـ \"مش فاهم قصد حضرتك\"", instructions)
+
+    def test_unknown_answers_defer_instead_of_claiming_confusion(self):
+        self.assertIn("هسأل وأرد عليك", self._not_found_instructions())
+
+    def test_unavailable_size_should_be_answered_with_what_is_available(self):
+        self.assertIn("مش متوفرة واذكرله المتاح فعلاً", self._not_found_instructions())
+
+    def test_genuinely_unintelligible_messages_still_get_clarification(self):
+        """The narrow case where "مش فاهم" remains correct."""
+        instructions = self._not_found_instructions()
+
+        self.assertIn("الرسالة نفسها غير مفهومة فعلاً", instructions)
+        self.assertIn("حروف عشوائية", instructions)
+
+    def test_base_prompt_separates_not_knowing_from_not_understanding(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("هسأل وأرد عليك", prompt)
+        self.assertIn("لو السؤال واضح ومفهوم وأنت مش عارف الإجابة", prompt)
