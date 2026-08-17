@@ -7,7 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from products.models import Brand, Product, ProductVariant, Store, StoreSettings
-from products.services.ai.recommendation import _format_products
+from products.services.ai.recommendation import _coerce_budget, _format_products
 from products.services.search_service import (
     MAX_PRODUCTS_IN_CONTEXT,
     search_products,
@@ -275,3 +275,100 @@ class MetaWebhookSignatureTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         task.assert_not_called()
+
+
+class BudgetLabellingTests(TestCase):
+    """Sizes are labelled against the customer's stated budget.
+
+    search_products matches a product when ANY variant is within budget, which is
+    correct — a 500 EGP customer genuinely can afford a cheap 50ml. But the
+    formatter then printed every size with its price and no affordability signal,
+    so a customer who said 500 could be shown a 3800 EGP bottle as a normal
+    option.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Perfamix Test")
+        cls.brand = Brand.objects.create(store=cls.store, name="Dior")
+        cls.product = Product.objects.create(
+            store=cls.store,
+            brand=cls.brand,
+            name="Dior Sauvage",
+            gender="male",
+            oil_stock_grams=1000,
+            concentration_percentage=30,
+        )
+        # 400 is affordable on a 500 budget, 550 is a plausible upsell (10% over),
+        # 3800 is not something to put in front of that customer.
+        ProductVariant.objects.create(
+            product=cls.product, volume=50, price=400, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=cls.product, volume=90, price=550, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=cls.product, volume=100, price=3800, bottle_type="original", stock=5
+        )
+
+    def _context(self, max_price):
+        return _format_products(
+            Product.objects.filter(pk=self.product.pk), max_price=max_price
+        )
+
+    def _line_for(self, context, price):
+        return [line for line in context.splitlines() if price in line][0]
+
+    def test_in_budget_size_is_marked_affordable(self):
+        self.assertIn("✅", self._line_for(self._context(500), "400"))
+
+    def test_slightly_over_budget_size_is_marked_as_an_upsell(self):
+        """budget_note explicitly asks for near-budget sizes to be offered."""
+        self.assertIn("⚠️", self._line_for(self._context(500), "550"))
+
+    def test_far_over_budget_size_is_marked_do_not_offer(self):
+        """The regression: this line used to be indistinguishable from the 400 one."""
+        self.assertIn("❌", self._line_for(self._context(500), "3800"))
+
+    def test_no_budget_means_no_labels(self):
+        """Customers who never stated a budget must see the unchanged format."""
+        context = self._context(None)
+
+        for marker in ("داخل الميزانية", "أعلى شوية من الميزانية", "أعلى من الميزانية بكتير"):
+            self.assertNotIn(marker, context)
+
+    def test_every_size_is_still_listed(self):
+        """Labelling, not hiding — the model still needs prices to answer questions."""
+        context = self._context(500)
+
+        for price in ("400", "550", "3800"):
+            self.assertIn(price, context)
+
+    def test_boundary_price_equal_to_budget_is_in_budget(self):
+        self.assertIn("✅", self._line_for(self._context(400), "400"))
+
+
+class BudgetCoercionTests(TestCase):
+    """The intent schema asks for a float, but models return strings too.
+
+    int("500.0") raises ValueError, which would have 500ed the recommendation
+    branch on a budget the LLM formatted slightly differently.
+    """
+
+    def test_accepts_numbers(self):
+        self.assertEqual(_coerce_budget(500), 500)
+        self.assertEqual(_coerce_budget(500.0), 500)
+
+    def test_accepts_numeric_strings(self):
+        self.assertEqual(_coerce_budget("500"), 500)
+        self.assertEqual(_coerce_budget("500.0"), 500)
+
+    def test_rejects_unusable_values(self):
+        for value in (None, "", "غالي", "abc", [], {}):
+            self.assertIsNone(_coerce_budget(value))
+
+    def test_rejects_zero_and_negative(self):
+        """Zero or negative is meaningless, and the falsy checks downstream already
+        treat it as 'no budget given'."""
+        self.assertIsNone(_coerce_budget(0))
+        self.assertIsNone(_coerce_budget(-100))

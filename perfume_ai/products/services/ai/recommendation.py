@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal, InvalidOperation
 from itertools import islice
 
 from .client import chat
@@ -6,7 +7,46 @@ from .prompts import get_system_prompt
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
-def _format_products(products):
+# A size priced just over the stated budget is still worth offering as an upsell —
+# budget_note() below asks for exactly that. Past this multiple it is far enough
+# out that offering it reads as not having listened to the customer.
+BUDGET_TOLERANCE = Decimal("1.2")
+
+
+def _coerce_budget(value):
+    """Turn an LLM-extracted budget into a Decimal, or None if unusable.
+
+    The intent schema asks for a float, but a model can return "500" or "500.0",
+    and the old int() call raised ValueError on the latter. Decimal also matches
+    ProductVariant.price, so comparisons stay exact — Decimal and float can be
+    compared but not multiplied together.
+    """
+    if value is None:
+        return None
+    try:
+        budget = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    return budget if budget > 0 else None
+
+
+def _budget_label(price, max_price):
+    """Tag one price against the customer's budget.
+
+    Without this the model sees a bare list of sizes and prices and cannot tell
+    which are affordable, so a customer who said 500 could be shown a 3800 bottle
+    as though it were a normal option.
+    """
+    if max_price is None:
+        return ""
+    if price <= max_price:
+        return " ✅ (داخل الميزانية)"
+    if price <= max_price * BUDGET_TOLERANCE:
+        return " ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)"
+    return " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)"
+
+
+def _format_products(products, max_price=None):
     context = ""
     # search_products already applies the LIMIT; this second cap only bounds the
     # prompt, so a caller passing an unsliced queryset can't blow up the request.
@@ -20,7 +60,7 @@ def _format_products(products):
                 req_oil = (v.volume * product.concentration_percentage) / 100
                 is_available = product.oil_stock_grams >= req_oil
                 if is_available:
-                    available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP")
+                    available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP{_budget_label(v.price, max_price)}")
                     all_out_of_stock = False
                 else:
                     out_of_stock_variants.append(f"الـ {v.volume} ملي")
@@ -29,7 +69,7 @@ def _format_products(products):
                 is_available = stock_num > 0
                 if is_available:
                     status = f" ({stock_num} زجاجة فقط)" if stock_num <= 3 else ""
-                    available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP{status}")
+                    available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP{status}{_budget_label(v.price, max_price)}")
                     all_out_of_stock = False
                 else:
                     out_of_stock_variants.append(f"زجاجة أوريجينال {v.volume} ملي")
@@ -95,16 +135,17 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         exclusion_note = f"\n⚠️ المنتجات التالية سبق ترشيحها للعميل في المحادثة — ممنوع تذكرها تاني، اختار منتجات مختلفة تماماً من القائمة: {', '.join(previously_recommended)}\n"
 
     # Detect if budget was provided
-    max_price = intent.get("max_price") if intent else None
+    max_price = _coerce_budget(intent.get("max_price") if intent else None)
     budget_note = ""
     if max_price:
         budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. لازم تذكر الأسعار والأحجام اللي داخل الميزانية. متسألوش عن الميزانية تاني. لو فيه حجم أكبر أغلى شوية بس قريب من الميزانية، ممكن تذكره كمان مع التوضيح.\n"
         budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره يتخطى ميزانيته، أخبره بوضوح ولطف أن الحجم المطلوب غير متاح بهذه الميزانية، واعرض عليه الحجم الأصغر (مثل 50 ملي) الذي يناسب ميزانيته كبديل، ووضح له أن الحجم الأكبر متاح أيضاً إذا أمكنه زيادة الميزانية قليلاً، دون أي ضغط أو إلحاح.\n"
+        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌.\n"
     price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل ميزانيته مع الترشيح. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). متسألوش عن الميزانية تاني."
 
     # Case 1: Exact matches found
     if products.exists():
-        context = _format_products(products)
+        context = _format_products(products, max_price=max_price)
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
@@ -134,7 +175,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
     elif alternatives and alternatives.exists():
-        context = _format_products(alternatives)
+        context = _format_products(alternatives, max_price=max_price)
         price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."
         user_content = f"""
 ═══ طلب العميل ═══
