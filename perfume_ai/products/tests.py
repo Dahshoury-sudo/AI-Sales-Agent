@@ -29,6 +29,13 @@ from products.services.order_service import (
     get_cart,
     handle_order,
 )
+from products.services.router import (
+    _count_recent_repetitions,
+    _detect_semantic_repetition,
+    _is_goodbye_loop,
+    _is_repetitive,
+    _was_already_handed_off,
+)
 from products.services.search_service import (
     MAX_PRODUCTS_IN_CONTEXT,
     search_products,
@@ -844,3 +851,333 @@ class PerStoreBottleImageTests(TestCase):
 
         self.assertEqual(img.call_args[0][0], "PAGE123")
         self.assertEqual(img.call_args[0][0], msg.call_args[0][0])
+
+
+# ── Router heuristics ───────────────────────────────────────────────────────
+# The layer that runs before classification on every message. Previously
+# untested, and every bug found in this codebase surfaced through execution
+# rather than review.
+
+def _bot(content):
+    return {"role": "assistant", "content": content}
+
+
+def _user(content):
+    return {"role": "user", "content": content}
+
+
+# What the musk (router.py:353), promotion (:403) and handoff (:491) branches
+# instruct the bot to say. Wording varies because those branches also tell it to
+# vary — the shared substrings are what matter.
+SCRIPTED_HANDOFF_REPLIES = [
+    "معلش يا فندم، حولت المحادثة لفريق خدمة العملاء وهيتواصلوا معاك في أقرب وقت.",
+    "أنا حولت رسالتك لفريق المبيعات وهيتواصلوا معاك قريب. تحت أمرك في أي حاجة تانية.",
+    "تم، حولت طلبك لفريق خدمة العملاء وهيتواصلوا معاك حالاً.",
+]
+
+
+class SemanticRepetitionDetectorTests(TestCase):
+    """_detect_semantic_repetition counted the router's own scripted output.
+
+    "حولت طلبك", "فريق خدمة العملاء" and "هيتواصلوا معاك" were treated as evidence
+    the bot was stuck, but three branches instruct it to say exactly that. Three
+    such replies in the last four bot turns pushed the count to 3 and route()
+    hijacked the turn with random products — reachable by asking about offers, then
+    musk, then for a human.
+    """
+
+    def test_scripted_handoff_replies_are_not_counted_as_being_stuck(self):
+        """The regression. Fails before the fix with a count of 3."""
+        history = []
+        for reply in SCRIPTED_HANDOFF_REPLIES:
+            history.append(_user("عايز اكلم حد"))
+            history.append(_bot(reply))
+
+        self.assertLess(
+            _detect_semantic_repetition(history), 3,
+            "scripted handoff wording still trips the stuck-in-a-loop threshold",
+        )
+
+    def test_genuinely_repeated_vague_question_is_still_caught(self):
+        """The detector must keep doing its actual job."""
+        history = []
+        for _ in range(3):
+            history.append(_user("مش عارف"))
+            history.append(_bot("قولي بتحب الفريش ولا التقيل؟"))
+
+        self.assertGreaterEqual(_detect_semantic_repetition(history), 3)
+
+    def test_needs_at_least_three_bot_messages(self):
+        history = [_user("هاي"), _bot("قولي بتحب الفريش ولا التقيل؟")]
+
+        self.assertEqual(_detect_semantic_repetition(history), 0)
+
+    def test_empty_history_is_zero(self):
+        self.assertEqual(_detect_semantic_repetition([]), 0)
+        self.assertEqual(_detect_semantic_repetition(None), 0)
+
+    def test_only_the_last_four_bot_messages_count(self):
+        """An old vague question shouldn't be held against the bot forever."""
+        history = [_bot("قولي بتحب الفريش ولا التقيل؟")]
+        for i in range(4):
+            history.append(_bot(f"ريحته حلوة ومناسبة للشتا، رقم {i}"))
+
+        self.assertEqual(_detect_semantic_repetition(history), 0)
+
+
+class HandoffLoopDetectionTests(TestCase):
+    """_was_already_handed_off is what actually prevents repeat handoffs.
+
+    This is why the semantic detector doesn't need to police handoff wording.
+    """
+
+    def test_detects_a_previous_handoff(self):
+        for reply in SCRIPTED_HANDOFF_REPLIES:
+            self.assertTrue(
+                _was_already_handed_off([_bot(reply)]),
+                f"missed a handoff in: {reply[:40]}",
+            )
+
+    def test_ordinary_replies_are_not_handoffs(self):
+        history = [_bot("ريحته فريش وثباته حوالي 8 ساعات."), _user("تمام")]
+
+        self.assertFalse(_was_already_handed_off(history))
+
+    def test_a_user_saying_it_does_not_count(self):
+        """Only the assistant's messages mean a handoff happened."""
+        history = [_user("انتو حولت طلبي لفريق خدمة العملاء ومحدش رد")]
+
+        self.assertFalse(_was_already_handed_off(history))
+
+    def test_empty_history(self):
+        self.assertFalse(_was_already_handed_off([]))
+        self.assertFalse(_was_already_handed_off(None))
+
+
+class TextRepetitionTests(TestCase):
+    """_is_repetitive and _count_recent_repetitions, the SequenceMatcher checks."""
+
+    def test_near_identical_response_is_repetitive(self):
+        history = [_bot("ريحته فريش وثباته حوالي 8 ساعات ومناسب للصيف.")]
+
+        self.assertTrue(
+            _is_repetitive("ريحته فريش وثباته حوالي 8 ساعات ومناسب للصيف!", history)
+        )
+
+    def test_different_response_is_not_repetitive(self):
+        history = [_bot("ريحته فريش وثباته حوالي 8 ساعات ومناسب للصيف.")]
+
+        self.assertFalse(_is_repetitive("تمام، الـ 90 ملي بـ 600 جنيه.", history))
+
+    def test_no_history_is_never_repetitive(self):
+        self.assertFalse(_is_repetitive("أي كلام", []))
+        self.assertFalse(_is_repetitive("أي كلام", None))
+
+    def test_consecutive_run_is_counted(self):
+        same = "تحت أمرك يا فندم، أقدر أساعدك إزاي؟"
+        history = [_bot(same), _bot(same), _bot(same)]
+
+        self.assertEqual(_count_recent_repetitions(history), 2)
+
+    def test_run_stops_at_the_first_different_message(self):
+        same = "تحت أمرك يا فندم، أقدر أساعدك إزاي؟"
+        history = [_bot(same), _bot("الـ 90 ملي بـ 600 جنيه."), _bot(same)]
+
+        self.assertEqual(_count_recent_repetitions(history), 0)
+
+    def test_single_message_has_no_run(self):
+        self.assertEqual(_count_recent_repetitions([_bot("أهلاً")]), 0)
+        self.assertEqual(_count_recent_repetitions([]), 0)
+
+
+class GoodbyeLoopTests(TestCase):
+    """_is_goodbye_loop short-circuits route() before any LLM call."""
+
+    def test_two_consecutive_goodbyes_is_a_loop(self):
+        history = [_user("سلام"), _user("سلام")]
+
+        self.assertTrue(_is_goodbye_loop(history))
+
+    def test_one_goodbye_is_not_a_loop(self):
+        self.assertFalse(_is_goodbye_loop([_user("سلام")]))
+
+    def test_a_real_question_breaks_the_run(self):
+        history = [_user("سلام"), _user("عايز اعرف سعر سوفاج")]
+
+        self.assertFalse(_is_goodbye_loop(history))
+
+    def test_long_message_starting_with_a_goodbye_word_is_not_a_goodbye(self):
+        """The 30-character limit exists so a real question isn't mistaken for one."""
+        history = [
+            _user("شكرا جدا على المساعدة بس عايز اسأل عن حاجة تانية مهمة"),
+            _user("شكرا جدا على المساعدة بس عايز اسأل عن حاجة تانية مهمة"),
+        ]
+
+        self.assertFalse(_is_goodbye_loop(history))
+
+    def test_empty_history(self):
+        self.assertFalse(_is_goodbye_loop([]))
+        self.assertFalse(_is_goodbye_loop(None))
+
+
+class RouterHijackTests(TestCase):
+    """route() diverts to an anti-repetition prompt when the detectors fire.
+
+    router.py:154 pulls 3 random products and tells the bot to change the subject.
+    Correct when the bot really is looping; wrong when it was the router's own
+    scripted handoff wording that tripped it.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        for i in range(3):
+            product = Product.objects.create(
+                store=self.store, brand=self.brand, name=f"Perfume {i}",
+                gender="male", oil_stock_grams=1000, concentration_percentage=30,
+            )
+            ProductVariant.objects.create(
+                product=product, volume=50, price=400, bottle_type="normal"
+            )
+
+    def _route_with(self, history, classification="faq"):
+        """Returns the prompt handle_general received, to see which path ran."""
+        with mock.patch("products.services.router.classify", return_value=classification), \
+             mock.patch("products.services.router.handle_general", return_value=("ok", "")) as general:
+            from products.services.router import route
+            route("طيب", history, self.store, None)
+        return general.call_args[0][0]
+
+    def test_scripted_handoffs_do_not_trigger_the_hijack(self):
+        """The regression, at the route() level rather than the detector's."""
+        history = []
+        for reply in SCRIPTED_HANDOFF_REPLIES:
+            history.append(_user("عايز اكلم حد"))
+            history.append(_bot(reply))
+
+        prompt = self._route_with(history)
+
+        self.assertNotIn("منتجات متوفرة يمكنك اقتراحها", prompt)
+        self.assertNotIn("استخدمت نفس العبارات", prompt)
+
+    def test_a_real_loop_still_triggers_the_hijack(self):
+        same = "قولي بتحب الفريش ولا التقيل؟"
+        history = [_bot(same), _bot(same), _bot(same)]
+
+        prompt = self._route_with(history)
+
+        self.assertIn("استخدمت نفس العبارات", prompt)
+        # Products must come from the database, never invented.
+        self.assertIn("منتجات متوفرة يمكنك اقتراحها", prompt)
+        self.assertIn("Perfume", prompt)
+
+
+class MessengerDMWebhookTests(TestCase):
+    """The `messaging` branch — Messenger and Instagram DMs.
+
+    This carries most real traffic (626 conversations across messenger, instagram
+    and whatsapp) and had no coverage, despite sharing the verify_signature that
+    was changed to add the enforcement flag.
+    """
+
+    APP_SECRET = "test-app-secret"
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(
+            store=self.store,
+            facebook_page_id="PAGE123",
+            instagram_account_id="IG456",
+            meta_app_secret=self.APP_SECRET,
+        )
+        self.url = reverse("meta-webhook")
+
+    def _post(self, payload, sign=True):
+        body = json.dumps(payload).encode()
+        headers = {}
+        if sign:
+            headers["HTTP_X_HUB_SIGNATURE_256"] = "sha256=" + hmac.new(
+                self.APP_SECRET.encode(), body, hashlib.sha256
+            ).hexdigest()
+        with mock.patch("products.tasks.process_message_async") as task:
+            response = self.client.post(
+                self.url, data=body, content_type="application/json", **headers
+            )
+        return response, task
+
+    def _dm(self, recipient_id, message=None):
+        return {
+            "object": "page",
+            "entry": [{
+                "id": recipient_id,
+                "messaging": [{
+                    "sender": {"id": "USER9"},
+                    "recipient": {"id": recipient_id},
+                    "message": message if message is not None else {"text": "عندكم سوفاج؟"},
+                }],
+            }],
+        }
+
+    def test_messenger_dm_is_routed_as_messenger(self):
+        response, task = self._post(self._dm("PAGE123"))
+
+        self.assertEqual(response.status_code, 200)
+        task.assert_called_once()
+        store_id, platform, sender_id, text = task.call_args[0]
+        self.assertEqual((platform, sender_id, text), ("messenger", "USER9", "عندكم سوفاج؟"))
+        self.assertEqual(store_id, self.store.id)
+
+    def test_instagram_dm_is_routed_as_instagram(self):
+        """Resolved by falling through to instagram_account_id."""
+        response, task = self._post(self._dm("IG456"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(task.call_args[0][1], "instagram")
+
+    def test_unsigned_dm_is_rejected(self):
+        response, task = self._post(self._dm("PAGE123"), sign=False)
+
+        self.assertEqual(response.status_code, 403)
+        task.assert_not_called()
+
+    def test_unknown_recipient_is_skipped_without_erroring(self):
+        response, task = self._post(self._dm("SOMEONE_ELSE"))
+
+        self.assertEqual(response.status_code, 200)
+        task.assert_not_called()
+
+    def test_echo_of_our_own_message_is_ignored(self):
+        """Without this the bot would answer itself in a loop."""
+        response, task = self._post(
+            self._dm("PAGE123", {"text": "أهلاً يا فندم", "is_echo": True})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        task.assert_not_called()
+
+    def test_delivery_and_read_receipts_are_ignored(self):
+        for noise in ("delivery", "read"):
+            payload = {
+                "object": "page",
+                "entry": [{
+                    "id": "PAGE123",
+                    "messaging": [{
+                        "sender": {"id": "USER9"},
+                        "recipient": {"id": "PAGE123"},
+                        noise: {"watermark": 1},
+                    }],
+                }],
+            }
+            response, task = self._post(payload)
+
+            self.assertEqual(response.status_code, 200)
+            task.assert_not_called()
+
+    def test_non_text_message_is_ignored(self):
+        """An image or sticker with no text must not reach the router."""
+        response, task = self._post(
+            self._dm("PAGE123", {"attachments": [{"type": "image"}]})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        task.assert_not_called()

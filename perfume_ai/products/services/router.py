@@ -43,25 +43,31 @@ def _detect_semantic_repetition(history):
     """
     if not history:
         return 0
-    
+
     bot_msgs = [msg["content"] for msg in history if msg.get("role") == "assistant"]
     if len(bot_msgs) < 3:
         return 0
-    
-    # Key phrases that indicate the bot is stuck in a pattern
+
+    # Vague questions the bot falls back on when it has nothing better to say.
+    # Deliberately excludes the handoff wording ("حولت طلبك", "فريق خدمة العملاء",
+    # "هيتواصلوا معاك"): the musk, promotion and handoff branches all *script* the
+    # bot to say exactly that, so counting it flagged the router's own output. A
+    # customer asking about offers, then musk, then for a human produced three
+    # scripted handoff replies and got the turn hijacked below. Handoff looping is
+    # already prevented by _was_already_handed_off and the classifier's
+    # HANDOFF ANTI-LOOP RULES, so this detector does not need to police it.
     stuck_phrases = [
-        "حولت طلبك", "حولت رسالتك", "حولت مشكلتك", "فريق خدمة العملاء", "هيتواصلوا معاك",
         "بتحب الفريش ولا", "عطر معين في بالك", "محتاج ترشيح",
     ]
-    
+
     # Count how many of the last 4 bot messages contain the same stuck phrase
     recent = bot_msgs[-4:] if len(bot_msgs) >= 4 else bot_msgs
-    
+
     max_repeat = 0
     for phrase in stuck_phrases:
         count = sum(1 for msg in recent if phrase in msg)
         max_repeat = max(max_repeat, count)
-    
+
     return max_repeat
 
 
@@ -89,13 +95,20 @@ def _count_recent_repetitions(history):
 
 
 def _was_already_handed_off(history):
-    """Check if the conversation was already handed off to a human."""
+    """Check if the conversation was already handed off to a human.
+
+    Matches "فريق" rather than "الفريق": the musk (router.py:353) and promotion
+    (:403) branches script "حولت المحادثة لفريق المبيعات", where the ل prefix means
+    the alef-lam form never appears. Requiring it missed those two branches
+    entirely, so a customer handed off through them was handed off a second time —
+    with a second notify_handoff — the next time they asked for a human.
+    """
     if not history:
         return False
     for msg in history:
         if msg.get("role") == "assistant":
             content = msg.get("content", "")
-            if "حولت" in content and ("خدمة العملاء" in content or "الفريق" in content):
+            if "حولت" in content and ("خدمة العملاء" in content or "فريق" in content):
                 return True
     return False
 
