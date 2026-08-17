@@ -30,6 +30,19 @@ class StoreSettings(models.Model):
     instagram_account_id = models.CharField(max_length=100, blank=True)
     whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
 
+    # Payment / deposit block appended to the order confirmation message.
+    # Per-store because it carries the store's own payment account: the text used
+    # to be hardcoded in order_service.create_order_in_db, so every store's
+    # customers were told to pay the first store's InstaPay account.
+    payment_instructions = models.TextField(
+        blank=True,
+        help_text=(
+            "تعليمات الدفع اللي تظهر للعميل بعد تأكيد الطلب (العربون، طرق التحويل، "
+            "سياسة الإلغاء). لو فاضية، البوت هيقول للعميل إن فريق المبيعات هيتواصل معاه "
+            "بتفاصيل الدفع."
+        ),
+    )
+
     # Comment Auto-Reply
     comment_reply_messages = models.TextField(
         blank=True,
@@ -164,6 +177,51 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.role} - {self.created_at}"
+
+class Cart(models.Model):
+    """An order in progress, before the customer confirms it.
+
+    Order details used to be re-derived by the LLM from conversation history on
+    every turn, but history is capped at 8 messages — so a name given five turns
+    ago, or a perfume chosen before that, silently vanished from the cart.
+    Persisting it means the flow survives long conversations: the extractor reads
+    this instead of trying to remember.
+
+    Deleted once converted into an Order, so a second order in the same
+    conversation starts from empty.
+    """
+
+    conversation = models.OneToOneField(
+        Conversation, on_delete=models.CASCADE, related_name="cart"
+    )
+    customer_name = models.CharField(max_length=200, blank=True)
+    customer_phone = models.CharField(max_length=50, blank=True)
+    secondary_phone = models.CharField(max_length=50, blank=True)
+    shipping_address = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart for conversation #{self.conversation_id}"
+
+
+class CartItem(models.Model):
+    BOTTLE_CHOICES = (
+        ("normal", "عادية"),
+        ("original", "أوريجينال"),
+    )
+
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    bottle_type = models.CharField(max_length=20, choices=BOTTLE_CHOICES, default="normal")
+
+    class Meta:
+        unique_together = ('cart', 'variant', 'bottle_type')
+
+    def __str__(self):
+        return f"{self.quantity} x {self.variant.product.name} ({self.variant.volume}ml)"
+
 
 class Order(models.Model):
     STATUS_CHOICES = (

@@ -6,8 +6,27 @@ from unittest import mock
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from products.models import Brand, Product, ProductVariant, Store, StoreSettings
+from products.models import (
+    Brand,
+    Cart,
+    CartItem,
+    Conversation,
+    Order,
+    OrderItem,
+    Product,
+    ProductVariant,
+    Store,
+    StoreSettings,
+)
 from products.services.ai.recommendation import _coerce_budget, _format_products
+from products.services.order_service import (
+    PAYMENT_FALLBACK,
+    _cart_context,
+    _looks_like_phone,
+    create_order_in_db,
+    get_cart,
+    handle_order,
+)
 from products.services.search_service import (
     MAX_PRODUCTS_IN_CONTEXT,
     search_products,
@@ -372,3 +391,347 @@ class BudgetCoercionTests(TestCase):
         treat it as 'no budget given'."""
         self.assertIsNone(_coerce_budget(0))
         self.assertIsNone(_coerce_budget(-100))
+
+
+class CartPersistenceTests(TestCase):
+    """The order cart survives a truncated conversation history.
+
+    get_conversation_messages caps history at 8 messages, but the extractor prompt
+    used to demand the model "reconstruct the FULL pending shopping cart every
+    time" from that history. Past four turns the cart silently emptied: a perfume
+    chosen early, or a name given five turns back, was simply gone.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store,
+            brand=self.brand,
+            name="Dior Sauvage",
+            gender="male",
+            oil_stock_grams=1000,
+            concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _turn(self, extracted):
+        """Run one order turn with the extractor's JSON stubbed."""
+        payload = {
+            "customer_name": None, "customer_phone": None,
+            "customer_secondary_phone": None, "shipping_address": None,
+            "products": [], "is_confirmed": False,
+        }
+        payload.update(extracted)
+        with mock.patch(
+            "products.services.order_service.chat", return_value=json.dumps(payload)
+        ):
+            return handle_order("...", [], self.store, self.conversation)
+
+    ONE_PERFUME = [{"name": "Dior Sauvage", "quantity": 1, "volume": 50, "bottle_type": "normal"}]
+
+    def test_chosen_perfume_is_saved_to_the_cart(self):
+        self._turn({"products": self.ONE_PERFUME})
+
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.items.count(), 1)
+        self.assertEqual(cart.items.first().variant, self.variant)
+
+    def test_cart_survives_a_turn_that_mentions_no_products(self):
+        """The regression. Turn 2 simulates a truncated window: the extractor can
+        no longer see the perfume, so it returns an empty product list."""
+        self._turn({"products": self.ONE_PERFUME})
+
+        reply, _ = self._turn({"customer_name": "محمد", "products": []})
+
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.items.count(), 1, "the cart was emptied")
+        self.assertNotIn("أنهي عطر", reply, "bot asked which perfume again")
+
+    def test_customer_details_accumulate_across_turns(self):
+        """Name given early must still be there when the address arrives late."""
+        self._turn({"products": self.ONE_PERFUME, "customer_name": "محمد"})
+        self._turn({"products": self.ONE_PERFUME, "customer_phone": "01000000000"})
+        self._turn({"products": self.ONE_PERFUME, "shipping_address": "القاهرة"})
+
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.customer_name, "محمد")
+        self.assertEqual(cart.customer_phone, "01000000000")
+        self.assertEqual(cart.shipping_address, "القاهرة")
+
+    def test_changing_the_size_does_not_duplicate_the_line(self):
+        big = ProductVariant.objects.create(
+            product=self.product, volume=90, price=600, bottle_type="normal"
+        )
+        self._turn({"products": self.ONE_PERFUME})
+        self._turn({"products": [
+            {"name": "Dior Sauvage", "quantity": 1, "volume": 90, "bottle_type": "normal"}
+        ]})
+
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.items.count(), 1)
+        self.assertEqual(cart.items.first().variant, big)
+
+    def test_confirming_creates_an_order_and_clears_the_cart(self):
+        self._turn({"products": self.ONE_PERFUME})
+
+        reply, _ = self._turn({
+            "products": self.ONE_PERFUME,
+            "customer_name": "محمد",
+            "customer_phone": "01000000000",
+            "customer_secondary_phone": "01100000000",
+            "shipping_address": "القاهرة، المعادي، ٥ شارع النصر",
+            "is_confirmed": True,
+        })
+
+        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        order = Order.objects.get(store=self.store)
+        self.assertEqual(order.items.count(), 1)
+        self.assertEqual(order.customer_name, "محمد")
+        self.assertFalse(
+            Cart.objects.filter(conversation=self.conversation).exists(),
+            "cart should be gone so a second order starts clean",
+        )
+
+    def test_confirming_decrements_stock(self):
+        self._turn({"products": self.ONE_PERFUME})
+        self._turn({
+            "products": self.ONE_PERFUME,
+            "customer_name": "محمد", "customer_phone": "01000000000",
+            "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
+            "is_confirmed": True,
+        })
+
+        self.product.refresh_from_db()
+        # 50ml at 30% concentration = 15g of oil
+        self.assertEqual(self.product.oil_stock_grams, 985)
+
+    def test_carts_are_isolated_per_conversation(self):
+        other = Conversation.objects.create(store=self.store)
+        self._turn({"products": self.ONE_PERFUME})
+
+        self.assertEqual(Cart.objects.get(conversation=self.conversation).items.count(), 1)
+        self.assertFalse(Cart.objects.filter(conversation=other).exists())
+
+
+class CartCancellationTests(TestCase):
+    """Cancelling an order that was never confirmed.
+
+    An in-progress order lives in a Cart and has taken no stock, so cancelling it
+    is just dropping the cart. Before carts existed the router only looked for a
+    pending Order, so "الغي الاوردر" mid-flow silently did nothing.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _cancel(self):
+        with mock.patch("products.services.router.classify", return_value="order_cancel"):
+            from products.services.router import route
+            return route("الغي الاوردر", [], self.store, self.conversation)
+
+    def test_cancelling_an_unconfirmed_cart_clears_it(self):
+        cart = Cart.objects.create(conversation=self.conversation)
+        CartItem.objects.create(cart=cart, variant=self.variant, quantity=1, bottle_type="normal")
+
+        reply, _ = self._cancel()
+
+        self.assertFalse(Cart.objects.filter(conversation=self.conversation).exists())
+        self.assertIn("إلغاء", reply)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.oil_stock_grams, 1000, "no stock was taken, none to restore")
+
+    def test_cancelling_a_confirmed_order_still_restores_stock(self):
+        """The existing path must keep working."""
+        self.product.oil_stock_grams = 985
+        self.product.save()
+        order = Order.objects.create(
+            store=self.store, customer_name="محمد", customer_phone="0100",
+            shipping_address="القاهرة", total_price=400, status="pending",
+            conversation=self.conversation,
+        )
+        OrderItem.objects.create(
+            order=order, variant=self.variant, quantity=1,
+            bottle_type="normal", price_at_time_of_order=400,
+        )
+
+        self._cancel()
+
+        order.refresh_from_db()
+        self.product.refresh_from_db()
+        self.assertEqual(order.status, "cancelled")
+        self.assertEqual(self.product.oil_stock_grams, 1000)
+
+    def test_cancelling_with_nothing_active_says_so(self):
+        reply, _ = self._cancel()
+
+        self.assertIn("مفيش طلب نشط", reply)
+
+
+class OrderGuardTests(TestCase):
+    """Guards against the extractor's output becoming a bad Order.
+
+    A real end-to-end run confirmed two orders with no contact details: the cart
+    context printed "(مش متوفر)" for unknown fields, the model echoed it back as
+    the customer's name, and a non-empty string passed the missing-field checks.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    ONE_PERFUME = [{"name": "Dior Sauvage", "quantity": 1, "volume": 50, "bottle_type": "normal"}]
+
+    def _turn(self, extracted):
+        payload = {
+            "customer_name": None, "customer_phone": None,
+            "customer_secondary_phone": None, "shipping_address": None,
+            "products": [], "is_confirmed": False,
+        }
+        payload.update(extracted)
+        with mock.patch(
+            "products.services.order_service.chat", return_value=json.dumps(payload)
+        ):
+            return handle_order("...", [], self.store, self.conversation)
+
+    def test_cart_context_never_shows_placeholder_text(self):
+        """The source of the bug: readable placeholders got echoed back as data."""
+        cart = get_cart(self.conversation)
+        context = _cart_context(cart)
+
+        self.assertNotIn("مش متوفر", context)
+        self.assertIn("null", context, "unknown fields should read as JSON null")
+
+    def test_non_numeric_phone_is_treated_as_missing(self):
+        reply, _ = self._turn({
+            "products": self.ONE_PERFUME,
+            "customer_name": "محمد",
+            "customer_phone": "(مش متوفر)",
+            "customer_secondary_phone": "(مش متوفر)",
+            "shipping_address": "القاهرة",
+            "is_confirmed": True,
+        })
+
+        self.assertFalse(
+            Order.objects.exists(), "an order was created without a real phone number"
+        )
+        self.assertIn("موبايل", reply, "bot should ask for the phone number")
+
+    def test_confirmation_without_details_does_not_create_an_order(self):
+        """The exact turn-6 failure: 'تمام' on a summary full of placeholders."""
+        self._turn({"products": self.ONE_PERFUME})
+        reply, _ = self._turn({"products": self.ONE_PERFUME, "is_confirmed": True})
+
+        self.assertFalse(Order.objects.exists())
+        self.assertIn("ناقصني", reply)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.oil_stock_grams, 1000, "stock was taken")
+
+    def test_phone_with_spaces_and_dashes_is_accepted(self):
+        """The guard must not reject numbers a real customer would type."""
+        self.assertTrue(_looks_like_phone("0100 000 0000"))
+        self.assertTrue(_looks_like_phone("010-1234-567"))
+        self.assertFalse(_looks_like_phone("(مش متوفر)"))
+        self.assertFalse(_looks_like_phone("غير معروف"))
+        self.assertFalse(_looks_like_phone(""))
+        self.assertFalse(_looks_like_phone(None))
+
+
+class PerStorePaymentInstructionsTests(TestCase):
+    """Payment details come from the store, not from a hardcoded string.
+
+    create_order_in_db used to emit one store's InstaPay link and handle to every
+    store's customers. With two active stores in the database, the second store's
+    first order would have directed that customer to pay the first store.
+    """
+
+    LEAKED = "perfamix2"
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Fragrance")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _confirm_order(self):
+        return create_order_in_db(
+            store=self.store, name="محمد", phone="01000000000",
+            secondary_phone="01100000000", address="القاهرة",
+            total_price=400,
+            items_to_create=[{
+                "variant": self.variant, "quantity": 1,
+                "price": self.variant.price, "bottle_type": "normal",
+            }],
+            context_str="", conversation=self.conversation,
+        )
+
+    def test_store_payment_instructions_are_used(self):
+        StoreSettings.objects.create(
+            store=self.store,
+            payment_instructions="💳 فودافون كاش: 01234567890",
+        )
+
+        reply, _ = self._confirm_order()
+
+        self.assertIn("فودافون كاش: 01234567890", reply)
+        self.assertNotIn(self.LEAKED, reply)
+
+    def test_store_without_instructions_gets_the_safe_fallback(self):
+        """The regression. Must never hand out another store's payment account."""
+        StoreSettings.objects.create(store=self.store)
+
+        reply, _ = self._confirm_order()
+
+        self.assertNotIn(self.LEAKED, reply, "another store's payment account leaked")
+        self.assertNotIn("إنستاباي", reply)
+        self.assertIn(PAYMENT_FALLBACK, reply)
+
+    def test_store_with_no_settings_row_still_confirms(self):
+        """A store missing StoreSettings entirely must not break the order."""
+        reply, _ = self._confirm_order()
+
+        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        self.assertIn(PAYMENT_FALLBACK, reply)
+        self.assertNotIn(self.LEAKED, reply)
+
+    def test_whitespace_only_instructions_count_as_unset(self):
+        StoreSettings.objects.create(store=self.store, payment_instructions="   \n  ")
+
+        reply, _ = self._confirm_order()
+
+        self.assertIn(PAYMENT_FALLBACK, reply)
+
+    def test_order_number_and_confirmation_still_present(self):
+        StoreSettings.objects.create(store=self.store, payment_instructions="ادفع كذا")
+
+        reply, _ = self._confirm_order()
+        order = Order.objects.get(store=self.store)
+
+        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        self.assertIn(f"#{order.id}", reply)

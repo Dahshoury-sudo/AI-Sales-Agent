@@ -4,7 +4,7 @@ from .ai.recommendation import recommend
 from .search_service import search_products
 from .product_info import get_product_info
 from .comparison_service import compare_products
-from .order_service import handle_order, restore_stock
+from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general
 from .notification_service import notify_handoff
 from products.models import Order
@@ -444,6 +444,14 @@ def route(message, history=None, store=None, conversation=None):
         
     elif request_type == "order_cancel":
         if conversation:
+            # An order still being assembled lives in a Cart and has taken no
+            # stock, so cancelling it is just dropping the cart. Only a confirmed
+            # order needs its stock returned.
+            cart = getattr(conversation, "cart", None)
+            if cart and cart.items.exists():
+                clear_cart(conversation)
+                return "تم إلغاء الطلب اللي كنا بنجهزه يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
             if latest_order:
                 with transaction.atomic():

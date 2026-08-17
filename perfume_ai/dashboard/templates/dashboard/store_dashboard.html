@@ -885,6 +885,21 @@
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
             </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-credit-card"></i> تعليمات الدفع</h3>
+                <p style="color:var(--text-muted);margin-bottom:10px;">
+                    الرسالة اللي العميل بيشوفها بعد تأكيد الطلب — العربون، طرق التحويل، وسياسة الإلغاء.
+                    لو سيبتها فاضية، البوت هيقول للعميل إن فريق المبيعات هيتواصل معاه بتفاصيل الدفع.
+                </p>
+                <div class="form-group">
+                    <label>تعليمات الدفع والعربون</label>
+                    <textarea id="setting-payment-instructions" rows="8" placeholder="📌 لتأكيد وشحن الأوردر برجاء تحويل عربون...&#10;&#10;💳 طرق التحويل:&#10;إنستاباي: ..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+            </div>
         </div>
 
 
@@ -1351,6 +1366,7 @@ Check your DM, we replied! 💬
                 const profile = await profileRes.json();
 
                 document.getElementById('setting-system-prompt').value = settings.system_prompt || '';
+                document.getElementById('setting-payment-instructions').value = settings.payment_instructions || '';
                 document.getElementById('api-key-display').textContent = profile.store.api_key;
                 
                 // Automatically save API key to localStorage
@@ -1368,6 +1384,7 @@ Check your DM, we replied! 💬
                     method: 'PUT',
                     body: JSON.stringify({
                         system_prompt: document.getElementById('setting-system-prompt').value,
+                        payment_instructions: document.getElementById('setting-payment-instructions').value,
                     })
                 });
                 if (res && res.ok) showToast('✅ تم حفظ الإعدادات');

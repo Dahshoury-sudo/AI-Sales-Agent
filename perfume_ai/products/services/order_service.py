@@ -2,12 +2,158 @@ import json
 import logging
 from django.db import transaction
 from django.db.models import F, Q
-from products.models import Order, OrderItem, Product, ProductVariant
+from products.models import Cart, CartItem, Order, OrderItem, Product, ProductVariant
 from .ai.client import chat
 from .product_resolver import resolve_product
 from .notification_service import notify_new_order
 
 logger = logging.getLogger(__name__)
+
+
+def get_cart(conversation):
+    """The conversation's in-progress cart, created on first use."""
+    cart, _ = Cart.objects.get_or_create(conversation=conversation)
+    return cart
+
+
+def clear_cart(conversation):
+    """Drop the in-progress cart. No stock to restore — none was ever taken."""
+    Cart.objects.filter(conversation=conversation).delete()
+
+
+def _cart_context(cart):
+    """Render the saved cart for the extractor prompt.
+
+    This is the fix for the truncation bug: the model reads the cart here instead
+    of reconstructing it from a conversation history that only goes back 8
+    messages.
+
+    Rendered as JSON in the same shape the extractor must return, deliberately.
+    An earlier version printed readable Arabic with "(مش متوفر)" for unknown
+    fields, and the model echoed that string back as the customer's name — a
+    non-empty value, so it passed the missing-field checks and confirmed orders
+    with no contact details at all.
+    """
+    items = [
+        {
+            "name": item.variant.product.name,
+            "volume": item.variant.volume,
+            "bottle_type": item.bottle_type,
+            "quantity": item.quantity,
+        }
+        for item in cart.items.select_related('variant__product').all()
+    ]
+    state = {
+        "products": items,
+        "customer_name": cart.customer_name or None,
+        "customer_phone": cart.customer_phone or None,
+        "customer_secondary_phone": cart.secondary_phone or None,
+        "shipping_address": cart.shipping_address or None,
+    }
+
+    return f"""
+
+═══ SAVED CART — authoritative current state, NOT the history ═══
+{json.dumps(state, ensure_ascii=False, indent=2)}
+
+A field that is null above is genuinely unknown. Return null for it too, unless
+the customer's LATEST message supplies it. NEVER invent a value, and never copy
+placeholder or descriptive text into a field.
+"""
+
+
+def _looks_like_phone(value):
+    """Guard against a hallucinated or echoed value reaching customer_phone.
+
+    The extractor is a language model, so no prompt wording makes its output
+    trustworthy enough to write into an Order unchecked. An Egyptian mobile is
+    11 digits; requiring 7 catches placeholder text and prose without rejecting
+    numbers the customer typed with spaces or dashes.
+    """
+    return bool(value) and sum(character.isdigit() for character in str(value)) >= 7
+
+
+# Shown when a store hasn't configured payment_instructions. Deliberately says
+# nothing concrete: emitting another store's payment account is worse than asking
+# the customer to wait for the team.
+PAYMENT_FALLBACK = (
+    "فريق المبيعات هيتواصل معاك في أقرب وقت يأكدلك تفاصيل الدفع والشحن."
+)
+
+
+def _payment_instructions(store):
+    """This store's own payment block for the order confirmation.
+
+    Was hardcoded in create_order_in_db, which meant every store's customers were
+    sent the first store's InstaPay link — money to the wrong account.
+    """
+    try:
+        instructions = (store.settings.payment_instructions or "").strip()
+    except Exception:
+        logger.warning(f"No StoreSettings for store '{store.name}'; using payment fallback.")
+        return PAYMENT_FALLBACK
+
+    if not instructions:
+        logger.warning(
+            f"Store '{store.name}' has no payment_instructions configured; "
+            f"the customer was not given payment details."
+        )
+        return PAYMENT_FALLBACK
+
+    return instructions
+
+
+
+def _save_cart_details(cart, name, phone, secondary_phone, address):
+    """Persist whichever customer details are known so far.
+
+    Called before validation so a name given early in a long conversation is kept
+    even when the turn ends in a question about something else.
+    """
+    cart.customer_name = name or ""
+    cart.customer_phone = phone or ""
+    cart.secondary_phone = secondary_phone or ""
+    cart.shipping_address = address or ""
+    cart.save(update_fields=[
+        "customer_name", "customer_phone", "secondary_phone",
+        "shipping_address", "updated_at",
+    ])
+
+
+def _save_cart_items(cart, items_to_create):
+    """Replace the cart's items with the freshly resolved ones.
+
+    Only fully resolved items can be stored, since CartItem requires a variant. A
+    perfume the customer named but hasn't picked a size for yet is still carried
+    by the conversation for the one turn it takes to ask.
+    """
+    cart.items.all().delete()
+    for item in items_to_create:
+        CartItem.objects.update_or_create(
+            cart=cart,
+            variant=item["variant"],
+            bottle_type=item["bottle_type"],
+            defaults={"quantity": item["quantity"]},
+        )
+
+
+def _cart_items_as_products_data(cart):
+    """The saved cart in the shape the extractor would have returned.
+
+    Used as a fallback when the model returns an empty product list despite a
+    saved cart existing — losing a cart to one bad extraction is the exact
+    failure this whole change exists to prevent.
+    """
+    return [
+        {
+            "name": item.variant.product.name,
+            "quantity": item.quantity,
+            "volume": item.variant.volume,
+            "bottle_type": item.bottle_type,
+        }
+        for item in cart.items.select_related('variant__product').all()
+    ]
+
 
 
 def restore_stock(order):
@@ -32,18 +178,30 @@ def handle_order(message, history, store, conversation):
     """
     Handles the order collection flow. Extracts Name, Phone, Address, Products, Quantities, and Confirmation.
     """
-    
+    cart = get_cart(conversation)
+
     prompt = """
 You are an order detail extractor for an Arabic perfume store.
-Look at the conversation history and the latest message to extract the customer's order details.
-If a detail is not provided, return null for it.
+
+A "SAVED CART" section below holds the order as it currently stands. It is the
+authoritative state — the conversation history is truncated and may not show
+everything the customer already told us. Start from the saved cart and apply the
+customer's LATEST message to it.
 
 Rules:
-1. "customer_name": The customer's full name if provided in the history.
-2. "customer_phone": The customer's phone number if provided in the history.
-3. "shipping_address": The customer's full delivery address if provided in the history.
-4. "customer_secondary_phone": The customer's alternative or secondary phone number if provided in the history.
-5. "products": A comprehensive list of ALL products the user wants to buy in the CURRENT active order. For each product, extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل). CRITICAL: If the user hasn't explicitly chosen the bottle type yet, YOU MUST return null. You MUST read the entire history and reconstruct the FULL pending shopping cart every time. Do NOT return an empty list if there is a pending unconfirmed order, even if the user's latest message doesn't explicitly mention the product (like when they just say "تمام" to confirm). 🚨 CRITICAL 🚨: If the assistant has ALREADY finalized a previous order in the history (e.g. saying "تم تأكيد طلبك بنجاح"), that order is CLOSED. You must start a NEW empty cart for any products requested AFTER that confirmation. If no NEW products have been requested yet, return an empty list [].
+1. "customer_name": The customer's name. Use the saved value unless the latest message gives a new one.
+2. "customer_phone": The customer's primary phone. Use the saved value unless the latest message gives a new one.
+3. "shipping_address": The customer's full delivery address. Use the saved value unless the latest message gives a new one.
+4. "customer_secondary_phone": The alternative phone. Use the saved value unless the latest message gives a new one.
+5. "products": The FULL list of products in the cart AFTER applying the latest message:
+   - Customer adds a perfume → the saved items PLUS the new one.
+   - Customer changes the size or bottle type of something already saved → return that perfume ONCE with the new size/type, do NOT duplicate it.
+   - Customer removes a perfume → the saved items WITHOUT it.
+   - Customer says nothing about products (just "تمام", or gives their phone/address) → return the saved items UNCHANGED.
+   - Saved cart is empty and no perfume named yet → return [].
+   🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message.
+   For each product extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل).
+   CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
 6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
 
 Return valid JSON in this exact format:
@@ -57,7 +215,7 @@ Return valid JSON in this exact format:
     ],
     "is_confirmed": false
 }
-"""
+""" + _cart_context(cart)
 
     messages = [{"role": "system", "content": prompt}]
     if history:
@@ -70,12 +228,24 @@ Return valid JSON in this exact format:
     except Exception:
         return "مش فاهم تفاصيل الطلب كويس يا فندم. ممكن تقولي تاني عايز تطلب ايه بالظبط؟", ""
 
-    name = data.get("customer_name")
-    phone = data.get("customer_phone")
-    secondary_phone = data.get("customer_secondary_phone")
-    address = data.get("shipping_address")
-    products_data = data.get("products", [])
+    # Fall back to the saved cart for anything the extractor left out, so a detail
+    # given earlier in a long conversation survives a turn that doesn't repeat it.
+    name = data.get("customer_name") or cart.customer_name or None
+    phone = data.get("customer_phone") or cart.customer_phone or None
+    secondary_phone = data.get("customer_secondary_phone") or cart.secondary_phone or None
+    address = data.get("shipping_address") or cart.shipping_address or None
+    products_data = data.get("products") or []
     is_confirmed = data.get("is_confirmed", False)
+
+    _save_cart_details(cart, name, phone, secondary_phone, address)
+
+    # A single bad extraction must not empty a cart the customer already built.
+    if not products_data and cart.items.exists():
+        products_data = _cart_items_as_products_data(cart)
+        logger.warning(
+            f"Extractor returned no products for conversation #{conversation.id}; "
+            f"falling back to the {len(products_data)} saved cart item(s)."
+        )
 
     if not products_data:
         return "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟", ""
@@ -264,6 +434,11 @@ Return valid JSON in this exact format:
             
     context_str = ", ".join(context_data) if context_data else "No products found"
 
+    # Persist whatever resolved cleanly, before any of the early returns below.
+    # Partial progress counts: if one perfume is settled and another still needs a
+    # size, the settled one must survive the turn spent asking about the other.
+    _save_cart_items(cart, items_to_create)
+
     # If the user asked for products but NONE were found in our store, stop immediately and suggest alternatives.
     if not items_to_create and all("product_obj" not in p for p in products_data if isinstance(p, dict)):
         # Check if the AI returned null for the name, which means the user's request was ambiguous (e.g. "عايز واحد")
@@ -308,11 +483,17 @@ Return valid JSON in this exact format:
             return f"تمام 👌 تحب الـ50 ملي ولا الـ90 ملي؟", ""
         return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
 
-    # 3. Product details are complete — now check for missing personal info
+    # 3. Product details are complete — now check for missing personal info.
+    # Phones go through _looks_like_phone rather than a truthiness check: the
+    # extractor is a language model, and a non-numeric string it invented or
+    # echoed must count as missing, not as a contact number.
+    phone = phone if _looks_like_phone(phone) else None
+    secondary_phone = secondary_phone if _looks_like_phone(secondary_phone) else None
+
     personal_missing_fields = []
     if not name:
         personal_missing_fields.append("الاسم")
-        
+
     if not phone and not secondary_phone:
         personal_missing_fields.append("رقمين للموبايل واحد اساسي وواحد بديل")
     elif not phone:
@@ -397,16 +578,14 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                     )
                 
         logger.info(f"Order #{order.id} created successfully for store '{store.name}'")
+        # The cart became an Order; drop it so a second order in this same
+        # conversation starts from empty instead of re-ordering the first one.
+        clear_cart(conversation)
         notify_new_order(order)  # Notify store owner in dashboard
         final_message = (
             f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\n"
             f"سيقوم فريق المبيعات بالتواصل معك قريباً.\n\n"
-            f"📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n"
-            f"⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n"
-            f"💳 طرق التحويل:\n"
-            f"إنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n"
-            f"(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\n"
-            f"برجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن."
+            f"{_payment_instructions(store)}"
         )
         return final_message, context_str
     except Exception as e:
