@@ -18,7 +18,9 @@ from products.models import (
     Store,
     StoreSettings,
 )
+from products.services.ai.prompts import get_system_prompt
 from products.services.ai.recommendation import _coerce_budget, _format_products
+from products.services.meta_service import send_platform_message
 from products.services.order_service import (
     PAYMENT_FALLBACK,
     _cart_context,
@@ -735,3 +737,110 @@ class PerStorePaymentInstructionsTests(TestCase):
 
         self.assertIn("تم تأكيد طلبك بنجاح", reply)
         self.assertIn(f"#{order.id}", reply)
+
+
+class PerStorePromptFactsTests(TestCase):
+    """Store-specific claims must come from the store, not the shared prompt.
+
+    prompts.py asserted one store's business model as universal truth to every
+    store's customers: the 28-36g oil ratio, "brand bottles come in 50ml and 90ml
+    only", a ~90% match claim, and "we have a physical branch, come visit".
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Fragrance")
+
+    def test_store_without_facts_makes_no_factual_claims(self):
+        StoreSettings.objects.create(store=self.store)
+
+        prompt = get_system_prompt(self.store)
+
+        for leaked in ("28 إلي 36", "16 إلى 20", "90%", "فرع وستور على أرض الواقع"):
+            self.assertNotIn(leaked, prompt, f"leaked another store's claim: {leaked}")
+
+    def test_store_facts_are_injected_when_set(self):
+        StoreSettings.objects.create(
+            store=self.store, business_facts="- الأحجام: 30 ملي و 60 ملي بس."
+        )
+
+        self.assertIn("الأحجام: 30 ملي و 60 ملي بس.", get_system_prompt(self.store))
+
+    def test_store_with_no_settings_row_still_builds_a_prompt(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn(self.store.name, prompt)
+        self.assertNotIn("28 إلي 36", prompt)
+
+    def test_no_bottle_image_means_the_bot_is_told_not_to_offer_photos(self):
+        StoreSettings.objects.create(store=self.store)
+
+        self.assertIn("ممنوع تكتب [SEND_BOTTLE_IMAGE]", get_system_prompt(self.store))
+
+    def test_configured_bottle_image_enables_the_image_rules(self):
+        StoreSettings.objects.create(
+            store=self.store, bottle_image_url="https://example.com/bottles.jpg"
+        )
+
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("واكتب الكلمة السرية دي في ردك: [SEND_BOTTLE_IMAGE]", prompt)
+
+    def test_custom_system_prompt_still_applies(self):
+        """The pre-existing per-store hook must keep working."""
+        StoreSettings.objects.create(store=self.store, system_prompt="اتكلم بالفصحى.")
+
+        self.assertIn("اتكلم بالفصحى.", get_system_prompt(self.store))
+
+
+class PerStoreBottleImageTests(TestCase):
+    """The bottle photo comes from the store, not a single global env var.
+
+    settings.BOTTLE_IMAGE_URL was one value for every store, so a second store's
+    customers were sent the first store's bottles and packaging.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Fragrance")
+        self.settings_obj = StoreSettings.objects.create(
+            store=self.store,
+            facebook_page_id="PAGE123",
+            instagram_account_id="IG456",
+            messenger_access_token="tok",
+        )
+        self.conversation = Conversation.objects.create(
+            store=self.store, platform="instagram", platform_sender_id="USER9"
+        )
+
+    def _send(self, text="دي صور الزجاجات: [SEND_BOTTLE_IMAGE]"):
+        with mock.patch("products.services.meta_service.send_instagram_image") as img, \
+             mock.patch("products.services.meta_service.send_instagram_message") as msg:
+            send_platform_message(self.conversation, text)
+        return img, msg
+
+    def test_no_configured_image_sends_text_only(self):
+        """The regression: this used to send the other store's packaging."""
+        img, msg = self._send()
+
+        img.assert_not_called()
+        msg.assert_called_once()
+        self.assertNotIn("[SEND_BOTTLE_IMAGE]", msg.call_args[0][2])
+
+    def test_configured_image_is_sent(self):
+        self.settings_obj.bottle_image_url = "https://example.com/misk.jpg"
+        self.settings_obj.save()
+
+        img, _ = self._send()
+
+        img.assert_called_once()
+        self.assertEqual(img.call_args[0][2], "https://example.com/misk.jpg")
+
+    def test_instagram_images_go_through_the_facebook_page_id(self):
+        """Instagram Messaging sends via the Page ID. This passed the IG account
+        ID, so image sends failed."""
+        self.settings_obj.bottle_image_url = "https://example.com/misk.jpg"
+        self.settings_obj.save()
+
+        img, msg = self._send()
+
+        self.assertEqual(img.call_args[0][0], "PAGE123")
+        self.assertEqual(img.call_args[0][0], msg.call_args[0][0])

@@ -245,20 +245,29 @@ def send_platform_message(conversation, text):
         return
 
     # Check for the special image token
-    should_send_image = False
+    bottle_image_url = ""
     if "[SEND_BOTTLE_IMAGE]" in text:
-        should_send_image = True
         text = text.replace("[SEND_BOTTLE_IMAGE]", "").strip()
-        BOTTLE_IMAGE_URL = settings.BOTTLE_IMAGE_URL
+        # Per-store: this was a single global setting, so every store's customers
+        # were shown the first store's bottles and packaging.
+        bottle_image_url = store_settings.bottle_image_url or ""
+        if not bottle_image_url:
+            logger.warning(
+                f"Store '{conversation.store.name}' emitted [SEND_BOTTLE_IMAGE] but has "
+                f"no bottle_image_url configured; sending text only."
+            )
 
     # Send the image first if requested
-    if should_send_image:
+    if bottle_image_url:
         if conversation.platform == "whatsapp":
-            send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, BOTTLE_IMAGE_URL, token)
+            send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
         elif conversation.platform == "messenger":
-            send_messenger_image(store_settings.facebook_page_id, sender_id, BOTTLE_IMAGE_URL, token)
+            send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
         elif conversation.platform == "instagram":
-            send_instagram_image(store_settings.instagram_account_id, sender_id, BOTTLE_IMAGE_URL, token)
+            # Instagram Messaging sends through the Facebook Page ID, not the IG
+            # account ID — same as send_instagram_message below. Passing the IG
+            # account ID here meant image sends failed.
+            send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
 
     # Only send text if there is text left after removing the token
     if text:

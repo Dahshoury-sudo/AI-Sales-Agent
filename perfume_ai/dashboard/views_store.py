@@ -32,6 +32,8 @@ class StoreSettingsView(APIView):
             "whatsapp_phone_number_id": settings.whatsapp_phone_number_id,
             "comment_reply_messages": settings.comment_reply_messages,
             "payment_instructions": settings.payment_instructions,
+            "bottle_image_url": settings.bottle_image_url,
+            "business_facts": settings.business_facts,
         })
 
     def put(self, request):
@@ -46,6 +48,7 @@ class StoreSettingsView(APIView):
             "meta_access_token", "messenger_access_token", "meta_app_secret",
             "facebook_page_id", "instagram_account_id", "whatsapp_phone_number_id",
             "comment_reply_messages", "payment_instructions",
+            "bottle_image_url", "business_facts",
         ]
 
         for field in updatable_fields:

@@ -43,6 +43,30 @@ class StoreSettings(models.Model):
         ),
     )
 
+    # Photo of this store's own bottles/packaging, sent when the bot emits
+    # [SEND_BOTTLE_IMAGE]. Per-store because it was a single global setting, so
+    # every store's customers were shown the first store's packaging.
+    bottle_image_url = models.URLField(
+        blank=True,
+        max_length=500,
+        help_text=(
+            "لينك صورة الزجاجات والبوكس بتاع الستور. لو فاضية، البوت مش هيبعت صور."
+        ),
+    )
+
+    # Store-specific factual claims injected into the system prompt: oil ratios,
+    # available bottle sizes, whether there is a physical branch, how close the
+    # blends are to the originals. These were hardcoded as universal truths, so
+    # every store's bot asserted the first store's business model.
+    business_facts = models.TextField(
+        blank=True,
+        help_text=(
+            "حقائق خاصة بالستور يقولها البوت للعميل (نسب الزيت، الأحجام المتاحة، "
+            "هل فيه فرع على أرض الواقع، نسبة تشابه التركيب). لو فاضية، البوت مش "
+            "هيدّعي أي حاجة من دي."
+        ),
+    )
+
     # Comment Auto-Reply
     comment_reply_messages = models.TextField(
         blank=True,

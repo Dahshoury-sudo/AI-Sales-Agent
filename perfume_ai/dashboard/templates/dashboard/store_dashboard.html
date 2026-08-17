@@ -900,6 +900,25 @@
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
             </div>
+
+            <div class="settings-card">
+                <h3><i class="fas fa-circle-info"></i> حقائق الستور</h3>
+                <p style="color:var(--text-muted);margin-bottom:10px;">
+                    الحقائق اللي البوت يقولها للعميل: نسب الزيت، الأحجام المتاحة، هل فيه فرع على أرض
+                    الواقع. لو سيبتها فاضية، البوت مش هيدّعي أي حاجة من دي — وده الأأمن لو مش متأكد.
+                </p>
+                <div class="form-group">
+                    <label>حقائق خاصة بالستور</label>
+                    <textarea id="setting-business-facts" rows="6" placeholder="- الأحجام المتاحة: ...&#10;- طبيعة المنتجات: ...&#10;- الستور على أرض الواقع: ..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>لينك صورة الزجاجات والبوكس</label>
+                    <input type="url" id="setting-bottle-image-url" placeholder="https://... (سيبها فاضية لو مفيش صور)">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+            </div>
         </div>
 
 
@@ -1367,6 +1386,8 @@ Check your DM, we replied! 💬
 
                 document.getElementById('setting-system-prompt').value = settings.system_prompt || '';
                 document.getElementById('setting-payment-instructions').value = settings.payment_instructions || '';
+                document.getElementById('setting-business-facts').value = settings.business_facts || '';
+                document.getElementById('setting-bottle-image-url').value = settings.bottle_image_url || '';
                 document.getElementById('api-key-display').textContent = profile.store.api_key;
                 
                 // Automatically save API key to localStorage
@@ -1385,6 +1406,8 @@ Check your DM, we replied! 💬
                     body: JSON.stringify({
                         system_prompt: document.getElementById('setting-system-prompt').value,
                         payment_instructions: document.getElementById('setting-payment-instructions').value,
+                        business_facts: document.getElementById('setting-business-facts').value,
+                        bottle_image_url: document.getElementById('setting-bottle-image-url').value,
                     })
                 });
                 if (res && res.ok) showToast('✅ تم حفظ الإعدادات');

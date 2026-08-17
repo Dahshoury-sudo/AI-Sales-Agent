@@ -121,7 +121,17 @@ class ChatAPIView(APIView):
             image_url = None
             if "[SEND_BOTTLE_IMAGE]" in reply:
                 reply = reply.replace("[SEND_BOTTLE_IMAGE]", "").strip()
-                image_url = settings.BOTTLE_IMAGE_URL
+                # Per-store, not a global setting — otherwise every store's
+                # customers see the first store's bottles.
+                try:
+                    image_url = store.settings.bottle_image_url or None
+                except Exception:
+                    image_url = None
+                if not image_url:
+                    logger.warning(
+                        f"Store '{store.name}' emitted [SEND_BOTTLE_IMAGE] but has no "
+                        f"bottle_image_url configured; replying without an image."
+                    )
 
             save_message(
                 conversation,
