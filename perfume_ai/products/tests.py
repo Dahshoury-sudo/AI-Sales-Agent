@@ -4,8 +4,11 @@ import inspect
 import json
 from unittest import mock
 
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from products.models import (
     Brand,
@@ -21,7 +24,11 @@ from products.models import (
 )
 from products.services.ai.prompts import get_system_prompt
 from products.services.ai.recommendation import _coerce_budget, _format_products
-from products.services.meta_service import send_platform_message
+from products.services.conversation_service import get_or_create_platform_conversation
+from products.services.meta_service import (
+    conversation_platform_for,
+    send_platform_message,
+)
 from products.services.product_info import get_product_info
 from products.services.order_service import (
     PAYMENT_FALLBACK,
@@ -1287,3 +1294,167 @@ class CommentReplyDelayTests(TestCase):
             scheduled.call_args.kwargs["args"],
             [7, "instagram", "C2", "USER1", "عندكم مسك؟", "P9"],
         )
+
+
+class HandoffReplyDeliveryTests(TestCase):
+    """Every platform a conversation can have must actually reach the customer.
+
+    views_meta.py stores platform="facebook" for conversations that began as a
+    comment on a Page post, but that value was in neither PLATFORM_CHOICES nor
+    send_platform_message's dispatch. Replying from the handoff dashboard saved the
+    message, returned {"status": "Message sent"}, logged "Unknown platform
+    'facebook'", and sent nothing. Confirmed against the endpoint before fixing.
+    """
+
+    def setUp(self):
+        self.owner = User.objects.create_user("owner", "owner@example.com", "pw")
+        self.store = Store.objects.create(name="Perfamix Test", owner=self.owner)
+        StoreSettings.objects.create(
+            store=self.store,
+            facebook_page_id="PAGE123",
+            instagram_account_id="IG456",
+            whatsapp_phone_number_id="WA789",
+            messenger_access_token="tok",
+            meta_access_token="tok",
+        )
+        self.client = APIClient()
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(RefreshToken.for_user(self.owner).access_token)
+        )
+
+    def _reply_on(self, platform):
+        """Reply through the real endpoint; returns which send API was used."""
+        conversation = Conversation.objects.create(
+            store=self.store, platform=platform,
+            platform_sender_id="USER9", needs_human=True,
+        )
+        with mock.patch("products.services.meta_service.send_messenger_message") as messenger, \
+             mock.patch("products.services.meta_service.send_instagram_message") as instagram, \
+             mock.patch("products.services.meta_service.send_whatsapp_message") as whatsapp:
+            response = self.client.post(
+                f"/api/handoff/conversations/{conversation.id}/reply/",
+                {"message": "اهلا يا فندم، معاك خدمة العملاء"},
+                format="json",
+            )
+        used = (
+            "messenger" if messenger.called
+            else "instagram" if instagram.called
+            else "whatsapp" if whatsapp.called
+            else None
+        )
+        return response, used, conversation
+
+    def test_facebook_comment_conversation_is_delivered(self):
+        """The regression: this sent nothing at all."""
+        response, used, _ = self._reply_on("facebook")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            used, "messenger",
+            "a private reply to a Facebook commenter goes out through the Page Send API",
+        )
+
+    def test_facebook_is_a_recognised_platform_value(self):
+        """views_meta.py has always written it, so the model should list it."""
+        self.assertIn("facebook", dict(Conversation.PLATFORM_CHOICES))
+
+    def test_messenger_instagram_and_whatsapp_still_route_correctly(self):
+        for platform, expected in [
+            ("messenger", "messenger"),
+            ("instagram", "instagram"),
+            ("whatsapp", "whatsapp"),
+        ]:
+            with self.subTest(platform=platform):
+                _, used, _ = self._reply_on(platform)
+                self.assertEqual(used, expected)
+
+    def test_web_conversations_send_nothing_externally(self):
+        """Web chat is polled by the widget; there is no channel to push to."""
+        _, used, _ = self._reply_on("web")
+
+        self.assertIsNone(used)
+
+    def test_the_reply_is_saved_and_the_conversation_is_flagged(self):
+        _, _, conversation = self._reply_on("facebook")
+
+        self.assertEqual(conversation.messages.count(), 1)
+        message = conversation.messages.first()
+        self.assertEqual(message.role, "assistant")
+        conversation.refresh_from_db()
+        self.assertTrue(conversation.needs_human)
+
+
+class CommentAndDMShareOneConversationTests(TestCase):
+    """A Facebook comment and a later DM from the same person are one thread.
+
+    get_or_create_platform_conversation keys on (store, platform, sender_id).
+    Comments were filed under "facebook" and DMs under "messenger", so the same
+    customer got two separate conversations and the bot lost the comment context
+    the moment the chat moved to DMs. Their sender ids are the same page-scoped id
+    — confirmed against real data — so one label joins them.
+    """
+
+    SENDER_ID = "24812345678901234"
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(
+            store=self.store, facebook_page_id="PAGE123",
+            instagram_account_id="IG456", messenger_access_token="tok",
+        )
+
+    def test_facebook_comments_are_filed_under_messenger(self):
+        self.assertEqual(conversation_platform_for("facebook"), "messenger")
+
+    def test_other_sources_are_unchanged(self):
+        for source in ("messenger", "instagram", "whatsapp", "web"):
+            self.assertEqual(conversation_platform_for(source), source)
+
+    def test_instagram_is_deliberately_not_remapped(self):
+        """IG comment ids and IG DM ids are different id spaces, so relabelling
+        would merge nothing — it needs the Send API's recipient_id instead."""
+        self.assertEqual(conversation_platform_for("instagram"), "instagram")
+
+    def test_a_comment_then_a_dm_reuse_the_same_conversation(self):
+        """The regression: this used to create two separate conversations."""
+        # Comment arrives first.
+        comment_conversation, _ = get_or_create_platform_conversation(
+            self.store, conversation_platform_for("facebook"), self.SENDER_ID
+        )
+        # The same person then sends a Messenger DM, as the webhook would file it.
+        dm_conversation, created = get_or_create_platform_conversation(
+            self.store, "messenger", self.SENDER_ID
+        )
+
+        self.assertEqual(comment_conversation.id, dm_conversation.id)
+        self.assertFalse(created, "the DM started a second conversation")
+        self.assertEqual(Conversation.objects.filter(store=self.store).count(), 1)
+
+    def test_the_comment_task_files_the_conversation_under_messenger(self):
+        """End to end through the task, with the Meta calls mocked."""
+        with mock.patch("products.tasks.fetch_post_content", return_value=""), \
+             mock.patch("products.tasks.reply_to_comment"), \
+             mock.patch("products.tasks.send_private_reply"), \
+             mock.patch("products.tasks.route", return_value=("رد البوت", "")):
+            result = process_comment_task.apply(
+                args=[self.store.id, "facebook", "C1", self.SENDER_ID, "بكام؟", "P1"]
+            )
+
+        self.assertTrue(result.successful(), result.result)
+        conversation = Conversation.objects.get(store=self.store)
+        self.assertEqual(conversation.platform, "messenger")
+        self.assertEqual(conversation.platform_sender_id, self.SENDER_ID)
+
+    def test_the_public_comment_reply_still_uses_the_facebook_endpoint(self):
+        """Remapping the conversation must not change which endpoint replies."""
+        with mock.patch("products.tasks.fetch_post_content", return_value=""), \
+             mock.patch("products.tasks.reply_to_comment") as facebook_reply, \
+             mock.patch("products.tasks.reply_to_ig_comment") as instagram_reply, \
+             mock.patch("products.tasks.send_private_reply"), \
+             mock.patch("products.tasks.route", return_value=("رد البوت", "")):
+            process_comment_task.apply(
+                args=[self.store.id, "facebook", "C1", self.SENDER_ID, "بكام؟", "P1"]
+            )
+
+        self.assertTrue(facebook_reply.called)
+        self.assertFalse(instagram_reply.called)

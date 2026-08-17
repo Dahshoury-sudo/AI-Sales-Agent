@@ -169,6 +169,11 @@ class Conversation(models.Model):
         ("whatsapp", "WhatsApp"),
         ("messenger", "Messenger"),
         ("instagram", "Instagram"),
+        # Started as a comment on a Facebook Page post rather than a DM.
+        # views_meta.py has always stored this value; it was missing here, and
+        # send_platform_message did not dispatch it either, so handoff replies to
+        # Facebook commenters were silently dropped.
+        ("facebook", "Facebook Comment"),
     )
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="conversations", null=True, blank=True)
     platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, default="web")

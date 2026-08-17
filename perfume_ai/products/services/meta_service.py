@@ -1,6 +1,5 @@
 import logging
 import requests
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -216,6 +215,33 @@ def send_messenger_image(page_id, recipient_id, image_url, token):
 send_instagram_image = send_messenger_image
 
 
+# Platforms delivered through the Facebook Page Send API. "facebook" marks a
+# conversation that started as a comment on a Page post rather than a DM — the
+# distinction is kept because process_comment_task uses it to choose the right
+# comment-reply endpoint, but a *private* reply to a commenter goes out through
+# the same Page endpoint Messenger uses. Omitting it here meant handoff replies to
+# Facebook commenters hit the "Unknown platform" branch below and were never sent,
+# while the dashboard still reported "Message sent".
+MESSENGER_PLATFORMS = ("messenger", "facebook")
+
+
+# Which platform label a *conversation* gets, given the source it arrived from.
+# A Facebook commenter and a Facebook DM sender share the same page-scoped ID, so
+# filing both under "messenger" keeps them in one conversation and the bot
+# remembers the comment when the DM continues. Comment-reply endpoints still key
+# off the original source, so this only affects conversation identity.
+#
+# Instagram is deliberately not mapped: its comment IDs and DM IDs are different
+# ID spaces, so relabelling would not merge anything. Joining those needs the
+# recipient_id that the Send API returns, which is a separate piece of work.
+_CONVERSATION_PLATFORM = {"facebook": "messenger"}
+
+
+def conversation_platform_for(source_platform):
+    """The platform label to store a conversation under for a given source."""
+    return _CONVERSATION_PLATFORM.get(source_platform, source_platform)
+
+
 def send_platform_message(conversation, text):
     """
     Unified function to send a message back to the user on whatever
@@ -261,7 +287,7 @@ def send_platform_message(conversation, text):
     if bottle_image_url:
         if conversation.platform == "whatsapp":
             send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
-        elif conversation.platform == "messenger":
+        elif conversation.platform in MESSENGER_PLATFORMS:
             send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
         elif conversation.platform == "instagram":
             # Instagram Messaging sends through the Facebook Page ID, not the IG
@@ -273,7 +299,7 @@ def send_platform_message(conversation, text):
     if text:
         if conversation.platform == "whatsapp":
             send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
-        elif conversation.platform == "messenger":
+        elif conversation.platform in MESSENGER_PLATFORMS:
             send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
         elif conversation.platform == "instagram":
             send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)

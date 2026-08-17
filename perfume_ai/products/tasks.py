@@ -16,6 +16,7 @@ from products.services.meta_service import (
     reply_to_ig_comment,
     send_private_reply,
     fetch_post_content,
+    conversation_platform_for,
 )
 
 logger = logging.getLogger(__name__)
@@ -122,7 +123,14 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         enriched_text = f"{post_context}[تعليق العميل]: {comment_text}"
 
         # ── 3. Generate AI answer ───────────────────────────────────────────
-        conversation, _ = get_or_create_platform_conversation(store, platform, commenter_id)
+        # `platform` identifies where the comment came from and drives the
+        # comment-reply endpoint below. The *conversation* is filed under
+        # conversation_platform_for(platform) so a Facebook comment and a later
+        # Facebook DM from the same person land in one thread — they share a
+        # page-scoped ID — and the bot keeps the comment context.
+        conversation, _ = get_or_create_platform_conversation(
+            store, conversation_platform_for(platform), commenter_id
+        )
         past_messages = get_conversation_messages(conversation)
         history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
         save_message(conversation, "user", comment_text)  # save original comment only
