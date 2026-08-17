@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import inspect
 import json
 from unittest import mock
 
@@ -40,6 +41,11 @@ from products.services.router import (
 from products.services.search_service import (
     MAX_PRODUCTS_IN_CONTEXT,
     search_products,
+)
+from products.tasks import (
+    COMMENT_REPLY_DELAY_RANGE,
+    process_comment_async,
+    process_comment_task,
 )
 
 
@@ -1239,3 +1245,45 @@ class UnknownVersusUnclearTests(TestCase):
 
         self.assertIn("هسأل وأرد عليك", prompt)
         self.assertIn("لو السؤال واضح ومفهوم وأنت مش عارف الإجابة", prompt)
+
+
+class CommentReplyDelayTests(TestCase):
+    """The comment reply delay must not occupy a worker.
+
+    process_comment_task used to time.sleep(20-40) inside the worker. There is no
+    queue routing in this project, so comment tasks share the default queue and
+    the --concurrency=2 pool with customer DMs and WhatsApp messages: two comments
+    held both slots for up to 40s and live conversations queued behind them.
+    """
+
+    def test_the_task_no_longer_sleeps(self):
+        """The regression. A sleeping task holds an execution slot outright."""
+        self.assertNotIn("time.sleep", inspect.getsource(process_comment_task))
+
+    def test_the_delay_is_scheduled_as_a_countdown(self):
+        with mock.patch.object(process_comment_task, "apply_async") as scheduled:
+            process_comment_async(1, "facebook", "C1", "USER9", "بكام؟", "P1")
+
+        scheduled.assert_called_once()
+        countdown = scheduled.call_args.kwargs["countdown"]
+        low, high = COMMENT_REPLY_DELAY_RANGE
+        self.assertGreaterEqual(countdown, low)
+        self.assertLessEqual(countdown, high)
+
+    def test_the_delay_is_short_enough_not_to_crowd_out_messages(self):
+        """countdown frees the execution slot but still holds a broker
+        reservation, and worker_prefetch_multiplier is 1 — so the window has to
+        stay small, not merely move."""
+        low, high = COMMENT_REPLY_DELAY_RANGE
+
+        self.assertGreater(low, 0, "some delay is wanted, replies shouldn't look instant")
+        self.assertLessEqual(high, 10, "long delays crowd out customer messages")
+
+    def test_all_task_arguments_are_forwarded(self):
+        with mock.patch.object(process_comment_task, "apply_async") as scheduled:
+            process_comment_async(7, "instagram", "C2", "USER1", "عندكم مسك؟", "P9")
+
+        self.assertEqual(
+            scheduled.call_args.kwargs["args"],
+            [7, "instagram", "C2", "USER1", "عندكم مسك؟", "P9"],
+        )

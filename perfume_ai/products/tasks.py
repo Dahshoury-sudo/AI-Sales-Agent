@@ -1,10 +1,9 @@
 import logging
 import random
-import time
 
 from celery import shared_task
 
-from products.models import Store, StoreSettings
+from products.models import Store
 from products.services.conversation_service import (
     get_or_create_platform_conversation,
     get_conversation_messages,
@@ -77,25 +76,32 @@ def process_message_async(store_id, platform, sender_id, text):
 
 # ── Comment Auto-Reply ──────────────────────────────────────────────────────
 
+# How long to wait before replying to a comment, so the reply doesn't look
+# instantaneous. Kept short deliberately: the wait used to be 20-40s held inside
+# the worker, and comment tasks share the default queue and the 2-slot pool with
+# customer DMs and WhatsApp messages, so a post drawing a few comments stalled
+# live conversations. The delay is now scheduled rather than slept through (see
+# process_comment_async), and shortened so even the reservation the delayed task
+# holds is brief.
+COMMENT_REPLY_DELAY_RANGE = (5, 8)
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=60 * 5)
 def process_comment_task(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
     """
     Background task to process a Facebook or Instagram comment.
     Features:
-    - Waits random amount of time (20-40s) before replying to feel human
     - Fetches context from the post (caption)
     - Asks AI to generate a reply
     - Picks a random pre-defined public reply message
     - Posts the public reply
     - Sends the AI answer as a private DM
+
+    The humanising delay happens before this task is dispatched, not inside it —
+    see process_comment_async.
     """
     try:
-        # ── 1. Humanize Delay ───────────────────────────────────────────────
-        delay = random.randint(20, 40)
-        logger.info(f"Comment task: waiting {delay}s before replying to comment {comment_id}")
-        time.sleep(delay)
-
-        # ── 2. Load store + settings ────────────────────────────────────────
+        # ── 1. Load store + settings ────────────────────────────────────────
         store = Store.objects.get(id=store_id)
         store_settings = store.settings
         token = store_settings.messenger_access_token or store_settings.meta_access_token
@@ -104,7 +110,7 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
             logger.warning(f"No Messenger token for store {store_id}, skipping comment reply.")
             return
 
-        # ── 3. Fetch post content for context ───────────────────────────────
+        # ── 2. Fetch post content for context ───────────────────────────────
         post_context = ""
         if post_id:
             post_text = fetch_post_content(post_id, token, platform)
@@ -115,7 +121,7 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         # Build the enriched message: post context + customer's comment
         enriched_text = f"{post_context}[تعليق العميل]: {comment_text}"
 
-        # ── 4. Generate AI answer ───────────────────────────────────────────
+        # ── 3. Generate AI answer ───────────────────────────────────────────
         conversation, _ = get_or_create_platform_conversation(store, platform, commenter_id)
         past_messages = get_conversation_messages(conversation)
         history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
@@ -124,22 +130,22 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         ai_reply, context = route(enriched_text, history, store, conversation)
         save_message(conversation, "assistant", ai_reply, internal_context=context)
 
-        # ── 5. Pick a random public reply message ───────────────────────────
+        # ── 4. Pick a random public reply message ───────────────────────────
         raw_messages = store_settings.comment_reply_messages or ""
         variations = [m.strip() for m in raw_messages.split("\n") if m.strip()]
         if not variations:
             variations = ["✅ Check your DM!"]
         public_reply = random.choice(variations)
 
-        # ── 6. Post public reply on the comment ─────────────────────────────
+        # ── 5. Post public reply on the comment ─────────────────────────────
         if platform == "instagram":
             reply_to_ig_comment(comment_id, public_reply, token)
         else:
             reply_to_comment(comment_id, public_reply, token)
-            
+
         logger.info(f"Posted public reply on {platform} comment {comment_id}: '{public_reply}'")
 
-        # ── 7. Send private DM with the AI answer ───────────────────────────
+        # ── 6. Send private DM with the AI answer ───────────────────────────
         # Private replies always go through the Facebook Page endpoint
         send_private_reply(store_settings.facebook_page_id, comment_id, ai_reply, token)
         logger.info(f"Sent private reply for {platform} comment {comment_id}")
@@ -153,6 +159,21 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
 
 
 def process_comment_async(store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
-    """Enqueue process_comment_task — returns 200 to Facebook immediately."""
-    process_comment_task.delay(store_id, platform, comment_id, commenter_id, comment_text, post_id)
+    """Schedule process_comment_task — returns 200 to Facebook immediately.
+
+    The humanising delay is a `countdown` rather than a sleep inside the task, so
+    the worker is free for other work while the reply waits. That matters because
+    comment tasks share the default queue and the 2-slot pool with customer DMs
+    and WhatsApp messages: a sleeping task held a slot outright, and a couple of
+    comments could stall live conversations.
+    """
+    countdown = random.randint(*COMMENT_REPLY_DELAY_RANGE)
+    logger.info(
+        f"Comment {comment_id}: replying in {countdown}s "
+        f"(scheduled, not blocking a worker)."
+    )
+    process_comment_task.apply_async(
+        args=[store_id, platform, comment_id, commenter_id, comment_text, post_id],
+        countdown=countdown,
+    )
 
