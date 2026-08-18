@@ -18,8 +18,31 @@ from products.services.meta_service import (
     fetch_post_content,
     conversation_platform_for,
 )
+from products.services.notification_service import notify_delivery_failure
 
 logger = logging.getLogger(__name__)
+
+
+def _flag_undelivered_reply(conversation):
+    """The bot's reply was written and saved, but the platform refused to deliver it.
+
+    The message stays saved — it is the record of what the bot tried to say, and
+    deleting it would lose that. But the conversation is flagged for a human,
+    because two things are now true and neither is visible otherwise: the customer
+    is still waiting, and the bot's own history contains a turn it never delivered,
+    which will feed the next message's context as though it had.
+
+    No retry: the usual cause is Meta refusing a recipient who has no role on the
+    app while it is in development mode, which fails identically every time.
+    """
+    logger.error(
+        f"Reply for conversation #{conversation.id} ({conversation.platform}) was saved "
+        f"but the platform rejected delivery; flagging for a human."
+    )
+    if not conversation.needs_human:
+        conversation.needs_human = True
+        conversation.save(update_fields=["needs_human"])
+    notify_delivery_failure(conversation)
 
 
 @shared_task(
@@ -54,7 +77,12 @@ def process_incoming_message(self, store_id, platform, sender_id, text):
 
         reply, context = route(text, history, store, conversation)
         save_message(conversation, "assistant", reply, internal_context=context)
-        send_platform_message(conversation, reply)
+
+        delivered = send_platform_message(conversation, reply)
+        # None means nothing needed sending (web conversations); only False is a
+        # delivery failure.
+        if delivered is False:
+            _flag_undelivered_reply(conversation)
 
     except Exception as exc:
         logger.exception(

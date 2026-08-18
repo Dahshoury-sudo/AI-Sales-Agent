@@ -40,20 +40,8 @@ class PublicChatDemoView(TemplateView):
     template_name = 'products/public_chat.html'
 
 
-class HomeView(TemplateView):
-    template_name = 'products/home.html'
-
-
 class InternalDashboardView(TemplateView):
     template_name = 'products/internal_dashboard.html'
-
-
-class TermsView(TemplateView):
-    template_name = 'products/terms.html'
-
-
-class PrivacyView(TemplateView):
-    template_name = 'products/privacy.html'
 
 
 class WidgetTestView(TemplateView):

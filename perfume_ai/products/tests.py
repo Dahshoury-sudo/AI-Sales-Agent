@@ -16,6 +16,7 @@ from products.models import (
     CartItem,
     Conversation,
     Message,
+    Notification,
     Order,
     OrderItem,
     Product,
@@ -58,6 +59,7 @@ from products.tasks import (
     COMMENT_REPLY_DELAY_RANGE,
     process_comment_async,
     process_comment_task,
+    process_incoming_message,
 )
 
 
@@ -1740,3 +1742,91 @@ class HotLookupIndexTests(TestCase):
         index_fields = [index.fields for index in Message._meta.indexes]
 
         self.assertIn(["conversation", "-created_at"], index_fields)
+
+
+class UndeliveredAutoReplyTests(TestCase):
+    """A bot reply the platform refused must not pass as answered.
+
+    process_incoming_message saved the reply and called send_platform_message
+    ignoring the result, so a rejection left the customer waiting while Celery
+    logged success — and the bot's history kept a turn it never delivered, which
+    then fed the next message's context as though it had.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(
+            store=self.store, facebook_page_id="PAGE123",
+            messenger_access_token="tok", meta_access_token="tok",
+        )
+
+    def _incoming(self, delivered):
+        """Run one inbound message with the send outcome forced."""
+        with mock.patch("products.tasks.route", return_value=("رد البوت", "")), \
+             mock.patch("products.tasks.send_platform_message", return_value=delivered):
+            result = process_incoming_message.apply(
+                args=[self.store.id, "messenger", "USER9", "عندكم سوفاج؟"]
+            )
+        self.assertTrue(result.successful(), result.result)
+        return Conversation.objects.get(store=self.store)
+
+    def test_rejected_reply_flags_the_conversation_for_a_human(self):
+        """The regression: nothing surfaced this at all."""
+        conversation = self._incoming(delivered=False)
+
+        self.assertTrue(conversation.needs_human)
+
+    def test_rejected_reply_creates_a_dashboard_notification(self):
+        self._incoming(delivered=False)
+
+        notification = Notification.objects.get(store=self.store)
+        self.assertEqual(notification.type, "delivery_failed")
+        self.assertIn("مستني", notification.message)
+
+    def test_rejected_reply_keeps_the_message_saved(self):
+        """It is the record of what the bot tried to say."""
+        conversation = self._incoming(delivered=False)
+
+        roles = list(conversation.messages.order_by("created_at").values_list("role", flat=True))
+        self.assertEqual(roles, ["user", "assistant"])
+
+    def test_accepted_reply_changes_nothing(self):
+        conversation = self._incoming(delivered=True)
+
+        self.assertFalse(conversation.needs_human)
+        self.assertFalse(Notification.objects.filter(type="delivery_failed").exists())
+
+    def test_nothing_to_send_is_not_a_failure(self):
+        """send_platform_message returns None for web — that is not a rejection."""
+        conversation = self._incoming(delivered=None)
+
+        self.assertFalse(conversation.needs_human)
+        self.assertFalse(Notification.objects.filter(type="delivery_failed").exists())
+
+    def test_delivery_failed_is_a_recognised_notification_type(self):
+        self.assertIn("delivery_failed", dict(Notification.TYPE_CHOICES))
+
+
+class RemovedDeadCodeTests(TestCase):
+    """Guards against the dead code coming back.
+
+    HomeView / TermsView / PrivacyView were unrouted and pointed at templates that
+    do not exist — /, /terms/ and /privacy/ are RedirectViews to the marketing site.
+    BOTTLE_IMAGE_URL became unused once migration 0025 moved the value onto
+    StoreSettings.bottle_image_url, where it belongs per-store.
+    """
+
+    def test_unrouted_template_views_are_gone(self):
+        import products.views as views
+
+        for name in ("HomeView", "TermsView", "PrivacyView"):
+            self.assertFalse(
+                hasattr(views, name),
+                f"{name} is unrouted and its template does not exist",
+            )
+
+    def test_global_bottle_image_setting_is_gone(self):
+        """It is per-store now; a global value showed one store's packaging to all."""
+        from django.conf import settings as django_settings
+
+        self.assertFalse(hasattr(django_settings, "BOTTLE_IMAGE_URL"))
