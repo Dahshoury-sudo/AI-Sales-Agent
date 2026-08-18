@@ -338,6 +338,7 @@ class Notification(models.Model):
         ("handoff", "Human Handoff Required"),
         ("new_order", "New Order"),
         ("low_stock", "Low Stock"),
+        ("delivery_failed", "Reply Not Delivered"),
     )
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="notifications")
