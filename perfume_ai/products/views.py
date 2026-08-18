@@ -449,14 +449,33 @@ class HandoffReplyAPIView(APIView):
             conv.save()
             
         save_message(conv, "assistant", message)
-        
+
         # Send reply back to the customer on their platform
         from products.services.meta_service import send_platform_message
         try:
-            send_platform_message(conv, message)
+            delivered = send_platform_message(conv, message)
         except Exception as e:
             logger.exception(f"Failed to send handoff reply to {conv.platform}: {e}")
-        
+            delivered = False
+
+        # delivered is None for web conversations, where the widget polls the
+        # thread and saving IS delivery. Only False means the customer missed it.
+        if delivered is False:
+            logger.error(
+                f"Handoff reply for conversation #{conv.id} ({conv.platform}) was "
+                f"saved but the platform rejected it."
+            )
+            return Response(
+                {
+                    "status": "not_delivered",
+                    "error": (
+                        "الرسالة اتسجلت في المحادثة بس المنصة رفضت توصيلها للعميل. "
+                        "راجع الـ logs وجرب تاني، أو تواصل مع العميل بطريقة تانية."
+                    ),
+                },
+                status=502,
+            )
+
         return Response({"status": "Message sent"})
 
 class HandoffResolveAPIView(APIView):

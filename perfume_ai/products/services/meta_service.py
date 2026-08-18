@@ -246,15 +246,28 @@ def send_platform_message(conversation, text):
     """
     Unified function to send a message back to the user on whatever
     platform they're chatting from. Does nothing for web conversations.
+
+    Returns:
+        True  — the platform accepted the message.
+        False — the platform rejected it, or there is no way to send it. The
+                customer did NOT receive it.
+        None  — nothing needed sending (web conversation, or no text left after
+                stripping the image marker).
+
+    Callers must distinguish False from None: only False means a delivery failure.
+    The individual send_* helpers swallow their exceptions and return None on
+    failure, so without this return value a rejected message was indistinguishable
+    from a delivered one — which is how the handoff dashboard came to report
+    "Message sent" for messages Meta had refused.
     """
     if conversation.platform == "web":
-        return
+        return None
 
     try:
         store_settings = conversation.store.settings
     except Exception:
         logger.error(f"No StoreSettings found for store {conversation.store_id}")
-        return
+        return False
 
     sender_id = conversation.platform_sender_id
 
@@ -268,7 +281,7 @@ def send_platform_message(conversation, text):
 
     if not token or not sender_id:
         logger.warning(f"Missing token or sender_id for conversation {conversation.id}")
-        return
+        return False
 
     # Check for the special image token
     bottle_image_url = ""
@@ -284,25 +297,38 @@ def send_platform_message(conversation, text):
             )
 
     # Send the image first if requested
+    image_accepted = None
     if bottle_image_url:
         if conversation.platform == "whatsapp":
-            send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
+            result = send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
         elif conversation.platform in MESSENGER_PLATFORMS:
-            send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+            result = send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
         elif conversation.platform == "instagram":
             # Instagram Messaging sends through the Facebook Page ID, not the IG
             # account ID — same as send_instagram_message below. Passing the IG
             # account ID here meant image sends failed.
-            send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+            result = send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+        else:
+            result = None
+        image_accepted = result is not None
 
     # Only send text if there is text left after removing the token
+    text_accepted = None
     if text:
         if conversation.platform == "whatsapp":
-            send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
+            result = send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
         elif conversation.platform in MESSENGER_PLATFORMS:
-            send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
+            result = send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
         elif conversation.platform == "instagram":
-            send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
+            result = send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
         else:
             logger.warning(f"Unknown platform '{conversation.platform}' for conversation {conversation.id}")
+            result = None
+        text_accepted = result is not None
+
+    # The text carries the message, so it decides the outcome. Fall back to the
+    # image result for the image-only case.
+    if text_accepted is not None:
+        return text_accepted
+    return image_accepted
 

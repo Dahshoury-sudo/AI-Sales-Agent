@@ -203,6 +203,8 @@ Rules:
    For each product extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل).
    CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
 6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
+7. "cart_cleared": true ONLY IF the customer's latest message asks to remove or drop product(s) AND that leaves the cart EMPTY (e.g. the saved cart held one perfume and they said "شيله" or "مش عايزه"). If they removed one perfume out of several, return false and simply omit that perfume from "products". If they said nothing about removing anything, return false.
+   ⚠️ This matters: an empty "products" list normally means the extractor lost track, and the saved cart is restored. "cart_cleared": true is how you say the cart is empty ON PURPOSE.
 
 Return valid JSON in this exact format:
 {
@@ -213,7 +215,8 @@ Return valid JSON in this exact format:
     "products": [
         {"name": "...", "quantity": null or integer, "volume": null or integer, "bottle_type": null or "normal" or "original"}
     ],
-    "is_confirmed": false
+    "is_confirmed": false,
+    "cart_cleared": false
 }
 """ + _cart_context(cart)
 
@@ -236,8 +239,23 @@ Return valid JSON in this exact format:
     address = data.get("shipping_address") or cart.shipping_address or None
     products_data = data.get("products") or []
     is_confirmed = data.get("is_confirmed", False)
+    cart_cleared = bool(data.get("cart_cleared"))
 
     _save_cart_details(cart, name, phone, secondary_phone, address)
+
+    if cart_cleared:
+        # The customer emptied the cart on purpose, so the restore below must not
+        # put it back. Without this flag an empty product list was always read as
+        # "the extractor lost track", and removing your only perfume re-added it.
+        removed = cart.items.count()
+        cart.items.all().delete()
+        products_data = []
+        if removed:
+            logger.info(
+                f"Cart cleared on request for conversation #{conversation.id} "
+                f"({removed} item(s) removed)."
+            )
+            return "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟", ""
 
     # A single bad extraction must not empty a cart the customer already built.
     if not products_data and cart.items.exists():

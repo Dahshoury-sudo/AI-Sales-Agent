@@ -22,13 +22,15 @@ class StoreSettings(models.Model):
     whatsapp_number = models.CharField(max_length=50, blank=True)
     
     # Meta Integration Credentials (encrypted at rest)
-    meta_verify_token = models.CharField(max_length=100, blank=True, help_text="Token for webhook verification")
+    # Indexed: every inbound webhook resolves the store by one of these before it
+    # can do anything else, so they are the hottest lookups in the system.
+    meta_verify_token = models.CharField(max_length=100, blank=True, db_index=True, help_text="Token for webhook verification")
     meta_access_token = EncryptedTextField(blank=True, help_text="WhatsApp Graph API Access Token")
     messenger_access_token = EncryptedTextField(blank=True, help_text="Messenger & Instagram Page Access Token")
     meta_app_secret = EncryptedCharField(max_length=500, blank=True, help_text="App Secret for signature validation")
-    facebook_page_id = models.CharField(max_length=100, blank=True)
-    instagram_account_id = models.CharField(max_length=100, blank=True)
-    whatsapp_phone_number_id = models.CharField(max_length=100, blank=True)
+    facebook_page_id = models.CharField(max_length=100, blank=True, db_index=True)
+    instagram_account_id = models.CharField(max_length=100, blank=True, db_index=True)
+    whatsapp_phone_number_id = models.CharField(max_length=100, blank=True, db_index=True)
 
     # Payment / deposit block appended to the order confirmation message.
     # Per-store because it carries the store's own payment account: the text used
@@ -181,6 +183,18 @@ class Conversation(models.Model):
     needs_human = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            # get_or_create_platform_conversation filters on exactly these three
+            # and takes the newest — once per inbound message on every platform.
+            models.Index(
+                fields=["store", "platform", "platform_sender_id", "-created_at"],
+                name="conv_lookup_idx",
+            ),
+            # The handoff dashboard lists open conversations per store.
+            models.Index(fields=["store", "needs_human"], name="conv_handoff_idx"),
+        ]
+
     def __str__(self):
         return f"Conversation #{self.id}"
 
@@ -203,6 +217,13 @@ class Message(models.Model):
     internal_context = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            # get_conversation_messages orders by -created_at within one
+            # conversation and slices — the history fetch on every single turn.
+            models.Index(fields=["conversation", "-created_at"], name="msg_history_idx"),
+        ]
 
     def __str__(self):
         return f"{self.role} - {self.created_at}"

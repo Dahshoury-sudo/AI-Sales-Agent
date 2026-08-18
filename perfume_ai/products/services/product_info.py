@@ -1,4 +1,5 @@
 from .product_resolver import resolve_products
+from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from django.db.models import Q
@@ -10,66 +11,7 @@ def get_product_info(message, history=None, store=None):
 
     if products:
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
-        for product in products:
-            variants = list(product.variants.all())
-            available_variants = []
-            out_of_stock_variants = []
-            all_out_of_stock = True
-            for v in variants:
-                if v.bottle_type == 'normal':
-                    req_oil = (v.volume * product.concentration_percentage) / 100
-                    is_available = product.oil_stock_grams >= req_oil
-                    if is_available:
-                        available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP")
-                        all_out_of_stock = False
-                    else:
-                        out_of_stock_variants.append(f"الـ {v.volume} ملي")
-                elif v.bottle_type == 'original':
-                    stock_num = v.stock or 0
-                    is_available = stock_num > 0
-                    if is_available:
-                        status = f" ({stock_num} زجاجة فقط)" if stock_num <= 3 else ""
-                        available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP{status}")
-                        all_out_of_stock = False
-                    else:
-                        out_of_stock_variants.append(f"زجاجة أوريجينال {v.volume} ملي")
-            
-            avail_str = "\n".join(available_variants) if available_variants else "لا توجد أحجام متوفرة حالياً"
-            oos_str = "، ".join(out_of_stock_variants) if out_of_stock_variants else "لا يوجد"
-            
-            stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-            is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
-            brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
-
-            has_original_bottle = any(v.bottle_type == 'original' for v in variants)
-            if has_original_bottle:
-                original_bottle_status = "Available (see sizes below)"
-            elif is_custom_blend:
-                original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
-            else:
-                original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({product.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
-
-            context += f"""
-Name (الاسم الصحيح): {product.name}
-Brand: {brand_display}
-Stock Status: {stock_status}
-Original Bottle: {original_bottle_status}
-Available Sizes & Prices:
-{avail_str}
-Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
-{oos_str}
-Gender: {product.gender}
-Perfume Type: {product.get_perfume_type_display() if product.perfume_type else 'غير محدد'}
-Season: {product.season}
-Occasion: {product.occasion}
-Longevity: {product.longevity}
-Projection: {product.projection}
-Top Notes: {product.top_notes}
-Middle Notes: {product.middle_notes}
-Base Notes: {product.base_notes}
-Description: {product.description}
------------------------
-"""
+        context += format_products(products)
         instructions = """
 ═══ تعليمات صارمة ═══
 1. 🔴 استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل في كتابته.
@@ -96,38 +38,7 @@ Description: {product.description}
         context = "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives.exists():
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
-            for alt in alternatives:
-                variants = list(alt.variants.all())
-                available_variants = []
-                for v in variants:
-                    if v.bottle_type == 'normal' and alt.oil_stock_grams >= (v.volume * alt.concentration_percentage) / 100:
-                        available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP")
-                    elif v.bottle_type == 'original' and (v.stock or 0) > 0:
-                        available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP")
-                
-                variants_str = "\n".join(available_variants)
-                is_custom_blend = bool(alt.store and alt.brand.name.lower() == alt.store.name.lower())
-                brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else alt.brand.name
-
-                has_original_bottle = any(v.bottle_type == 'original' for v in variants)
-                if has_original_bottle:
-                    original_bottle_status = "Available (see sizes below)"
-                elif is_custom_blend:
-                    original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
-                else:
-                    original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({alt.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
-
-                context += f"""
-Name (الاسم الصحيح): {alt.name}
-Brand: {brand_display}
-Original Bottle: {original_bottle_status}
-Available Sizes & Prices:
-{variants_str}
-Gender: {alt.gender}
-Perfume Type: {alt.get_perfume_type_display() if alt.perfume_type else 'غير محدد'}
-Description: {alt.description}
------------------------
-"""
+            context += format_products(alternatives, brief=True)
         
         instructions = """
 ═══ تعليمات ═══

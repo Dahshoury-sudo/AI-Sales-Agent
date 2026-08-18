@@ -1,16 +1,10 @@
 import re
 from decimal import Decimal, InvalidOperation
-from itertools import islice
 
 from .client import chat
 from .prompts import get_system_prompt
+from ..product_formatting import format_products
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
-
-
-# A size priced just over the stated budget is still worth offering as an upsell —
-# budget_note() below asks for exactly that. Past this multiple it is far enough
-# out that offering it reads as not having listened to the customer.
-BUDGET_TOLERANCE = Decimal("1.2")
 
 
 def _coerce_budget(value):
@@ -30,87 +24,13 @@ def _coerce_budget(value):
     return budget if budget > 0 else None
 
 
-def _budget_label(price, max_price):
-    """Tag one price against the customer's budget.
-
-    Without this the model sees a bare list of sizes and prices and cannot tell
-    which are affordable, so a customer who said 500 could be shown a 3800 bottle
-    as though it were a normal option.
-    """
-    if max_price is None:
-        return ""
-    if price <= max_price:
-        return " ✅ (داخل الميزانية)"
-    if price <= max_price * BUDGET_TOLERANCE:
-        return " ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)"
-    return " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)"
-
-
 def _format_products(products, max_price=None):
-    context = ""
-    # search_products already applies the LIMIT; this second cap only bounds the
-    # prompt, so a caller passing an unsliced queryset can't blow up the request.
-    for product in islice(products, MAX_PRODUCTS_IN_CONTEXT):
-        variants = list(product.variants.all())
-        available_variants = []
-        out_of_stock_variants = []
-        all_out_of_stock = True
-        for v in variants:
-            if v.bottle_type == 'normal':
-                req_oil = (v.volume * product.concentration_percentage) / 100
-                is_available = product.oil_stock_grams >= req_oil
-                if is_available:
-                    available_variants.append(f"- الـ {v.volume} ملي: {v.price} EGP{_budget_label(v.price, max_price)}")
-                    all_out_of_stock = False
-                else:
-                    out_of_stock_variants.append(f"الـ {v.volume} ملي")
-            elif v.bottle_type == 'original':
-                stock_num = v.stock or 0
-                is_available = stock_num > 0
-                if is_available:
-                    status = f" ({stock_num} زجاجة فقط)" if stock_num <= 3 else ""
-                    available_variants.append(f"- زجاجة أوريجينال {v.volume} ملي: {v.price} EGP{status}{_budget_label(v.price, max_price)}")
-                    all_out_of_stock = False
-                else:
-                    out_of_stock_variants.append(f"زجاجة أوريجينال {v.volume} ملي")
-        
-        avail_str = "\n".join(available_variants) if available_variants else "لا توجد أحجام متوفرة حالياً"
-        oos_str = "، ".join(out_of_stock_variants) if out_of_stock_variants else "لا يوجد"
-        
-        stock_status = "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if all_out_of_stock else "✅ متوفر"
-        is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
-        brand_display = "⭐ عطر تركيب حصري خاص بالمتجر" if is_custom_blend else product.brand.name
+    """Thin wrapper over the shared renderer, capped for prompt size.
 
-        has_original_bottle = any(v.bottle_type == 'original' for v in variants)
-        if has_original_bottle:
-            original_bottle_status = "Available (see sizes below)"
-        elif is_custom_blend:
-            original_bottle_status = 'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
-        else:
-            original_bottle_status = f'NOT AVAILABLE — this is a GLOBAL BRAND ({product.brand.name}) perfume, NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". ❌ DO NOT say it is store-exclusive or حصري.'
-
-        context += f"""
-Name (الاسم الصحيح): {product.name}
-Brand: {brand_display}
-Stock Status: {stock_status}
-Original Bottle: {original_bottle_status}
-Available Sizes & Prices:
-{avail_str}
-Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
-{oos_str}
-Gender: {product.gender}
-Season: {product.season}
-Occasion: {product.occasion}
-Longevity: {product.longevity}
-Projection: {product.projection}
-Top Notes: {product.top_notes}
-Middle Notes: {product.middle_notes}
-Base Notes: {product.base_notes}
-Description: {product.description}
-
--------------------------
-"""
-    return context
+    search_products already applies the LIMIT; the cap here only bounds the
+    prompt, so a caller passing an unsliced queryset can't blow up the request.
+    """
+    return format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
 
 
 def _get_previously_recommended(history):

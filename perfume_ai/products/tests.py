@@ -15,6 +15,7 @@ from products.models import (
     Cart,
     CartItem,
     Conversation,
+    Message,
     Order,
     OrderItem,
     Product,
@@ -23,12 +24,16 @@ from products.models import (
     StoreSettings,
 )
 from products.services.ai.prompts import get_system_prompt
-from products.services.ai.recommendation import _coerce_budget, _format_products
+from products.services.ai.recommendation import (
+    _coerce_budget,
+    _format_products,
+)
 from products.services.conversation_service import get_or_create_platform_conversation
 from products.services.meta_service import (
     conversation_platform_for,
     send_platform_message,
 )
+from products.services.product_formatting import format_products
 from products.services.product_info import get_product_info
 from products.services.order_service import (
     PAYMENT_FALLBACK,
@@ -1458,3 +1463,280 @@ class CommentAndDMShareOneConversationTests(TestCase):
 
         self.assertTrue(facebook_reply.called)
         self.assertFalse(instagram_reply.called)
+
+
+class DeliveryOutcomeTests(TestCase):
+    """A rejected send must never look like a delivered one.
+
+    The send_* helpers catch their errors, log, and return None. Nothing checked,
+    so the handoff dashboard answered "Message sent" whether or not the platform
+    accepted the message — its try/except could never fire, because the helpers
+    swallow everything. Meta rejects any recipient without an app role while the
+    app is in development mode, so delivery is partial and silent.
+    """
+
+    def setUp(self):
+        self.owner = User.objects.create_user("owner2", "owner2@example.com", "pw")
+        self.store = Store.objects.create(name="Perfamix Test", owner=self.owner)
+        StoreSettings.objects.create(
+            store=self.store, facebook_page_id="PAGE123",
+            messenger_access_token="tok", meta_access_token="tok",
+        )
+        self.client = APIClient()
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(RefreshToken.for_user(self.owner).access_token)
+        )
+
+    def _conversation(self, platform="messenger"):
+        return Conversation.objects.create(
+            store=self.store, platform=platform,
+            platform_sender_id="USER9", needs_human=True,
+        )
+
+    def test_accepted_send_reports_true(self):
+        with mock.patch(
+            "products.services.meta_service.send_messenger_message",
+            return_value={"message_id": "m1"},
+        ):
+            self.assertIs(send_platform_message(self._conversation(), "اهلا"), True)
+
+    def test_rejected_send_reports_false(self):
+        """The helpers return None on failure; that must surface as False."""
+        with mock.patch(
+            "products.services.meta_service.send_messenger_message", return_value=None
+        ):
+            self.assertIs(send_platform_message(self._conversation(), "اهلا"), False)
+
+    def test_web_reports_none_not_false(self):
+        """Web needs no send at all — that is not a delivery failure."""
+        self.assertIsNone(send_platform_message(self._conversation("web"), "اهلا"))
+
+    def test_missing_token_reports_false(self):
+        settings_obj = self.store.settings
+        settings_obj.messenger_access_token = ""
+        settings_obj.meta_access_token = ""
+        settings_obj.save()
+
+        self.assertIs(send_platform_message(self._conversation(), "اهلا"), False)
+
+    def test_dashboard_reports_failure_instead_of_message_sent(self):
+        """The regression: this returned 200 {"status": "Message sent"}."""
+        conversation = self._conversation()
+        with mock.patch(
+            "products.services.meta_service.send_messenger_message", return_value=None
+        ):
+            response = self.client.post(
+                f"/api/handoff/conversations/{conversation.id}/reply/",
+                {"message": "اهلا يا فندم"}, format="json",
+            )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertEqual(response.json()["status"], "not_delivered")
+        # Still saved, so the owner can see what they tried to send.
+        self.assertEqual(conversation.messages.count(), 1)
+
+    def test_dashboard_reports_success_when_accepted(self):
+        conversation = self._conversation()
+        with mock.patch(
+            "products.services.meta_service.send_messenger_message",
+            return_value={"message_id": "m1"},
+        ):
+            response = self.client.post(
+                f"/api/handoff/conversations/{conversation.id}/reply/",
+                {"message": "اهلا يا فندم"}, format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Message sent")
+
+    def test_web_conversations_are_reported_as_sent(self):
+        """Saving IS delivery for web — the widget polls the thread."""
+        conversation = self._conversation("web")
+        response = self.client.post(
+            f"/api/handoff/conversations/{conversation.id}/reply/",
+            {"message": "اهلا يا فندم"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+
+class CartClearedTests(TestCase):
+    """Removing your only perfume must not put it straight back.
+
+    The cart-restore fallback treats an empty product list as "the extractor lost
+    track" and reinstates the saved items — which is what makes the cart survive a
+    truncated history. It could not tell that apart from a deliberate removal, so
+    "شيله" on a single-item cart re-added the item. The extractor now says which
+    one it meant via cart_cleared.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    ONE_PERFUME = [{"name": "Dior Sauvage", "quantity": 1, "volume": 50, "bottle_type": "normal"}]
+
+    def _turn(self, extracted):
+        payload = {
+            "customer_name": None, "customer_phone": None,
+            "customer_secondary_phone": None, "shipping_address": None,
+            "products": [], "is_confirmed": False, "cart_cleared": False,
+        }
+        payload.update(extracted)
+        with mock.patch(
+            "products.services.order_service.chat", return_value=json.dumps(payload)
+        ):
+            return handle_order("...", [], self.store, self.conversation)
+
+    def test_clearing_the_cart_empties_it(self):
+        """The regression: the item used to come straight back."""
+        self._turn({"products": self.ONE_PERFUME})
+        self.assertEqual(get_cart(self.conversation).items.count(), 1)
+
+        reply, _ = self._turn({"products": [], "cart_cleared": True})
+
+        self.assertEqual(get_cart(self.conversation).items.count(), 0)
+        self.assertIn("شلت الطلب", reply)
+
+    def test_an_empty_list_without_the_flag_still_restores_the_cart(self):
+        """The truncation fallback must keep working — that's why it exists."""
+        self._turn({"products": self.ONE_PERFUME})
+
+        self._turn({"products": [], "cart_cleared": False})
+
+        self.assertEqual(get_cart(self.conversation).items.count(), 1)
+
+    def test_clearing_takes_no_stock(self):
+        self._turn({"products": self.ONE_PERFUME})
+        self._turn({"products": [], "cart_cleared": True})
+
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.oil_stock_grams, 1000)
+        self.assertFalse(Order.objects.exists())
+
+
+class UnifiedProductFormattingTests(TestCase):
+    """One renderer for product data, instead of four copies.
+
+    The block was duplicated across the recommendation prompt, both branches of
+    product_info, and the comparison prompt — and had drifted: only product_info
+    told the model a perfume's type, and comparison used a bare "Name:" instead of
+    "Name (الاسم الصحيح):", the label that tells it to use the database spelling.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", perfume_type="western", season="All Seasons",
+            occasion="Casual", longevity="8 hours", projection="Strong",
+            top_notes="Bergamot", middle_notes="Pepper", base_notes="Ambroxan",
+            description="Fresh spicy", oil_stock_grams=20, concentration_percentage=30,
+        )
+        # 50ml at 30% needs 15g of oil, so it is available from the 20g in stock.
+        ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        # 200ml needs 60g, which the 20g in stock cannot cover — out of stock.
+        ProductVariant.objects.create(
+            product=self.product, volume=200, price=900, bottle_type="normal"
+        )
+        self.queryset = Product.objects.filter(pk=self.product.pk)
+
+    def test_every_field_is_rendered(self):
+        context = format_products(self.queryset)
+
+        for field in (
+            "Name (الاسم الصحيح): Dior Sauvage", "Brand: Dior", "Stock Status:",
+            "Original Bottle:", "Available Sizes & Prices:", "Out of Stock Sizes",
+            "Gender: male", "Perfume Type:", "Season: All Seasons", "Occasion: Casual",
+            "Longevity: 8 hours", "Projection: Strong", "Top Notes: Bergamot",
+            "Middle Notes: Pepper", "Base Notes: Ambroxan", "Description: Fresh spicy",
+        ):
+            self.assertIn(field, context)
+
+    def test_perfume_type_is_no_longer_missing_from_recommendations(self):
+        """The drift: recommendation and comparison omitted it."""
+        self.assertIn("Perfume Type: عطور غربية", _format_products(self.queryset))
+
+    def test_comparison_uses_the_same_name_label(self):
+        """It used a bare "Name:", losing the use-the-database-spelling hint."""
+        context = format_products(self.queryset)
+
+        self.assertIn("Name (الاسم الصحيح):", context)
+
+    def test_out_of_stock_sizes_are_separated_from_available_ones(self):
+        context = format_products(self.queryset)
+        available_block = context.split("Out of Stock Sizes")[0]
+
+        self.assertIn("50 ملي", available_block)
+        self.assertNotIn("200 ملي", available_block)
+        self.assertIn("200 ملي", context.split("Out of Stock Sizes")[1])
+
+    def test_brief_form_drops_the_detail_fields(self):
+        """Used for alternatives, where the model only needs to name something."""
+        context = format_products(self.queryset, brief=True)
+
+        self.assertIn("Name (الاسم الصحيح):", context)
+        self.assertIn("Perfume Type:", context)
+        for omitted in ("Stock Status:", "Out of Stock Sizes", "Top Notes:", "Season:"):
+            self.assertNotIn(omitted, context)
+
+    def test_budget_labels_only_appear_when_a_budget_is_given(self):
+        self.assertNotIn("داخل الميزانية", format_products(self.queryset))
+        self.assertIn("داخل الميزانية", format_products(self.queryset, max_price=500))
+
+    def test_the_limit_caps_the_number_of_products(self):
+        for i in range(5):
+            product = Product.objects.create(
+                store=self.store, brand=self.brand, name=f"Extra {i}",
+                gender="male", oil_stock_grams=1000, concentration_percentage=30,
+            )
+            ProductVariant.objects.create(
+                product=product, volume=50, price=400, bottle_type="normal"
+            )
+
+        context = format_products(Product.objects.filter(store=self.store), limit=2)
+
+        self.assertEqual(context.count("Name (الاسم الصحيح):"), 2)
+
+
+class HotLookupIndexTests(TestCase):
+    """Indexes on the columns every inbound message touches."""
+
+    def test_webhook_store_lookup_columns_are_indexed(self):
+        indexed = {
+            field.name
+            for field in StoreSettings._meta.get_fields()
+            if getattr(field, "db_index", False)
+        }
+
+        for column in (
+            "facebook_page_id", "instagram_account_id",
+            "whatsapp_phone_number_id", "meta_verify_token",
+        ):
+            self.assertIn(column, indexed, f"{column} is looked up on every webhook")
+
+    def test_conversation_lookup_index_matches_the_query(self):
+        """get_or_create_platform_conversation filters on these three and takes
+        the newest."""
+        index_fields = [index.fields for index in Conversation._meta.indexes]
+
+        self.assertIn(
+            ["store", "platform", "platform_sender_id", "-created_at"], index_fields
+        )
+
+    def test_message_history_index_matches_the_query(self):
+        """get_conversation_messages orders by -created_at within a conversation."""
+        index_fields = [index.fields for index in Message._meta.indexes]
+
+        self.assertIn(["conversation", "-created_at"], index_fields)
