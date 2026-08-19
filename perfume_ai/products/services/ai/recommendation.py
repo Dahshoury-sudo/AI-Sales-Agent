@@ -154,5 +154,5 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         "content": user_content,
     })
 
-    response = chat(messages)
+    response = chat(messages, profile="converse")
     return response, context

@@ -61,7 +61,7 @@ Rules:
         "content": message,
     })
 
-    response = chat(messages, response_format={"type": "json_object"})
+    response = chat(messages, profile="extract", response_format={"type": "json_object"})
 
     try:
         return json.loads(response)

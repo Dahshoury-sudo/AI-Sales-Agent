@@ -226,7 +226,7 @@ Return valid JSON in this exact format:
     messages.append({"role": "user", "content": message})
 
     try:
-        response = chat(messages, response_format={"type": "json_object"})
+        response = chat(messages, profile="reason", response_format={"type": "json_object"})
         data = json.loads(response)
     except Exception:
         return "مش فاهم تفاصيل الطلب كويس يا فندم. ممكن تقولي تاني عايز تطلب ايه بالظبط؟", ""

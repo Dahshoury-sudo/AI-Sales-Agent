@@ -52,7 +52,7 @@ Return ONLY valid JSON:
     response = chat([
         {"role": "system", "content": prompt},
         {"role": "user", "content": f"Conversation History:\n{history_text}"}
-    ], response_format={"type": "json_object"})
+    ], profile="extract", response_format={"type": "json_object"})
     
     try:
         data = json.loads(response)

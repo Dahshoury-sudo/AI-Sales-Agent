@@ -42,4 +42,4 @@ def handle_general(message, history=None, store=None):
         "content": message
     })
 
-    return chat(messages), ""
+    return chat(messages, profile="converse"), ""

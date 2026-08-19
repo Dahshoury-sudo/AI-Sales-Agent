@@ -68,7 +68,7 @@ CRITICAL — MUSK/MIX PRODUCT vs NOTE RULE (VERY IMPORTANT):
     })
 
     try:
-        response = chat(messages, response_format={"type": "json_object"})
+        response = chat(messages, profile="extract", response_format={"type": "json_object"})
         data = json.loads(response)
         return data.get("intent", "").strip().lower()
     except Exception:

@@ -50,6 +50,11 @@ CACHES = {
 OPENAI_API_KEY = OPENAI_API_KEY or 'test-key-unused'  # noqa: F405
 OPENAI_MODEL = OPENAI_MODEL or 'gpt-4.1-mini'  # noqa: F405
 
+# Pinned off regardless of the developer's .env, so the suite is deterministic
+# and never depends on a reasoning model being reachable. Tests that exercise
+# the "reason" profile set it with override_settings.
+OPENAI_SMART_MODEL = None
+
 # Keep test output clean and fast.
 DEBUG = False
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

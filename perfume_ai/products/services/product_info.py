@@ -77,5 +77,5 @@ def get_product_info(message, history=None, store=None):
 """
     })
 
-    response = chat(messages)
+    response = chat(messages, profile="converse")
     return response, context

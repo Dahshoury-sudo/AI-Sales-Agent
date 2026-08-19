@@ -23,7 +23,7 @@ Return ONLY valid JSON in this format:
     messages_for_extract.append({"role": "user", "content": message})
 
     try:
-        response = chat(messages_for_extract, response_format={"type": "json_object"})
+        response = chat(messages_for_extract, profile="extract", response_format={"type": "json_object"})
         
         data = json.loads(response)
         p1_name = data.get("perfume_1", "")
@@ -75,5 +75,5 @@ Return ONLY valid JSON in this format:
 """
     })
 
-    response = chat(messages)
+    response = chat(messages, profile="converse")
     return response, context

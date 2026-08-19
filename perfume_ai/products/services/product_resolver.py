@@ -37,7 +37,7 @@ Output format MUST be valid JSON:
             messages.extend(history)
         messages.append({"role": "user", "content": message})
         
-        response = chat(messages, response_format={"type": "json_object"})
+        response = chat(messages, profile="extract", response_format={"type": "json_object"})
         
         data = json.loads(response)
         p_names = data.get("perfumes", [])

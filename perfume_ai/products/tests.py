@@ -5,6 +5,7 @@ import json
 from unittest import mock
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -24,18 +25,24 @@ from products.models import (
     Store,
     StoreSettings,
 )
+from products.services.ai import client as ai_client
+from products.services.ai.classifier import classify
+from products.services.ai.intent import extract_intent
 from products.services.ai.prompts import get_system_prompt
 from products.services.ai.recommendation import (
     _coerce_budget,
     _format_products,
 )
+from products.services.comparison_service import compare_products
 from products.services.conversation_service import get_or_create_platform_conversation
+from products.services.general_service import handle_general
 from products.services.meta_service import (
     conversation_platform_for,
     send_platform_message,
 )
 from products.services.product_formatting import format_products
 from products.services.product_info import get_product_info
+from products.services.product_resolver import resolve_products
 from products.services.order_service import (
     PAYMENT_FALLBACK,
     _cart_context,
@@ -1830,3 +1837,150 @@ class RemovedDeadCodeTests(TestCase):
         from django.conf import settings as django_settings
 
         self.assertFalse(hasattr(django_settings, "BOTTLE_IMAGE_URL"))
+
+
+class ChatProfileTests(TestCase):
+    """chat() resolves model and sampling from named profiles.
+
+    OPENAI_SMART_MODEL was configured in .env but read nowhere, and the single
+    OPENAI_TEMPERATURE (0.3) was applied to every call including the JSON
+    extractors. Profiles put that strategy in one dict so the ten call sites
+    declare intent instead of implementation.
+    """
+
+    def _request_kwargs(self, profile):
+        """Call chat() with a stubbed transport and return the request kwargs."""
+        response = mock.Mock()
+        response.choices = [mock.Mock(message=mock.Mock(content="ok"))]
+
+        with mock.patch(
+            "products.services.ai.client.client.chat.completions.create",
+            return_value=response,
+        ) as create:
+            ai_client.chat([{"role": "user", "content": "hi"}], profile=profile)
+
+        return create.call_args.kwargs
+
+    def test_extract_profile_is_deterministic(self):
+        """0.3 on a JSON extractor makes identical input yield different routes."""
+        kwargs = self._request_kwargs("extract")
+
+        self.assertEqual(kwargs["model"], settings.OPENAI_MODEL)
+        self.assertEqual(kwargs["temperature"], 0)
+
+    @override_settings(OPENAI_TEMPERATURE=0.3)
+    def test_converse_profile_keeps_the_tuned_temperature(self):
+        kwargs = self._request_kwargs("converse")
+
+        self.assertEqual(kwargs["model"], settings.OPENAI_MODEL)
+        self.assertEqual(kwargs["temperature"], 0.3)
+
+    @override_settings(OPENAI_SMART_MODEL="gpt-5-mini")
+    def test_reason_profile_sends_no_temperature(self):
+        """The reasoning family accepts only its default and 400s on any value."""
+        kwargs = self._request_kwargs("reason")
+
+        self.assertEqual(kwargs["model"], "gpt-5-mini")
+        self.assertNotIn("temperature", kwargs)
+
+    @override_settings(OPENAI_SMART_MODEL=None)
+    def test_reason_falls_back_to_the_base_model_at_temperature_zero(self):
+        """Unset must not crash, and must not inherit the API default of 1.0 —
+        this profile decides whether an order is written and stock decremented."""
+        kwargs = self._request_kwargs("reason")
+
+        self.assertEqual(kwargs["model"], settings.OPENAI_MODEL)
+        self.assertEqual(kwargs["temperature"], 0)
+
+    def test_response_format_still_passes_through(self):
+        kwargs = self._request_kwargs("extract")
+        self.assertNotIn("response_format", kwargs)
+
+        response = mock.Mock()
+        response.choices = [mock.Mock(message=mock.Mock(content="{}"))]
+        with mock.patch(
+            "products.services.ai.client.client.chat.completions.create",
+            return_value=response,
+        ) as create:
+            ai_client.chat([], profile="extract", response_format={"type": "json_object"})
+
+        self.assertEqual(create.call_args.kwargs["response_format"], {"type": "json_object"})
+
+    def test_unknown_profile_raises_rather_than_silently_defaulting(self):
+        with self.assertRaises(ValueError):
+            ai_client.chat([], profile="smart")
+
+
+class CallSiteProfileTests(TestCase):
+    """Each call site asks for the profile matching what it actually does."""
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+        # Nothing here may reach the network. Patching one module's chat is not
+        # enough: several entry points fan out to services that call chat()
+        # through their own module (get_product_info -> resolve_products,
+        # compare_products -> resolve_product), so the transport is stubbed too.
+        response = mock.Mock()
+        response.choices = [mock.Mock(message=mock.Mock(content="{}"))]
+        guard = mock.patch(
+            "products.services.ai.client.client.chat.completions.create",
+            return_value=response,
+        )
+        guard.start()
+        self.addCleanup(guard.stop)
+
+    def _profile_used(self, target, call, **stub):
+        """Patch chat() where the module imported it and return the profile asked for."""
+        with mock.patch(target, **stub) as chat_mock:
+            try:
+                call()
+            except Exception:
+                pass  # only the profile argument is under test
+
+        self.assertTrue(chat_mock.called, f"{target} was never called")
+        return chat_mock.call_args.kwargs.get("profile")
+
+    def test_order_extractor_asks_for_reason(self):
+        """Highest stakes in the system: it writes orders and moves stock."""
+        payload = json.dumps({
+            "customer_name": None, "customer_phone": None,
+            "customer_secondary_phone": None, "shipping_address": None,
+            "products": [], "is_confirmed": False,
+        })
+        profile = self._profile_used(
+            "products.services.order_service.chat",
+            lambda: handle_order("...", [], self.store, self.conversation),
+            return_value=payload,
+        )
+
+        self.assertEqual(profile, "reason")
+
+    def test_extractors_ask_for_extract(self):
+        cases = [
+            ("products.services.ai.classifier.chat",
+             lambda: classify("hi", []), '{"intent": "general"}'),
+            ("products.services.ai.intent.chat",
+             lambda: extract_intent("hi", [], self.store), '{}'),
+            ("products.services.product_resolver.chat",
+             lambda: resolve_products("hi", [], self.store), '{"perfumes": []}'),
+            ("products.services.comparison_service.chat",
+             lambda: compare_products("hi", [], self.store), '{"perfume_1": "", "perfume_2": ""}'),
+        ]
+        for target, call, payload in cases:
+            with self.subTest(target=target):
+                profile = self._profile_used(target, call, return_value=payload)
+                self.assertEqual(profile, "extract")
+
+    def test_prose_calls_ask_for_converse(self):
+        cases = [
+            ("products.services.general_service.chat",
+             lambda: handle_general("hi", [], self.store)),
+            ("products.services.product_info.chat",
+             lambda: get_product_info("hi", [], self.store)),
+        ]
+        for target, call in cases:
+            with self.subTest(target=target):
+                profile = self._profile_used(target, call, return_value="ok")
+                self.assertEqual(profile, "converse")

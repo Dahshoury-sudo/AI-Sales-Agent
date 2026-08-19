@@ -29,6 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
+# Stronger model for reasoning-heavy calls. Unset falls back to OPENAI_MODEL;
+# see products.services.ai.client._profiles.
+OPENAI_SMART_MODEL = os.environ.get("OPENAI_SMART_MODEL")
 OPENAI_TEMPERATURE = float(os.environ.get("OPENAI_TEMPERATURE", 1.0))
 
 # SECURITY WARNING: don't run with debug turned on in production!
