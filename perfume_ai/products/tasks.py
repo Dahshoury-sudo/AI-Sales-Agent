@@ -7,9 +7,11 @@ from products.models import Store
 from products.services.conversation_service import (
     get_or_create_platform_conversation,
     get_conversation_messages,
+    build_llm_history,
     save_message,
 )
 from products.services.router import route
+from products.services.reply_sanitizer import sanitize_reply
 from products.services.meta_service import (
     send_platform_message,
     reply_to_comment,
@@ -70,14 +72,13 @@ def process_incoming_message(self, store_id, platform, sender_id, text):
             save_message(conversation, "user", text)
             return
 
-        past_messages = get_conversation_messages(conversation)
-        history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
+        history = build_llm_history(conversation)
 
         save_message(conversation, "user", text)
 
         reply, context = route(text, history, store, conversation)
+        reply = sanitize_reply(reply, conversation)
         save_message(conversation, "assistant", reply, internal_context=context)
-
         delivered = send_platform_message(conversation, reply)
         # None means nothing needed sending (web conversations); only False is a
         # delivery failure.
@@ -159,11 +160,11 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         conversation, _ = get_or_create_platform_conversation(
             store, conversation_platform_for(platform), commenter_id
         )
-        past_messages = get_conversation_messages(conversation)
-        history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
+        history = build_llm_history(conversation)
         save_message(conversation, "user", comment_text)  # save original comment only
 
         ai_reply, context = route(enriched_text, history, store, conversation)
+        ai_reply = sanitize_reply(ai_reply, conversation)
         save_message(conversation, "assistant", ai_reply, internal_context=context)
 
         # ── 4. Pick a random public reply message ───────────────────────────

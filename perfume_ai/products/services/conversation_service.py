@@ -55,3 +55,23 @@ def save_message(conversation, role, content, internal_context=""):
 def get_conversation_messages(conversation, limit=8):
     messages = conversation.messages.order_by("-created_at")[:limit]
     return reversed(messages)
+
+
+# Roles the Chat Completions API accepts. A human agent's "agent" row is dropped
+# rather than mapped onto "assistant": the bot must not adopt a colleague's voice or
+# inherit promises it cannot keep. The cost is that the bot loses sight of what the
+# human said, which is the safer of the two failures.
+LLM_ROLES = ("user", "assistant")
+
+
+def build_llm_history(conversation, limit=8):
+    """History for a model call, as role/content dicts.
+
+    Both callers built this inline and identically (products/tasks.py and
+    products/views.py), so neither would have picked up the agent-role filter.
+    """
+    return [
+        {"role": message.role, "content": message.content}
+        for message in get_conversation_messages(conversation, limit=limit)
+        if message.role in LLM_ROLES
+    ]

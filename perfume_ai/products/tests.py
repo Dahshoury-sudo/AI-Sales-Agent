@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import inspect
 import json
+from decimal import Decimal
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -22,6 +23,7 @@ from products.models import (
     OrderItem,
     Product,
     ProductVariant,
+    StaticFAQ,
     Store,
     StoreSettings,
 )
@@ -34,15 +36,24 @@ from products.services.ai.recommendation import (
     _format_products,
 )
 from products.services.comparison_service import compare_products
-from products.services.conversation_service import get_or_create_platform_conversation
+from products.services.conversation_service import (
+    build_llm_history,
+    get_or_create_platform_conversation,
+    save_message,
+)
 from products.services.general_service import handle_general
 from products.services.meta_service import (
     conversation_platform_for,
     send_platform_message,
 )
-from products.services.product_formatting import format_products
+from products.services.product_formatting import (
+    format_product,
+    format_products,
+    value_pick_note,
+)
 from products.services.product_info import get_product_info
 from products.services.product_resolver import resolve_products
+from products.services.reply_sanitizer import sanitize_reply
 from products.services.order_service import (
     PAYMENT_FALLBACK,
     _cart_context,
@@ -57,6 +68,7 @@ from products.services.router import (
     _is_goodbye_loop,
     _is_repetitive,
     _was_already_handed_off,
+    route,
 )
 from products.services.search_service import (
     MAX_PRODUCTS_IN_CONTEXT,
@@ -154,6 +166,65 @@ class ProductContextCapTests(TestCase):
         context = _format_products(every_product)
 
         self.assertEqual(context.count("Name (الاسم الصحيح):"), MAX_PRODUCTS_IN_CONTEXT)
+
+
+class ExcludeNamesTests(TestCase):
+    """Asking for alternatives must not return the same perfumes again.
+
+    This is the only "don't repeat that recommendation" mechanism in the system, and
+    it is the right one: ai/intent.py tells the model to fill exclude_names *only*
+    when the customer asks for something else, and search_products drops those from
+    the queryset — so the model cannot mention them rather than being asked not to.
+    recommend() previously carried a second, prompt-level version of this that
+    excluded any perfume merely *mentioned* earlier, including one the customer had
+    just shown interest in. That one is gone; this is what replaced it, so it needs
+    to actually work.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        brand = Brand.objects.create(store=self.store, name="YSL")
+        for name in ("Black Opium", "Good Girl", "Libre"):
+            product = Product.objects.create(
+                store=self.store, brand=brand, name=name, gender="female",
+                oil_stock_grams=500, concentration_percentage=30,
+            )
+            ProductVariant.objects.create(
+                product=product, volume=50, price=600, bottle_type="normal"
+            )
+
+    def _names_for(self, intent):
+        return sorted(p.name for p in search_products(intent, store=self.store)["products"])
+
+    def test_an_excluded_perfume_is_not_offered_again(self):
+        names = self._names_for({"gender": "female", "exclude_names": ["Black Opium"]})
+
+        self.assertNotIn("Black Opium", names)
+        self.assertEqual(names, ["Good Girl", "Libre"])
+
+    def test_several_exclusions_apply_together(self):
+        names = self._names_for(
+            {"gender": "female", "exclude_names": ["Black Opium", "Libre"]}
+        )
+
+        self.assertEqual(names, ["Good Girl"])
+
+    def test_exclusion_is_case_insensitive(self):
+        """The model echoes names back from history, not from the database."""
+        names = self._names_for({"gender": "female", "exclude_names": ["black opium"]})
+
+        self.assertNotIn("Black Opium", names)
+
+    def test_the_legacy_singular_key_still_works(self):
+        names = self._names_for({"gender": "female", "exclude_name": "Good Girl"})
+
+        self.assertNotIn("Good Girl", names)
+
+    def test_no_exclusions_returns_everything(self):
+        self.assertEqual(
+            self._names_for({"gender": "female"}),
+            ["Black Opium", "Good Girl", "Libre"],
+        )
 
 
 class IntentExtractionIsLazyTests(TestCase):
@@ -456,7 +527,13 @@ class CartPersistenceTests(TestCase):
         self.conversation = Conversation.objects.create(store=self.store)
 
     def _turn(self, extracted):
-        """Run one order turn with the extractor's JSON stubbed."""
+        """Run one order turn with the extractor's JSON stubbed.
+
+        The reply is persisted the way products/tasks.py does it. That matters for
+        confirmation: order_service only honours is_confirmed if this conversation
+        already contains the summary carrying the total, so a helper that dropped the
+        reply could never reach a legitimate confirmation.
+        """
         payload = {
             "customer_name": None, "customer_phone": None,
             "customer_secondary_phone": None, "shipping_address": None,
@@ -466,7 +543,24 @@ class CartPersistenceTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            return handle_order("...", [], self.store, self.conversation)
+            reply, context = handle_order("...", [], self.store, self.conversation)
+
+        save_message(self.conversation, "assistant", reply, internal_context=context)
+        return reply, context
+
+    ALL_DETAILS = {
+        "customer_name": "محمد",
+        "customer_phone": "01000000000",
+        "customer_secondary_phone": "01100000000",
+        "shipping_address": "القاهرة، المعادي، ٥ شارع النصر",
+    }
+
+    def _confirm(self, **extra):
+        """The real two-step confirmation: summary first, then the customer agrees."""
+        self._turn({"products": self.ONE_PERFUME, **self.ALL_DETAILS, **extra})
+        return self._turn(
+            {"products": self.ONE_PERFUME, **self.ALL_DETAILS, "is_confirmed": True, **extra}
+        )
 
     ONE_PERFUME = [{"name": "Dior Sauvage", "quantity": 1, "volume": 50, "bottle_type": "normal"}]
 
@@ -513,16 +607,7 @@ class CartPersistenceTests(TestCase):
         self.assertEqual(cart.items.first().variant, big)
 
     def test_confirming_creates_an_order_and_clears_the_cart(self):
-        self._turn({"products": self.ONE_PERFUME})
-
-        reply, _ = self._turn({
-            "products": self.ONE_PERFUME,
-            "customer_name": "محمد",
-            "customer_phone": "01000000000",
-            "customer_secondary_phone": "01100000000",
-            "shipping_address": "القاهرة، المعادي، ٥ شارع النصر",
-            "is_confirmed": True,
-        })
+        reply, _ = self._confirm()
 
         self.assertIn("تم تأكيد طلبك بنجاح", reply)
         order = Order.objects.get(store=self.store)
@@ -533,14 +618,43 @@ class CartPersistenceTests(TestCase):
             "cart should be gone so a second order starts clean",
         )
 
+    def test_a_summary_is_shown_before_the_order_is_created(self):
+        """The turn where every detail first arrives must summarise, not confirm."""
+        reply, _ = self._turn({"products": self.ONE_PERFUME, **self.ALL_DETAILS})
+
+        self.assertIn("💰 الإجمالي:", reply)
+        self.assertFalse(Order.objects.exists())
+
+    def test_is_confirmed_alone_cannot_create_an_order(self):
+        """A spurious true from the extractor must not move stock. The model runs on
+        a reasoning model at its default temperature, so true/false can flip between
+        runs on identical input — the summary having gone out is the real evidence."""
+        reply, _ = self._turn(
+            {"products": self.ONE_PERFUME, **self.ALL_DETAILS, "is_confirmed": True}
+        )
+
+        self.assertFalse(
+            Order.objects.exists(), "an order was confirmed without a summary being sent"
+        )
+        self.assertIn("💰 الإجمالي:", reply)
+
+    def test_an_earlier_orders_summary_cannot_confirm_a_later_one(self):
+        """clear_cart drops the row on completion and get_cart makes a fresh one, so
+        the guard is scoped to summaries at or after the current cart's creation."""
+        self._confirm()
+        self.assertEqual(Order.objects.count(), 1)
+
+        # Second order in the same conversation: the first summary is still in the
+        # thread, but it predates this cart.
+        reply, _ = self._turn(
+            {"products": self.ONE_PERFUME, **self.ALL_DETAILS, "is_confirmed": True}
+        )
+
+        self.assertEqual(Order.objects.count(), 1, "the stale summary confirmed a new order")
+        self.assertIn("💰 الإجمالي:", reply)
+
     def test_confirming_decrements_stock(self):
-        self._turn({"products": self.ONE_PERFUME})
-        self._turn({
-            "products": self.ONE_PERFUME,
-            "customer_name": "محمد", "customer_phone": "01000000000",
-            "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
-            "is_confirmed": True,
-        })
+        self._confirm()
 
         self.product.refresh_from_db()
         # 50ml at 30% concentration = 15g of oil
@@ -1265,7 +1379,11 @@ class UnknownVersusUnclearTests(TestCase):
         prompt = get_system_prompt(self.store)
 
         self.assertIn("هسأل وأرد عليك", prompt)
-        self.assertIn("لو السؤال واضح ومفهوم وأنت مش عارف الإجابة", prompt)
+        # The persona was reworded during consolidation; the distinction it protects
+        # is unchanged — "مش فاهم" is only for genuinely unintelligible messages,
+        # never for a clear question whose answer the bot does not have.
+        self.assertIn('ممنوع تقول "مش فاهم" لسؤال واضح', prompt)
+        self.assertIn("للرسائل المش مفهومة فعلاً بس", prompt)
 
 
 class CommentReplyDelayTests(TestCase):
@@ -1393,7 +1511,10 @@ class HandoffReplyDeliveryTests(TestCase):
 
         self.assertEqual(conversation.messages.count(), 1)
         message = conversation.messages.first()
-        self.assertEqual(message.role, "assistant")
+        # "agent", not "assistant": this is a human colleague speaking. Stored as
+        # "assistant" it read back to the bot as its own prior output once the
+        # handoff was resolved, so the bot adopted the human's voice and claims.
+        self.assertEqual(message.role, "agent")
         conversation.refresh_from_db()
         self.assertTrue(conversation.needs_human)
 
@@ -1984,3 +2105,504 @@ class CallSiteProfileTests(TestCase):
             with self.subTest(target=target):
                 profile = self._profile_used(target, call, return_value="ok")
                 self.assertEqual(profile, "converse")
+
+
+class SalesQualityTests(TestCase):
+    """Sales behaviour that used to depend on the model following a prompt rule.
+
+    Diagnosed from conv_651.txt. The prompt already forbade what the bot did — a
+    banned closing question closed three replies, a banned joke went out, and prices
+    were invented with an empty context block — so the mechanical parts are enforced
+    in code here instead of asked for again.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        # 30% concentration: a 50ml brand bottle needs 15g of oil, a 90ml needs 27g.
+        self.product = Product.objects.create(
+            store=self.store,
+            brand=self.brand,
+            name="Dior Sauvage",
+            gender="male",
+            oil_stock_grams=1000,
+            concentration_percentage=30,
+        )
+        # The real prices from the transcript: 90ml is 80% more perfume for 47% more.
+        self.small = ProductVariant.objects.create(
+            product=self.product, volume=50, price=642, bottle_type="normal"
+        )
+        self.large = ProductVariant.objects.create(
+            product=self.product, volume=90, price=944, bottle_type="normal"
+        )
+
+    def _variants(self):
+        return list(self.product.variants.all())
+
+    def test_value_pick_names_the_better_value_size_with_the_numbers(self):
+        note = value_pick_note(self.product, self._variants())
+
+        self.assertIn("90 ملي", note)
+        self.assertIn("80%", note)   # (90-50)/50
+        self.assertIn("302", note)   # 944-642
+
+    def test_value_pick_is_silent_when_there_is_only_one_size(self):
+        self.large.delete()
+
+        self.assertEqual(value_pick_note(self.product, self._variants()), "")
+
+    def test_value_pick_ignores_sizes_over_the_stated_budget(self):
+        """Upselling to a price the customer already ruled out is not an upsell."""
+        self.assertEqual(
+            value_pick_note(self.product, self._variants(), max_price=Decimal("700")), ""
+        )
+
+    def test_value_pick_prefers_the_cheaper_per_ml_size(self):
+        """A larger bottle is not automatically the better value."""
+        self.large.price = 2000  # 22.2/ml vs the 50ml's 12.8/ml
+        self.large.save()
+
+        self.assertEqual(value_pick_note(self.product, self._variants()), "")
+
+    def test_value_pick_reaches_the_prompt_block(self):
+        self.assertIn("💡 Value Pick", format_product(self.product))
+
+    def test_brand_bottles_show_scarcity_when_the_oil_is_nearly_out(self):
+        """Only original bottles had a low-stock signal; brand bottles had none."""
+        self.product.oil_stock_grams = 45  # exactly 3 × 50ml
+        self.product.save()
+        self.large.delete()
+
+        self.assertIn("3 زجاجة فقط", format_product(self.product))
+
+    def test_plentiful_stock_shows_no_scarcity_claim(self):
+        self.assertNotIn("زجاجة فقط", format_product(self.product))
+
+    def test_store_exclusive_carries_a_selling_instruction(self):
+        """The ⭐ marker existed but told the model nothing, so a request for نيش got
+        "not available" while three store-exclusive blends sat in context."""
+        own_brand = Brand.objects.create(store=self.store, name=self.store.name)
+        exclusive = Product.objects.create(
+            store=self.store, brand=own_brand, name="Citrolo", gender="female",
+            oil_stock_grams=500, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(
+            product=exclusive, volume=50, price=598, bottle_type="normal"
+        )
+
+        for label, block in (
+            ("full", format_product(exclusive)),
+            ("brief", format_product(exclusive, brief=True)),
+        ):
+            with self.subTest(mode=label):
+                self.assertIn("نيش", block)
+                self.assertIn("ممنوع تقول مفيش", block)
+
+    def test_a_global_brand_gets_no_exclusive_note(self):
+        self.assertNotIn("مش موجود عند أي حد تاني", format_product(self.product))
+
+    def test_a_zero_concentration_product_offers_no_brand_bottles(self):
+        """Behaviour change, made deliberately: the old check treated "needs no oil"
+        as "always in stock", so a misconfigured product offered sizes that cannot be
+        filled. Bad configuration should hide a size, not sell it."""
+        self.product.concentration_percentage = 0
+        self.product.save()
+
+        block = format_product(self.product)
+
+        self.assertIn("غير متوفر حالياً بجميع أحجامه", block)
+        self.assertEqual(value_pick_note(self.product, self._variants()), "")
+
+    def test_a_zero_volume_variant_is_not_offered(self):
+        self.small.volume = 0
+        self.small.save()
+
+        # It still appears under "Out of Stock Sizes", which the block itself labels
+        # DO NOT OFFER — what matters is that it is not in the available list.
+        available = format_product(self.product).split("Out of Stock Sizes")[0]
+
+        self.assertNotIn("الـ 0 ملي", available)
+        self.assertIn("الـ 90 ملي", available)
+
+
+class ReplySanitizerTests(TestCase):
+    """Banned phrasing is stripped rather than asked about again.
+
+    "تحب تعرف أسعارهم والأحجام؟" closed three replies in conv_651 despite being
+    quoted inside the persona as forbidden.
+    """
+
+    def test_the_transcripts_banned_closer_is_removed(self):
+        reply = (
+            "🔹 Black Opium: ريحته فيها قهوة وفانيليا تجنن\n\n"
+            "تحب تعرف أسعارهم والأحجام؟"
+        )
+
+        cleaned = sanitize_reply(reply)
+
+        self.assertNotIn("تحب تعرف", cleaned)
+        self.assertIn("Black Opium", cleaned)
+
+    def test_the_personas_own_wording_is_removed_too(self):
+        cleaned = sanitize_reply("أه متوفر عندنا. تحب تعرف الأسعار والأحجام المتاحة؟")
+
+        self.assertNotIn("تحب تعرف", cleaned)
+        self.assertIn("أه متوفر عندنا", cleaned)
+
+    def test_empty_filler_questions_are_removed(self):
+        for banned in ("عايز حاجة تانية؟", "محتاج مساعدة؟", "عطر معين في بالك؟"):
+            with self.subTest(banned=banned):
+                cleaned = sanitize_reply(f"الـ 90 ملي بـ 944 جنيه. {banned}")
+
+                self.assertNotIn(banned.rstrip("؟"), cleaned)
+                self.assertIn("944", cleaned)
+
+    def test_a_reply_that_is_only_a_banned_question_is_left_alone(self):
+        """Sending nothing is worse than sending a weak reply."""
+        only_banned = "تحب تعرف الأسعار والأحجام؟"
+
+        self.assertEqual(sanitize_reply(only_banned), only_banned)
+
+    def test_a_legitimate_sales_question_survives(self):
+        reply = "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟"
+
+        self.assertEqual(sanitize_reply(reply), reply)
+
+    def test_empty_and_none_are_passed_through(self):
+        self.assertEqual(sanitize_reply(""), "")
+        self.assertIsNone(sanitize_reply(None))
+
+
+class ScriptedRepliesSurviveSanitizingTests(TestCase):
+    """Hardcoded replies must reach the customer byte-for-byte.
+
+    Every reply route() returns is sanitized, scripted ones included — tasks.py and
+    views.py cannot tell a generated reply from a hardcoded one. A regex that clipped
+    the order summary or the cancellation line would do it silently and in production
+    only, so the exact strings are pinned here.
+
+    Known and accepted: a StaticFAQ answer a store writes ending in one of the banned
+    questions would also be trimmed. The answer survives, only the trailing filler
+    goes, so this is left as-is rather than making sanitizing route-aware.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+            oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.variant = ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def test_the_order_summary_is_untouched(self):
+        """It ends in "ولا تحب تعدل حاجة؟", which sits close to a banned pattern."""
+        payload = json.dumps({
+            "products": [{
+                "name": "Dior Sauvage", "quantity": 1, "volume": 50,
+                "bottle_type": "normal",
+            }],
+            "customer_name": "محمد", "customer_phone": "01000000000",
+            "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
+            "is_confirmed": False,
+        })
+        with mock.patch(
+            "products.services.order_service.chat", return_value=payload
+        ):
+            summary, _ = handle_order("...", [], self.store, self.conversation)
+
+        self.assertIn("💰 الإجمالي:", summary)
+        self.assertEqual(sanitize_reply(summary), summary)
+
+    def test_the_cart_cancellation_reply_is_untouched(self):
+        """Contains "تحب تشوف حاجة تانية" — near-miss on the filler pattern."""
+        scripted = "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟"
+
+        self.assertEqual(sanitize_reply(scripted), scripted)
+
+    def test_the_goodbye_reply_is_untouched(self):
+        scripted = (
+            "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك "
+            "24 ساعة. يوم سعيد!"
+        )
+
+        self.assertEqual(sanitize_reply(scripted), scripted)
+
+    def test_a_static_faq_answer_is_untouched(self):
+        faq = StaticFAQ.objects.create(
+            store=self.store, question="الشحن بكام؟", keywords="شحن, توصيل",
+            answer="الشحن 60 جنيه لكل محافظات مصر، والتوصيل من 2 لـ 4 أيام.",
+        )
+
+        self.assertEqual(sanitize_reply(faq.answer), faq.answer)
+
+    def test_the_payment_fallback_is_untouched(self):
+        self.assertEqual(sanitize_reply(PAYMENT_FALLBACK), PAYMENT_FALLBACK)
+
+
+class HumanAgentVoiceTests(TestCase):
+    """A human colleague's words must not come back as the bot's own.
+
+    conv_651 lines 631-634 show an agent's "معاك محمد / انا شغال في الاستور" saved as
+    role=assistant. Once the handoff was resolved the bot read them as its own prior
+    output and imitated them.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def test_agent_messages_are_kept_out_of_the_models_history(self):
+        Message.objects.create(conversation=self.conversation, role="user", content="هاي")
+        Message.objects.create(
+            conversation=self.conversation, role="agent", content="اتفضل يا فندم معاك محمد"
+        )
+        Message.objects.create(
+            conversation=self.conversation, role="assistant", content="أهلاً يا فندم"
+        )
+
+        history = build_llm_history(self.conversation)
+
+        self.assertEqual([m["role"] for m in history], ["user", "assistant"])
+        self.assertNotIn("محمد", " ".join(m["content"] for m in history))
+
+    def test_only_roles_the_api_accepts_are_emitted(self):
+        Message.objects.create(conversation=self.conversation, role="agent", content="x")
+
+        for message in build_llm_history(self.conversation):
+            self.assertIn(message["role"], ("user", "assistant"))
+
+    def test_the_dashboard_saves_a_handoff_reply_as_agent(self):
+        """views.HandoffReplyAPIView used to save these as assistant."""
+        import products.views as views
+
+        source = inspect.getsource(views.HandoffReplyAPIView)
+
+        self.assertIn('save_message(conv, "agent"', source)
+        self.assertNotIn('save_message(conv, "assistant"', source)
+
+
+class NoProductDataGuardTests(TestCase):
+    """The one branch with no product context invented prices anyway.
+
+    conv_651 line 815 answered "في بلو دي شانيل؟" with fabricated prices for Dior
+    Homme Sport and an empty context block.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+
+    def _system_prompt_sent(self, history=None):
+        with mock.patch(
+            "products.services.general_service.chat", return_value="ok"
+        ) as chat_mock:
+            handle_general("في بلو دي شانيل؟", history or [], self.store)
+        return chat_mock.call_args[0][0][0]["content"]
+
+    def test_the_no_price_guard_is_present(self):
+        prompt = self._system_prompt_sent()
+
+        self.assertIn("مفيش أي بيانات منتجات مبعوتة لك", prompt)
+        self.assertIn("ممنوع تذكر سعر أو اسم عطر من ذاكرتك", prompt)
+
+    def test_configured_store_offers_can_still_be_relayed(self):
+        """The promotion branch routes through here and must be able to quote the
+        store's real configured offer prices — only invented ones are banned."""
+        prompt = self._system_prompt_sent()
+
+        self.assertIn("مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً", prompt)
+
+    def test_repetition_context_demands_a_different_move_not_new_wording(self):
+        """Five "هاي" produced four rewordings of the same greeting move."""
+        history = [
+            {"role": "user", "content": "هاي"},
+            {"role": "assistant", "content": "أهلاً يا فندم، تحت أمرك في أي استفسار"},
+            {"role": "user", "content": "هاي"},
+            {"role": "assistant", "content": "أهلاً بحضرتك، جاهز أساعدك"},
+        ]
+
+        prompt = self._system_prompt_sent(history)
+
+        self.assertIn("مش كفاية تغير الكلمات", prompt)
+        self.assertIn("أهلاً بحضرتك، جاهز أساعدك", prompt)
+
+
+class RouterBranchPromptTests(TestCase):
+    """What the scripted router branches actually send to the model.
+
+    The router has ~20 branches and almost none assert on the prompt they build, which
+    is how a blanket "never mention a price" guard added to general_service came within
+    one reading of gagging the promotion branch — that branch routes through
+    handle_general and asks the model to relay the store's configured offers, prices
+    included. Nothing would have failed. These pin the instruction each branch depends
+    on, and that the no-product-data guard still permits configured prices.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(
+            store=self.store,
+            system_prompt="عروضنا: بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه",
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _prompt_for(self, classification, message, history=None):
+        """Route a message and return everything handle_general sent to the model.
+
+        The branches put their instructions in the user message and the persona plus
+        guards in the system message, so both are joined — what matters is whether the
+        model was told a thing, not which slot carried it.
+        """
+        with mock.patch(
+            "products.services.router.classify", return_value=classification
+        ), mock.patch(
+            "products.services.general_service.chat", return_value="ok"
+        ) as chat_mock:
+            route(message, history or [], self.store, self.conversation)
+
+        self.assertTrue(chat_mock.called, f"{classification} did not reach handle_general")
+        return "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+    def test_promotion_can_still_quote_the_stores_configured_offers(self):
+        """The regression I nearly shipped: the guard must ban invented prices only."""
+        prompt = self._prompt_for("promotion", "عندكم عروض؟")
+
+        self.assertIn("بوكس الصيف", prompt, "the store's own offer text was withheld")
+        self.assertIn("مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً", prompt)
+        self.assertIn("مش بتقدر تطبق", prompt)
+
+    def test_promotion_insistence_refuses_firmly(self):
+        prompt = self._prompt_for("promotion", "لا انا عايزك انت تنفذه")
+
+        self.assertIn("مش في إمكانياتك", prompt)
+        self.assertIn("ممنوع توهمه", prompt)
+
+    def test_musk_and_mix_defers_to_a_human_rep(self):
+        prompt = self._prompt_for("musk_mix_product", "عندكم مسكات؟")
+
+        self.assertIn("المندوب البشري", prompt)
+        self.assertIn("ممنوع تحاول تجاوب", prompt)
+
+    def test_a_second_handoff_is_told_not_to_repeat_itself(self):
+        history = [
+            {"role": "user", "content": "عايز اكلم حد"},
+            {"role": "assistant", "content": "حولت المحادثة لفريق خدمة العملاء"},
+        ]
+
+        prompt = self._prompt_for("handoff", "لسه محدش رد عليا", history)
+
+        self.assertIn("اتحول لخدمة العملاء قبل كده", prompt)
+        self.assertIn('ممنوع تقوله "حولت طلبك"', prompt)
+
+    def test_every_general_branch_carries_the_no_invented_price_guard(self):
+        """None of these branches gets product data, so all of them need it."""
+        for classification, message in (
+            ("greeting", "هاي"),
+            ("faq", "انت مين"),
+            ("promotion", "عندكم عروض؟"),
+            ("musk_mix_product", "عندكم مسكات؟"),
+        ):
+            with self.subTest(classification=classification):
+                prompt = self._prompt_for(classification, message)
+
+                self.assertIn("ممنوع تذكر سعر أو اسم عطر من ذاكرتك", prompt)
+
+
+class PersonaConsolidationTests(TestCase):
+    """The rewritten persona must keep its hard rules and lose its contradiction."""
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+
+    def test_the_cta_contradiction_is_gone(self):
+        """Persona said "CTA ~1 in 2-3 replies" while recommendation.py said "always
+        end with a question". The model resolved that arbitrarily every turn."""
+        from products.services.ai import recommendation
+
+        self.assertNotIn(
+            "لازم تختم الترشيح بسؤال", inspect.getsource(recommendation)
+        )
+
+    def test_the_sales_plays_the_transcript_was_missing_are_present(self):
+        prompt = get_system_prompt(self.store)
+
+        for play, marker in (
+            ("price objection", "غالي"),
+            ("soft rejection", "هفكر وأرجعلك"),
+            ("diagnose rejection", "مش عاجبني"),
+            ("niche pivot", "نيش"),
+            ("value pick", "Value Pick"),
+            ("no dead-end availability", "رد ميت"),
+        ):
+            with self.subTest(play=play):
+                self.assertIn(marker, prompt)
+
+    def test_the_hard_money_rules_survived_the_rewrite(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("ممنوع تخترع سعر", prompt)
+        self.assertIn("ممنوع تأكد أي طلب", prompt)
+        self.assertIn("أسرار المهنة", prompt)
+
+    def test_the_exhaustive_price_list_mandate_is_gone(self):
+        """This rule is what flattened the price reply into a receipt."""
+        self.assertNotIn("كل الأحجام والأسعار المتاحة", get_system_prompt(self.store))
+
+    def test_rule_marker_count_stays_bounded(self):
+        """The failure mode was ~60 competing absolute markers. This is a ratchet:
+        if it trips, consolidate rather than raising the number."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertLess(prompt.count("🔴"), 35)
+
+    def test_every_rule_from_the_pre_rewrite_persona_survived(self):
+        """Audit ratchet for the consolidation.
+
+        Comparing the rewritten persona against the pre-rewrite file rule by rule
+        turned up two that had been dropped: obey the (Original Bottle) field's
+        dictated wording, and avoid fusha / literal-English phrasing. Both are back.
+        Each entry below is a distinct rule from the old prompt, so a future
+        consolidation that loses one fails here instead of in production.
+        """
+        prompt = get_system_prompt(self.store)
+
+        for rule, marker in (
+            ("identity: store's perfumes only", "خبرتك محصورة"),
+            ("no inventing prices", "ممنوع تخترع سعر"),
+            ("product not in data = absent", "مش في البيانات"),
+            ("never change a price", "ممنوع تغيره"),
+            ("no confirm without a summary", "ممنوع تأكد أي طلب"),
+            ("no invented attributes", "ممنوع تخترع مواصفات"),
+            ("no unbacked similarity claims", 'ممنوع تقول عطر "شبه"'),
+            ("prices in EGP", "بالجنيه المصري"),
+            ("obey the Original Bottle wording", "خانة (Original Bottle)"),
+            ("no fusha or literal translation", "ترجمة حرفية"),
+            ("banned florid words", "عبير"),
+            ("banned robotic phrases", "يسعدني مساعدتك"),
+            ("store not محل", 'ممنوع كلمة "محل"'),
+            ("1-4 short sentences", "4 جمل قصيرة"),
+            ("no spec-list dumps", "ممنوع تسرد"),
+            ("max 2-3 recommendations", "ترشيحين أو تلاتة"),
+            ("no (تركيب) label on sizes", '(تركيب)'),
+            ("only in-stock sizes offered", "الأحجام المتوفرة بس"),
+            ("brand vs original same juice", "نفس التركيبة بالظبط"),
+            ("don't re-ask stated preferences", "ممنوع تسأل عليها تاني"),
+            ("stay on the chosen perfume", "خليه الأساس"),
+            ("no empty questions", "الأسئلة الفاضية"),
+            ("no promises it cannot keep", "ممنوع توعد"),
+            ("cheapest-perfume handling", "أرخص عطر"),
+            ("respect a refusal", "احترم الرد"),
+            ("trade secrets refused", "أسرار المهنة"),
+            ("no business consulting", "استشارات تجارية"),
+            ("keyword hand-off for store info", "الكلمة المفتاحية"),
+            ("medical caution", "يستشير طبيب"),
+            ("handoff only once", "متكررش جملة التحويل"),
+            ("no jokes back", "ممنوع ترد بهزار"),
+            ("musk/mix defers to a human", "تخصص المندوب البشري"),
+            ("no repeating a reply or its idea", "ممنوع تكرر نفس الجملة"),
+        ):
+            with self.subTest(rule=rule):
+                self.assertIn(marker, prompt)

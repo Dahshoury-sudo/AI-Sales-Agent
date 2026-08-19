@@ -37,6 +37,29 @@ def budget_label(price, max_price):
     return " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)"
 
 
+# A brand bottle is filled to order from bulk oil, so "stock" is however many
+# bottles the remaining oil can fill. At or below this many, say so: the transcript
+# showed the bot reading the original-bottle "(2 زجاجة فقط)" out as a neutral fact,
+# and brand bottles had no scarcity signal at all.
+LOW_BOTTLE_THRESHOLD = 3
+
+
+def _bottles_fillable(product, variant):
+    """How many of this brand-bottle size the remaining oil can fill.
+
+    Returns 0 when a bottle would need no oil at all — a 0ml variant, or a product
+    configured at 0% concentration. The previous arithmetic (`oil_stock_grams >=
+    required_oil`) reported those as *available* at any stock level, including zero,
+    which would offer the customer a size that cannot be filled. Treating them as
+    out of stock is the deliberate choice: bad configuration should hide a size, not
+    sell it.
+    """
+    required_oil = (variant.volume * product.concentration_percentage) / 100
+    if required_oil <= 0:
+        return 0
+    return int(product.oil_stock_grams // required_oil)
+
+
 def _size_lines(product, variants, max_price=None):
     """Split this product's sizes into available and out-of-stock lines.
 
@@ -46,10 +69,13 @@ def _size_lines(product, variants, max_price=None):
     available, out_of_stock = [], []
     for variant in variants:
         if variant.bottle_type == "normal":
-            required_oil = (variant.volume * product.concentration_percentage) / 100
-            if product.oil_stock_grams >= required_oil:
+            fillable = _bottles_fillable(product, variant)
+            if fillable > 0:
+                low_stock = (
+                    f" ({fillable} زجاجة فقط)" if fillable <= LOW_BOTTLE_THRESHOLD else ""
+                )
                 available.append(
-                    f"- الـ {variant.volume} ملي: {variant.price} EGP"
+                    f"- الـ {variant.volume} ملي: {variant.price} EGP{low_stock}"
                     f"{budget_label(variant.price, max_price)}"
                 )
             else:
@@ -70,6 +96,64 @@ def _size_lines(product, variants, max_price=None):
 def _is_store_exclusive(product):
     """A perfume whose brand is the store itself, i.e. the store's own blend."""
     return bool(product.store and product.brand.name.lower() == product.store.name.lower())
+
+
+def value_pick_note(product, variants, max_price=None):
+    """State which brand-bottle size is the better value, and by how much.
+
+    The model was handed a bare list of sizes and prices and read it back as a price
+    sheet: "الـ 50 بـ 642، والـ 90 بـ 944" with no recommendation, at the exact moment
+    the customer asked to buy. The upsell is arithmetic — 90ml is 80% more perfume for
+    47% more money — so it is computed here rather than left to the model, which cannot
+    reliably do it and must not invent it.
+
+    Only compares in-budget brand bottles: recommending a size the customer already
+    said they cannot afford is not an upsell.
+    """
+    priced = []
+    for variant in variants:
+        if variant.bottle_type != "normal" or _bottles_fillable(product, variant) <= 0:
+            continue
+        if max_price is not None and variant.price > max_price:
+            continue
+        if variant.volume > 0:
+            priced.append(variant)
+
+    if len(priced) < 2:
+        return ""
+
+    smallest = min(priced, key=lambda v: v.volume)
+    # Best value = lowest cost per ml. Ties go to the smaller bottle, which is the
+    # safer recommendation for a first-time buyer.
+    best = min(priced, key=lambda v: (v.price / v.volume, v.volume))
+
+    if best.volume == smallest.volume:
+        return ""
+
+    extra_volume = round((best.volume - smallest.volume) / smallest.volume * 100)
+    extra_price = best.price - smallest.price
+
+    return (
+        f"💡 Value Pick: الـ {best.volume} ملي أوفر — "
+        f"كمية أكتر بـ {extra_volume}% بفرق {extra_price:.0f} جنيه بس "
+        f"(بدل {smallest.price:.0f} جنيه للـ {smallest.volume} ملي). "
+        f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار."
+    )
+
+
+def _exclusive_selling_note(product):
+    """Tell the model what the ⭐ marker is worth commercially.
+
+    The marker existed but carried no instruction, so when a customer asked for
+    نيش the bot answered "not available" with three store-exclusive blends sitting
+    in its context — the store's own highest-margin products and its real answer.
+    """
+    if not _is_store_exclusive(product):
+        return ""
+    return (
+        "Sales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. "
+        "لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش."
+    )
 
 
 def _original_bottle_status(product, variants):
@@ -110,13 +194,18 @@ def format_product(product, max_price=None, brief=False):
     perfume_type = product.get_perfume_type_display() if product.perfume_type else "غير محدد"
 
     if brief:
+        # The exclusive note stays even in brief mode: brief is what the "no exact
+        # match" branch renders, which is the branch that answered "النيش مش متوفرة"
+        # while holding three store-exclusive blends.
+        exclusive_note = _exclusive_selling_note(product)
+        exclusive_block = f"{exclusive_note}\n" if exclusive_note else ""
         return f"""
 Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Original Bottle: {_original_bottle_status(product, variants)}
 Available Sizes & Prices:
 {available_text}
-Gender: {product.gender}
+{exclusive_block}Gender: {product.gender}
 Perfume Type: {perfume_type}
 Description: {product.description}
 -----------------------
@@ -126,6 +215,13 @@ Description: {product.description}
         "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" if not available else "✅ متوفر"
     )
     out_of_stock_text = "، ".join(out_of_stock) if out_of_stock else "لا يوجد"
+    extras = "\n".join(
+        line for line in (
+            value_pick_note(product, variants, max_price),
+            _exclusive_selling_note(product),
+        ) if line
+    )
+    extras_block = f"{extras}\n" if extras else ""
 
     return f"""
 Name (الاسم الصحيح): {product.name}
@@ -134,7 +230,7 @@ Stock Status: {stock_status}
 Original Bottle: {_original_bottle_status(product, variants)}
 Available Sizes & Prices:
 {available_text}
-Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
+{extras_block}Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
 {out_of_stock_text}
 Gender: {product.gender}
 Perfume Type: {perfume_type}

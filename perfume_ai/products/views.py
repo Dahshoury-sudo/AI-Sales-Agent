@@ -16,6 +16,7 @@ from .auth import StoreAPIKeyAuthentication
 from dashboard.auth_backend import StoreOwnerAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .services.router import route
+from .services.reply_sanitizer import sanitize_reply
 from .throttles import ChatThrottle, StoreKeyThrottle
 
 from .services.conversation_service import (
@@ -23,6 +24,7 @@ from .services.conversation_service import (
     get_conversation,
     save_message,
     get_conversation_messages,
+    build_llm_history,
 )
 
 
@@ -81,8 +83,7 @@ class ChatAPIView(APIView):
                     pass
                 
                 if conversation:
-                    past_messages = get_conversation_messages(conversation)
-                    history = [{"role": msg.role, "content": msg.content} for msg in past_messages]
+                    history = build_llm_history(conversation)
 
             if not conversation:
                 conversation = create_conversation(store)
@@ -105,6 +106,7 @@ class ChatAPIView(APIView):
                 })
 
             reply, context = route(message, history, store, conversation)
+            reply = sanitize_reply(reply, conversation)
 
             image_url = None
             if "[SEND_BOTTLE_IMAGE]" in reply:
@@ -436,7 +438,10 @@ class HandoffReplyAPIView(APIView):
             conv.needs_human = True
             conv.save()
             
-        save_message(conv, "assistant", message)
+        # Saved as "agent", not "assistant": once the handoff is resolved and the bot
+        # resumes, an "assistant" row here would read to the model as its own earlier
+        # output, so it copied the human's introduction and claims.
+        save_message(conv, "agent", message)
 
         # Send reply back to the customer on their platform
         from products.services.meta_service import send_platform_message

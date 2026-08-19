@@ -200,9 +200,15 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
+    # "agent" is a human colleague replying through the dashboard handoff. It is a
+    # distinct role because these used to be saved as "assistant": once the handoff
+    # was resolved and the bot resumed, it read a human's words as its own prior
+    # output and imitated them — introducing itself as "محمد" and repeating claims
+    # the bot cannot make. build_llm_history keeps these out of the model's context.
     ROLE_CHOICES = (
         ("user", "User"),
         ("assistant", "Assistant"),
+        ("agent", "Human Agent"),
     )
 
     conversation = models.ForeignKey(

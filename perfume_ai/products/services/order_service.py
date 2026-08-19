@@ -21,6 +21,35 @@ def clear_cart(conversation):
     Cart.objects.filter(conversation=conversation).delete()
 
 
+# The total line of the order summary generated below. Its presence in the thread is
+# the evidence that the customer was actually shown a total before agreeing to it.
+CONFIRMATION_SUMMARY_MARKER = "💰 الإجمالي:"
+
+
+def _summary_was_shown(conversation, cart):
+    """Has this cart's order summary, including the total, already gone out?
+
+    `is_confirmed` comes back from a language model, and the extractor runs on a
+    reasoning model at its default temperature (it rejects temperature 0), so the
+    same conversation can yield true on one run and false on the next. Creating an
+    Order and decrementing stock is too consequential to rest on that. The prompt's
+    own rule is that confirmation requires having summarised with the total price,
+    and unlike most prompt rules that one is checkable here.
+
+    Scoped to messages at or after cart.created_at: clear_cart drops the row when an
+    order completes and get_cart makes a fresh one, so a previous order's summary
+    cannot authorise this one.
+    """
+    if conversation is None:
+        return False
+
+    return conversation.messages.filter(
+        role="assistant",
+        content__contains=CONFIRMATION_SUMMARY_MARKER,
+        created_at__gte=cart.created_at,
+    ).exists()
+
+
 def _cart_context(cart):
     """Render the saved cart for the extractor prompt.
 
@@ -526,7 +555,10 @@ Return valid JSON in this exact format:
         missing_text = " و ".join(personal_missing_fields)
         return f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}.", ""
 
-    if not is_confirmed:
+    # A true is_confirmed only counts if the customer was actually shown the total
+    # first. Without this, one spurious true creates the order and moves stock on a
+    # turn where no summary was ever sent.
+    if not is_confirmed or not _summary_was_shown(conversation, cart):
         # Generate Summary
         summary = "تمام، راجع معايا تفاصيل الطلب كده:\n\n"
         summary += f"👤 الاسم: {name}\n"
