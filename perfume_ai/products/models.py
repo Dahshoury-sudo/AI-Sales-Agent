@@ -1,7 +1,7 @@
 import secrets
 from django.db import models
 from django.contrib.auth.models import User
-from .encryption import EncryptedCharField, EncryptedTextField
+from .encryption import EncryptedCharField, EncryptedTextField, phone_blind_index
 
 def generate_api_key():
     return secrets.token_urlsafe(32)
@@ -74,6 +74,15 @@ class StoreSettings(models.Model):
         blank=True,
         default="✅ تم الرد في الخاص، راجع رسائلك!\n📩 جاوبناك في الخاص، اتفضل شوف!\nتم الرد في الإنبوكس ✅\nCheck your DM, we replied! 💬\nراجع رسائلك الخاصة، بعتنالك الرد 📬",
         help_text="رسائل الرد على التعليقات — كل سطر رسالة منفصلة، البوت يختار عشوائياً (حد أقصى 5 رسائل)"
+    )
+
+    # The subscription's monthly allowance of model-billed messages. Null means
+    # unlimited. Exceeding it never stops the bot replying — a store whose bot goes
+    # quiet mid-sale loses more than the overage is worth — it only notifies the owner
+    # and shows up on the invoice.
+    monthly_message_cap = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="الحد الشهري للرسائل اللي بتستهلك الـ AI. فاضي = بدون حد."
     )
 
     def __str__(self):
@@ -181,6 +190,14 @@ class Conversation(models.Model):
     platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, default="web")
     platform_sender_id = models.CharField(max_length=255, blank=True, help_text="External user ID from the platform")
     needs_human = models.BooleanField(default=False)
+    # What this customer has told us they want, carried across the history window.
+    # extract_intent re-derives every search criterion from the last 8 messages only,
+    # so a budget or gender stated five turns ago vanished — and losing max_price
+    # flips recommendation.py into refusing to quote prices at all, while the router
+    # re-asks for a budget the customer already gave. Lives here rather than on Cart
+    # because clear_cart drops that row on every completed order, and a customer's
+    # taste should outlive one purchase.
+    preferences = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -251,9 +268,11 @@ class Cart(models.Model):
         Conversation, on_delete=models.CASCADE, related_name="cart"
     )
     customer_name = models.CharField(max_length=200, blank=True)
-    customer_phone = models.CharField(max_length=50, blank=True)
-    secondary_phone = models.CharField(max_length=50, blank=True)
-    shipping_address = models.TextField(blank=True)
+    # Same treatment as Order: the cart holds the same contact details before the
+    # order exists, so leaving it plaintext would defeat encrypting the Order.
+    customer_phone = EncryptedCharField(max_length=500, blank=True)
+    secondary_phone = EncryptedCharField(max_length=500, blank=True)
+    shipping_address = EncryptedTextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -287,15 +306,36 @@ class Order(models.Model):
         ("delivered", "Delivered"),
     )
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="orders")
+    # customer_name stays unencrypted on purpose: admin search over it is an
+    # icontains lookup, and substring search across ciphertext is not solvable —
+    # not even with a blind index, which only supports exact match. The sensitive
+    # pairing is name+address, and the address is encrypted.
     customer_name = models.CharField(max_length=200)
-    customer_phone = models.CharField(max_length=50)
-    secondary_phone = models.CharField(max_length=50, blank=True)
-    shipping_address = models.TextField()
+    # max_length grows well past the 11 digits it holds: Fernet ciphertext for a short
+    # string is ~120 characters, so the old max_length=50 would fail on save.
+    customer_phone = EncryptedCharField(max_length=500)
+    secondary_phone = EncryptedCharField(max_length=500, blank=True)
+    shipping_address = EncryptedTextField()
+    # Deterministic keyed hash of the normalized phone. Exists because the encrypted
+    # column cannot be queried: this is what the analytics DISTINCT and the admin
+    # phone search run against. Written in save().
+    customer_phone_hash = models.CharField(max_length=64, blank=True, db_index=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     conversation = models.ForeignKey(Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     bot_notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Kept in step with customer_phone on every write, including the backfill
+        # command, so the hash can never drift from the value it indexes.
+        self.customer_phone_hash = phone_blind_index(self.customer_phone)
+        if "update_fields" in kwargs and kwargs["update_fields"] is not None:
+            fields = set(kwargs["update_fields"])
+            if "customer_phone" in fields:
+                fields.add("customer_phone_hash")
+            kwargs["update_fields"] = fields
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order #{self.id} - {self.customer_name}"
@@ -345,6 +385,7 @@ class Notification(models.Model):
         ("new_order", "New Order"),
         ("low_stock", "Low Stock"),
         ("delivery_failed", "Reply Not Delivered"),
+        ("usage_warning", "Approaching Monthly Limit"),
     )
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="notifications")
@@ -376,4 +417,39 @@ class StaticFAQ(models.Model):
         verbose_name_plural = "الأسئلة الثابتة"
 
     def __str__(self):
-        return f"{self.question[:50]} ({self.store.name})"
+        return f"{self.question[:50]} ({self.store.name})"
+
+
+class StoreMonthlyUsage(models.Model):
+    """How many model-billed messages a store used in one calendar month.
+
+    Nothing counted anything before this. throttles.py caps requests per *minute* and
+    only on the DRF views — the Messenger and Instagram path goes through views_meta
+    into Celery and never touches them, so the traffic that actually generates the
+    OpenAI bill had no per-store limit of any kind, and the subscription tiers could
+    not be enforced or invoiced.
+
+    Counted in router.route at the point where model spending begins, so a StaticFAQ
+    answer or a goodbye reply — both of which return earlier and cost nothing — is
+    never billed to the store.
+    """
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="usage")
+    # First day of the month this row covers.
+    period = models.DateField()
+    llm_messages = models.PositiveIntegerField(default=0)
+    # Set once each, so an owner is warned rather than spammed every message.
+    warned_at_80 = models.BooleanField(default=False)
+    warned_at_cap = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["store", "period"], name="one_usage_row_per_store_month"
+            )
+        ]
+        ordering = ["-period"]
+
+    def __str__(self):
+        return f"{self.store.name} {self.period:%Y-%m}: {self.llm_messages}"

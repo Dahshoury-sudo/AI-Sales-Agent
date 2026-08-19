@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 import inspect
@@ -5,9 +6,11 @@ import json
 from decimal import Decimal
 from unittest import mock
 
+from django.contrib.admin.sites import site
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.db import connection
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,8 +28,11 @@ from products.models import (
     ProductVariant,
     StaticFAQ,
     Store,
+    StoreMonthlyUsage,
     StoreSettings,
 )
+from products.admin import OrderAdmin
+from products.encryption import normalize_phone, phone_blind_index
 from products.services.ai import client as ai_client
 from products.services.ai.classifier import classify
 from products.services.ai.intent import extract_intent
@@ -39,6 +45,7 @@ from products.services.comparison_service import compare_products
 from products.services.conversation_service import (
     build_llm_history,
     get_or_create_platform_conversation,
+    merge_preferences,
     save_message,
 )
 from products.services.general_service import handle_general
@@ -54,6 +61,11 @@ from products.services.product_formatting import (
 from products.services.product_info import get_product_info
 from products.services.product_resolver import resolve_products
 from products.services.reply_sanitizer import sanitize_reply
+from products.services.usage_service import (
+    messages_used_this_month,
+    monthly_cap,
+    record_llm_message,
+)
 from products.services.order_service import (
     PAYMENT_FALLBACK,
     _cart_context,
@@ -2225,6 +2237,255 @@ class SalesQualityTests(TestCase):
         self.assertIn("الـ 90 ملي", available)
 
 
+class PreferenceMemoryTests(TestCase):
+    """A budget or gender stated once must survive the history window.
+
+    extract_intent rebuilds all ten criteria from the last 8 messages only, so a budget
+    given five turns back disappeared. That is not a cosmetic loss: with max_price gone,
+    recommendation.py flips price_instruction to "ممنوع تذكر الأسعار" so the bot stops
+    quoting prices mid-conversation, search_products drops its price filter and starts
+    offering perfumes over budget, and the router asks for a budget already given.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def test_a_budget_survives_a_turn_that_does_not_mention_it(self):
+        """The regression: turn 2 is what a truncated window looks like."""
+        merge_preferences(self.conversation, {"gender": "male", "max_price": 700})
+
+        later = merge_preferences(self.conversation, {"gender": "male"})
+
+        self.assertEqual(later["max_price"], 700)
+
+    def test_a_new_value_overrides_the_saved_one(self):
+        """The extractor prompt's own rule: a customer changing their mind wins."""
+        merge_preferences(self.conversation, {"max_price": 700, "brand": "Dior"})
+
+        later = merge_preferences(self.conversation, {"max_price": 1500})
+
+        self.assertEqual(later["max_price"], 1500)
+        self.assertEqual(later["brand"], "Dior", "unrelated preferences should persist")
+
+    def test_preferences_accumulate_across_several_turns(self):
+        merge_preferences(self.conversation, {"gender": "female"})
+        merge_preferences(self.conversation, {"perfume_type": "oriental"})
+        final = merge_preferences(self.conversation, {"max_price": 900})
+
+        self.assertEqual(final["gender"], "female")
+        self.assertEqual(final["perfume_type"], "oriental")
+        self.assertEqual(final["max_price"], 900)
+
+    def test_exclude_names_is_never_persisted(self):
+        """Per-request by design. Persisting it would blacklist a perfume the customer
+        merely mentioned — the over-broad exclusion bug, reintroduced by the back door."""
+        merge_preferences(self.conversation, {"exclude_names": ["Black Opium"]})
+
+        self.conversation.refresh_from_db()
+        self.assertNotIn("exclude_names", self.conversation.preferences)
+        self.assertEqual(merge_preferences(self.conversation, {}).get("exclude_names"), None)
+
+    def test_the_multiple_gender_signal_is_not_persisted(self):
+        """"multiple" means "he wants one of each, ask which first" — a transient state.
+        Saved, it would re-ask that question on every later turn omitting a gender."""
+        merge_preferences(self.conversation, {"gender": "multiple", "max_price": 800})
+
+        self.conversation.refresh_from_db()
+        self.assertNotIn("gender", self.conversation.preferences)
+        self.assertEqual(self.conversation.preferences["max_price"], 800)
+
+    def test_empty_values_do_not_overwrite_real_ones(self):
+        merge_preferences(self.conversation, {"notes": ["vanilla"], "gender": "female"})
+
+        later = merge_preferences(self.conversation, {"notes": [], "gender": None})
+
+        self.assertEqual(later["notes"], ["vanilla"])
+        self.assertEqual(later["gender"], "female")
+
+    def test_no_conversation_is_a_no_op(self):
+        """The web widget can route before a conversation row exists."""
+        self.assertEqual(merge_preferences(None, {"gender": "male"}), {"gender": "male"})
+
+    def test_the_router_merges_before_it_decides_anything(self):
+        """The whole point of merging at the top of the branch: the budget prompt and
+        search_products must both see the restored value, not the truncated intent."""
+        self.conversation.preferences = {"gender": "male", "max_price": 700}
+        self.conversation.save()
+
+        with mock.patch(
+            "products.services.router.classify", return_value="recommendation"
+        ), mock.patch(
+            "products.services.router.extract_intent", return_value={"brand": "Dior"}
+        ), mock.patch(
+            "products.services.router.search_products",
+            return_value={"products": Product.objects.none(), "alternatives": None},
+        ) as search, mock.patch(
+            "products.services.router.recommend", return_value=("ok", "")
+        ):
+            route("عايز حاجة من ديور", [], self.store, self.conversation)
+
+        intent_used = search.call_args[0][0]
+        self.assertEqual(intent_used["max_price"], 700, "budget was lost before search")
+        self.assertEqual(intent_used["gender"], "male")
+        self.assertEqual(intent_used["brand"], "Dior")
+
+
+class UsageMeteringTests(TestCase):
+    """Counting the messages that actually cost money.
+
+    Nothing counted anything before this. throttles.py limits requests per *minute* and
+    only on the DRF views — the Messenger and Instagram path runs views_meta → Celery
+    and never touches them — so the traffic generating the OpenAI bill had no per-store
+    limit and the subscription tiers were unenforceable.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.settings_row = StoreSettings.objects.create(
+            store=self.store, monthly_message_cap=10
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _route(self, message, classification="faq"):
+        with mock.patch(
+            "products.services.router.classify", return_value=classification
+        ), mock.patch(
+            "products.services.router.handle_general", return_value=("ok", "")
+        ):
+            return route(message, [], self.store, self.conversation)
+
+    def _count(self):
+        usage = StoreMonthlyUsage.objects.filter(store=self.store).first()
+        return usage.llm_messages if usage else 0
+
+    def test_a_classified_message_is_counted_once(self):
+        self._route("عندكم سوفاج؟")
+
+        self.assertEqual(self._count(), 1)
+
+    def test_a_static_faq_answer_costs_nothing(self):
+        """It returns before classify(), so it must never be billed — that free path is
+        the single biggest cost saving in the system."""
+        StaticFAQ.objects.create(
+            store=self.store, question="الشحن بكام؟", keywords="شحن",
+            answer="الشحن 60 جنيه.",
+        )
+
+        reply, _ = self._route("الشحن بكام؟")
+
+        self.assertEqual(reply, "الشحن 60 جنيه.")
+        self.assertEqual(self._count(), 0)
+
+    def test_a_goodbye_shortcut_costs_nothing(self):
+        history = [
+            {"role": "user", "content": "سلام"},
+            {"role": "assistant", "content": "نورتنا"},
+            {"role": "user", "content": "سلام"},
+        ]
+        with mock.patch("products.services.router.classify") as classify_mock:
+            route("سلام", history, self.store, self.conversation)
+
+        self.assertFalse(classify_mock.called, "the shortcut should return before classify")
+        self.assertEqual(self._count(), 0)
+
+    def test_counts_accumulate_within_the_month(self):
+        for _ in range(3):
+            self._route("عندكم حاجة؟")
+
+        self.assertEqual(self._count(), 3)
+
+    def test_usage_is_bucketed_per_store(self):
+        other = Store.objects.create(name="Rival")
+        other_conversation = Conversation.objects.create(store=other)
+
+        self._route("عندكم حاجة؟")
+        with mock.patch(
+            "products.services.router.classify", return_value="faq"
+        ), mock.patch(
+            "products.services.router.handle_general", return_value=("ok", "")
+        ):
+            route("عندكم حاجة؟", [], other, other_conversation)
+
+        self.assertEqual(self._count(), 1)
+        self.assertEqual(
+            StoreMonthlyUsage.objects.get(store=other).llm_messages, 1
+        )
+
+    def test_the_owner_is_warned_once_at_eighty_percent(self):
+        for _ in range(8):  # cap is 10
+            self._route("عندكم حاجة؟")
+
+        warnings = Notification.objects.filter(store=self.store, type="usage_warning")
+        self.assertEqual(warnings.count(), 1)
+        self.assertIn("قربت على الحد", warnings.first().title)
+
+    def test_the_owner_is_warned_again_at_the_cap_but_not_repeatedly(self):
+        for _ in range(13):  # well past the cap of 10
+            self._route("عندكم حاجة؟")
+
+        warnings = Notification.objects.filter(store=self.store, type="usage_warning")
+        self.assertEqual(warnings.count(), 2, "one warning at 80%, one at the cap")
+
+    def test_going_over_the_cap_never_stops_the_bot(self):
+        """A bot that goes quiet mid-sale costs the store more than the overage."""
+        for _ in range(15):
+            reply, _ = self._route("عندكم حاجة؟")
+
+        self.assertEqual(reply, "ok", "the reply was withheld once over the cap")
+        self.assertEqual(self._count(), 15, "counting stopped at the cap")
+
+    def test_an_uncapped_store_is_counted_but_never_warned(self):
+        self.settings_row.monthly_message_cap = None
+        self.settings_row.save()
+
+        for _ in range(20):
+            self._route("عندكم حاجة؟")
+
+        self.assertEqual(self._count(), 20)
+        self.assertFalse(
+            Notification.objects.filter(store=self.store, type="usage_warning").exists()
+        )
+
+    def test_a_store_with_no_settings_row_is_treated_as_uncapped(self):
+        bare = Store.objects.create(name="No Settings")
+
+        self.assertIsNone(monthly_cap(bare))
+        record_llm_message(bare)
+
+        self.assertEqual(StoreMonthlyUsage.objects.get(store=bare).llm_messages, 1)
+
+    def test_each_month_gets_its_own_bucket(self):
+        from datetime import date
+
+        record_llm_message(self.store, today=date(2026, 7, 15))
+        record_llm_message(self.store, today=date(2026, 8, 3))
+        record_llm_message(self.store, today=date(2026, 8, 27))
+
+        july = StoreMonthlyUsage.objects.get(store=self.store, period=date(2026, 7, 1))
+        august = StoreMonthlyUsage.objects.get(store=self.store, period=date(2026, 8, 1))
+
+        self.assertEqual(july.llm_messages, 1)
+        self.assertEqual(august.llm_messages, 2)
+
+    def test_reading_usage_never_writes_a_row(self):
+        """The analytics endpoint is a GET. It first used usage_for, which
+        get_or_creates, so every dashboard page load wrote a row — including for months
+        the store had never sent a message."""
+        self.assertEqual(messages_used_this_month(self.store), 0)
+
+        self.assertFalse(
+            StoreMonthlyUsage.objects.filter(store=self.store).exists(),
+            "reading usage created a row",
+        )
+
+    def test_reading_usage_reports_what_was_counted(self):
+        self._route("عندكم حاجة؟")
+        self._route("عندكم حاجة؟")
+
+        self.assertEqual(messages_used_this_month(self.store), 2)
+
+
 class ReplySanitizerTests(TestCase):
     """Banned phrasing is stripped rather than asked about again.
 
@@ -2606,3 +2867,262 @@ class PersonaConsolidationTests(TestCase):
         ):
             with self.subTest(rule=rule):
                 self.assertIn(marker, prompt)
+
+
+# A valid Fernet key (32 url-safe base64 bytes). settings_test deliberately leaves
+# FIELD_ENCRYPTION_KEY unset so the default suite exercises the no-key path, so any test
+# that actually needs encryption has to supply one.
+TEST_ENCRYPTION_KEY = base64.urlsafe_b64encode(b"perfume-ai-test-key-32-bytes!!!!").decode()
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_ENCRYPTION_KEY)
+class CustomerPIIEncryptionTests(TestCase):
+    """Phones and addresses are encrypted at rest and still usable.
+
+    Fernet is non-deterministic, which is what breaks naive encryption of a queried
+    column: an admin icontains search encrypts the term into ciphertext matching
+    nothing, and a DISTINCT counts every row as a separate customer. Both are served by
+    the blind index instead.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+
+    def _order(self, phone="01000000000", **overrides):
+        fields = {
+            "store": self.store,
+            "customer_name": "محمد",
+            "customer_phone": phone,
+            "secondary_phone": "01100000000",
+            "shipping_address": "القاهرة، المعادي، ٥ شارع النصر",
+            "total_price": 400,
+        }
+        fields.update(overrides)
+        return Order.objects.create(**fields)
+
+    def _raw(self, order, column):
+        """The column exactly as stored, bypassing the field's decryption."""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"SELECT {column} FROM products_order WHERE id = %s", [order.id]
+            )
+            return cursor.fetchone()[0]
+
+    def test_pii_round_trips_through_the_orm(self):
+        order = self._order()
+
+        reloaded = Order.objects.get(pk=order.pk)
+
+        self.assertEqual(reloaded.customer_phone, "01000000000")
+        self.assertEqual(reloaded.secondary_phone, "01100000000")
+        self.assertEqual(reloaded.shipping_address, "القاهرة، المعادي، ٥ شارع النصر")
+
+    def test_the_stored_columns_are_not_plaintext(self):
+        """The actual point of the change — verified against the raw column, because
+        reading through the ORM would decrypt and prove nothing."""
+        order = self._order()
+
+        for column in ("customer_phone", "secondary_phone", "shipping_address"):
+            with self.subTest(column=column):
+                stored = self._raw(order, column)
+                self.assertNotIn("01000000000", stored or "")
+                self.assertNotIn("المعادي", stored or "")
+
+    def test_the_customer_name_stays_queryable(self):
+        """Left plaintext on purpose: admin name search is a substring lookup, and no
+        blind index can serve that."""
+        self._order()
+
+        self.assertTrue(
+            Order.objects.filter(customer_name__icontains="محم").exists()
+        )
+
+    def test_one_phone_written_three_ways_is_one_customer(self):
+        """This also fixes a bug older than encryption: _looks_like_phone never
+        normalized, so these three already counted as three customers."""
+        self._order(phone="01000000000")
+        self._order(phone="0100 000 0000")
+        self._order(phone="+201000000000")
+
+        distinct = (
+            Order.objects.filter(store=self.store)
+            .values("customer_phone_hash")
+            .distinct()
+            .count()
+        )
+
+        self.assertEqual(distinct, 1)
+
+    def test_different_phones_stay_distinct(self):
+        self._order(phone="01000000000")
+        self._order(phone="01222222222")
+
+        self.assertEqual(
+            Order.objects.values("customer_phone_hash").distinct().count(), 2
+        )
+
+    def test_the_hash_is_rewritten_when_the_phone_changes(self):
+        order = self._order(phone="01000000000")
+        original = order.customer_phone_hash
+
+        order.customer_phone = "01222222222"
+        order.save()
+
+        self.assertNotEqual(order.customer_phone_hash, original)
+        self.assertEqual(
+            order.customer_phone_hash, phone_blind_index("01222222222")
+        )
+
+    def test_admin_phone_search_finds_an_encrypted_order(self):
+        order = self._order(phone="01000000000")
+        order_admin = OrderAdmin(Order, site)
+        request = RequestFactory().get("/admin/products/order/")
+        request.user = User.objects.create_superuser("root", "r@e.com", "pw")
+
+        found, _ = order_admin.get_search_results(
+            request, Order.objects.all(), "01000000000"
+        )
+
+        self.assertIn(order, found)
+
+    def test_admin_phone_search_tolerates_a_differently_typed_number(self):
+        order = self._order(phone="01000000000")
+        order_admin = OrderAdmin(Order, site)
+        request = RequestFactory().get("/admin/products/order/")
+        request.user = User.objects.create_superuser("root", "r@e.com", "pw")
+
+        found, _ = order_admin.get_search_results(
+            request, Order.objects.all(), "+20 100 000 0000"
+        )
+
+        self.assertIn(order, found)
+
+    def test_admin_name_search_still_works(self):
+        order = self._order()
+        order_admin = OrderAdmin(Order, site)
+        request = RequestFactory().get("/admin/products/order/")
+        request.user = User.objects.create_superuser("root", "r@e.com", "pw")
+
+        found, _ = order_admin.get_search_results(
+            request, Order.objects.all(), "محمد"
+        )
+
+        self.assertIn(order, found)
+
+    def test_the_cart_encrypts_the_same_fields(self):
+        conversation = Conversation.objects.create(store=self.store)
+        cart = Cart.objects.create(
+            conversation=conversation, customer_phone="01000000000",
+            shipping_address="القاهرة",
+        )
+
+        reloaded = Cart.objects.get(pk=cart.pk)
+
+        self.assertEqual(reloaded.customer_phone, "01000000000")
+        self.assertEqual(reloaded.shipping_address, "القاهرة")
+
+    def test_rows_predating_the_migration_are_missing_from_the_customer_count(self):
+        """Documents a real transitional gap rather than pretending it away.
+
+        Every Order written before migration 0032 has customer_phone_hash="", and the
+        KPI excludes those — an order with no phone is not a customer. So
+        unique_customers undercounts until backfill_pii_encryption has run. Simulated
+        here with a raw UPDATE, which is the only way to get an unhashed row now that
+        save() always populates it."""
+        order = self._order()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE products_order SET customer_phone_hash = '' WHERE id = %s",
+                [order.id],
+            )
+
+        counted = (
+            Order.objects.filter(store=self.store)
+            .exclude(customer_phone_hash="")
+            .values("customer_phone_hash")
+            .distinct()
+            .count()
+        )
+        self.assertEqual(counted, 0, "an unhashed legacy row should not be counted")
+
+        # Re-saving is exactly what the backfill command does, and it repairs the row.
+        Order.objects.get(pk=order.pk).save()
+
+        repaired = (
+            Order.objects.filter(store=self.store)
+            .exclude(customer_phone_hash="")
+            .values("customer_phone_hash")
+            .distinct()
+            .count()
+        )
+        self.assertEqual(repaired, 1)
+
+    def test_an_order_with_no_phone_is_not_counted_as_a_customer(self):
+        self._order(phone="")
+
+        self.assertEqual(
+            Order.objects.exclude(customer_phone_hash="").count(), 0
+        )
+
+
+class PhoneNormalizationTests(TestCase):
+    """The blind index is only as good as the normalization feeding it."""
+
+    def test_egyptian_formats_collapse_to_one_key(self):
+        canonical = normalize_phone("01000000000")
+
+        for spelling in ("0100 000 0000", "+201000000000", "0020 100 000 0000",
+                         "0100-000-0000"):
+            with self.subTest(spelling=spelling):
+                self.assertEqual(normalize_phone(spelling), canonical)
+
+    def test_short_values_are_kept_whole(self):
+        self.assertEqual(normalize_phone("12345"), "12345")
+
+    def test_empty_input_hashes_to_nothing(self):
+        for empty in ("", None):
+            with self.subTest(value=empty):
+                self.assertEqual(normalize_phone(empty), "")
+                self.assertEqual(phone_blind_index(empty), "")
+
+
+class EncryptionWithoutAKeyTests(TestCase):
+    """A missing key must degrade, not crash — and must be visibly a no-op.
+
+    settings.py defaults FIELD_ENCRYPTION_KEY to "" and encrypt_value silently returns
+    plaintext when it is unset, so an environment that forgets it gets no encryption at
+    all. That is worth pinning: it is the difference between "encrypted" and "believed
+    to be encrypted", and the Meta access tokens have relied on this code path since
+    long before customer PII did.
+    """
+
+    @override_settings(FIELD_ENCRYPTION_KEY="")
+    def test_saving_without_a_key_stores_plaintext_rather_than_failing(self):
+        store = Store.objects.create(name="Perfamix Test")
+
+        order = Order.objects.create(
+            store=store, customer_name="محمد", customer_phone="01000000000",
+            shipping_address="القاهرة", total_price=400,
+        )
+
+        self.assertEqual(Order.objects.get(pk=order.pk).customer_phone, "01000000000")
+
+    @override_settings(FIELD_ENCRYPTION_KEY="")
+    def test_grouping_still_works_unkeyed(self):
+        """The hash falls back to an unkeyed digest, so analytics stay correct even in a
+        misconfigured environment."""
+        self.assertNotEqual(phone_blind_index("01000000000"), "")
+        self.assertEqual(
+            phone_blind_index("01000000000"), phone_blind_index("0100 000 0000")
+        )
+
+    @override_settings(FIELD_ENCRYPTION_KEY=TEST_ENCRYPTION_KEY)
+    def test_the_key_changes_the_hash(self):
+        """Keyed, so a stolen database cannot brute-force the small space of Egyptian
+        mobile numbers back out of the index."""
+        keyed = phone_blind_index("01000000000")
+
+        with override_settings(FIELD_ENCRYPTION_KEY=""):
+            unkeyed = phone_blind_index("01000000000")
+
+        self.assertNotEqual(keyed, unkeyed)

@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from products.models import Conversation, Order, OrderItem
+from products.services.usage_service import messages_used_this_month, monthly_cap
 from .auth_backend import StoreOwnerAuthentication
 
 
@@ -217,12 +218,22 @@ class AnalyticsView(APIView):
             round(total_revenue / delivered_orders, 2)
             if delivered_orders > 0 else 0
         )
+        # Counted on the blind index, not customer_phone: that column is encrypted with
+        # a non-deterministic cipher, so a DISTINCT over it would report every order as
+        # a separate customer. The hash is also normalized, which fixes a bug that
+        # predates encryption — "0100 000 0000" and "01000000000" used to count twice.
         unique_customers = (
             Order.objects.filter(store=store)
-            .values("customer_phone")
+            .exclude(customer_phone_hash="")
+            .values("customer_phone_hash")
             .distinct()
             .count()
         )
+
+        # Read-only: usage_for would get_or_create, writing a row on every dashboard
+        # page load, including for months the store never sent anything.
+        messages_this_month = messages_used_this_month(store)
+        cap = monthly_cap(store)
 
         return Response({
             "period_comparisons":    period_comparisons,
@@ -236,6 +247,8 @@ class AnalyticsView(APIView):
                 "unique_customers":    unique_customers,
                 "conversion_rate":     conversion_rate,
                 "avg_order_value":     avg_order_value,
+                "messages_this_month": messages_this_month,
+                "monthly_message_cap": cap,
             },
         })
 

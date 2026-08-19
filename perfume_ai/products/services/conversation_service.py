@@ -75,3 +75,67 @@ def build_llm_history(conversation, limit=8):
         for message in get_conversation_messages(conversation, limit=limit)
         if message.role in LLM_ROLES
     ]
+
+
+# The durable half of the intent schema (products/services/ai/intent.py). exclude_names
+# is deliberately absent: it is per-request by design — intent.py only fills it when the
+# customer asks for an alternative — and persisting it would permanently blacklist
+# perfumes the customer merely mentioned once.
+PERSISTED_PREFERENCE_KEYS = (
+    "gender",
+    "max_price",
+    "perfume_type",
+    "brand",
+    "season",
+    "occasion",
+    "notes",
+    "longevity",
+    "projection",
+)
+
+# "multiple" is a transient signal, not a taste: it means the customer wants a men's and
+# a women's perfume and the router must ask which to start with. Persisting it would
+# restore that question on every later turn that happens to omit a gender.
+_TRANSIENT_GENDER = "multiple"
+
+
+def _is_set(value):
+    """A preference the customer actually expressed, as opposed to an empty slot."""
+    return value not in (None, "", [], {})
+
+
+def merge_preferences(conversation, intent):
+    """Fill gaps in a freshly extracted intent from what the customer said earlier.
+
+    extract_intent re-derives every criterion from the last 8 messages alone, so a
+    budget or gender given five turns back is simply gone. The consequences are not
+    subtle: with max_price missing, recommendation.py switches price_instruction to
+    "ممنوع تذكر الأسعار", so a bot that was quoting prices stops, search_products drops
+    its price filter and starts offering perfumes over budget, and the router asks for
+    a budget the customer already gave.
+
+    Freshly extracted values always win over saved ones, matching the override rule the
+    extractor prompt already states — a customer who changes their mind must not be
+    contradicted by their own history.
+    """
+    merged = dict(intent or {})
+    if conversation is None:
+        return merged
+
+    saved = conversation.preferences or {}
+
+    for key in PERSISTED_PREFERENCE_KEYS:
+        if not _is_set(merged.get(key)) and _is_set(saved.get(key)):
+            merged[key] = saved[key]
+
+    to_save = {
+        key: merged[key] for key in PERSISTED_PREFERENCE_KEYS if _is_set(merged.get(key))
+    }
+    if to_save.get("gender") == _TRANSIENT_GENDER:
+        to_save.pop("gender")
+
+    if to_save != saved:
+        conversation.preferences = to_save
+        conversation.save(update_fields=["preferences"])
+
+    return merged

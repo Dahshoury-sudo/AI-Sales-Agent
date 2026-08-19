@@ -6,7 +6,9 @@ from .product_info import get_product_info
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general
+from .conversation_service import merge_preferences
 from .notification_service import notify_handoff
+from .usage_service import record_llm_message
 from products.models import Order
 from django.db import transaction
 from difflib import SequenceMatcher
@@ -158,6 +160,11 @@ def route(message, history=None, store=None, conversation=None):
     # on every other message. Firing it in a ThreadPoolExecutor did not help: the
     # `with` block exits via shutdown(wait=True), so it blocked on both calls
     # anyway.
+    #
+    # Billing starts on this line, so the counter goes immediately above it: the
+    # StaticFAQ match and the goodbye shortcut both returned earlier without spending
+    # anything, and classify() is the first model call on every path that remains.
+    record_llm_message(store)
     request_type = classify(message, history)
 
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
@@ -206,6 +213,10 @@ def route(message, history=None, store=None, conversation=None):
     if request_type == "recommendation":
         # The only branch that needs the extracted intent.
         intent = extract_intent(message, history, store)
+        # Restore anything the customer said before the 8-message window cut it off.
+        # Merged here, before every check below, so the gender and budget prompts and
+        # search_products all see the full picture rather than a truncated one.
+        intent = merge_preferences(conversation, intent)
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":
