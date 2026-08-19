@@ -44,7 +44,8 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(','
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if os.environ.get('CORS_ALLOWED_ORIGINS') else []
 CORS_ALLOW_ALL_ORIGINS = True if DEBUG and not CORS_ALLOWED_ORIGINS else False
 
-CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.up.railway.app']
+_csrf_extra = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if os.environ.get('CSRF_TRUSTED_ORIGINS') else []
+CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.up.railway.app'] + _csrf_extra
 
 # Allow the custom X-API-Key header from cross-origin widget requests
 CORS_ALLOW_HEADERS = [
