@@ -9,9 +9,50 @@ from .general_service import handle_general
 from .conversation_service import merge_preferences
 from .notification_service import notify_handoff
 from .usage_service import record_llm_message
+from .identification_service import identify_perfume
+from .objection_service import handle_objection
+from .reply_sanitizer import soften_marketing_language, strip_premature_closing
+from .sales import constraints as sales_constraints
+from .sales import objection as sales_objection
+from .sales import stage as sales_stage
 from products.models import Order
 from django.db import transaction
 from difflib import SequenceMatcher
+
+
+# Classifications where an objection in the message should take over. A customer objecting
+# to a price is usually classified `faq` or `product_info`, and answering that as a product
+# question is exactly the defend-instead-of-address failure. `order` and `order_cancel` are
+# absent on purpose: mid-checkout hesitation is handled by the order flow, which holds the
+# cart state this branch does not.
+OBJECTION_ELIGIBLE = frozenset(
+    {"faq", "handoff", "recommendation", "product_info", "greeting"}
+)
+
+# An explicit request for a person still goes to handoff, even when it carries an objection.
+_ASKED_FOR_HUMAN = (
+    "اكلم حد", "أكلم حد", "حد حقيقي", "موظف", "مندوب", "خدمة العملاء",
+    "حد من الفريق", "بشري", "انسان", "إنسان", "اتكلم مع حد",
+)
+
+
+def _wants_a_human(message):
+    return any(phrase in (message or "") for phrase in _ASKED_FOR_HUMAN)
+
+
+def _finalize(reply, stage):
+    """Post-process a generated reply according to the stage it was produced in.
+
+    Both passes are code rather than prompt rules, for the reason reply_sanitizer's module
+    docstring already gives: the persona forbade a closing question and the bot closed
+    three replies in a row anyway. Applied only to model-generated text — scripted replies
+    return directly and are pinned byte-for-byte by ScriptedRepliesSurviveSanitizingTests.
+    """
+    reply = soften_marketing_language(reply)
+    if not sales_stage.closing_allowed(stage):
+        reply = strip_premature_closing(reply, stage)
+    return reply
+
 
 
 def _is_repetitive(new_response, history):
@@ -167,6 +208,28 @@ def route(message, history=None, store=None, conversation=None):
     record_llm_message(store)
     request_type = classify(message, history)
 
+    # An objection is detected from the customer's own words rather than asked of the
+    # classifier: it costs no extra model call, it is directly testable, and when it misses
+    # the turn simply falls through to the behaviour it had before. It outranks the
+    # classification because "غالي" arrives labelled faq or product_info, and answering
+    # those as ordinary questions is the defend-instead-of-address bug.
+    objection = None
+    if request_type in OBJECTION_ELIGIBLE and not _wants_a_human(message):
+        objection = sales_objection.detect(message, history)
+
+    if objection is not None:
+        reply, context = handle_objection(
+            message, objection, history, store, conversation
+        )
+        stage = (
+            sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
+        )
+        return _finalize(reply, stage), context
+
+    if request_type == "identification":
+        reply, context = identify_perfume(message, history, store)
+        return _finalize(reply, sales_stage.IDENTIFICATION), context
+
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
     semantic_rep = _detect_semantic_repetition(history)
     text_rep = _count_recent_repetitions(history)
@@ -270,6 +333,15 @@ def route(message, history=None, store=None, conversation=None):
             intent.get("projection"),
             intent.get("max_price"),
             intent.get("notes"),
+            # The new slots count too, and "شبه Sauvage" is the most specific thing a
+            # customer can say — without these, asking for a lookalike registered as
+            # having said nothing about their taste and got answered with "قولي ذوقك".
+            # Additive only: this can make has_taste_info true where it was false, never
+            # the reverse, so no path that works today changes.
+            intent.get("similar_to"),
+            intent.get("avoid_notes"),
+            intent.get("avoid_traits"),
+            intent.get("wants_uncommon"),
         ])
         
         has_budget = intent.get("max_price") is not None
@@ -301,6 +373,19 @@ def route(message, history=None, store=None, conversation=None):
                             break
             
             if not has_taste_info and not already_asked_preferences:
+                # A gift-giver who does not know the recipient's taste cannot answer "what
+                # do you like?" — asking it anyway is what produced two perfumes and
+                # "الاتنين مضمونين". Ask the one question they *can* answer instead.
+                is_gift, recipient_taste_known = sales_constraints.gift_context(
+                    message, history, intent
+                )
+                if is_gift and not recipient_taste_known:
+                    return handle_general(
+                        f"""العميل بعتلي: "{message}"
+{sales_constraints.GIFT_UNCERTAINTY_HINT}""",
+                        history, store
+                    )
+
                 return handle_general(
                     f"""العميل بعتلي: "{message}"
 
@@ -315,39 +400,57 @@ def route(message, history=None, store=None, conversation=None):
                 )
                 
             if has_taste_info and not has_budget and not already_asked_budget:
-                return handle_general(
-                    f"""العميل بعتلي: "{message}"
+                # The customer told us plenty and the whole turn was still blocked on a
+                # budget question that mentioned none of it: "عايز برفان رجالي ريحته فخمة
+                # وثابتة، مناسب للخروجات بالليل، بس مش عايز حاجة تقيلة" was answered with
+                # "ميزانيتك في حدود كام؟" and nothing else. Above the constraint threshold
+                # we recommend and fold the budget probe into that reply instead; below it
+                # we still ask, but with what they said attached so the question
+                # acknowledges it. The wording is a hint, not a script — the behaviour
+                # being replaced was one hardcoded sentence, and mandating a different
+                # single sentence would be the same bug in a nicer costume.
+                if not sales_constraints.can_recommend_without_budget(intent):
+                    return handle_general(
+                        f"""العميل بعتلي: "{message}"
+{sales_constraints.acknowledgement_hint(intent)}
+العميل ده قال تفضيلاته بس لسه متحددش ميزانيته.
+اعترف باللي قاله في نص جملة قصيرة بأسلوبك، وبعدها اسأله عن الميزانية في سؤال واحد مختصر.
 
-العميل ده عايز ترشيح عطر وقال تفضيلاته، بس لسه متحددش ميزانيته.
-اسأله سؤال واحد مختصر عن الميزانية عشان تقدر ترشحله أنسب حاجة، زي كده:
-"تمام 👌 ميزانيتك في حدود كام عشان أرشحلك أنسب حاجة؟"
-
-❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
-                    history, store
-                )
+❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.
+❌ ممنوع تعيد سرد كل تفاصيل طلبه عليه.""",
+                        history, store
+                    )
         
         results = search_products(intent, store)
-        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent)
-        
+        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results)
+
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
-            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent)
-        
-        return response, context
+            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results)
+
+        # A customer being shown options for the first time has not chosen anything yet, so
+        # this turn has not earned "تحب أساعدك في الطلب؟".
+        stage = sales_stage.derive(request_type, message, intent, objection, history)
+        return _finalize(response, stage), context
 
     elif request_type == "product_info":
         response, context = get_product_info(message, history, store)
-        
+
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product data and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف تماماً."
             response, context = get_product_info(modified_msg, history, store)
-        
-        return response, context
+
+        # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
+        # is a factual question and may not.
+        stage = sales_stage.derive(request_type, message, None, objection, history)
+        return _finalize(response, stage), context
 
     elif request_type == "comparison":
-        return compare_products(message, history, store)
+        response, context = compare_products(message, history, store)
+        # Still weighing two options — differentiate, do not close.
+        return _finalize(response, sales_stage.COMPARISON), context
 
     elif request_type in ["greeting", "faq"]:
         return handle_general(message, history, store)

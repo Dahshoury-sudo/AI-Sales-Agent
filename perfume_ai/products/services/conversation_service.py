@@ -81,6 +81,11 @@ def build_llm_history(conversation, limit=8):
 # is deliberately absent: it is per-request by design — intent.py only fills it when the
 # customer asks for an alternative — and persisting it would permanently blacklist
 # perfumes the customer merely mentioned once.
+#
+# avoid_notes, avoid_traits and similar_to are durable for the same reason a budget is: a
+# customer who said "مش عايز حاجة تقيلة" five turns ago still does not want one, and
+# re-deriving intent from an 8-message window loses that. Losing an exclusion is worse
+# than losing a preference — it means recommending the exact thing they rejected.
 PERSISTED_PREFERENCE_KEYS = (
     "gender",
     "max_price",
@@ -91,6 +96,9 @@ PERSISTED_PREFERENCE_KEYS = (
     "notes",
     "longevity",
     "projection",
+    "avoid_notes",
+    "avoid_traits",
+    "similar_to",
 )
 
 # "multiple" is a transient signal, not a taste: it means the customer wants a men's and

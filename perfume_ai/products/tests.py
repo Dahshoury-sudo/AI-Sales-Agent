@@ -59,8 +59,22 @@ from products.services.product_formatting import (
     value_pick_note,
 )
 from products.services.product_info import get_product_info
+from products.services import identification_service
 from products.services.product_resolver import resolve_products
-from products.services.reply_sanitizer import sanitize_reply
+from products.services.reply_sanitizer import (
+    sanitize_reply,
+    soften_marketing_language,
+    strip_premature_closing,
+)
+from products.services.sales import (
+    constraints as sales_constraints,
+    notes as sales_notes,
+    objection as sales_objection,
+    ranking as sales_ranking,
+    similarity as sales_similarity,
+    stage as sales_stage,
+    value as sales_value,
+)
 from products.services.usage_service import (
     messages_used_this_month,
     monthly_cap,
@@ -3126,3 +3140,1530 @@ class EncryptionWithoutAKeyTests(TestCase):
             unkeyed = phone_blind_index("01000000000")
 
         self.assertNotEqual(keyed, unkeyed)
+
+
+class NoteParsingTests(TestCase):
+    """Note fields are free text typed per store, so they need normalising first.
+
+    bulk_import writes columns K/L/M verbatim, so "Citrus, Mint", "عود وفانيليا" and
+    "Bergamot/Pepper" all reach the database as-is. Comparing them literally finds far
+    less overlap than actually exists.
+    """
+
+    def test_a_comma_separated_field_splits(self):
+        self.assertEqual(
+            sales_notes.parse_notes("Citrus, Mint, Bergamot"),
+            ("citrus", "mint", "bergamot"),
+        )
+
+    def test_slashes_semicolons_and_newlines_all_separate(self):
+        self.assertEqual(
+            sales_notes.parse_notes("Cedar / Vetiver; Amber\nMusk"),
+            ("cedar", "vetiver", "amber", "musk"),
+        )
+
+    def test_a_standalone_arabic_waw_separates_but_an_attached_one_does_not(self):
+        """"عود و فانيليا" is two notes; "وفانيليا" is one. Splitting on every و would
+        corrupt the second."""
+        self.assertEqual(sales_notes.parse_notes("عود و فانيليا"), ("عود", "فانيليا"))
+        self.assertEqual(sales_notes.parse_notes("وفانيليا"), ("وفانيليا",))
+
+    def test_duplicates_collapse_and_order_is_kept(self):
+        self.assertEqual(
+            sales_notes.parse_notes("Rose, rose, ROSE, Oud"), ("rose", "oud")
+        )
+
+    def test_blank_input_is_empty_not_an_error(self):
+        for blank in ("", None, "   ", ",,,"):
+            with self.subTest(blank=blank):
+                self.assertEqual(sales_notes.parse_notes(blank), ())
+
+    def test_related_notes_share_an_accord_family(self):
+        """The point of families: bergamot and lemon never match as strings."""
+        self.assertIn("citrus", sales_notes.families(("bergamot",)))
+        self.assertIn("citrus", sales_notes.families(("lemon",)))
+
+    def test_an_unknown_note_contributes_no_family(self):
+        """Bucketing an unrecognised string would invent similarity."""
+        self.assertEqual(sales_notes.families(("unobtainium",)), frozenset())
+
+    def test_a_note_can_belong_to_two_families(self):
+        self.assertEqual(
+            sales_notes.families(("cherry",)), frozenset({"fruity", "gourmand"})
+        )
+
+    def test_the_sweet_expansion_is_preserved_verbatim(self):
+        """The existing "عايز حاجة مسكرة" behaviour depends on this exact list, so it
+        moved out of search_service rather than changing."""
+        self.assertEqual(
+            sales_notes.SWEET_NOTE_EXPANSION,
+            ("vanilla", "caramel", "tonka", "praline", "honey", "chocolate",
+             "cacao", "marshmallow", "sugar", "cherry", "plum"),
+        )
+
+
+class ScentSimilarityTests(TestCase):
+    """Similarity is scored from note data, and reported without a number.
+
+    "بحب ريحة Sauvage بس عايز حاجة شبهه" used to be answered with Dior Homme Intense and
+    Fahrenheit — same brand, same gender, nothing alike. Similarity was never computed;
+    it was approximated by AND-filtering LLM-guessed notes, which matched nothing.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Perfamix Test")
+        cls.brand = Brand.objects.create(store=cls.store, name="Dior")
+
+        cls.sauvage = cls._make(
+            "Dior Sauvage", "Bergamot, Pepper", "Lavender, Patchouli",
+            "Ambroxan, Cedar", occasion="Casual", longevity="8 hours",
+            projection="Strong",
+        )
+        cls.lookalike = cls._make(
+            "Ambero", "Bergamot, Pink Pepper", "Lavender", "Ambroxan, Vetiver"
+        )
+        cls.unrelated = cls._make(
+            "Fahrenheit", "Mandarin", "Violet", "Leather, Tobacco",
+            occasion="Evening", longevity="10 hours", projection="Strong",
+        )
+
+    @classmethod
+    def _make(cls, name, top, middle, base, **extra):
+        product = Product.objects.create(
+            store=cls.store, brand=cls.brand, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base,
+            oil_stock_grams=500, concentration_percentage=30, **extra
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=600, bottle_type="normal"
+        )
+        return product
+
+    def _score(self, product):
+        reference = sales_similarity.reference_from_product(self.sauvage)
+        return sales_similarity.compare(reference, product)
+
+    def test_a_genuine_lookalike_scores_far_above_an_unrelated_perfume(self):
+        self.assertGreater(self._score(self.lookalike).score, self._score(self.unrelated).score)
+
+    def test_a_genuine_lookalike_lands_in_the_close_band(self):
+        self.assertEqual(self._score(self.lookalike).band, "close")
+
+    def test_the_regression_an_unrelated_perfume_is_not_called_similar(self):
+        """Fahrenheit shares gender, projection and an evening occasion with Sauvage and
+        must still not read as similar to it."""
+        self.assertNotEqual(self._score(self.unrelated).band, "close")
+
+    def test_shared_notes_are_named_so_the_claim_is_evidenced(self):
+        shared = self._score(self.lookalike).shared_notes
+
+        self.assertIn("bergamot", shared)
+        self.assertIn("ambroxan", shared)
+
+    def test_occasion_and_gender_stay_separate_from_scent_dna(self):
+        """Conflating them is what produced the bug: same occasion is not similarity."""
+        result = self._score(self.unrelated)
+
+        self.assertTrue(result.same_gender)
+        self.assertLess(result.score, sales_similarity.CLOSE)
+
+    def test_the_description_never_contains_a_percentage(self):
+        """Handing the model a number is how "95% similar to the original" gets born."""
+        reference = sales_similarity.reference_from_product(self.sauvage)
+        description = sales_similarity.describe(reference, self._score(self.lookalike))
+
+        self.assertNotIn("%", description)
+        self.assertIn("ممنوع تذكر نسبة مئوية", description)
+
+    def test_a_reference_we_do_not_stock_is_labelled_as_general_knowledge(self):
+        """Its notes came from the model's world knowledge, not our catalogue, so the
+        reply has to phrase it more cautiously."""
+        reference = sales_similarity.reference_from_notes(
+            "Creed Aventus", ["pineapple", "birch", "musk"]
+        )
+
+        self.assertEqual(reference.source, "general_knowledge")
+        description = sales_similarity.describe(
+            reference, sales_similarity.compare(reference, self.lookalike)
+        )
+        if description:
+            self.assertIn("مش على عطر عندنا", description)
+
+    def test_an_unusable_reference_scores_nothing_rather_than_guessing(self):
+        empty = sales_similarity.reference_from_notes("Unknown", [])
+
+        self.assertFalse(empty.is_usable)
+        self.assertEqual(sales_similarity.compare(empty, self.lookalike).band, "none")
+
+    def test_base_notes_outweigh_top_notes(self):
+        """Base notes are the drydown — what someone means by how a perfume smells."""
+        self.assertGreater(
+            sales_similarity.LAYER_WEIGHTS["base"], sales_similarity.LAYER_WEIGHTS["top"]
+        )
+
+
+class RankingWeightTests(TestCase):
+    """A strong explicit signal must not be outvoted by weak incidental ones.
+
+    There was no ranking at all before: criteria either deleted a product or did nothing,
+    so "similar to X" could not outrank "same occasion". These pin the ordering that fixes
+    that, and the tie-break that keeps the previous behaviour intact.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Perfamix Test")
+        cls.brand = Brand.objects.create(store=cls.store, name="Dior")
+        cls.own_brand = Brand.objects.create(store=cls.store, name="Perfamix Test")
+
+    def _make(self, name, top="", middle="", base="", brand=None, oil=500, **extra):
+        product = Product.objects.create(
+            store=self.store, brand=brand or self.brand, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base,
+            oil_stock_grams=oil, concentration_percentage=30, **extra
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=600, bottle_type="normal"
+        )
+        return product
+
+    def test_similarity_outweighs_occasion_season_and_projection_combined(self):
+        """The plan's core requirement, stated as arithmetic."""
+        self.assertGreater(
+            sales_ranking.WEIGHTS["similarity"],
+            sales_ranking.WEIGHTS["occasion"]
+            + sales_ranking.WEIGHTS["season"]
+            + sales_ranking.WEIGHTS["projection"],
+        )
+
+    def test_an_explicit_exclusion_is_a_penalty_not_a_bonus(self):
+        self.assertLess(sales_ranking.WEIGHTS["avoid"], 0)
+
+    def test_a_lookalike_beats_an_occasion_match_end_to_end(self):
+        reference_product = self._make(
+            "Dior Sauvage", "Bergamot, Pepper", "Lavender", "Ambroxan, Cedar"
+        )
+        lookalike = self._make(
+            "Ambero", "Bergamot, Pink Pepper", "Lavender", "Ambroxan, Vetiver"
+        )
+        occasion_only = self._make(
+            "Fahrenheit", "Mandarin", "Violet", "Leather, Tobacco",
+            occasion="Evening", season="Winter", projection="Strong",
+        )
+        reference = sales_similarity.reference_from_product(reference_product)
+
+        ranked = sales_ranking.rank(
+            [occasion_only, lookalike],
+            {"gender": "male", "occasion": "evening", "season": "winter",
+             "projection": "strong"},
+            reference=reference,
+        )
+
+        self.assertEqual(ranked[0].product.name, "Ambero")
+
+    def test_a_perfume_full_of_an_avoided_trait_is_pushed_down(self):
+        """"مش عايز حاجة تقيلة أو تخنق اللي حواليا" has to actually cost something."""
+        heavy = self._make("Heavy One", "Oud", "Incense", "Amber, Leather")
+        light = self._make("Light One", "Bergamot", "Mint", "Cedar")
+
+        ranked = sales_ranking.rank(
+            [heavy, light], {"gender": "male", "avoid_traits": ["heavy", "suffocating"]}
+        )
+
+        self.assertEqual(ranked[0].product.name, "Light One")
+        self.assertTrue(
+            any("تقيل" in note for note in ranked[-1].mismatches),
+            "the heavy perfume should be flagged as a mismatch, not silently ranked",
+        )
+
+    def test_an_avoided_note_outranks_a_wanted_one(self):
+        """A wanted note plus an excluded note must not net out positive: an explicit
+        exclusion is the stronger statement."""
+        both = self._make("Both", "Vanilla", "", "Oud")
+
+        ranked = sales_ranking.rank(
+            [both], {"notes": ["vanilla"], "avoid_notes": ["oud"]}
+        )
+
+        self.assertTrue(ranked[0].mismatches)
+
+    def test_partial_note_matches_score_proportionally(self):
+        """The AND-filter this replaces scored two-of-three as zero."""
+        two_of_three = self._make("Two", "Bergamot", "Pepper", "Cedar")
+        one_of_three = self._make("One", "Bergamot", "Rose", "Musk")
+
+        ranked = sales_ranking.rank(
+            [one_of_three, two_of_three], {"notes": ["bergamot", "pepper", "cedar"]}
+        )
+
+        self.assertEqual(ranked[0].product.name, "Two")
+
+    def test_wanting_something_uncommon_favours_a_store_exclusive(self):
+        """"مش منتشرة" — the store's own blend is the only real signal for that in the
+        data we hold."""
+        mainstream = self._make("Mainstream", "Bergamot", "", "Cedar")
+        exclusive = self._make(
+            "Exclusive", "Bergamot", "", "Cedar", brand=self.own_brand
+        )
+
+        ranked = sales_ranking.rank(
+            [mainstream, exclusive], {"wants_uncommon": True}
+        )
+
+        self.assertEqual(ranked[0].product.name, "Exclusive")
+
+    def test_equal_scores_fall_back_to_the_previous_ordering(self):
+        """The compatibility guarantee: with nothing to discriminate on, ranking must
+        reduce to search_service's original -oil_stock_grams, id ordering."""
+        low = self._make("Low", "Bergamot", oil=100)
+        high = self._make("High", "Bergamot", oil=900)
+
+        ranked = sales_ranking.rank([low, high], {"notes": ["bergamot"]})
+
+        self.assertEqual([entry.product.name for entry in ranked], ["High", "Low"])
+
+    def test_reasons_are_rendered_without_the_score(self):
+        product = self._make("Any", "Bergamot", "", "Cedar")
+
+        ranked = sales_ranking.rank([product], {"notes": ["bergamot"]})
+        note = sales_ranking.reasons_note(ranked[0])
+
+        self.assertIn("bergamot", note)
+        self.assertNotIn(str(ranked[0].score), note)
+
+    def test_no_discriminating_signal_is_detected_as_no_signal(self):
+        """Gender alone cannot order anything — it is already a hard filter."""
+        self.assertFalse(sales_ranking.has_signal({"gender": "male"}))
+        self.assertTrue(sales_ranking.has_signal({"notes": ["oud"]}))
+
+
+class SimilaritySearchTests(TestCase):
+    """search_products end-to-end for "عايز حاجة شبه X".
+
+    Covers the two halves of the fix: notes are OR-scored rather than AND-filtered, so a
+    similarity request no longer falls through to the gender-and-brand-only branch; and
+    when nothing is actually close, the caller is told so instead of being handed the
+    nearest perfume as though it matched.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.dior = Brand.objects.create(store=self.store, name="Dior")
+        self.own = Brand.objects.create(store=self.store, name="Perfamix Test")
+
+    def _make(self, name, top="", middle="", base="", brand=None, **extra):
+        product = Product.objects.create(
+            store=self.store, brand=brand or self.dior, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base,
+            oil_stock_grams=500, concentration_percentage=30, **extra
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=600, bottle_type="normal"
+        )
+        return product
+
+    def _names(self, results):
+        products = results["products"]
+        chosen = products if products.exists() else results["alternatives"]
+        return [product.name for product in (chosen or [])]
+
+    def test_the_sauvage_regression_a_lookalike_is_ranked_first(self):
+        self._make("Dior Sauvage", "Bergamot, Pepper", "Lavender", "Ambroxan, Cedar")
+        self._make("Ambero", "Bergamot, Pink Pepper", "Lavender", "Ambroxan, Vetiver",
+                   brand=self.own)
+        self._make("Fahrenheit", "Mandarin", "Violet", "Leather, Tobacco",
+                   occasion="Evening", projection="Strong")
+        self._make("Dior Homme Intense", "Lavender", "Iris", "Leather, Amber",
+                   occasion="Evening", projection="Strong")
+
+        results = search_products(
+            {
+                "gender": "male",
+                "occasion": "evening",
+                "projection": "strong",
+                "similar_to": "Dior Sauvage",
+                "similar_to_notes": ["bergamot", "pepper", "ambroxan", "lavender"],
+                "exclude_names": ["Dior Sauvage"],
+                "wants_uncommon": True,
+            },
+            store=self.store,
+        )
+
+        self.assertEqual(self._names(results)[0], "Ambero")
+
+    def test_several_notes_no_longer_have_to_all_match(self):
+        """The AND-chain emptied the result set and hid the fall-through."""
+        self._make("Partial", "Bergamot", "Rose", "Cedar")
+
+        results = search_products(
+            {"notes": ["bergamot", "pepper", "ambroxan"]}, store=self.store
+        )
+
+        self.assertIn("Partial", self._names(results))
+
+    def test_a_reference_in_the_catalogue_is_preferred_over_guessed_notes(self):
+        self._make("Dior Sauvage", "Bergamot", "Lavender", "Ambroxan")
+        self._make("Other", "Rose", "Jasmine", "Musk")
+
+        results = search_products(
+            {"similar_to": "Dior Sauvage", "similar_to_notes": ["rose"]},
+            store=self.store,
+        )
+
+        self.assertEqual(results["similarity"]["reference_source"], "catalogue")
+
+    def test_an_unstocked_reference_falls_back_to_general_knowledge(self):
+        self._make("Other", "Pineapple", "Birch", "Musk")
+
+        results = search_products(
+            {"similar_to": "Creed Aventus",
+             "similar_to_notes": ["pineapple", "birch", "musk"]},
+            store=self.store,
+        )
+
+        self.assertEqual(results["similarity"]["reference_source"], "general_knowledge")
+
+    def test_no_close_match_is_reported_honestly(self):
+        """The honesty requirement: do not present the nearest perfume as a match."""
+        self._make("Nothing Alike", "Rose", "Jasmine", "Vanilla")
+
+        results = search_products(
+            {"similar_to": "Creed Aventus",
+             "similar_to_notes": ["pineapple", "birch", "ambergris"]},
+            store=self.store,
+        )
+
+        self.assertFalse(results["similarity"]["has_close_match"])
+        self.assertEqual(results["similarity"]["best_band"], "none")
+
+    def test_a_close_match_is_reported_as_one(self):
+        self._make("Twin", "Pineapple, Birch", "Ambergris", "Musk")
+
+        results = search_products(
+            {"similar_to": "Creed Aventus",
+             "similar_to_notes": ["pineapple", "birch", "ambergris", "musk"]},
+            store=self.store,
+        )
+
+        self.assertTrue(results["similarity"]["has_close_match"])
+
+    def test_a_sparsely_filled_product_survives_an_occasion_request(self):
+        """The regression this fixes: occasion was an icontains AND-filter, and icontains
+        against an empty column matches nothing — so naming an occasion silently deleted
+        every product whose occasion the store never filled in."""
+        self._make("No Occasion Recorded", "Bergamot", "", "Cedar")
+
+        results = search_products(
+            {"gender": "male", "occasion": "evening", "notes": ["bergamot"]},
+            store=self.store,
+        )
+
+        self.assertIn("No Occasion Recorded", self._names(results))
+
+    def test_the_return_value_is_still_a_queryset(self):
+        """recommend() calls .exists() on this, and the existing tests call len()."""
+        self._make("Any", "Bergamot", "", "Cedar")
+
+        results = search_products({"notes": ["bergamot"]}, store=self.store)
+
+        self.assertTrue(hasattr(results["products"], "exists"))
+        self.assertEqual(len(results["products"]), 1)
+
+    def test_similarity_is_none_when_none_was_requested(self):
+        self._make("Any", "Bergamot", "", "Cedar")
+
+        self.assertIsNone(
+            search_products({"gender": "male"}, store=self.store)["similarity"]
+        )
+
+
+class ValueLanguageTests(TestCase):
+    """The value pick must not call a dearer bottle cheaper.
+
+    The transcript rendered "الـ90 ملي أوفر — كمية أكتر بـ80% بفرق 302 جنيه بس". Every
+    number is right and the sentence is still wrong: "أوفر" beside a bare price difference
+    reads as *cheaper by 302*, and the model duly told a customer the bigger bottle saved
+    them money.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+            oil_stock_grams=1000, concentration_percentage=30,
+        )
+        self.small = ProductVariant.objects.create(
+            product=self.product, volume=50, price=642, bottle_type="normal"
+        )
+        self.large = ProductVariant.objects.create(
+            product=self.product, volume=90, price=944, bottle_type="normal"
+        )
+
+    def _note(self, max_price=None):
+        return value_pick_note(
+            self.product, list(self.product.variants.all()), max_price=max_price
+        )
+
+    def test_the_bigger_bottle_is_described_as_more_expensive_overall(self):
+        note = self._note()
+
+        self.assertIn("أغلى", note)
+        self.assertIn("302", note)
+
+    def test_the_per_ml_saving_is_stated_separately_from_the_total(self):
+        note = self._note()
+
+        self.assertIn("سعر الملي أرخص", note)
+        self.assertIn("10.5", note)   # 944/90
+        self.assertIn("12.8", note)   # 642/50
+
+    def test_the_regression_it_never_claims_the_dearer_bottle_is_cheaper(self):
+        note = self._note()
+
+        self.assertNotIn("أوفر بفرق", note)
+        self.assertIn('ممنوع تقول إنه "أرخص"', note)
+
+    def test_a_negative_price_difference_is_never_rendered(self):
+        """The latent bug: the baseline was the smallest bottle while the winner was the
+        cheapest per ml, with nothing guaranteeing the winner cost more. 30ml@500 beside
+        50ml@400 produced "بفرق -100 جنيه بس"."""
+        self.small.volume = 30
+        self.small.price = 500
+        self.small.save()
+        self.large.volume = 50
+        self.large.price = 400
+        self.large.save()
+
+        note = self._note()
+
+        self.assertNotIn("-100", note)
+        self.assertNotIn("-", note.replace("—", ""))
+
+    def test_price_per_ml_is_correct(self):
+        self.assertEqual(sales_value.price_per_ml(self.large), Decimal(944) / Decimal(90))
+
+    def test_a_zero_volume_variant_has_no_price_per_ml(self):
+        self.small.volume = 0
+        self.small.save()
+
+        self.assertIsNone(sales_value.price_per_ml(self.small))
+
+    def test_cross_product_value_reports_only_recorded_dimensions(self):
+        """"ليه أدفع 1200 بدل 500؟" must be answered from data, not invention."""
+        cheap = Product.objects.create(
+            store=self.store, brand=self.brand, name="Cheap", gender="male",
+            longevity="4 hours", projection="Moderate",
+            oil_stock_grams=500, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(product=cheap, volume=50, price=500)
+        dear = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dear", gender="male",
+            longevity="10 hours", projection="Strong", perfume_type="niche",
+            oil_stock_grams=500, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(product=dear, volume=50, price=1200)
+
+        dimensions, unknown = sales_value.cross_product_value(cheap, dear)
+        labels = [label for label, _, _ in dimensions]
+
+        self.assertIn("الثبات", labels)
+        self.assertIn("الفوحان", labels)
+        self.assertIn("سعر الملي", labels)
+        self.assertIn("الموسم", unknown)
+
+    def test_unknown_dimensions_are_banned_by_name_not_omitted(self):
+        bare_one = Product.objects.create(
+            store=self.store, brand=self.brand, name="Bare", gender="male",
+            oil_stock_grams=500, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(product=bare_one, volume=50, price=500)
+
+        note = sales_value.value_comparison_note(bare_one, self.product)
+
+        self.assertIn("ممنوع تخترع فرق فيها", note)
+
+    def test_the_comparison_permits_recommending_the_cheaper_option(self):
+        """A trustworthy salesperson does not force the expensive product."""
+        note = sales_value.value_comparison_note(self.product, self.product)
+
+        self.assertIn("الأرخص أنسب ليه", note)
+
+
+class BlankFieldHallucinationGuardTests(TestCase):
+    """An unrecorded field must be named as unrecorded, not left blank.
+
+    "Longevity: " with nothing after it reads to the model as a gap to fill, and it filled
+    them — quoting hour counts and projection figures no row contained.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Sparse", gender="male",
+            oil_stock_grams=500, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(product=self.product, volume=50, price=500)
+
+    def test_a_blank_longevity_renders_as_unrecorded(self):
+        self.assertIn("Longevity: غير مسجل", format_product(self.product))
+
+    def test_a_blank_field_carries_an_explicit_ban(self):
+        block = format_product(self.product)
+
+        self.assertIn("بيانات ناقصة", block)
+        self.assertIn("ممنوع تذكر رقم ساعات", block)
+
+    def test_missing_notes_are_banned_too(self):
+        self.assertIn("ممنوع تخترع نوتات", format_product(self.product))
+
+    def test_a_fully_populated_product_gets_no_warning(self):
+        self.product.longevity = "8 hours"
+        self.product.projection = "Strong"
+        self.product.season = "Winter"
+        self.product.occasion = "Evening"
+        self.product.top_notes = "Bergamot"
+        self.product.save()
+
+        self.assertNotIn("بيانات ناقصة", format_product(self.product))
+
+
+class ComparisonSuppressesPricesTests(TestCase):
+    """The comparison prompt forbids prices; the block it injected mandated them.
+
+    format_products carried the 💡 Value Pick line telling the model to lead with the
+    numbers, while comparison_service told it to mention none — two opposite orders in one
+    request, and an "أوفر" verdict about one perfume's size ladder could be read back as a
+    verdict about the other.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+            top_notes="Bergamot", oil_stock_grams=1000, concentration_percentage=30,
+        )
+        ProductVariant.objects.create(product=self.product, volume=50, price=642)
+        ProductVariant.objects.create(product=self.product, volume=90, price=944)
+
+    def test_prices_and_the_value_pick_are_dropped_in_comparison_mode(self):
+        block = format_product(self.product, show_prices=False)
+
+        self.assertNotIn("642", block)
+        self.assertNotIn("💡 Value Pick", block)
+        self.assertNotIn("Available Sizes", block)
+
+    def test_the_scent_data_comparison_needs_is_still_present(self):
+        block = format_product(self.product, show_prices=False)
+
+        self.assertIn("Bergamot", block)
+        self.assertIn("Dior Sauvage", block)
+
+    def test_prices_are_still_shown_by_default(self):
+        """Every other branch depends on them."""
+        block = format_product(self.product)
+
+        self.assertIn("642", block)
+        self.assertIn("💡 Value Pick", block)
+
+
+class ObjectionDetectionTests(TestCase):
+    """Which objection was raised, decided in code rather than by a twelfth intent."""
+
+    def _kind(self, message):
+        found = sales_objection.detect(message)
+        return found.kind if found else None
+
+    def test_each_objection_type_is_recognised(self):
+        cases = (
+            ("غالي شوية عليا", "price"),
+            ("ليه أدفع 1200 بدل 500؟", "price_gap"),
+            ("خايف الثبات يطلع وحش", "longevity_doubt"),
+            ("ده تقليد ولا أصلي؟", "authenticity_doubt"),
+            ("جربت قبل كده ومعجبنيش", "tried_before"),
+            ("مش واثق بصراحة", "not_sure"),
+            ("هفكر وأرجعلك", "thinking"),
+            ("مش عارف أختار", "cant_choose"),
+            ("مش عارف إذا هتعجبني", "wont_like"),
+        )
+        for message, expected in cases:
+            with self.subTest(message=message):
+                self.assertEqual(self._kind(message), expected)
+
+    def test_an_ordinary_request_is_not_an_objection(self):
+        for message in ("عايز عطر رجالي", "بكام سوفاج؟", "تمام خدلي الـ90"):
+            with self.subTest(message=message):
+                self.assertIsNone(sales_objection.detect(message))
+
+    def test_the_transcript_complaint_is_a_complaint_not_an_objection(self):
+        """A customer describing a perfume they already bought needs resolving before
+        selling — the reply that failed here explained skin chemistry instead."""
+        found = sales_objection.detect(
+            "جبت من عندكم عطر قبل كده وكان مكتوب ثابت 8 ساعات، وبعد ساعتين مش بحسه. "
+            "خايف أطلب تاني وأدفع فلوس على الفاضي."
+        )
+
+        self.assertEqual(found.kind, "longevity_doubt")
+        self.assertTrue(found.is_complaint)
+
+    def test_a_forward_looking_worry_is_not_a_complaint(self):
+        found = sales_objection.detect("خايف الثبات يطلع وحش")
+
+        self.assertFalse(found.is_complaint)
+
+    def test_a_tatweel_does_not_defeat_matching(self):
+        """Customers write "بـ1200" constantly, and normalize_arabic leaves the tatweel."""
+        self.assertEqual(self._kind("ليه أدفع بـ1200 بدل 500؟"), "price_gap")
+
+    def test_every_kind_has_playbook_guidance(self):
+        for _, phrases in sales_objection._PATTERNS:
+            self.assertTrue(phrases)
+        kinds = {kind for kind, _ in sales_objection._PATTERNS}
+        self.assertEqual(kinds - set(sales_objection.PLAYBOOK), set())
+
+    def test_blank_input_is_safe(self):
+        for blank in ("", None, "   "):
+            with self.subTest(blank=blank):
+                self.assertIsNone(sales_objection.detect(blank))
+
+
+class SalesStageTests(TestCase):
+    """Where the customer stands, and whether closing has been earned."""
+
+    def test_an_objection_outranks_the_classification(self):
+        """"غالي" arrives labelled faq or product_info, and answering it as an ordinary
+        question is the defend-instead-of-address failure."""
+        found = sales_objection.detect("غالي شوية")
+
+        self.assertEqual(
+            sales_stage.derive("product_info", "غالي شوية", objection=found),
+            sales_stage.OBJECTION,
+        )
+
+    def test_a_past_purchase_objection_is_the_complaint_stage(self):
+        found = sales_objection.detect("العطر اللي اشتريته مش ثابت")
+
+        self.assertEqual(
+            sales_stage.derive("faq", "العطر اللي اشتريته مش ثابت", objection=found),
+            sales_stage.COMPLAINT,
+        )
+
+    def test_stages_map_from_the_classification(self):
+        cases = (
+            ("order", sales_stage.ORDER_COLLECTION),
+            ("comparison", sales_stage.COMPARISON),
+            ("identification", sales_stage.IDENTIFICATION),
+            ("handoff", sales_stage.COMPLAINT),
+            ("greeting", sales_stage.DISCOVERY),
+        )
+        for request_type, expected in cases:
+            with self.subTest(request_type=request_type):
+                self.assertEqual(sales_stage.derive(request_type, "أي كلام"), expected)
+
+    def test_a_recommendation_with_no_constraints_is_discovery(self):
+        self.assertEqual(
+            sales_stage.derive("recommendation", "عايز عطر", intent={}),
+            sales_stage.DISCOVERY,
+        )
+
+    def test_a_recommendation_with_constraints_is_the_recommendation_stage(self):
+        self.assertEqual(
+            sales_stage.derive("recommendation", "عايز عطر", intent={"notes": ["oud"]}),
+            sales_stage.RECOMMENDATION,
+        )
+
+    def test_a_price_question_is_purchase_intent_but_a_scent_question_is_not(self):
+        """The persona wants the next step offered on a price question and not on a
+        factual one."""
+        self.assertEqual(
+            sales_stage.derive("product_info", "سوفاج بكام؟"),
+            sales_stage.PURCHASE_INTENT,
+        )
+        self.assertEqual(
+            sales_stage.derive("product_info", "ريحته ايه؟"),
+            sales_stage.RECOMMENDATION,
+        )
+
+    def test_closing_is_allowed_only_at_the_buying_stages(self):
+        for stage in (sales_stage.PURCHASE_INTENT, sales_stage.ORDER_COLLECTION):
+            with self.subTest(stage=stage):
+                self.assertTrue(sales_stage.closing_allowed(stage))
+
+        for stage in (sales_stage.DISCOVERY, sales_stage.RECOMMENDATION,
+                      sales_stage.COMPARISON, sales_stage.OBJECTION,
+                      sales_stage.IDENTIFICATION, sales_stage.COMPLAINT):
+            with self.subTest(stage=stage):
+                self.assertFalse(sales_stage.closing_allowed(stage))
+
+
+class ConstraintAcknowledgementTests(TestCase):
+    """What the customer said must reach the prompt that answers them.
+
+    The failure: five stated constraints, and the reply was "ميزانيتك في حدود كام؟" with
+    no sign any of them had registered. Every one was extracted correctly and then dropped,
+    because the budget gate built its prompt from a hardcoded sentence.
+    """
+
+    def test_constraints_are_rendered_as_short_arabic_phrases(self):
+        phrases = sales_constraints.describe({
+            "gender": "male",
+            "occasion": "evening",
+            "longevity": "long-lasting",
+            "avoid_traits": ["heavy", "suffocating"],
+        })
+
+        self.assertIn("رجالي", phrases)
+        self.assertIn("للسهرات بالليل", phrases)
+        self.assertIn("ثابت", phrases)
+        self.assertIn("مش تقيل", phrases)
+        self.assertIn("مش خانق", phrases)
+
+    def test_the_hint_forbids_reciting_everything_back(self):
+        hint = sales_constraints.acknowledgement_hint({"gender": "male", "notes": ["oud"]})
+
+        self.assertIn("نص جملة قصيرة", hint)
+        self.assertIn("ممنوع تعيد سرد", hint)
+        self.assertIn("ممنوع تستخدم نفس الصيغة", hint)
+
+    def test_no_constraints_produces_no_hint(self):
+        self.assertEqual(sales_constraints.acknowledgement_hint({}), "")
+
+    def test_an_unmapped_value_is_echoed_rather_than_dropped(self):
+        self.assertIn("للجيم", sales_constraints.describe({"occasion": "للجيم"}))
+
+    def test_the_multiple_gender_signal_is_not_echoed_as_a_preference(self):
+        """It means "he wants one of each, ask which first" — not a taste."""
+        self.assertEqual(sales_constraints.describe({"gender": "multiple"}), [])
+
+    def test_the_scenario_a_request_clears_the_recommend_threshold(self):
+        """"فخمة وثابتة للليل بس مش خانقة" — enough to recommend from, so the turn must
+        not be blocked on a budget question."""
+        intent = {
+            "gender": "male",
+            "occasion": "evening",
+            "longevity": "long-lasting",
+            "avoid_traits": ["heavy", "suffocating"],
+        }
+
+        self.assertGreaterEqual(
+            sales_constraints.taste_constraint_count(intent),
+            sales_constraints.MIN_CONSTRAINTS_TO_RECOMMEND,
+        )
+        self.assertTrue(sales_constraints.can_recommend_without_budget(intent))
+
+    def test_a_bare_request_does_not_clear_the_threshold(self):
+        self.assertFalse(sales_constraints.can_recommend_without_budget({"gender": "male"}))
+
+    def test_a_budget_alone_is_not_taste_information(self):
+        """It is the thing being asked about, so counting it would let a bare budget stand
+        in for knowing anything about the customer."""
+        self.assertEqual(
+            sales_constraints.taste_constraint_count({"max_price": 1000}), 0
+        )
+
+    def test_a_gift_with_unknown_taste_is_detected(self):
+        is_gift, taste_known = sales_constraints.gift_context(
+            "عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه", intent={}
+        )
+
+        self.assertTrue(is_gift)
+        self.assertFalse(taste_known)
+
+    def test_a_gift_with_stated_taste_is_not_uncertain(self):
+        is_gift, taste_known = sales_constraints.gift_context(
+            "عايز هدية لمراتي، بتحب الفانيليا", intent={"notes": ["vanilla"]}
+        )
+
+        self.assertTrue(is_gift)
+        self.assertTrue(taste_known)
+
+    def test_a_non_gift_request_is_not_flagged(self):
+        is_gift, _ = sales_constraints.gift_context("عايز عطر لنفسي", intent={})
+
+        self.assertFalse(is_gift)
+
+    def test_the_gift_hint_forbids_guarantees(self):
+        """"الاتنين مضمونين" is not something we can know about a recipient we have never
+        met."""
+        hint = sales_constraints.GIFT_UNCERTAINTY_HINT
+
+        self.assertIn("ممنوع", hint)
+        self.assertIn("مضمون", hint)
+        self.assertIn("برفان كانت بتحبه", hint)
+
+
+class PrematureClosingTests(TestCase):
+    """Closing questions are stripped where the stage has not earned them.
+
+    Kept out of sanitize_reply on purpose: a legitimate close must survive untouched, and
+    "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟" is pinned as passing through.
+    """
+
+    def test_the_transcripts_premature_close_is_removed(self):
+        cleaned = strip_premature_closing(
+            "Ambero ريحته دافية وثابتة. تحب أساعدك في الطلب؟"
+        )
+
+        self.assertNotIn("تحب أساعدك", cleaned)
+        self.assertIn("Ambero", cleaned)
+
+    def test_the_common_closing_variants_are_removed(self):
+        for closer in ("تحب تطلب؟", "تحب تطلبه؟", "نسجل الطلب؟", "تحب نكمل الطلب؟"):
+            with self.subTest(closer=closer):
+                cleaned = strip_premature_closing(f"العطر ده ثابت جداً. {closer}")
+
+                self.assertNotIn(closer.rstrip("؟"), cleaned)
+                self.assertIn("ثابت", cleaned)
+
+    def test_a_size_close_is_removed_too(self):
+        cleaned = strip_premature_closing("ده أنسب ليك. أجيبلك الـ90 ولا الـ50؟")
+
+        self.assertNotIn("أجيبلك", cleaned)
+
+    def test_a_narrowing_question_is_not_a_close_and_survives(self):
+        """Closing is not the same as asking a useful question."""
+        reply = "فهمتك. ميزانيتك في حدود كام؟"
+
+        self.assertEqual(strip_premature_closing(reply), reply)
+
+    def test_a_reply_that_is_only_a_close_is_left_alone(self):
+        only_close = "تحب تطلب؟"
+
+        self.assertEqual(strip_premature_closing(only_close), only_close)
+
+    def test_sanitize_reply_still_leaves_a_legitimate_close_untouched(self):
+        """The pinned guarantee: the two passes stay separate."""
+        reply = "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟"
+
+        self.assertEqual(sanitize_reply(reply), reply)
+
+    def test_empty_and_none_pass_through(self):
+        self.assertEqual(strip_premature_closing(""), "")
+        self.assertIsNone(strip_premature_closing(None))
+
+
+class MarketingLanguageTests(TestCase):
+    """Brochure phrasing and manufactured precision are removed, not asked about.
+
+    The persona's own approved-words list recommended "جذابة جداً" — the exact register the
+    evaluation flagged. That is fixed at the source; this catches what the model still
+    produces.
+    """
+
+    def test_intensifiers_are_softened_without_breaking_the_sentence(self):
+        cleaned = soften_marketing_language("ريحته جذابة جداً وفخمة جداً")
+
+        self.assertNotIn("جداً", cleaned)
+        self.assertIn("جذابة", cleaned)
+        self.assertIn("فخمة", cleaned)
+
+    def test_brochure_phrases_are_replaced(self):
+        cleaned = soften_marketing_language("فيه لمسة عصرية جذابة وتركيبة رائعة")
+
+        self.assertNotIn("لمسة عصرية جذابة", cleaned)
+        self.assertNotIn("تركيبة رائعة", cleaned)
+
+    def test_a_manufactured_similarity_percentage_is_removed(self):
+        """"95% similar to the original" is not a fact we hold."""
+        cleaned = soften_marketing_language("ده مطابق للأصل بنسبة 95% تقريباً")
+
+        self.assertNotIn("95", cleaned)
+
+    def test_an_absolute_guarantee_is_removed(self):
+        for claim in ("ده مضمون 100%", "الاتنين مضمونين"):
+            with self.subTest(claim=claim):
+                cleaned = soften_marketing_language(claim)
+
+                self.assertNotIn("مضمون 100%", cleaned)
+                self.assertNotIn("مضمونين", cleaned)
+
+    def test_the_personas_own_quality_reassurance_survives(self):
+        """The trade-secrets rule says "أضمنلك إن جودتها هتعجبك" and is ratchet-pinned, so
+        the guard must target quantified certainty rather than the word itself."""
+        reply = "دي أسرار المهنة يا فندم، بس أضمنلك إن جودتها هتعجبك جداً!"
+
+        self.assertIn("أضمنلك", soften_marketing_language(reply))
+
+    def test_structural_emoji_survive_the_emoji_cap(self):
+        """🔹 opens each recommendation line and 💰 marks the total order_service greps
+        for — stripping either would damage the reply."""
+        reply = "🔹 Ambero: ريحته دافية\n🔹 Citrolo: منعش\n🔹 Sauvage: نضيف\n💰 الإجمالي: 900"
+
+        cleaned = soften_marketing_language(reply)
+
+        self.assertEqual(cleaned.count("🔹"), 3)
+        self.assertIn("💰", cleaned)
+
+    def test_decorative_emoji_spam_is_capped(self):
+        cleaned = soften_marketing_language("ريحته تجنن 😍😍🥰😻💕🌸")
+
+        self.assertLess(len(cleaned), len("ريحته تجنن 😍😍🥰😻💕🌸"))
+
+    def test_a_clean_reply_is_unchanged(self):
+        reply = "Ambero ريحته دافية بالتوابل والفانيليا، ثابت وفواح."
+
+        self.assertEqual(soften_marketing_language(reply), reply)
+
+    def test_empty_and_none_pass_through(self):
+        self.assertEqual(soften_marketing_language(""), "")
+        self.assertIsNone(soften_marketing_language(None))
+
+
+class SalesScenarioTests(TestCase):
+    """The nine evaluation scenarios, routed end to end.
+
+    Each asserts on the prompt the branch actually built, following the house pattern from
+    RouterBranchPromptTests: what matters is whether the model was *told* the right thing,
+    since the reply itself is the model's to write. Letters match the evaluation brief.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(store=self.store, business_facts="عندنا فرع في مدينة نصر.")
+        self.conversation = Conversation.objects.create(store=self.store)
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.own = Brand.objects.create(store=self.store, name="Perfamix Test")
+
+        self.sauvage = self._make(
+            "Dior Sauvage", "Bergamot, Pepper", "Lavender", "Ambroxan, Cedar",
+            longevity="8 hours", projection="Strong", occasion="Casual",
+        )
+        self.light = self._make(
+            "Citrolo", "Bergamot, Lemon", "Mint", "Cedar", brand=self.own,
+            longevity="8 hours", projection="Moderate", occasion="Evening",
+        )
+        self.heavy = self._make(
+            "Oudy", "Oud", "Incense", "Amber, Leather",
+            longevity="12 hours", projection="Enormous", occasion="Evening",
+        )
+        self.vanilla = self._make(
+            "Black Opium", "Coffee", "Vanilla", "Vanilla, Patchouli",
+            gender="female", longevity="10 hours",
+        )
+
+    def _make(self, name, top, middle, base, brand=None, gender="male", **extra):
+        product = Product.objects.create(
+            store=self.store, brand=brand or self.brand, name=name, gender=gender,
+            top_notes=top, middle_notes=middle, base_notes=base,
+            oil_stock_grams=1000, concentration_percentage=30, **extra
+        )
+        ProductVariant.objects.create(product=product, volume=50, price=600)
+        ProductVariant.objects.create(product=product, volume=90, price=900)
+        return product
+
+    def _route_recommendation(self, message, intent):
+        """Route a recommendation and return (prompt_sent_to_recommend, general_prompt)."""
+        with mock.patch("products.services.router.classify", return_value="recommendation"), \
+             mock.patch("products.services.router.extract_intent", return_value=intent), \
+             mock.patch("products.services.ai.recommendation.chat", return_value="ok") as rec, \
+             mock.patch("products.services.general_service.chat", return_value="ok") as gen:
+            route(message, [], self.store, self.conversation)
+
+        recommend_prompt = (
+            "\n".join(m["content"] for m in rec.call_args[0][0]) if rec.called else ""
+        )
+        general_prompt = (
+            "\n".join(m["content"] for m in gen.call_args[0][0]) if gen.called else ""
+        )
+        return recommend_prompt, general_prompt
+
+    # ---- A: rich constraints, no budget ----
+
+    def test_a_a_rich_request_is_recommended_not_blocked_on_a_budget_question(self):
+        """The transcript failure: five constraints answered with "ميزانيتك كام؟" alone."""
+        recommend_prompt, general_prompt = self._route_recommendation(
+            "عايز برفان رجالي ريحته فخمة وثابتة، ويكون مناسب للخروجات بالليل، "
+            "بس مش عايز حاجة تقيلة أو تخنق اللي حواليا.",
+            {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
+             "avoid_traits": ["heavy", "suffocating"]},
+        )
+
+        self.assertTrue(recommend_prompt, "the turn was blocked instead of recommending")
+        self.assertNotIn("ميزانيتك في حدود كام عشان أرشحلك", general_prompt)
+
+    def test_a_the_stated_constraints_reach_the_recommendation_prompt(self):
+        recommend_prompt, _ = self._route_recommendation(
+            "عايز برفان رجالي ثابت للخروجات بالليل بس مش تقيل",
+            {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
+             "avoid_traits": ["heavy"]},
+        )
+
+        self.assertIn("العميل قال بالفعل", recommend_prompt)
+        self.assertIn("للسهرات بالليل", recommend_prompt)
+        self.assertIn("مش تقيل", recommend_prompt)
+
+    def test_a_the_acknowledgement_is_a_hint_not_a_script(self):
+        """A single mandated sentence would be the same bug in a nicer costume."""
+        recommend_prompt, _ = self._route_recommendation(
+            "عايز حاجة ثابتة للليل مش تقيلة",
+            {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
+             "avoid_traits": ["heavy"]},
+        )
+
+        self.assertIn("ممنوع تستخدم نفس الصيغة", recommend_prompt)
+        self.assertIn("ممنوع تعيد سرد", recommend_prompt)
+
+    def test_a_a_sparse_request_still_asks_for_a_budget_but_acknowledges_first(self):
+        _, general_prompt = self._route_recommendation(
+            "عايز عطر رجالي فيه عود", {"gender": "male", "notes": ["oud"]}
+        )
+
+        self.assertIn("العميل قال بالفعل", general_prompt)
+        self.assertIn("اعترف باللي قاله", general_prompt)
+
+    def test_a_a_heavy_perfume_is_flagged_when_heaviness_was_excluded(self):
+        results = search_products(
+            {"gender": "male", "avoid_traits": ["heavy", "suffocating"]}, store=self.store
+        )
+        ranked = results["ranked"]
+
+        self.assertTrue(ranked[self.heavy.id].mismatches)
+
+    # ---- B: similar to X, not mainstream ----
+
+    def test_b_similarity_drives_the_recommendation_and_is_evidenced(self):
+        recommend_prompt, _ = self._route_recommendation(
+            "بحب ريحة Sauvage بس عايز حاجة شبهه ومش منتشرة أوي",
+            {"gender": "male", "similar_to": "Dior Sauvage",
+             "similar_to_notes": ["bergamot", "pepper", "ambroxan"],
+             "exclude_names": ["Dior Sauvage"], "wants_uncommon": True},
+        )
+
+        self.assertIn("طلب حاجة شبه", recommend_prompt)
+        self.assertIn("Match:", recommend_prompt)
+
+    def test_b_the_prompt_forbids_a_similarity_percentage(self):
+        """"95% similar to the original" is the claim this has to make unsayable."""
+        recommend_prompt, _ = self._route_recommendation(
+            "عايز حاجة شبه Sauvage",
+            {"gender": "male", "similar_to": "Dior Sauvage",
+             "similar_to_notes": ["bergamot", "ambroxan"]},
+        )
+
+        self.assertIn("ممنوع تذكر نسبة مئوية للتشابه", recommend_prompt)
+
+    def test_b_no_close_match_is_admitted_rather_than_faked(self):
+        recommend_prompt, _ = self._route_recommendation(
+            "عايز حاجة شبه Creed Aventus",
+            {"gender": "male", "similar_to": "Creed Aventus",
+             "similar_to_notes": ["pineapple", "birch", "ambergris"]},
+        )
+
+        self.assertIn("مفيش حاجة قريبة", recommend_prompt)
+        self.assertIn("ممنوع تقول عن أي عطر إنه شبهه", recommend_prompt)
+
+    # ---- C: identification from clues ----
+
+    def _route_identification(self, message, clues):
+        with mock.patch("products.services.router.classify", return_value="identification"), \
+             mock.patch(
+                 "products.services.identification_service.chat",
+                 side_effect=[json.dumps(clues), "ok"],
+             ) as chat_mock:
+            route(message, [], self.store, self.conversation)
+        return "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+    def test_c_a_clue_based_guess_is_hedged_not_asserted(self):
+        """"العطر اللي بتوصفه هو Black Opium" turned four vague clues into a fact."""
+        prompt = self._route_identification(
+            "مش فاكر اسم البرفان، الزجاجة سودا والريحة فيها فانيليا وحاجة حلوة وثابتة",
+            {"notes": ["vanilla"], "sweet": True, "gender": "female",
+             "bottle_color": "black", "longevity_hint": "long"},
+        )
+
+        self.assertTrue(
+            "غالبًا" in prompt or "قريب من" in prompt,
+            "the identification must be hedged, not asserted",
+        )
+
+    def test_c_the_bottle_colour_is_not_treated_as_evidence(self):
+        """There is no bottle-colour field, so it cannot corroborate anything."""
+        prompt = self._route_identification(
+            "الزجاجة سودا وفيها فانيليا",
+            {"notes": ["vanilla"], "bottle_color": "black"},
+        )
+
+        self.assertIn("مش بنسجل ده في بياناتنا", prompt)
+        self.assertIn("مينفعش تعتمد عليه كدليل", prompt)
+
+    def test_c_exactly_one_clarifying_question_is_requested(self):
+        prompt = self._route_identification(
+            "نسيت اسمه بس فيه فانيليا", {"notes": ["vanilla"]}
+        )
+
+        self.assertIn("سؤال واحد", prompt)
+        self.assertIn("ممنوع تسأل أكتر من سؤال", prompt)
+
+    def test_c_identification_does_not_try_to_close_the_sale(self):
+        prompt = self._route_identification(
+            "نسيت اسمه بس فيه فانيليا", {"notes": ["vanilla"]}
+        )
+
+        self.assertIn("ممنوع تسأله يطلب", prompt)
+
+    def test_c_an_unstocked_guess_is_named_only_with_not_available(self):
+        prompt = self._route_identification(
+            "نسيت اسمه، ريحته أناناس",
+            {"notes": [], "likely_known_perfume": "Creed Aventus"},
+        )
+
+        self.assertIn("Creed Aventus", prompt)
+        self.assertIn("مش موجود عندنا", prompt)
+        self.assertIn("ممنوع توحي إننا بنبيعه", prompt)
+
+    def test_c_no_clues_means_no_name_is_invented(self):
+        prompt = self._route_identification("مش فاكر اسمه خلاص", {})
+
+        self.assertIn("ممنوع تخترع اسم عطر", prompt)
+
+    def test_c_confidence_rises_with_verifiable_clue_types(self):
+        weak = identification_service.score_candidates(
+            {"notes": ["vanilla"]}, [self.vanilla]
+        )
+        strong = identification_service.score_candidates(
+            {"notes": ["vanilla", "coffee"], "sweet": True, "gender": "female",
+             "name_fragment": "opium"},
+            [self.vanilla],
+        )
+
+        self.assertEqual(identification_service.confidence_tier([]), "none")
+        self.assertEqual(identification_service.confidence_tier(strong), "high")
+        self.assertIn(identification_service.confidence_tier(weak), ("low", "medium"))
+
+    # ---- D: complaint about a past purchase ----
+
+    def _route_objection(self, message, classification="faq"):
+        with mock.patch("products.services.router.classify", return_value=classification), \
+             mock.patch("products.services.objection_service.resolve_products", return_value=[]), \
+             mock.patch("products.services.objection_service.chat", return_value="ok") as chat_mock:
+            route(message, [], self.store, self.conversation)
+        self.assertTrue(chat_mock.called, "the objection branch was not reached")
+        return "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+    def test_d_a_longevity_complaint_reaches_the_objection_branch(self):
+        prompt = self._route_objection(
+            "جبت من عندكم عطر قبل كده وكان مكتوب ثابت 8 ساعات، وبعد ساعتين مش بحسه. "
+            "خايف أطلب تاني وأدفع فلوس على الفاضي."
+        )
+
+        self.assertIn("longevity_doubt", prompt)
+
+    def test_d_acknowledgement_comes_before_any_explanation(self):
+        """The reply that failed opened with skin chemistry and bottle economics."""
+        prompt = self._route_objection("العطر اللي اشتريته من عندكم مش ثابت")
+
+        self.assertIn("ابدأ بالاعتراف", prompt)
+        self.assertIn("ممنوع تبدأ بشرح", prompt)
+
+    def test_d_a_complaint_is_not_blamed_on_the_customer(self):
+        prompt = self._route_objection("العطر اللي اشتريته مش ثابت")
+
+        self.assertIn("ممنوع تقول إن المشكلة منه", prompt)
+
+    def test_d_a_complaint_turn_may_not_close_the_sale(self):
+        prompt = self._route_objection("العطر اللي اشتريته مش ثابت")
+
+        self.assertIn("ممنوع تقفل البيعة", prompt)
+
+    def test_d_the_complaint_branch_does_not_silence_the_bot(self):
+        """needs_human makes views.py return an empty reply, so marking every complaint as
+        needing a human would go quiet on the customers who most need answering."""
+        self._route_objection("العطر اللي اشتريته مش ثابت")
+        self.conversation.refresh_from_db()
+
+        self.assertFalse(self.conversation.needs_human)
+
+    def test_d_an_explicit_request_for_a_human_still_hands_off(self):
+        """The objection branch must not swallow a genuine handoff."""
+        with mock.patch("products.services.router.classify", return_value="handoff"), \
+             mock.patch("products.services.general_service.chat", return_value="ok"), \
+             mock.patch("products.services.router.notify_handoff") as notify:
+            route("العطر مش ثابت وعايز اكلم حد حقيقي", [], self.store, self.conversation)
+
+        self.conversation.refresh_from_db()
+        self.assertTrue(self.conversation.needs_human)
+        self.assertTrue(notify.called)
+
+    def test_d_no_invented_remedy_is_offered(self):
+        """There is no returns or exchange field, so none may be promised."""
+        prompt = self._route_objection("العطر اللي اشتريته مش ثابت")
+
+        self.assertIn("ممنوع تعرض استرجاع أو استبدال", prompt)
+
+    # ---- E: price-gap objection ----
+
+    def test_e_the_price_gap_objection_is_recognised(self):
+        prompt = self._route_objection("ليه أجيب ده بـ1200 وأنا ممكن أجيب حاجة بـ500؟")
+
+        self.assertIn("price_gap", prompt)
+
+    def test_e_the_value_answer_is_built_from_real_dimensions(self):
+        with mock.patch("products.services.router.classify", return_value="faq"), \
+             mock.patch(
+                 "products.services.objection_service.resolve_products",
+                 return_value=[self.light, self.heavy],
+             ), \
+             mock.patch("products.services.objection_service.chat", return_value="ok") as chat_mock:
+            route("ليه أدفع 1200 بدل 500؟", [], self.store, self.conversation)
+
+        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+        self.assertIn("الفرق الحقيقي بين", prompt)
+        self.assertIn("سعر الملي", prompt)
+
+    def test_e_recommending_the_cheaper_option_is_explicitly_permitted(self):
+        prompt = self._route_objection("ليه أدفع 1200 بدل 500؟")
+
+        self.assertIn("الأرخص أنسب ليه", prompt)
+
+    def test_e_no_invented_differentiator_is_allowed(self):
+        prompt = self._route_objection("ليه أدفع 1200 بدل 500؟")
+
+        self.assertIn("الفروقات الحقيقية الموجودة في البيانات", prompt)
+
+    # ---- F: gift with unknown taste ----
+
+    def test_f_a_gift_with_unknown_taste_acknowledges_the_uncertainty(self):
+        _, general_prompt = self._route_recommendation(
+            "عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه",
+            {"gender": "female"},
+        )
+
+        self.assertIn("مش عارف ذوق المستلم", general_prompt)
+        self.assertIn("بتساعده يقرب لذوقها مش بتضمنه", general_prompt)
+
+    def test_f_the_one_high_value_question_is_asked(self):
+        _, general_prompt = self._route_recommendation(
+            "عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"}
+        )
+
+        self.assertIn("برفان كانت بتحبه", general_prompt)
+
+    def test_f_guarantees_are_forbidden(self):
+        """"الاتنين مضمونين" about a recipient we have never met."""
+        _, general_prompt = self._route_recommendation(
+            "عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"}
+        )
+
+        self.assertIn('ممنوع تقول "مضمون"', general_prompt)
+
+    # ---- G: budget ----
+
+    def test_g_a_stated_budget_filters_and_is_not_asked_again(self):
+        recommend_prompt, _ = self._route_recommendation(
+            "عايز حاجة كويسة تحت 1000", {"gender": "male", "max_price": 1000}
+        )
+
+        self.assertIn("ميزانية العميل: 1000", recommend_prompt)
+        self.assertIn("متسألوش عن الميزانية تاني", recommend_prompt)
+
+    def test_g_a_budget_excludes_products_priced_above_it_from_the_matched_set(self):
+        """The matched set honours the budget. The alternatives fallback deliberately
+        relaxes it — that predates this work and `budget_label` marks such sizes ❌ — so the
+        guarantee to pin is that an affordable match wins and an unaffordable one is
+        flagged, not that it never appears."""
+        affordable = self._make("Affordable Rose", "Rose", "", "Musk")
+        expensive = self._make("Pricey", "Rose", "", "Musk")
+        expensive.variants.all().delete()
+        ProductVariant.objects.create(product=expensive, volume=50, price=5000)
+
+        results = search_products(
+            {"gender": "male", "max_price": 1000, "notes": ["rose"]}, store=self.store
+        )
+
+        self.assertEqual(
+            [product.name for product in results["products"]], ["Affordable Rose"]
+        )
+        self.assertNotIn(expensive.id, results["ranked"])
+
+    def test_g_an_unaffordable_alternative_is_flagged_and_ranked_last(self):
+        expensive = self._make("Pricey", "Tuberose", "", "Musk")
+        expensive.variants.all().delete()
+        ProductVariant.objects.create(product=expensive, volume=50, price=5000)
+
+        results = search_products(
+            {"gender": "male", "max_price": 1000, "notes": ["tuberose"]},
+            store=self.store,
+        )
+        entry = results["ranked"][expensive.id]
+
+        self.assertIn("مفيش حجم متاح داخل ميزانيته", entry.mismatches)
+
+    def test_g_a_saved_budget_survives_a_later_turn(self):
+        """merge_preferences must still restore it — the memory path is unchanged."""
+        merge_preferences(self.conversation, {"gender": "male", "max_price": 1000})
+
+        later = merge_preferences(self.conversation, {"gender": "male"})
+
+        self.assertEqual(later["max_price"], 1000)
+
+    def test_g_an_exclusion_also_survives_a_later_turn(self):
+        """Losing an exclusion is worse than losing a preference: it means recommending
+        the exact thing the customer rejected."""
+        merge_preferences(
+            self.conversation, {"gender": "male", "avoid_traits": ["heavy"]}
+        )
+
+        later = merge_preferences(self.conversation, {"gender": "male"})
+
+        self.assertEqual(later["avoid_traits"], ["heavy"])
+
+    # ---- H: ready to buy ----
+
+    def test_h_a_size_choice_reaches_the_order_flow_unchanged(self):
+        with mock.patch("products.services.router.classify", return_value="order"), \
+             mock.patch("products.services.router.handle_order", return_value=("ok", "")) as order:
+            route("تمام خدلي الـ90ml", [], self.store, self.conversation)
+
+        self.assertTrue(order.called, "the order flow must still be reached")
+
+    def test_h_closing_is_allowed_once_the_customer_is_buying(self):
+        self.assertTrue(sales_stage.closing_allowed(sales_stage.ORDER_COLLECTION))
+        self.assertTrue(sales_stage.closing_allowed(sales_stage.PURCHASE_INTENT))
+
+    def test_h_a_purchase_intent_reply_keeps_its_closing_question(self):
+        """The gate must not strip a close the customer has earned."""
+        reply = "تمام، الـ90 بـ 900 جنيه. تحب أساعدك في الطلب؟"
+
+        with mock.patch("products.services.router.classify", return_value="product_info"), \
+             mock.patch(
+                 "products.services.router.get_product_info", return_value=(reply, "")
+             ):
+            result, _ = route("الـ90 بكام؟", [], self.store, self.conversation)
+
+        self.assertIn("تحب أساعدك في الطلب", result)
+
+    def test_h_the_same_close_is_stripped_at_a_deciding_stage(self):
+        """Same reply, earlier stage — this is the whole point of the gate."""
+        reply = "Citrolo ريحته منعشة. تحب أساعدك في الطلب؟"
+
+        with mock.patch("products.services.router.classify", return_value="product_info"), \
+             mock.patch(
+                 "products.services.router.get_product_info", return_value=(reply, "")
+             ):
+            result, _ = route("ريحته ايه؟", [], self.store, self.conversation)
+
+        self.assertNotIn("تحب أساعدك في الطلب", result)
+
+    # ---- I: factual product question ----
+
+    def test_i_a_factual_question_is_answered_from_the_database(self):
+        with mock.patch("products.services.router.classify", return_value="product_info"), \
+             mock.patch(
+                 "products.services.product_info.resolve_products",
+                 return_value=[self.sauvage],
+             ), \
+             mock.patch("products.services.product_info.chat", return_value="ok") as chat_mock:
+            route("ثبات سوفاج قد ايه؟", [], self.store, self.conversation)
+
+        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+        self.assertIn("8 hours", prompt)
+        self.assertIn("ممنوع تخترع أي معلومة", prompt)
+
+    def test_i_an_unrecorded_fact_is_refused_rather_than_invented(self):
+        bare = self._make("Bare", "", "", "")
+        bare.longevity = ""
+        bare.save()
+
+        with mock.patch("products.services.router.classify", return_value="product_info"), \
+             mock.patch(
+                 "products.services.product_info.resolve_products", return_value=[bare]
+             ), \
+             mock.patch("products.services.product_info.chat", return_value="ok") as chat_mock:
+            route("ثباته قد ايه؟", [], self.store, self.conversation)
+
+        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+        self.assertIn("غير مسجل", prompt)
+        self.assertIn("ممنوع تذكر رقم ساعات", prompt)
+
+    def test_i_a_factual_question_does_not_close_the_sale(self):
+        with mock.patch("products.services.router.classify", return_value="product_info"), \
+             mock.patch(
+                 "products.services.router.get_product_info",
+                 return_value=("ثباته 8 ساعات. تحب تطلب؟", ""),
+             ):
+            result, _ = route("ريحته عاملة ايه؟", [], self.store, self.conversation)
+
+        self.assertNotIn("تحب تطلب", result)
+
+
+class StoreConfiguredClaimsSurviveTests(TestCase):
+    """A guard against inventing claims must not gag the store's own configured ones.
+
+    StoreSettings.business_facts is documented as the place a store records "نسبة تشابه
+    التركيب", so a similarity percentage can be a legitimate, store-authored fact. This is
+    the same trap test_promotion_can_still_quote_the_stores_configured_offers exists to
+    catch — a blanket price ban once came within one reading of gagging the promotion
+    branch. The ban is on *deriving* a percentage from our ranking, never on relaying one.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        StoreSettings.objects.create(
+            store=self.store,
+            business_facts="تركيباتنا بتوصل لنسبة تشابه 90% مع العطر الأصلي.",
+        )
+
+    def test_the_configured_similarity_fact_reaches_the_prompt(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("نسبة تشابه 90%", prompt)
+
+    def test_the_sanitizer_does_not_strip_a_relayed_store_fact(self):
+        """The store wrote this number; the bot is only repeating it."""
+        reply = "تركيباتنا بتوصل لنسبة تشابه 90% مع العطر الأصلي يا فندم."
+
+        self.assertIn("90%", soften_marketing_language(reply))
+
+    def test_but_an_invented_match_percentage_is_still_removed(self):
+        self.assertNotIn(
+            "95", soften_marketing_language("ده مطابق للأصل بنسبة 95%")
+        )
+
+
+class IdentificationCarveOutIsScopedTests(TestCase):
+    """Naming an unstocked perfume is allowed in identification only.
+
+    The identification branch may say "غالبًا Black Opium، بس مش موجود عندنا" — a deliberate,
+    scoped exception to the persona red line that a perfume absent from the data does not
+    exist. The exception must not leak into the branches that recommend or answer freely,
+    where it would become permission to invent products.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def test_the_persona_still_forbids_naming_absent_products(self):
+        """The ratchet-pinned rule is untouched."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("مش في البيانات", prompt)
+
+    def test_the_no_product_data_branch_still_bans_naming_a_perfume(self):
+        with mock.patch(
+            "products.services.general_service.chat", return_value="ok"
+        ) as chat_mock:
+            handle_general("في بلو دي شانيل؟", [], self.store)
+
+        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+        self.assertIn("ممنوع تذكر سعر أو اسم عطر من ذاكرتك", prompt)
+
+    def test_the_carve_out_text_appears_only_in_the_identification_branch(self):
+        """Asserted on the carve-out's own instruction rather than on "مش موجود عندنا",
+        which the persona itself contains in the very red line being carved out of. If this
+        shows up in handle_general's prompt, the exception has leaked."""
+        with mock.patch(
+            "products.services.general_service.chat", return_value="ok"
+        ) as chat_mock:
+            handle_general("عايز عطر", [], self.store)
+
+        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+
+        self.assertNotIn("ممنوع توحي إننا بنبيعه", prompt)

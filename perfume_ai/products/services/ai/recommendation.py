@@ -3,6 +3,8 @@ from decimal import Decimal, InvalidOperation
 from .client import chat
 from .prompts import get_system_prompt
 from ..product_formatting import format_products
+from ..sales.constraints import acknowledgement_hint
+from ..sales.ranking import reasons_note
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
@@ -23,16 +25,60 @@ def _coerce_budget(value):
     return budget if budget > 0 else None
 
 
-def _format_products(products, max_price=None):
+def _format_products(products, max_price=None, ranked=None):
     """Thin wrapper over the shared renderer, capped for prompt size.
 
     search_products already applies the LIMIT; the cap here only bounds the
     prompt, so a caller passing an unsliced queryset can't blow up the request.
+
+    When ranking ran, each product's own evidence line is appended to its block. The
+    model gets the *reasons* — shared notes, which constraint matched — and never the
+    score, because a number in the prompt is how "شبهه بنسبة 95%" gets invented.
     """
-    return format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
+    context = format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
+    if not ranked:
+        return context
+
+    blocks = []
+    for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
+        block = format_products([product], max_price=max_price)
+        note = reasons_note(ranked.get(product.id))
+        blocks.append(f"{block}{note}\n" if note else block)
+    return "".join(blocks)
 
 
-def recommend(message, products, history=None, alternatives=None, store=None, intent=None):
+def _similarity_instruction(search):
+    """Tell the model how close we actually got, when similarity was asked for.
+
+    This is the honesty path for "عايز حاجة شبه X". Presenting the nearest perfume as a
+    match is exactly what produced Fahrenheit as an answer for Sauvage, so when nothing
+    reaches the close band the reply has to say so.
+    """
+    summary = (search or {}).get("similarity")
+    if not summary:
+        return ""
+
+    name = summary["reference_name"]
+    if summary["has_close_match"]:
+        return (
+            f"\n🔎 العميل طلب حاجة شبه {name}. سطر Match في بيانات كل عطر بيقولك إيه "
+            f"المشترك بينهم بالظبط — اعتمد عليه واذكر النوتات المشتركة دي بالاسم عشان "
+            f"كلامك يكون مبني على حقيقة.\n"
+            f"❌ ممنوع تذكر نسبة مئوية للتشابه ولا تقول \"مطابق\" أو \"نفس العطر\".\n"
+        )
+
+    return (
+        f"\n🔎 العميل طلب حاجة شبه {name}، ومفيش عندنا عطر قريب منه فعلاً.\n"
+        f"- 🔴 قوله كده بصراحة: مفيش حاجة قريبة من {name} بالظبط عندنا.\n"
+        f"- ⚠️ ده استثناء من قاعدة \"ممنوع تقول مفيش\": القاعدة دي عن التوافر، وهنا "
+        f"الكلام عن التشابه. مسموح — بل لازم — تقول إن مفيش حاجة شبهه، وبعدها تكمّل "
+        f"وتعرض المتاح عادي.\n"
+        f"- اعرض أقرب المتاح كـ\"مختلف بس ممكن يعجبك\"، ووضّح الفرق في جملة.\n"
+        f"- ❌ ممنوع تقول عن أي عطر إنه شبهه أو بديله أو نفس ريحته.\n"
+    )
+
+
+def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None):
     # Not repeating a recommendation is handled upstream, not here: ai/intent.py fills
     # intent["exclude_names"] when the customer asks for something else, and
     # search_service drops those from the queryset before this function ever sees it.
@@ -48,13 +94,17 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌.\n"
     price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل ميزانيته مع الترشيح. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). متسألوش عن الميزانية تاني."
 
+    # What the customer already told us, so the reply can nod to it once instead of
+    # answering five stated constraints as though none had registered.
+    constraint_note = acknowledgement_hint(intent or {})
+
     # Case 1: Exact matches found
     if products.exists():
-        context = _format_products(products, max_price=max_price)
+        context = _format_products(products, max_price=max_price, ranked=(search or {}).get("ranked"))
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}
+{budget_note}{constraint_note}{_similarity_instruction(search)}
 ═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 
@@ -65,16 +115,17 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 4. 🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال "لخطيبتي") رشّح على طول.
 5. 🔴 تجاهل تماماً أي منتج Stock Status = ❌ واختار غيره من المتوفر.
 6. 🔴 لو العميل محدد ميزانية ولقيت عطر ممتاز أرخص بكتير منها، رشحه كـ"قيمة مقابل سعر" — متفضلش الأغلى لمجرد إنه بيقفل الميزانية.
+7. سطر "✅ ليه مناسب" في بيانات كل عطر هو الدليل اللي بنيت عليه الترشيح — اعتمد عليه في سبب الترشيح بدل كلام عام. وسطر "⚠️ مش مطابق في" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة مكتوب جانبها إنه مش مطابق فيها.
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
     elif alternatives and alternatives.exists():
-        context = _format_products(alternatives, max_price=max_price)
+        context = _format_products(alternatives, max_price=max_price, ranked=(search or {}).get("ranked"))
         price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}
+{budget_note}{constraint_note}{_similarity_instruction(search)}
 ═══ ملحوظة مهمة ═══
 لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 

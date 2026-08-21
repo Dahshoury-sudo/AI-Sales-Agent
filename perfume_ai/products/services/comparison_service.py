@@ -7,7 +7,14 @@ from .product_resolver import resolve_product
 
 
 def compare_products(message, history=None, store=None):
+    """Compare two named perfumes.
 
+    Rendered with show_prices=False: this prompt forbids mentioning any price or size,
+    while the product block it injects used to carry the 💡 Value Pick line telling the
+    model to lead with exactly those numbers. Two opposite orders in one request, and an
+    "أوفر" verdict about one perfume's size ladder could be read back as a verdict about
+    the other.
+    """
     prompt = """
 Extract the names of the two perfumes the user wants to compare from their message or conversation history.
 Fix any spelling mistakes in the perfume names. Translate Arabic names to English.
@@ -43,7 +50,7 @@ Return ONLY valid JSON in this format:
     if len(matches) < 2:
         return "واحد او اكثر من العطور دي مش متوفر عندنا للاسف ممكن تقولي اسماء عطور تانية؟", ""
 
-    context = format_products(matches)
+    context = format_products(matches, show_prices=False)
 
     messages = [
         {

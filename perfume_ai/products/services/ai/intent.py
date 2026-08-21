@@ -23,7 +23,12 @@ Schema:
     "longevity": "like 'long-lasting', 'moderate', 'eternal' or null",
     "projection": "like 'strong', 'moderate', 'intimate' or null",
     "exclude_names": ["perfume1", "perfume2"] or [],
-    "notes": ["note1", "note2"] or []
+    "notes": ["note1", "note2"] or [],
+    "similar_to": "name of the ONE perfume they want something similar to, or null",
+    "similar_to_notes": ["note1", "note2"] or [],
+    "avoid_notes": ["note1", "note2"] or [],
+    "avoid_traits": ["heavy", "suffocating", "sweet", "loud"] or [],
+    "wants_uncommon": true or false
 }}
 
 Rules:
@@ -37,9 +42,18 @@ Rules:
   • Female context: عروسة, عروسه, لصاحبتي, لأختي, لماما, لخطيبتي, لمراتي, بنت, لبنتي, لطنطي, لخالتي, هدية لبنت, أنا بنت, ست
   If any of these clues exist, set gender accordingly ('male' or 'female'). Only leave gender as null if there is absolutely NO clue about gender in the message or conversation history.
 - CRITICAL — Multiple Genders: If the user explicitly asks for BOTH male and female perfumes in the same message (e.g. "واحد ليا وواحد لمراتي", "رجالي وحريمي"), you MUST set 'gender' to 'unisex' to safely retrieve perfumes suitable for both. HOWEVER, if the user explicitly INSISTS on having separate distinct perfumes and REJECTS unisex (e.g. "مش عايز للجنسين عايز رجالي لوحده وحريمي لوحده"), you MUST set 'gender' to 'multiple'.
-- If the user EXPLICITLY asks for a perfume SIMILAR to a specific known perfume (e.g. "عايز حاجة زي كريد" or "بديل سوفاج", "شبه كذا"), use your general knowledge to extract the main olfactory notes of that famous perfume and put them in the 'notes' array (e.g. ["pineapple", "birch"]). ALSO, add the name of that perfume to 'exclude_names' so we don't recommend the exact same one back.
+- CRITICAL — SIMILARITY: If the user EXPLICITLY asks for a perfume SIMILAR to a specific known perfume (e.g. "عايز حاجة زي كريد", "بديل سوفاج", "شبه كذا"):
+  1. Put that perfume's name in 'similar_to' (English, correctly spelled). This is the most important field in that case — the ranking is driven by it.
+  2. Use your general knowledge to extract that perfume's main olfactory notes into 'similar_to_notes' (e.g. ["bergamot", "pepper", "ambroxan"]). Put them in 'similar_to_notes', NOT in 'notes' — 'notes' is for ingredients the user asked for directly.
+  3. Add that perfume's name to 'exclude_names' so we don't recommend the exact same one back.
 - CRITICAL: DO NOT put a perfume in 'exclude_names' if the user just names it (e.g. "سوفاج", "عايز سوفاج"). Only exclude it if they explicitly ask for an ALTERNATIVE ("بديل", "زي", "شبه").
 - If the user asks for alternatives (e.g. "في حاجة تانية", "عندك ايه تاني", "ايه تاني"), you MUST read the history and extract the names of ALL perfumes the assistant previously recommended, and add them to the 'exclude_names' array. This ensures we don't recommend the exact same perfumes again.
+- CRITICAL — EXCLUSIONS: If the user says what they do NOT want, capture it:
+  • A specific ingredient they don't want (e.g. "مش بحب العود", "من غير مسك") → 'avoid_notes' (English).
+  • A characteristic they don't want → 'avoid_traits', using ONLY these values: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة).
+  • Example: "مش عايز حاجة تقيلة أو تخنق اللي حواليا" → avoid_traits: ["heavy", "suffocating"].
+  ❌ Never put an avoided thing in 'notes' — that would search FOR the thing they rejected.
+- If the user wants something not mainstream (e.g. "مش منتشرة", "مش موجودة عند حد", "حاجة مختلفة", "مش مشهورة", "حاجة نادرة"), set 'wants_uncommon' to true.
 - If the user asks for high longevity (e.g. "ثبات عالي", "ثباته يومين"), set 'longevity' to 'long-lasting' or 'eternal'.
 - If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.

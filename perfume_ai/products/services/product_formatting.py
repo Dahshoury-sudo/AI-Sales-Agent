@@ -14,6 +14,8 @@ trying to prevent. Both drifts are resolved by including the superset.
 from decimal import Decimal
 from itertools import islice
 
+from .sales.value import is_store_exclusive, size_value, size_value_note
+
 
 # A size priced just over the stated budget is still worth offering as an upsell —
 # recommendation's budget_note asks for exactly that. Past this multiple it is far
@@ -83,7 +85,9 @@ def _size_lines(product, variants, max_price=None):
         elif variant.bottle_type == "original":
             stock = variant.stock or 0
             if stock > 0:
-                low_stock = f" ({stock} زجاجة فقط)" if stock <= 3 else ""
+                low_stock = (
+                    f" ({stock} زجاجة فقط)" if stock <= LOW_BOTTLE_THRESHOLD else ""
+                )
                 available.append(
                     f"- زجاجة أوريجينال {variant.volume} ملي: {variant.price} EGP{low_stock}"
                     f"{budget_label(variant.price, max_price)}"
@@ -93,9 +97,9 @@ def _size_lines(product, variants, max_price=None):
     return available, out_of_stock
 
 
-def _is_store_exclusive(product):
-    """A perfume whose brand is the store itself, i.e. the store's own blend."""
-    return bool(product.store and product.brand.name.lower() == product.store.name.lower())
+# The store's own blend. Defined in sales.value because the value comparison needs it too,
+# and importing this module from there would be a cycle.
+_is_store_exclusive = is_store_exclusive
 
 
 def value_pick_note(product, variants, max_price=None):
@@ -103,42 +107,26 @@ def value_pick_note(product, variants, max_price=None):
 
     The model was handed a bare list of sizes and prices and read it back as a price
     sheet: "الـ 50 بـ 642، والـ 90 بـ 944" with no recommendation, at the exact moment
-    the customer asked to buy. The upsell is arithmetic — 90ml is 80% more perfume for
-    47% more money — so it is computed here rather than left to the model, which cannot
-    reliably do it and must not invent it.
+    the customer asked to buy. The upsell is arithmetic, so it is computed rather than
+    left to the model, which cannot reliably do it and must not invent it.
 
-    Only compares in-budget brand bottles: recommending a size the customer already
-    said they cannot afford is not an upsell.
+    Eligibility is decided here because it needs oil-stock knowledge; the arithmetic and
+    the wording live in sales.value. That split is what fixed the two defects this note
+    used to carry: a bigger bottle described as "أوفر" next to a bare price difference,
+    which the model read as *cheaper by 302*, and a baseline chosen by smallest volume
+    rather than lowest price, which could render a negative difference.
+
+    Only compares in-budget brand bottles: recommending a size the customer already said
+    they cannot afford is not an upsell.
     """
-    priced = []
-    for variant in variants:
-        if variant.bottle_type != "normal" or _bottles_fillable(product, variant) <= 0:
-            continue
-        if max_price is not None and variant.price > max_price:
-            continue
-        if variant.volume > 0:
-            priced.append(variant)
-
-    if len(priced) < 2:
-        return ""
-
-    smallest = min(priced, key=lambda v: v.volume)
-    # Best value = lowest cost per ml. Ties go to the smaller bottle, which is the
-    # safer recommendation for a first-time buyer.
-    best = min(priced, key=lambda v: (v.price / v.volume, v.volume))
-
-    if best.volume == smallest.volume:
-        return ""
-
-    extra_volume = round((best.volume - smallest.volume) / smallest.volume * 100)
-    extra_price = best.price - smallest.price
-
-    return (
-        f"💡 Value Pick: الـ {best.volume} ملي أوفر — "
-        f"كمية أكتر بـ {extra_volume}% بفرق {extra_price:.0f} جنيه بس "
-        f"(بدل {smallest.price:.0f} جنيه للـ {smallest.volume} ملي). "
-        f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار."
-    )
+    eligible = [
+        variant for variant in variants
+        if variant.bottle_type == "normal"
+        and _bottles_fillable(product, variant) > 0
+        and (max_price is None or variant.price <= max_price)
+        and variant.volume > 0
+    ]
+    return size_value_note(size_value(eligible))
 
 
 def _exclusive_selling_note(product):
@@ -177,12 +165,53 @@ def _original_bottle_status(product, variants):
     )
 
 
-def format_product(product, max_price=None, brief=False):
+# The fields a customer asks about that carry a factual claim. A blank one used to render
+# as "Longevity: " with nothing after it, which reads to the model as a gap to fill — and
+# it filled them, quoting hours and projection figures no row contained. Naming the gap
+# and forbidding it by name is the whole fix.
+_CLAIM_FIELDS = (
+    ("longevity", "الثبات", "ممنوع تذكر رقم ساعات"),
+    ("projection", "الفوحان", "ممنوع تقيّم الفوحان"),
+    ("season", "الموسم", "ممنوع تقول مناسب لموسم معين"),
+    ("occasion", "المناسبة", "ممنوع تقول مناسب لمناسبة معينة"),
+)
+
+_NOT_RECORDED = "غير مسجل"
+
+
+def _missing_data_note(product):
+    """One line naming every unrecorded claim field, and banning invention for each."""
+    missing = [
+        (label, ban) for attribute, label, ban in _CLAIM_FIELDS
+        if not (getattr(product, attribute, "") or "").strip()
+    ]
+    if not any((getattr(product, layer, "") or "").strip()
+               for layer in ("top_notes", "middle_notes", "base_notes")):
+        missing.append(("النوتات", "ممنوع تخترع نوتات أو تقول ريحته فيها إيه"))
+
+    if not missing:
+        return ""
+
+    labels = "، ".join(label for label, _ in missing)
+    bans = "، ".join(ban for _, ban in missing)
+    return f"⚠️ بيانات ناقصة للعطر ده ({labels}): {bans}."
+
+
+def _field_or_placeholder(value):
+    return value if (value or "").strip() else _NOT_RECORDED
+
+
+def format_product(product, max_price=None, brief=False, show_prices=True):
     """Render one product as a prompt block.
 
     brief=True drops stock status, out-of-stock sizes and the scent/performance
     fields — used when suggesting alternatives, where the model only needs enough
     to name something plausible rather than to answer detailed questions.
+
+    show_prices=False drops sizes, prices and the value pick. Comparison needs it: that
+    prompt forbids mentioning any price, while this block was simultaneously instructing
+    the model to lead with them — two opposite orders in one request, and an "أوفر" verdict
+    about one perfume's size ladder could be read back as a verdict about the other.
     """
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
@@ -192,6 +221,9 @@ def format_product(product, max_price=None, brief=False):
         "⭐ عطر تركيب حصري خاص بالمتجر" if _is_store_exclusive(product) else product.brand.name
     )
     perfume_type = product.get_perfume_type_display() if product.perfume_type else "غير محدد"
+    sizes_block = (
+        f"Available Sizes & Prices:\n{available_text}\n" if show_prices else ""
+    )
 
     if brief:
         # The exclusive note stays even in brief mode: brief is what the "no exact
@@ -203,9 +235,7 @@ def format_product(product, max_price=None, brief=False):
 Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Original Bottle: {_original_bottle_status(product, variants)}
-Available Sizes & Prices:
-{available_text}
-{exclusive_block}Gender: {product.gender}
+{sizes_block}{exclusive_block}Gender: {product.gender}
 Perfume Type: {perfume_type}
 Description: {product.description}
 -----------------------
@@ -217,37 +247,38 @@ Description: {product.description}
     out_of_stock_text = "، ".join(out_of_stock) if out_of_stock else "لا يوجد"
     extras = "\n".join(
         line for line in (
-            value_pick_note(product, variants, max_price),
+            value_pick_note(product, variants, max_price) if show_prices else "",
             _exclusive_selling_note(product),
+            _missing_data_note(product),
         ) if line
     )
     extras_block = f"{extras}\n" if extras else ""
+    out_of_stock_block = (
+        f"Out of Stock Sizes (DO NOT OFFER unless explicitly asked):\n{out_of_stock_text}\n"
+        if show_prices else ""
+    )
 
     return f"""
 Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Stock Status: {stock_status}
 Original Bottle: {_original_bottle_status(product, variants)}
-Available Sizes & Prices:
-{available_text}
-{extras_block}Out of Stock Sizes (DO NOT OFFER unless explicitly asked):
-{out_of_stock_text}
-Gender: {product.gender}
+{sizes_block}{extras_block}{out_of_stock_block}Gender: {product.gender}
 Perfume Type: {perfume_type}
-Season: {product.season}
-Occasion: {product.occasion}
-Longevity: {product.longevity}
-Projection: {product.projection}
-Top Notes: {product.top_notes}
-Middle Notes: {product.middle_notes}
-Base Notes: {product.base_notes}
+Season: {_field_or_placeholder(product.season)}
+Occasion: {_field_or_placeholder(product.occasion)}
+Longevity: {_field_or_placeholder(product.longevity)}
+Projection: {_field_or_placeholder(product.projection)}
+Top Notes: {_field_or_placeholder(product.top_notes)}
+Middle Notes: {_field_or_placeholder(product.middle_notes)}
+Base Notes: {_field_or_placeholder(product.base_notes)}
 Description: {product.description}
 
 -------------------------
 """
 
 
-def format_products(products, max_price=None, limit=None, brief=False):
+def format_products(products, max_price=None, limit=None, brief=False, show_prices=True):
     """Render several products, optionally capped.
 
     The cap is a safety net on prompt size: callers should already be handing over
@@ -256,5 +287,6 @@ def format_products(products, max_price=None, limit=None, brief=False):
     """
     selected = islice(products, limit) if limit else products
     return "".join(
-        format_product(product, max_price=max_price, brief=brief) for product in selected
+        format_product(product, max_price=max_price, brief=brief, show_prices=show_prices)
+        for product in selected
     )
