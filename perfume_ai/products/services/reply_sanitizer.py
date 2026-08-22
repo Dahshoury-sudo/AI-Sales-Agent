@@ -28,10 +28,25 @@ BANNED_CLOSERS = (
         r"\s*(?:و\s*)?تحب\s+تعرف\s+(?:ال)?[أاإ]?سعار\S*"
         r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
     ),
+    # The same forbidden move in the first person, which is how the model actually
+    # phrased it in evaluation: "تحب أعرفك الأسعار والأحجام؟" / "تحب أقولك الأسعار؟".
+    # The pattern above requires "تعرف" and matched none of these, so the single
+    # question the persona quotes verbatim as forbidden went out repeatedly.
+    re.compile(
+        r"\s*(?:و\s*)?تحب\s+[أاإ](?:عرفك|قولك)\s+(?:على\s+)?(?:ال)?[أاإ]?سعار\S*"
+        r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
+    ),
+    # "تحب أعرفك أكتر عن الأحجام دي؟" — same emptiness, different noun.
+    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]عرفك\s+[أاإ]كتر\s+عن\s+[^؟?]{0,40}[؟?]"),
     # "عايز حاجة تانية؟" / "محتاج مساعدة في حاجة؟" / "محتاج حاجة تانية؟"
     re.compile(r"\s*(?:عايز|محتاج|تحب)\s+(?:حاجة\s+تانية|مساعدة(?:\s+في\s+حاجة)?)\s*[؟?]"),
+    # The statement form, which carries no question mark and so escaped the pattern
+    # above: "لو حابب أساعدك في حاجة تانية، تحت أمرك."
+    re.compile(r"\s*لو\s+حابب\s+[أاإ]?ساعدك\s+في\s+حاج[ةه]\s+تاني[ةه][^.؟?]*[.؟?]?"),
     # "عطر معين في بالك؟"
     re.compile(r"\s*(?:فيه\s+)?عطر\s+معين\s+في\s+بالك\s*[؟?]"),
+    # "أقدر أساعدك إزاي؟" / "أقدر أساعدك في إيه؟" — the persona's own banned opener.
+    re.compile(r"\s*[أاإ]قدر\s+[أاإ]ساعدك\s+(?:في\s+)?[أاإ]?(?:يه|زاي)\s*[؟?]"),
 )
 
 
@@ -74,16 +89,24 @@ def sanitize_reply(reply, conversation=None):
 # remember a name. sanitize_reply must stay byte-identical for a legitimate close —
 # "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟" is pinned as passing through untouched.
 PREMATURE_CLOSERS = (
-    # "تحب أساعدك في الطلب؟" / "تحب اساعدك في الاوردر؟"
-    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)\S*\s*[؟?]"),
-    # "تحب تطلب؟" / "تحب تطلبه؟" / "تحب نطلبه؟"
-    re.compile(r"\s*(?:و\s*)?تحب\s+[نت]طلب\S*\s*[؟?]"),
+    # "تحب أساعدك في الطلب؟" / "تحب اساعدك في طلب واحد فيهم؟"
+    # `[^؟?]{0,30}` rather than `\S*\s*` because every one of these patterns used to
+    # require the question mark to sit immediately after the order word. Real replies put
+    # words in between — "تحب أساعدك في طلب واحد فيهم؟", "تحب تطلبه تاني؟" — and every
+    # one of them walked straight through.
+    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,30}[؟?]"),
+    # The same close without the "في": "تحب أساعدك تطلب واحد فيهم؟".
+    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?ساعدك\s+[نت]طلب[^؟?]{0,30}[؟?]"),
+    # "تحب أجهزلك واحد منهم؟" — a close carrying no order word at all.
+    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?جهز\s*ل?ك[^؟?]{0,40}[؟?]"),
+    # "تحب تطلب؟" / "تحب تطلبه تاني؟" / "تحب نطلبه؟"
+    re.compile(r"\s*(?:و\s*)?تحب\s+[نت]طلب[^؟?]{0,30}[؟?]"),
     # "أجيبلك الـ90 ولا الـ50؟" — a size close.
     re.compile(r"\s*[أا]جيبلك\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*ولا\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*[؟?]"),
     # "نسجل الطلب؟" / "نكمل الاوردر؟"
-    re.compile(r"\s*(?:و\s*)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)\S*\s*[؟?]"),
+    re.compile(r"\s*(?:و\s*)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,20}[؟?]"),
     # "تحب نكمل الطلب؟"
-    re.compile(r"\s*(?:و\s*)?تحب\s+نكمل\S*\s*[؟?]"),
+    re.compile(r"\s*(?:و\s*)?تحب\s+نكمل[^؟?]{0,25}[؟?]"),
 )
 
 

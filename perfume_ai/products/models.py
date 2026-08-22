@@ -273,6 +273,19 @@ class Cart(models.Model):
     customer_phone = EncryptedCharField(max_length=500, blank=True)
     secondary_phone = EncryptedCharField(max_length=500, blank=True)
     shipping_address = EncryptedTextField(blank=True)
+    # A perfume the customer has chosen but not yet picked a size for. CartItem requires
+    # a variant, so an unsized selection had nowhere to live and was simply dropped —
+    # and because the extractor prompt (rightly) refuses to refill an empty cart from
+    # history, the very next message lost the perfume outright: "هاخد اودورا" followed by
+    # "خليها 2 بدل واحدة" was answered with "مش واضحلي عايز تطلب أنهي عطر".
+    pending_product = models.ForeignKey(
+        "Product",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pending_in_carts",
+        help_text="عطر اختاره العميل لكن لسه محددش الحجم",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

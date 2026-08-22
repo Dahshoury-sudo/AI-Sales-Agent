@@ -5,7 +5,7 @@ from .search_service import search_products
 from .product_info import get_product_info
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
-from .general_service import handle_general
+from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
 from .notification_service import notify_handoff
 from .usage_service import record_llm_message
@@ -13,6 +13,7 @@ from .identification_service import identify_perfume
 from .objection_service import handle_objection
 from .reply_sanitizer import soften_marketing_language, strip_premature_closing
 from .sales import constraints as sales_constraints
+from .sales import gender as sales_gender
 from .sales import objection as sales_objection
 from .sales import stage as sales_stage
 from products.models import Order
@@ -52,6 +53,30 @@ def _finalize(reply, stage):
     if not sales_stage.closing_allowed(stage):
         reply = strip_premature_closing(reply, stage)
     return reply
+
+
+def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVERY):
+    """A model-generated reply with no product data, finalized like every other path.
+
+    Wraps general_service.handle_general because `route` returns through it in sixteen
+    places and `_finalize` was only reached in five. Everything on those sixteen paths —
+    every greeting, FAQ answer, out-of-domain redirect, promotion and musk deferral, and
+    every one of the discovery gates — returned raw model output: neither
+    soften_marketing_language nor strip_premature_closing ever ran on it. So a greeting
+    could close the sale and nothing removed the close, which is most of why premature
+    closing survived at all.
+
+    Wrapping here rather than editing sixteen call sites keeps the diff honest and makes
+    it impossible for a seventeenth branch to be added that forgets. The default stage
+    forbids closing, which is correct for every one of these branches: none of them is a
+    customer who has chosen anything.
+
+    Scripted replies are deliberately NOT routed through this — they return directly from
+    `route` and stay byte-for-byte identical, as ScriptedRepliesSurviveSanitizingTests
+    pins them.
+    """
+    reply, context = _handle_general_raw(message, history, store)
+    return _finalize(reply, stage), context
 
 
 
@@ -236,17 +261,15 @@ def route(message, history=None, store=None, conversation=None):
     
     if text_rep >= 3 or semantic_rep >= 3:
         # Bot has been repeating itself — force a conversation redirect
-        # Fetch real products from DB to prevent hallucination when suggesting alternatives
-        from products.models import Product
-        from django.db.models import Q
-        random_products = Product.objects.filter(
-            store=store, is_active=True
-        ).filter(
-            Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)
-        ).distinct().order_by('?')[:3]
+        # Fetch real products from DB to prevent hallucination when suggesting alternatives.
+        # Deterministic rather than order_by('?'), so a repeated conversation can be
+        # replayed and the customer is not shown a random gender mix.
+        from .fallback import suggest_alternatives
+
+        random_products = suggest_alternatives(store)
         
         products_context = ""
-        if random_products.exists():
+        if random_products:
             products_list = []
             for p in random_products:
                 available_variants = []
@@ -279,7 +302,7 @@ def route(message, history=None, store=None, conversation=None):
         # Restore anything the customer said before the 8-message window cut it off.
         # Merged here, before every check below, so the gender and budget prompts and
         # search_products all see the full picture rather than a truncated one.
-        intent = merge_preferences(conversation, intent)
+        intent = merge_preferences(conversation, intent, message)
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":
@@ -292,36 +315,15 @@ def route(message, history=None, store=None, conversation=None):
                 history, store
             )
 
-        # Check if gender is missing and not inferable from conversation history
-        if not intent.get("gender"):
-            # Check if gender was mentioned in recent conversation history
-            gender_mentioned = False
-            if history:
-                gender_keywords_male = ["رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي", "شبابي", "شاب", "رجاله", "عريس", "لصاحبي", "لأخويا", "لأبويا", "لخطيبي", "لجوزي", "لابني", "لعمي", "لخالي", "أنا راجل"]
-                gender_keywords_female = ["حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي", "بنت", "بنات", "عروسة", "عروسه", "لصاحبتي", "لأختي", "لماما", "لخطيبتي", "لمراتي", "لبنتي", "لطنطي", "لخالتي", "أنا بنت"]
-                for msg in history:
-                    content = msg.get("content", "")
-                    if any(kw in content for kw in gender_keywords_male + gender_keywords_female):
-                        gender_mentioned = True
-                        break
-            
-            # Also check the current message
-            msg_lower = message.lower()
-            gender_keywords_all = ["رجالي", "رجالى", "للرجال", "male", "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "يونيسيكس", "unisex", "bi", "bisexual", "باي", "بايسكشوال", "بايسيكشوال", "بناتي", "ولادي", "شبابي", "شاب", "رجاله", "عريس", "عروسة", "عروسه", "لصاحبي", "لصاحبتي", "لأخويا", "لأختي", "لأبويا", "لماما", "لخطيبي", "لخطيبتي", "لجوزي", "لمراتي", "لابني", "لبنتي", "أنا راجل", "أنا بنت"]
-            if any(kw in msg_lower for kw in gender_keywords_all):
-                gender_mentioned = True
-            
-            if not gender_mentioned:
-                # Gender not known — ask the customer first before recommending
-                return handle_general(
-                    f"""العميل بعتلي: "{message}"
+        # Resolve gender from data before considering asking for it. The old gate
+        # scanned only for literal Arabic gender words, so "عايز حاجة شبه سوفاج" —
+        # a perfume this store stocks as gender=male — read as unknown and burned the
+        # customer's most informative turn on "رجالي ولا حريمي؟". Three of four
+        # lookalike requests in evaluation were answered that way.
+        resolved_gender = sales_gender.resolve(intent, message, history, store)
+        if resolved_gender:
+            intent["gender"] = resolved_gender
 
-العميل ده عايز ترشيح عطر بس مش واضح عايز رجالي ولا حريمي.
-اسأله سؤال واحد مختصر: بتدور على عطر رجالي ولا حريمي؟
-ممنوع ترشح أي عطر قبل ما تعرف الإجابة. سؤال واحد بس ومتطولش.""",
-                    history, store
-                )
-        
         # Check if the intent is too vague (only gender, nothing about taste/preferences)
         # Ask about preferences before recommending blindly
         has_taste_info = any([
@@ -345,7 +347,27 @@ def route(message, history=None, store=None, conversation=None):
         ])
         
         has_budget = intent.get("max_price") is not None
-        
+        # "مش مهم السعر" answers the budget question. Asking it anyway is the same
+        # not-listening failure as re-asking a stated number.
+        if not has_budget and sales_constraints.budget_is_open(message, history):
+            has_budget = True
+
+        # The gender gate is now a last resort rather than the first move. Ask only when
+        # the data could not resolve it AND the customer has told us nothing else — at
+        # or above that bar, answering the request and folding the gender question into
+        # the same reply is what a salesperson actually does, and it is what the
+        # `similar_to` clause in has_taste_info was always meant to protect.
+        gender_unknown = not intent.get("gender")
+        if gender_unknown and not has_taste_info:
+            return handle_general(
+                f"""العميل بعتلي: "{message}"
+
+العميل ده عايز ترشيح عطر بس مش واضح عايز رجالي ولا حريمي.
+اسأله سؤال واحد مختصر: بتدور على عطر رجالي ولا حريمي؟
+ممنوع ترشح أي عطر قبل ما تعرف الإجابة. سؤال واحد بس ومتطولش.""",
+                history, store
+            )
+
         if not has_taste_info or not has_budget:
             # Check if bot already asked about preferences or budget recently (avoid looping)
             already_asked_preferences = False
@@ -422,12 +444,12 @@ def route(message, history=None, store=None, conversation=None):
                     )
         
         results = search_products(intent, store)
-        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results)
+        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
 
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
-            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results)
+            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
 
         # A customer being shown options for the first time has not chosen anything yet, so
         # this turn has not earned "تحب أساعدك في الطلب؟".
@@ -626,8 +648,8 @@ def route(message, history=None, store=None, conversation=None):
         return handle_general(
             f"""العميل بعتلي الرسالة دي: "{message}"
 
-الرسالة دي مش متعلقة بالعطور. رد عليه بأسلوب ودود وخفيف (مش جامد)، ووجهه بلطف إنك متخصص في العطور وتقدر تساعده يختار عطر مميز.
-لو ممكن تربط الموضوع بالعطور بشكل مضحك أو ذكي، يبقى أحسن.
+الرسالة دي مش متعلقة بالعطور. رد عليه بأسلوب ودود ومحترم ومختصر، ووجهه بلطف إنك متخصص في العطور وتقدر تساعده يختار عطر مميز.
+🔴 لو الرسالة كلام عشوائي أو حروف مش مفهومة: قول "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟" وبس. ❌ ممنوع تهزر ولا تعمل نكتة ولا تلعب بالكلام — ده مكتوب في أسلوبك كخط أحمر.
 ممنوع تكرر نفس الرد كل مرة.""",
             history, store
         )

@@ -30,6 +30,7 @@ from .notes import (
     HEAVY_FAMILIES,
     HEAVY_NOTES,
     LIGHT_FAMILIES,
+    expand_request_term,
     families,
 )
 
@@ -113,6 +114,55 @@ def _text_hit(field_value, wanted):
     return str(wanted).strip().lower() in str(field_value).lower()
 
 
+# What the extractor emits for these two slots, as the same 1-4 scale similarity._ordinal
+# reads catalogue text onto.
+_WANTED_LONGEVITY = {
+    "weak": 1, "poor": 1, "short": 1,
+    "moderate": 2, "medium": 2, "average": 2,
+    "long": 3, "long-lasting": 3, "long lasting": 3, "longlasting": 3,
+    "eternal": 4, "very long": 4, "very long-lasting": 4,
+}
+_WANTED_PROJECTION = {
+    "intimate": 1, "soft": 1, "skin": 1, "close": 1,
+    "moderate": 2, "medium": 2,
+    "strong": 3, "heavy": 3, "loud": 3,
+    "enormous": 4, "beast": 4, "nuclear": 4,
+}
+
+
+def _ordinal_hit(field_value, wanted, vocabulary, words):
+    """Score a graded request against a graded catalogue value, 0.0-1.0.
+
+    This replaces `_text_hit` for longevity and projection, and it exists because that
+    substring test was dead on arrival for longevity: the extractor emits
+    'long-lasting' / 'eternal' / 'moderate', while stores type '8 hours', '8–10 hrs',
+    '12 hours'. No product in a real catalogue ever matched, so a customer whose stated
+    top priority was الثبات contributed exactly zero to the ranking — and evaluation
+    caught the bot recommending a 6-hour perfume while saying out loud that its
+    longevity was lower.
+
+    similarity._ordinal already parses both the words and the hour numbers onto a 1-4
+    scale, so it is reused rather than reimplemented. Meeting or beating the request
+    scores full; one grade short scores half, because a 7-hour perfume is a real answer
+    to "ثابت" even if it is not the best one; further short scores nothing.
+    """
+    if not field_value or not wanted:
+        return 0.0
+
+    target = vocabulary.get(str(wanted).strip().lower())
+    if target is None:
+        # An unmapped request value falls back to the old substring behaviour rather
+        # than silently scoring zero.
+        return 1.0 if _text_hit(field_value, wanted) else 0.0
+
+    actual = similarity._ordinal(field_value, words)
+    if actual is None:
+        return 0.0
+    if actual >= target:
+        return 1.0
+    return 0.5 if target - actual == 1 else 0.0
+
+
 def _affordable_and_obtainable(product, max_price, fillable):
     """Is there a bottle that is both within budget and actually gettable?
 
@@ -164,7 +214,16 @@ def rank(products, intent, reference=None, fillable=None):
 
         matched_notes = [
             note for note in wanted_notes
-            if any(str(note).strip().lower() in existing for existing in profile)
+            # Scored through the same expansion table the SQL filter uses. Without this
+            # an accord request ("مسكر") filtered to the gourmands and then scored every
+            # one of them zero, because no product has a note literally named "sweet" —
+            # so the ordering fell back to bulk-oil stock and the reasons line came out
+            # empty, leaving the model no evidence to recommend from.
+            if any(
+                term in existing
+                for term in expand_request_term(note)
+                for existing in profile
+            )
         ]
         if wanted_notes:
             # Proportional, not all-or-nothing: matching two of three requested notes is
@@ -193,8 +252,6 @@ def rank(products, intent, reference=None, fillable=None):
         for key, weight_name, attribute, label in (
             ("occasion", "occasion", "occasion", "مناسب للمناسبة اللي قالها"),
             ("season", "season", "season", "مناسب للموسم"),
-            ("longevity", "longevity", "longevity", "ثباته بيطابق طلبه"),
-            ("projection", "projection", "projection", "فوحانه بيطابق طلبه"),
         ):
             wanted = intent.get(key)
             if not wanted:
@@ -202,6 +259,27 @@ def rank(products, intent, reference=None, fillable=None):
             if _text_hit(getattr(product, attribute, ""), wanted):
                 entry.score += WEIGHTS[weight_name]
                 entry.reasons.append(label)
+
+        # Graded, not substring-matched — see _ordinal_hit. Partial credit is reported as
+        # a mismatch rather than a reason so the reply cannot claim a perfume "matches"
+        # a longevity request it only half meets.
+        for key, attribute, vocabulary, words, label, short_label in (
+            ("longevity", "longevity", _WANTED_LONGEVITY, similarity._LONGEVITY_WORDS,
+             "ثباته بيطابق طلبه", "ثباته أقل من اللي طلبه شوية"),
+            ("projection", "projection", _WANTED_PROJECTION, similarity._PROJECTION_WORDS,
+             "فوحانه بيطابق طلبه", "فوحانه أقل من اللي طلبه شوية"),
+        ):
+            wanted = intent.get(key)
+            if not wanted:
+                continue
+            hit = _ordinal_hit(getattr(product, attribute, ""), wanted, vocabulary, words)
+            if hit <= 0:
+                entry.mismatches.append(
+                    f"{'ثباته' if key == 'longevity' else 'فوحانه'} مش بيطابق طلبه"
+                )
+                continue
+            entry.score += WEIGHTS[key] * hit
+            entry.reasons.append(label if hit >= 1.0 else short_label)
 
         if intent.get("gender") and product.gender == str(intent["gender"]).lower():
             entry.score += WEIGHTS["gender"]

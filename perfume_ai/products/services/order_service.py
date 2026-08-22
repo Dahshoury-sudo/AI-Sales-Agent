@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import F, Q
 from products.models import Cart, CartItem, Order, OrderItem, Product, ProductVariant
 from .ai.client import chat
+from .fallback import suggest_alternatives
 from .product_resolver import resolve_product
 from .notification_service import notify_new_order
 
@@ -74,6 +75,14 @@ def _cart_context(cart):
     ]
     state = {
         "products": items,
+        # A perfume chosen but not yet sized. Reported separately from `products`
+        # because it has no variant and therefore no price — but reporting it at all is
+        # what stops the next turn losing it: an empty `products` list used to be the
+        # only signal, and the rule below (correctly) forbids refilling an empty cart
+        # from history, so the perfume vanished.
+        "pending_product": (
+            cart.pending_product.name if cart.pending_product_id else None
+        ),
         "customer_name": cart.customer_name or None,
         "customer_phone": cart.customer_phone or None,
         "customer_secondary_phone": cart.secondary_phone or None,
@@ -88,6 +97,11 @@ def _cart_context(cart):
 A field that is null above is genuinely unknown. Return null for it too, unless
 the customer's LATEST message supplies it. NEVER invent a value, and never copy
 placeholder or descriptive text into a field.
+
+If "pending_product" is set, the customer has already chosen that perfume and only
+the size (and/or bottle type) is still missing. Include it in "products" — carrying
+over any quantity, size or bottle type the latest message supplies — instead of
+returning an empty list.
 """
 
 
@@ -149,12 +163,13 @@ def _save_cart_details(cart, name, phone, secondary_phone, address):
     ])
 
 
-def _save_cart_items(cart, items_to_create):
+def _save_cart_items(cart, items_to_create, pending_product=None):
     """Replace the cart's items with the freshly resolved ones.
 
     Only fully resolved items can be stored, since CartItem requires a variant. A
-    perfume the customer named but hasn't picked a size for yet is still carried
-    by the conversation for the one turn it takes to ask.
+    perfume the customer has named but not sized is recorded in `pending_product`
+    instead — it used to be held only by the conversation history, which the extractor
+    is forbidden to read back once the cart is empty, so it was lost on the next turn.
     """
     cart.items.all().delete()
     for item in items_to_create:
@@ -164,6 +179,9 @@ def _save_cart_items(cart, items_to_create):
             bottle_type=item["bottle_type"],
             defaults={"quantity": item["quantity"]},
         )
+    if cart.pending_product_id != (pending_product.id if pending_product else None):
+        cart.pending_product = pending_product
+        cart.save(update_fields=["pending_product", "updated_at"])
 
 
 def _cart_items_as_products_data(cart):
@@ -292,6 +310,21 @@ Return valid JSON in this exact format:
         logger.warning(
             f"Extractor returned no products for conversation #{conversation.id}; "
             f"falling back to the {len(products_data)} saved cart item(s)."
+        )
+
+    # Same protection for a perfume that was chosen but never sized. It has no CartItem
+    # to fall back on, so without this the turn spent asking for the size also loses the
+    # perfume — which is exactly what "هاخد اودورا" then "خليها 2 بدل واحدة" did.
+    if not products_data and cart.pending_product_id:
+        products_data = [{
+            "name": cart.pending_product.name,
+            "quantity": None,
+            "volume": None,
+            "bottle_type": None,
+        }]
+        logger.info(
+            f"Extractor returned no products for conversation #{conversation.id}; "
+            f"restoring the pending selection '{cart.pending_product.name}'."
         )
 
     if not products_data:
@@ -483,8 +516,17 @@ Return valid JSON in this exact format:
 
     # Persist whatever resolved cleanly, before any of the early returns below.
     # Partial progress counts: if one perfume is settled and another still needs a
-    # size, the settled one must survive the turn spent asking about the other.
-    _save_cart_items(cart, items_to_create)
+    # size, the settled one must survive the turn spent asking about the other — and so
+    # must the unsettled one, which is what `pending` carries.
+    pending = next(
+        (
+            item["product_obj"]
+            for item in products_data
+            if isinstance(item, dict) and item.get("product_obj") is not None
+        ),
+        None,
+    )
+    _save_cart_items(cart, items_to_create, pending_product=pending)
 
     # If the user asked for products but NONE were found in our store, stop immediately and suggest alternatives.
     if not items_to_create and all("product_obj" not in p for p in products_data if isinstance(p, dict)):
@@ -492,8 +534,8 @@ Return valid JSON in this exact format:
         if any(not p.get("name") for p in products_data if isinstance(p, dict)):
             return "عذراً يا فندم، تقصد أنهي عطر فيهم بالظبط عشان أقدر أسجلهولك في الطلب؟", context_str
             
-        alternatives = Product.objects.filter(store=store, is_active=True).filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct().order_by('?')[:3]
-        if alternatives.exists():
+        alternatives = suggest_alternatives(store)
+        if alternatives:
             alts_text = []
             for alt in alternatives:
                 alts_text.append(f"• {alt.name} ({alt.brand.name})")
@@ -516,8 +558,13 @@ Return valid JSON in this exact format:
                 missing_for_this_product.append("نوع الزجاجة (أوريجينال أم زجاجة البراند؟)")
             
         # Check quantities for products
+        # A missing quantity defaults to one bottle rather than blocking the turn.
+        # "عايز اطلب امبيرو 90 ملي" plainly means one, and answering it with "محتاج أعرف
+        # كمية الزجاجات المطلوبة" is friction a salesperson would never add. Only an
+        # explicit larger quantity changes it, and the summary shows the count before
+        # anything is confirmed, so a customer who meant two can still correct it.
         if not p.get("quantity"):
-            missing_for_this_product.append("كمية الزجاجات المطلوبة")
+            p["quantity"] = 1
             
         if missing_for_this_product:
             joined_missing = " و ".join(missing_for_this_product)
@@ -525,9 +572,22 @@ Return valid JSON in this exact format:
 
     if product_missing_fields:
         missing_text = " ولا ".join(product_missing_fields) if len(product_missing_fields) == 1 else " و ".join(product_missing_fields)
-        # If it's just one product and they're missing size, make it sound like a natural question
+        # If it's just one product and they're missing size, ask with the perfume's REAL
+        # sizes and acknowledge whatever else they just told us. The old line was a
+        # hardcoded "تحب الـ50 ملي ولا الـ90 ملي؟" — wrong for any perfume stocked in
+        # other sizes, and it repeated itself verbatim when the customer answered with
+        # something else ("خليها 2 بدل واحدة" got the identical question back).
         if len(product_missing_fields) == 1 and "الحجم" in product_missing_fields[0]:
-            return f"تمام 👌 تحب الـ50 ملي ولا الـ90 ملي؟", ""
+            pending = next(
+                (p for p in products_data if isinstance(p, dict) and "available_volumes_display" in p),
+                None,
+            )
+            if pending:
+                sizes = " ولا ".join(pending["available_volumes_display"])
+                quantity = pending.get("quantity") or 1
+                count = f"{quantity} × " if quantity > 1 else ""
+                return f"تمام 👌 {count}{pending.get('name')} — تحب {sizes}؟", ""
+            return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
         return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
 
     # 3. Product details are complete — now check for missing personal info.

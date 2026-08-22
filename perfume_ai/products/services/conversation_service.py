@@ -99,6 +99,14 @@ PERSISTED_PREFERENCE_KEYS = (
     "avoid_notes",
     "avoid_traits",
     "similar_to",
+    # similar_to_notes travels with similar_to or the pair is useless: keeping the name
+    # while dropping the notes meant that on any later turn a reference we do not stock
+    # resolved to no catalogue product and no fallback notes, so _resolve_reference
+    # returned None and similarity silently switched itself off mid-conversation.
+    "similar_to_notes",
+    # "مش منتشرة" is a taste, not a passing remark, and losing it dropped the one signal
+    # that favours the store's own exclusive blends — its highest-margin stock.
+    "wants_uncommon",
 )
 
 # "multiple" is a transient signal, not a taste: it means the customer wants a men's and
@@ -106,13 +114,67 @@ PERSISTED_PREFERENCE_KEYS = (
 # restore that question on every later turn that happens to omit a gender.
 _TRANSIENT_GENDER = "multiple"
 
+# Axes that a single sentence can flip wholesale. When the customer reverses one of
+# these, every key on the same axis has to be dropped rather than gap-filled — see
+# _contradicted_keys.
+_AXES = (
+    ("scent", ("notes", "avoid_notes", "avoid_traits", "perfume_type")),
+    ("season", ("season",)),
+    ("occasion", ("occasion",)),
+    ("performance", ("longevity", "projection")),
+    ("reference", ("similar_to", "similar_to_notes")),
+)
+
+# How a customer says "ignore what I just told you". Kept narrow on purpose: a false
+# positive here throws away a preference the customer still holds.
+_REVERSAL_MARKERS = (
+    "غيرت رايي", "غيرت رأيي", "بدلت رايي", "بدلت رأيي",
+    "لا مش كده", "لا مش ده", "لا مش دي", "بلاش", "الغي اللي قلته",
+    "انسى اللي قلته", "انسي اللي قلته", "مش عايز اللي قلته",
+    "عدلت عن", "رجعت في كلامي",
+)
+
+
+def _is_reversal(message):
+    """Did the customer explicitly retract what they said earlier?"""
+    if not message:
+        return False
+    from .static_faq_service import normalize_arabic
+
+    normalized = normalize_arabic(message)
+    return any(normalize_arabic(marker) in normalized for marker in _REVERSAL_MARKERS)
+
+
+def _contradicted_keys(intent, message):
+    """Saved keys that must NOT be restored on this turn.
+
+    The failure this exists for: "لا غيرت رايي، عايزه حاجه تقيله للشتا" arrived with a
+    fresh intent carrying season=winter but no `notes`, so the gap-filler dutifully
+    restored notes=["fresh"] from the summer request the customer had just retracted —
+    and the active requirement set became "heavy winter AND fresh". Per-key freshness is
+    not enough, because a reversal expresses itself on a *different key* from the one it
+    contradicts.
+
+    So on an explicit reversal, any axis the new intent speaks to at all is cleared of
+    its saved values entirely; axes the customer did not touch are still carried, since
+    changing your mind about the season says nothing about your budget.
+    """
+    if not _is_reversal(message):
+        return frozenset()
+
+    contradicted = set()
+    for _, keys in _AXES:
+        if any(_is_set((intent or {}).get(key)) for key in keys):
+            contradicted.update(keys)
+    return frozenset(contradicted)
+
 
 def _is_set(value):
     """A preference the customer actually expressed, as opposed to an empty slot."""
     return value not in (None, "", [], {})
 
 
-def merge_preferences(conversation, intent):
+def merge_preferences(conversation, intent, message=None):
     """Fill gaps in a freshly extracted intent from what the customer said earlier.
 
     extract_intent re-derives every criterion from the last 8 messages alone, so a
@@ -124,15 +186,19 @@ def merge_preferences(conversation, intent):
 
     Freshly extracted values always win over saved ones, matching the override rule the
     extractor prompt already states — a customer who changes their mind must not be
-    contradicted by their own history.
+    contradicted by their own history. `message` is used to detect an explicit reversal,
+    where gap-filling itself is the wrong behaviour rather than merely a stale one.
     """
     merged = dict(intent or {})
     if conversation is None:
         return merged
 
     saved = conversation.preferences or {}
+    contradicted = _contradicted_keys(intent, message)
 
     for key in PERSISTED_PREFERENCE_KEYS:
+        if key in contradicted:
+            continue
         if not _is_set(merged.get(key)) and _is_set(saved.get(key)):
             merged[key] = saved[key]
 

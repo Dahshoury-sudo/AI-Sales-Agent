@@ -1,0 +1,239 @@
+{
+  "C1": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "medium",
+      "detail": "order-closing question at stage 'comparison' — sanitizer should have caught this"
+    }
+  ],
+  "C2": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "medium",
+      "detail": "order-closing question at stage 'comparison' — sanitizer should have caught this"
+    }
+  ],
+  "C3": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'comparison' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    }
+  ],
+  "CS1": [
+    {
+      "turn": 2,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /حاج[هة]\\s+تاني[هة]\\s+ممكن\\s+[أا]ساعدك/ survived sanitize_reply"
+    }
+  ],
+  "CS2": [],
+  "D1": [],
+  "D2": [],
+  "D3": [],
+  "G1": [],
+  "G2": [],
+  "M1": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 2,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['similar_to', 'wants_uncommon']"
+    },
+    {
+      "turn": 3,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 3,
+      "code": "reference_in_own_shortlist",
+      "severity": "high",
+      "detail": "'Dior Sauvage' is the perfume the customer asked to be matched against, yet it was shortlisted as a candidate — and its self-similarity of 1.0 is what set has_close_match=True"
+    },
+    {
+      "turn": 4,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 4,
+      "code": "reference_in_own_shortlist",
+      "severity": "high",
+      "detail": "'Dior Sauvage' is the perfume the customer asked to be matched against, yet it was shortlisted as a candidate — and its self-similarity of 1.0 is what set has_close_match=True"
+    }
+  ],
+  "M2": [
+    {
+      "turn": 2,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /تحب\\s+[أا]قولك\\s+(?:ال)?[أا]?سعار/ survived sanitize_reply"
+    }
+  ],
+  "M3": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'discovery' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 2,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 3,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 3,
+      "code": "repeated_reply",
+      "severity": "high",
+      "detail": "85% similar to the previous reply — the customer asked for something new and got the same answer"
+    }
+  ],
+  "M4": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'None' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    },
+    {
+      "turn": 2,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['similar_to']"
+    }
+  ],
+  "O1": [
+    {
+      "turn": 2,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /تحب\\s+[أا]عرفك\\s+[أا]كتر\\s+عن/ survived sanitize_reply"
+    }
+  ],
+  "O2": [],
+  "O3": [],
+  "O4": [
+    {
+      "turn": 1,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /تحب\\s+[أا]عرفك\\s+[أا]كتر\\s+عن/ survived sanitize_reply"
+    }
+  ],
+  "O5": [
+    {
+      "turn": 2,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /لو\\s+حابب\\s+[أا]ساعدك\\s+في\\s+حاج[هة]\\s+تاني[هة]/ survived sanitize_reply"
+    }
+  ],
+  "P1": [],
+  "P2": [],
+  "P3": [],
+  "R1": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'discovery' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    }
+  ],
+  "R2": [],
+  "R3": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    }
+  ],
+  "R4": [
+    {
+      "turn": 1,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['perfume_type', 'wants_uncommon']"
+    }
+  ],
+  "R5": [],
+  "S1": [
+    {
+      "turn": 1,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /تحب\\s+[أا]عرفك\\s+(?:على\\s+)?(?:ال)?[أا]?سعار/ survived sanitize_reply"
+    }
+  ],
+  "S2": [
+    {
+      "turn": 1,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['similar_to']"
+    }
+  ],
+  "S3": [
+    {
+      "turn": 1,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['similar_to']"
+    }
+  ],
+  "S4": [
+    {
+      "turn": 1,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['similar_to']"
+    }
+  ],
+  "X1": [
+    {
+      "turn": 1,
+      "code": "premature_close",
+      "severity": "high",
+      "detail": "order-closing question at stage 'recommendation' — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
+    }
+  ],
+  "X2": [
+    {
+      "turn": 1,
+      "code": "banned_closer_leak",
+      "severity": "medium",
+      "detail": "persona-forbidden filler closer /تحب\\s+[أا]قولك\\s+(?:ال)?[أا]?سعار/ survived sanitize_reply"
+    }
+  ],
+  "X3": [
+    {
+      "turn": 1,
+      "code": "gender_gate_wasted_turn",
+      "severity": "high",
+      "detail": "whole turn spent asking male/female while the customer had already supplied ['perfume_type', 'longevity', 'projection', 'max_price', 'avoid_traits']"
+    }
+  ],
+  "X4": [],
+  "X5": []
+}

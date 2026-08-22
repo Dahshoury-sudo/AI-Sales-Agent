@@ -2,6 +2,7 @@ import json
 from django.db.models import Q
 from products.models import Product
 from .ai.client import chat
+from .sales import naming
 
 
 def resolve_products(message: str, history=None, store=None):
@@ -56,17 +57,19 @@ Output format MUST be valid JSON:
             resolved.append(exact_match)
             continue
 
-        # Fallback search if LLM returned slightly different name
-        query = Q()
-        for word in p_name.split():
-            if len(word) > 2:
-                query &= (Q(name__icontains=word) | Q(brand__name__icontains=word))
-                
-        if query:
-            match = products.filter(query).first()
-            if match and match not in resolved:
-                resolved.append(match)
-                
+        # Then the deterministic token matcher, which handles reordering ("9pm by Afnan"
+        # for "Afnan 9PM") and a one-character slip ("Ambiro" for "Ambero"), and returns
+        # nothing when a name is ambiguous.
+        #
+        # This replaces a loose AND of `icontains` over each word, which was actively
+        # dangerous: it resolved a mis-transliterated "اوداورا" to *Dark Aura* — a
+        # different real perfume — and the bot then confidently compared the wrong one.
+        # The prompt above tells the model never to substitute a different perfume; the
+        # Python fallback was doing exactly that behind its back.
+        match = naming.match_product(p_name, store, products=products)
+        if match and match not in resolved:
+            resolved.append(match)
+
     return resolved
 
 

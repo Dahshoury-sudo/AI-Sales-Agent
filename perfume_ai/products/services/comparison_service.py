@@ -3,7 +3,7 @@ import json
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .product_formatting import format_products
-from .product_resolver import resolve_product
+from .product_resolver import resolve_products
 
 
 def compare_products(message, history=None, store=None):
@@ -14,38 +14,15 @@ def compare_products(message, history=None, store=None):
     model to lead with exactly those numbers. Two opposite orders in one request, and an
     "أوفر" verdict about one perfume's size ladder could be read back as a verdict about
     the other.
+
+    Resolution goes through resolve_products rather than a second extractor of its own.
+    The private extractor this replaces was never given the catalogue, so it
+    transliterated Arabic names blind — "اوداورا" came back as something that matched no
+    row, and before the resolver was hardened it matched *Dark Aura*, a different real
+    perfume the customer had never mentioned. resolve_products injects the actual product
+    list into its prompt, which is the whole reason it gets these right.
     """
-    prompt = """
-Extract the names of the two perfumes the user wants to compare from their message or conversation history.
-Fix any spelling mistakes in the perfume names. Translate Arabic names to English.
-Return ONLY valid JSON in this format:
-{
-  "perfume_1": "Name 1",
-  "perfume_2": "Name 2"
-}
-"""
-    messages_for_extract = [{"role": "system", "content": prompt}]
-    if history:
-        messages_for_extract.extend(history)
-    messages_for_extract.append({"role": "user", "content": message})
-
-    try:
-        response = chat(messages_for_extract, profile="extract", response_format={"type": "json_object"})
-        
-        data = json.loads(response)
-        p1_name = data.get("perfume_1", "")
-        p2_name = data.get("perfume_2", "")
-    except Exception:
-        p1_name = ""
-        p2_name = ""
-
-    
-    prod1 = resolve_product(p1_name, history, store)
-    prod2 = resolve_product(p2_name, history, store)
-
-    matches = []
-    if prod1: matches.append(prod1)
-    if prod2 and prod2 not in matches: matches.append(prod2)
+    matches = resolve_products(message, history, store)[:2]
 
     if len(matches) < 2:
         return "واحد او اكثر من العطور دي مش متوفر عندنا للاسف ممكن تقولي اسماء عطور تانية؟", ""
@@ -76,7 +53,7 @@ Return ONLY valid JSON in this format:
 3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة، الثبات، المناسبة). متسردش كل حاجة.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.
 5. انصح العميل أي واحد يناسبه أكتر بناءً على ذوقه أو سؤاله.
-6. لو حابب تختم بسؤال، اسأل سؤال تضييق بيعي (زي "تحب تطلب واحد فيهم؟") — بس مش لازم في كل رد.
+6. 🔴 العميل لسه بيوازن بين اختيارين ومختارش — ❌ ممنوع تقفل البيعة في الرد ده. ممنوع "تحب أساعدك في الطلب؟" ولا "تحب تطلب واحد فيهم؟". لو حابب تختم بسؤال، اسأله سؤال تضييق بيساعده يقرر (زي "بتستخدمه بالنهار ولا بالليل؟").
 7. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
 8. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
 """

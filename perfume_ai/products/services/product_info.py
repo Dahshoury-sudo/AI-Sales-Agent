@@ -2,8 +2,7 @@ from .product_resolver import resolve_products
 from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-from django.db.models import Q
-from products.models import Product
+from .fallback import suggest_alternatives
 
 def get_product_info(message, history=None, store=None):
 
@@ -32,11 +31,19 @@ def get_product_info(message, history=None, store=None):
 12. 🔴 لو العميل بيسأل يجيب 50 ملي ولا 90 ملي: ساعده يختار من نفس العطر. لو أول مرة → الأصغر أأمن. لو عاجبه → الأكبر أوفر. ❌ ممنوع تبدل العطر.
 """
     else:
-        # Product not found, let's get some alternatives
-        alternatives = Product.objects.filter(store=store, is_active=True).filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct().order_by('?')[:3]
+        # Product not found, let's get some alternatives. Chosen deterministically and
+        # with the customer's gender in mind: `order_by('?')` here offered a women's
+        # perfume and a men's perfume side by side to someone whose gender was never
+        # established, and made the reply impossible to reproduce.
+        from .sales import gender as sales_gender
+
+        alternatives = suggest_alternatives(
+            store,
+            gender=sales_gender.resolve({}, message, history, store),
+        )
         
         context = "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
-        if alternatives.exists():
+        if alternatives:
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
             context += format_products(alternatives, brief=True)
         

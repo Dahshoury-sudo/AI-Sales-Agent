@@ -121,24 +121,56 @@ def _candidate_pool(clues, store):
 
 
 def score_candidates(clues, products):
-    """Rank products by how many *verifiable* clue types each satisfies."""
+    """Rank products by how many *verifiable* clue types each satisfies.
+
+    Two things stop this from being a coin flip. Note matches are weighted by how rare
+    the note is in the candidate pool, because "vanilla" is shared by a third of the
+    catalogue and identifies nothing on its own; and "sweet" scores by how gourmand the
+    product actually is rather than a flat point for containing one sweet note.
+
+    Without those, "الزجاجة سودا والريحة فيها فانيليا وحاجة حلوة وثابتة" produced eight
+    products tied at exactly 3.50, and the sort fell through to `product.id` — handing
+    the answer to Dior Sauvage, a fresh masculine, ahead of Black Opium, Good Girl and
+    Vanilo, which are literally black-bottled sweet gourmands.
+    """
     wanted_notes = [str(note).strip().lower() for note in (clues.get("notes") or ()) if note]
     candidates = []
 
+    profiles = {}
     for product in products:
-        entry = Candidate(product=product)
         profile = set()
         for layer in ("top_notes", "middle_notes", "base_notes"):
             profile.update(parse_notes(getattr(product, layer, "")))
+        profiles[product.id] = profile
+
+    # How common each requested note is among the candidates. A note in nearly every
+    # candidate cannot discriminate between them.
+    pool_size = max(1, len(products))
+    rarity = {}
+    for note in wanted_notes:
+        frequency = sum(
+            1 for profile in profiles.values() if any(note in existing for existing in profile)
+        )
+        # Never zero: a note every candidate shares still counts a little.
+        rarity[note] = max(0.15, 1.0 - (frequency / pool_size))
+
+    for product in products:
+        entry = Candidate(product=product)
+        profile = profiles[product.id]
 
         hits = [note for note in wanted_notes if any(note in existing for existing in profile)]
         if hits and wanted_notes:
-            entry.score += 2.0 * (len(hits) / len(wanted_notes))
+            weighted = sum(rarity[note] for note in hits) / len(wanted_notes)
+            entry.score += 2.0 * weighted
             entry.matched_types.add("notes")
 
-        if clues.get("sweet") and (profile & _GOURMAND):
-            entry.score += 1.0
-            entry.matched_types.add("sweet")
+        if clues.get("sweet"):
+            gourmand = len(profile & _GOURMAND)
+            if gourmand:
+                # Proportional to how gourmand it really is, capped so a dessert of a
+                # perfume cannot outscore every other kind of evidence on its own.
+                entry.score += min(1.0, gourmand / 3.0)
+                entry.matched_types.add("sweet")
 
         if clues.get("gender") and product.gender == str(clues["gender"]).lower():
             entry.score += 0.8
@@ -188,7 +220,10 @@ def confidence_tier(candidates):
 
     if has_nominal and clue_types >= HIGH_CLUE_TYPES and margin >= HIGH_MARGIN:
         return "high"
-    if clue_types >= 2 or margin >= MEDIUM_MARGIN:
+    # Both conditions, not either. As an OR, three descriptive clue types returned
+    # "medium" — and therefore "غالبًا X" — even at a margin of zero, which is precisely
+    # the case where the evidence does not distinguish the winner from the field.
+    if clue_types >= 2 and margin >= MEDIUM_MARGIN:
         return "medium"
     return "low"
 

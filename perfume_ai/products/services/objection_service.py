@@ -22,9 +22,12 @@ bot that marked every complaint as needing a human would go silent on the custom
 most need answering. Genuine "let me talk to a person" requests still route to handoff.
 """
 
+import re
+from decimal import Decimal
+
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-from .product_formatting import format_products
+from .product_formatting import _bottles_fillable, format_products
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
@@ -60,15 +63,43 @@ _NO_GUARANTEE = (
 )
 
 
+def _cheaper_alternatives(store, ceiling, exclude=None):
+    """Real perfumes at or under a price the customer named."""
+    from products.models import Product
+
+    products = (
+        Product.objects.filter(store=store, is_active=True)
+        .filter(variants__bottle_type="normal", variants__price__lte=ceiling)
+        .prefetch_related("variants")
+        .distinct()
+    )
+    if exclude is not None:
+        products = products.exclude(pk=exclude.pk)
+    return [
+        product
+        for product in products
+        if any(
+            variant.bottle_type == "normal" and _bottles_fillable(product, variant) > 0
+            for variant in product.variants.all()
+        )
+    ][:3]
+
+
 def _price_gap_context(message, history, store):
-    """For "ليه أدفع 1200 بدل 500؟" — the real differences between the two, if we can
-    resolve both perfumes. Nothing in the codebase compared two products numerically
-    before; comparison rendered two independent text blocks and left the model to eyeball
-    it, which is how invented differentiators got in.
+    """For "ليه أدفع 1200 بدل 500؟" — the real differences between the two.
+
+    Nothing in the codebase compared two products numerically before; comparison
+    rendered two independent text blocks and left the model to eyeball it, which is how
+    invented differentiators got in.
+
+    The single-perfume case matters just as much and used to fall through to "". A
+    customer comparing one named perfume against a *price point* ("فهرنهايت بـ1200 وانا
+    ممكن اجيب حاجة بـ500") got an answer about 50ml versus 90ml of the same perfume —
+    which is not the question — because the playbook's size clause was the only guidance
+    left standing. So when only one perfume resolves, the cheaper side is taken from the
+    catalogue at the price the customer actually named.
     """
     products = resolve_products(message, history, store)
-    if len(products) < 2:
-        return ""
 
     priced = []
     for product in products[:2]:
@@ -78,6 +109,28 @@ def _price_gap_context(message, history, store):
         ]
         if variants:
             priced.append((min(variant.price for variant in variants), product))
+
+    if len(priced) < 2 and priced and store is not None:
+        named_price, named = priced[0]
+        # The lowest figure in the message is the budget they are comparing against.
+        figures = [
+            Decimal(match)
+            for match in re.findall(r"\d{2,6}", message or "")
+            if Decimal(match) >= 50
+        ]
+        ceiling = min(figures) if figures else None
+        if ceiling is not None and ceiling < named_price:
+            for alternative in _cheaper_alternatives(store, ceiling, exclude=named):
+                cheapest = min(
+                    (
+                        variant.price for variant in alternative.variants.all()
+                        if variant.bottle_type == "normal" and variant.volume
+                    ),
+                    default=None,
+                )
+                if cheapest is not None:
+                    priced.append((cheapest, alternative))
+                    break
 
     if len(priced) < 2:
         return ""

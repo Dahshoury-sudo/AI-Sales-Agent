@@ -2112,13 +2112,24 @@ class CallSiteProfileTests(TestCase):
              lambda: extract_intent("hi", [], self.store), '{}'),
             ("products.services.product_resolver.chat",
              lambda: resolve_products("hi", [], self.store), '{"perfumes": []}'),
-            ("products.services.comparison_service.chat",
-             lambda: compare_products("hi", [], self.store), '{"perfume_1": "", "perfume_2": ""}'),
+            # comparison_service is deliberately absent: it no longer has an extractor of
+            # its own. It had a private one that was never given the catalogue, so it
+            # transliterated Arabic names blind — "اوداورا" resolved to *Dark Aura*, a
+            # different real perfume the customer never named, and the bot compared that.
+            # Resolution now goes through product_resolver, which is covered above and
+            # does inject the product list.
         ]
         for target, call, payload in cases:
             with self.subTest(target=target):
                 profile = self._profile_used(target, call, return_value=payload)
                 self.assertEqual(profile, "extract")
+
+    def test_comparison_resolves_through_the_shared_resolver(self):
+        """Comparison must not re-derive perfume names with a catalogue-blind prompt."""
+        from products.services import comparison_service
+
+        self.assertNotIn("perfume_1", inspect.getsource(comparison_service))
+        self.assertIn("resolve_products", inspect.getsource(comparison_service))
 
     def test_prose_calls_ask_for_converse(self):
         cases = [

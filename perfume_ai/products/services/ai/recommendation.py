@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from .prompts import get_system_prompt
-from ..product_formatting import format_products
+from ..product_formatting import _bottles_fillable, format_products
 from ..sales.constraints import acknowledgement_hint
 from ..sales.ranking import reasons_note
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
@@ -78,7 +78,69 @@ def _similarity_instruction(search):
     )
 
 
-def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None):
+def _gender_note(gender_unknown):
+    """Ask who it is for *inside* the recommendation, not instead of it.
+
+    The router used to block the whole turn on this question. It now only reaches here
+    when the customer supplied real taste information but no resolvable gender — a
+    lookalike request for a perfume we do not stock, for instance. Answering and asking
+    in one reply is what a salesperson does; spending the turn on the question is not.
+    """
+    if not gender_unknown:
+        return ""
+    return (
+        "\n👤 مش واضح العطر لراجل ولا لست، وعندنا معلومات كفاية نرشح منها:\n"
+        "- رشّح حاجة واحدة أو اتنين مناسبين للوصف اللي قاله، وفضّل اللي ينفع للجنسين.\n"
+        "- واسأله في نفس الرد سؤال واحد قصير: العطر لراجل ولا لست؟\n"
+        "- ❌ ممنوع تسأل السؤال ده لوحده من غير ما ترشح — ده بيضيّع دور العميل.\n"
+    )
+
+
+def _in_budget_note(products, max_price):
+    """State outright that affordable sizes exist, when they do.
+
+    A prompt rule was not enough. After the previously-recommended perfumes were
+    excluded, the remaining shortlist's brand bottles were all over budget while one
+    *original* bottle sat at 326 against a 500 budget — and the reply opened "للأسف
+    العطور المتوفرة عندنا كلها فوق الميزانية دي" and then offered the 326 bottle two
+    sentences later. Every size already carries a ✅/⚠️/❌ label, so whether an affordable
+    option exists is arithmetic; asserting it here removes the room to claim otherwise.
+    """
+    if not max_price:
+        return ""
+
+    affordable = []
+    for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
+        for variant in product.variants.all():
+            if variant.price > max_price:
+                continue
+            # Obtainable, not merely cheap. Filtering on price alone named Dior Sauvage's
+            # original 60ml — which is in budget at 456 and has stock=0 — so the reply
+            # offered a bottle that cannot be sold.
+            if variant.bottle_type == "normal":
+                if _bottles_fillable(product, variant) <= 0:
+                    continue
+                label = "زجاجة البراند"
+            else:
+                if (variant.stock or 0) <= 0:
+                    continue
+                label = "زجاجة أوريجينال"
+            affordable.append(f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}")
+    if not affordable:
+        return (
+            "\n🔴 مفيش أي حجم في القائمة دي داخل ميزانية العميل. قوله كده بصراحة عن "
+            "العطور اللي بتعرضها، واعرض أقرب حجم بفرق السعر بوضوح. ❌ ممنوع تعمم على "
+            "الستور كله.\n"
+        )
+    return (
+        "\n✅ فيه أحجام داخل ميزانية العميل في القائمة دي: "
+        + "، ".join(affordable[:4])
+        + ".\n🔴 ❌ ممنوع تقول \"كل العطور فوق الميزانية\" أو \"مفيش حاجة في الميزانية\" — "
+        "ده غلط، وفوق كده مكتوب الأحجام اللي داخلها. ابدأ بواحد منهم.\n"
+    )
+
+
+def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None, gender_unknown=False):
     # Not repeating a recommendation is handled upstream, not here: ai/intent.py fills
     # intent["exclude_names"] when the customer asks for something else, and
     # search_service drops those from the queryset before this function ever sees it.
@@ -97,6 +159,18 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     # What the customer already told us, so the reply can nod to it once instead of
     # answering five stated constraints as though none had registered.
     constraint_note = acknowledgement_hint(intent or {})
+    gender_note = _gender_note(gender_unknown)
+    # Rule 4 used to be an unconditional "ممنوع ترشح لو مش واضح رجالي ولا حريمي". That
+    # now contradicts the router, which reaches this function with an unresolved gender
+    # only when the customer *has* given usable taste information — so the instruction
+    # has to flip with it rather than veto the recommendation the router just decided to
+    # make.
+    gender_instruction = (
+        "🔴 مش واضح رجالي ولا حريمي، بس العميل قال تفاصيل كفاية — رشّح من المتاح "
+        "(فضّل اللي ينفع للجنسين) واسأله في نفس الرد لراجل ولا لست."
+        if gender_unknown else
+        "🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال \"لخطيبتي\") رشّح على طول."
+    )
 
     # Case 1: Exact matches found
     if products.exists():
@@ -104,7 +178,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{constraint_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{_similarity_instruction(search)}
 ═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 
@@ -112,10 +186,11 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 1. اختر أفضل 1-2 منتج بيطابق شروط العميل كلها مع بعض. لو مفيش منتج بيطابق كل الشروط، ماترشحوش.
 2. 🔴 لو رشحت عطرين، لازم تقارن بينهم في جملة واحدة سريعة تساعده يختار، أو توضح إيه الأنسب. مثال: "Ambero أنسب لو بتحب التوابل والريحة الدافية، أما Afnan 9PM فهو أحلى ومسَكّر أكتر وفيه طابع فاكهي." ولو فيه واحد هو الأنسب بوضوح، قوله "أنا أرشحلك كذا أكتر لطلبك 👌".
 3. {price_instruction}
-4. 🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال "لخطيبتي") رشّح على طول.
+4. {gender_instruction}
 5. 🔴 تجاهل تماماً أي منتج Stock Status = ❌ واختار غيره من المتوفر.
 6. 🔴 لو العميل محدد ميزانية ولقيت عطر ممتاز أرخص بكتير منها، رشحه كـ"قيمة مقابل سعر" — متفضلش الأغلى لمجرد إنه بيقفل الميزانية.
 7. سطر "✅ ليه مناسب" في بيانات كل عطر هو الدليل اللي بنيت عليه الترشيح — اعتمد عليه في سبب الترشيح بدل كلام عام. وسطر "⚠️ مش مطابق في" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة مكتوب جانبها إنه مش مطابق فيها.
+8. 🔴 القائمة اللي فوق هي مجموعة مختارة من العطور، مش كل الستور. ❌ ممنوع تعمل تعميم على المتجر كله زي "كل العطور أغلى من كده" أو "مفيش حاجة في الميزانية دي" — أنت شايف جزء بس، وممكن تكون رشحت للعميل حاجة أرخص في رسالة قبل كده. اتكلم عن العطور اللي قدامك بس.
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
@@ -125,18 +200,20 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{constraint_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{_similarity_instruction(search)}
 ═══ ملحوظة مهمة ═══
 لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 
 {context}
 
 ═══ تعليمات الرد ═══
-1. ❌ إياك أن تقول "لا يوجد" أو "مفيش عطر مطابق لطلبك" أو "للأسف". البائع الماهر يركز على بيع المتاح.
-2. ادخل في الموضوع فوراً ورشّح أفضل 1-2 من القائمة وكأنها صنعت خصيصاً لطلبه.
-3. 🔴 لو رشحت عطرين، قارن بينهم في جملة واحدة سريعة تساعده يختار. مثال: "Ambero أنسب لو بتحب التوابل والريحة الدافية، أما Afnan 9PM فهو أحلى ومسَكّر أكتر."
-4. {price_instruction_alt}
-5. 🔴 تجاهل أي منتج Stock Status = ❌ ورشّح المتوفر بس.
+1. ❌ ممنوع تبدأ بـ"للأسف" أو تسيب العميل بإيد فاضية. البائع الماهر يركز على بيع المتاح.
+2. ادخل في الموضوع فوراً ورشّح أفضل 1-2 من القائمة.
+3. 🔴 لكن ممنوع توهمه إنهم بيطابقوا كل شروطه. سطر "⚠️ مش مطابق في" في بيانات كل عطر بيقولك الشرط اللي مش متحقق — لازم تقول الفرق ده بصراحة في نص جملة (مثال: "ثباته 8 ساعات، أقل من اللي طلبته، بس هو أقرب حاجة عندنا"). ❌ ممنوع تقول إن الثبات أو الفوحان "مناسب لطلبك" لو مكتوب إنه مش مطابق.
+4. 🔴 لو شرط من شروطه مستحيل يتحقق مع الباقي (زي ثبات يومين بميزانية صغيرة)، قوله كده بصراحة وقوله أنهي شرط لازم يتنازل عنه شوية — ده بيبني ثقة أكتر من إنك تبيعه حاجة وهو متوقع حاجة تانية.
+5. 🔴 لو رشحت عطرين، قارن بينهم في جملة واحدة سريعة تساعده يختار.
+6. {price_instruction_alt}
+7. 🔴 تجاهل أي منتج Stock Status = ❌ ورشّح المتوفر بس.
 """
 
     else:

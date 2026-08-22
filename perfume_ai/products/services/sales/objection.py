@@ -82,6 +82,28 @@ _PATTERNS = (
             "العطر اللي جبته",
         ),
     ),
+    (
+        # A formed negative opinion, as opposed to `wont_like`'s forward-looking worry.
+        # This is the commonest rejection in Arabic retail and the detector had no
+        # pattern for it at all, so "العطر اللي رشحتوه ليا مش عاجبني خالص" fell through
+        # to the recommendation branch and a dissatisfied customer was answered with
+        # "بتدور على عطر رجالي ولا حريمي؟". The persona already has the right play for
+        # this ("ممنوع ترشح تاني على طول — اسأله الأول إيه اللي مش عاجبه"); it just
+        # never got the chance to apply.
+        #
+        # Ordered LAST on purpose, against this tuple's most-specific-first rule: a
+        # rejection that also mentions a past purchase ("جربت قبل كده ومعجبنيش") is
+        # better served by `tried_before`, whose playbook already opens by acknowledging
+        # the earlier disappointment. This entry is for a rejection with no purchase
+        # attached.
+        "rejected",
+        (
+            "مش عاجبني", "مش عاجبتني", "معجبنيش", "ماعجبنيش", "مش حبيته",
+            "مش حبيتها", "لا مش دي", "لا مش ده", "مش دي اللي عايزها",
+            "الريحه مش حلوه", "ريحته مش حلوه", "مش عاجبه",
+            "مش عجبني", "مش عجبتني",
+        ),
+    ),
 )
 
 # Language that means the customer is talking about a purchase they already made, which
@@ -90,6 +112,9 @@ _PAST_PURCHASE = (
     "جبت من عندكم", "جربت قبل كده", "اشتريت قبل كده", "اشتريت من عندكم",
     "المره اللي فاتت", "طلبت قبل كده", "العطر اللي اشتريته", "العطر اللي جبته",
     "اللي جبته منكم", "اللي طلبته",
+    # A recommendation the customer acted on is a past interaction too: "العطر اللي
+    # رشحتوه ليا" has to resolve before anything is sold into it.
+    "اللي رشحتوه", "اللي رشحتهولي", "العطر اللي رشحته", "اللي نصحتوني",
 )
 
 
@@ -151,8 +176,11 @@ PLAYBOOK = {
     ),
     "price_gap": (
         "الفرق بين السعرين هو السؤال — جاوب عليه بالفروقات الحقيقية الموجودة في "
-        "البيانات بس. ولو الفرق الوحيد هو الحجم أو شكل الزجاجة، قول كده بصراحة. "
-        "ولو أولويته إنه يشتري أرخص حاجة ريحتها حلوة، قوله إن الأرخص أنسب ليه."
+        "البيانات بس. 🔴 لو العميل بيقارن عطر بسعر تاني (مثلاً \"ليه 1200 وانا ممكن "
+        "اجيب حاجة بـ500\")، الإجابة الصح هي المقارنة بين العطرين مش بين أحجام نفس "
+        "العطر — ممنوع تحوّل السؤال لكلام عن 50 ملي و90 ملي. ولو الفرق الوحيد هو "
+        "الحجم أو شكل الزجاجة، قول كده بصراحة. ولو أولويته إنه يشتري أرخص حاجة "
+        "ريحتها حلوة، قوله إن الأرخص أنسب ليه واعرضه عليه بالاسم والسعر."
     ),
     "longevity_doubt": (
         "ابدأ بالاعتراف بإن ده مضايقه فعلاً — مفيش شرح قبل ده. بعدها اتكلم عن "
@@ -183,5 +211,11 @@ PLAYBOOK = {
     "wont_like": (
         "متوعدش إنها هتعجبه. قلّل المخاطرة بحاجة حقيقية: الحجم الأصغر كبداية، "
         "أو إنه يشمه في الستور لو فيه فرع في حقائق الستور."
+    ),
+    "rejected": (
+        "العميل جرب أو شاف ترشيح ومش عاجبه. ❌ ممنوع ترشح حاجة تانية على طول — ده "
+        "بيحس العميل إنك بتخبط. اعترف الأول في جملة قصيرة، وبعدها اسأل سؤال واحد "
+        "يحدد إيه اللي مش عاجبه بالظبط (تقيل أوي؟ مسكر أوي؟ ثباته؟ ريحة تانية خالص؟). "
+        "استنى رده قبل أي ترشيح."
     ),
 }

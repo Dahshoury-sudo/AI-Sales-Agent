@@ -58,6 +58,44 @@ SWEET_NOTE_EXPANSION = (
 # note. Also unchanged from search_service.py.
 SWEET_REQUEST_TERMS = ("sweet", "gourmand", "مسكر", "سويتي")
 
+# The same idea for "فريش". This one exists because `notes: ["fresh"]` was worse than
+# useless: no product has a note literally called "fresh", so the term matched nothing,
+# and since notes are a hard filter on the `exact` queryset it silently emptied the
+# matched set. A customer asking for a fresh summer perfume got zero exact matches and
+# fell through to the alternatives branch, which is instructed never to say "لا يوجد".
+FRESH_REQUEST_TERMS = ("fresh", "فريش", "منعش", "منعشه", "منعشة")
+FRESH_NOTE_EXPANSION = (
+    "bergamot", "lemon", "lime", "grapefruit", "mandarin", "orange", "neroli",
+    "citrus", "mint", "marine", "aquatic", "sea salt", "calone", "green notes",
+    "green tea", "lavender", "petitgrain",
+)
+
+
+# Request term -> the notes it should be searched and scored as. One table so the SQL
+# filter and the Python ranker cannot drift apart: they did, and the consequence was
+# that "عايزه عطر مسكر اوي" filtered correctly to the gourmands and then scored all
+# seven of them identically with no reasons, so the shortlist fell back to bulk-oil
+# order and a white floral was recommended for a dessert-sweet request.
+_REQUEST_EXPANSIONS = (
+    (SWEET_REQUEST_TERMS, SWEET_NOTE_EXPANSION),
+    (FRESH_REQUEST_TERMS, FRESH_NOTE_EXPANSION),
+)
+
+
+def expand_request_term(term):
+    """The note names a requested term should match, as a tuple.
+
+    An ordinary ingredient ("vanilla") returns just itself. An accord word ("مسكر",
+    "فريش") returns the family it stands for.
+    """
+    lowered = str(term or "").strip().lower()
+    if not lowered:
+        return ()
+    for triggers, expansion in _REQUEST_EXPANSIONS:
+        if lowered in triggers:
+            return tuple(expansion)
+    return (lowered,)
+
 
 # note -> the families it reads as. Deliberately not exhaustive perfumery taxonomy:
 # it covers what stores actually type, in English (the import template's language) and

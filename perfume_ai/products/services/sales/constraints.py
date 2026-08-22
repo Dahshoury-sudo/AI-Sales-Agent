@@ -44,10 +44,46 @@ def _is_set(value):
 
 
 def taste_constraint_count(intent):
-    """How many distinct taste constraints the customer has expressed."""
+    """How many distinct taste constraints the customer has expressed.
+
+    List-valued slots count per entry, capped at two each. An expert saying "فيها
+    ambroxan و lavender" has given two facts, and scoring `notes` as a single constraint
+    left them one short of the threshold — so the whole turn went on a budget question
+    while three perfumes carrying exactly those notes sat in the catalogue. The cap stops
+    one over-eager extraction from a single sentence clearing the bar on its own.
+    """
     if not intent:
         return 0
-    return sum(1 for key in TASTE_KEYS if _is_set(intent.get(key)))
+
+    total = 0
+    for key in TASTE_KEYS:
+        value = intent.get(key)
+        if not _is_set(value):
+            continue
+        if isinstance(value, (list, tuple, set)):
+            total += min(2, len([entry for entry in value if _is_set(entry)]))
+        else:
+            total += 1
+    return total
+
+
+# How a customer says the budget is not a constraint. Treated as answering the budget
+# question rather than leaving it open: "مش مهم السعر" followed by "ميزانيتك كام؟" is the
+# bot not listening, which is the failure this module exists to prevent.
+_BUDGET_OPEN = (
+    "مش مهم السعر", "السعر مش مهم", "مش فارقه السعر", "مش مشكله السعر",
+    "السعر مش مشكله", "مهما كان السعر", "اي سعر", "مفتوح الميزانيه",
+    "مش بهتم بالسعر", "الفلوس مش مشكله", "بدون حد للسعر",
+)
+
+
+def budget_is_open(message, history=None):
+    """Did the customer say price is not a constraint?"""
+    text = normalize_arabic(message or "")
+    for entry in history or ():
+        if entry.get("role") == "user":
+            text += " " + normalize_arabic(entry.get("content", ""))
+    return any(normalize_arabic(phrase) in text for phrase in _BUDGET_OPEN)
 
 
 def can_recommend_without_budget(intent):
