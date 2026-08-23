@@ -18,8 +18,9 @@ Two properties worth preserving deliberately:
     inventing a justification — and cannot quote a similarity percentage that does not
     exist.
   * With no discriminating signal every score is equal and the tie-break falls through to
-    `(-oil_stock_grams, id)`, which is exactly the previous ordering. That is what lets
-    this land without changing behaviour for the searches that already worked.
+    the caller's ordering. That used to be `(-oil_stock_grams, id)`; oil tracking is gone,
+    and `search_service._by_value` now hands candidates over cheapest-brand-bottle first,
+    so an all-equal set comes back in that order.
 """
 
 from dataclasses import dataclass, field
@@ -49,7 +50,6 @@ WEIGHTS = {
     "projection": 0.8,
     "season": 0.8,
     "uncommon": 1.2,
-    "stock": 0.5,
 }
 
 # Below this a candidate matches nothing the customer discriminated on. Reported per
@@ -163,31 +163,26 @@ def _ordinal_hit(field_value, wanted, vocabulary, words):
     return 0.5 if target - actual == 1 else 0.0
 
 
-def _affordable_and_obtainable(product, max_price, fillable):
-    """Is there a bottle that is both within budget and actually gettable?
+def _affordable_and_obtainable(product, max_price):
+    """Is there a bottle that is both within budget and actually sellable?
 
-    The two ORM filters that approximate this are separate joins, so a product can qualify
-    on budget through one variant and on availability through another. That is only a
-    wasted shortlist slot rather than a wrong price — the renderer marks unfillable sizes
-    out of stock — but the slot is worth reclaiming.
+    A brand bottle is compounded to order so it always counts; an original counts only
+    while stock remains. Worth checking separately from the SQL price filter, which
+    qualifies a product through *any* variant under budget — so a product whose only
+    affordable size is a sold-out original would otherwise score as in-budget.
     """
     for variant in product.variants.all():
         if max_price is not None and variant.price > max_price:
             continue
         if variant.bottle_type == "normal":
-            if fillable(product, variant) > 0:
-                return True
+            return True
         elif (variant.stock or 0) > 0:
             return True
     return False
 
 
-def rank(products, intent, reference=None, fillable=None):
-    """Score and order candidates, best first.
-
-    `fillable` is injected rather than imported to keep this module free of any dependency
-    on the renderer (which imports the value helpers, which would close a cycle).
-    """
+def rank(products, intent, reference=None):
+    """Score and order candidates, best first."""
     intent = intent or {}
     max_price = _as_decimal(intent.get("max_price"))
     wanted_notes = [note for note in (intent.get("notes") or ()) if note]
@@ -291,26 +286,20 @@ def rank(products, intent, reference=None, fillable=None):
                 entry.score += WEIGHTS["uncommon"]
                 entry.reasons.append("تركيب حصري بتاعنا — مش منتشر عند حد تاني")
 
-        if max_price is not None and fillable is not None:
-            if _affordable_and_obtainable(product, max_price, fillable):
+        if max_price is not None:
+            if _affordable_and_obtainable(product, max_price):
                 entry.score += WEIGHTS["budget"]
             else:
                 entry.mismatches.append("مفيش حجم متاح داخل ميزانيته")
 
-        if (product.oil_stock_grams or 0) > 0:
-            entry.score += WEIGHTS["stock"]
-
         ranked.append(entry)
 
-    # The tie-break is the compatibility guarantee: equal scores fall through to exactly
-    # the ordering search_products used before ranking existed.
-    ranked.sort(
-        key=lambda entry: (
-            -entry.score,
-            -(entry.product.oil_stock_grams or 0),
-            entry.product.id,
-        )
-    )
+    # Equal scores fall through to the order the caller supplied, which
+    # search_service._by_value has already sorted cheapest-brand-bottle first. The
+    # `-oil_stock_grams` term that used to sit here went with oil tracking; there is
+    # deliberately no replacement, because re-sorting on a second criterion here would
+    # override the caller's ordering rather than defer to it.
+    ranked.sort(key=lambda entry: -entry.score)
     return ranked
 
 

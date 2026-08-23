@@ -44,8 +44,6 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "store",
         "brand",
-        "oil_stock_grams",
-        "concentration_percentage",
         "is_active",
     )
 

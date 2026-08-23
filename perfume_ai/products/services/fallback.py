@@ -12,7 +12,7 @@ same conversation could not be replayed to see what the customer was shown.
 
 from django.db.models import Q
 
-from .product_formatting import _bottles_fillable
+from .product_formatting import is_variant_available
 
 # Enough to give the customer a real choice without turning the reply into a catalogue.
 DEFAULT_LIMIT = 3
@@ -22,12 +22,7 @@ def _obtainable(product):
     variants = list(product.variants.all())
     if not variants:
         return False
-    return any(
-        _bottles_fillable(product, variant) > 0
-        if variant.bottle_type == "normal"
-        else (variant.stock or 0) > 0
-        for variant in variants
-    )
+    return any(is_variant_available(variant) for variant in variants)
 
 
 def _cheapest_price(product):
@@ -49,9 +44,11 @@ def suggest_alternatives(store, gender=None, max_price=None, exclude=None, limit
     """
     from products.models import Product
 
+    from .search_service import SELLABLE
+
     queryset = (
         Product.objects.filter(store=store, is_active=True)
-        .filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0))
+        .filter(SELLABLE)
         .select_related("brand")
         .prefetch_related("variants")
         .distinct()

@@ -275,7 +275,7 @@ def route(message, history=None, store=None, conversation=None):
                 available_variants = []
                 has_original_bottle = False
                 for v in p.variants.all():
-                    if v.bottle_type == 'normal' and p.oil_stock_grams >= (v.volume * p.concentration_percentage) / 100:
+                    if v.bottle_type == 'normal':
                         available_variants.append(f"{v.volume} ملي بـ {v.price} جنيه")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
                         available_variants.append(f"{v.volume} ملي أوريجينال بـ {v.price} جنيه")

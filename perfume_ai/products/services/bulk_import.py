@@ -24,8 +24,8 @@ def parse_excel(file_bytes, store):
     L: middle_notes
     M: base_notes
     N: description
-    O: oil_stock_grams
-    P: concentration_percentage (default: 30)
+    O: (ignored — was oil_stock_grams)
+    P: (ignored — was concentration_percentage)
     Q: norm_vol_1 (ml)
     R: norm_price_1
     S: norm_vol_2 (ml)
@@ -114,8 +114,10 @@ def parse_excel(file_bytes, store):
                 middle_notes=str(row[11]).strip() if row[11] else "",
                 base_notes=str(row[12]).strip() if row[12] else "",
                 description=str(row[13]).strip() if row[13] else "",
-                oil_stock_grams=int(float(str(row[14]))) if len(row) > 14 and row[14] else 0,
-                concentration_percentage=int(float(str(row[15]))) if len(row) > 15 and row[15] else 30,
+                # Columns O and P held oil_stock_grams and concentration_percentage.
+                # Oil tracking is gone, but the columns stay in the sheet and are simply
+                # ignored: removing them would shift every index from Q (norm_vol_1)
+                # onward and silently break every spreadsheet already in customers' hands.
             )
             
             # Create normal variants (up to 2)

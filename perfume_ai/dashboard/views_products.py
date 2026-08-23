@@ -48,7 +48,6 @@ class ProductListView(APIView):
                 "category": p.category.name if p.category else "",
                 "gender": p.gender,
                 "is_active": p.is_active,
-                "oil_stock_grams": p.oil_stock_grams,
                 "description": p.description,
                 "top_notes": p.top_notes,
                 "middle_notes": p.middle_notes,
@@ -58,7 +57,6 @@ class ProductListView(APIView):
                 "longevity": p.longevity,
                 "projection": p.projection,
                 "concentration": p.concentration,
-                "concentration_percentage": p.concentration_percentage,
                 "variants": variants,
                 "created_at": p.created_at.isoformat(),
             })
@@ -108,8 +106,6 @@ class ProductDetailView(APIView):
             "middle_notes": p.middle_notes,
             "base_notes": p.base_notes,
             "description": p.description,
-            "oil_stock_grams": p.oil_stock_grams,
-            "concentration_percentage": p.concentration_percentage,
             "is_active": p.is_active,
             "variants": variants,
         })
@@ -124,7 +120,7 @@ class ProductDetailView(APIView):
         simple_fields = [
             "name", "gender", "season", "occasion", "longevity", "projection",
             "concentration", "top_notes", "middle_notes", "base_notes",
-            "description", "oil_stock_grams", "concentration_percentage", "is_active",
+            "description", "is_active",
         ]
 
         for field in simple_fields:
@@ -205,8 +201,6 @@ class ProductCreateView(APIView):
                     middle_notes=data.get("middle_notes", ""),
                     base_notes=data.get("base_notes", ""),
                     description=data.get("description", ""),
-                    oil_stock_grams=data.get("oil_stock_grams", 0),
-                    concentration_percentage=data.get("concentration_percentage", 30),
                 )
 
                 for v_data in data.get("variants", []):

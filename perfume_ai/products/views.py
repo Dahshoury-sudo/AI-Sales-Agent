@@ -327,7 +327,9 @@ class BulkImportTemplateView(APIView):
             "season", "occasion", "longevity", "projection",
             "concentration", "top_notes", "middle_notes", "base_notes",
             "description",
-            "oil_stock_grams", "concentration_percentage",
+            # Kept as placeholders so sheets produced before oil tracking was removed
+            # still import: dropping them would shift every column from norm_vol_1 on.
+            "unused_1", "unused_2",
             "norm_vol_1", "norm_price_1",
             "norm_vol_2", "norm_price_2",
             "orig_vol_1", "orig_price_1", "orig_stock_1",
@@ -341,7 +343,7 @@ class BulkImportTemplateView(APIView):
             "All Seasons", "Casual", "8 hours", "Moderate",
             "EDP", "Citrus, Mint", "Jasmine, Ginger", "Cedar, Sandalwood",
             "A fresh and woody fragrance",
-            1000, 30,
+            "", "",
             50, 500,
             90, 900,
             100, 5000, 5,

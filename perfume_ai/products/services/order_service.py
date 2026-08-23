@@ -204,20 +204,18 @@ def _cart_items_as_products_data(cart):
 
 
 def restore_stock(order):
-    """
-    Restore stock for all items in a cancelled order.
+    """Return original bottles to stock for a cancelled order.
+
+    Only originals hold stock. A brand bottle is compounded to order, so cancelling one
+    consumes nothing and there is nothing to give back — the oil ledger this used to
+    credit is gone.
+
     Should be called inside a transaction.
     """
     for item in order.items.select_related('variant__product').all():
         if item.bottle_type == "original":
             ProductVariant.objects.filter(id=item.variant_id).update(
                 stock=F('stock') + item.quantity
-            )
-        elif item.bottle_type == "normal":
-            product = item.variant.product
-            req_oil = int((item.variant.volume * product.concentration_percentage) / 100 * item.quantity)
-            Product.objects.filter(id=product.id).update(
-                oil_stock_grams=F('oil_stock_grams') + req_oil
             )
     logger.info(f"Stock restored for cancelled order #{order.id}")
 
@@ -360,7 +358,8 @@ Return valid JSON in this exact format:
             bottle_type = p_data.get("bottle_type")
             
             # Filter available variants based on actual stock
-            available_normal = [v for v in variants if v.bottle_type == "normal" and product.oil_stock_grams >= (v.volume * product.concentration_percentage) / 100]
+            # Brand bottles are compounded to order, so every one of them is available.
+            available_normal = [v for v in variants if v.bottle_type == "normal"]
             available_original = [v for v in variants if v.bottle_type == "original" and (v.stock or 0) > 0]
             
             # If req_volume is present, try to infer bottle_type if it uniquely belongs to one type
@@ -480,20 +479,10 @@ Return valid JSON in this exact format:
                     p_data["available_volumes_display"] = avail_vols_display
                     continue
             
-            # Check stock availability for the selected variant
-            if bottle_type == "normal":
-                req_oil = (selected_variant.volume * product.concentration_percentage) / 100
-                if product.oil_stock_grams < req_oil:
-                    if available_normal:
-                        sizes_available = ", ".join([f"{v.volume} ملي" for v in available_normal])
-                        return f"للأسف الزيت العطري لـ {product.name} لا يكفي لحجم {selected_variant.volume} ملي حالياً 😔 لكن متوفر منه أحجام تانية: {sizes_available}. تحب تطلب حجم تاني؟", ""
-                    else:
-                        return f"للأسف عطر {product.name} (تركيب) نفد من المخزون حالياً 😔", ""
-                elif product.oil_stock_grams < req_oil * qty:
-                    max_qty = int(product.oil_stock_grams / req_oil)
-                    return f"للأسف كمية الزيت المطلوبة من عطر {product.name} ({selected_variant.volume} ملي) أكبر من المتوفر في المخزون. المتوفر حالياً يكفي لـ {max_qty} زجاجة فقط. تحب تطلب {max_qty} بدل {qty}؟", ""
-            
-            elif bottle_type == "original":
+            # Check stock availability for the selected variant. Brand bottles have no
+            # stock to check — they are compounded to order, so the oil-insufficient and
+            # max-quantity paths that used to live here are gone with the oil ledger.
+            if bottle_type == "original":
                 stock = selected_variant.stock or 0
                 if stock == 0:
                     return f"عذراً يا فندم، الزجاجات الأوريجينال لعطر {product.name} حجم {selected_variant.volume} ملي نفدت تماماً.", ""
@@ -641,16 +630,11 @@ Return valid JSON in this exact format:
 def create_order_in_db(store, name, phone, secondary_phone, address, total_price, items_to_create, context_str, conversation):
     try:
         with transaction.atomic():
-            # Re-validate stock inside the transaction with select_for_update to prevent race conditions
+            # Re-validate stock inside the transaction with select_for_update to prevent
+            # race conditions. Only originals need it: they are the one finite thing an
+            # order consumes, so they are the one place two concurrent orders can oversell.
             for item in items_to_create:
-                product = item["variant"].product
-                if item["bottle_type"] == "normal":
-                    # Lock the product row to prevent concurrent stock modifications
-                    locked_product = Product.objects.select_for_update().get(id=product.id)
-                    req_oil = (item["variant"].volume * locked_product.concentration_percentage) / 100 * item["quantity"]
-                    if locked_product.oil_stock_grams < req_oil:
-                        return f"للأسف عطر {locked_product.name} نفد من المخزون أثناء تأكيد الطلب 😔 ممكن تجرب تاني.", ""
-                elif item["bottle_type"] == "original":
+                if item["bottle_type"] == "original":
                     locked_variant = ProductVariant.objects.select_for_update().get(id=item["variant"].id)
                     if (locked_variant.stock or 0) < item["quantity"]:
                         return f"للأسف الزجاجة الأوريجينال لعطر {item['variant'].product.name} نفدت أثناء تأكيد الطلب 😔 ممكن تجرب تاني.", ""
@@ -675,16 +659,11 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                     price_at_time_of_order=item["price"]
                 )
                 
-                # Decrement stock atomically using F()
-                product = item["variant"].product
+                # Decrement stock atomically using F(). Originals only — a brand bottle is
+                # compounded to order and consumes no tracked inventory.
                 if item["bottle_type"] == "original":
                     ProductVariant.objects.filter(id=item["variant"].id).update(
                         stock=F('stock') - item["quantity"]
-                    )
-                elif item["bottle_type"] == "normal":
-                    req_oil = int((item["variant"].volume * product.concentration_percentage) / 100 * item["quantity"])
-                    Product.objects.filter(id=product.id).update(
-                        oil_stock_grams=F('oil_stock_grams') - req_oil
                     )
                 
         logger.info(f"Order #{order.id} created successfully for store '{store.name}'")

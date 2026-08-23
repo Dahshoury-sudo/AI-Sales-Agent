@@ -39,49 +39,54 @@ def budget_label(price, max_price):
     return " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)"
 
 
-# A brand bottle is filled to order from bulk oil, so "stock" is however many
-# bottles the remaining oil can fill. At or below this many, say so: the transcript
-# showed the bot reading the original-bottle "(2 زجاجة فقط)" out as a neutral fact,
-# and brand bottles had no scarcity signal at all.
+# Original bottles are counted physical units, so a low count is a real fact worth
+# saying. At or below this many, say so.
+#
+# This no longer applies to brand bottles. It used to: "stock" for a brand bottle was
+# however many bottles the remaining bulk oil could fill, and the resulting
+# "(2 زجاجة فقط)" went into the prompt as scarcity. But oil_stock_grams only ever went
+# down — every confirmed order decremented it and nothing replenished it automatically —
+# so that count drifted away from reality and the scarcity line became a false urgency
+# claim. Brand bottles are compounded to order, so they carry no count at all now.
 LOW_BOTTLE_THRESHOLD = 3
 
 
-def _bottles_fillable(product, variant):
-    """How many of this brand-bottle size the remaining oil can fill.
+def is_variant_available(variant):
+    """Whether this size can actually be sold.
 
-    Returns 0 when a bottle would need no oil at all — a 0ml variant, or a product
-    configured at 0% concentration. The previous arithmetic (`oil_stock_grams >=
-    required_oil`) reported those as *available* at any stock level, including zero,
-    which would offer the customer a size that cannot be filled. Treating them as
-    out of stock is the deliberate choice: bad configuration should hide a size, not
-    sell it.
+    A brand ("تركيب") bottle is compounded to order, so it is always available for an
+    active product. An original bottle is a discrete physical unit that either exists or
+    does not.
+
+    This replaces `_bottles_fillable`, which divided bulk oil by the bottle's oil
+    requirement. That number looked authoritative and was quietly wrong: oil_stock_grams
+    decremented on every order and was only ever topped up by hand, so products slid to
+    zero and vanished from the catalogue with nobody told. `Dark Aura` finished that slide
+    (5g at 30%, unable to fill even a 50ml bottle) and `Dior Sauvage` was six bottles from
+    it.
     """
-    required_oil = (variant.volume * product.concentration_percentage) / 100
-    if required_oil <= 0:
-        return 0
-    return int(product.oil_stock_grams // required_oil)
+    if variant.bottle_type == "normal":
+        return True
+    return (variant.stock or 0) > 0
 
 
 def _size_lines(product, variants, max_price=None):
     """Split this product's sizes into available and out-of-stock lines.
 
-    Brand bottles are filled from bulk oil, so availability is a calculation
-    against oil_stock_grams; original bottles are counted units.
+    Brand bottles are compounded to order, so they are always available and carry no
+    scarcity count. Only original bottles can be out of stock.
+
+    The `volume > 0` guard stays: a 0ml variant is a configuration error, and offering it
+    would put a size on the price list that cannot be filled with anything.
     """
     available, out_of_stock = [], []
     for variant in variants:
         if variant.bottle_type == "normal":
-            fillable = _bottles_fillable(product, variant)
-            if fillable > 0:
-                low_stock = (
-                    f" ({fillable} زجاجة فقط)" if fillable <= LOW_BOTTLE_THRESHOLD else ""
-                )
+            if variant.volume and variant.volume > 0:
                 available.append(
-                    f"- الـ {variant.volume} ملي: {variant.price} EGP{low_stock}"
+                    f"- الـ {variant.volume} ملي: {variant.price} EGP"
                     f"{budget_label(variant.price, max_price)}"
                 )
-            else:
-                out_of_stock.append(f"الـ {variant.volume} ملي")
         elif variant.bottle_type == "original":
             stock = variant.stock or 0
             if stock > 0:
@@ -110,11 +115,10 @@ def value_pick_note(product, variants, max_price=None):
     the customer asked to buy. The upsell is arithmetic, so it is computed rather than
     left to the model, which cannot reliably do it and must not invent it.
 
-    Eligibility is decided here because it needs oil-stock knowledge; the arithmetic and
-    the wording live in sales.value. That split is what fixed the two defects this note
-    used to carry: a bigger bottle described as "أوفر" next to a bare price difference,
-    which the model read as *cheaper by 302*, and a baseline chosen by smallest volume
-    rather than lowest price, which could render a negative difference.
+    The arithmetic and the wording live in sales.value. That split is what fixed the two
+    defects this note used to carry: a bigger bottle described as "أوفر" next to a bare
+    price difference, which the model read as *cheaper by 302*, and a baseline chosen by
+    smallest volume rather than lowest price, which could render a negative difference.
 
     Only compares in-budget brand bottles: recommending a size the customer already said
     they cannot afford is not an upsell.
@@ -122,7 +126,6 @@ def value_pick_note(product, variants, max_price=None):
     eligible = [
         variant for variant in variants
         if variant.bottle_type == "normal"
-        and _bottles_fillable(product, variant) > 0
         and (max_price is None or variant.price <= max_price)
         and variant.volume > 0
     ]

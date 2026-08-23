@@ -142,8 +142,16 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
-    oil_stock_grams = models.PositiveIntegerField(default=0, help_text="رصيد الزيت العطري بالجرام")
-    concentration_percentage = models.PositiveIntegerField(default=30, help_text="نسبة الزيت للزجاجة (مثال: 30%)")
+    # oil_stock_grams and concentration_percentage lived here. They gated availability:
+    # a brand bottle was sellable only while the remaining bulk oil could fill it. The
+    # problem was that the counter only ever went down — every confirmed order decremented
+    # it and nothing replenished it automatically — so products slid to zero and became
+    # invisible to the bot with nobody told, and the derived "(N زجاجة فقط)" line turned a
+    # stale number into a false scarcity claim to the customer.
+    #
+    # Brand bottles are compounded to order, so they are now always available for an
+    # active product. ProductVariant.stock still gates original bottles, which are
+    # discrete physical units that cannot be re-blended.
 
     is_active = models.BooleanField(default=True)
 

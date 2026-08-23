@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from .prompts import get_system_prompt
-from ..product_formatting import _bottles_fillable, format_products
+from ..product_formatting import format_products, is_variant_available
 from ..sales.constraints import acknowledgement_hint
 from ..sales.ranking import reasons_note
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
@@ -114,17 +114,14 @@ def _in_budget_note(products, max_price):
         for variant in product.variants.all():
             if variant.price > max_price:
                 continue
-            # Obtainable, not merely cheap. Filtering on price alone named Dior Sauvage's
+            # Sellable, not merely cheap. Filtering on price alone named Dior Sauvage's
             # original 60ml — which is in budget at 456 and has stock=0 — so the reply
             # offered a bottle that cannot be sold.
-            if variant.bottle_type == "normal":
-                if _bottles_fillable(product, variant) <= 0:
-                    continue
-                label = "زجاجة البراند"
-            else:
-                if (variant.stock or 0) <= 0:
-                    continue
-                label = "زجاجة أوريجينال"
+            if not is_variant_available(variant):
+                continue
+            label = (
+                "زجاجة أوريجينال" if variant.bottle_type == "original" else "زجاجة البراند"
+            )
             affordable.append(f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}")
     if not affordable:
         return (

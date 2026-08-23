@@ -27,7 +27,7 @@ from decimal import Decimal
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-from .product_formatting import _bottles_fillable, format_products
+from .product_formatting import format_products, is_variant_available
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
@@ -79,7 +79,7 @@ def _cheaper_alternatives(store, ceiling, exclude=None):
         product
         for product in products
         if any(
-            variant.bottle_type == "normal" and _bottles_fillable(product, variant) > 0
+            variant.bottle_type == "normal" and is_variant_available(variant)
             for variant in product.variants.all()
         )
     ][:3]

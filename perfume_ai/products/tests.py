@@ -138,12 +138,12 @@ class ProductContextCapTests(TestCase):
                 middle_notes="Jasmine",
                 base_notes="Cedar",
                 description="A test perfume.",
-                # Varied so the ordering has something to sort on.
-                oil_stock_grams=100 + i,
-                concentration_percentage=30,
             )
             ProductVariant.objects.create(
-                product=product, volume=50, price=500, bottle_type="normal"
+                # Varied so the cheapest-first ordering has something to sort on. This
+                # used to be a varied oil_stock_grams, back when the shortlist led with
+                # the most bulk oil.
+                product=product, volume=50, price=500 + i, bottle_type="normal"
             )
 
     def test_exact_match_path_is_capped(self):
@@ -173,15 +173,26 @@ class ProductContextCapTests(TestCase):
 
         self.assertEqual(first, second)
 
-    def test_shortlist_prefers_products_with_more_oil_stock(self):
-        """Leading with empty shelves wastes the shortlist, since the prompts
-        instruct the model to skip anything marked out of stock."""
-        results = search_products({"gender": "male"}, store=self.store)
-        stocks = [p.oil_stock_grams for p in results["products"]]
+    def test_shortlist_leads_with_the_cheapest_brand_bottle(self):
+        """Replaces test_shortlist_prefers_products_with_more_oil_stock.
 
-        self.assertEqual(stocks, sorted(stocks, reverse=True))
-        # The lowest-stock products should not have made the cut at all.
-        self.assertGreater(min(stocks), 100)
+        That test asserted the shortlist led with the most bulk oil, which was the
+        ordering before oil tracking was removed. Something still has to order the
+        shortlist deterministically — the prompts tell the model to stay on a perfume once
+        the customer shows interest — and cheapest-brand-bottle-first is the deliberate
+        replacement for an ordering by inventory depth, which was commercially arbitrary.
+        """
+        results = search_products({"gender": "male"}, store=self.store)
+        prices = [
+            min(
+                variant.price
+                for variant in product.variants.all()
+                if variant.bottle_type == "normal"
+            )
+            for product in results["products"]
+        ]
+
+        self.assertEqual(prices, sorted(prices))
 
     def test_formatter_caps_an_unsliced_queryset(self):
         """Defensive net: a caller bypassing search_products can't blow up the
@@ -213,8 +224,7 @@ class ExcludeNamesTests(TestCase):
         for name in ("Black Opium", "Good Girl", "Libre"):
             product = Product.objects.create(
                 store=self.store, brand=brand, name=name, gender="female",
-                oil_stock_grams=500, concentration_percentage=30,
-            )
+                )
             ProductVariant.objects.create(
                 product=product, volume=50, price=600, bottle_type="normal"
             )
@@ -449,8 +459,6 @@ class BudgetLabellingTests(TestCase):
             brand=cls.brand,
             name="Dior Sauvage",
             gender="male",
-            oil_stock_grams=1000,
-            concentration_percentage=30,
         )
         # 400 is affordable on a 500 budget, 550 is a plausible upsell (10% over),
         # 3800 is not something to put in front of that customer.
@@ -544,8 +552,6 @@ class CartPersistenceTests(TestCase):
             brand=self.brand,
             name="Dior Sauvage",
             gender="male",
-            oil_stock_grams=1000,
-            concentration_percentage=30,
         )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
@@ -679,12 +685,18 @@ class CartPersistenceTests(TestCase):
         self.assertEqual(Order.objects.count(), 1, "the stale summary confirmed a new order")
         self.assertIn("💰 الإجمالي:", reply)
 
-    def test_confirming_decrements_stock(self):
+    def test_confirming_a_brand_bottle_takes_no_tracked_stock(self):
+        """Replaces test_confirming_decrements_stock.
+
+        A brand bottle is compounded to order, so confirming one consumes nothing the
+        system counts. The oil ledger this used to assert against is gone — the order
+        itself is the record. Original bottles still decrement; that is covered by
+        OriginalBottleStockTests.
+        """
         self._confirm()
 
-        self.product.refresh_from_db()
-        # 50ml at 30% concentration = 15g of oil
-        self.assertEqual(self.product.oil_stock_grams, 985)
+        self.assertEqual(Order.objects.count(), 1)
+        self.assertEqual(OrderItem.objects.count(), 1)
 
     def test_carts_are_isolated_per_conversation(self):
         other = Conversation.objects.create(store=self.store)
@@ -707,8 +719,7 @@ class CartCancellationTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage",
-            gender="male", oil_stock_grams=1000, concentration_percentage=30,
-        )
+            gender="male", )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
@@ -727,13 +738,35 @@ class CartCancellationTests(TestCase):
 
         self.assertFalse(Cart.objects.filter(conversation=self.conversation).exists())
         self.assertIn("إلغاء", reply)
-        self.product.refresh_from_db()
-        self.assertEqual(self.product.oil_stock_grams, 1000, "no stock was taken, none to restore")
 
-    def test_cancelling_a_confirmed_order_still_restores_stock(self):
-        """The existing path must keep working."""
-        self.product.oil_stock_grams = 985
-        self.product.save()
+    def test_cancelling_a_confirmed_order_restores_original_bottles(self):
+        """Replaces the oil-restoring version.
+
+        Only originals hold stock now, so an original is what a cancellation has to give
+        back. A cancelled brand bottle restores nothing because it consumed nothing.
+        """
+        original = ProductVariant.objects.create(
+            product=self.product, volume=100, price=800,
+            bottle_type="original", stock=4,
+        )
+        order = Order.objects.create(
+            store=self.store, customer_name="محمد", customer_phone="0100",
+            shipping_address="القاهرة", total_price=800, status="pending",
+            conversation=self.conversation,
+        )
+        OrderItem.objects.create(
+            order=order, variant=original, quantity=1,
+            bottle_type="original", price_at_time_of_order=800,
+        )
+
+        self._cancel()
+
+        order.refresh_from_db()
+        original.refresh_from_db()
+        self.assertEqual(order.status, "cancelled")
+        self.assertEqual(original.stock, 5)
+
+    def test_cancelling_a_brand_bottle_order_restores_nothing(self):
         order = Order.objects.create(
             store=self.store, customer_name="محمد", customer_phone="0100",
             shipping_address="القاهرة", total_price=400, status="pending",
@@ -747,9 +780,7 @@ class CartCancellationTests(TestCase):
         self._cancel()
 
         order.refresh_from_db()
-        self.product.refresh_from_db()
         self.assertEqual(order.status, "cancelled")
-        self.assertEqual(self.product.oil_stock_grams, 1000)
 
     def test_cancelling_with_nothing_active_says_so(self):
         reply, _ = self._cancel()
@@ -770,8 +801,7 @@ class OrderGuardTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage",
-            gender="male", oil_stock_grams=1000, concentration_percentage=30,
-        )
+            gender="male", )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
@@ -821,8 +851,6 @@ class OrderGuardTests(TestCase):
 
         self.assertFalse(Order.objects.exists())
         self.assertIn("ناقصني", reply)
-        self.product.refresh_from_db()
-        self.assertEqual(self.product.oil_stock_grams, 1000, "stock was taken")
 
     def test_phone_with_spaces_and_dashes_is_accepted(self):
         """The guard must not reject numbers a real customer would type."""
@@ -849,8 +877,7 @@ class PerStorePaymentInstructionsTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage",
-            gender="male", oil_stock_grams=1000, concentration_percentage=30,
-        )
+            gender="male", )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
@@ -1202,8 +1229,7 @@ class RouterHijackTests(TestCase):
         for i in range(3):
             product = Product.objects.create(
                 store=self.store, brand=self.brand, name=f"Perfume {i}",
-                gender="male", oil_stock_grams=1000, concentration_percentage=30,
-            )
+                gender="male", )
             ProductVariant.objects.create(
                 product=product, volume=50, price=400, bottle_type="normal"
             )
@@ -1731,8 +1757,7 @@ class CartClearedTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage",
-            gender="male", oil_stock_grams=1000, concentration_percentage=30,
-        )
+            gender="male", )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
@@ -1774,8 +1799,6 @@ class CartClearedTests(TestCase):
         self._turn({"products": self.ONE_PERFUME})
         self._turn({"products": [], "cart_cleared": True})
 
-        self.product.refresh_from_db()
-        self.assertEqual(self.product.oil_stock_grams, 1000)
         self.assertFalse(Order.objects.exists())
 
 
@@ -1796,15 +1819,18 @@ class UnifiedProductFormattingTests(TestCase):
             gender="male", perfume_type="western", season="All Seasons",
             occasion="Casual", longevity="8 hours", projection="Strong",
             top_notes="Bergamot", middle_notes="Pepper", base_notes="Ambroxan",
-            description="Fresh spicy", oil_stock_grams=20, concentration_percentage=30,
-        )
-        # 50ml at 30% needs 15g of oil, so it is available from the 20g in stock.
+            description="Fresh spicy", )
+        # A brand bottle is compounded to order, so it is always available.
         ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
-        # 200ml needs 60g, which the 20g in stock cannot cover — out of stock.
+        # The out-of-stock case is now an original with no units left. It used to be a
+        # 200ml brand bottle needing 60g of oil against 20g in stock — but brand bottles
+        # can no longer be out of stock at all, so an original is the only thing that can
+        # still land in the out-of-stock block.
         ProductVariant.objects.create(
-            product=self.product, volume=200, price=900, bottle_type="normal"
+            product=self.product, volume=200, price=900,
+            bottle_type="original", stock=0,
         )
         self.queryset = Product.objects.filter(pk=self.product.pk)
 
@@ -1855,8 +1881,7 @@ class UnifiedProductFormattingTests(TestCase):
         for i in range(5):
             product = Product.objects.create(
                 store=self.store, brand=self.brand, name=f"Extra {i}",
-                gender="male", oil_stock_grams=1000, concentration_percentage=30,
-            )
+                gender="male", )
             ProductVariant.objects.create(
                 product=product, volume=50, price=400, bottle_type="normal"
             )
@@ -2162,8 +2187,6 @@ class SalesQualityTests(TestCase):
             brand=self.brand,
             name="Dior Sauvage",
             gender="male",
-            oil_stock_grams=1000,
-            concentration_percentage=30,
         )
         # The real prices from the transcript: 90ml is 80% more perfume for 47% more.
         self.small = ProductVariant.objects.create(
@@ -2204,16 +2227,25 @@ class SalesQualityTests(TestCase):
     def test_value_pick_reaches_the_prompt_block(self):
         self.assertIn("💡 Value Pick", format_product(self.product))
 
-    def test_brand_bottles_show_scarcity_when_the_oil_is_nearly_out(self):
-        """Only original bottles had a low-stock signal; brand bottles had none."""
-        self.product.oil_stock_grams = 45  # exactly 3 × 50ml
-        self.product.save()
+    def test_brand_bottles_never_claim_scarcity(self):
+        """Replaces test_brand_bottles_show_scarcity_when_the_oil_is_nearly_out.
+
+        A brand bottle is compounded to order, so there is no count to report. The old
+        behaviour derived one from bulk oil, and because that counter only ever went down
+        it drifted from reality and turned into a false urgency claim.
+        """
         self.large.delete()
 
-        self.assertIn("3 زجاجة فقط", format_product(self.product))
-
-    def test_plentiful_stock_shows_no_scarcity_claim(self):
         self.assertNotIn("زجاجة فقط", format_product(self.product))
+
+    def test_original_bottles_still_show_a_real_low_count(self):
+        """Originals are discrete units, so a low count there is a fact worth saying."""
+        ProductVariant.objects.create(
+            product=self.product, volume=100, price=800,
+            bottle_type="original", stock=2,
+        )
+
+        self.assertIn("2 زجاجة فقط", format_product(self.product))
 
     def test_store_exclusive_carries_a_selling_instruction(self):
         """The ⭐ marker existed but told the model nothing, so a request for نيش got
@@ -2221,8 +2253,7 @@ class SalesQualityTests(TestCase):
         own_brand = Brand.objects.create(store=self.store, name=self.store.name)
         exclusive = Product.objects.create(
             store=self.store, brand=own_brand, name="Citrolo", gender="female",
-            oil_stock_grams=500, concentration_percentage=30,
-        )
+            )
         ProductVariant.objects.create(
             product=exclusive, volume=50, price=598, bottle_type="normal"
         )
@@ -2238,17 +2269,19 @@ class SalesQualityTests(TestCase):
     def test_a_global_brand_gets_no_exclusive_note(self):
         self.assertNotIn("مش موجود عند أي حد تاني", format_product(self.product))
 
-    def test_a_zero_concentration_product_offers_no_brand_bottles(self):
-        """Behaviour change, made deliberately: the old check treated "needs no oil"
-        as "always in stock", so a misconfigured product offered sizes that cannot be
-        filled. Bad configuration should hide a size, not sell it."""
-        self.product.concentration_percentage = 0
-        self.product.save()
+    def test_a_brand_bottle_is_available_for_any_active_product(self):
+        """Replaces test_a_zero_concentration_product_offers_no_brand_bottles.
 
+        That test pinned the oil arithmetic's treatment of a misconfigured product. With
+        oil tracking gone, a brand bottle of an active product is always offerable — which
+        is the whole point of the change: products no longer slide out of the catalogue
+        because a counter drifted to zero.
+        """
         block = format_product(self.product)
 
-        self.assertIn("غير متوفر حالياً بجميع أحجامه", block)
-        self.assertEqual(value_pick_note(self.product, self._variants()), "")
+        self.assertNotIn("غير متوفر حالياً بجميع أحجامه", block)
+        self.assertIn("الـ 50 ملي", block)
+        self.assertNotEqual(value_pick_note(self.product, self._variants()), "")
 
     def test_a_zero_volume_variant_is_not_offered(self):
         self.small.volume = 0
@@ -2577,8 +2610,7 @@ class ScriptedRepliesSurviveSanitizingTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
-            oil_stock_grams=1000, concentration_percentage=30,
-        )
+            )
         self.variant = ProductVariant.objects.create(
             product=self.product, volume=50, price=400, bottle_type="normal"
         )
@@ -3244,7 +3276,7 @@ class ScentSimilarityTests(TestCase):
         product = Product.objects.create(
             store=cls.store, brand=cls.brand, name=name, gender="male",
             top_notes=top, middle_notes=middle, base_notes=base,
-            oil_stock_grams=500, concentration_percentage=30, **extra
+            **extra
         )
         ProductVariant.objects.create(
             product=product, volume=50, price=600, bottle_type="normal"
@@ -3328,11 +3360,10 @@ class RankingWeightTests(TestCase):
         cls.brand = Brand.objects.create(store=cls.store, name="Dior")
         cls.own_brand = Brand.objects.create(store=cls.store, name="Perfamix Test")
 
-    def _make(self, name, top="", middle="", base="", brand=None, oil=500, **extra):
+    def _make(self, name, top="", middle="", base="", brand=None, **extra):
         product = Product.objects.create(
             store=self.store, brand=brand or self.brand, name=name, gender="male",
-            top_notes=top, middle_notes=middle, base_notes=base,
-            oil_stock_grams=oil, concentration_percentage=30, **extra
+            top_notes=top, middle_notes=middle, base_notes=base, **extra
         )
         ProductVariant.objects.create(
             product=product, volume=50, price=600, bottle_type="normal"
@@ -3424,15 +3455,20 @@ class RankingWeightTests(TestCase):
 
         self.assertEqual(ranked[0].product.name, "Exclusive")
 
-    def test_equal_scores_fall_back_to_the_previous_ordering(self):
-        """The compatibility guarantee: with nothing to discriminate on, ranking must
-        reduce to search_service's original -oil_stock_grams, id ordering."""
-        low = self._make("Low", "Bergamot", oil=100)
-        high = self._make("High", "Bergamot", oil=900)
+    def test_equal_scores_preserve_the_callers_ordering(self):
+        """With nothing to discriminate on, ranking must not reorder at all.
 
-        ranked = sales_ranking.rank([low, high], {"notes": ["bergamot"]})
+        It used to re-sort equal scores by -oil_stock_grams. That column is gone, and the
+        replacement is deliberately *no* secondary key: search_service._by_value has
+        already ordered candidates cheapest-brand-bottle first, and re-sorting here would
+        override the caller rather than defer to it. Python's sort is stable, so an
+        all-equal set comes back exactly as it was handed in."""
+        first = self._make("First", "Bergamot")
+        second = self._make("Second", "Bergamot")
 
-        self.assertEqual([entry.product.name for entry in ranked], ["High", "Low"])
+        ranked = sales_ranking.rank([second, first], {"notes": ["bergamot"]})
+
+        self.assertEqual([entry.product.name for entry in ranked], ["Second", "First"])
 
     def test_reasons_are_rendered_without_the_score(self):
         product = self._make("Any", "Bergamot", "", "Cedar")
@@ -3467,7 +3503,7 @@ class SimilaritySearchTests(TestCase):
         product = Product.objects.create(
             store=self.store, brand=brand or self.dior, name=name, gender="male",
             top_notes=top, middle_notes=middle, base_notes=base,
-            oil_stock_grams=500, concentration_percentage=30, **extra
+            **extra
         )
         ProductVariant.objects.create(
             product=product, volume=50, price=600, bottle_type="normal"
@@ -3603,8 +3639,7 @@ class ValueLanguageTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
-            oil_stock_grams=1000, concentration_percentage=30,
-        )
+            )
         self.small = ProductVariant.objects.create(
             product=self.product, volume=50, price=642, bottle_type="normal"
         )
@@ -3666,14 +3701,12 @@ class ValueLanguageTests(TestCase):
         cheap = Product.objects.create(
             store=self.store, brand=self.brand, name="Cheap", gender="male",
             longevity="4 hours", projection="Moderate",
-            oil_stock_grams=500, concentration_percentage=30,
-        )
+            )
         ProductVariant.objects.create(product=cheap, volume=50, price=500)
         dear = Product.objects.create(
             store=self.store, brand=self.brand, name="Dear", gender="male",
             longevity="10 hours", projection="Strong", perfume_type="niche",
-            oil_stock_grams=500, concentration_percentage=30,
-        )
+            )
         ProductVariant.objects.create(product=dear, volume=50, price=1200)
 
         dimensions, unknown = sales_value.cross_product_value(cheap, dear)
@@ -3687,8 +3720,7 @@ class ValueLanguageTests(TestCase):
     def test_unknown_dimensions_are_banned_by_name_not_omitted(self):
         bare_one = Product.objects.create(
             store=self.store, brand=self.brand, name="Bare", gender="male",
-            oil_stock_grams=500, concentration_percentage=30,
-        )
+            )
         ProductVariant.objects.create(product=bare_one, volume=50, price=500)
 
         note = sales_value.value_comparison_note(bare_one, self.product)
@@ -3714,8 +3746,7 @@ class BlankFieldHallucinationGuardTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Sparse", gender="male",
-            oil_stock_grams=500, concentration_percentage=30,
-        )
+            )
         ProductVariant.objects.create(product=self.product, volume=50, price=500)
 
     def test_a_blank_longevity_renders_as_unrecorded(self):
@@ -3755,8 +3786,7 @@ class ComparisonSuppressesPricesTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
-            top_notes="Bergamot", oil_stock_grams=1000, concentration_percentage=30,
-        )
+            top_notes="Bergamot", )
         ProductVariant.objects.create(product=self.product, volume=50, price=642)
         ProductVariant.objects.create(product=self.product, volume=90, price=944)
 
@@ -4159,7 +4189,7 @@ class SalesScenarioTests(TestCase):
         product = Product.objects.create(
             store=self.store, brand=brand or self.brand, name=name, gender=gender,
             top_notes=top, middle_notes=middle, base_notes=base,
-            oil_stock_grams=1000, concentration_percentage=30, **extra
+            **extra
         )
         ProductVariant.objects.create(product=product, volume=50, price=600)
         ProductVariant.objects.create(product=product, volume=90, price=900)

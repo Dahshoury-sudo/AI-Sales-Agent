@@ -276,9 +276,11 @@ def identify_perfume(message, history=None, store=None):
         # otherwise treats a perfume absent from the data as non-existent. Saying the name
         # and then offering the closest thing we do sell is more useful than pretending
         # not to know, provided we never imply availability.
+        from .search_service import SELLABLE
+
         alternatives = Product.objects.filter(
             store=store, is_active=True
-        ).filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct()[:3]
+        ).filter(SELLABLE).distinct()[:3]
         context = format_products(alternatives, brief=True) if alternatives else ""
         instructions = f"""
 ═══ تعليمات التعرف على العطر ═══

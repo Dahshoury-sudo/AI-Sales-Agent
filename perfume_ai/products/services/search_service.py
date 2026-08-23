@@ -1,7 +1,7 @@
-from django.db.models import Case, Q, When
-from products.models import Product
+from django.db.models import Case, DecimalField, Min, OuterRef, Q, Subquery, When
+from products.models import Product, ProductVariant
 
-from .product_formatting import _bottles_fillable
+from .product_formatting import is_variant_available
 from .sales import naming, ranking, similarity
 from .sales.notes import expand_request_term
 
@@ -16,18 +16,46 @@ MAX_PRODUCTS_IN_CONTEXT = 12
 # it also cannot walk an unbounded catalogue on every turn.
 MAX_CANDIDATES_TO_SCORE = 60
 
+# Products that can actually be sold: a brand bottle is compounded to order, an original
+# bottle is a counted unit. Both conditions of the original clause sit inside one Q() on
+# purpose — split across two, they would match different joined variant rows and a product
+# with any original at all would qualify regardless of its stock.
+SELLABLE = Q(variants__bottle_type="normal") | Q(
+    variants__bottle_type="original", variants__stock__gt=0
+)
+
+# Cheapest brand bottle, as a correlated subquery rather than
+# `annotate(Min('variants__price', ...))`. The queryset already filters on the
+# multi-valued `variants` relation, and an aggregate over a relation that is also
+# filtered on is computed across the duplicated join rows — so the annotation would be
+# quietly wrong. A subquery is evaluated independently of the join.
+_CHEAPEST_BRAND_PRICE = Subquery(
+    ProductVariant.objects.filter(product=OuterRef("pk"), bottle_type="normal")
+    .order_by("price")
+    .values("price")[:1],
+    output_field=DecimalField(max_digits=10, decimal_places=2),
+)
+
+
+def _by_value(queryset):
+    """Order candidates cheapest-brand-bottle first, then by id.
+
+    Replaces `order_by('-oil_stock_grams', 'id')`. That ordering existed to avoid leading
+    with empty shelves, a concern that disappears once brand bottles are always
+    available — but *something* has to order the shortlist deterministically, because the
+    prompts tell the model to stay on a perfume once the customer shows interest and a
+    list that reshuffled between turns would undermine that.
+
+    Cheapest-first is the deliberate replacement: the previous ordering was by bulk oil
+    inventory, which is commercially arbitrary, and this catalogue serves a
+    price-sensitive market. `id` breaks ties so the result is stable.
+    """
+    return queryset.annotate(_cheapest=_CHEAPEST_BRAND_PRICE).order_by("_cheapest", "id")
+
 
 def _shortlist(queryset):
-    """Trim a candidate queryset down to what fits comfortably in one prompt.
-
-    Ordered by oil stock descending so the perfumes most likely to be
-    fulfillable in any size come first — the prompts tell the model to skip
-    anything marked out of stock, so leading with empty shelves wastes the
-    shortlist. The `id` tie-break keeps it deterministic: the prompts also tell
-    the model to stay on a perfume once the customer shows interest, which a
-    shortlist that reshuffled between turns would undermine.
-    """
-    return queryset.order_by('-oil_stock_grams', 'id')[:MAX_PRODUCTS_IN_CONTEXT]
+    """Trim a candidate queryset down to what fits comfortably in one prompt."""
+    return _by_value(queryset)[:MAX_PRODUCTS_IN_CONTEXT]
 
 
 def _notes_query(notes):
@@ -102,33 +130,25 @@ def _ordered_by_ids(queryset, ids):
 
 
 def _obtainable_only(queryset):
-    """Drop products no size of which can actually be produced.
+    """Drop products no size of which can actually be sold.
 
-    The SQL prefilter (`oil_stock_grams > 0 OR any original in stock`) is only a
-    superset: it ignores concentration, so a product with 5g of oil at 30% — which
-    cannot fill even a 50ml bottle — passes it. Evaluation caught exactly that product
-    being recommended to a customer, and it had been consuming a shortlist slot on every
-    search besides.
+    With brand bottles always available, the only thing this can now exclude is a product
+    whose every variant is an original with zero stock — `SELLABLE` already covers that in
+    SQL, so this is a belt-and-braces pass over the same rule expressed through
+    `is_variant_available`.
 
-    Decided in Python against `_bottles_fillable` rather than in SQL on purpose: that
-    function is the single definition of "can we fill this bottle", and the renderer uses
-    it to mark sizes out of stock. A second, subtly different expression of the same rule
-    in the ORM is how the two drift apart and the model gets shown a size the order flow
-    then refuses.
+    Kept rather than deleted because the two expressions can drift: `SELLABLE` is a join
+    condition and this is the per-variant predicate the renderer uses to mark sizes out of
+    stock. If they ever disagree, the model gets shown a size the order flow then refuses,
+    which is the failure this function was originally written for.
     """
     unobtainable = [
         product.id
         for product in queryset.prefetch_related("variants")
-        # Deliberately scoped to products that HAVE sizes but none of them obtainable.
-        # A product with no variants at all keeps whatever behaviour it had before, so
-        # this cannot quietly remove anything beyond the case it was written for.
+        # Scoped to products that HAVE sizes but none of them sellable. A product with no
+        # variants at all keeps whatever behaviour it had before.
         if product.variants.all()
-        and not any(
-            _bottles_fillable(product, variant) > 0
-            if variant.bottle_type == "normal"
-            else (variant.stock or 0) > 0
-            for variant in product.variants.all()
-        )
+        and not any(is_variant_available(variant) for variant in product.variants.all())
     ]
     return queryset.exclude(id__in=unobtainable) if unobtainable else queryset
 
@@ -138,8 +158,8 @@ def search_products(intent, store=None):
     if store:
         queryset = queryset.filter(store=store)
 
-    # Exclude products with no stock
-    queryset = queryset.filter(Q(oil_stock_grams__gt=0) | Q(variants__stock__gt=0)).distinct()
+    # Only products with something sellable in them.
+    queryset = queryset.filter(SELLABLE).distinct()
     queryset = _obtainable_only(queryset)
 
     gender = intent.get("gender")
@@ -214,8 +234,8 @@ def search_products(intent, store=None):
     if not pool.exists():
         return {"products": base.none(), "alternatives": None, "similarity": None}
 
-    candidates = list(pool.order_by('-oil_stock_grams', 'id')[:MAX_CANDIDATES_TO_SCORE])
-    ranked = ranking.rank(candidates, intent, reference=reference, fillable=_bottles_fillable)
+    candidates = list(_by_value(pool)[:MAX_CANDIDATES_TO_SCORE])
+    ranked = ranking.rank(candidates, intent, reference=reference)
     top = ranked[:MAX_PRODUCTS_IN_CONTEXT]
     ordered = _ordered_by_ids(pool, [entry.product.id for entry in top])
 

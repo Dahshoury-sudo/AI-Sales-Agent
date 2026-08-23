@@ -129,7 +129,6 @@ def database_facts(names):
             + (f" stock={v.stock}" if v.bottle_type == "original" else "")
             for v in product.variants.all()
         )
-        fillable = product.oil_stock_grams // max(1, (50 * product.concentration_percentage) // 100)
         lines.append(
             f"- {product.name} | brand={product.brand.name} | gender={product.gender} | "
             f"type={product.perfume_type} | season={product.season or 'NOT RECORDED'} | "
@@ -137,9 +136,7 @@ def database_facts(names):
             f"longevity={product.longevity or 'NOT RECORDED'} | "
             f"projection={product.projection or 'NOT RECORDED'} | "
             f"top={product.top_notes or 'NOT RECORDED'} | mid={product.middle_notes or 'NOT RECORDED'} | "
-            f"base={product.base_notes or 'NOT RECORDED'} | sizes: {sizes} | "
-            f"oil={product.oil_stock_grams}g conc={product.concentration_percentage}% "
-            f"(50ml bottles fillable≈{fillable})"
+            f"base={product.base_notes or 'NOT RECORDED'} | sizes: {sizes}"
         )
     return "\n".join(lines) or "(no catalogue perfume was named in this conversation)"
 
