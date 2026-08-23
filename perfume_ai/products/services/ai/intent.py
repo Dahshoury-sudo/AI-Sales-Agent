@@ -59,6 +59,7 @@ Rules:
 - If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
 - CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
+- 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, or projection unless the user EXPLICITLY mentioned them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
 - STATE MANAGEMENT: Accumulate preferences from the history (e.g., if they asked for 'female' before, and now say 'Dior', return both). BUT if the user's latest message changes or overrides a previous preference (e.g., they wanted 'Xerjoff' before but now want 'Dior'), OVERRIDE the old preference and ONLY return the NEW one ('Dior'). Do NOT include outdated criteria from the history.
 """
 
