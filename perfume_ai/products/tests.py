@@ -33,6 +33,7 @@ from products.models import (
 )
 from products.admin import OrderAdmin
 from products.encryption import normalize_phone, phone_blind_index
+from products.throttles import ChatThrottle, LoginThrottle, StoreKeyThrottle
 from products.services.ai import client as ai_client
 from products.services.ai.classifier import classify
 from products.services.ai.intent import extract_intent
@@ -4708,3 +4709,405 @@ class IdentificationCarveOutIsScopedTests(TestCase):
         prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
 
         self.assertNotIn("ممنوع توحي إننا بنبيعه", prompt)
+
+
+class ThrottleKeyTests(TestCase):
+    """What the throttles actually key on.
+
+    There were no throttle tests at all before this, and all three keying defects were
+    invisible without one: a bypassable IP key, five views throttling on a header they never
+    send, and rate settings that were never read.
+    """
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.owner = User.objects.create_user(username="o@x.com", password="pw")
+        self.store = Store.objects.create(name="Perfamix Test", owner=self.owner)
+        self.other = Store.objects.create(name="Other Store")
+
+    def _key(self, throttle, store=None, user=None, **meta):
+        request = self.factory.get("/", **meta)
+        if store is not None:
+            request.store = store
+        request.user = user
+        return throttle.get_cache_key(request, None)
+
+    def test_each_store_gets_its_own_bucket(self):
+        """The five JWT dashboard views read HTTP_X_API_KEY, which they never send, so they
+        fell through to a bare IP and lost per-store isolation entirely."""
+        throttle = StoreKeyThrottle()
+
+        self.assertNotEqual(
+            self._key(throttle, store=self.store),
+            self._key(throttle, store=self.other),
+        )
+
+    def test_two_stores_behind_one_ip_do_not_collide(self):
+        throttle = StoreKeyThrottle()
+        shared = {"REMOTE_ADDR": "197.1.1.1"}
+
+        self.assertNotEqual(
+            self._key(throttle, store=self.store, **shared),
+            self._key(throttle, store=self.other, **shared),
+        )
+
+    def test_the_scope_prefix_is_never_dropped(self):
+        """The old fallback returned a bare ident, skipping cache_format — so two throttles
+        hitting it shared one bucket and mixed their limits."""
+        for throttle in (StoreKeyThrottle(), ChatThrottle()):
+            with self.subTest(scope=throttle.scope):
+                key = self._key(throttle, store=self.store)
+                self.assertTrue(key.startswith(f"throttle_{throttle.scope}_"), key)
+
+    def test_the_store_and_chat_scopes_stay_separate(self):
+        self.assertNotEqual(
+            self._key(StoreKeyThrottle(), store=self.store),
+            self._key(ChatThrottle(), store=self.store),
+        )
+
+    def test_no_raw_api_key_reaches_the_cache_key(self):
+        """It used to key on the API key verbatim, putting a store secret in the Redis
+        keyspace where KEYS/MONITOR and key-level metrics can read it."""
+        key = self._key(
+            StoreKeyThrottle(), store=self.store,
+            HTTP_X_API_KEY=self.store.api_key,
+        )
+
+        self.assertNotIn(self.store.api_key, key)
+
+    def test_no_throttle_hardcodes_its_own_rate(self):
+        """This is the defect itself. SimpleRateThrottle.__init__ consults get_rate() only
+        `if not getattr(self, "rate", None)`, so a class-level `rate` made
+        DEFAULT_THROTTLE_RATES unreachable and editing settings changed nothing."""
+        from products import throttles as throttle_module
+
+        for name in dir(throttle_module):
+            attribute = getattr(throttle_module, name)
+            if isinstance(attribute, type) and getattr(attribute, "scope", None):
+                with self.subTest(throttle=name):
+                    self.assertNotIn(
+                        "rate", attribute.__dict__,
+                        f"{name} pins its own rate, so settings are ignored for it",
+                    )
+
+    def test_the_rate_is_read_from_the_configured_table(self):
+        """Patches THROTTLE_RATES rather than settings: DRF binds
+        `THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES` at class-definition time, so
+        override_settings cannot reach it. That table is what get_rate() reads."""
+        rates = dict(ChatThrottle.THROTTLE_RATES)
+        rates["chat"] = "7/minute"
+
+        with mock.patch.object(ChatThrottle, "THROTTLE_RATES", rates):
+            throttle = ChatThrottle()
+
+        self.assertEqual(throttle.num_requests, 7)
+        self.assertEqual(throttle.duration, 60)
+
+    def test_every_scope_in_use_is_configured(self):
+        """A scope missing from settings raises ImproperlyConfigured at throttle init, which
+        would surface as a 500 on the endpoint rather than at startup."""
+        from products import throttles as throttle_module
+
+        configured = settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]
+        for name in dir(throttle_module):
+            attribute = getattr(throttle_module, name)
+            scope = getattr(attribute, "scope", None)
+            if isinstance(attribute, type) and scope:
+                with self.subTest(throttle=name):
+                    self.assertIn(scope, configured)
+
+
+class ProxyHeaderBypassTests(TestCase):
+    """The security fix: an IP throttle must not be keyed on a client-supplied header.
+
+    With NUM_PROXIES unset, DRF's get_ident returns the whole X-Forwarded-For — which the
+    client sends. Rotating one header gave a fresh bucket, and the only protection on the
+    login and password-reset endpoints was an IP throttle.
+    """
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def _ident(self, xff):
+        request = self.factory.get("/", REMOTE_ADDR="10.0.0.1", HTTP_X_FORWARDED_FOR=xff)
+        return LoginThrottle().get_ident(request)
+
+    def test_a_spoofed_forwarded_for_no_longer_changes_the_bucket(self):
+        """A reverse proxy *appends* the true client IP to whatever the client sent, so with
+        NUM_PROXIES=1 DRF reads the last entry — the part the client cannot forge. Varying
+        the attacker-controlled prefix must therefore leave the bucket alone.
+
+        Before the fix DRF joined the whole header, so the prefix was part of the key and
+        one extra hop of junk bought a fresh bucket.
+        """
+        real_client = "197.55.55.55"
+
+        self.assertEqual(
+            self._ident(f"1.2.3.4, {real_client}"),
+            self._ident(f"9.9.9.9, 8.8.8.8, {real_client}"),
+        )
+
+    def test_the_whole_header_is_no_longer_the_key(self):
+        """The precise old behaviour: ''.join(xff.split()) when NUM_PROXIES is None."""
+        from rest_framework.settings import api_settings
+
+        self.assertNotEqual(
+            api_settings.NUM_PROXIES, None,
+            "with NUM_PROXIES unset the entire client-supplied header becomes the key",
+        )
+
+    def test_num_proxies_zero_ignores_the_header_entirely(self):
+        """The correct setting for a directly-exposed gunicorn, where nothing appends a
+        trustworthy entry and NUM_PROXIES=1 would trust the client's own value."""
+        request = self.factory.get(
+            "/", REMOTE_ADDR="10.0.0.1", HTTP_X_FORWARDED_FOR="1.2.3.4"
+        )
+
+        with mock.patch("rest_framework.throttling.api_settings") as api:
+            api.NUM_PROXIES = 0
+            self.assertEqual(LoginThrottle().get_ident(request), "10.0.0.1")
+
+    def test_num_proxies_is_configured(self):
+        from rest_framework.settings import api_settings
+
+        self.assertIsNotNone(
+            api_settings.NUM_PROXIES,
+            "unset NUM_PROXIES means DRF trusts the whole client-supplied XFF",
+        )
+
+    def test_the_real_client_ip_is_taken_from_behind_one_proxy(self):
+        """With one trusted proxy the last XFF entry is the one the proxy appended."""
+        request = self.factory.get(
+            "/", REMOTE_ADDR="10.0.0.1",
+            HTTP_X_FORWARDED_FOR="1.2.3.4, 197.55.55.55",
+        )
+
+        self.assertEqual(LoginThrottle().get_ident(request), "197.55.55.55")
+
+    def test_credential_endpoints_are_throttled_far_below_the_anon_default(self):
+        """All four had authentication_classes = [] and set no throttle_classes, so their
+        only limit was AnonRateThrottle at 30/minute on a spoofable key."""
+        from dashboard.views_auth import (
+            ForgotPasswordView,
+            LoginView,
+            RegisterView,
+            ResetPasswordView,
+        )
+
+        for view in (LoginView, RegisterView, ForgotPasswordView, ResetPasswordView):
+            with self.subTest(view=view.__name__):
+                self.assertTrue(view.throttle_classes, "no explicit throttle")
+                throttle = view.throttle_classes[0]()
+                self.assertLess(throttle.num_requests / throttle.duration, 30 / 60)
+
+
+class WebhookIsNotThrottledTests(TestCase):
+    """Meta's webhook must never be refused.
+
+    The old WebhookThrottle keyed on the client IP, so every store shared one bucket and one
+    busy store throttled the rest — and exceeding it returned 429, which makes Meta retry
+    and, on sustained failure, disable the webhook subscription app-wide.
+    """
+
+    def test_the_webhook_view_has_no_throttle_at_all(self):
+        from products.views_meta import MetaWebhookView
+
+        self.assertEqual(MetaWebhookView.throttle_classes, [])
+
+    def test_an_empty_list_not_a_missing_attribute(self):
+        """Deleting the attribute is the trap: DRF then falls back to
+        DEFAULT_THROTTLE_CLASSES — AnonRateThrottle at 30/minute on Meta's own IPs, which is
+        a *tighter* global bucket than the one being removed, still answering 429."""
+        from products.views_meta import MetaWebhookView
+
+        self.assertIn("throttle_classes", MetaWebhookView.__dict__)
+
+    def test_the_old_throttle_class_is_gone(self):
+        from products import throttles
+
+        self.assertFalse(hasattr(throttles, "WebhookThrottle"))
+
+
+class RateLimitPrimitiveTests(TestCase):
+    """products.services.rate_limit — the counter behind the message-path limits."""
+
+    def setUp(self):
+        from products.services import rate_limit
+
+        self.rate_limit = rate_limit
+        for bucket in ("a", "b", "minute", "hour"):
+            rate_limit.reset(bucket)
+
+    def test_exactly_the_limit_is_allowed(self):
+        outcomes = [self.rate_limit.hit("a", 3, 60)[0] for _ in range(5)]
+
+        self.assertEqual(outcomes, [True, True, True, False, False])
+
+    def test_separate_buckets_do_not_share_a_counter(self):
+        for _ in range(3):
+            self.rate_limit.hit("a", 3, 60)
+
+        self.assertTrue(self.rate_limit.hit("b", 3, 60)[0])
+
+    def test_retry_after_is_the_window_length(self):
+        self.rate_limit.hit("a", 1, 60)
+        allowed, retry_after = self.rate_limit.hit("a", 1, 60)
+
+        self.assertFalse(allowed)
+        self.assertEqual(retry_after, 60)
+
+    def test_the_longest_exhausted_window_decides_the_wait(self):
+        """An hourly breach must not be retried in sixty seconds, only to be refused again."""
+        buckets = [("minute", 2, 60), ("hour", 3, 3600)]
+        for _ in range(3):
+            self.rate_limit.hit_all(buckets)
+
+        allowed, retry_after, exhausted = self.rate_limit.hit_all(buckets)
+
+        self.assertFalse(allowed)
+        self.assertEqual(retry_after, 3600)
+        self.assertEqual(exhausted, "hour")
+
+    def test_every_window_is_counted_even_after_one_refuses(self):
+        """Short-circuiting would leave the hour counter behind whenever the minute limit
+        tripped first, so sustained abuse would never reach the hourly ceiling."""
+        buckets = [("minute", 1, 60), ("hour", 10, 3600)]
+        for _ in range(4):
+            self.rate_limit.hit_all(buckets)
+
+        from django.core.cache import cache
+
+        self.assertEqual(cache.get("ratelimit:hour"), 4)
+
+    def test_peek_reports_without_counting(self):
+        """A deferred message re-enters the task and must not be charged twice."""
+        self.rate_limit.hit("a", 2, 60)
+
+        for _ in range(5):
+            self.assertEqual(self.rate_limit.peek([("a", 2, 60)]), (True, 0))
+
+        from django.core.cache import cache
+
+        self.assertEqual(cache.get("ratelimit:a"), 1)
+
+    def test_peek_refuses_once_the_window_is_full(self):
+        for _ in range(2):
+            self.rate_limit.hit("a", 2, 60)
+
+        self.assertEqual(self.rate_limit.peek([("a", 2, 60)]), (False, 60))
+
+    def test_a_cache_outage_fails_open(self):
+        """Matching products/cache.py's documented trade: losing accuracy during an outage
+        beats taking the message path down with it."""
+        with mock.patch("products.services.rate_limit.cache") as broken:
+            broken.incr.return_value = None
+
+            self.assertEqual(self.rate_limit.hit("a", 1, 60), (True, 0))
+
+
+class MessageRateLimitTests(TestCase):
+    """The per-sender and per-store limits on the expensive path.
+
+    route() spends two to three model calls per message, and nothing capped per store or per
+    end customer: the old WebhookThrottle keyed on Meta's IP, and usage_service counts
+    without ever blocking. One WhatsApp user could bill the store without limit.
+    """
+
+    def setUp(self):
+        from products.services import rate_limit
+        from products import tasks
+
+        self.tasks = tasks
+        self.rate_limit = rate_limit
+        self.store = Store.objects.create(name="Perfamix Test")
+        for sender in ("2010", "2099"):
+            for bucket, _limit, _window in tasks._rate_limit_buckets(
+                self.store.id, "whatsapp", sender
+            ):
+                rate_limit.reset(bucket)
+
+    def _run(self, deferrals=0, sender="2010"):
+        """Run the task body with everything past the rate limit stubbed out."""
+        with mock.patch.object(self.tasks, "route", return_value=("ok", "")), \
+             mock.patch.object(self.tasks, "send_platform_message", return_value=None), \
+             mock.patch.object(self.tasks, "sanitize_reply", side_effect=lambda r, c: r), \
+             mock.patch.object(
+                 self.tasks.process_incoming_message, "apply_async"
+             ) as apply_async:
+            self.tasks.process_incoming_message(
+                self.store.id, "whatsapp", sender, "عايز عطر", deferrals=deferrals
+            )
+        return apply_async
+
+    def test_a_normal_message_is_processed(self):
+        apply_async = self._run()
+
+        self.assertFalse(apply_async.called, "a first message must not be deferred")
+        self.assertEqual(Message.objects.filter(role="user").count(), 1)
+
+    def test_a_sender_past_the_minute_limit_is_deferred_not_dropped(self):
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run()
+
+        apply_async = self._run()
+
+        self.assertTrue(apply_async.called, "the message was dropped instead of deferred")
+        self.assertGreater(apply_async.call_args.kwargs["countdown"], 0)
+        self.assertEqual(apply_async.call_args.kwargs["kwargs"], {"deferrals": 1})
+
+    def test_a_deferred_message_saves_nothing_so_no_half_turn_is_left_behind(self):
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run()
+        before = Message.objects.count()
+
+        self._run()
+
+        self.assertEqual(Message.objects.count(), before)
+
+    def test_deferral_stops_at_the_cap(self):
+        """Unbounded requeueing turns a flood into an unbounded queue, which is shared with
+        every other store's live conversations."""
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run()
+
+        apply_async = self._run(deferrals=self.tasks.MAX_DEFERRALS)
+
+        self.assertFalse(apply_async.called, "deferred past the cap instead of dropping")
+
+    def test_a_retry_is_not_charged_a_second_time(self):
+        """Counting on every retry would push a sender further past the limit by the
+        system's own back-pressure rather than by anything they sent."""
+        from django.core.cache import cache
+
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run()
+        key = f"ratelimit:sender:{self.store.id}:whatsapp:2010"
+        before = cache.get(key)
+
+        self._run(deferrals=1)
+
+        self.assertEqual(cache.get(key), before)
+
+    def test_deferrals_are_staggered_so_replies_keep_their_order(self):
+        """Without a stagger, every message a sender queued in one window is re-dispatched to
+        the same instant and they race — so the saved history can misrepresent the
+        conversation and poison the next turn's context."""
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run()
+
+        first = self._run(deferrals=1).call_args.kwargs["countdown"]
+        second = self._run(deferrals=2).call_args.kwargs["countdown"]
+
+        self.assertGreater(second, first)
+
+    def test_one_sender_flooding_does_not_block_another(self):
+        for _ in range(self.tasks.SENDER_PER_MINUTE):
+            self._run(sender="2010")
+
+        apply_async = self._run(sender="2099")
+
+        self.assertFalse(apply_async.called, "a different sender was caught by the limit")
+
+    def test_the_store_ceiling_is_higher_than_one_senders(self):
+        """The per-store bucket exists for cross-tenant isolation, not to cap a customer."""
+        self.assertGreater(self.tasks.STORE_PER_MINUTE, self.tasks.SENDER_PER_MINUTE)

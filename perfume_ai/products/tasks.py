@@ -21,6 +21,7 @@ from products.services.meta_service import (
     conversation_platform_for,
 )
 from products.services.notification_service import notify_delivery_failure
+from products.services import rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,70 @@ def _flag_undelivered_reply(conversation):
     notify_delivery_failure(conversation)
 
 
+# ── Cost limiting on the message path ───────────────────────────────────────
+#
+# This is the only real limit on the expensive path. `route()` spends two to three model
+# calls per message, and before this nothing capped per store or per end customer: the old
+# WebhookThrottle keyed on Meta's IP (one global bucket for every store, and a 429 that
+# makes Meta disable the subscription), and usage_service counts without ever blocking.
+#
+# A real conversation never approaches these. Fifteen messages in a minute from one sender
+# is a script or a stuck client, not a shopper — the hourly window catches the slower
+# version of the same abuse.
+SENDER_PER_MINUTE = 15
+SENDER_PER_HOUR = 150
+
+# Aggregate ceiling per store, replacing the global bucket. Generous: what matters is that
+# one store's traffic can no longer throttle another's, which the IP-keyed version could.
+STORE_PER_MINUTE = 120
+
+# How many times a message may be pushed back before it is dropped. Unbounded requeueing
+# turns a flood into an unbounded queue, which is worse than dropping — the queue is shared
+# with every other store's live conversations.
+MAX_DEFERRALS = 3
+
+# Added per deferral so re-dispatched messages do not all land on the same instant and race.
+# Without it a sender's queued messages can be delivered out of order, and the bot's own
+# saved history then misrepresents the conversation, which poisons the next turn's context.
+DEFERRAL_STAGGER_SECONDS = 5
+
+
+def _rate_limit_buckets(store_id, platform, sender_id):
+    sender = f"{store_id}:{platform}:{sender_id}"
+    return (
+        (f"sender:{sender}", SENDER_PER_MINUTE, 60),
+        (f"sender-hour:{sender}", SENDER_PER_HOUR, 3600),
+        (f"store:{store_id}", STORE_PER_MINUTE, 60),
+    )
+
+
+def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted):
+    """Push an over-limit message back, or drop it once it has waited long enough.
+
+    Deferring rather than dropping is the deliberate choice: a dropped message is a real
+    customer's question vanishing, and this is a sales bot. Nothing is saved to the
+    conversation before this point, so a deferred message leaves no half-written turn behind.
+    """
+    if deferrals >= MAX_DEFERRALS:
+        logger.warning(
+            "Dropping message after %d deferrals — store=%s platform=%s sender=%s "
+            "bucket=%s. Sustained rate above the limit.",
+            deferrals, store_id, platform, sender_id, exhausted,
+        )
+        return
+
+    countdown = retry_after + deferrals * DEFERRAL_STAGGER_SECONDS
+    logger.info(
+        "Rate limit hit (%s) — deferring message %ds, attempt %d/%d, store=%s sender=%s.",
+        exhausted, countdown, deferrals + 1, MAX_DEFERRALS, store_id, sender_id,
+    )
+    process_incoming_message.apply_async(
+        args=[store_id, platform, sender_id, text],
+        kwargs={"deferrals": deferrals + 1},
+        countdown=countdown,
+    )
+
+
 @shared_task(
     bind=True,
     max_retries=3,
@@ -54,7 +119,7 @@ def _flag_undelivered_reply(conversation):
     name='products.tasks.process_incoming_message',
     acks_late=True,                   # only ack after the task succeeds
 )
-def process_incoming_message(self, store_id, platform, sender_id, text):
+def process_incoming_message(self, store_id, platform, sender_id, text, deferrals=0):
     """
     Process an incoming message from a Meta platform (WhatsApp / Messenger / Instagram).
     Runs inside a Celery worker so the webhook endpoint returns 200 immediately.
@@ -62,7 +127,26 @@ def process_incoming_message(self, store_id, platform, sender_id, text):
     Retry behaviour:
       - Retries up to 3 times with a 15-second delay on any unhandled exception.
       - Uses acks_late so the message is never lost if the worker crashes mid-task.
+
+    `deferrals` counts how many times this message has been pushed back by the rate limit.
+    It is separate from Celery's retry count on purpose: `max_retries` is the budget for
+    genuine failures, and a deferral is not a failure — spending a retry on one would both
+    burn that budget and log an exception for normal back-pressure.
     """
+    buckets = _rate_limit_buckets(store_id, platform, sender_id)
+    if deferrals:
+        # Already counted on first entry; only ask whether the window has rolled.
+        allowed, retry_after = rate_limit.peek(buckets)
+        exhausted = None if allowed else "still over limit"
+    else:
+        allowed, retry_after, exhausted = rate_limit.hit_all(buckets)
+
+    if not allowed:
+        _defer_or_drop(
+            store_id, platform, sender_id, text, deferrals, retry_after, exhausted
+        )
+        return
+
     try:
         store = Store.objects.get(id=store_id)
         conversation, created = get_or_create_platform_conversation(store, platform, sender_id)

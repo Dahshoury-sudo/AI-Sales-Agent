@@ -43,6 +43,23 @@ class ResilientRedisCache(RedisCache):
             self._unavailable("add", exc)
             return False
 
+    def incr(self, key, delta=1, version=None):
+        """Atomic increment, or None when Redis is unreachable.
+
+        Wrapped for the same reason as the rest: `products.services.rate_limit` counts
+        every inbound platform message through this, and an unwrapped RedisError there
+        would turn a brief outage into 500s on the message path.
+
+        Returns None rather than a count on failure, so callers can tell "Redis is down"
+        apart from a real tally and fail open. ValueError is deliberately NOT caught — a
+        missing key is a race the caller has to resolve by re-seeding it, not an outage.
+        """
+        try:
+            return super().incr(key, delta, version)
+        except RedisError as exc:
+            self._unavailable("incr", exc)
+            return None
+
     def touch(self, key, timeout=DEFAULT_TIMEOUT, version=None):
         try:
             return super().touch(key, timeout, version)

@@ -13,6 +13,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 
 from products.models import Store, StoreSettings
+from products.throttles import (
+    LoginThrottle,
+    PasswordResetThrottle,
+    RegisterThrottle,
+)
 from .auth_backend import StoreOwnerAuthentication
 
 logger = logging.getLogger(__name__)
@@ -21,6 +26,7 @@ logger = logging.getLogger(__name__)
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         email = request.data.get("email", "").strip().lower()
@@ -74,6 +80,7 @@ class RegisterView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [LoginThrottle]
 
     def post(self, request):
         email = request.data.get("email", "").strip().lower()
@@ -143,6 +150,7 @@ class ProfileView(APIView):
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         email = request.data.get("email", "").strip().lower()
@@ -176,6 +184,7 @@ class ForgotPasswordView(APIView):
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request, uidb64, token):
         password = request.data.get("password", "")

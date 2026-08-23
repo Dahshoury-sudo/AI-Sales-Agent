@@ -172,15 +172,42 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF Rate Limiting
+#
+# NUM_PROXIES is the security-critical one. DRF derives an IP throttle key from
+# X-Forwarded-For, and with it unset DRF trusts the *whole* header — which the client
+# sends. Any IP-keyed limit could then be bypassed by varying one header, including the
+# only protection on the login and password-reset endpoints.
+#
+# 1 = exactly one trusted proxy in front of Django (Railway's edge, or nginx on a VPS).
+# A proxy appends the true client IP to whatever the client sent, so DRF reading the *last*
+# X-Forwarded-For entry reads the part the client cannot forge.
+#
+# 🔴 Set 0 when gunicorn is exposed directly. With no proxy appending anything, a
+# single-entry header IS the client's own value, so NUM_PROXIES=1 would trust it and buy
+# nothing over leaving this unset. 0 ignores the header entirely and uses REMOTE_ADDR.
+NUM_PROXIES = int(os.environ.get('NUM_PROXIES', '1'))
+
 REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
     ],
+    'NUM_PROXIES': NUM_PROXIES,
+    # These are now actually read. They were dead config: every throttle class set a
+    # `rate` attribute, and SimpleRateThrottle.__init__ only consults get_rate() when
+    # `rate` is falsy — so editing this dict changed nothing. The class attributes are
+    # gone, which makes this the single source of truth. A scope used by a throttle and
+    # missing here raises ImproperlyConfigured at init, so keep them in step.
     'DEFAULT_THROTTLE_RATES': {
         'anon': '30/minute',
         'store': '60/minute',
         'chat': '30/minute',
-        'webhook': '200/minute',
+        # Credential endpoints. Per-IP by necessity, so these only mean anything because
+        # NUM_PROXIES is set above. Deliberately far tighter than 'anon'.
+        'login': '10/minute',
+        'register': '5/hour',
+        # Shared by forgot-password and reset-password: the first sends mail, so it is a
+        # spam vector as well as an account-enumeration one.
+        'password_reset': '5/hour',
     }
 }
 

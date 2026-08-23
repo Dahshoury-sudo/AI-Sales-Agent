@@ -11,14 +11,36 @@ from products.models import StoreSettings
 from products.services.conversation_service import get_or_create_platform_conversation, get_conversation_messages, save_message
 from products.services.router import route
 from products.services.meta_service import send_platform_message
-from products.throttles import WebhookThrottle
 
 logger = logging.getLogger(__name__)
 
 class MetaWebhookView(APIView):
+    """Meta's inbound webhook for WhatsApp, Messenger and Instagram.
+
+    Deliberately unthrottled at the HTTP layer. It used to carry a WebhookThrottle keyed on
+    the client IP, which was wrong in two ways: every Meta webhook arrives from Facebook's
+    addresses, so all stores shared one bucket and one busy store throttled the rest; and
+    exceeding it returned 429, which makes Meta retry and — on sustained failure — disable
+    the webhook subscription for the whole app. A rate limit whose failure mode is "the
+    integration goes down until someone manually re-subscribes" is worse than none.
+
+    DRF throttling also cannot fix this, because it runs before the body is parsed and the
+    store is only resolvable per-entry inside post(). Rate limiting therefore lives in
+    products/tasks.py, where the store and sender are known and a message can be deferred
+    instead of refused. This view always answers 200.
+
+    The edge is guarded by verify_signature, which rejects forged payloads before anything
+    is dispatched. Residual cost of an unsigned flood is a JSON parse and one or two indexed
+    lookups; genuine edge protection belongs at the reverse proxy, not in Django.
+    """
+
     authentication_classes = []
     permission_classes = []
-    throttle_classes = [WebhookThrottle]
+    # Explicitly empty, not merely unset. Removing the attribute makes DRF fall back to
+    # DEFAULT_THROTTLE_CLASSES — AnonRateThrottle at 30/minute keyed on the client IP —
+    # which is strictly worse than the WebhookThrottle it replaced: a tighter global bucket
+    # on Meta's own addresses, still answering 429.
+    throttle_classes = []
 
     def get(self, request):
         mode = request.GET.get("hub.mode")
