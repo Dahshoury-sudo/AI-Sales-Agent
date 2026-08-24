@@ -5712,3 +5712,244 @@ class ConversationContinuityTests(TestCase):
         )
 
         self.assertIn("3300", results["dropped"]["Green Irish Tweed"])
+
+
+class OrderEditNotCancelTests(TestCase):
+    """Conversation 1005: "مش عايز 1 × Noirvel (90ml)" wiped a two-item cart.
+
+    The customer was removing one line of two. They got "تم إلغاء الطلب اللي كنا بنجهزه", lost
+    their name, phone and address with it, and retyped everything to order the one perfume they
+    had wanted from the start.
+
+    The capability was already there — handle_order's extractor rule 5 drops the named perfume
+    and keeps the rest, and `cart_cleared` exists for the genuinely-empty case. The message
+    never arrived: "مش عايز" was a listed example of order_cancel, and the branch cleared the
+    cart whenever it held any items.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        self.le_male = self._make("Le Male", 856)
+        self.noirvel = self._make("Noirvel", 1085)
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _make(self, name, price):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+        )
+        return ProductVariant.objects.create(
+            product=product, volume=90, price=price, bottle_type="normal"
+        )
+
+    def _cart(self, *variants, **details):
+        cart = Cart.objects.create(
+            conversation=self.conversation,
+            customer_name=details.get("name", "محمد فؤاد"),
+            customer_phone=details.get("phone", "01153032052"),
+            secondary_phone=details.get("secondary", "01051089101"),
+            shipping_address=details.get("address", "المقطم شارع 9"),
+        )
+        for variant in variants:
+            CartItem.objects.create(
+                cart=cart, variant=variant, quantity=1, bottle_type="normal"
+            )
+        return cart
+
+    def _route(self, message):
+        with mock.patch(
+            "products.services.router.classify", return_value="order_cancel"
+        ), mock.patch(
+            "products.services.router.handle_order", return_value=("edited", "")
+        ) as handle_order:
+            from products.services.router import route
+
+            reply, _ = route(message, [], self.store, self.conversation)
+        return reply, handle_order
+
+    # ── naming.mentioned_in ──────────────────────────────────────────────
+    def test_a_summary_line_resolves_to_its_perfume(self):
+        from products.services.sales import naming
+
+        found = naming.mentioned_in(
+            "مش عايز 1 × Noirvel (90ml)",
+            [self.le_male.product, self.noirvel.product],
+        )
+
+        self.assertEqual([p.name for p in found], ["Noirvel"])
+
+    def test_a_blanket_cancellation_names_nothing(self):
+        from products.services.sales import naming
+
+        for message in ("الغي الاوردر", "مش عايز خلاص", "بلاش الطلب كله"):
+            with self.subTest(message=message):
+                self.assertEqual(
+                    naming.mentioned_in(
+                        message, [self.le_male.product, self.noirvel.product]
+                    ),
+                    [],
+                )
+
+    def test_a_partial_name_is_not_a_match(self):
+        from products.services.sales import naming
+
+        self.assertEqual(
+            naming.mentioned_in("مش عايز Le", [self.le_male.product]), []
+        )
+
+    # ── the router guard ─────────────────────────────────────────────────
+    def test_naming_one_of_two_items_edits_instead_of_cancelling(self):
+        """The exact failure. Enforced in code, not left to the classifier, because a dropped
+        prompt rule on this branch destroys a sale."""
+        self._cart(self.le_male, self.noirvel)
+
+        reply, handle_order = self._route("مش عايز 1 × Noirvel (90ml)")
+
+        self.assertTrue(handle_order.called, "the removal was treated as a cancellation")
+        self.assertEqual(reply, "edited")
+        self.assertNotIn("إلغاء", reply)
+
+    def test_the_cart_survives_a_line_removal(self):
+        self._cart(self.le_male, self.noirvel)
+
+        self._route("مش عايز 1 × Noirvel (90ml)")
+
+        self.assertTrue(Cart.objects.filter(conversation=self.conversation).exists())
+
+    def test_naming_the_only_item_still_cancels(self):
+        """A one-item cart named in full genuinely is a cancellation, and the extractor's
+        cart_cleared flag already covers that path."""
+        self._cart(self.le_male)
+
+        reply, handle_order = self._route("مش عايز Le Male")
+
+        self.assertFalse(handle_order.called)
+        self.assertIn("إلغاء", reply)
+
+    def test_a_blanket_cancellation_still_cancels_a_multi_item_cart(self):
+        self._cart(self.le_male, self.noirvel)
+
+        reply, handle_order = self._route("الغي الاوردر")
+
+        self.assertFalse(handle_order.called)
+        self.assertIn("إلغاء", reply)
+        self.assertFalse(
+            CartItem.objects.filter(cart__conversation=self.conversation).exists()
+        )
+
+    # ── contact details survive a cancellation ───────────────────────────
+    def test_cancelling_keeps_the_details_already_given(self):
+        """They retyped name, phone and address in full because the row was deleted."""
+        self._cart(self.le_male, self.noirvel)
+
+        self._route("الغي الاوردر")
+
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.customer_name, "محمد فؤاد")
+        self.assertEqual(cart.customer_phone, "01153032052")
+        self.assertEqual(cart.shipping_address, "المقطم شارع 9")
+        self.assertFalse(cart.items.exists())
+
+    def test_cancelling_advances_the_summary_window(self):
+        """The trap in keeping the details. `_summary_was_shown` scopes to
+        created_at >= cart.created_at, so a surviving row would let a summary sent *before* the
+        cancellation authorise a confirmation *after* it — an order with no total ever shown.
+        Delete-and-recreate is what keeps that guard honest."""
+        from products.services.order_service import clear_cart
+
+        original = self._cart(self.le_male, self.noirvel)
+        before = original.created_at
+
+        clear_cart(self.conversation, keep_details=True)
+
+        self.assertGreater(Cart.objects.get(conversation=self.conversation).created_at, before)
+
+    def test_a_stale_summary_cannot_confirm_after_a_cancellation(self):
+        from products.services.order_service import _summary_was_shown, clear_cart
+
+        self._cart(self.le_male, self.noirvel)
+        Message.objects.create(
+            conversation=self.conversation, role="assistant",
+            content="💰 الإجمالي: 1941.00 جنيه.",
+        )
+        clear_cart(self.conversation, keep_details=True)
+
+        fresh = Cart.objects.get(conversation=self.conversation)
+
+        self.assertFalse(_summary_was_shown(self.conversation, fresh))
+
+    def test_a_completed_order_still_starts_the_next_one_empty(self):
+        """create_order_in_db keeps the default: a cart that became an Order leaves nothing."""
+        from products.services.order_service import clear_cart
+
+        self._cart(self.le_male)
+
+        clear_cart(self.conversation)
+
+        self.assertFalse(Cart.objects.filter(conversation=self.conversation).exists())
+
+
+class OverBudgetLineTests(TestCase):
+    """Noirvel's 90ml at 1085 was assembled against a stated 900 and nobody said anything.
+
+    The order flow never read conversation.preferences, so the only thing standing between the
+    customer and an over-budget line was their own reading of the summary.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Perfamix Test")
+        self.conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 900},
+        )
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Noirvel", gender="male",
+        )
+        self.variant = ProductVariant.objects.create(
+            product=product, volume=90, price=1085, bottle_type="normal"
+        )
+
+    def _items(self, price):
+        return [{
+            "variant": self.variant, "quantity": 1,
+            "price": Decimal(str(price)), "bottle_type": "normal",
+        }]
+
+    def test_a_line_above_the_stated_budget_is_flagged(self):
+        from products.services.order_service import _over_budget_warning
+
+        warning = _over_budget_warning(self.conversation, self._items(1085))
+
+        self.assertIn("Noirvel", warning)
+        self.assertIn("1085", warning)
+        self.assertIn("900", warning)
+
+    def test_a_line_within_the_budget_is_not_flagged(self):
+        from products.services.order_service import _over_budget_warning
+
+        self.assertEqual(_over_budget_warning(self.conversation, self._items(856)), "")
+
+    def test_no_stated_budget_means_no_flag(self):
+        from products.services.order_service import _over_budget_warning
+
+        self.conversation.preferences = {}
+        self.conversation.save()
+
+        self.assertEqual(_over_budget_warning(self.conversation, self._items(1085)), "")
+
+    def test_the_flag_offers_to_remove_it_rather_than_refusing(self):
+        """The customer may well want it, and the summary is already the moment they check."""
+        from products.services.order_service import _over_budget_warning
+
+        self.assertIn("أشيله", _over_budget_warning(self.conversation, self._items(1085)))
+
+    def test_the_extractor_is_taught_positional_reference(self):
+        """"هات 90 ملي من اول واحد ده" put both perfumes from the previous reply in the cart."""
+        import inspect
+
+        from products.services import order_service
+
+        source = inspect.getsource(order_service.handle_order)
+
+        self.assertIn("POSITIONAL REFERENCE", source)
+        self.assertIn("اول واحد", source)

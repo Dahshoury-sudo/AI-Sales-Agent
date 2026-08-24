@@ -33,7 +33,11 @@ from eval_harness import checks  # noqa: E402
 # Replaying the transcript a customer complained about is the fastest way to tell whether a
 # fix actually landed — and running it twice matters, because extractor variance between runs
 # is what exposed two separate bugs in the conv_990 work that a single run had hidden.
-_REPLAYS = {"conv990": "scenarios_conv990", "conv997": "scenarios_conv997"}
+_REPLAYS = {
+    "conv990": "scenarios_conv990",
+    "conv997": "scenarios_conv997",
+    "conv1005": "scenarios_conv1005",
+}
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:
     SCENARIOS = __import__(

@@ -137,3 +137,38 @@ def resolve_names(names, store, products=None):
         if value not in resolved:
             resolved.append(value)
     return resolved
+
+
+def mentioned_in(text, products):
+    """Which of `products` the text names.
+
+    Companion to `match_product`, reversed: that one takes a name and finds the product,
+    this takes free text and finds every product it refers to. Reuses the same `tokens()`
+    and stopword handling, so "Noirvel (90ml)" resolves the way "9pm by Afnan" already does.
+
+    Written for the router's cancel branch. "مش عايز 1 × Noirvel (90ml)" is a request to
+    remove one line of two, but it was classified `order_cancel` — "مش عايز" was a listed
+    example of it — and the branch then wiped the whole cart, name and address included. The
+    order flow already knows how to remove a single item; it needed a way to tell that this
+    message names one.
+
+    A product matches when every one of its identifying tokens appears in the text, so
+    "Le Male" is not matched by a message that only says "Le". `_similar_enough` gives the
+    same one-character tolerance as elsewhere, since a customer retyping a name from a
+    summary line will occasionally miss a letter.
+    """
+    haystack = tokens(text)
+    if not haystack:
+        return []
+
+    found = []
+    for product in products:
+        wanted = tokens(product.name)
+        if not wanted:
+            continue
+        if all(
+            any(_similar_enough(token, other) for other in haystack)
+            for token in wanted
+        ):
+            found.append(product)
+    return found

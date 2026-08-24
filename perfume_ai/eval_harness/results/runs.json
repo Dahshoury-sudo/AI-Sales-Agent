@@ -1,14 +1,14 @@
 [
   {
-    "id": "CONV997",
+    "id": "CONV1005",
     "category": "regression",
-    "persona": "indecisive",
-    "probe": "Replay of conversation 997. It offered four different pairs of perfumes across seven turns (eight perfumes) while the customer never rejected anything. Turn 5 answered the bot own narrowing question with two perfumes that were neither option. Turn 7 dropped Le Male (50ml=623) on the turn the customer said they had 800. The conversation must stay on the same perfumes, converge to ONE when the customer answers a narrowing question, and state why any perfume stopped qualifying instead of swapping it silently.",
+    "persona": "ready_buyer",
+    "probe": "Replay of conversation 1005. Two failures at checkout: \"ماشي هات 90 ملي من اول واحد ده\" put BOTH perfumes in the cart (the ordinal means one — Le Male, listed first) including Noirvel 90ml at 1085 against a stated 900 budget; and \"مش عايز 1 × Noirvel (90ml)\" — a removal of one line out of two — cancelled the whole order and erased the name, phone and address, forcing the customer to retype everything. Removing one item must EDIT the order, keep the other perfume and keep the contact details.",
     "turns": [
       {
         "n": 1,
-        "user": "عايز برفان ثابت وفواح بس مش لدرجه انه يخنق يعني",
-        "reply": "عطر Dior Homme Intense مناسب جداً لطلبك لأنه ثابت وفوحانه متوسط، وريحته خشبية ناعمة مش خانقة. كمان Jasmino من تصميمنا حصري، ثابت وفواح لكن خفيف ومناسب للجنسين. العطرين دول خيارين ممتازين، Dior Homme Intense لو بتحب الريحة الخشبية، وJasmino لو حابب حاجة ناعمة وأنثوية شوي. العطر لراجل ولا لست؟",
+        "user": "عايز برفان ثابت للجيم وفريش",
+        "reply": "أنسب لك عطرين للجيم وفريش وثابت: \n🔹 Noirvel، عطر تركيب حصري نضيف وفيه ريحة فواحة من البرغموت والجريب فروت، ثابت حوالي 7 ساعات. \n🔹 Le Male من Jean Paul Gaultier، ريحته منعشة بالنعناع واللافندر، وثباته مناسب للجيم والاستخدام اليومي. \n\nأنا أرشحلك Noirvel أكتر لأنه للجنسين وفريش ونضيف، أما Le Male رجالي أكتر. العطر لراجل ولا لست؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -16,18 +16,18 @@
           "gender": null,
           "perfume_type": null,
           "season": null,
-          "occasion": null,
+          "occasion": "gym",
           "max_price": null,
           "longevity": "long-lasting",
-          "projection": "moderate",
+          "projection": null,
           "exclude_names": [],
-          "notes": [],
+          "notes": [
+            "fresh"
+          ],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
+          "avoid_traits": [],
           "wants_uncommon": false
         },
         "merged_intent": {
@@ -35,144 +35,144 @@
           "gender": null,
           "perfume_type": null,
           "season": null,
-          "occasion": null,
+          "occasion": "gym",
           "max_price": null,
           "longevity": "long-lasting",
-          "projection": "moderate",
+          "projection": null,
           "exclude_names": [],
-          "notes": [],
+          "notes": [
+            "fresh"
+          ],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
+          "avoid_traits": [],
           "wants_uncommon": false
         },
         "stage": "recommendation",
         "search": {
           "matched": [
-            "Dior Homme Intense",
+            "Noirvel",
             "Jasmino",
-            "Y Eau de Parfum",
             "Le Male",
-            "Good Girl",
+            "Dior Sauvage",
+            "Bleu de Chanel",
+            "Eros",
+            "La Vie Est Belle",
+            "Dark Aura",
+            "Luna Rossa Carbon",
+            "Erba Pura",
             "XJ 1861 Naxos",
-            "Green Irish Tweed",
-            "Stronger With You",
-            "Invictus",
-            "Rosalia",
-            "Accento Overdose",
-            "Silver Mountain Water"
+            "Green Irish Tweed"
           ],
           "alternatives": [],
           "similarity": null,
           "reasons": {
-            "Dior Homme Intense": {
-              "score": 2.55,
+            "Noirvel": {
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             },
             "Jasmino": {
-              "score": 2.55,
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Y Eau de Parfum": {
-              "score": 2.55,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             },
             "Le Male": {
-              "score": 2.55,
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             },
-            "Good Girl": {
-              "score": 2.55,
+            "Dior Sauvage": {
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Bleu de Chanel": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Eros": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "La Vie Est Belle": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Luna Rossa Carbon": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Erba Pura": {
+              "score": 4.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             },
             "XJ 1861 Naxos": {
-              "score": 2.55,
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             },
             "Green Irish Tweed": {
-              "score": 2.55,
+              "score": 4.0,
               "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Stronger With You": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Invictus": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Rosalia": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Accento Overdose": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Silver Mountain Water": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
               "mismatches": []
             }
@@ -180,14 +180,14 @@
         },
         "keeping": [],
         "dropped": {},
-        "context_chars": 12562,
-        "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 306 جنيه في الإجمالي (900 مقابل 594)، بس سعر الملي أرخص: 10.0 بدل 11.9 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (856 مقابل 623)، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 433 جنيه في الإجمالي (1083 مقابل 650)، بس سعر الملي أرخص: 12.0 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 2300 جنيه في الإجمالي (5200 مقابل 2900)، بس سعر الملي أرخص: 57.8 بدل 58.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Rosalia\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 575.00 EGP\n- الـ 90 ملي: 1030.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 455 جنيه في الإجمالي (1030 مقابل 575)، بس سعر الملي أرخص: 11.4 بدل 11.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Daily\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lychee, Pink Pepper, Bergamot\nMiddle Notes: Turkish Rose, Peony, Jasmine\nBase Notes: White Musk, Cedarwood\nDescription: A romantic bouquet centered on Turkish rose, brightened with juicy lychee and softened with delicate peony. Perfect for daytime wear when you want to feel effortlessly elegant.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 2200 جنيه في الإجمالي (5000 مقابل 2800)، بس سعر الملي أرخص: 55.6 بدل 56.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n",
+        "context_chars": 13340,
+        "context": "\nName (الاسم الصحيح): Noirvel\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 562.00 EGP\n- الـ 90 ملي: 1085.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Pink Grapefruit\nMiddle Notes: Iris, White Musk, Violet\nBase Notes: Sandalwood, Ambroxan, Musk\nDescription: A soft, skin-like musk fragrance that feels like a second skin. Clean citrus opens the scent before a powdery iris heart takes over, finishing on a smooth, addictive musky base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (856 مقابل 623)، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 326.00 EGP\n- زجاجة أوريجينال 100 ملي: 565.00 EGP\n- زجاجة أوريجينال 150 ملي: 1016.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 370 جنيه في الإجمالي (1015 مقابل 645)، بس سعر الملي أرخص: 11.3 بدل 12.9 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 377 جنيه في الإجمالي (1046 مقابل 669)، بس سعر الملي أرخص: 11.6 بدل 13.4 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP\n- الـ 90 ملي: 950.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 250 جنيه في الإجمالي (950 مقابل 700)، بس سعر الملي أرخص: 10.6 بدل 14.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2700.00 EGP\n- الـ 90 ملي: 4900.00 EGP\n- زجاجة أوريجينال 50 ملي: 20000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 36000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: A juicy citrus-fruit oriental with a creamy vanilla-musk base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 2300 جنيه في الإجمالي (5200 مقابل 2900)، بس سعر الملي أرخص: 57.8 بدل 58.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n",
         "findings": []
       },
       {
         "n": 2,
-        "user": "راجل",
-        "reply": "Dior Homme Intense هو الأنسب لطلبك بالذات، لأنه ثابت وفوحانه متوسط مش خانق، أما Jasmino خرج من الاختيار لأنه مش من نفس النوع اللي طلبته.",
+        "user": "رجالي",
+        "reply": "أنا أرشحلك Noirvel أكتر لأنه ثابت وفريش ونضيف، وكمان عطر تركيب حصري من تصميمنا مش موجود عند حد تاني.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -195,18 +195,18 @@
           "gender": "male",
           "perfume_type": null,
           "season": null,
-          "occasion": null,
+          "occasion": "gym",
           "max_price": null,
           "longevity": "long-lasting",
-          "projection": "moderate",
+          "projection": null,
           "exclude_names": [],
-          "notes": [],
+          "notes": [
+            "fresh"
+          ],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
+          "avoid_traits": [],
           "wants_uncommon": false
         },
         "merged_intent": {
@@ -214,314 +214,164 @@
           "gender": "male",
           "perfume_type": null,
           "season": null,
-          "occasion": null,
+          "occasion": "gym",
           "max_price": null,
           "longevity": "long-lasting",
-          "projection": "moderate",
+          "projection": null,
           "exclude_names": [],
-          "notes": [],
+          "notes": [
+            "fresh"
+          ],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
+          "avoid_traits": [],
           "wants_uncommon": false
         },
         "stage": "recommendation",
         "search": {
           "matched": [
-            "Dior Homme Intense",
-            "Y Eau de Parfum",
             "Le Male",
+            "Dior Sauvage",
+            "Bleu de Chanel",
+            "Eros",
+            "Dark Aura",
+            "Luna Rossa Carbon",
             "Green Irish Tweed",
             "Stronger With You",
+            "Dior Homme Sport",
+            "Acqua di Gio",
             "Invictus",
-            "XJ 1861 Naxos",
-            "Accento Overdose",
-            "Silver Mountain Water",
-            "Stronger With You Intensely",
-            "Stronger With You Absolutely",
-            "Afnan 9PM"
+            "Noirvel"
           ],
           "alternatives": [],
           "similarity": null,
           "reasons": {
-            "Dior Homme Intense": {
-              "score": 8.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه",
-                "العميل بيتكلم عنه بالفعل"
-              ],
-              "mismatches": []
-            },
-            "Y Eau de Parfum": {
-              "score": 5.55,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
             "Le Male": {
-              "score": 5.55,
+              "score": 9.5,
               "reasons": [
-                "خفيف ومش خانق",
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
                 "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Green Irish Tweed": {
-              "score": 5.55,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Stronger With You": {
-              "score": 5.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Invictus": {
-              "score": 5.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "XJ 1861 Naxos": {
-              "score": 2.55,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Accento Overdose": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Silver Mountain Water": {
-              "score": 2.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": []
-            },
-            "Stronger With You Intensely": {
-              "score": 1.8,
-              "reasons": [
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
-            },
-            "Stronger With You Absolutely": {
-              "score": 1.8,
-              "reasons": [
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
-            },
-            "Afnan 9PM": {
-              "score": 1.8,
-              "reasons": [
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
-              ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
-            }
-          }
-        },
-        "keeping": [
-          "Dior Homme Intense"
-        ],
-        "dropped": {
-          "Jasmino": "مش من نفس النوع اللي طلبه"
-        },
-        "context_chars": 11640,
-        "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nGender: male\nPerfume Type: عطور غربية\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n-----------------------\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 306 جنيه في الإجمالي (900 مقابل 594)، بس سعر الملي أرخص: 10.0 بدل 11.9 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (856 مقابل 623)، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 2300 جنيه في الإجمالي (5200 مقابل 2900)، بس سعر الملي أرخص: 57.8 بدل 58.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 2200 جنيه في الإجمالي (5000 مقابل 2800)، بس سعر الملي أرخص: 55.6 بدل 56.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 330 جنيه في الإجمالي (780 مقابل 450)، بس سعر الملي أرخص: 8.7 بدل 9.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n",
-        "findings": []
-      },
-      {
-        "n": 3,
-        "user": "بكام دول",
-        "reply": "الـ 90 ملي من Dior Homme Intense بـ 1300 جنيه، وده الحجم اللي بنرشحه لأنه أوفر مع ثباته وفوحانه. وفيه كمان الـ 50 ملي بـ 550 جنيه، وزجاجات أوريجينال 100 و200 ملي بأسعار أعلى لو حابب. تحب أساعدك تطلب؟",
-        "classification": "product_info",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "purchase_intent",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 731,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n",
-        "findings": []
-      },
-      {
-        "n": 4,
-        "user": "انا محتار بينهم ساعدني اختار",
-        "reply": "فاهم إنك محتار بين Dior Homme Intense والحاجات التانية. عشان أساعدك أختار، تحب الريحة تكون أخف تناسب الاستخدام اليومي ولا أقوى للمناسبات والسهرات؟",
-        "classification": "recommendation",
-        "objection": {
-          "kind": "cant_choose",
-          "matched": [
-            "محتار"
-          ],
-          "past_purchase": false
-        },
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "objection",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 680,
-        "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n",
-        "findings": []
-      },
-      {
-        "n": 5,
-        "user": "حاجه خفيفه لكل الاوقات",
-        "reply": "أنا أرشحلك Dior Homme Intense أكتر لأنه ثابت وفوحانه متوسط مناسب لكل الأوقات، وريحته ناعمة ومتوازنة مش تقيلة أو خانقة.",
-        "classification": "recommendation",
-        "objection": null,
-        "raw_intent": {
-          "brand": "Dior",
-          "gender": "male",
-          "perfume_type": null,
-          "season": null,
-          "occasion": "all",
-          "max_price": null,
-          "longevity": "long-lasting",
-          "projection": "moderate",
-          "exclude_names": [
-            "Jasmino"
-          ],
-          "notes": [],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
-          "wants_uncommon": false
-        },
-        "merged_intent": {
-          "brand": "Dior",
-          "gender": "male",
-          "perfume_type": null,
-          "season": null,
-          "occasion": "all",
-          "max_price": null,
-          "longevity": "long-lasting",
-          "projection": "moderate",
-          "exclude_names": [
-            "Jasmino"
-          ],
-          "notes": [],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [
-            "suffocating"
-          ],
-          "wants_uncommon": false
-        },
-        "stage": "recommendation",
-        "search": {
-          "matched": [
-            "Dior Homme Intense",
-            "Dior Sauvage",
-            "Fahrenheit",
-            "Dior Homme Sport"
-          ],
-          "alternatives": [],
-          "similarity": null,
-          "reasons": {
-            "Dior Homme Intense": {
-              "score": 8.05,
-              "reasons": [
-                "خفيف ومش خانق",
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه",
                 "العميل بيتكلم عنه بالفعل"
               ],
               "mismatches": []
             },
             "Dior Sauvage": {
-              "score": 1.8,
+              "score": 7.0,
               "reasons": [
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
+              "mismatches": []
             },
-            "Fahrenheit": {
-              "score": 1.8,
+            "Bleu de Chanel": {
+              "score": 7.0,
               "reasons": [
-                "ثباته بيطابق طلبه",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
               ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
+              "mismatches": []
+            },
+            "Eros": {
+              "score": 7.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 7.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Luna Rossa Carbon": {
+              "score": 7.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Green Irish Tweed": {
+              "score": 7.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You": {
+              "score": 6.5,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية"
+              ],
+              "mismatches": []
             },
             "Dior Homme Sport": {
-              "score": 1.3,
+              "score": 6.5,
               "reasons": [
-                "ثباته أقل من اللي طلبه شوية",
-                "فوحانه بيطابق طلبه"
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية"
               ],
-              "mismatches": [
-                "ممكن يكون تقيل على العميل"
-              ]
+              "mismatches": []
+            },
+            "Acqua di Gio": {
+              "score": 6.5,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية"
+              ],
+              "mismatches": []
+            },
+            "Invictus": {
+              "score": 6.5,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية"
+              ],
+              "mismatches": []
+            },
+            "Noirvel": {
+              "score": 6.5,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه",
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
             }
           }
         },
         "keeping": [
-          "Dior Homme Intense"
+          "Le Male",
+          "Noirvel"
         ],
         "dropped": {},
-        "context_chars": 3472,
-        "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nGender: male\nPerfume Type: عطور غربية\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n-----------------------\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Fahrenheit\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 900.00 EGP\n- الـ 90 ملي: 1200.00 EGP\n- زجاجة أوريجينال 100 ملي: 5000.00 EGP\n- زجاجة أوريجينال 200 ملي: 9000.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (1200 مقابل 900)، بس سعر الملي أرخص: 13.3 بدل 18.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Nutmeg Flower, Lavender, Mandarin Orange, Bergamot, Lemon\nMiddle Notes: Violet Leaf, Sandalwood, Carnation, Jasmine\nBase Notes: Leather, Vetiver, Musk, Amber, Patchouli, Tonka Bean\nDescription: An iconic aromatic fougere famous for its bold leather and violet dry-down.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n✅ ليه مناسب: ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n",
+        "context_chars": 11731,
+        "context": "\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nGender: male\nPerfume Type: عطور غربية\nDescription: A classic aromatic fougere with a sweet vanilla signature\n-----------------------\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 326.00 EGP\n- زجاجة أوريجينال 100 ملي: 565.00 EGP\n- زجاجة أوريجينال 150 ملي: 1016.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 370 جنيه في الإجمالي (1015 مقابل 645)، بس سعر الملي أرخص: 11.3 بدل 12.9 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP\n- الـ 90 ملي: 950.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 250 جنيه في الإجمالي (950 مقابل 700)، بس سعر الملي أرخص: 10.6 بدل 14.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP\n- الـ 90 ملي: 1032.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Noirvel\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 562.00 EGP\n- الـ 90 ملي: 1085.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nGender: unisex\nPerfume Type: عطور غربية\nDescription: A soft, skin-like musk fragrance that feels like a second skin. Clean citrus opens the scent before a powdery iris heart takes over, finishing on a smooth, addictive musky base.\n-----------------------\n",
         "findings": []
       },
       {
-        "n": 6,
-        "user": "بكام دول طب",
-        "reply": "الـ 90 ملي من Dior Homme Intense بـ 1300 جنيه، وده الحجم اللي بنرشحه لأنه أوفر مع ثباته وفوحانه المعتدل. وفيه كمان الـ 50 ملي بـ 550 جنيه، وزجاجات أوريجينال 100 و200 ملي بأسعار مختلفة لو حابب. تحب أساعدك في الطلب؟",
+        "n": 3,
+        "user": "بكام ده",
+        "reply": "ريحتي Noirvel الـ50 ملي تجنن بسعر 562 جنيه، وفيه كمان الـ90 ملي بسعر 1085 جنيه. تحب أجهزلك أي حجم منهم؟",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -530,15 +380,433 @@
         "search": null,
         "keeping": null,
         "dropped": null,
-        "context_chars": 731,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n",
+        "context_chars": 1059,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Noirvel\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 562.00 EGP\n- الـ 90 ملي: 1085.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Pink Grapefruit\nMiddle Notes: Iris, White Musk, Violet\nBase Notes: Sandalwood, Ambroxan, Musk\nDescription: A soft, skin-like musk fragrance that feels like a second skin. Clean citrus opens the scent before a powdery iris heart takes over, finishing on a smooth, addictive musky base.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 4,
+        "user": "في اي تاني طيب يكون 90 ملي في حدود 900 جنيه",
+        "reply": "الـ90 ملي في حدود 900 جنيه متوفر عندنا Vanilo بسعر 897 جنيه، وهو عطر تركيب حصري نضيف وثابت، مناسب للطلب بتاعك. \n\nولو تحب، فيه كمان أحجام 50 ملي بأسعار أقل زي Dark Aura بـ680 جنيه، Marino بـ649 جنيه، Leatherio بـ513 جنيه، وAmbero بـ601 جنيه، كلها مناسبة للميزانية.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": "STORE_BRAND_EXCLUSIVE",
+          "gender": "male",
+          "max_price": 900,
+          "exclude_names": [
+            "Noirvel"
+          ]
+        },
+        "merged_intent": {
+          "brand": "STORE_BRAND_EXCLUSIVE",
+          "gender": "male",
+          "max_price": 900,
+          "exclude_names": [
+            "Noirvel"
+          ],
+          "occasion": "gym",
+          "notes": [
+            "fresh"
+          ],
+          "longevity": "long-lasting"
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Dark Aura",
+            "Marino",
+            "Leatherio",
+            "Ambero",
+            "Safrano",
+            "Vanilo"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Dark Aura": {
+              "score": 8.5,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Marino": {
+              "score": 8.0,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية"
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 7.5,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            },
+            "Ambero": {
+              "score": 7.5,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            },
+            "Safrano": {
+              "score": 7.5,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": []
+            },
+            "Vanilo": {
+              "score": 4.5,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {
+          "Noirvel": null
+        },
+        "context_chars": 7297,
+        "context": "\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1151.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1093.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1180.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 897.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 290 جنيه في الإجمالي (897 مقابل 607)، بس سعر الملي أرخص: 10.0 بدل 12.1 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n",
+        "findings": []
+      },
+      {
+        "n": 5,
+        "user": "دول ينفعو للجيم ؟",
+        "reply": "لو عايز عطر رجالي ثابت وفريش للجم وفي حدود 900 جنيه، أرشحلك Vanilo الـ90 ملي بسعر 897 جنيه، لأنه مناسب للطلب ده وكمان قيمة كويسة بالنسبة للسعر. \n\nكمان ممكن تختار Marino أو Dark Aura أو Leatherio أو Ambero بالـ50 ملي، كلها داخل الميزانية وثابتة وفريش، بس الـ90 ملي أغلى من 900 جنيه. \n\nل",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": "STORE_BRAND_EXCLUSIVE",
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": "gym",
+          "max_price": 900.0,
+          "longevity": "long-lasting",
+          "projection": null,
+          "exclude_names": [
+            "Noirvel",
+            "Le Male"
+          ],
+          "notes": [
+            "fresh"
+          ],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "merged_intent": {
+          "brand": "STORE_BRAND_EXCLUSIVE",
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": "gym",
+          "max_price": 900.0,
+          "longevity": "long-lasting",
+          "projection": null,
+          "exclude_names": [
+            "Noirvel",
+            "Le Male"
+          ],
+          "notes": [
+            "fresh"
+          ],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Dark Aura",
+            "Marino",
+            "Leatherio",
+            "Ambero",
+            "Safrano",
+            "Vanilo"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Dark Aura": {
+              "score": 12.2,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته بيطابق طلبه",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Marino": {
+              "score": 11.7,
+              "reasons": [
+                "فيه fresh",
+                "مناسب للمناسبة اللي قالها",
+                "ثباته أقل من اللي طلبه شوية",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 11.2,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            },
+            "Ambero": {
+              "score": 11.2,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            },
+            "Safrano": {
+              "score": 8.7,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Vanilo": {
+              "score": 8.2,
+              "reasons": [
+                "فيه fresh",
+                "ثباته بيطابق طلبه",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مناسبته المسجلة Evening، مش اللي قاله"
+              ]
+            }
+          }
+        },
+        "keeping": [
+          "Ambero",
+          "Dark Aura",
+          "Leatherio",
+          "Marino",
+          "Vanilo"
+        ],
+        "dropped": {
+          "Noirvel": null
+        },
+        "context_chars": 7690,
+        "context": "\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1151.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1093.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1180.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 897.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 290 جنيه في الإجمالي (897 مقابل 607)، بس سعر الملي أرخص: 10.0 بدل 12.1 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله\n",
+        "findings": []
+      },
+      {
+        "n": 6,
+        "user": "قولي النوتات",
+        "reply": "Vanilo فيه نوتات عليا من الهيل وقشر البرتقال، ونوتات وسط فيها الفول التونكا والبرالين والقرفة، وقاعدته من الفانيليا والتبغ والعنبر. ريحته دافية وفيها لمسة مدخنة، مناسبة جداً للشتا والسهرات.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 6119,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP\n- الـ 90 ملي: 897.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 290 جنيه في الإجمالي (897 مقابل 607)، بس سعر الملي أرخص: 10.0 بدل 12.1 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP\n- الـ 90 ملي: 1093.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 444 جنيه في الإجمالي (1093 مقابل 649)، بس سعر الملي أرخص: 12.1 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP\n- الـ 90 ملي: 1075.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP\n- الـ 90 ملي: 1180.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n",
         "findings": []
       },
       {
         "n": 7,
-        "user": "انا معايا 800 جنيه",
-        "reply": "لو ميزانيتك 800 جنيه، ممكن تختار حجم الـ50 ملي من Dior Homme Intense بـ 550 جنيه، وده مناسب للاستخدام اليومي وخفيف.",
-        "classification": "faq",
+        "user": "والتاني ؟",
+        "reply": "Dark Aura رجالي، عطر شرقي نضيف وفواح، فيه نوتات عليا من الفلفل الأسود والبرغموت والهيل، ونوتات وسط من الجلد والتبغ والشوكولاتة الداكنة، وقاعدته من العود والعنبر والفانيليا والباتشولي. تحبه للنهار ولا للسهرات؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 4813,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP\n- الـ 90 ملي: 1093.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 444 جنيه في الإجمالي (1093 مقابل 649)، بس سعر الملي أرخص: 12.1 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP\n- الـ 90 ملي: 1075.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP\n- الـ 90 ملي: 1180.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 8,
+        "user": "انهي فيهم مسكر اكتر ؟",
+        "reply": "لو بتحب العطور الدافية اللي فيها لمسة حلوة من التبغ والعنبر مع ريحة حلوة من الفانيليا والتوابل، Vanilo هيكون مناسب ليك، لأنه ريحته مريحة وهادي أكتر للسهرات والشتا. أما لو بتحب العطور القوية والفواحة اللي فيها نفحات جلد وعود وفانيليا مع توابل واضحة وفوحان أقوى، Dark Aura هيكون اختيار أفضل، لأنه مناسب للاستخدام اليومي والمناسبات وكمان فوحانه قوي. \n\nبتستخدم العطر أكتر بالنهار ولا بالليل؟",
+        "classification": "comparison",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "comparison",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 1809,
+        "context": "\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nGender: unisex\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 9,
+        "user": "قولتلي بكام",
+        "reply": "Vanilo الـ90 ملي بـ897 جنيه، وهو أفضل قيمة لأن الكمية أكبر بـ80% وسعر الملي أرخص. وفيه كمان حجم 50 ملي بـ607 جنيه.\n\nDark Aura الـ90 ملي بـ1151 جنيه، وفيه كمان حجم 50 ملي بـ680 جنيه.\n\nتحب أساعدك تختار الحجم المناسب؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "purchase_intent",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 6119,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP\n- الـ 90 ملي: 897.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 290 جنيه في الإجمالي (897 مقابل 607)، بس سعر الملي أرخص: 10.0 بدل 12.1 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP\n- الـ 90 ملي: 1075.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP\n- الـ 90 ملي: 1180.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP\n- الـ 90 ملي: 1093.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 444 جنيه في الإجمالي (1093 مقابل 649)، بس سعر الملي أرخص: 12.1 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 10,
+        "user": "ماشي هات 90 ملي من اول واحد ده",
+        "reply": "تمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 0,
+        "context": "",
+        "findings": []
+      },
+      {
+        "n": 11,
+        "user": "محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Vanilo (90ml) - زجاجة البراند (السعر: 897.00 جنيه)\n\n💰 الإجمالي: 897.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 48,
+        "context": "Vanilo (90 ملي) (زجاجة البراند) x 1 (897.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 12,
+        "user": "مش عايز 1 × Noirvel (90ml)",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Vanilo (90ml) - زجاجة البراند (السعر: 897.00 جنيه)\n\n💰 الإجمالي: 897.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 48,
+        "context": "Vanilo (90 ملي) (زجاجة البراند) x 1 (897.00 EGP)",
+        "findings": [
+          [
+            "invented_number",
+            "critical",
+            "'01051089101' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+          ],
+          [
+            "invented_number",
+            "critical",
+            "'01153032052' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+          ]
+        ]
+      },
+      {
+        "n": 13,
+        "user": "عايز Le Male (90ml)",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Vanilo (90ml) - زجاجة البراند (السعر: 897.00 جنيه)\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 1753.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 99,
+        "context": "Vanilo (90 ملي) (زجاجة البراند) x 1 (897.00 EGP), Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+        "findings": [
+          [
+            "invented_number",
+            "critical",
+            "'01051089101' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+          ],
+          [
+            "invented_number",
+            "critical",
+            "'01153032052' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+          ]
+        ]
+      },
+      {
+        "n": 14,
+        "user": "محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n- 1 × Vanilo (90ml) - زجاجة البراند (السعر: 897.00 جنيه)\n\n💰 الإجمالي: 1753.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 99,
+        "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP), Vanilo (90 ملي) (زجاجة البراند) x 1 (897.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 15,
+        "user": "تمام",
+        "reply": "تمام يا فندم، لو حابب أساعدك في اختيار حجم معين من العطور المتوفرة عندنا زي Stronger With You أو Dior Homme Sport؟ ممكن تختار الحجم اللي يناسبك سواء 50 أو 90 ملي، وكمان متاح عندنا زجاجات أوريجينال بأحجام أكبر لو مهتم.",
+        "classification": "order",
         "objection": null,
         "raw_intent": null,
         "merged_intent": null,
@@ -552,29 +820,50 @@
           [
             "named_product_without_data",
             "high",
-            "named 'Dior Homme Intense' on a turn where no product data was injected"
+            "named 'Stronger With You' on a turn where no product data was injected"
           ]
         ]
       }
     ],
     "findings": [
       [
+        "invented_number",
+        "critical",
+        "'01051089101' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+      ],
+      [
+        "invented_number",
+        "critical",
+        "'01153032052' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+      ],
+      [
+        "invented_number",
+        "critical",
+        "'01051089101' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+      ],
+      [
+        "invented_number",
+        "critical",
+        "'01153032052' appears in the reply but is not a catalogue price, volume, store fact, or anything in the injected context"
+      ],
+      [
         "named_product_without_data",
         "high",
-        "named 'Dior Homme Intense' on a turn where no product data was injected"
+        "named 'Stronger With You' on a turn where no product data was injected"
       ]
     ],
     "error": null,
     "final_preferences": {
       "gender": "male",
-      "brand": "Dior",
-      "occasion": "all",
+      "max_price": 900.0,
+      "brand": "STORE_BRAND_EXCLUSIVE",
+      "occasion": "gym",
+      "notes": [
+        "fresh"
+      ],
       "longevity": "long-lasting",
-      "projection": "moderate",
-      "avoid_traits": [
-        "suffocating"
-      ]
+      "wants_uncommon": true
     },
-    "seconds": 30.6
+    "seconds": 100.5
   }
 ]

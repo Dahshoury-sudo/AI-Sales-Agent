@@ -15,6 +15,7 @@ from .reply_sanitizer import soften_marketing_language, strip_premature_closing
 from .sales import constraints as sales_constraints
 from .sales import described as sales_described
 from .sales import gender as sales_gender
+from .sales import naming as sales_naming
 from .sales import objection as sales_objection
 from .sales import stage as sales_stage
 from products.models import Order
@@ -602,8 +603,26 @@ def route(message, history=None, store=None, conversation=None):
             # stock, so cancelling it is just dropping the cart. Only a confirmed
             # order needs its stock returned.
             cart = getattr(conversation, "cart", None)
+
+            # Removing one line of several is an *edit*, not a cancellation. handle_order's
+            # extractor already does this correctly — rule 5 drops the named perfume and
+            # keeps the rest — but the message never reached it: "مش عايز" was a listed
+            # example of order_cancel, so "مش عايز 1 × Noirvel (90ml)" wiped a two-item cart
+            # along with the customer's name, phone and address, and they retyped everything
+            # to order the one perfume they had wanted all along.
+            #
+            # Enforced here rather than left to the classifier because a dropped prompt rule
+            # on this branch destroys a sale. Gated on more than one item: naming the only
+            # item in the cart genuinely is a cancellation, and the extractor's `cart_cleared`
+            # flag already covers that.
+            if cart and cart.items.count() > 1:
+                items = list(cart.items.select_related("variant__product"))
+                in_cart = [item.variant.product for item in items]
+                if sales_naming.mentioned_in(message, in_cart):
+                    return handle_order(message, history, store, conversation)
+
             if cart and cart.items.exists():
-                clear_cart(conversation)
+                clear_cart(conversation, keep_details=True)
                 return "تم إلغاء الطلب اللي كنا بنجهزه يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
 
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()

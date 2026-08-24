@@ -1,5 +1,6 @@
 import json
 import logging
+from decimal import Decimal, InvalidOperation
 from django.db import transaction
 from django.db.models import F, Q
 from products.models import Cart, CartItem, Order, OrderItem, Product, ProductVariant
@@ -17,9 +18,38 @@ def get_cart(conversation):
     return cart
 
 
-def clear_cart(conversation):
-    """Drop the in-progress cart. No stock to restore — none was ever taken."""
+def clear_cart(conversation, keep_details=False):
+    """Empty the in-progress cart. No stock to restore — none was ever taken.
+
+    `keep_details=True` carries the customer's name, phone and address into a fresh cart. A
+    cancellation used to delete the row outright, so a customer who cancelled one thing and
+    re-ordered had to retype every contact detail they had just given — which is exactly what
+    happened when "مش عايز 1 × Noirvel (90ml)" was read as cancelling the whole order.
+
+    Deliberately delete-and-recreate rather than emptying the row in place. `_summary_was_shown`
+    scopes its check to `created_at__gte=cart.created_at`, so a surviving row keeps its old
+    timestamp and a summary sent *before* the cancellation would still authorise a confirmation
+    *after* it — creating an order the customer was never shown a total for. Recreating advances
+    `created_at`, so that guard stays honest while the details survive.
+
+    `create_order_in_db` keeps the default: once a cart has become an Order, the next order in
+    the conversation starts genuinely empty.
+    """
+    carried = None
+    if keep_details:
+        cart = Cart.objects.filter(conversation=conversation).first()
+        if cart:
+            carried = {
+                "customer_name": cart.customer_name,
+                "customer_phone": cart.customer_phone,
+                "secondary_phone": cart.secondary_phone,
+                "shipping_address": cart.shipping_address,
+            }
+
     Cart.objects.filter(conversation=conversation).delete()
+
+    if carried and any(carried.values()):
+        Cart.objects.create(conversation=conversation, **carried)
 
 
 # The total line of the order summary generated below. Its presence in the thread is
@@ -147,6 +177,45 @@ def _payment_instructions(store):
 
 
 
+def _over_budget_warning(conversation, items_to_create):
+    """Flag any line priced above the budget the customer stated earlier.
+
+    The order flow never consulted `conversation.preferences`, so a 1085 line was assembled in
+    silence against a stated 900 — and the only thing that caught it was the customer reading
+    the summary. Computed rather than left to the model, for the same reason
+    recommendation._in_budget_note is: whether a line exceeds a number is arithmetic.
+
+    Phrased as a question rather than a refusal. The customer may well want it, and the summary
+    is already the moment they are being asked to check.
+    """
+    try:
+        budget = conversation.preferences.get("max_price") if conversation else None
+    except Exception:
+        budget = None
+    if not budget:
+        return ""
+
+    try:
+        budget = Decimal(str(budget))
+    except (InvalidOperation, TypeError, ValueError):
+        return ""
+
+    over = [
+        f"{item['variant'].product.name} ({item['variant'].volume} ملي) بـ {item['price']:.0f}"
+        for item in items_to_create
+        if item["price"] > budget
+    ]
+    if not over:
+        return ""
+
+    return (
+        "\n⚠️ للعلم: "
+        + "، ".join(over)
+        + f" — أعلى من الميزانية اللي قلتها ({int(budget)} جنيه). "
+        "لو مش مقصود، قولي وأشيله.\n"
+    )
+
+
 def _save_cart_details(cart, name, phone, secondary_phone, address):
     """Persist whichever customer details are known so far.
 
@@ -244,6 +313,13 @@ Rules:
    - Customer removes a perfume → the saved items WITHOUT it.
    - Customer says nothing about products (just "تمام", or gives their phone/address) → return the saved items UNCHANGED.
    - Saved cart is empty and no perfume named yet → return [].
+   🔴 POSITIONAL REFERENCE: "اول واحد" / "الأول" means the FIRST perfume you named in your
+     previous reply; "التاني" the second; "الأخير" the last. One ordinal means exactly ONE
+     perfume — return that one only. "هات 90 ملي من اول واحد ده" put BOTH perfumes from the
+     previous reply in the cart, including one 185 جنيه over the customer's stated budget.
+   🔴 A leading "ماشي" / "تمام" / "اوك" followed by a specific request is a REQUEST, not a
+     blanket yes to everything on the table. "ماشي هات كذا" = they want كذا. Do not read it as
+     accepting every perfume you had just listed.
    🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message.
    For each product extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل).
    CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
