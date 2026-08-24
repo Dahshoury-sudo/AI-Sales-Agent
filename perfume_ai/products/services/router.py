@@ -13,6 +13,7 @@ from .identification_service import identify_perfume
 from .objection_service import handle_objection
 from .reply_sanitizer import soften_marketing_language, strip_premature_closing
 from .sales import constraints as sales_constraints
+from .sales import described as sales_described
 from .sales import gender as sales_gender
 from .sales import objection as sales_objection
 from .sales import stage as sales_stage
@@ -443,7 +444,11 @@ def route(message, history=None, store=None, conversation=None):
                         history, store
                     )
         
-        results = search_products(intent, store)
+        # What the conversation is already on, so ranking can hold those perfumes near the
+        # top instead of re-deriving a fresh shortlist every turn. Without it a customer who
+        # merely added a budget lost the perfume they had been converging on.
+        keep = sales_described.under_discussion(history, store)
+        results = search_products(intent, store, keep=keep)
         response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
 
         if _is_repetitive(response, history):

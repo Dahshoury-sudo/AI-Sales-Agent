@@ -153,7 +153,60 @@ def _obtainable_only(queryset):
     return queryset.exclude(id__in=unobtainable) if unobtainable else queryset
 
 
-def search_products(intent, store=None):
+def _drop_reason(product, intent, max_price):
+    """Why a perfume the conversation was on no longer qualifies.
+
+    Computed rather than hinted. The note used to tell the model to say why "(السعر مثلاً)",
+    and the model duly asserted price as the cause for a perfume dropped on *gender* — the
+    customer had said "راجل" and no budget existed yet. Offering an example invited a guess,
+    and a guess about why something was withdrawn is a trust failure, not a wording problem.
+
+    Every branch only claims what it can prove. An earlier version returned a price reason
+    whenever a budget existed at all, including a fallback that fired when the perfume *was*
+    affordable — so a perfume excluded on season was reported as "مفيش منه حجم داخل ميزانيته"
+    while its 50ml sat at 550 against an 800 budget. Reproducing the original bug one layer
+    down is easy here; the guard is that each check verifies its own cause.
+
+    Ordered to match how the filters are applied: the `base` criteria first, since those are
+    what removed the product from the candidate pool, then budget, which lives on `exact`.
+
+    Returns a short Arabic phrase, or None when the cause is not one we can name — in which
+    case the caller says the perfume dropped without inventing a reason for it.
+    """
+    gender = (intent.get("gender") or "").lower()
+    if gender and product.gender not in (gender, "unisex"):
+        return "مش من نفس النوع اللي طلبه"
+
+    perfume_type = (intent.get("perfume_type") or "").lower()
+    if perfume_type and (product.perfume_type or "").lower() != perfume_type:
+        return "مش من الفئة اللي طلبها"
+
+    season = intent.get("season")
+    if season and not _text_season_hit(product.season, season):
+        return "مش لنفس الموسم اللي قاله"
+
+    brand = intent.get("brand")
+    if brand and brand != "STORE_BRAND_EXCLUSIVE":
+        if brand.lower() not in (product.brand.name or "").lower():
+            return "مش من البراند اللي طلبه"
+
+    # Budget last, and only when it is demonstrably the blocker.
+    if max_price:
+        cheapest = min(
+            (variant.price for variant in product.variants.all()), default=None
+        )
+        if cheapest is not None and cheapest > max_price:
+            return f"أرخص حجم فيه {cheapest:.0f} جنيه، فوق ميزانيته"
+
+    return None
+
+
+def _text_season_hit(recorded, wanted):
+    lowered = (recorded or "").lower()
+    return "all season" in lowered or str(wanted).strip().lower() in lowered
+
+
+def search_products(intent, store=None, keep=()):
     queryset = Product.objects.filter(is_active=True).prefetch_related('variants')
     if store:
         queryset = queryset.filter(store=store)
@@ -214,15 +267,49 @@ def search_products(intent, store=None):
     if max_price:
         exact = exact.filter(variants__price__lte=max_price).distinct()
 
+    # Split what the conversation is on into what still qualifies and what a new constraint
+    # has just ruled out. The second half matters as much as the first: a perfume vanishing
+    # without comment is what made conversation 997 read as random, while saying "Green Irish
+    # Tweed خرج من الميزانية" is a useful answer.
+    #
+    # Budget is applied here rather than taken from `base`, because the price filter lives on
+    # `exact` — so splitting on `base` alone reported nothing as dropped on exactly the turn
+    # that motivated this (the customer said "معايا 800" while Green Irish Tweed was in the
+    # conversation at 3300). Notes are deliberately NOT applied: those narrow the search, and
+    # a perfume the customer is discussing should not be evicted because a requested accord
+    # happens to be absent from it.
+    keep = frozenset(keep or ())
+    if keep:
+        qualifying = base.filter(name__in=keep)
+        if max_price:
+            qualifying = qualifying.filter(variants__price__lte=max_price).distinct()
+        surviving = frozenset(qualifying.values_list("name", flat=True))
+    else:
+        surviving = frozenset()
+    # Named with the real cause, product by product. A dropped perfume the customer was
+    # discussing is a withdrawal, and a withdrawal needs a true explanation.
+    lost = keep - surviving
+    dropped = {}
+    if lost:
+        for product in Product.objects.filter(
+            store=store, name__in=lost
+        ).prefetch_related("variants").select_related("brand") if store else ():
+            dropped[product.name] = _drop_reason(product, intent, max_price)
+        for name in lost:
+            dropped.setdefault(name, None)
+
     # No ranking signal means nothing can discriminate between candidates, so the legacy
     # ordering is used untouched. This is what keeps the existing shortlist tests honest
     # rather than shuffling an all-equal list through a scorer.
-    if not ranking.has_signal(intent, reference):
+    if not ranking.has_signal(intent, reference) and not keep:
+        report = {"keeping": sorted(surviving), "dropped": dropped}
         if exact.exists():
-            return {"products": _shortlist(exact), "alternatives": None, "similarity": None}
+            return {"products": _shortlist(exact), "alternatives": None,
+                    "similarity": None, **report}
         if base.exists():
-            return {"products": base.none(), "alternatives": _shortlist(base), "similarity": None}
-        return {"products": base.none(), "alternatives": None, "similarity": None}
+            return {"products": base.none(), "alternatives": _shortlist(base),
+                    "similarity": None, **report}
+        return {"products": base.none(), "alternatives": None, "similarity": None, **report}
 
     # The exact-versus-alternatives decision stays exactly what it was: did anything match
     # the literal criteria? Ranking only decides the *order* within whichever set wins.
@@ -232,10 +319,20 @@ def search_products(intent, store=None):
     matched = exact.exists()
     pool = exact if matched else base
     if not pool.exists():
-        return {"products": base.none(), "alternatives": None, "similarity": None}
+        return {"products": base.none(), "alternatives": None, "similarity": None,
+                "keeping": sorted(surviving), "dropped": dropped}
 
     candidates = list(_by_value(pool)[:MAX_CANDIDATES_TO_SCORE])
-    ranked = ranking.rank(candidates, intent, reference=reference)
+    if surviving:
+        # The cap is ordered cheapest-first, so an expensive perfume under discussion could
+        # fall outside it and never be scored at all — the continuity weight cannot lift a
+        # candidate the scorer never sees. Append any survivor the slice missed.
+        seen = {product.pk for product in candidates}
+        candidates += [
+            product for product in pool.filter(name__in=surviving)
+            if product.pk not in seen
+        ]
+    ranked = ranking.rank(candidates, intent, reference=reference, keep=surviving)
     top = ranked[:MAX_PRODUCTS_IN_CONTEXT]
     ordered = _ordered_by_ids(pool, [entry.product.id for entry in top])
 
@@ -245,6 +342,8 @@ def search_products(intent, store=None):
         "similarity": _similarity_summary(reference, ranked),
         # Keyed by product id so the renderer can attach each product's own reasons.
         "ranked": {entry.product.id: entry for entry in top},
+        "keeping": sorted(surviving),
+        "dropped": dropped,
     }
 
 

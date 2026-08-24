@@ -33,8 +33,12 @@ from eval_harness import checks  # noqa: E402
 # Replaying the transcript a customer complained about is the fastest way to tell whether a
 # fix actually landed — and running it twice matters, because extractor variance between runs
 # is what exposed two separate bugs in the conv_990 work that a single run had hidden.
-if os.environ.get("EVAL_SCENARIOS") == "conv990":
-    from eval_harness.scenarios_conv990 import SCENARIOS  # noqa: E402
+_REPLAYS = {"conv990": "scenarios_conv990", "conv997": "scenarios_conv997"}
+_replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
+if _replay:
+    SCENARIOS = __import__(
+        f"eval_harness.{_replay}", fromlist=["SCENARIOS"]
+    ).SCENARIOS
 else:
     from eval_harness.scenarios import SCENARIOS  # noqa: E402
 
@@ -80,8 +84,8 @@ def install_probes():
         _rec()["merged_intent"] = dict(result or {})
         return result
 
-    def search_products(intent, store=None):
-        result = original_search(intent, store)
+    def search_products(intent, store=None, keep=()):
+        result = original_search(intent, store, keep=keep)
         products = list(result.get("products") or [])
         alternatives = list(result.get("alternatives") or [])
         _rec()["search"] = {
@@ -98,6 +102,8 @@ def install_probes():
             },
         }
         _rec()["similarity"] = result.get("similarity")
+        _rec()["keeping"] = result.get("keeping")
+        _rec()["dropped"] = result.get("dropped")
         return result
 
     def recommend_probe(*args, **kwargs):
@@ -220,6 +226,8 @@ def run_scenario(scenario, truth):
                     "merged_intent": state.get("merged_intent"),
                     "stage": state.get("stage") or state.get("derived_stage"),
                     "search": state.get("search"),
+                    "keeping": state.get("keeping"),
+                    "dropped": state.get("dropped"),
                     "context_chars": len(context or ""),
                     "context": context,
                     "findings": [list(f) for f in turn_findings],

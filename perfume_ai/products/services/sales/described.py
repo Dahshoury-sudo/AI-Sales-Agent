@@ -122,3 +122,94 @@ def repeat_ban_hint(described, follow_up):
         "- ❌ ممنوع تعيد الترشيح من الأول ولا تسرد المواصفات ولا تفتح خيارات جديدة.\n"
         "- ✅ مسموح تضيف حاجة واحدة جديدة بس لو ردّه فعلاً غيّر الترشيح.\n"
     )
+
+
+def under_discussion(history, store, turns=2):
+    """Catalogue names the bot itself named in its last `turns` replies.
+
+    Narrower than `already_described`, and answering a different question. That one asks "has
+    the customer heard this before"; this asks "is this what we are talking about right now".
+
+    The failure it exists for (conversation 997): four different pairs of perfumes across
+    seven turns, eight in total, with the customer never once rejecting anything — they were
+    answering questions and adding constraints. On the last turn they said "معايا 800" and
+    Le Male, whose 50ml is 623 and which they had been converging on for two turns, was
+    dropped for a perfume they had never seen.
+
+    The cause is that `search_products` re-derives its shortlist from scratch every turn.
+    Le Male survived every hard filter and landed at rank 3 — and at rank 3 two persona rules
+    conflict with the data deciding which wins: "لو أبدى اهتمام بواحد — خليه الأساس" against
+    "المنتج اللي مش في البيانات = مش موجود عندنا" plus "اختر أفضل 1-2 منتج". Staying on the
+    perfume was not something the model could do, however firmly it was told to.
+
+    Two replies is the window: it covers the common shape of a recommendation followed by a
+    price question about the same perfumes, without pinning the conversation to perfumes the
+    customer has genuinely moved past. Assistant messages only — a perfume the *customer*
+    named is not one we put on the table.
+    """
+    if not history or store is None:
+        return frozenset()
+
+    recent = [
+        (entry.get("content") or "").lower()
+        for entry in history
+        if entry.get("role") == "assistant"
+    ][-turns:]
+    if not recent:
+        return frozenset()
+
+    blob = " ".join(recent)
+
+    from products.models import Product
+
+    names = Product.objects.filter(store=store).values_list("name", flat=True)
+    return frozenset(name for name in names if name and name.lower() in blob)
+
+
+def continuity_note(keeping, dropped, converge=False):
+    """Stay on what the conversation is already about, and account for what left it.
+
+    `dropped` names perfumes that *were* under discussion and no longer pass the customer's
+    constraints. Naming them is the point: a perfume vanishing without comment is what made
+    conversation 997 read as random, while "Le Male لسه داخل الـ800، بس Green Irish Tweed خرج
+    من الميزانية" is a genuinely useful answer.
+
+    `converge` comes from `is_follow_up`, so the two fixes compose — that one makes the reply
+    short, this one makes it about the right perfume. Without the converge clause the ranking
+    boost alone still leaves the model free to present a fresh pair every turn.
+    """
+    if not keeping and not dropped:
+        return ""
+
+    parts = []
+    if keeping:
+        parts.append(
+            "\n🎯 الكلام دلوقتي على: " + "، ".join(sorted(keeping)) + ".\n"
+            "- 🔴 كمّل عليهم. ❌ ممنوع تقلب على عطور جديدة والعميل لسه بيسأل عن دول — ده "
+            "بيحسسه إنك بتخبط.\n"
+            "- ✅ غيّر بس لو واحد منهم مطابقش شرط جديد قاله، وساعتها قول السبب.\n"
+        )
+    if converge and keeping:
+        parts.append(
+            "- 🔴 العميل بيرد على سؤال أنت سألته، فالجواب عطر **واحد** بالاسم من اللي فوق. "
+            "❌ ممنوع تعرض عليه اتنين تاني ولا تفتح خيارات جديدة — هو بيضيّق مش بيبدأ من الأول.\n"
+        )
+    if dropped:
+        # `dropped` maps name -> computed reason, or None when the cause cannot be named. It
+        # used to be a bare list, with this note suggesting "(السعر مثلاً)" as the reason to
+        # give — and the model asserted price for a perfume dropped on *gender*, with no budget
+        # anywhere in the conversation. Offering an example invited a guess, and a guess about
+        # why something was withdrawn is a trust failure, not a wording problem.
+        reasons = dropped if isinstance(dropped, dict) else {name: None for name in dropped}
+        lines = "\n".join(
+            f"- {name}: {reason}" if reason else f"- {name}"
+            for name, reason in sorted(reasons.items())
+        )
+        parts.append(
+            "\n⚠️ العطور دي كانت في الكلام وخرجت من شروطه دلوقتي:\n"
+            + lines
+            + "\n- 🔴 قول للعميل إنها خرجت، بالسبب المكتوب جنبها بالظبط، بدل ما تشيلها في "
+            "السكوت. ❌ ممنوع تخترع سبب تاني — ولو مفيش سبب مكتوب، قول إنها مش مناسبة "
+            "لطلبه وبس.\n"
+        )
+    return "".join(parts)

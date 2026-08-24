@@ -5472,3 +5472,243 @@ class FieldVocabularyTests(TestCase):
         ):
             with self.subTest(wanted=wanted, recorded=recorded):
                 self.assertTrue(self._entry({"occasion": wanted}, occasion=recorded).mismatches)
+
+
+class ConversationContinuityTests(TestCase):
+    """Conversation 997: four different pairs of perfumes across seven turns, eight in total,
+    with the customer never once rejecting anything.
+
+    The cause was that `search_products` re-derived its shortlist from scratch every turn. On
+    the turn the customer said "معايا 800", Le Male — whose 50ml is 623, and which they had
+    been converging on for two turns — survived every hard filter and sat at rank 3. The
+    prompt asks for the best 1-2, so it silently vanished, leaving two persona rules in
+    conflict with the data deciding which won: "لو أبدى اهتمام بواحد — خليه الأساس" against
+    "المنتج اللي مش في البيانات = مش موجود عندنا".
+    """
+
+    def setUp(self):
+        from products.services.sales import described
+
+        self.described = described
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.cheap = self._make("Le Male", price=623, longevity="7 hours")
+        self.rival = self._make("Dior Sauvage", price=400, longevity="8 hours")
+        self.pricey = self._make("Green Irish Tweed", price=3300, longevity="7 hours")
+
+    def _make(self, name, price, **fields):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+            projection="Moderate", **fields,
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _history(self, *replies):
+        return [
+            entry
+            for reply in replies
+            for entry in ({"role": "user", "content": "تمام"},
+                          {"role": "assistant", "content": reply})
+        ]
+
+    # ── what the conversation is on ──────────────────────────────────────
+    def test_perfumes_named_in_the_last_replies_are_under_discussion(self):
+        history = self._history("أرشحلك Le Male وGreen Irish Tweed.")
+
+        self.assertEqual(
+            self.described.under_discussion(history, self.store),
+            {"Le Male", "Green Irish Tweed"},
+        )
+
+    def test_older_replies_fall_out_of_the_window(self):
+        """Two replies back, so a conversation is not pinned to perfumes it has moved past."""
+        history = self._history(
+            "أرشحلك Dior Sauvage.",
+            "أرشحلك Le Male.",
+            "الـ50 بـ 623 جنيه.",
+        )
+
+        self.assertNotIn(
+            "Dior Sauvage", self.described.under_discussion(history, self.store)
+        )
+
+    def test_a_perfume_only_the_customer_named_is_not_under_discussion(self):
+        history = [{"role": "user", "content": "عندكم Le Male؟"}]
+
+        self.assertEqual(
+            self.described.under_discussion(history, self.store), frozenset()
+        )
+
+    # ── the ranking signal ───────────────────────────────────────────────
+    def test_continuity_lifts_a_perfume_that_previously_lost(self):
+        """The turn-7 failure, as arithmetic."""
+        intent = {"gender": "male", "longevity": "long-lasting", "max_price": 800}
+
+        without = sales_ranking.rank([self.rival, self.cheap], intent)
+        with_keep = sales_ranking.rank([self.rival, self.cheap], intent, keep={"Le Male"})
+
+        self.assertEqual(without[0].product.name, "Dior Sauvage")
+        self.assertEqual(with_keep[0].product.name, "Le Male")
+
+    def test_continuity_cannot_outrank_a_similarity_match(self):
+        """An explicit "عايز حاجة شبه X" must still be able to move the conversation."""
+        self.assertLess(
+            sales_ranking.WEIGHTS["continuity"], sales_ranking.WEIGHTS["similarity"]
+        )
+
+    def test_continuity_cannot_rescue_an_excluded_scent(self):
+        """A real exclusion stays authoritative: the avoid penalty outweighs the boost."""
+        self.cheap.base_notes = "Oud"
+        self.cheap.save()
+
+        ranked = sales_ranking.rank(
+            [self.rival, self.cheap],
+            {"gender": "male", "avoid_notes": ["oud"]},
+            keep={"Le Male"},
+        )
+
+        self.assertEqual(ranked[0].product.name, "Dior Sauvage")
+
+    def test_continuity_outweighs_the_slots_a_conversation_narrows_on(self):
+        """Budget, occasion, season, longevity and projection are refinements, so a customer
+        adding one must not displace the perfume they were converging on."""
+        for key in ("budget", "occasion", "longevity", "projection", "season"):
+            with self.subTest(slot=key):
+                self.assertGreater(
+                    sales_ranking.WEIGHTS["continuity"], sales_ranking.WEIGHTS[key]
+                )
+
+    def test_the_reason_line_says_why_it_was_kept(self):
+        ranked = sales_ranking.rank([self.cheap], {"gender": "male"}, keep={"Le Male"})
+
+        self.assertIn("العميل بيتكلم عنه بالفعل", ranked[0].reasons)
+
+    # ── search_products threading ────────────────────────────────────────
+    def test_a_kept_perfume_leads_the_shortlist(self):
+        results = search_products(
+            {"gender": "male", "longevity": "long-lasting", "max_price": 800},
+            store=self.store, keep={"Le Male"},
+        )
+
+        self.assertEqual([p.name for p in results["products"]][0], "Le Male")
+        self.assertEqual(results["keeping"], ["Le Male"])
+
+    def test_a_new_budget_reports_what_it_ruled_out(self):
+        """Silently swapping a perfume out is what made the conversation read as random."""
+        results = search_products(
+            {"gender": "male", "max_price": 800}, store=self.store,
+            keep={"Le Male", "Green Irish Tweed"},
+        )
+
+        self.assertEqual(results["keeping"], ["Le Male"])
+        self.assertIn("Green Irish Tweed", results["dropped"])
+        self.assertIn("3300", results["dropped"]["Green Irish Tweed"])
+
+    def test_a_note_request_does_not_evict_a_discussed_perfume(self):
+        """Notes narrow the search; they are not a reason to drop what is being discussed."""
+        results = search_products(
+            {"gender": "male", "notes": ["oud"]}, store=self.store, keep={"Le Male"},
+        )
+
+        self.assertEqual(results["keeping"], ["Le Male"])
+        self.assertEqual(results["dropped"], {})
+
+    def test_an_expensive_kept_perfume_still_reaches_the_scorer(self):
+        """The candidate cap is ordered cheapest-first, so a costly perfume under discussion
+        could fall outside it — and the boost cannot lift what the scorer never sees."""
+        results = search_products(
+            {"gender": "male"}, store=self.store, keep={"Green Irish Tweed"},
+        )
+
+        self.assertIn("Green Irish Tweed", [p.name for p in results["products"]])
+
+    # ── the prompt half ──────────────────────────────────────────────────
+    def test_the_note_tells_the_model_to_stay_put(self):
+        note = self.described.continuity_note(["Le Male"], [], converge=False)
+
+        self.assertIn("Le Male", note)
+        self.assertIn("ممنوع تقلب على عطور جديدة", note)
+
+    def test_converging_demands_exactly_one_perfume(self):
+        """The ranking boost puts the right perfume in front of the model; nothing stops it
+        presenting a fresh pair alongside. This is the clause that does."""
+        note = self.described.continuity_note(["Le Male"], [], converge=True)
+
+        self.assertIn("واحد", note)
+        self.assertIn("ممنوع تعرض عليه اتنين", note)
+
+    def test_not_converging_leaves_the_pair_allowed(self):
+        note = self.described.continuity_note(["Le Male"], [], converge=False)
+
+        self.assertNotIn("ممنوع تعرض عليه اتنين", note)
+
+    def test_the_note_names_what_dropped_out(self):
+        note = self.described.continuity_note(
+            ["Le Male"],
+            {"Green Irish Tweed": "أرخص حجم فيه 3300 جنيه، فوق ميزانيته"},
+            converge=True,
+        )
+
+        self.assertIn("Green Irish Tweed", note)
+        self.assertIn("خرجت من شروطه", note)
+        self.assertIn("3300", note)
+        self.assertIn("ممنوع تخترع سبب", note)
+
+    def test_nothing_under_discussion_produces_no_note(self):
+        self.assertEqual(self.described.continuity_note([], {}, converge=True), "")
+
+    def test_the_drop_reason_is_computed_not_guessed(self):
+        """Turn 2 of conversation 997 said Jasmino "خرج لأنه سعره أعلى" — it was dropped on
+        gender, and no budget existed anywhere in the conversation. The note had offered
+        "(السعر مثلاً)" as the reason to give, and the model took the example as the answer."""
+        female = Product.objects.create(
+            store=self.store, brand=self.brand, name="Jasmino", gender="female",
+        )
+        ProductVariant.objects.create(
+            product=female, volume=50, price=578, bottle_type="normal"
+        )
+
+        results = search_products(
+            {"gender": "male"}, store=self.store, keep={"Le Male", "Jasmino"},
+        )
+
+        self.assertIn("النوع", results["dropped"]["Jasmino"])
+        self.assertNotIn("ميزاني", results["dropped"]["Jasmino"])
+
+    def test_an_unnameable_cause_yields_no_invented_reason(self):
+        note = self.described.continuity_note(["Le Male"], {"Green Irish Tweed": None})
+
+        self.assertIn("Green Irish Tweed", note)
+        self.assertIn("ممنوع تخترع سبب", note)
+
+    def test_an_affordable_perfume_is_never_blamed_on_price(self):
+        """The bug this fix reproduced one layer down: the budget branch had a fallback that
+        fired when the perfume *was* affordable, so one excluded on season was reported as
+        "مفيش منه حجم داخل ميزانيته" while its 50ml sat at 550 against an 800 budget."""
+        winter = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Homme Intense",
+            gender="male", season="Fall/Winter",
+        )
+        ProductVariant.objects.create(
+            product=winter, volume=50, price=550, bottle_type="normal"
+        )
+
+        results = search_products(
+            {"gender": "male", "season": "summer", "max_price": 800},
+            store=self.store, keep={"Dior Homme Intense"},
+        )
+
+        reason = results["dropped"]["Dior Homme Intense"]
+        self.assertIn("الموسم", reason)
+        self.assertNotIn("ميزاني", reason)
+
+    def test_price_is_blamed_only_when_it_is_the_blocker(self):
+        results = search_products(
+            {"gender": "male", "max_price": 800},
+            store=self.store, keep={"Green Irish Tweed"},
+        )
+
+        self.assertIn("3300", results["dropped"]["Green Irish Tweed"])

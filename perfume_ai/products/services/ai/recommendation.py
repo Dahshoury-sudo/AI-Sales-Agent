@@ -178,6 +178,15 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     seen = described.already_described(history, store)
     follow_up = described.is_follow_up(message, history, seen)
     repeat_note = described.repeat_ban_hint(seen, follow_up)
+    # What the conversation is on, and what a new constraint has just ruled out. The ranking
+    # boost alone is not enough: it puts the right perfume in front of the model, but nothing
+    # stops the model presenting a fresh pair alongside it. `converge` is the same follow_up
+    # signal, so on an answer to our own question the reply names exactly one.
+    continuity = described.continuity_note(
+        (search or {}).get("keeping") or (),
+        (search or {}).get("dropped") or (),
+        converge=follow_up,
+    )
     # Only shorten what was already covered, and only on a follow-up. A fresh request still
     # gets the full block and the evidence line for everything, including a perfume mentioned
     # earlier — the customer asking anew deserves the detail.
@@ -213,7 +222,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}
 ═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 
@@ -238,7 +247,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}
 ═══ ملحوظة مهمة ═══
 لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 

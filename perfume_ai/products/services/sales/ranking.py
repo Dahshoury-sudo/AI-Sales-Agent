@@ -44,6 +44,20 @@ WEIGHTS = {
     "notes": 2.0,
     "avoid": -3.0,
     "gender": 3.0,
+    # Already under discussion. Sized against the rest of this table on purpose:
+    #
+    #   * above the sum of the slots that shift as a conversation narrows (budget 1.5,
+    #     occasion 1.0, longevity 1.0, projection 0.8, season 0.8), because a customer adding
+    #     one of those is *refining* — so refining must not be able to displace the perfume
+    #     they were converging on;
+    #   * below `similarity`, so an explicit "عايز حاجة شبه X" still moves the conversation;
+    #   * unable to rescue anything `avoid` (-3.0) has sunk, which keeps a real exclusion
+    #     authoritative.
+    #
+    # Without it, conversation 997 dropped Le Male (50ml at 623) on the turn the customer said
+    # "معايا 800". It survived every hard filter and sat at rank 3, and the prompt asks for the
+    # best 1-2 — so "stay on the perfume he showed interest in" was unfollowable.
+    "continuity": 2.5,
     "budget": 1.5,
     "longevity": 1.0,
     "occasion": 1.0,
@@ -181,9 +195,17 @@ def _affordable_and_obtainable(product, max_price):
     return False
 
 
-def rank(products, intent, reference=None):
-    """Score and order candidates, best first."""
+def rank(products, intent, reference=None, keep=()):
+    """Score and order candidates, best first.
+
+    `keep` names perfumes already under discussion, which earn WEIGHTS["continuity"]. That is
+    what makes the persona's "stay on the perfume he showed interest in" rule followable at
+    all: ranking re-runs from scratch every turn, and a perfume the customer was converging on
+    could fall below the top 1-2 the prompt asks the model to choose from — at which point the
+    competing rule "a product not in the data does not exist" made staying impossible.
+    """
     intent = intent or {}
+    keep = frozenset(keep or ())
     max_price = _as_decimal(intent.get("max_price"))
     wanted_notes = [note for note in (intent.get("notes") or ()) if note]
     avoid_notes = [note for note in (intent.get("avoid_notes") or ()) if note]
@@ -294,6 +316,10 @@ def rank(products, intent, reference=None):
 
         if intent.get("gender") and product.gender == str(intent["gender"]).lower():
             entry.score += WEIGHTS["gender"]
+
+        if product.name in keep:
+            entry.score += WEIGHTS["continuity"]
+            entry.reasons.append("العميل بيتكلم عنه بالفعل")
 
         if intent.get("wants_uncommon"):
             from .value import is_store_exclusive
