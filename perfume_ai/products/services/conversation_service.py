@@ -170,7 +170,16 @@ def _contradicted_keys(intent, message):
 
 
 def _is_set(value):
-    """A preference the customer actually expressed, as opposed to an empty slot."""
+    """A preference the customer actually expressed, as opposed to an empty slot.
+
+    `False` counts as unset, matching sales.constraints._is_set. `wants_uncommon: false` is
+    the extractor reporting the *absence* of a preference, and a plain membership test
+    against (None, "", [], {}) treats it as present — so once wants_uncommon joined
+    PERSISTED_PREFERENCE_KEYS every conversation began saving `wants_uncommon: False` as
+    though the customer had asked for something.
+    """
+    if value is False:
+        return False
     return value not in (None, "", [], {})
 
 

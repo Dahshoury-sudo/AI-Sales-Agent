@@ -197,6 +197,11 @@ def acknowledgement_hint(intent):
     The instruction to vary the wording is load-bearing: the behaviour being replaced was
     a single hardcoded sentence, and a single mandated sentence would be the same bug in
     a nicer costume.
+
+    That is not hypothetical. This hint briefly named "تمام جداً، أرشحلك..." as the way in,
+    and conv_990 duly opened three of six replies with "تمام جداً، أرشحلك Dior Homme
+    Intense". The ban on reciting the customer's own words back is kept — that part was
+    right — but the opener is described rather than quoted, so the model has to pick its own.
     """
     phrases = describe(intent)
     if not phrases:
@@ -205,7 +210,8 @@ def acknowledgement_hint(intent):
     return (
         "\n🧠 العميل قال بالفعل: " + "، ".join(phrases) + ".\n"
         "- ❌ تحذير: ممنوع تكرار كلام العميل أو إعادة سرد طلباته نصاً (ممنوع تقول \"فهمتك إنت عايز كذا وكذا\").\n"
-        "- بيّن إنك فهمت طلبه من خلال ترشيحك نفسه، وادخل في الترشيح على طول بكلمة زي \"تمام جداً، أرشحلك...\"\n"
+        "- بيّن إنك فهمت طلبه من خلال ترشيحك نفسه، وادخل في الترشيح على طول في نص جملة قصيرة.\n"
+        "- 🔴 ممنوع تستخدم نفس الصيغة في كل رد — لو فتحت رد بجملة، افتح اللي بعده بجملة تانية.\n"
         "- ❌ ممنوع تسأله عن أي حاجة من دي تاني.\n"
     )
 

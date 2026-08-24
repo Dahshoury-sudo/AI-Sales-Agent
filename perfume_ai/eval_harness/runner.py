@@ -29,7 +29,14 @@ django.setup()
 from django.db import connection, transaction  # noqa: E402
 
 from eval_harness import checks  # noqa: E402
-from eval_harness.scenarios import SCENARIOS  # noqa: E402
+# EVAL_SCENARIOS=conv990 replays a single reported conversation instead of the full suite.
+# Replaying the transcript a customer complained about is the fastest way to tell whether a
+# fix actually landed — and running it twice matters, because extractor variance between runs
+# is what exposed two separate bugs in the conv_990 work that a single run had hidden.
+if os.environ.get("EVAL_SCENARIOS") == "conv990":
+    from eval_harness.scenarios_conv990 import SCENARIOS  # noqa: E402
+else:
+    from eval_harness.scenarios import SCENARIOS  # noqa: E402
 
 STORE_NAME = "Perfamix"
 _local = threading.local()

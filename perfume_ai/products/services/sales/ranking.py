@@ -244,16 +244,32 @@ def rank(products, intent, reference=None):
                 entry.score += abs(WEIGHTS["avoid"]) * 0.25
                 entry.reasons.append("خفيف ومش خانق")
 
-        for key, weight_name, attribute, label in (
-            ("occasion", "occasion", "occasion", "مناسب للمناسبة اللي قالها"),
-            ("season", "season", "season", "مناسب للموسم"),
+        for key, attribute, label, mismatch_template, verdict_for in (
+            ("occasion", "occasion", "مناسب للمناسبة اللي قالها",
+             "مناسبته المسجلة {recorded}، مش اللي قاله", _occasion_verdict),
+            ("season", "season", "مناسب للموسم",
+             "موسمه المسجل {recorded}، مش اللي قاله", _season_verdict),
         ):
             wanted = intent.get(key)
             if not wanted:
                 continue
-            if _text_hit(getattr(product, attribute, ""), wanted):
-                entry.score += WEIGHTS[weight_name]
+            recorded = (getattr(product, attribute, "") or "").strip()
+            if not recorded:
+                # Blank is unknown, never a mismatch. Treating empty as "different" is what
+                # made the old icontains AND-filter delete every sparsely-filled product the
+                # moment a customer named an occasion; _missing_data_note covers the gap.
+                continue
+            verdict = verdict_for(recorded, wanted)
+            if verdict == MATCH:
+                entry.score += WEIGHTS[key]
                 entry.reasons.append(label)
+            elif verdict == CONFLICT:
+                # A conflicting value used to produce nothing at all, so the model saw a ✅
+                # line pulling one way and no counter-signal — which is how a perfume recorded
+                # Evening/Formal was sold as "مناسبة للنهار" two turns after the bot had
+                # correctly called it an evening scent. The recorded value is named so the
+                # reply can state the truth and pivot, rather than only stay quiet.
+                entry.mismatches.append(mismatch_template.format(recorded=recorded))
 
         # Graded, not substring-matched — see _ordinal_hit. Partial credit is reported as
         # a mismatch rather than a reason so the reply cannot claim a perfume "matches"
@@ -303,16 +319,76 @@ def rank(products, intent, reference=None):
     return ranked
 
 
-def reasons_note(entry):
+# Occasion text conflates two independent things — when a perfume is worn and how dressed-up
+# it is — so "Evening/Formal" is both. A flat synonym table cannot express that: mapping
+# office→formal let an evening perfume pass an office request and be sold as "مناسب للنهار",
+# which is the exact bug the mismatch warning exists to prevent, while refusing to map
+# anything flagged Le Male ("Casual") as unsuitable for daytime.
+#
+# So only the time-of-day axis is judged, and only a genuine conflict on it is a warning.
+# Anything else — a vocabulary that simply does not line up — stays silent, on the same
+# principle as a blank field: unknown is not a mismatch.
+_DAYTIME_TERMS = ("daily", "casual", "everyday", "office", "work", "business", "sport", "gym")
+_EVENING_TERMS = ("evening", "night", "dinner", "party", "parties", "club")
+
+# A perfume the store marked as year-round matches any season asked for. search_service
+# already ORs `season__icontains="All Seasons"` into its filter; ranking has to agree, or a
+# year-round perfume gets warned about for every specific season.
+_ALL_SEASONS = ("all season", "all-season", "كل الفصول", "كل المواسم")
+
+MATCH, CONFLICT, UNKNOWN = "match", "conflict", "unknown"
+
+
+def _occasion_verdict(recorded, wanted):
+    """MATCH, CONFLICT or UNKNOWN for a recorded occasion against a requested one."""
+    lowered = str(recorded).lower()
+    asked = str(wanted).strip().lower()
+
+    if _text_hit(lowered, asked):
+        return MATCH
+
+    recorded_daytime = any(term in lowered for term in _DAYTIME_TERMS)
+    recorded_evening = any(term in lowered for term in _EVENING_TERMS)
+    asked_daytime = asked in _DAYTIME_TERMS
+    asked_evening = asked in _EVENING_TERMS
+
+    if asked_daytime:
+        if recorded_daytime:
+            return MATCH
+        return CONFLICT if recorded_evening else UNKNOWN
+    if asked_evening:
+        if recorded_evening:
+            return MATCH
+        return CONFLICT if recorded_daytime else UNKNOWN
+
+    # A register or an event ("formal", "wedding") says nothing about time of day, so there
+    # is nothing here to contradict.
+    return UNKNOWN
+
+
+def _season_verdict(recorded, wanted):
+    """Seasons are a closed, unambiguous vocabulary, so a miss really is a conflict."""
+    if any(marker in str(recorded).lower() for marker in _ALL_SEASONS):
+        return MATCH
+    return MATCH if _text_hit(recorded, wanted) else CONFLICT
+
+def reasons_note(entry, mismatches_only=False):
     """The evidence line attached to a product block in the prompt.
 
     Reasons only — the numeric score is deliberately never rendered. Handing a model 0.62
     is how "شبهه بنسبة 95%" gets invented.
+
+    `mismatches_only` drops the ✅ half and keeps the ⚠️ half. Needed because the two halves
+    have opposite lifetimes: the ✅ reasons are what the model says to justify a
+    recommendation, so re-sending them every turn is what made the bot recite "ثابت وفوحانه
+    متوسط" four times — but the ⚠️ mismatches are a *safety* signal that never goes stale.
+    Suppressing the whole line to stop the recital took the warning with it, and the reply
+    promptly offered an Evening/Formal perfume as "أنسب للنهار في المكتب".
     """
     if entry is None:
         return ""
     parts = []
-    if entry.reasons:
+    if entry.reasons and not mismatches_only:
         parts.append("✅ ليه مناسب: " + " | ".join(entry.reasons))
     if entry.mismatches:
         parts.append("⚠️ مش مطابق في: " + " | ".join(entry.mismatches))

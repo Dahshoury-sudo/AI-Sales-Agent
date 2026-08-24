@@ -3967,8 +3967,15 @@ class ConstraintAcknowledgementTests(TestCase):
         hint = sales_constraints.acknowledgement_hint({"gender": "male", "notes": ["oud"]})
 
         self.assertIn("نص جملة قصيرة", hint)
-        self.assertIn("ممنوع تعيد سرد", hint)
+        self.assertIn("ممنوع تكرار كلام العميل", hint)
         self.assertIn("ممنوع تستخدم نفس الصيغة", hint)
+
+    def test_the_hint_does_not_pin_one_opening_phrase(self):
+        """It briefly named "تمام جداً، أرشحلك..." as the way in, and conv_990 opened three
+        of six replies with exactly that. Describing the move is fine; quoting it is not."""
+        hint = sales_constraints.acknowledgement_hint({"gender": "male"})
+
+        self.assertNotIn("تمام جداً، أرشحلك", hint)
 
     def test_no_constraints_produces_no_hint(self):
         self.assertEqual(sales_constraints.acknowledgement_hint({}), "")
@@ -4238,7 +4245,9 @@ class SalesScenarioTests(TestCase):
         self.assertIn("مش تقيل", recommend_prompt)
 
     def test_a_the_acknowledgement_is_a_hint_not_a_script(self):
-        """A single mandated sentence would be the same bug in a nicer costume."""
+        """A single mandated sentence would be the same bug in a nicer costume — and it
+        happened: the hint briefly quoted "تمام جداً، أرشحلك..." and conv_990 opened three of
+        six replies with exactly that."""
         recommend_prompt, _ = self._route_recommendation(
             "عايز حاجة ثابتة للليل مش تقيلة",
             {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
@@ -4246,7 +4255,8 @@ class SalesScenarioTests(TestCase):
         )
 
         self.assertIn("ممنوع تستخدم نفس الصيغة", recommend_prompt)
-        self.assertIn("ممنوع تعيد سرد", recommend_prompt)
+        self.assertIn("ممنوع تكرار كلام العميل", recommend_prompt)
+        self.assertNotIn("تمام جداً، أرشحلك", recommend_prompt)
 
     def test_a_a_sparse_request_still_asks_for_a_budget_but_acknowledges_first(self):
         _, general_prompt = self._route_recommendation(
@@ -5111,3 +5121,354 @@ class MessageRateLimitTests(TestCase):
     def test_the_store_ceiling_is_higher_than_one_senders(self):
         """The per-store bucket exists for cross-tenant isolation, not to cap a customer."""
         self.assertGreater(self.tasks.STORE_PER_MINUTE, self.tasks.SENDER_PER_MINUTE)
+
+
+class AlreadyDescribedTests(TestCase):
+    """conv_990: the bot described Dior Homme Intense four times in six turns.
+
+    Three of those replies opened with the identical "تمام جداً، أرشحلك Dior Homme Intense
+    لأنه ثابت وفوحانه متوسط", and two of the turns were the customer merely *answering a
+    question the bot had asked*. Nothing tracked what the customer had already been told.
+    """
+
+    def setUp(self):
+        from products.services.sales import described
+
+        self.described = described
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        for name in ("Dior Homme Intense", "Le Male"):
+            Product.objects.create(
+                store=self.store, brand=self.brand, name=name, gender="male",
+                longevity="8 hours", projection="Moderate",
+            )
+        self.history = [
+            {"role": "user", "content": "عايز برفان ثابت وفواح"},
+            {"role": "assistant", "content": (
+                "تمام جداً، أرشحلك Dior Homme Intense لأنه ثابت وفوحانه متوسط. "
+                "العطر لراجل ولا لست؟"
+            )},
+        ]
+
+    def test_a_perfume_the_bot_named_counts_as_described(self):
+        self.assertIn(
+            "Dior Homme Intense",
+            self.described.already_described(self.history, self.store),
+        )
+
+    def test_a_perfume_only_the_customer_named_does_not(self):
+        """They may be asking about it for the first time — we have told them nothing."""
+        history = [{"role": "user", "content": "عندكم Le Male؟"}]
+
+        self.assertEqual(
+            self.described.already_described(history, self.store), frozenset()
+        )
+
+    def test_an_empty_conversation_describes_nothing(self):
+        self.assertEqual(self.described.already_described([], self.store), frozenset())
+
+    def test_answering_our_question_is_a_follow_up(self):
+        """The two turns from the transcript that produced a full re-pitch."""
+        seen = self.described.already_described(self.history, self.store)
+
+        for message in ("راجل", "بالنهار اكتر"):
+            with self.subTest(message=message):
+                self.assertTrue(
+                    self.described.is_follow_up(message, self.history, seen)
+                )
+
+    def test_asking_us_to_choose_is_a_follow_up(self):
+        seen = self.described.already_described(self.history, self.store)
+
+        self.assertTrue(
+            self.described.is_follow_up("ترشحلي انهي احسن منهم", self.history, seen)
+        )
+
+    def test_a_fresh_request_is_not_a_follow_up(self):
+        """A customer stating new criteria wants the detail, however much we have said."""
+        seen = self.described.already_described(self.history, self.store)
+
+        self.assertFalse(
+            self.described.is_follow_up(
+                "عايز عطر حريمي مسكر للصيف وميزانيتي 700 ومش تقيل",
+                self.history, seen,
+            )
+        )
+
+    def test_the_first_recommendation_can_never_be_shortened(self):
+        """Requiring something already described is what protects turn one."""
+        self.assertFalse(
+            self.described.is_follow_up("راجل", self.history, frozenset())
+        )
+
+    def test_a_short_message_is_only_an_answer_if_we_asked_something(self):
+        seen = self.described.already_described(self.history, self.store)
+        no_question = [
+            {"role": "assistant", "content": "أرشحلك Dior Homme Intense."},
+        ]
+
+        self.assertFalse(self.described.is_follow_up("راجل", no_question, seen))
+
+    def test_the_hint_bans_re_describing_and_names_what_was_said(self):
+        seen = self.described.already_described(self.history, self.store)
+
+        hint = self.described.repeat_ban_hint(seen, follow_up=True)
+
+        self.assertIn("Dior Homme Intense", hint)
+        self.assertIn("ممنوع تعيد وصف", hint)
+        self.assertIn("سطر واحد قصير", hint)
+
+    def test_nothing_described_produces_no_hint(self):
+        self.assertEqual(self.described.repeat_ban_hint(frozenset(), True), "")
+
+    def test_a_non_follow_up_still_gets_the_no_repeat_ban(self):
+        """Even a fresh request should not re-recite specs the customer already heard; it
+        just is not held to the one-line shape."""
+        seen = self.described.already_described(self.history, self.store)
+
+        hint = self.described.repeat_ban_hint(seen, follow_up=False)
+
+        self.assertIn("ممنوع تعيد وصف", hint)
+        self.assertNotIn("سطر واحد قصير", hint)
+
+
+class ContradictedFieldWarningTests(TestCase):
+    """A populated-but-different occasion or season must be flagged, not passed over.
+
+    conv_990 turn 8: the customer said "بالنهار اكتر" and the bot called Dior Homme Intense
+    "مناسبة للنهار", two turns after correctly describing it as an evening scent. The row says
+    occasion='Evening/Formal'. It could because a miss on occasion produced *nothing* — the
+    model saw a ✅ line pulling one way and no counter-signal.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+
+    def _make(self, **fields):
+        return Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Homme Intense",
+            gender="male", **fields,
+        )
+
+    def test_a_contradicted_occasion_is_flagged_with_the_recorded_value(self):
+        product = self._make(occasion="Evening/Formal")
+
+        entry = sales_ranking.rank([product], {"occasion": "daily"})[0]
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Evening/Formal", entry.mismatches[0])
+        self.assertNotIn("مناسب للمناسبة اللي قالها", entry.reasons)
+
+    def test_a_contradicted_season_is_flagged_too(self):
+        product = self._make(season="Fall/Winter")
+
+        entry = sales_ranking.rank([product], {"season": "summer"})[0]
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Fall/Winter", entry.mismatches[0])
+
+    def test_a_matching_occasion_still_earns_its_reason(self):
+        product = self._make(occasion="Daily, Office, Dates")
+
+        entry = sales_ranking.rank([product], {"occasion": "daily"})[0]
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+        self.assertFalse(entry.mismatches)
+
+    def test_a_blank_field_is_unknown_not_a_mismatch(self):
+        """Treating empty as "different" is what made the old icontains AND-filter delete
+        every sparsely-filled product the moment a customer named an occasion."""
+        product = self._make(occasion="")
+
+        entry = sales_ranking.rank([product], {"occasion": "daily"})[0]
+
+        self.assertFalse(entry.mismatches)
+        self.assertFalse(entry.reasons)
+
+    def test_the_warning_reaches_the_prompt(self):
+        product = self._make(occasion="Evening/Formal")
+        entry = sales_ranking.rank([product], {"occasion": "daily"})[0]
+
+        self.assertIn("Evening/Formal", sales_ranking.reasons_note(entry))
+
+    def test_a_daytime_request_now_ranks_daytime_perfumes_first(self):
+        """Side effect worth pinning: with a miss scoring nothing, an evening perfume and a
+        daily one used to tie on this axis."""
+        evening = self._make(occasion="Evening/Formal")
+        daily = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage",
+            gender="male", occasion="Daily, Office, Dates",
+        )
+
+        ranked = sales_ranking.rank([evening, daily], {"occasion": "daily"})
+
+        self.assertEqual(ranked[0].product.name, "Dior Sauvage")
+
+
+class UnsetPreferenceIsNotPersistedTests(TestCase):
+    """`wants_uncommon: false` is the extractor reporting the absence of a preference."""
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def test_a_false_flag_is_not_saved_as_a_preference(self):
+        merge_preferences(self.conversation, {"gender": "male", "wants_uncommon": False})
+
+        self.conversation.refresh_from_db()
+        self.assertNotIn("wants_uncommon", self.conversation.preferences)
+        self.assertEqual(self.conversation.preferences.get("gender"), "male")
+
+    def test_a_true_flag_still_is(self):
+        merge_preferences(self.conversation, {"wants_uncommon": True})
+
+        self.conversation.refresh_from_db()
+        self.assertTrue(self.conversation.preferences.get("wants_uncommon"))
+
+
+class SuppressedReasonsKeepTheirWarningTests(TestCase):
+    """Suppressing the recital must not suppress the safety half of the same line.
+
+    The ✅ reasons and the ⚠️ mismatches share one rendered line but have opposite lifetimes:
+    the reasons are the selling justification, so re-sending them every turn is what made the
+    bot recite "ثابت وفوحانه متوسط" four times — while the mismatches are a warning that
+    never goes stale. Dropping the whole line for an already-described perfume took the
+    warning with it, and the reply then offered an Evening/Formal perfume as "أنسب للنهار في
+    المكتب" on the very turn the warning had fired.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Homme Intense",
+            gender="male", occasion="Evening/Formal", longevity="8 hours",
+        )
+        ProductVariant.objects.create(
+            product=self.product, volume=50, price=550, bottle_type="normal"
+        )
+        self.entry = sales_ranking.rank(
+            [self.product], {"occasion": "daily", "longevity": "long-lasting"}
+        )[0]
+
+    def test_the_full_note_carries_both_halves(self):
+        note = sales_ranking.reasons_note(self.entry)
+
+        self.assertIn("✅ ليه مناسب", note)
+        self.assertIn("⚠️ مش مطابق في", note)
+
+    def test_mismatches_only_drops_the_selling_half(self):
+        note = sales_ranking.reasons_note(self.entry, mismatches_only=True)
+
+        self.assertNotIn("✅ ليه مناسب", note)
+        self.assertIn("Evening/Formal", note)
+
+    def test_an_already_described_perfume_keeps_its_warning_in_the_prompt(self):
+        """Brief mode omits the Occasion field, so this line is the only place the recorded
+        value still appears."""
+        context = _format_products(
+            Product.objects.filter(pk=self.product.pk),
+            ranked={self.product.id: self.entry},
+            brief_for={self.product.name},
+        )
+
+        self.assertIn("Evening/Formal", context)
+        self.assertNotIn("✅ ليه مناسب", context)
+
+    def test_a_first_mention_still_gets_the_full_evidence_line(self):
+        context = _format_products(
+            Product.objects.filter(pk=self.product.pk),
+            ranked={self.product.id: self.entry},
+            brief_for=frozenset(),
+        )
+
+        self.assertIn("✅ ليه مناسب", context)
+        self.assertIn("Longevity: 8 hours", context)
+
+
+class FieldVocabularyTests(TestCase):
+    """A vocabulary gap must not become a false accusation.
+
+    Now that a miss produces a *warning* rather than silence, any mismatch between the
+    extractor's vocabulary and the store's own typing mislabels a suitable perfume. "بالنهار"
+    is extracted as `daily` while the catalogue types `Casual`, so Le Male — genuinely a
+    daytime perfume — was flagged "مناسبته المسجلة Casual، مش اللي قاله" and dropped.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+
+    def _entry(self, intent, **fields):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Test", gender="male", **fields
+        )
+        return sales_ranking.rank([product], intent)[0]
+
+    def test_casual_satisfies_a_daytime_request(self):
+        entry = self._entry({"occasion": "daily"}, occasion="Casual")
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+        self.assertFalse(entry.mismatches)
+
+    def test_a_register_request_never_contradicts_a_time_of_day(self):
+        """"formal" says nothing about when a perfume is worn, so an Office-tagged scent is
+        neither confirmed nor contradicted by it. Silence is the honest verdict — the same
+        principle as a blank field: unknown is not a mismatch."""
+        entry = self._entry({"occasion": "formal"}, occasion="Office, Daily")
+
+        self.assertFalse(entry.mismatches)
+        self.assertFalse(entry.reasons)
+
+    def test_an_evening_perfume_is_still_flagged_for_a_daytime_request(self):
+        """The synonyms must not be so loose that nothing is ever a mismatch."""
+        entry = self._entry({"occasion": "daily"}, occasion="Evening/Formal")
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Evening/Formal", entry.mismatches[0])
+
+    def test_all_seasons_satisfies_any_season(self):
+        """search_service already ORs season__icontains="All Seasons" into its filter;
+        ranking has to agree or a year-round perfume is warned about for every season."""
+        for season in ("summer", "winter", "spring"):
+            with self.subTest(season=season):
+                entry = self._entry({"season": season}, season="All Seasons")
+                self.assertFalse(entry.mismatches)
+                self.assertIn("مناسب للموسم", entry.reasons)
+
+    def test_a_wrong_season_is_still_flagged(self):
+        entry = self._entry({"season": "summer"}, season="Fall/Winter")
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Fall/Winter", entry.mismatches[0])
+
+    def test_an_unmapped_occasion_falls_back_to_a_substring_test(self):
+        entry = self._entry({"occasion": "للجيم"}, occasion="للجيم والرياضة")
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+
+    def test_an_evening_perfume_fails_an_office_request(self):
+        """The bug this table nearly caused. `office` was mapped to `formal`, and because
+        "Evening/Formal" contains "formal" an evening perfume passed an office request and was
+        sold as "مناسب للنهار" — exactly what the mismatch warning exists to stop. Formality is
+        a register, not a time of day."""
+        entry = self._entry({"occasion": "office"}, occasion="Evening/Formal")
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Evening/Formal", entry.mismatches[0])
+
+    def test_an_office_perfume_passes_an_office_request(self):
+        entry = self._entry({"occasion": "office"}, occasion="Casual/Office/Everyday")
+
+        self.assertFalse(entry.mismatches)
+
+    def test_evening_and_daytime_never_satisfy_each_other(self):
+        for wanted, recorded in (
+            ("daily", "Evening"),
+            ("office", "Evening"),
+            ("evening", "Daily, Office, Dates"),
+            ("night", "Casual"),
+        ):
+            with self.subTest(wanted=wanted, recorded=recorded):
+                self.assertTrue(self._entry({"occasion": wanted}, occasion=recorded).mismatches)

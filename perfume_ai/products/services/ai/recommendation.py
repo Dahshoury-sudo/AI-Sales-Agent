@@ -3,6 +3,7 @@ from decimal import Decimal, InvalidOperation
 from .client import chat
 from .prompts import get_system_prompt
 from ..product_formatting import format_products, is_variant_available
+from ..sales import described
 from ..sales.constraints import acknowledgement_hint
 from ..sales.ranking import reasons_note
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
@@ -25,7 +26,7 @@ def _coerce_budget(value):
     return budget if budget > 0 else None
 
 
-def _format_products(products, max_price=None, ranked=None):
+def _format_products(products, max_price=None, ranked=None, brief_for=()):
     """Thin wrapper over the shared renderer, capped for prompt size.
 
     search_products already applies the LIMIT; the cap here only bounds the
@@ -34,15 +35,28 @@ def _format_products(products, max_price=None, ranked=None):
     When ranking ran, each product's own evidence line is appended to its block. The
     model gets the *reasons* — shared notes, which constraint matched — and never the
     score, because a number in the prompt is how "شبهه بنسبة 95%" gets invented.
+
+    `brief_for` names perfumes the customer has already had described to them. Those render
+    through the existing `brief=True` mode — which drops the scent and performance fields —
+    and lose the ✅ half of their evidence line. Both are the recital's source material: the
+    evidence line said "ثباته بيطابق طلبه | فوحانه أقل من اللي طلبه شوية" on every single
+    turn, and instruction 7 asks the model to lean on it, so the same sentence came back four
+    times. Prices and sizes stay, so a follow-up can still answer "بكام".
+
+    The ⚠️ mismatch half is deliberately kept. It is a safety signal, not a selling point,
+    and it never goes stale — dropping it along with the reasons is what let a reply offer an
+    Evening/Formal perfume as "أنسب للنهار في المكتب" on the very turn the warning fired.
+    Brief mode omits the Occasion field, so this line is then the only place the recorded
+    value appears.
     """
-    context = format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
-    if not ranked:
-        return context
+    if not ranked and not brief_for:
+        return format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
 
     blocks = []
     for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
-        block = format_products([product], max_price=max_price)
-        note = reasons_note(ranked.get(product.id))
+        seen = product.name in brief_for
+        block = format_products([product], max_price=max_price, brief=seen)
+        note = reasons_note((ranked or {}).get(product.id), mismatches_only=seen)
         blocks.append(f"{block}{note}\n" if note else block)
     return "".join(blocks)
 
@@ -157,6 +171,17 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     # answering five stated constraints as though none had registered.
     constraint_note = acknowledgement_hint(intent or {})
     gender_note = _gender_note(gender_unknown)
+
+    # What we already told *them*. A perfume the customer has had described once must not be
+    # described again — conv_990 re-pitched the same one four times, three of those replies
+    # opening identically, because nothing tracked this.
+    seen = described.already_described(history, store)
+    follow_up = described.is_follow_up(message, history, seen)
+    repeat_note = described.repeat_ban_hint(seen, follow_up)
+    # Only shorten what was already covered, and only on a follow-up. A fresh request still
+    # gets the full block and the evidence line for everything, including a perfume mentioned
+    # earlier — the customer asking anew deserves the detail.
+    brief_for = seen if follow_up else frozenset()
     # Rule 4 used to be an unconditional "ممنوع ترشح لو مش واضح رجالي ولا حريمي". That
     # now contradicts the router, which reaches this function with an unresolved gender
     # only when the customer *has* given usable taste information — so the instruction
@@ -168,14 +193,27 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         if gender_unknown else
         "🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال \"لخطيبتي\") رشّح على طول."
     )
+    # Instruction 7 tells the model to lean on the "✅ ليه مناسب" line for its stated reason.
+    # Correct on a first recommendation; on a follow-up it is precisely what made the bot
+    # recite "ثابت وفوحانه متوسط" four times, since that line is re-injected every turn.
+    reasons_instruction = (
+        "سطر \"✅ ليه مناسب\" هو دليلك لاختيار العطر لنفسك — ❌ مش كلام تقوله للعميل تاني، هو "
+        "سمعه خلاص. وسطر \"⚠️ مش مطابق في\" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة "
+        "مكتوب جانبها إنه مش مطابق فيها."
+        if follow_up else
+        "سطر \"✅ ليه مناسب\" في بيانات كل عطر هو الدليل اللي بنيت عليه الترشيح — اعتمد عليه في سبب الترشيح بدل كلام عام. وسطر \"⚠️ مش مطابق في\" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة مكتوب جانبها إنه مش مطابق فيها."
+    )
 
     # Case 1: Exact matches found
     if products.exists():
-        context = _format_products(products, max_price=max_price, ranked=(search or {}).get("ranked"))
+        context = _format_products(
+            products, max_price=max_price,
+            ranked=(search or {}).get("ranked"), brief_for=brief_for,
+        )
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{_similarity_instruction(search)}
 ═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 
@@ -186,18 +224,21 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 4. {gender_instruction}
 5. 🔴 تجاهل تماماً أي منتج Stock Status = ❌ واختار غيره من المتوفر.
 6. 🔴 لو العميل محدد ميزانية ولقيت عطر ممتاز أرخص بكتير منها، رشحه كـ"قيمة مقابل سعر" — متفضلش الأغلى لمجرد إنه بيقفل الميزانية.
-7. سطر "✅ ليه مناسب" في بيانات كل عطر هو الدليل اللي بنيت عليه الترشيح — اعتمد عليه في سبب الترشيح بدل كلام عام. وسطر "⚠️ مش مطابق في" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة مكتوب جانبها إنه مش مطابق فيها.
+7. {reasons_instruction}
 8. 🔴 القائمة اللي فوق هي مجموعة مختارة من العطور، مش كل الستور. ❌ ممنوع تعمل تعميم على المتجر كله زي "كل العطور أغلى من كده" أو "مفيش حاجة في الميزانية دي" — أنت شايف جزء بس، وممكن تكون رشحت للعميل حاجة أرخص في رسالة قبل كده. اتكلم عن العطور اللي قدامك بس.
 """
 
     # Case 2: No exact match, but we have alternatives (e.g. higher price)
     elif alternatives and alternatives.exists():
-        context = _format_products(alternatives, max_price=max_price, ranked=(search or {}).get("ranked"))
+        context = _format_products(
+            alternatives, max_price=max_price,
+            ranked=(search or {}).get("ranked"), brief_for=brief_for,
+        )
         price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{_similarity_instruction(search)}
 ═══ ملحوظة مهمة ═══
 لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 
