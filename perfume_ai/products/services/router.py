@@ -448,7 +448,10 @@ def route(message, history=None, store=None, conversation=None):
         # What the conversation is already on, so ranking can hold those perfumes near the
         # top instead of re-deriving a fresh shortlist every turn. Without it a customer who
         # merely added a budget lost the perfume they had been converging on.
-        keep = sales_described.under_discussion(history, store)
+        # Reads the saved internal_context of our recent replies, not just their text, so a
+        # perfume named only while being withdrawn does not count as still under discussion —
+        # that loop announced the same withdrawal on turn after turn.
+        keep = sales_described.under_discussion(conversation, store)
         results = search_products(intent, store, keep=keep)
         response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
 

@@ -5495,6 +5495,7 @@ class ConversationContinuityTests(TestCase):
         self.cheap = self._make("Le Male", price=623, longevity="7 hours")
         self.rival = self._make("Dior Sauvage", price=400, longevity="8 hours")
         self.pricey = self._make("Green Irish Tweed", price=3300, longevity="7 hours")
+        self.conversation = Conversation.objects.create(store=self.store)
 
     def _make(self, name, price, **fields):
         product = Product.objects.create(
@@ -5506,40 +5507,74 @@ class ConversationContinuityTests(TestCase):
         )
         return product
 
-    def _history(self, *replies):
-        return [
-            entry
-            for reply in replies
-            for entry in ({"role": "user", "content": "تمام"},
-                          {"role": "assistant", "content": reply})
-        ]
+    def _reply(self, text, shown=()):
+        """One exchange. `shown` names the perfumes whose data was injected that turn."""
+        Message.objects.create(
+            conversation=self.conversation, role="user", content="تمام"
+        )
+        context = "".join(
+            f"Name (الاسم الصحيح): {name}" + "\n" for name in shown
+        )
+        Message.objects.create(
+            conversation=self.conversation, role="assistant",
+            content=text, internal_context=context,
+        )
 
     # ── what the conversation is on ──────────────────────────────────────
-    def test_perfumes_named_in_the_last_replies_are_under_discussion(self):
-        history = self._history("أرشحلك Le Male وGreen Irish Tweed.")
+    def test_perfumes_shown_and_named_are_under_discussion(self):
+        self._reply(
+            "أرشحلك Le Male وGreen Irish Tweed.",
+            shown=("Le Male", "Green Irish Tweed"),
+        )
 
         self.assertEqual(
-            self.described.under_discussion(history, self.store),
+            self.described.under_discussion(self.conversation, self.store),
             {"Le Male", "Green Irish Tweed"},
         )
 
-    def test_older_replies_fall_out_of_the_window(self):
-        """Two replies back, so a conversation is not pinned to perfumes it has moved past."""
-        history = self._history(
-            "أرشحلك Dior Sauvage.",
-            "أرشحلك Le Male.",
-            "الـ50 بـ 623 جنيه.",
-        )
+    def test_a_perfume_in_the_data_but_never_mentioned_is_not_under_discussion(self):
+        """The injected block holds up to twelve products; most are never put to the
+        customer, so the data alone is not what the conversation is on."""
+        self._reply("أرشحلك Le Male.", shown=("Le Male", "Dior Sauvage"))
 
         self.assertNotIn(
-            "Dior Sauvage", self.described.under_discussion(history, self.store)
+            "Dior Sauvage",
+            self.described.under_discussion(self.conversation, self.store),
+        )
+
+    def test_a_perfume_named_only_while_being_withdrawn_is_not_under_discussion(self):
+        """Conversation 1012: announcing "Ambero خرج من الاختيارات" put Ambero in the reply, so
+        the next turn found it under discussion again, found it still failing the customer's
+        constraints, and announced the same withdrawal a second time. A dropped perfume is
+        absent from the injected data by definition, which is what breaks the loop."""
+        self._reply(
+            "أرشحلك Le Male. أما Green Irish Tweed خرج من الاختيارات.",
+            shown=("Le Male",),
+        )
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Le Male", under)
+        self.assertNotIn("Green Irish Tweed", under)
+
+    def test_older_replies_fall_out_of_the_window(self):
+        """Two replies back, so a conversation is not pinned to perfumes it has moved past."""
+        self._reply("أرشحلك Dior Sauvage.", shown=("Dior Sauvage",))
+        self._reply("أرشحلك Le Male.", shown=("Le Male",))
+        self._reply("الـ50 بـ 623 جنيه.", shown=("Le Male",))
+
+        self.assertNotIn(
+            "Dior Sauvage",
+            self.described.under_discussion(self.conversation, self.store),
         )
 
     def test_a_perfume_only_the_customer_named_is_not_under_discussion(self):
-        history = [{"role": "user", "content": "عندكم Le Male؟"}]
+        Message.objects.create(
+            conversation=self.conversation, role="user", content="عندكم Le Male؟"
+        )
 
         self.assertEqual(
-            self.described.under_discussion(history, self.store), frozenset()
+            self.described.under_discussion(self.conversation, self.store), frozenset()
         )
 
     # ── the ranking signal ───────────────────────────────────────────────
@@ -5712,6 +5747,46 @@ class ConversationContinuityTests(TestCase):
         )
 
         self.assertIn("3300", results["dropped"]["Green Irish Tweed"])
+    def test_a_withdrawal_is_announced_only_once(self):
+        """Conversation 1012 told the customer Ambero was out on two consecutive turns.
+
+        The `internal_context` intersection stops the *announcement* reply from counting, but
+        the earlier reply that recommended the perfume is still inside the two-reply window —
+        so it stayed under discussion, still failed the constraints, and was announced again.
+        A withdrawal in the most recent reply has to settle the matter.
+        """
+        # Turn 1: both recommended, both backed by data.
+        self._reply(
+            "أرشحلك Le Male وGreen Irish Tweed.",
+            shown=("Le Male", "Green Irish Tweed"),
+        )
+        first = self.described.under_discussion(self.conversation, self.store)
+
+        # Turn 2: one is withdrawn — named in prose, absent from the data.
+        self._reply(
+            "أرشحلك Le Male. أما Green Irish Tweed خرج من الاختيارات.",
+            shown=("Le Male",),
+        )
+        second = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Green Irish Tweed", first, "it was on the table on the first turn")
+        self.assertNotIn(
+            "Green Irish Tweed", second,
+            "still under discussion, so the same withdrawal is announced twice",
+        )
+        self.assertIn("Le Male", second, "the kept perfume must survive the window")
+
+    def test_a_withdrawal_two_replies_back_does_not_resurface(self):
+        self._reply("أرشحلك Le Male وGreen Irish Tweed.", shown=("Le Male", "Green Irish Tweed"))
+        self._reply("Green Irish Tweed خرج من الاختيارات.", shown=("Le Male",))
+        self._reply("Le Male الـ50 بـ 623 جنيه.", shown=("Le Male",))
+
+        self.assertNotIn(
+            "Green Irish Tweed",
+            self.described.under_discussion(self.conversation, self.store),
+        )
+
+
 
 
 class OrderEditNotCancelTests(TestCase):
@@ -5953,3 +6028,28 @@ class OverBudgetLineTests(TestCase):
 
         self.assertIn("POSITIONAL REFERENCE", source)
         self.assertIn("اول واحد", source)
+
+    def test_the_note_seals_the_two_lists_against_each_other(self):
+        """Handed "Ambero dropped" alongside a keeping list, the model announced *Vanilo* as
+        dropped — a perfume on the keeping list, in budget and available. Telling a customer an
+        available perfume is gone is worse than saying nothing."""
+        from products.services.sales import described
+
+        note = described.continuity_note(
+            ["Vanilo", "Black Opium"],
+            {"Ambero": "مش من نفس النوع اللي طلبه"},
+            converge=False,
+        )
+
+        self.assertIn("ممنوع تقول عن أي عطر تاني إنه خرج", note)
+        self.assertIn("Vanilo", note)
+        self.assertIn("Black Opium", note)
+
+    def test_the_dropped_list_is_stated_as_exhaustive(self):
+        from products.services.sales import described
+
+        note = described.continuity_note(
+            ["Vanilo"], {"Ambero": None}, converge=False
+        )
+
+        self.assertIn("بس هي اللي خرجت", note)

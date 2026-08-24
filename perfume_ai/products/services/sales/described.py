@@ -124,8 +124,8 @@ def repeat_ban_hint(described, follow_up):
     )
 
 
-def under_discussion(history, store, turns=2):
-    """Catalogue names the bot itself named in its last `turns` replies.
+def under_discussion(conversation, store, turns=2):
+    """Perfumes we actually put in front of the customer in our last `turns` replies.
 
     Narrower than `already_described`, and answering a different question. That one asks "has
     the customer heard this before"; this asks "is this what we are talking about right now".
@@ -136,34 +136,57 @@ def under_discussion(history, store, turns=2):
     Le Male, whose 50ml is 623 and which they had been converging on for two turns, was
     dropped for a perfume they had never seen.
 
-    The cause is that `search_products` re-derives its shortlist from scratch every turn.
-    Le Male survived every hard filter and landed at rank 3 — and at rank 3 two persona rules
-    conflict with the data deciding which wins: "لو أبدى اهتمام بواحد — خليه الأساس" against
-    "المنتج اللي مش في البيانات = مش موجود عندنا" plus "اختر أفضل 1-2 منتج". Staying on the
-    perfume was not something the model could do, however firmly it was told to.
+    A perfume counts only if it appears in the reply text **and** in that reply's saved
+    `internal_context` — the product data the model was actually given. Requiring both matters
+    in each direction:
+
+      * the context alone lists up to twelve products, most of which were never mentioned to
+        the customer, so it is not what the conversation is "on";
+      * the text alone includes perfumes named while being *withdrawn*, and that created a
+        feedback loop (conversation 1012). Announcing "Ambero خرج من الاختيارات" put Ambero in
+        the reply, so the next turn found it under discussion again, found it still failing the
+        customer's constraints, and announced the same withdrawal a second time. A dropped
+        perfume is absent from the injected data by definition, so the intersection excludes it
+        and the withdrawal is announced exactly once.
 
     Two replies is the window: it covers the common shape of a recommendation followed by a
     price question about the same perfumes, without pinning the conversation to perfumes the
-    customer has genuinely moved past. Assistant messages only — a perfume the *customer*
-    named is not one we put on the table.
+    customer has moved past.
     """
-    if not history or store is None:
+    if conversation is None or store is None:
         return frozenset()
-
-    recent = [
-        (entry.get("content") or "").lower()
-        for entry in history
-        if entry.get("role") == "assistant"
-    ][-turns:]
-    if not recent:
-        return frozenset()
-
-    blob = " ".join(recent)
 
     from products.models import Product
 
-    names = Product.objects.filter(store=store).values_list("name", flat=True)
-    return frozenset(name for name in names if name and name.lower() in blob)
+    recent = list(
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("content", "internal_context")[:turns]
+    )
+    if not recent:
+        return frozenset()
+
+    names = list(Product.objects.filter(store=store).values_list("name", flat=True))
+
+    def shown_in(content, context):
+        prose, data = (content or "").lower(), (context or "").lower()
+        return {n for n in names if n and n.lower() in prose and n.lower() in data}
+
+    def withdrawn_in(content, context):
+        """Named to the customer with no data behind it — i.e. we said it is gone."""
+        prose, data = (content or "").lower(), (context or "").lower()
+        return {n for n in names if n and n.lower() in prose and n.lower() not in data}
+
+    found = set()
+    for content, context in recent:
+        found |= shown_in(content, context)
+
+    # A withdrawal announced in our most recent reply settles the matter. Without this the
+    # perfume stayed "under discussion" from the earlier reply that recommended it — still
+    # inside the two-reply window — so the same withdrawal was announced on the next turn too.
+    # Conversation 1012 told the customer Ambero was out twice over.
+    latest_content, latest_context = recent[0]
+    return frozenset(found - withdrawn_in(latest_content, latest_context))
 
 
 def continuity_note(keeping, dropped, converge=False):
@@ -205,11 +228,19 @@ def continuity_note(keeping, dropped, converge=False):
             f"- {name}: {reason}" if reason else f"- {name}"
             for name, reason in sorted(reasons.items())
         )
+        # The exclusivity clause is load-bearing. Handed "Ambero dropped" alongside a keeping
+        # list, the model announced *Vanilo* as dropped instead — a perfume that was on the
+        # keeping list, in budget and available. Telling a customer an available perfume is
+        # gone is worse than saying nothing, so the two lists have to be sealed against each
+        # other by name.
+        kept_names = "، ".join(sorted(keeping)) if keeping else "—"
         parts.append(
-            "\n⚠️ العطور دي كانت في الكلام وخرجت من شروطه دلوقتي:\n"
+            "\n⚠️ العطور دي بس هي اللي خرجت من شروطه دلوقتي:\n"
             + lines
             + "\n- 🔴 قول للعميل إنها خرجت، بالسبب المكتوب جنبها بالظبط، بدل ما تشيلها في "
             "السكوت. ❌ ممنوع تخترع سبب تاني — ولو مفيش سبب مكتوب، قول إنها مش مناسبة "
             "لطلبه وبس.\n"
+            f"- 🔴 ❌ ممنوع تقول عن أي عطر تاني إنه خرج أو مش متاح. العطور دي لسه متاحة "
+            f"ومناسبة: {kept_names}.\n"
         )
     return "".join(parts)
