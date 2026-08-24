@@ -148,6 +148,16 @@
             border-bottom-right-radius: 0;
         }
 
+        /* A human colleague's reply, sent from this dashboard. Saved with role="agent"
+           rather than "assistant" so the bot never reads it back as its own voice —
+           which means it needs its own bubble here, or it renders unstyled. */
+        .message.agent {
+            align-self: flex-start;
+            background: var(--user-msg);
+            border: 1px dashed var(--primary);
+            border-bottom-right-radius: 0;
+        }
+
         .message-time {
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -541,7 +551,9 @@
             }
             
             const div = document.createElement('div');
-            div.className = `message assistant`;
+            // "agent", matching the role the reply endpoint saves it under — otherwise
+            // the bubble restyles itself a second later when fetchMessages() reruns.
+            div.className = `message agent`;
             div.innerHTML = `
                 <div>${text.replace(/\\n/g, '<br>')}</div>
                 <div class="message-time">الآن (أنت)</div>
