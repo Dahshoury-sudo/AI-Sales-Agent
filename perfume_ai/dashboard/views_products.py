@@ -17,8 +17,16 @@ class ProductListView(APIView):
     def get(self, request):
         store = request.store
         search = request.GET.get("search", "").strip()
-        page = int(request.GET.get("page", 1))
-        per_page = int(request.GET.get("per_page", 20))
+        
+        try:
+            page = int(request.GET.get("page", 1))
+        except (ValueError, TypeError):
+            page = 1
+            
+        try:
+            per_page = int(request.GET.get("per_page", 20))
+        except (ValueError, TypeError):
+            per_page = 20
 
         products = Product.objects.filter(store=store).select_related("brand", "category")
 
