@@ -2666,6 +2666,23 @@ class OrphanedConnectorTests(TestCase):
         self.assertIn("700", cleaned)
         self.assertTrue(cleaned.endswith("جنيه."), cleaned)
 
+    def test_the_interrogative_particle_is_not_stranded(self):
+        """A live reply ended on "...1100 جنيه. هل" — هل introduces the question that was just
+        removed and can never end an Arabic sentence."""
+        head = "🔹 Dior Homme Sport 90 ملي بـ 1100 جنيه. "
+        for closer in ("هل تحب أساعدك في الطلب؟", "هل تحب تطلب؟", "وهل تحب نكمل الطلب؟"):
+            with self.subTest(closer=closer):
+                self.assertTrue(
+                    strip_premature_closing(head + closer).rstrip().endswith("جنيه."),
+                    strip_premature_closing(head + closer),
+                )
+        for closer in ("هل تحب تعرف الأسعار؟", "هل عايز حاجة تانية؟"):
+            with self.subTest(closer=closer):
+                self.assertTrue(
+                    sanitize_reply(head + closer).rstrip().endswith("جنيه."),
+                    sanitize_reply(head + closer),
+                )
+
     def test_a_sentence_final_word_is_not_mistaken_for_a_connector(self):
         """"بس" and "كمان" end ordinary Egyptian sentences and must survive."""
         for reply in ("دي الأسعار بس", "وفيه حجم 50 ملي كمان"):
@@ -6495,6 +6512,127 @@ class DemonstrativeReferenceTests(TestCase):
 
         self.assertNotEqual(second, _WHICH_PERFUME)
         self.assertTrue(second.strip())
+
+
+class NamedPerfumeIsNeverDeniedTests(TestCase):
+    """A perfume absent from the shortlist must not be reported as out of stock.
+
+    Conversation 1099: the customer asked "ليه مرشحتش versace eros" and was told
+    "عطر Versace Eros مش متوفر عندنا حالياً" — while Eros sat in the catalogue, active, at
+    1019 جنيه for the 90ml. It had even been in the injected shortlist one turn earlier.
+
+    Two causes, both fixed here. The classifier sent "ليه مرشحتش X" to the recommendation
+    flow, which never looks a named perfume up. And the shortlist is a filtered, capped
+    selection of a 47-product catalogue, but the persona told the model that a product absent
+    from its data does not exist — so with 12 slots and 47 products, false denials were
+    guaranteed rather than accidental.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Versace")
+        self.eros = Product.objects.create(
+            store=self.store, brand=self.brand, name="Eros", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=50, price=666, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+
+    # ── the deterministic name fallback ──────────────────────────────────
+    def test_a_named_perfume_is_matched_without_a_model_call(self):
+        from products.services.product_info import _named_in_message
+
+        found = _named_in_message("ليه مرشحتش versace eros", self.store)
+
+        self.assertEqual([p.name for p in found], ["Eros"])
+
+    def test_a_perfume_that_is_genuinely_absent_stays_absent(self):
+        """The guard must not manufacture a match — "بلاك اوركيد" really is not stocked."""
+        from products.services.product_info import _named_in_message
+
+        self.assertEqual(_named_in_message("عندكم بلاك اوركيد؟", self.store), [])
+
+    def test_a_message_naming_nothing_matches_nothing(self):
+        from products.services.product_info import _named_in_message
+
+        self.assertEqual(_named_in_message("عايز عطر رجالي فواح", self.store), [])
+
+    def test_the_fallback_is_none_safe(self):
+        from products.services.ai.recommendation import _named_in_message as rec_named
+        from products.services.product_info import _named_in_message as info_named
+
+        self.assertEqual(info_named(None, self.store), [])
+        self.assertEqual(info_named("eros", None), [])
+        self.assertEqual(rec_named("", self.store), [])
+
+    def test_both_branches_share_the_same_matcher(self):
+        """The recommendation branch could deny a perfume too, so it needs the guard as well."""
+        from products.services.ai.recommendation import _named_in_message as rec_named
+        from products.services.product_info import _named_in_message as info_named
+
+        message = "ليه مرشحتش versace eros"
+
+        self.assertEqual(
+            [p.name for p in rec_named(message, self.store)],
+            [p.name for p in info_named(message, self.store)],
+        )
+
+    # ── product_info falls back when the resolver comes back empty ────────
+    def test_product_info_recovers_when_the_resolver_returns_nothing(self):
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info("ليه مرشحتش versace eros", [], self.store)
+
+        self.assertIn("Eros", context)
+        self.assertIn("1019", context)
+
+    def test_product_info_still_reports_a_genuinely_unknown_perfume(self):
+        """The guard must not turn an unknown name into a resolved product. Eros may still
+        appear below as a suggested alternative — that is the existing fallback, and the
+        distinction is the "لم يتم التعرف" notice at the top."""
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info("عندكم بلاك اوركيد؟", [], self.store)
+
+        self.assertIn("لم يتم التعرف على اسم منتج محدد", context)
+        self.assertNotIn("بيانات المنتجات الحقيقية", context)
+
+    # ── the prompt rules that licensed the denial ────────────────────────
+    def test_the_persona_separates_absent_from_unavailable(self):
+        """The red line used to read "المنتج اللي مش في البيانات = مش موجود عندنا"."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("مش في البيانات دي\" ≠ \"مش موجود في الستور", prompt)
+        self.assertNotIn("المنتج اللي مش في البيانات = مش موجود عندنا", prompt)
+
+    def test_the_nothing_found_branch_no_longer_asserts_unavailability(self):
+        import inspect
+
+        from products.services.ai import recommendation
+
+        source = inspect.getsource(recommendation.recommend)
+
+        self.assertIn("_named_in_message(message, store)", source)
+        self.assertNotIn("وأخبره أن العطر غير متوفر حالياً", source)
+
+    def test_the_classifier_routes_why_didnt_you_recommend_to_product_info(self):
+        import inspect
+
+        from products.services.ai import classifier
+
+        source = inspect.getsource(classifier.classify)
+
+        self.assertIn("ASKING WHY A NAMED PERFUME WAS NOT OFFERED", source)
+        self.assertIn("ليه مرشحتش", source)
 
 
 class BudgetWarningReachesTheCustomerTests(TestCase):

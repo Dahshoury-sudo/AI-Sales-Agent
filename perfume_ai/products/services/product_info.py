@@ -4,9 +4,44 @@ from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .fallback import suggest_alternatives
 
+
+def _named_in_message(message, store):
+    """Catalogue perfumes the customer named, matched deterministically.
+
+    A fallback for `resolve_products`, which is an LLM call and can come back empty on a
+    message that plainly names a perfume. When it does, the caller falls through to the
+    "no product recognised" branch, and the model — told that a product absent from its data
+    does not exist — reports the perfume as unavailable.
+
+    That is what happened to Versace Eros in conversation 1099: the customer asked
+    "ليه مرشحتش versace eros", the reply said "مش متوفر عندنا حالياً", and Eros was in the
+    catalogue at 1019 جنيه the whole time. `naming.mentioned_in` resolves it in one pass with
+    no model call, so the data is simply there and the question cannot arise.
+
+    Latin names only, which is `naming.tokens`' existing limitation — an Arabic
+    transliteration still depends on the LLM resolver.
+    """
+    if not message or store is None:
+        return []
+
+    from products.models import Product
+
+    from .sales import naming
+
+    candidates = list(
+        Product.objects.filter(store=store, is_active=True)
+        .prefetch_related("variants")
+        .select_related("brand")
+    )
+    return naming.mentioned_in(message, candidates)
+
+
 def get_product_info(message, history=None, store=None):
 
     products = resolve_products(message, history, store)
+
+    if not products:
+        products = _named_in_message(message, store)
 
     if products:
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"

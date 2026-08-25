@@ -29,9 +29,11 @@ logger = logging.getLogger(__name__)
 # "…وأغنى شوية. لو تحب تعرف الأسعار؟" was stripped down to "…وأغنى شوية. ل" and the reply
 # ended on an orphaned letter. Evaluation caught that in a live reply (scenario M3).
 # A `\bو` fix is not enough: it turns the orphaned ل into an orphaned لو, which is a reply
-# ending in "if". The alternation below consumes لو / ولو / a bare و together with the
+# ending in "if". The alternation below consumes لو / ولو / هل / a bare و together with the
 # question, and _trim_dangling_connector is the backstop for whatever slips past it.
-_LEAD = r"\s*(?:(?:و\s*)?لو\s+|و\s*)?"
+# "هل" was added after a live reply ended on it: "...1100 جنيه. هل" — the interrogative
+# particle introduces the question that was just removed and can never end a sentence.
+_LEAD = r"\s*(?:(?:و\s*)?لو\s+|(?:و\s*)?هل\s+|و\s*)?"
 
 BANNED_CLOSERS = (
     # "تحب تعرف الأسعار والأحجام المتاحة؟" / "تحب تعرف أسعارهم والأحجام؟"
@@ -65,7 +67,7 @@ BANNED_CLOSERS = (
 # when a strip actually happened, and only mid-text (never the whole reply), so a reply that
 # legitimately ends on one is left alone. "بس" and "كمان" are deliberately absent: both are
 # ordinary sentence-final words in Egyptian ("دي الأسعار بس", "وفيه 50 ملي كمان").
-_DANGLING_TAIL = re.compile(r"\s+(?:ل|لو|ولو|و|أو|او|لكن|يعني)\s*[.،,؟?!]*\s*$")
+_DANGLING_TAIL = re.compile(r"\s+(?:ل|لو|ولو|و|أو|او|لكن|يعني|هل|وهل)\s*[.،,؟?!]*\s*$")
 
 
 def _trim_dangling_connector(text):

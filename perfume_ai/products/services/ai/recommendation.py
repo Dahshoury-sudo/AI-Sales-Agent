@@ -110,6 +110,31 @@ def _gender_note(gender_unknown):
     )
 
 
+def _named_in_message(message, store):
+    """Catalogue perfumes the customer named, matched deterministically.
+
+    Used only on the nothing-found path, to tell apart "no product matched the criteria" from
+    "the customer asked for a perfume by name and the shortlist did not happen to contain it".
+    The second is not an availability problem and must never be reported as one.
+
+    Latin names only — `naming.tokens` cannot match an Arabic transliteration, so that case
+    still relies on the resolver upstream.
+    """
+    if not message or store is None:
+        return []
+
+    from products.models import Product
+
+    from ..sales import naming
+
+    candidates = list(
+        Product.objects.filter(store=store, is_active=True)
+        .prefetch_related("variants")
+        .select_related("brand")
+    )
+    return naming.mentioned_in(message, candidates)
+
+
 def _performance_note(products, intent):
     """Pin the lead recommendation to the ranking, and make it quote the recorded figure.
 
@@ -299,8 +324,33 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 """
 
     else:
-        context = ""
-        user_content = f"""
+        # Before reporting nothing found, check whether the customer simply named a perfume
+        # the shortlist happened to miss. The shortlist is a filtered, capped selection of a
+        # 47-product catalogue, so "not in my data" and "not in the store" are different
+        # statements — and this branch used to tell the customer the second one. Conversation
+        # 1099: "ليه مرشحتش versace eros" got "مش متوفر عندنا حالياً" while Eros sat in the
+        # catalogue at 1019 جنيه.
+        named = _named_in_message(message, store)
+        if named:
+            context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
+            context += format_products(named, max_price=max_price)
+            user_content = f"""
+═══ طلب العميل ═══
+{message}
+{budget_note}
+
+═══ ملحوظة مهمة ═══
+العميل سأل عن عطر بالاسم، والعطر ده **موجود عندنا** وبياناته تحت. الشورت ليست اللي جالك قبل كده كانت مجموعة مختارة مش الكتالوج كله، فمجرد إنه مكانش فيها لا يعني إنه مش متوفر.
+
+═══ تعليمات الرد ═══
+1. 🔴 جاوب على سؤاله عن العطر ده من البيانات تحت. ❌ ممنوع تقول إنه مش متوفر أو مش موجود.
+2. 🔴 لو كان بيسأل ليه مرشحتهوش قبل كده، اعتذر في نص جملة قصيرة وقوله البيانات بتاعته، وخلاص. ❌ ممنوع تدخل في تفاصيل عن طريقة اختيارك للترشيحات.
+3. {price_instruction_alt}
+4. 🔴 تجاهل أي حجم Stock Status = ❌ واذكر المتوفر بس.
+"""
+        else:
+            context = ""
+            user_content = f"""
 ═══ طلب العميل ═══
 {message}
 
@@ -310,7 +360,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 ═══ تعليمات الرد ═══
 1. ⭐ إذا كان العميل يطلب المزيد من الخيارات (مثل "إيه تاني؟"، "غيره"، "في حاجة تانية")، اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي بتطابق طلبه بالظبط، واعرض عليه يغير المواصفات بشكل عام عشان يظهرله عطور تانية. ❌ ممنوع تقترح عليه روائح محددة (زي "تحب حاجة خشبية؟" أو "فريش") لأنك لا تعرف ما هو متوفر في المخزون حالياً.
 2. ⭐ إذا كانت رسالة العميل غامضة أو غير مفهومة، لا تعتذر عن عدم توفر العطر، بل قل له بوضوح: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر عشان أقدر أساعدك؟".
-3. أما إذا كان يطلب عطراً أو طلباً واضحاً ولكنه غير متوفر، فاعتذر بلطف للعميل وأخبره أن العطر غير متوفر حالياً، واسأله لو عايز ترشحله بديل.
+3. أما إذا كان يطلب عطراً بالاسم وهو مش في البيانات اللي معاك: ❌ ممنوع تقول إنه "مش متوفر" أو "مش موجود عندنا" — إنت شايف جزء من الكتالوج بس. ✅ قول "لحظة أتأكدلك منه" واسأله لو يحب ترشحله بديل في نفس الجو. ممنوع تجزم بعدم التوفر إلا لو البيانات نفسها بتقول كده.
 4. ❌ ممنوع ترشيح أو ذكر أي منتج غير موجود أو اختراع أسماء منتجات.
 5. رد بشكل قصير ومباشر (1-4 جمل).
 6. 🔴🔴 متسألش أسئلة كتير. سؤال واحد بس لو محتاج توضيح، ومتسألش سؤال متابعة لو الموقف مش محتاج.
