@@ -165,6 +165,24 @@ _LONGEVITY_WORDS = (
 )
 
 
+def peak_hours(text):
+    """The largest hour figure a free-text performance field carries, or None.
+
+    Split out of `_ordinal` so a caller can discriminate *inside* an ordinal band without
+    re-banding it. `_ordinal` maps everything from 7 to 12 hours onto 3, which is the whole
+    7-12 range a real catalogue lives in — so an 8-hour perfume and an 11-hour one are
+    indistinguishable to it, and a customer who says الثبات أهم حاجة changes nothing.
+    Re-banding is not the fix: `_ordinal` also drives `_performance`, whose stronger/lighter
+    verdict appears in the similarity reason line for every comparison in the product.
+    """
+    if not text:
+        return None
+    lowered = str(text).lower()
+    digits = "".join(character if character.isdigit() else " " for character in lowered)
+    hours = [int(part) for part in digits.split() if part]
+    return max(hours) if hours else None
+
+
 def _ordinal(text, vocabulary):
     if not text:
         return None
@@ -173,10 +191,8 @@ def _ordinal(text, vocabulary):
         if any(word in lowered for word in words):
             return rank
     # "8 hours" and "10-12 ساعة" carry a number rather than a word.
-    digits = "".join(character if character.isdigit() else " " for character in lowered)
-    hours = [int(part) for part in digits.split() if part]
-    if hours:
-        peak = max(hours)
+    peak = peak_hours(lowered)
+    if peak is not None:
         if peak <= 3:
             return 1
         if peak <= 6:

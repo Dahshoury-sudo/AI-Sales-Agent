@@ -189,6 +189,61 @@ def under_discussion(conversation, store, turns=2):
     return frozenset(found - withdrawn_in(latest_content, latest_context))
 
 
+def offered_in_order(conversation, store, turns=2):
+    """The perfumes under discussion, in the order we named them in our latest reply.
+
+    `under_discussion` answers "which perfumes are we on", and a set is the right shape for
+    that. Resolving a *reference* needs the sequence as well: "اول واحد" points at a position,
+    and a bare "ده" points at the one we led with.
+
+    The failure this exists for (evaluation scenario F1): the bot recommended two perfumes,
+    the customer replied "تمام هاخد ده، وضيف كمان واحد للهدية", and the order extractor
+    answered "مش واضحلي عايز تطلب أنهي عطر" — twice, byte for byte, because the next message
+    ("خليه 90 ملي بدل الـ50") named no perfume either. The extractor is told that an ordinal
+    means "the perfume you named in your previous reply" but was never handed that list, and
+    is separately told not to pull products out of the history when the cart is empty. Both
+    rules were obeyed and the customer was stuck.
+
+    Ordering is by first appearance in the reply prose, which is the order the customer read
+    them in. Soundness is inherited from `under_discussion`: a perfume must appear in both the
+    prose and that reply's injected data, so a withdrawn perfume is never offered as a referent.
+
+    The scan matches the LONGEST name at each position rather than asking each name where it
+    occurs. Catalogue names nest — "Stronger With You" is a prefix of "Stronger With You
+    Intensely" — so a per-name `find` returns the same index for both and the shorter, more
+    generic name wins the tie. That would point "ده" at the wrong perfume, which is the whole
+    thing this function exists to get right.
+    """
+    names = under_discussion(conversation, store, turns=turns)
+    if not names:
+        return []
+
+    latest = (
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("content", flat=True)
+        .first()
+    )
+    prose = (latest or "").lower()
+
+    longest_first = sorted(names, key=len, reverse=True)
+    ordered, remaining = [], set(names)
+    position = 0
+    while position < len(prose) and remaining:
+        for name in longest_first:
+            if name in remaining and prose.startswith(name.lower(), position):
+                ordered.append(name)
+                remaining.discard(name)
+                position += len(name)
+                break
+        else:
+            position += 1
+
+    # Whatever is under discussion from the older reply but absent from the latest one sorts
+    # after everything we just said — the right precedence for resolving a reference.
+    return ordered + sorted(remaining)
+
+
 def continuity_note(keeping, dropped, converge=False):
     """Stay on what the conversation is already about, and account for what left it.
 

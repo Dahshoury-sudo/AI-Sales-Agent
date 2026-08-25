@@ -177,6 +177,38 @@ def _ordinal_hit(field_value, wanted, vocabulary, words):
     return 0.5 if target - actual == 1 else 0.0
 
 
+# The widest ordinal band, in hours: `similarity._ordinal` maps everything from 7 to 12 onto
+# 3, and 3 is what "long-lasting" asks for. A real catalogue lives almost entirely inside that
+# band, so every candidate scored an identical 1.0 and longevity discriminated nothing —
+# raising WEIGHTS["longevity"] to any value would have multiplied a constant and reordered
+# nothing. Evaluation scenario M1: nine of eleven candidates tied, and the customer who had
+# just said "بس اهم حاجه الثبات" was handed an 8-hour perfume over an 11-hour one.
+_BAND_FLOOR, _BAND_CEILING = 7, 12
+
+# Ordering *within* a band, never across one. Capped at a quarter of the signal's own weight,
+# which keeps it far below `continuity` (2.5) — a refinement must not displace the perfume the
+# customer was converging on — and leaves the full-credit hit untouched, so a product whose
+# only reason was a longevity match still has one.
+_WITHIN_BAND_FRACTION = 0.25
+
+
+def _within_band_bonus(key, recorded, hit):
+    """Break a tie inside an ordinal band using the recorded hours.
+
+    Additive on top of the hit, and deliberately tiny: it decides between two perfumes that
+    already satisfy the request, not whether the request is satisfied.
+    """
+    if hit < 1.0:
+        return 0.0
+    peak = similarity.peak_hours(recorded)
+    if peak is None:
+        return 0.0
+
+    span = _BAND_CEILING - _BAND_FLOOR
+    above = min(max(peak - _BAND_FLOOR, 0), span)
+    return WEIGHTS[key] * _WITHIN_BAND_FRACTION * (above / span)
+
+
 def _affordable_and_obtainable(product, max_price):
     """Is there a bottle that is both within budget and actually sellable?
 
@@ -305,14 +337,21 @@ def rank(products, intent, reference=None, keep=()):
             wanted = intent.get(key)
             if not wanted:
                 continue
-            hit = _ordinal_hit(getattr(product, attribute, ""), wanted, vocabulary, words)
+            recorded = getattr(product, attribute, "")
+            hit = _ordinal_hit(recorded, wanted, vocabulary, words)
             if hit <= 0:
                 entry.mismatches.append(
                     f"{'ثباته' if key == 'longevity' else 'فوحانه'} مش بيطابق طلبه"
                 )
                 continue
-            entry.score += WEIGHTS[key] * hit
-            entry.reasons.append(label if hit >= 1.0 else short_label)
+            entry.score += WEIGHTS[key] * hit + _within_band_bonus(key, recorded, hit)
+            reason = label if hit >= 1.0 else short_label
+            # The recorded value rides along so the reply can quote it instead of asserting
+            # "وثباتهم كويس" with no number, which is what the evaluation caught it doing on
+            # the turn the customer said longevity mattered most.
+            if hit >= 1.0 and (recorded or "").strip():
+                reason = f"{reason} ({str(recorded).strip()})"
+            entry.reasons.append(reason)
 
         if intent.get("gender") and product.gender == str(intent["gender"]).lower():
             entry.score += WEIGHTS["gender"]

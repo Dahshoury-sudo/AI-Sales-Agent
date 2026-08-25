@@ -53,6 +53,14 @@ _CLOSING = (
     re.compile(r"نبعتلك\S*\s+الطلب"),
 )
 
+# Not a close, even though `عايز تطلب` matches above: asking WHICH perfume is a clarifying
+# question, and the agent cannot close on an order it has not identified yet. This produced
+# two false `premature_close` findings on the one scenario where the agent was in fact stuck.
+_NOT_A_CLOSE = (
+    re.compile(r"مش\s+واضح\S*\s+عايز\s+تطلب"),
+    re.compile(r"عايز\s+تطلب\s+[أا]نهي"),
+)
+
 # Empty filler questions the persona bans outright.
 _FILLER = (
     re.compile(r"(?:عايز|محتاج|تحب)\s+حاج[هة]\s+تاني[هة]\s*[؟?]"),
@@ -62,10 +70,16 @@ _FILLER = (
     re.compile(r"[أا]قدر\s+[أا]ساعدك\s+(?:في\s+)?[أا]?ي[هة]?\s*[؟?]"),
 )
 
+# Re-asking the budget has to be an actual QUESTION. A bare `ميزانيتك` fired on every
+# statement that merely referred to it — "الـ90 أغلى من ميزانيتك", "داخل ميزانيتك",
+# "أعلى شوية من ميزانيتك" — and produced four false `reasked_budget` findings in one
+# six-scenario run, none of them a re-ask. These are rescore.py's stricter forms, which
+# were already correct; the loose ones lived on here.
 _ASK_BUDGET = (
-    re.compile(r"ميزانيتك"),
+    re.compile(r"ميزانيتك\s+(?:في\s+حدود\s+)?كام"),
     re.compile(r"حدود\s+كام"),
-    re.compile(r"في\s+رينج"),
+    re.compile(r"ميزانيتك\s+[أا]يه"),
+    re.compile(r"في\s+رينج\s+[أا]يه"),
     re.compile(r"السعر\s+اللي\s+في\s+بالك"),
 )
 
@@ -158,11 +172,19 @@ def _allowed_numbers(truth, context, customer_text):
     return allowed
 
 
-def check_reply(reply, *, truth, context, customer_text, turn_state):
-    """Findings for one bot reply. Each finding is (code, severity, detail)."""
+def check_reply(reply, *, truth, context, customer_text, turn_state, history_text=""):
+    """Findings for one bot reply. Each finding is (code, severity, detail).
+
+    `history_text` is everything said earlier in the conversation. Without it a number the
+    customer typed two turns ago reads as invented — the summary that correctly echoed back
+    the phone numbers from the previous turn produced two `invented_number` criticals, the
+    single worst class of false positive this file can emit.
+    """
     findings = []
     reply = reply or ""
-    allowed = _allowed_numbers(truth, context, customer_text)
+    allowed = _allowed_numbers(
+        truth, context, f"{customer_text or ''}\n{history_text or ''}"
+    )
 
     # ── Invented numbers (prices) ──────────────────────────────────────────
     for number in _numbers(reply):
@@ -228,15 +250,16 @@ def check_reply(reply, *, truth, context, customer_text, turn_state):
     # ── Premature closing ─────────────────────────────────────────────────
     stage = turn_state.get("stage")
     closing_ok = stage in ("purchase_intent", "order_collection")
-    for pattern in _CLOSING:
-        if pattern.search(reply):
-            if not closing_ok:
-                findings.append((
-                    "premature_close", "medium",
-                    f"closing question at stage '{stage}' (leaked past the sanitizer): "
-                    f"/{pattern.pattern}/",
-                ))
-            break
+    if not any(pattern.search(reply) for pattern in _NOT_A_CLOSE):
+        for pattern in _CLOSING:
+            if pattern.search(reply):
+                if not closing_ok:
+                    findings.append((
+                        "premature_close", "medium",
+                        f"closing question at stage '{stage}' (leaked past the sanitizer): "
+                        f"/{pattern.pattern}/",
+                    ))
+                break
 
     # ── Banned filler ─────────────────────────────────────────────────────
     for pattern in _FILLER:
@@ -287,11 +310,34 @@ def check_reply(reply, *, truth, context, customer_text, turn_state):
     return findings
 
 
+def _strip_product_names(text, truth):
+    """Remove catalogue names before scanning a reply for numbers.
+
+    "Baccarat Rouge 540" carries a number inside the product name, and it was read as a
+    540 EGP price quoted against a 300 budget — a false `over_budget_offer` on a reply that
+    had in fact handled the budget honestly. Longest name first so a nested name cannot leave
+    a fragment behind.
+    """
+    cleaned = text or ""
+    for name in sorted(truth.get("names") or (), key=len, reverse=True):
+        if name:
+            cleaned = re.sub(re.escape(name), " ", cleaned, flags=re.IGNORECASE)
+    return cleaned
+
+
 def check_budget_respected(reply, budget, truth):
-    """Any catalogue price quoted in the reply that is well above the stated budget."""
+    """Any catalogue price quoted in the reply that is well above the stated budget.
+
+    A price named *as* being over budget is not a finding. Scenario X3 asks for something
+    impossible at 300 EGP and the correct answer names the nearest options and says plainly
+    that they cost more — the skill requires exactly that, so flagging it inverted the grade.
+    """
+    if any(pattern.search(reply or "") for pattern in _BUDGET_ACKNOWLEDGED):
+        return []
+
     over = []
     tolerance = budget * 1.2
-    for number in _numbers(reply):
+    for number in _numbers(_strip_product_names(reply, truth)):
         base = number.split(".")[0]
         if base not in {p.split(".")[0] for p in truth["prices"]}:
             continue
@@ -300,5 +346,54 @@ def check_budget_respected(reply, budget, truth):
         except ValueError:
             continue
         if value > tolerance:
+            over.append(value)
+    return over
+
+
+# "الإجمالي: 1560 جنيه" / "المجموع 1753" / "الطلب كله بـ 1560"
+_STATED_TOTAL = re.compile(
+    r"(?:الإجمالي|الاجمالي|المجموع|الطلب\s+كله)\s*"
+    r"(?:هيبقى|بيبقى|يبقى|هو|بـ|ب|:)?\s*(\d[\d.,]*)"
+)
+
+
+# The reply telling the customer, in its own words, that it is over their budget. A total
+# stated *with* this is correct salesmanship — the skill explicitly allows going over budget
+# as long as it is named — so only a SILENT overage is a finding.
+_BUDGET_ACKNOWLEDGED = (
+    re.compile(r"[أا]على\s+من\s+(?:ال)?ميزاني"),
+    re.compile(r"[أا]كتر\s+من\s+(?:ال)?ميزاني"),
+    re.compile(r"فوق\s+(?:ال)?ميزاني"),
+    re.compile(r"خارج\s+(?:ال)?ميزاني"),
+    re.compile(r"زياد[هة]\s+عن\s+(?:ال)?ميزاني"),
+    re.compile(r"مش\s+داخل\s+(?:ال)?ميزاني"),
+)
+
+
+def check_stated_total(reply, budget, truth):
+    """A total the reply states out loud, checked against the stated budget.
+
+    Deliberately independent of `_allowed_numbers`, which whitelists every catalogue price
+    times one to four *and every pairwise sum* so that legitimate order totals are not flagged
+    as invented. The side effect is that a fabricated total is unflaggable by construction:
+    2 × 780 = 1560 is a product of real prices, so `invented_number` stayed silent while the
+    agent quoted 1560 against a stated budget of 900 for a cart that did not exist.
+
+    A stated total is the one number where the arithmetic being valid is not the point. What
+    matters is whether the customer was told. A reply that names the overage has done its job.
+    """
+    if not budget:
+        return []
+    if any(pattern.search(reply or "") for pattern in _BUDGET_ACKNOWLEDGED):
+        return []
+
+    over = []
+    for match in _STATED_TOTAL.finditer(reply or ""):
+        raw = match.group(1).rstrip(".,").replace(",", "")
+        try:
+            value = float(raw)
+        except ValueError:
+            continue
+        if value > float(budget):
             over.append(value)
     return over

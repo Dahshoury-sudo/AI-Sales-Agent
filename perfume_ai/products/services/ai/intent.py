@@ -2,6 +2,39 @@ import json
 
 from .client import chat
 
+# The closed vocabulary the prompt asks for. Enforced here as well as asked for there,
+# because the prompt is advice and this is arithmetic: `avoid_traits` is the only extracted
+# field scored as a PENALTY (ranking.WEIGHTS["avoid"] is -3.0), so a value the customer never
+# said does not merely add noise — it actively pushes away perfumes that suit them.
+#
+# Evaluation scenario M1 is the case: "مش عايز حاجه منتشره" (not widely owned) came back as
+# avoid_traits ["loud", "mainstream"] and persisted for the whole conversation. "loud" is in
+# vocabulary and is read as heaviness (ranking.py:213), so seven of eleven candidates were
+# penalised -3.0 — including the longest-lasting ones, one turn before the customer said
+# longevity was their top priority. "mainstream" is not in vocabulary at all and reached the
+# Arabic prompt as the literal string "مش mainstream".
+AVOID_TRAITS = frozenset({"heavy", "suffocating", "sweet", "loud", "strong", "old"})
+
+
+def _sanitize(intent):
+    """Drop extracted values that are outside a closed vocabulary.
+
+    Only `avoid_traits` is filtered. The other free-text fields are matched against the
+    catalogue downstream, where an unknown value simply fails to match; this one is scored
+    directly, so an unknown value has to be removed before it reaches the ranker.
+    """
+    if not isinstance(intent, dict):
+        return {}
+
+    traits = intent.get("avoid_traits")
+    if isinstance(traits, (list, tuple, set)):
+        intent["avoid_traits"] = [
+            trait for trait in traits
+            if str(trait).strip().lower() in AVOID_TRAITS
+        ]
+
+    return intent
+
 
 def extract_intent(message: str, history=None, store=None):
     store_name_text = f"The name of the store is '{store.name}'." if store else ""
@@ -27,7 +60,7 @@ Schema:
     "similar_to": "name of the ONE perfume they want something similar to, or null",
     "similar_to_notes": ["note1", "note2"] or [],
     "avoid_notes": ["note1", "note2"] or [],
-    "avoid_traits": ["heavy", "suffocating", "sweet", "loud"] or [],
+    "avoid_traits": subset of ["heavy", "suffocating", "sweet", "loud", "strong", "old"] or [] — CLOSED list, nothing else,
     "wants_uncommon": true or false
 }}
 
@@ -51,15 +84,16 @@ Rules:
 - CRITICAL — "SAME VIBE" IS A SIMILARITY REQUEST: if the user asks for something in the same character as a perfume already discussed (e.g. "عايز حاجة تانية في نفس الجو", "نفس الستايل", "زي اللي جبته", "قريب من اللي اشتريته", "نفس النوع بس مختلف"), you MUST set 'similar_to' to that perfume's name from the history AND add it to 'exclude_names'. Returning only 'exclude_names' loses the whole point of the request — there is then nothing to match against, and the customer who told us exactly what they like gets asked what they like.
 - CRITICAL — EXCLUSIONS: If the user says what they do NOT want, capture it:
   • A specific ingredient they don't want (e.g. "مش بحب العود", "من غير مسك") → 'avoid_notes' (English).
-  • A characteristic they don't want → 'avoid_traits', using ONLY these values: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة).
+  • A characteristic they don't want → 'avoid_traits'. This is a CLOSED list of exactly six values and you may return NOTHING else: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة). A value outside this list is discarded, so inventing one silently loses the customer's constraint.
   • Example: "مش عايز حاجة تقيلة أو تخنق اللي حواليا" → avoid_traits: ["heavy", "suffocating"].
   ❌ Never put an avoided thing in 'notes' — that would search FOR the thing they rejected.
-- If the user wants something not mainstream (e.g. "مش منتشرة", "مش موجودة عند حد", "حاجة مختلفة", "مش مشهورة", "حاجة نادرة"), set 'wants_uncommon' to true.
+  ❌ POPULARITY IS NOT INTENSITY. "مش منتشر" / "مش مشهور" / "مش موجود عند حد" describe how MANY people own a perfume, not how strong it smells. They set 'wants_uncommon' ONLY. Putting them in 'avoid_traits' as "loud"/"strong"/"heavy" — or inventing "mainstream" — is a serious error: 'avoid_traits' is a heavy PENALTY, so it would push away the powerful, long-lasting perfumes the customer never objected to. A customer who said "مش منتشرة" has said nothing whatsoever about strength.
+- If the user wants something not mainstream (e.g. "مش منتشرة", "مش موجودة عند حد", "حاجة مختلفة", "مش مشهورة", "حاجة نادرة"), set 'wants_uncommon' to true — and leave 'avoid_traits' untouched.
 - If the user asks for high longevity (e.g. "ثبات عالي", "ثباته يومين"), set 'longevity' to 'long-lasting' or 'eternal'.
 - If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
 - CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
-- 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, or projection unless the user EXPLICITLY mentioned them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
+- 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, projection, or avoid_traits unless the user EXPLICITLY mentioned them. 'avoid_traits' is the most damaging field to guess, because it is scored as a penalty rather than a preference — a trait the customer never rejected actively pushes away perfumes that suit them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
 - STATE MANAGEMENT: Accumulate preferences from the history (e.g., if they asked for 'female' before, and now say 'Dior', return both). BUT if the user's latest message changes or overrides a previous preference (e.g., they wanted 'Xerjoff' before but now want 'Dior'), OVERRIDE the old preference and ONLY return the NEW one ('Dior'). Do NOT include outdated criteria from the history.
 """
 
@@ -80,6 +114,6 @@ Rules:
     response = chat(messages, profile="extract", response_format={"type": "json_object"})
 
     try:
-        return json.loads(response)
+        return _sanitize(json.loads(response))
     except Exception:
         return {}

@@ -1,0 +1,22 @@
+{
+  "F1": [
+    {
+      "turn": 3,
+      "code": "repeated_reply",
+      "severity": "high",
+      "detail": "100% similar to the previous reply — the customer asked for something new and got the same answer"
+    }
+  ],
+  "M1": [],
+  "M3": [],
+  "P2": [
+    {
+      "turn": 2,
+      "code": "repeated_reply",
+      "severity": "high",
+      "detail": "85% similar to the previous reply — the customer asked for something new and got the same answer"
+    }
+  ],
+  "S1": [],
+  "X3": []
+}

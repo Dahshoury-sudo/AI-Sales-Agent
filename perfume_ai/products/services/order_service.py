@@ -178,7 +178,7 @@ def _payment_instructions(store):
 
 
 def _over_budget_warning(conversation, items_to_create):
-    """Flag any line priced above the budget the customer stated earlier.
+    """Flag a line, or a cart total, priced above the budget the customer stated earlier.
 
     The order flow never consulted `conversation.preferences`, so a 1085 line was assembled in
     silence against a stated 900 — and the only thing that caught it was the customer reading
@@ -187,6 +187,19 @@ def _over_budget_warning(conversation, items_to_create):
 
     Phrased as a question rather than a refusal. The customer may well want it, and the summary
     is already the moment they are being asked to check.
+
+    Three defects the evaluation found here, all fixed:
+
+      * The function was never called. It was added with its tests and the summary block was
+        never edited to interpolate it, so not even the per-line warning ever reached anybody.
+      * It compared the *unit* price, so 2 × 780 against a stated 900 passed silently — the
+        quantity was ignored even though the summary line prints `price * quantity`.
+      * It never checked the total, so two individually-affordable lines could assemble a cart
+        at any multiple of the budget. Scenario F1 reached 1560 against 900 this way.
+
+    The per-line warning is kept alongside the total: they are different problems and a
+    customer who is over on both should hear about both. One line that is itself over budget
+    reports only once, since the total warning would be telling them the same thing twice.
     """
     try:
         budget = conversation.preferences.get("max_price") if conversation else None
@@ -199,21 +212,39 @@ def _over_budget_warning(conversation, items_to_create):
         budget = Decimal(str(budget))
     except (InvalidOperation, TypeError, ValueError):
         return ""
-
-    over = [
-        f"{item['variant'].product.name} ({item['variant'].volume} ملي) بـ {item['price']:.0f}"
-        for item in items_to_create
-        if item["price"] > budget
-    ]
-    if not over:
+    if budget <= 0:
         return ""
 
-    return (
-        "\n⚠️ للعلم: "
-        + "، ".join(over)
-        + f" — أعلى من الميزانية اللي قلتها ({int(budget)} جنيه). "
-        "لو مش مقصود، قولي وأشيله.\n"
-    )
+    def _line_total(item):
+        try:
+            return Decimal(str(item["price"])) * int(item.get("quantity") or 1)
+        except (InvalidOperation, TypeError, ValueError):
+            return Decimal("0")
+
+    over = [
+        f"{item['variant'].product.name} ({item['variant'].volume} ملي) بـ {_line_total(item):.0f}"
+        for item in items_to_create
+        if _line_total(item) > budget
+    ]
+    total = sum((_line_total(item) for item in items_to_create), Decimal("0"))
+
+    parts = []
+    if over:
+        parts.append(
+            "\n⚠️ للعلم: "
+            + "، ".join(over)
+            + f" — أعلى من الميزانية اللي قلتها ({int(budget)} جنيه). "
+            "لو مش مقصود، قولي وأشيله.\n"
+        )
+    elif total > budget:
+        # Only when no single line was already flagged: otherwise the customer is told the
+        # same thing twice in one summary.
+        parts.append(
+            f"\n⚠️ للعلم: إجمالي الطلب {total:.0f} جنيه، أعلى من الميزانية اللي قلتها "
+            f"({int(budget)} جنيه). لو مش مقصود، أقدر أشيل حاجة أو أنزل حجم أصغر.\n"
+        )
+
+    return "".join(parts)
 
 
 def _save_cart_details(cart, name, phone, secondary_phone, address):
@@ -288,6 +319,137 @@ def restore_stock(order):
             )
     logger.info(f"Stock restored for cancelled order #{order.id}")
 
+def _offered_context(conversation, store):
+    """The perfumes we just put in front of the customer, so a reference can resolve.
+
+    The extractor is told an ordinal means "the perfume you named in your previous reply", but
+    the reply reaches it only through a truncated history — nothing structured. So "تمام هاخد ده"
+    could not be resolved and the customer was asked which perfume they meant, twice, after the
+    bot had just named two (evaluation scenario F1).
+
+    Derived from `Message.internal_context` via sales.described, not scraped from prose, so the
+    anti-hallucination rule above is not weakened: every name here is one we demonstrably had
+    real data for when we said it.
+    """
+    from .sales import described as sales_described
+
+    try:
+        offered = sales_described.offered_in_order(conversation, store)
+    except Exception:
+        offered = []
+    if not offered:
+        return ""
+
+    lines = "\n".join(f"{index}. {name}" for index, name in enumerate(offered, start=1))
+    return (
+        "\n═══ PERFUMES YOU JUST OFFERED (in the order you named them) ═══\n"
+        f"{lines}\n"
+        "Resolve \"ده\" / \"اول واحد\" / \"التاني\" against this list. Entry 1 is what you led with.\n"
+    )
+
+
+_WHICH_PERFUME = "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟"
+
+
+def _ask_which_perfume(conversation, store):
+    """Ask which perfume they mean — and do not ask the same way twice.
+
+    This literal went out byte-for-byte on two consecutive turns in evaluation scenario F1:
+    "تمام هاخد ده" could not be resolved, and neither could "خليه 90 ملي بدل الـ50", so the
+    customer answered a question and received the identical question back. The order branch
+    does not pass through `_is_repetitive`, and a retry would not have helped anyway — this is
+    a scripted reply, not model output.
+
+    On a repeat, name the perfumes we actually offered instead. That is both a different
+    sentence and a genuinely more useful one: it turns an open question into a choice.
+    """
+    from .sales import described as sales_described
+
+    previous = (
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("content", flat=True)
+        .first()
+        if conversation is not None else None
+    )
+    if (previous or "").strip() != _WHICH_PERFUME:
+        return _WHICH_PERFUME
+
+    try:
+        offered = sales_described.offered_in_order(conversation, store)
+    except Exception:
+        offered = []
+    if not offered:
+        return "معلش، أنا مش لاقي العطر. ممكن تكتبلي اسمه وأنا أجيبلك سعره والأحجام؟"
+
+    if len(offered) == 1:
+        return f"تقصد {offered[0]}؟ لو أيوة قولي الحجم وأجهزلك الطلب."
+    names = " ولا ".join(offered[:3])
+    return f"تقصد {names}؟ قولي أنهي واحد والحجم وأجهزلك الطلب."
+
+
+_DETAILS_ASK_MARKER = "عشان أأكدلك الطلب ناقصني"
+
+
+def _already_asked_for_details(conversation):
+    """Did our previous reply already ask for the personal details?"""
+    if conversation is None:
+        return False
+    previous = (
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("content", flat=True)
+        .first()
+    )
+    return _DETAILS_ASK_MARKER in (previous or "")
+
+
+def _short_missing(name, phone, secondary_phone, address):
+    """The same list of missing fields, without repeating the long-form instructions."""
+    parts = []
+    if not name:
+        parts.append("الاسم")
+    if not phone:
+        parts.append("رقم الموبايل")
+    if not secondary_phone:
+        parts.append("رقم بديل")
+    if not address:
+        parts.append("العنوان")
+    return " و".join(parts) or "التفاصيل"
+
+
+def _cart_recap(conversation, items_to_create, total_price):
+    """One line naming what is in the cart and what it comes to, above a details request.
+
+    Three reasons it exists, all from evaluation scenario F1, where the details request went out
+    byte-for-byte on three consecutive turns:
+
+      * The customer said "خليه 90 ملي بدل الـ50" and got the identical reply. The cart HAD
+        changed; the reply just never said so, so the change was invisible and unconfirmable.
+      * The customer asked "الاجمالي بقى كام؟" and got the identical reply again — the question
+        went unanswered while the cart sat there holding the answer.
+      * A running total is where the over-budget warning belongs earliest. Waiting for the full
+        summary means the customer only learns they are over budget after handing over their
+        name, phone and address.
+
+    Deliberately NOT using CONFIRMATION_SUMMARY_MARKER ("💰 الإجمالي:"). _summary_was_shown greps
+    the saved replies for that string to decide whether a bare "تمام" may confirm an order, so
+    emitting it here would let a details request authorise a confirmation the customer was never
+    properly shown.
+    """
+    if not items_to_create:
+        return ""
+
+    lines = "\n".join(
+        f"- {item['quantity']} × {item['variant'].product.name} "
+        f"({item['variant'].volume}ml) بـ {item['price'] * item['quantity']:.0f} جنيه"
+        for item in items_to_create
+    )
+    recap = f"🛍️ الطلب لحد دلوقتي:\n{lines}\nالمجموع: {total_price:.0f} جنيه.\n"
+    recap += _over_budget_warning(conversation, items_to_create)
+    return recap + "\n"
+
+
 def handle_order(message, history, store, conversation):
     """
     Handles the order collection flow. Extracts Name, Phone, Address, Products, Quantities, and Confirmation.
@@ -313,14 +475,19 @@ Rules:
    - Customer removes a perfume → the saved items WITHOUT it.
    - Customer says nothing about products (just "تمام", or gives their phone/address) → return the saved items UNCHANGED.
    - Saved cart is empty and no perfume named yet → return [].
-   🔴 POSITIONAL REFERENCE: "اول واحد" / "الأول" means the FIRST perfume you named in your
-     previous reply; "التاني" the second; "الأخير" the last. One ordinal means exactly ONE
-     perfume — return that one only. "هات 90 ملي من اول واحد ده" put BOTH perfumes from the
+   🔴 POSITIONAL REFERENCE: "اول واحد" / "الأول" means the FIRST perfume in the "PERFUMES YOU
+     JUST OFFERED" list below; "التاني" the second; "الأخير" the last. One ordinal means exactly
+     ONE perfume — return that one only. "هات 90 ملي من اول واحد ده" put BOTH perfumes from the
      previous reply in the cart, including one 185 جنيه over the customer's stated budget.
+   🔴 DEMONSTRATIVE REFERENCE: a bare "ده" / "دي" / "ديت" / "الاولاني" with no name, or "هاخد ده"
+     / "عايز ده" / "خليه" / "نفسه", points at the FIRST entry in that list — the one you led with.
+     "وضيف كمان واحد" / "واحد تاني" after it means a SECOND unit of that same perfume unless they
+     name a different one. If the list below is empty you genuinely cannot tell, and only then
+     should you ask which perfume they mean.
    🔴 A leading "ماشي" / "تمام" / "اوك" followed by a specific request is a REQUEST, not a
      blanket yes to everything on the table. "ماشي هات كذا" = they want كذا. Do not read it as
      accepting every perfume you had just listed.
-   🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message.
+   🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message OR points at one with a demonstrative/ordinal, in which case resolve it against the "PERFUMES YOU JUST OFFERED" list below — that list is the perfumes of the CURRENT conversation, not of a finished order.
    For each product extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل).
    CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
 6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
@@ -339,7 +506,7 @@ Return valid JSON in this exact format:
     "is_confirmed": false,
     "cart_cleared": false
 }
-""" + _cart_context(cart)
+""" + _cart_context(cart) + _offered_context(conversation, store)
 
     messages = [{"role": "system", "content": prompt}]
     if history:
@@ -402,7 +569,7 @@ Return valid JSON in this exact format:
         )
 
     if not products_data:
-        return "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟", ""
+        return _ask_which_perfume(conversation, store), ""
 
     # 1. Resolve products first to check stock and prices BEFORE asking for user info
     total_price = 0
@@ -651,9 +818,9 @@ Return valid JSON in this exact format:
                 sizes = " ولا ".join(pending["available_volumes_display"])
                 quantity = pending.get("quantity") or 1
                 count = f"{quantity} × " if quantity > 1 else ""
-                return f"تمام 👌 {count}{pending.get('name')} — تحب {sizes}؟", ""
-            return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
-        return f"تمام 👌 بس محتاج أعرف {missing_text}؟", ""
+                return f"تمام 👌 {count}{pending.get('name')} — تحب {sizes}؟", context_str
+            return f"تمام 👌 بس محتاج أعرف {missing_text}؟", context_str
+        return f"تمام 👌 بس محتاج أعرف {missing_text}؟", context_str
 
     # 3. Product details are complete — now check for missing personal info.
     # Phones go through _looks_like_phone rather than a truthiness check: the
@@ -678,7 +845,14 @@ Return valid JSON in this exact format:
 
     if personal_missing_fields:
         missing_text = " و ".join(personal_missing_fields)
-        return f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}.", ""
+        ask = f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}."
+        # Asking for the same fields a second time in a row gets the short form. The long
+        # parenthesised address prompt going out verbatim on consecutive turns is what made
+        # three replies identical in evaluation scenario F1, and re-reading the same
+        # instruction is not what a customer who just answered something else needs.
+        if _already_asked_for_details(conversation):
+            ask = f"ولسه ناقص {_short_missing(name, phone, secondary_phone, address)}."
+        return _cart_recap(conversation, items_to_create, total_price) + ask, context_str
 
     # A true is_confirmed only counts if the customer was actually shown the total
     # first. Without this, one spurious true creates the order and moves stock on a
@@ -696,6 +870,10 @@ Return valid JSON in this exact format:
             bottle_disp = "أوريجينال" if item['bottle_type'] == "original" else "البراند"
             summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - زجاجة {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
         summary += f"\n💰 الإجمالي: {total_price} جنيه.\n"
+        # Between the total and the confirmation question on purpose: this is the moment the
+        # customer is being asked to check, and the caveat is worthless after they have agreed.
+        # It goes after the 💰 marker so _summary_was_shown still finds it.
+        summary += _over_budget_warning(conversation, items_to_create)
         summary += "\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟"
         return summary, context_str
 

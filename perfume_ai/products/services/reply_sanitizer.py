@@ -22,10 +22,21 @@ logger = logging.getLogger(__name__)
 
 # Each pattern matches a whole trailing question, including the whitespace before it,
 # so removing it leaves the preceding sentence intact.
+#
+# The optional connector in front of every one of them has to absorb a *whole* conditional
+# opener rather than half of one. `(?:و\s*)?` on its own matched the و **inside** لو ("if"),
+# because both letters are word characters and the group happily started mid-word — so
+# "…وأغنى شوية. لو تحب تعرف الأسعار؟" was stripped down to "…وأغنى شوية. ل" and the reply
+# ended on an orphaned letter. Evaluation caught that in a live reply (scenario M3).
+# A `\bو` fix is not enough: it turns the orphaned ل into an orphaned لو, which is a reply
+# ending in "if". The alternation below consumes لو / ولو / a bare و together with the
+# question, and _trim_dangling_connector is the backstop for whatever slips past it.
+_LEAD = r"\s*(?:(?:و\s*)?لو\s+|و\s*)?"
+
 BANNED_CLOSERS = (
     # "تحب تعرف الأسعار والأحجام المتاحة؟" / "تحب تعرف أسعارهم والأحجام؟"
     re.compile(
-        r"\s*(?:و\s*)?تحب\s+تعرف\s+(?:ال)?[أاإ]?سعار\S*"
+        _LEAD + r"تحب\s+تعرف\s+(?:ال)?[أاإ]?سعار\S*"
         r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
     ),
     # The same forbidden move in the first person, which is how the model actually
@@ -33,21 +44,34 @@ BANNED_CLOSERS = (
     # The pattern above requires "تعرف" and matched none of these, so the single
     # question the persona quotes verbatim as forbidden went out repeatedly.
     re.compile(
-        r"\s*(?:و\s*)?تحب\s+[أاإ](?:عرفك|قولك)\s+(?:على\s+)?(?:ال)?[أاإ]?سعار\S*"
+        _LEAD + r"تحب\s+[أاإ](?:عرفك|قولك)\s+(?:على\s+)?(?:ال)?[أاإ]?سعار\S*"
         r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
     ),
     # "تحب أعرفك أكتر عن الأحجام دي؟" — same emptiness, different noun.
-    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]عرفك\s+[أاإ]كتر\s+عن\s+[^؟?]{0,40}[؟?]"),
+    re.compile(_LEAD + r"تحب\s+[أاإ]عرفك\s+[أاإ]كتر\s+عن\s+[^؟?]{0,40}[؟?]"),
     # "عايز حاجة تانية؟" / "محتاج مساعدة في حاجة؟" / "محتاج حاجة تانية؟"
-    re.compile(r"\s*(?:عايز|محتاج|تحب)\s+(?:حاجة\s+تانية|مساعدة(?:\s+في\s+حاجة)?)\s*[؟?]"),
+    re.compile(_LEAD + r"(?:عايز|محتاج|تحب)\s+(?:حاجة\s+تانية|مساعدة(?:\s+في\s+حاجة)?)\s*[؟?]"),
     # The statement form, which carries no question mark and so escaped the pattern
     # above: "لو حابب أساعدك في حاجة تانية، تحت أمرك."
-    re.compile(r"\s*لو\s+حابب\s+[أاإ]?ساعدك\s+في\s+حاج[ةه]\s+تاني[ةه][^.؟?]*[.؟?]?"),
+    re.compile(_LEAD + r"حابب\s+[أاإ]?ساعدك\s+في\s+حاج[ةه]\s+تاني[ةه][^.؟?]*[.؟?]?"),
     # "عطر معين في بالك؟"
-    re.compile(r"\s*(?:فيه\s+)?عطر\s+معين\s+في\s+بالك\s*[؟?]"),
+    re.compile(_LEAD + r"(?:فيه\s+)?عطر\s+معين\s+في\s+بالك\s*[؟?]"),
     # "أقدر أساعدك إزاي؟" / "أقدر أساعدك في إيه؟" — the persona's own banned opener.
-    re.compile(r"\s*[أاإ]قدر\s+[أاإ]ساعدك\s+(?:في\s+)?[أاإ]?(?:يه|زاي)\s*[؟?]"),
+    re.compile(_LEAD + r"[أاإ]قدر\s+[أاإ]ساعدك\s+(?:في\s+)?[أاإ]?(?:يه|زاي)\s*[؟?]"),
 )
+
+
+# Connectors whose only job is to introduce the clause that was just removed. Trimmed only
+# when a strip actually happened, and only mid-text (never the whole reply), so a reply that
+# legitimately ends on one is left alone. "بس" and "كمان" are deliberately absent: both are
+# ordinary sentence-final words in Egyptian ("دي الأسعار بس", "وفيه 50 ملي كمان").
+_DANGLING_TAIL = re.compile(r"\s+(?:ل|لو|ولو|و|أو|او|لكن|يعني)\s*[.،,؟?!]*\s*$")
+
+
+def _trim_dangling_connector(text):
+    """Drop a connector left stranded at the end by a stripped question."""
+    return _DANGLING_TAIL.sub("", text).rstrip()
+
 
 
 def sanitize_reply(reply, conversation=None):
@@ -67,6 +91,9 @@ def sanitize_reply(reply, conversation=None):
             removed.append(pattern.pattern)
 
     cleaned = cleaned.strip()
+
+    if removed:
+        cleaned = _trim_dangling_connector(cleaned)
 
     if not cleaned:
         return reply
@@ -94,19 +121,29 @@ PREMATURE_CLOSERS = (
     # require the question mark to sit immediately after the order word. Real replies put
     # words in between — "تحب أساعدك في طلب واحد فيهم؟", "تحب تطلبه تاني؟" — and every
     # one of them walked straight through.
-    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,30}[؟?]"),
+    re.compile(_LEAD + r"تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,30}[؟?]"),
     # The same close without the "في": "تحب أساعدك تطلب واحد فيهم؟".
-    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?ساعدك\s+[نت]طلب[^؟?]{0,30}[؟?]"),
+    re.compile(_LEAD + r"تحب\s+[أاإ]?ساعدك\s+[نت]طلب[^؟?]{0,30}[؟?]"),
     # "تحب أجهزلك واحد منهم؟" — a close carrying no order word at all.
-    re.compile(r"\s*(?:و\s*)?تحب\s+[أاإ]?جهز\s*ل?ك[^؟?]{0,40}[؟?]"),
+    re.compile(_LEAD + r"تحب\s+[أاإ]?جهز\s*ل?ك[^؟?]{0,40}[؟?]"),
     # "تحب تطلب؟" / "تحب تطلبه تاني؟" / "تحب نطلبه؟"
-    re.compile(r"\s*(?:و\s*)?تحب\s+[نت]طلب[^؟?]{0,30}[؟?]"),
+    re.compile(_LEAD + r"تحب\s+[نت]طلب[^؟?]{0,30}[؟?]"),
     # "أجيبلك الـ90 ولا الـ50؟" — a size close.
-    re.compile(r"\s*[أا]جيبلك\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*ولا\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*[؟?]"),
-    # "نسجل الطلب؟" / "نكمل الاوردر؟"
-    re.compile(r"\s*(?:و\s*)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,20}[؟?]"),
-    # "تحب نكمل الطلب؟"
-    re.compile(r"\s*(?:و\s*)?تحب\s+نكمل[^؟?]{0,25}[؟?]"),
+    re.compile(_LEAD + r"[أا]جيبلك\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*ولا\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*[؟?]"),
+    # "نسجل الطلب؟" / "نكمل الاوردر؟" / "تحب نكمل الطلب؟"
+    # The optional "تحب" matters for ordering: without it this pattern matched only
+    # "نكمل الطلب؟" out of "تحب نكمل الطلب؟" and left the verb stranded, because it is
+    # tried before the "تحب نكمل" pattern below and consumed the tail first.
+    re.compile(_LEAD + r"(?:تحب\s+)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,20}[؟?]"),
+    # "تحب نكمل؟" — the same close with no order word for the pattern above to anchor on.
+    re.compile(_LEAD + r"تحب\s+نكمل[^؟?]{0,25}[؟?]"),
+    # The statement form, which carries no question mark and so escaped every pattern above:
+    # "لو تحب أساعدك في الطلب أو تحب تجرب العطور في الستور تحت أمرك." went out at stage
+    # 'discovery'. BANNED_CLOSERS already carries a statement variant for the same reason;
+    # this family needed one too.
+    re.compile(
+        _LEAD + r"تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^.؟?]*[.؟?]?"
+    ),
 )
 
 
@@ -130,6 +167,8 @@ def strip_premature_closing(reply, stage=None):
         removed += count
 
     cleaned = cleaned.strip()
+    if removed:
+        cleaned = _trim_dangling_connector(cleaned)
     if not cleaned:
         return reply
 

@@ -172,9 +172,16 @@ def describe(intent):
     if _is_set(intent.get("notes")):
         phrases.append("فيه " + "، ".join(str(note) for note in intent["notes"][:4]))
 
+    # An unknown trait is dropped rather than echoed. The fallback here used to be
+    # f"مش {trait}", so a hallucinated avoid_traits ["mainstream"] rendered as the literal
+    # "مش mainstream" and was injected under "العميل قال بالفعل" — telling the model in
+    # broken Arabic-English that the customer had rejected something they never mentioned.
+    # intent._sanitize now filters these at the source; this is the second line of defence,
+    # since describe() is also called with hand-built intents.
     for trait in intent.get("avoid_traits") or ():
         phrase = _TRAITS.get(str(trait).strip().lower())
-        phrases.append(phrase or f"مش {trait}")
+        if phrase:
+            phrases.append(phrase)
 
     if _is_set(intent.get("avoid_notes")):
         phrases.append("من غير " + "، ".join(str(note) for note in intent["avoid_notes"][:3]))

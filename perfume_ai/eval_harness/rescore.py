@@ -84,7 +84,7 @@ def _all_text(record, upto):
     return "\n".join(parts)
 
 
-def rescore(record, truth):
+def rescore(record, truth, scenario_budget=None):
     findings = []
     previous_reply = None
 
@@ -203,6 +203,16 @@ def rescore(record, truth):
                     f"something new and got the same answer")
         previous_reply = reply or previous_reply
 
+        # ── a stated order total, checked against the scenario's budget ──
+        # Independent of _allowed_numbers, which whitelists price x1-4 and every pairwise
+        # sum, so a fabricated total is unflaggable there by construction.
+        budget = scenario_budget
+        if budget:
+            for value in checks.check_stated_total(reply, budget, truth):
+                add("over_budget_total", "critical",
+                    f"stated an order total of {value:.0f} against a stated budget of "
+                    f"{budget}, with no acknowledgement")
+
         if len(reply) > 700:
             add("too_long", "low", f"{len(reply)} characters")
 
@@ -216,9 +226,16 @@ def main():
     from products.models import Store
     truth = checks.build_ground_truth(Store.objects.get(name="Perfamix"))
 
+    # The scenario's stated budget, so the total check has something to compare against.
+    try:
+        from eval_harness.scenarios import SCENARIOS
+        budgets = {s["id"]: s.get("assert_budget") for s in SCENARIOS}
+    except Exception:
+        budgets = {}
+
     tally, by_scenario = {}, {}
     for record in runs:
-        findings = rescore(record, truth)
+        findings = rescore(record, truth, scenario_budget=budgets.get(record["id"]))
         by_scenario[record["id"]] = findings
         for finding in findings:
             key = (finding["code"], finding["severity"])

@@ -173,6 +173,7 @@ def run_scenario(scenario, truth):
     }
 
     started = time.time()
+    budget_stated = False
     try:
         with transaction.atomic():
             conversation = create_conversation(store)
@@ -201,15 +202,34 @@ def run_scenario(scenario, truth):
                     context=context,
                     customer_text=message,
                     turn_state=state,
+                    history_text="\n".join(
+                        f"{turn['user']}\n{turn['reply']}\n{turn.get('context') or ''}"
+                        for turn in record["turns"]
+                    ),
                 )
 
                 budget = scenario.get("assert_budget")
-                if budget:
+                # Only from the turn the customer actually states it. Applying it to every
+                # turn flagged Dior Sauvage's real 944 price quoted on turn 1 of M1 against a
+                # budget the customer first mentioned on turn 3 — a finding about the future.
+                if budget and not budget_stated:
+                    budget_stated = (
+                        str(int(budget)) in (message or "")
+                        or bool((state.get("merged_intent") or {}).get("max_price"))
+                    )
+                if budget and budget_stated:
                     over = checks.check_budget_respected(reply, budget, truth)
                     if over:
                         turn_findings.append((
                             "over_budget_offer", "high",
                             f"quoted {over} against a stated budget of {budget}",
+                        ))
+                    stated = checks.check_stated_total(reply, budget, truth)
+                    if stated:
+                        turn_findings.append((
+                            "over_budget_total", "critical",
+                            f"stated an order total of {stated} against a stated budget of "
+                            f"{budget}, with no acknowledgement",
                         ))
 
                 for excluded in scenario.get("assert_excludes", []):

@@ -110,6 +110,41 @@ def _gender_note(gender_unknown):
     )
 
 
+def _performance_note(products, intent):
+    """Pin the lead recommendation to the ranking, and make it quote the recorded figure.
+
+    Evaluation scenario M1, on the turn the customer said "بس اهم حاجه الثبات": the ranker put
+    Ambero (10 hours) first and the reply recommended Dark Aura (8 hours) instead, describing
+    both as "وثباتهم كويس" without quoting either figure. Two separate failures — the ranking
+    was right and the prose ignored it, and a performance claim was asserted rather than sourced.
+
+    Computed here rather than asked for in the persona because which product is first is a fact
+    about the list we just built, the same reason _in_budget_note exists.
+    """
+    axes = [key for key in ("longevity", "projection") if intent.get(key)]
+    if not axes:
+        return ""
+
+    shortlist = list(products)[:MAX_PRODUCTS_IN_CONTEXT]
+    if not shortlist:
+        return ""
+
+    leader = shortlist[0]
+    labels = {"longevity": "الثبات", "projection": "الفوحان"}
+    asked = " و".join(labels[key] for key in axes)
+    recorded = " / ".join(
+        f"{labels[key]}: {(getattr(leader, key, '') or '').strip() or 'غير مسجل'}"
+        for key in axes
+    )
+
+    return (
+        f"\n🔴 العميل سأل عن {asked}. القائمة تحت مرتبة بالأنسب لطلبه، و**{leader.name}** هو "
+        f"الأول فيها ({recorded}). رشحه هو الأساس. لو رشحت غيره قبله، لازم تقول السبب صراحة "
+        f"من بيانات العطر. ❌ ممنوع تقول \"ثباته كويس\" أو \"ثباتهم عالي\" كده — اذكر الرقم "
+        f"المسجل زي ما هو من بيانات العطر.\n"
+    )
+
+
 def _in_budget_note(products, max_price):
     """State outright that affordable sizes exist, when they do.
 
@@ -222,7 +257,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}{_performance_note(products, intent)}
 ═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
 {context}
 

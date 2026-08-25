@@ -2593,6 +2593,187 @@ class ReplySanitizerTests(TestCase):
         self.assertIsNone(sanitize_reply(None))
 
 
+class OrphanedConnectorTests(TestCase):
+    """A stripped closer must not leave the reply ending mid-word.
+
+    Evaluation scenario M3 sent "...أما Tom Ford فهو أقوى وأغنى شوية. ل" to a customer. The
+    optional connector `(?:و\\s*)?` in front of every closer pattern matched the و *inside*
+    لو ("if") — both are word characters, so the group started mid-word — and stripped from
+    there, orphaning the ل.
+
+    Fixing it with `\\bو` is not enough: that leaves an orphaned لو, a reply ending in "if".
+    The lead alternation has to consume the whole conditional opener.
+    """
+
+    HEAD = "أما Tom Ford فهو أقوى وأغنى شوية. "
+
+    def test_the_transcripts_orphaned_lam_is_gone(self):
+        """The exact string that went out to a customer."""
+        cleaned = sanitize_reply(self.HEAD + "لو تحب تعرف الأسعار؟")
+
+        self.assertEqual(cleaned, "أما Tom Ford فهو أقوى وأغنى شوية.")
+
+    def test_no_banned_closer_leaves_a_dangling_connector(self):
+        for closer in (
+            "لو تحب تعرف الأسعار؟",
+            "ولو تحب أعرفك الأسعار والأحجام؟",
+            "لو تحب أقولك الأسعار؟",
+            "لو تحب أعرفك أكتر عن الأحجام دي؟",
+            "لو عايز حاجة تانية؟",
+            "لو محتاج مساعدة؟",
+            "لو حابب أساعدك في حاجة تانية، تحت أمرك.",
+            "لو فيه عطر معين في بالك؟",
+            "لو أقدر أساعدك في إيه؟",
+        ):
+            with self.subTest(closer=closer):
+                cleaned = sanitize_reply(self.HEAD + closer)
+
+                self.assertTrue(cleaned.endswith("شوية."), cleaned)
+                self.assertIn("Tom Ford", cleaned)
+
+    def test_no_premature_closer_leaves_a_dangling_connector(self):
+        for closer in (
+            "لو تحب أساعدك في الطلب؟",
+            "لو تحب أساعدك تطلب واحد؟",
+            "لو تحب أجهزلك واحد؟",
+            "لو تحب تطلب؟",
+            "لو أجيبلك الـ90 ولا الـ50؟",
+            "لو نسجل الطلب؟",
+            "لو تحب نكمل الطلب؟",
+        ):
+            with self.subTest(closer=closer):
+                cleaned = strip_premature_closing(self.HEAD + closer)
+
+                self.assertTrue(cleaned.endswith("شوية."), cleaned)
+
+    def test_the_order_verb_is_not_stranded_either(self):
+        """"تحب نكمل الطلب؟" left "تحب" behind: the bare نسجل/نكمل pattern is tried first
+        and consumed the tail before the "تحب نكمل" pattern could match the whole thing."""
+        cleaned = strip_premature_closing(self.HEAD + "تحب نكمل الطلب؟")
+
+        self.assertEqual(cleaned, "أما Tom Ford فهو أقوى وأغنى شوية.")
+
+    def test_the_statement_form_of_an_order_close_is_stripped(self):
+        """Every PREMATURE_CLOSERS pattern required a question mark, so a close phrased as a
+        statement walked through: "لو تحب أساعدك في الطلب ... تحت أمرك." went out at stage
+        'discovery' in evaluation scenario F1."""
+        cleaned = strip_premature_closing(
+            "أنصحك بـ Stronger With You 90 ملي بـ 700 جنيه. "
+            "لو تحب أساعدك في الطلب أو تحب تجرب العطور في الستور تحت أمرك."
+        )
+
+        self.assertNotIn("أساعدك في الطلب", cleaned)
+        self.assertIn("700", cleaned)
+        self.assertTrue(cleaned.endswith("جنيه."), cleaned)
+
+    def test_a_sentence_final_word_is_not_mistaken_for_a_connector(self):
+        """"بس" and "كمان" end ordinary Egyptian sentences and must survive."""
+        for reply in ("دي الأسعار بس", "وفيه حجم 50 ملي كمان"):
+            with self.subTest(reply=reply):
+                self.assertEqual(sanitize_reply(reply), reply)
+
+    def test_nothing_is_trimmed_when_no_closer_was_stripped(self):
+        """The trim is a repair for a strip, not a general rewrite."""
+        reply = "الـ 90 ملي بـ 944 جنيه و"
+
+        self.assertEqual(sanitize_reply(reply), reply)
+
+
+class AvoidTraitVocabularyTests(TestCase):
+    """A trait the customer never stated must not reach the ranker.
+
+    Evaluation scenario M1: "مش عايز حاجه منتشره" (not widely owned) came back as
+    avoid_traits ["loud", "mainstream"] and persisted for the whole conversation. Popularity
+    is not intensity. "loud" is in vocabulary and ranking.py reads it as heaviness, so seven
+    of eleven candidates were penalised -3.0 — including the longest-lasting ones, one turn
+    before the customer said longevity was their top priority.
+
+    Enforced in code as well as in the prompt because avoid_traits is the only extracted
+    field scored as a penalty, so guessing it is worse than leaving it empty.
+    """
+
+    def test_an_out_of_vocabulary_trait_is_dropped(self):
+        from products.services.ai.intent import _sanitize
+
+        cleaned = _sanitize({"avoid_traits": ["loud", "mainstream"]})
+
+        self.assertEqual(cleaned["avoid_traits"], ["loud"])
+
+    def test_every_documented_trait_survives(self):
+        from products.services.ai.intent import _sanitize
+
+        traits = ["heavy", "suffocating", "sweet", "loud", "strong", "old"]
+
+        self.assertEqual(_sanitize({"avoid_traits": traits})["avoid_traits"], traits)
+
+    def test_case_and_whitespace_are_tolerated(self):
+        from products.services.ai.intent import _sanitize
+
+        cleaned = _sanitize({"avoid_traits": [" Heavy ", "SWEET"]})
+
+        self.assertEqual(cleaned["avoid_traits"], [" Heavy ", "SWEET"])
+
+    def test_other_fields_are_untouched(self):
+        from products.services.ai.intent import _sanitize
+
+        intent = {"gender": "male", "max_price": 700, "notes": ["oud"], "wants_uncommon": True}
+
+        self.assertEqual(_sanitize(dict(intent)), intent)
+
+    def test_a_missing_or_malformed_field_does_not_raise(self):
+        from products.services.ai.intent import _sanitize
+
+        self.assertEqual(_sanitize({}), {})
+        self.assertEqual(_sanitize({"avoid_traits": None})["avoid_traits"], None)
+        self.assertEqual(_sanitize("not a dict"), {})
+
+    def test_an_unknown_trait_is_not_echoed_into_the_arabic_prompt(self):
+        """The fallback rendered ["mainstream"] as the literal "مش mainstream"."""
+        from products.services.sales.constraints import describe
+
+        phrases = describe({"avoid_traits": ["mainstream"]})
+
+        self.assertEqual([p for p in phrases if "mainstream" in p], [])
+
+    def test_a_known_trait_still_renders(self):
+        from products.services.sales.constraints import describe
+
+        self.assertIn("مش تقيل", describe({"avoid_traits": ["heavy"]}))
+
+    def test_wanting_uncommon_does_not_also_claim_an_avoided_trait(self):
+        """"مش منتشرة" is one statement and must produce one phrase, not two."""
+        from products.services.sales.constraints import describe
+
+        phrases = describe({"wants_uncommon": True, "avoid_traits": ["mainstream"]})
+
+        self.assertIn("حاجة مش منتشرة", phrases)
+        self.assertEqual(len(phrases), 1)
+
+    def test_popularity_is_not_intensity_in_the_prompt(self):
+        """The extractor prompt must say so explicitly — this is what the model got wrong."""
+        import inspect
+
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+
+        self.assertIn("منتشر", source)
+        self.assertIn("POPULARITY IS NOT INTENSITY", source)
+        self.assertIn("avoid_traits", source)
+
+    def test_the_zero_hallucination_rule_names_avoid_traits(self):
+        """It listed every inferable field except the one that costs -3.0."""
+        import inspect
+
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+        rule = source[source.index("ZERO HALLUCINATION"):]
+        rule = rule[: rule.index("\n")]
+
+        self.assertIn("avoid_traits", rule)
+
+
 class ScriptedRepliesSurviveSanitizingTests(TestCase):
     """Hardcoded replies must reach the customer byte-for-byte.
 
@@ -5964,6 +6145,497 @@ class OrderEditNotCancelTests(TestCase):
         self.assertFalse(Cart.objects.filter(conversation=self.conversation).exists())
 
 
+class PerformanceLeadNoteTests(TestCase):
+    """The lead recommendation must follow the ranking, and quote the recorded figure.
+
+    Evaluation scenario M1, on the turn the customer said "بس اهم حاجه الثبات": the ranker put
+    Ambero (10 hours) first and the reply recommended Dark Aura (8 hours), describing both as
+    "وثباتهم كويس" without quoting either number. The ranking was right and the prose ignored it.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Perfamix Test")
+        self.lead = self._make("Ambero", "10 hours", "Strong")
+        self.other = self._make("Dark Aura", "8 hours", "Strong")
+
+    def _make(self, name, longevity, projection):
+        return Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+            longevity=longevity, projection=projection,
+        )
+
+    def _note(self, intent):
+        from products.services.ai.recommendation import _performance_note
+
+        return _performance_note([self.lead, self.other], intent)
+
+    def test_the_note_names_the_top_ranked_perfume(self):
+        note = self._note({"longevity": "long-lasting"})
+
+        self.assertIn("Ambero", note)
+        self.assertIn("رشحه هو الأساس", note)
+
+    def test_the_note_carries_the_recorded_figure(self):
+        self.assertIn("10 hours", self._note({"longevity": "long-lasting"}))
+
+    def test_vague_performance_claims_are_forbidden_by_name(self):
+        self.assertIn("ثباته كويس", self._note({"longevity": "long-lasting"}))
+
+    def test_projection_is_covered_too(self):
+        note = self._note({"projection": "strong"})
+
+        self.assertIn("الفوحان", note)
+        self.assertIn("Strong", note)
+
+    def test_both_axes_are_reported_together(self):
+        note = self._note({"longevity": "long-lasting", "projection": "strong"})
+
+        self.assertIn("10 hours", note)
+        self.assertIn("Strong", note)
+
+    def test_no_note_without_a_performance_request(self):
+        """It must not appear on every turn — the persona already carries too many rules."""
+        self.assertEqual(self._note({"gender": "male", "max_price": 700}), "")
+
+    def test_an_unrecorded_figure_is_named_as_missing_not_invented(self):
+        blank = self._make("Nofigure", "", "")
+
+        from products.services.ai.recommendation import _performance_note
+
+        note = _performance_note([blank], {"longevity": "long-lasting"})
+
+        self.assertIn("غير مسجل", note)
+
+    def test_an_empty_shortlist_is_safe(self):
+        from products.services.ai.recommendation import _performance_note
+
+        self.assertEqual(_performance_note([], {"longevity": "long-lasting"}), "")
+
+    def test_the_note_reaches_the_recommendation_prompt(self):
+        import inspect
+
+        from products.services.ai import recommendation
+
+        source = inspect.getsource(recommendation.recommend)
+
+        self.assertIn("_performance_note(products, intent)", source)
+
+
+class LongevityBandTieBreakTests(TestCase):
+    """Longevity has to be able to discriminate, or declaring it a priority does nothing.
+
+    similarity._ordinal maps every value from 7 to 12 hours onto 3, and 3 is exactly what
+    "long-lasting" asks for. A real catalogue lives almost entirely inside that band, so nine
+    of the eleven candidates in evaluation scenario M1 scored an identical 1.0 and the customer
+    who had just said "بس اهم حاجه الثبات" was handed an 8-hour perfume over an 11-hour one.
+
+    Raising WEIGHTS["longevity"] would not have helped: with the hit at 1.0 for everyone, any
+    weight multiplies a constant and reorders nothing.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Perfamix Test")
+
+    def _make(self, name, longevity):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name,
+            gender="male", longevity=longevity,
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=500, bottle_type="normal"
+        )
+        return product
+
+    INTENT = {"gender": "male", "longevity": "long-lasting"}
+
+    def test_hours_are_parsed_off_the_free_text_field(self):
+        from products.services.sales.similarity import peak_hours
+
+        self.assertEqual(peak_hours("10 hours"), 10)
+        self.assertEqual(peak_hours("8–10 hrs"), 10)
+        self.assertEqual(peak_hours("6–8 hours"), 8)
+        self.assertIsNone(peak_hours("Strong"))
+        self.assertIsNone(peak_hours(""))
+        self.assertIsNone(peak_hours(None))
+
+    def test_the_ordinal_bands_are_unchanged(self):
+        """_ordinal also drives _performance, whose stronger/lighter verdict appears in the
+        similarity reason line for every comparison — re-banding it was not the fix."""
+        from products.services.sales.similarity import _LONGEVITY_WORDS, _ordinal
+
+        for text, expected in (
+            ("2 hours", 1), ("5 hours", 2), ("8 hours", 3),
+            ("12 hours", 3), ("48 hours", 4),
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(_ordinal(text, _LONGEVITY_WORDS), expected)
+
+    def test_more_hours_ranks_higher_inside_the_same_band(self):
+        eleven = self._make("Safrano", "11 hours")
+        eight = self._make("Dark Aura", "8 hours")
+
+        ranked = {e.product.name: e.score for e in sales_ranking.rank([eight, eleven], self.INTENT)}
+
+        self.assertGreater(ranked["Safrano"], ranked["Dark Aura"])
+
+    def test_the_tie_break_stays_below_a_single_weight_unit(self):
+        """It orders within a tier. It must never overturn a real signal."""
+        from products.services.sales.ranking import WEIGHTS, _within_band_bonus
+
+        widest = _within_band_bonus("longevity", "12 hours", 1.0)
+
+        self.assertLess(widest, WEIGHTS["longevity"])
+        self.assertLess(widest, WEIGHTS["continuity"])
+
+    def test_a_half_credit_match_earns_no_bonus(self):
+        """Partial credit is reported as a shortfall; rewarding it would blur the distinction."""
+        from products.services.sales.ranking import _within_band_bonus
+
+        self.assertEqual(_within_band_bonus("longevity", "6 hours", 0.5), 0.0)
+
+    def test_a_missing_longevity_earns_no_bonus(self):
+        from products.services.sales.ranking import _within_band_bonus
+
+        self.assertEqual(_within_band_bonus("longevity", "", 1.0), 0.0)
+        self.assertEqual(_within_band_bonus("longevity", "Strong", 1.0), 0.0)
+
+    def test_full_credit_is_still_full_credit(self):
+        """The bonus is additive. A product whose only reason was a longevity match must keep
+        it, or the ✅ evidence half of its note disappears."""
+        product = self._make("Ambero", "10 hours")
+
+        entry = sales_ranking.rank([product], self.INTENT)[0]
+
+        self.assertTrue(any("بيطابق طلبه" in reason for reason in entry.reasons))
+        self.assertGreaterEqual(entry.score, sales_ranking.WEIGHTS["longevity"])
+
+    def test_the_recorded_hours_reach_the_evidence_line(self):
+        """"وثباتهم كويس" with no number is what the evaluation caught. Give the model the
+        figure so it can quote the row instead of asserting."""
+        product = self._make("Ambero", "10 hours")
+
+        entry = sales_ranking.rank([product], self.INTENT)[0]
+
+        self.assertIn("10 hours", sales_ranking.reasons_note(entry))
+
+    def test_continuity_still_outranks_the_tie_break(self):
+        """A refinement must not displace the perfume the customer was converging on."""
+        eleven = self._make("Safrano", "11 hours")
+        eight = self._make("Dark Aura", "8 hours")
+
+        ranked = {
+            e.product.name: e.score
+            for e in sales_ranking.rank([eight, eleven], self.INTENT, keep=("Dark Aura",))
+        }
+
+        self.assertGreater(ranked["Dark Aura"], ranked["Safrano"])
+
+
+class DemonstrativeReferenceTests(TestCase):
+    """"تمام هاخد ده" must resolve to the perfume we just led with.
+
+    Evaluation scenario F1: after the bot recommended two perfumes, "تمام هاخد ده، وضيف كمان
+    واحد للهدية" and then "خليه 90 ملي بدل الـ50" both produced the identical scripted reply
+    "مش واضحلي عايز تطلب أنهي عطر". Two rules were in tension and both were obeyed: the
+    extractor is told an ordinal means "the perfume you named in your previous reply", but the
+    reply reached it only through a truncated history, and it is separately told to return []
+    rather than pull products out of the history when the saved cart is empty.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Emporio Armani")
+        self.lead = Product.objects.create(
+            store=self.store, brand=self.brand,
+            name="Stronger With You Intensely", gender="male",
+        )
+        self.second = Product.objects.create(
+            store=self.store, brand=self.brand,
+            name="Stronger With You", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.lead, volume=90, price=780, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.second, volume=90, price=700, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _recommended_both(self):
+        """The reply and the data behind it, the way the router saves them."""
+        save_message(
+            self.conversation, "assistant",
+            "أنصحك بـ Stronger With You Intensely بـ 780 جنيه. "
+            "ولو تحب حاجة أخف، Stronger With You بـ 700 جنيه.",
+            internal_context="Name: Stronger With You Intensely\nName: Stronger With You",
+        )
+
+    def test_the_offered_perfumes_are_returned_in_the_order_they_were_named(self):
+        from products.services.sales import described
+
+        self._recommended_both()
+
+        offered = described.offered_in_order(self.conversation, self.store)
+
+        self.assertEqual(
+            offered, ["Stronger With You Intensely", "Stronger With You"]
+        )
+
+    def test_a_perfume_named_without_data_behind_it_is_not_a_referent(self):
+        """A withdrawal names a perfume with no data — it must not become "ده"."""
+        from products.services.sales import described
+
+        save_message(
+            self.conversation, "assistant",
+            "Ambero خرج من الاختيارات. أنصحك بـ Stronger With You بـ 700 جنيه.",
+            internal_context="Name: Stronger With You",
+        )
+        Product.objects.create(
+            store=self.store, brand=self.brand, name="Ambero", gender="male",
+        )
+
+        self.assertEqual(
+            described.offered_in_order(self.conversation, self.store),
+            ["Stronger With You"],
+        )
+
+    def test_nesting_names_do_not_collide(self):
+        """"Stronger With You" is a prefix of "Stronger With You Intensely", so asking each
+        name where it occurs returns the same index for both and the shorter, more generic
+        name wins the tie — pointing "ده" at the wrong perfume."""
+        from products.services.sales import described
+
+        save_message(
+            self.conversation, "assistant",
+            "أنصحك بـ Stronger With You بـ 700 جنيه، "
+            "ولو تحب حاجة أقوى Stronger With You Intensely بـ 780 جنيه.",
+            internal_context="Name: Stronger With You\nName: Stronger With You Intensely",
+        )
+
+        self.assertEqual(
+            described.offered_in_order(self.conversation, self.store),
+            ["Stronger With You", "Stronger With You Intensely"],
+        )
+
+    def test_nothing_offered_yet_is_an_empty_list(self):
+        from products.services.sales import described
+
+        self.assertEqual(described.offered_in_order(self.conversation, self.store), [])
+        self.assertEqual(described.offered_in_order(None, self.store), [])
+
+    def test_the_extractor_is_handed_the_offered_list(self):
+        from products.services.order_service import _offered_context
+
+        self._recommended_both()
+
+        block = _offered_context(self.conversation, self.store)
+
+        self.assertIn("PERFUMES YOU JUST OFFERED", block)
+        self.assertIn("1. Stronger With You Intensely", block)
+        self.assertIn("2. Stronger With You", block)
+
+    def test_the_block_is_empty_when_nothing_was_offered(self):
+        from products.services.order_service import _offered_context
+
+        self.assertEqual(_offered_context(self.conversation, self.store), "")
+
+    def test_the_extractor_is_taught_the_demonstrative(self):
+        import inspect
+
+        from products.services import order_service
+
+        source = inspect.getsource(order_service.handle_order)
+
+        self.assertIn("DEMONSTRATIVE REFERENCE", source)
+        self.assertIn("هاخد ده", source)
+
+    def test_the_empty_cart_rule_allows_a_pointed_reference(self):
+        """It used to say "return [] unless they NAME a perfume", which forbade resolving "ده"."""
+        import inspect
+
+        from products.services import order_service
+
+        source = inspect.getsource(order_service.handle_order)
+
+        self.assertIn("points at one with a demonstrative/ordinal", source)
+
+    # ── the identical reply ──────────────────────────────────────────────
+    def test_the_clarification_is_not_repeated_verbatim(self):
+        from products.services.order_service import _WHICH_PERFUME, _ask_which_perfume
+
+        self._recommended_both()
+        first = _ask_which_perfume(self.conversation, self.store)
+        save_message(self.conversation, "assistant", first)
+
+        second = _ask_which_perfume(self.conversation, self.store)
+
+        self.assertEqual(first, _WHICH_PERFUME)
+        self.assertNotEqual(second, first)
+
+    def test_the_second_ask_names_the_perfumes_we_offered(self):
+        """An open question becomes a choice, which is also more useful."""
+        from products.services.order_service import _WHICH_PERFUME, _ask_which_perfume
+
+        self._recommended_both()
+        save_message(self.conversation, "assistant", _WHICH_PERFUME)
+
+        second = _ask_which_perfume(self.conversation, self.store)
+
+        self.assertIn("Stronger With You Intensely", second)
+        self.assertIn("Stronger With You", second)
+
+    def test_the_second_ask_still_works_with_nothing_offered(self):
+        from products.services.order_service import _WHICH_PERFUME, _ask_which_perfume
+
+        save_message(self.conversation, "assistant", _WHICH_PERFUME)
+
+        second = _ask_which_perfume(self.conversation, self.store)
+
+        self.assertNotEqual(second, _WHICH_PERFUME)
+        self.assertTrue(second.strip())
+
+
+class BudgetWarningReachesTheCustomerTests(TestCase):
+    """The end-to-end gap that let the whole thing ship.
+
+    Every existing budget test called _over_budget_warning directly, so none of them noticed
+    that handle_order never called it. These drive a real order turn and read the reply the
+    customer would actually receive.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Emporio Armani")
+        product = Product.objects.create(
+            store=self.store, brand=self.brand,
+            name="Stronger With You Intensely", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=450, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=product, volume=90, price=780, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 900},
+        )
+
+    DETAILS = {
+        "customer_name": "بلال حسن",
+        "customer_phone": "01012345678",
+        "customer_secondary_phone": "01198765432",
+        "shipping_address": "مدينة نصر، شارع عباس العقاد",
+    }
+
+    def _summary(self, quantity):
+        payload = {
+            "products": [{
+                "name": "Stronger With You Intensely",
+                "quantity": quantity, "volume": 90, "bottle_type": "normal",
+            }],
+            "is_confirmed": False,
+            **self.DETAILS,
+        }
+        with mock.patch(
+            "products.services.order_service.chat", return_value=json.dumps(payload)
+        ):
+            reply, _ = handle_order("...", [], self.store, self.conversation)
+        return reply
+
+    def test_the_customer_is_warned_when_the_cart_breaks_their_budget(self):
+        """Scenario F1: 2 × 780 = 1560 was quoted against a stated 900 in silence."""
+        reply = self._summary(quantity=2)
+
+        self.assertIn("💰 الإجمالي:", reply)
+        self.assertIn("1560", reply)
+        self.assertIn("900", reply)
+        self.assertIn("⚠️", reply)
+
+    def test_an_in_budget_cart_gets_no_warning(self):
+        reply = self._summary(quantity=1)
+
+        self.assertIn("💰 الإجمالي:", reply)
+        self.assertNotIn("⚠️", reply)
+
+    def test_the_warning_does_not_break_the_confirmation_handshake(self):
+        """_summary_was_shown greps the saved reply for the 💰 marker to authorise an order."""
+        from products.services.order_service import _summary_was_shown, get_cart
+
+        reply = self._summary(quantity=2)
+        save_message(self.conversation, "assistant", reply)
+
+        self.assertTrue(_summary_was_shown(self.conversation, get_cart(self.conversation)))
+
+    def test_no_order_is_created_while_the_summary_is_being_shown(self):
+        self._summary(quantity=2)
+
+        self.assertEqual(Order.objects.count(), 0)
+
+    # ── the details request used to repeat byte-for-byte ─────────────────
+    def _details_request(self, quantity, volume=90):
+        payload = {
+            "products": [{
+                "name": "Stronger With You Intensely",
+                "quantity": quantity, "volume": volume, "bottle_type": "normal",
+            }],
+            "is_confirmed": False,
+            "customer_name": None, "customer_phone": None,
+            "customer_secondary_phone": None, "shipping_address": None,
+        }
+        with mock.patch(
+            "products.services.order_service.chat", return_value=json.dumps(payload)
+        ):
+            reply, _ = handle_order("...", [], self.store, self.conversation)
+        return reply
+
+    def test_the_details_request_says_what_is_in_the_cart(self):
+        """It went out identically on three turns while the cart changed under it, so a size
+        change was invisible and "الاجمالي بقى كام؟" went unanswered."""
+        reply = self._details_request(quantity=2)
+
+        self.assertIn("Stronger With You Intensely", reply)
+        self.assertIn("1560", reply)
+        self.assertIn("ناقصني", reply)
+
+    def test_the_details_request_changes_when_the_cart_changes(self):
+        two = self._details_request(quantity=2)
+        one = self._details_request(quantity=1)
+
+        self.assertNotEqual(two, one)
+        self.assertIn("780", one)
+
+    def test_the_budget_warning_arrives_before_personal_details_are_handed_over(self):
+        """Waiting for the full summary means learning you are over budget only after giving
+        your name, phone and address."""
+        reply = self._details_request(quantity=2)
+
+        self.assertIn("⚠️", reply)
+        self.assertIn("900", reply)
+
+    def test_the_interim_recap_cannot_authorise_a_confirmation(self):
+        """_summary_was_shown greps for the 💰 marker, so the recap must not carry it."""
+        from products.services.order_service import (
+            CONFIRMATION_SUMMARY_MARKER,
+            _summary_was_shown,
+            get_cart,
+        )
+
+        reply = self._details_request(quantity=2)
+        save_message(self.conversation, "assistant", reply)
+
+        self.assertNotIn(CONFIRMATION_SUMMARY_MARKER, reply)
+        self.assertFalse(
+            _summary_was_shown(self.conversation, get_cart(self.conversation))
+        )
+
+    def test_an_empty_cart_gets_no_recap(self):
+        from products.services.order_service import _cart_recap
+
+        self.assertEqual(_cart_recap(self.conversation, [], 0), "")
+
+
 class OverBudgetLineTests(TestCase):
     """Noirvel's 90ml at 1085 was assembled against a stated 900 and nobody said anything.
 
@@ -6017,6 +6689,110 @@ class OverBudgetLineTests(TestCase):
         from products.services.order_service import _over_budget_warning
 
         self.assertIn("أشيله", _over_budget_warning(self.conversation, self._items(1085)))
+
+    # ── the quantity used to be ignored ──────────────────────────────────
+    def test_a_line_is_measured_by_its_total_not_its_unit_price(self):
+        """2 × 780 = 1560 against a stated 900 passed silently: the check read
+        item["price"], the unit price, while the summary line prints price × quantity."""
+        from products.services.order_service import _over_budget_warning
+
+        items = [{
+            "variant": self.variant, "quantity": 2,
+            "price": Decimal("780"), "bottle_type": "normal",
+        }]
+
+        warning = _over_budget_warning(self.conversation, items)
+
+        self.assertIn("1560", warning)
+        self.assertIn("900", warning)
+
+    # ── the cart total was never checked at all ──────────────────────────
+    def test_two_affordable_lines_that_break_the_budget_together_are_flagged(self):
+        """Each line cleared 900 on its own, so nothing was ever said about 1753."""
+        from products.services.order_service import _over_budget_warning
+
+        second = ProductVariant.objects.create(
+            product=Product.objects.create(
+                store=self.store, brand=self.brand, name="Vanilo", gender="male",
+            ),
+            volume=90, price=897, bottle_type="normal",
+        )
+        items = [
+            {"variant": self.variant, "quantity": 1,
+             "price": Decimal("856"), "bottle_type": "normal"},
+            {"variant": second, "quantity": 1,
+             "price": Decimal("897"), "bottle_type": "normal"},
+        ]
+
+        warning = _over_budget_warning(self.conversation, items)
+
+        self.assertIn("1753", warning)
+        self.assertIn("900", warning)
+
+    def test_a_total_within_the_budget_is_still_silent(self):
+        from products.services.order_service import _over_budget_warning
+
+        items = [{
+            "variant": self.variant, "quantity": 1,
+            "price": Decimal("400"), "bottle_type": "normal",
+        }]
+
+        self.assertEqual(_over_budget_warning(self.conversation, items), "")
+
+    def test_an_over_budget_line_is_not_also_reported_as_an_over_budget_total(self):
+        """One problem, one warning — the customer should not read the same thing twice."""
+        from products.services.order_service import _over_budget_warning
+
+        warning = _over_budget_warning(self.conversation, self._items(1085))
+
+        self.assertEqual(warning.count("⚠️"), 1)
+        self.assertNotIn("إجمالي الطلب", warning)
+
+    # ── the whole function was unreachable ───────────────────────────────
+    def test_the_warning_actually_reaches_the_summary(self):
+        """It was defined, unit-tested, and never called. handle_order's summary block was
+        never edited to interpolate it, so no customer ever saw a budget warning."""
+        import inspect
+
+        from products.services import order_service
+
+        source = inspect.getsource(order_service.handle_order)
+
+        self.assertIn("_over_budget_warning", source)
+
+    def test_the_summary_marker_survives_the_warning(self):
+        """_summary_was_shown greps for 💰 الإجمالي:, so the warning must not displace it."""
+        import inspect
+
+        from products.services import order_service
+
+        source = inspect.getsource(order_service.handle_order)
+        total_at = source.index("💰 الإجمالي:")
+        warning_at = source.index("_over_budget_warning")
+
+        self.assertLess(total_at, warning_at)
+
+    def test_product_info_is_forbidden_from_computing_a_total(self):
+        """A product_info turn holds one perfume row and no cart, so the model did the
+        arithmetic itself: "الإجمالي هيبقى 1560 جنيه ... للطلبين" for an empty cart."""
+        import inspect
+
+        from products.services import product_info
+
+        source = inspect.getsource(product_info.get_product_info)
+
+        self.assertIn("ممنوع تحسب إجمالي طلب", source)
+
+    def test_the_classifier_routes_an_order_total_question_to_the_order_flow(self):
+        """"الاجمالي بقى كام" was caught by the "كام" price rule and sent to product_info."""
+        import inspect
+
+        from products.services.ai import classifier
+
+        source = inspect.getsource(classifier.classify)
+
+        self.assertIn("THE ORDER TOTAL IS NOT A PRODUCT PRICE", source)
+        self.assertIn("الاجمالي بقى كام", source)
 
     def test_the_extractor_is_taught_positional_reference(self):
         """"هات 90 ملي من اول واحد ده" put both perfumes from the previous reply in the cart."""

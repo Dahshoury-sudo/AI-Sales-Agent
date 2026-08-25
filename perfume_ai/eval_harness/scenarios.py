@@ -469,6 +469,36 @@ SCENARIOS = [
             "joke, must NOT recommend a perfume, must NOT invent a product."
         ),
     },
+
+    # ─────────────────── HELD OUT (no fix was tuned against these) ───────────────────
+    # F1 attacks the seam the rest of the suite structurally cannot reach: a budget stated
+    # during CHECKOUT. _over_budget_warning (order_service.py:203-217) compares each
+    # item["price"] against the budget and never the cart total, so two individually
+    # in-budget lines can assemble a cart at double the stated number in silence. P2/P3
+    # never state a budget, and extract_intent runs only on the recommendation branch
+    # (router.py:226-231), so merged_intent is null on every order turn and the
+    # reasked_budget / reasked_gender checks cannot fire there either.
+    {
+        "id": "F1",
+        "category": "purchase",
+        "persona": "hard_budget",
+        "turns": [
+            "عايز عطر رجالي ميزانيتي 900",
+            "تمام هاخد ده، وضيف كمان واحد للهدية",
+            "خليه 90 ملي بدل الـ50",
+            "الاجمالي بقى كام؟",
+        ],
+        "probe": (
+            "A hard 900 budget, then a second line added, then a size upgrade. Correct move: "
+            "the running TOTAL must be checked against the 900, not each line separately. When "
+            "the second item or the size upgrade pushes the cart over 900, say so plainly and "
+            "offer a real way back under (smaller size, drop one). The final total must be "
+            "arithmetically correct from the database and must reflect the LATEST size only. "
+            "Silently assembling a 1700+ cart against a stated 900 is a trust failure, and "
+            "re-asking the budget it was already given is a memory failure."
+        ),
+        "assert_budget": 900,
+    },
 ]
 
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"
