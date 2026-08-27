@@ -69,6 +69,7 @@ from products.services.reply_sanitizer import (
 )
 from products.services.sales import (
     constraints as sales_constraints,
+    naming as sales_naming,
     notes as sales_notes,
     objection as sales_objection,
     ranking as sales_ranking,
@@ -6512,6 +6513,627 @@ class DemonstrativeReferenceTests(TestCase):
 
         self.assertNotEqual(second, _WHICH_PERFUME)
         self.assertTrue(second.strip())
+
+
+class HarnessFalseDenialCheckTests(TestCase):
+    """The eval harness must be able to catch a denial of a perfume we stock.
+
+    `_DENIAL` sat in `eval_harness/checks.py` with the comment "used to catch 'we don't have it'
+    while stock exists" and zero references anywhere — and `rescore.py`'s docstring already
+    committed in writing to the false-positive rule with nothing implementing it. Two halves of
+    one unfinished feature, which is why the suite scored conversation 1099 clean.
+
+    These are the first tests over harness code; `build_ground_truth` needs the ORM, so they
+    live here with everything else.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Versace")
+        self.eros = Product.objects.create(
+            store=self.store, brand=self.brand, name="Eros", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+        self.truth = self._truth()
+
+    def _truth(self):
+        from eval_harness import checks
+
+        return checks.build_ground_truth(self.store)
+
+    def _denied(self, reply, truth=None):
+        from eval_harness import checks
+
+        return checks._false_denial(reply, truth or self.truth)
+
+    # ── it fires on the real defect ───────────────────────────────────────
+    def test_the_transcripts_false_denial_is_caught(self):
+        """The literal reply from conversation 1099."""
+        self.assertEqual(
+            self._denied("عطر Versace Eros مش متوفر عندنا حالياً، يا فندم."), "Eros"
+        )
+
+    def test_every_denial_phrasing_is_caught(self):
+        for reply in (
+            "للأسف Eros مش متوفر عندنا.",
+            "Eros غير متوفر حالياً.",
+            "مفيش عندنا Eros.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(self._denied(reply), "Eros")
+
+    # ── the false positives it must not produce ───────────────────────────
+    def test_an_original_bottle_denial_is_not_a_false_denial(self):
+        """product_formatting dictates this sentence verbatim for a global brand with no
+        original variant, and the persona reproduces it بالحرف — so the *fixed* 1099 reply
+        still contains it. Eros genuinely has no original bottle."""
+        reply = "Versace Eros متوفر. للاسف مش متوفر منه زجاجة أوريجينال حالياً."
+
+        self.assertIsNone(self._denied(reply))
+
+    def test_a_size_scoped_denial_is_not_a_false_denial(self):
+        for reply in (
+            "Eros موجود. حجم 50 ملي غير متوفر حالياً (المتاح: 90 ملي).",
+            "Eros متوفر بس الـ50 ملي مش متوفر.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertIsNone(self._denied(reply))
+
+    def test_a_brand_bottle_denial_is_not_a_false_denial(self):
+        reply = "زجاجات البراند لعطر Eros غير متوفرة حالياً."
+
+        self.assertIsNone(self._denied(reply))
+
+    def test_denying_a_perfume_we_do_not_stock_is_correct(self):
+        """Scenario X1's case — the inverse, where denial is the right answer."""
+        self.assertIsNone(self._denied("عطر Black Orchid مش متوفر عندنا."))
+
+    def test_a_denial_naming_no_product_is_not_flagged(self):
+        self.assertIsNone(self._denied("للأسف العطر ده مش متوفر عندنا يا فندم."))
+
+    def test_a_reply_with_no_denial_at_all_is_not_flagged(self):
+        self.assertIsNone(self._denied("Eros متوفر عندنا، الـ90 ملي بـ1019 جنيه."))
+
+    def test_a_deactivated_product_may_be_denied(self):
+        """`names` stays unfiltered so hallucinations are still caught; only the availability
+        set is active-only, so a denial about a deactivated perfume is correct."""
+        self.eros.is_active = False
+        self.eros.save()
+
+        self.assertIsNone(self._denied("Eros مش متوفر عندنا.", self._truth()))
+
+    def test_an_out_of_stock_original_only_product_may_be_denied(self):
+        """Only original bottles can run out; with no sellable variant the denial is true."""
+        sold_out = Product.objects.create(
+            store=self.store, brand=self.brand, name="Oud Wood", gender="unisex",
+        )
+        ProductVariant.objects.create(
+            product=sold_out, volume=100, price=700, bottle_type="original", stock=0
+        )
+
+        truth = self._truth()
+
+        self.assertIn("Eros", truth["available_names"])
+        self.assertNotIn("Oud Wood", truth["available_names"])
+        self.assertIsNone(self._denied("Oud Wood مش متوفر عندنا.", truth))
+
+    def test_a_similarity_denial_is_not_an_availability_denial(self):
+        """Scenario S1 produces this verbatim: "مفيش عندنا حاجة شبه X" denies a RESEMBLANCE and
+        is the honest answer when no close match exists. It says nothing about stock."""
+        reply = (
+            "مفيش عندنا حاجة شبه Dior Sauvage بالظبط، لكن ممكن يعجبك Luna Rossa Carbon "
+            "لو بتحب الريحة النضيفة، وفيه كمان Ambero."
+        )
+
+        self.assertIsNone(self._denied(reply))
+
+    def test_a_denial_is_not_pinned_on_a_perfume_being_recommended(self):
+        """A reply that denies one thing and offers another is ordinary, so the denied name has
+        to sit in the same clause as the denial — not just somewhere in the reply."""
+        reply = "مفيش عندنا حاجة زي Baccarat Rouge 540، بس Ambero قريب في الجو."
+
+        self.assertIsNone(self._denied(reply))
+
+    def test_a_denial_in_a_later_clause_is_still_caught(self):
+        """Clause scoping must not become a way to hide a real denial."""
+        reply = "رشحتلك حاجات تانية، بس Eros مش متوفر عندنا خلاص."
+
+        self.assertEqual(self._denied(reply), "Eros")
+
+    def test_a_reordered_name_is_still_matched(self):
+        """Matching goes through naming.mentioned_in, not a substring test. "9pm by Afnan" for
+        "Afnan 9PM" is that function's own documented case, and substring matching missed it."""
+        Product.objects.create(
+            store=self.store, brand=self.brand, name="Afnan 9PM", gender="unisex",
+        )
+        ProductVariant.objects.create(
+            product=Product.objects.get(store=self.store, name="Afnan 9PM"),
+            volume=90, price=1077, bottle_type="normal",
+        )
+
+        self.assertEqual(
+            self._denied("9pm by Afnan مش متوفر عندنا.", self._truth()), "Afnan 9PM"
+        )
+
+    def test_a_nesting_name_reports_the_longer_one(self):
+        """Catalogue names nest: text containing the longer name satisfies every token of the
+        shorter one, so the more specific name has to win."""
+        for name, price in (("Stronger With You", 700), ("Stronger With You Intensely", 780)):
+            product = Product.objects.create(
+                store=self.store, brand=self.brand, name=name, gender="male",
+            )
+            ProductVariant.objects.create(
+                product=product, volume=90, price=price, bottle_type="normal"
+            )
+
+        self.assertEqual(
+            self._denied("Stronger With You Intensely مش متوفر عندنا.", self._truth()),
+            "Stronger With You Intensely",
+        )
+
+    # ── it is actually wired in, on both passes ───────────────────────────
+    def test_check_reply_emits_the_finding(self):
+        from eval_harness import checks
+
+        findings = checks.check_reply(
+            "عطر Versace Eros مش متوفر عندنا حالياً.",
+            truth=self.truth, context="", customer_text="", turn_state={},
+        )
+
+        self.assertIn("false_denial", [code for code, _, _ in findings])
+
+    def test_rescore_emits_the_finding_too(self):
+        """checks.py findings only reach runs.json — rescore is where findings.json comes from."""
+        from eval_harness import checks, rescore
+
+        record = {
+            "id": "T1",
+            "turns": [{
+                "n": 1, "user": "ليه مرشحتش eros",
+                "reply": "عطر Eros مش متوفر عندنا حالياً.",
+                "context": "", "search": {"matched": ["Eros"]},
+                "merged_intent": {}, "stage": None,
+            }],
+        }
+
+        findings = rescore.rescore(record, self.truth)
+
+        self.assertIn("false_denial", [f["code"] for f in findings])
+
+    def test_rescore_excuses_a_denial_the_injected_row_supports(self):
+        """format_product writes this Stock Status when nothing is sellable, so a reply
+        relaying it is telling the truth about the data it was given."""
+        from eval_harness import rescore
+
+        record = {
+            "id": "T2",
+            "turns": [{
+                "n": 1, "user": "عندكم eros؟",
+                "reply": "عطر Eros مش متوفر عندنا حالياً.",
+                "context": "Name: Eros\nStock Status: ❌ هذا المنتج غير متوفر حالياً بجميع أحجامه",
+                "search": {"matched": ["Eros"]}, "merged_intent": {}, "stage": None,
+            }],
+        }
+
+        findings = rescore.rescore(record, self.truth)
+
+        self.assertNotIn("false_denial", [f["code"] for f in findings])
+
+    def test_the_severity_is_one_rescore_can_sort(self):
+        """rescore.main() indexes a fixed severity table and raises KeyError otherwise."""
+        from eval_harness import checks
+
+        findings = checks.check_reply(
+            "عطر Eros مش متوفر عندنا.",
+            truth=self.truth, context="", customer_text="", turn_state={},
+        )
+        severities = {severity for _, severity, _ in findings}
+
+        self.assertTrue(severities <= {"critical", "high", "medium", "low"})
+
+    def test_a_scenario_covers_this_case(self):
+        """X1 probes the inverse. Nothing covered a perfume that IS stocked."""
+        from eval_harness.scenarios import SCENARIOS
+
+        probes = " ".join(s["probe"] for s in SCENARIOS)
+
+        self.assertIn("ليه مرشحتش versace eros", [t for s in SCENARIOS for t in s["turns"]])
+        self.assertIn("not in the data I was handed", probes)
+
+    # ── false positives the denial work surfaced in neighbouring checks ───
+    def test_a_products_own_total_price_is_not_an_order_total(self):
+        """"سعره الإجمالي 944" is one bottle's price. Read as a cart total it flagged a correct
+        product_info answer about Dior Sauvage's 90ml against a budget stated two turns later."""
+        from eval_harness import checks
+
+        reply = "أنصحك بحجم الـ 90 ملي، بس سعره الإجمالي 944 جنيه."
+
+        self.assertEqual(checks.check_stated_total(reply, 700, self.truth), [])
+
+    def test_a_real_order_total_is_still_caught(self):
+        from eval_harness import checks
+
+        self.assertEqual(
+            checks.check_stated_total("💰 الإجمالي: 1560 جنيه.", 900, self.truth), [1560.0]
+        )
+
+    def test_rescore_ignores_a_budget_not_yet_stated(self):
+        """runner.py gates this; rescore did not, so a price quoted before the customer
+        mentioned a budget was scored against it."""
+        from eval_harness import rescore
+
+        record = {
+            "id": "T3",
+            "turns": [
+                {"n": 1, "user": "بحب سوفاج",
+                 "reply": "الـ90 ملي سعره الإجمالي 944 جنيه.",
+                 "context": "", "search": {}, "merged_intent": {}, "stage": None},
+                {"n": 2, "user": "ميزانيتي 700",
+                 "reply": "تمام.", "context": "", "search": {},
+                 "merged_intent": {"max_price": 700}, "stage": None},
+            ],
+        }
+
+        codes = [f["code"] for f in rescore.rescore(record, self.truth, scenario_budget=700)]
+
+        self.assertNotIn("over_budget_total", codes)
+
+    def test_an_honest_admission_is_not_a_similarity_overclaim(self):
+        """"مش موجود عندنا حاجة شبهه" admits the gap outright, but "مش موجود" was missing from
+        the admission markers, so the word "شبه" alone made it an overclaim."""
+        from eval_harness import rescore
+
+        record = {
+            "id": "T4",
+            "turns": [{
+                "n": 1, "user": "عايز حاجه شبه سوفاج",
+                "reply": "Dior Sauvage مش موجود عندنا حاجة شبهه بالظبط.",
+                "context": "",
+                "search": {"similarity": {
+                    "reference_name": "Dior Sauvage",
+                    "best_band": "none", "has_close_match": False,
+                }},
+                "merged_intent": {}, "stage": None,
+            }],
+        }
+
+        codes = [f["code"] for f in rescore.rescore(record, self.truth)]
+
+        self.assertNotIn("similarity_overclaim", codes)
+
+    def test_naming_a_perfume_does_not_set_the_brand(self):
+        """Inferring brand='Dior' from "سوفاج" collapsed a twelve-perfume shortlist to two
+        mainstream Dior products for a customer who had just asked for something uncommon."""
+        import inspect
+
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+
+        self.assertIn("NAMING A PERFUME IS NOT NAMING A BRAND", source)
+
+
+class NameTokenPunctuationTests(TestCase):
+    """Punctuation glued to a name must not defeat deterministic matching.
+
+    `tokens()` split on whitespace only, so "بكام Dior Sauvage؟" produced the token
+    "sauvage؟" and matched no product — while the identical message with a space before the
+    "؟" matched fine. That silently broke every deterministic call site: `mentioned_in` on the
+    order-cancel branch, `match_product` as the resolver's post-filter, and the named-perfume
+    guard in `product_info`. Found while wiring the 1099 referent fix.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+        )
+
+    def test_a_trailing_arabic_question_mark_does_not_hide_a_name(self):
+        found = sales_naming.mentioned_in("بكام Dior Sauvage؟", [self.product])
+
+        self.assertEqual([p.name for p in found], ["Dior Sauvage"])
+
+    def test_an_arabic_comma_does_not_either(self):
+        found = sales_naming.mentioned_in("عايز Dior Sauvage، بكام؟", [self.product])
+
+        self.assertEqual([p.name for p in found], ["Dior Sauvage"])
+
+    def test_names_carrying_digits_tokenise_unchanged(self):
+        """The fix must not disturb names where a number is identifying."""
+        for name, expected in (
+            ("Afnan 9PM", {"9pm", "afnan"}),
+            ("XJ 1861 Naxos", {"1861", "naxos", "xj"}),
+            ("Baccarat Rouge 540", {"540", "baccarat", "rouge"}),
+        ):
+            with self.subTest(name=name):
+                self.assertEqual(sales_naming.tokens(name), expected)
+
+    def test_a_message_naming_nothing_still_matches_nothing(self):
+        self.assertEqual(sales_naming.mentioned_in("بكام؟", [self.product]), [])
+
+    def test_the_summary_line_shape_still_resolves(self):
+        """The order-cancel case the function was written for."""
+        noirvel = Product.objects.create(
+            store=self.store, brand=self.brand, name="Noirvel", gender="male",
+        )
+
+        found = sales_naming.mentioned_in("مش عايز 1 × Noirvel (90ml)", [noirvel])
+
+        self.assertEqual([p.name for p in found], ["Noirvel"])
+
+
+class ProductInfoReferentTests(TestCase):
+    """A follow-up with no perfume name is about the perfume we just offered.
+
+    Conversation 1099, turn 6: the bot had just discussed Versace Eros, the customer said
+    "مش متوفر متأكد ؟", and `resolve_products` returned Dior Sauvage + Lattafa Asad from two
+    turns earlier. The reply was only correct because the model read Eros's prices out of the
+    conversation history — the injected context was wrong, which stops being survivable as soon
+    as the 8-message window truncates.
+
+    Resolved in Python from `Message.internal_context` rather than left to the resolver, whose
+    only reference guidance was one sentence plus a rule scoped to short confirmations
+    ("ماشي", "تمام") that a doubt utterance does not match.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Versace")
+        self.eros = Product.objects.create(
+            store=self.store, brand=self.brand, name="Eros", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+        self.older = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.older, volume=90, price=944, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _offered(self, name):
+        """A reply that named `name`, with the data behind it, as the router saves it."""
+        save_message(
+            self.conversation, "assistant",
+            f"{name} متوفر عندنا، والـ 90 ملي بـ 1019 جنيه.",
+            internal_context=f"Name (الاسم الصحيح): {name}",
+        )
+
+    def _referent(self, message):
+        from products.services.product_info import _referent_from_conversation
+
+        return [
+            p.name for p in
+            _referent_from_conversation(message, self.store, self.conversation)
+        ]
+
+    def test_a_doubt_utterance_resolves_to_the_perfume_just_offered(self):
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("مش متوفر متأكد ؟"), ["Eros"])
+
+    def test_a_bare_price_question_resolves_to_it_too(self):
+        """"بكام؟" is the purest case — no name, no pronoun, pure ellipsis."""
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("بكام؟"), ["Eros"])
+
+    def test_the_newest_turn_wins_over_an_earlier_one(self):
+        """The exact 1099 shape: an older perfume must not out-rank the newest."""
+        self._offered("Dior Sauvage")
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("متأكد؟"), ["Eros"])
+
+    def test_nothing_offered_yet_is_a_no_op(self):
+        self.assertEqual(self._referent("بكام؟"), [])
+
+    def test_no_conversation_is_a_no_op(self):
+        """Six existing tests call get_product_info with three positional args, so the
+        conversation-gated path must stay inert for them."""
+        from products.services.product_info import _referent_from_conversation
+
+        self._offered("Eros")
+
+        self.assertEqual(_referent_from_conversation("بكام؟", self.store, None), [])
+        self.assertEqual(_referent_from_conversation("بكام؟", None, self.conversation), [])
+
+    def test_a_withdrawn_perfume_is_never_the_referent(self):
+        """Named with no data behind it means we said it was gone."""
+        self._offered("Eros")
+        save_message(
+            self.conversation, "assistant",
+            "Dior Sauvage خرج من الاختيارات.",
+            internal_context="",
+        )
+
+        self.assertNotIn("Dior Sauvage", self._referent("بكام؟"))
+
+    # ── precedence ────────────────────────────────────────────────────────
+    def test_an_explicit_name_in_the_message_wins(self):
+        """An explicit name beats anything inferred from an earlier turn."""
+        self._offered("Eros")
+
+        with mock.patch(
+            "products.services.product_info.resolve_products"
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "بكام Dior Sauvage؟", [], self.store, self.conversation
+            )
+
+        self.assertIn("Dior Sauvage", context)
+        self.assertNotIn("Eros", context)
+        self.assertFalse(resolver.called, "the resolver should not be needed at all")
+
+    def test_the_referent_is_preferred_over_the_resolvers_guess(self):
+        """This is the fix: the resolver returning the wrong perfume no longer decides."""
+        self._offered("Eros")
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.older],
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "مش متوفر متأكد ؟", [], self.store, self.conversation
+            )
+
+        self.assertIn("Eros", context)
+        self.assertNotIn("Dior Sauvage", context)
+
+    def test_the_resolver_still_runs_when_nothing_is_under_discussion(self):
+        """Arabic transliterations stay on the LLM path, so it must not be bypassed."""
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.older],
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "بكام سوفاج؟", [], self.store, self.conversation
+            )
+
+        self.assertTrue(resolver.called)
+        self.assertIn("Dior Sauvage", context)
+
+    # ── the anchor handed to the resolver ─────────────────────────────────
+    def test_the_resolver_is_given_the_offered_list(self):
+        from products.services.sales import described
+
+        self._offered("Eros")
+
+        block = described.offered_context_block(self.conversation, self.store)
+
+        self.assertIn("PERFUMES YOU JUST OFFERED", block)
+        self.assertIn("1. Eros", block)
+
+    def test_the_offered_block_is_empty_when_nothing_was_offered(self):
+        from products.services.sales import described
+
+        self.assertEqual(
+            described.offered_context_block(self.conversation, self.store), ""
+        )
+        self.assertEqual(described.offered_context_block(None, self.store), "")
+
+    def test_the_order_branch_still_reads_the_same_block(self):
+        """order_service._offered_context is imported by name and its strings are pinned."""
+        from products.services.order_service import _offered_context
+        from products.services.sales import described
+
+        self._offered("Eros")
+
+        self.assertEqual(
+            _offered_context(self.conversation, self.store),
+            described.offered_context_block(self.conversation, self.store),
+        )
+
+    def test_the_resolver_prompt_states_that_the_newest_turn_wins(self):
+        import inspect
+
+        from products.services import product_resolver
+
+        source = inspect.getsource(product_resolver.resolve_products)
+
+        self.assertIn("THE NEWEST TURN WINS", source)
+        self.assertIn("PERFUMES YOU JUST OFFERED", source)
+
+
+class NamedPerfumeSurvivesTheShortlistTests(TestCase):
+    """A perfume the customer named must have its row present, shortlist or not.
+
+    Conversation 1099, turn 5: `extract_intent` on "ليه مرشحتش versace eros" returned gender,
+    budget, longevity and projection — and nothing referencing Eros. So the name never became
+    a search key, and whether Eros reached the customer depended on it surviving a generic
+    filter capped at twelve products. It had survived one turn earlier and did not survive this
+    one, and the model then reported it as unavailable.
+
+    The extractor is asked to keep the name; this is the guarantee that does not depend on it.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Versace")
+        self.eros = Product.objects.create(
+            store=self.store, brand=self.brand, name="Eros", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+        self.shortlisted = Product.objects.create(
+            store=self.store, brand=self.brand, name="Ambero", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.shortlisted, volume=90, price=1180, bottle_type="normal"
+        )
+
+    def _block(self, message):
+        from products.services.ai.recommendation import _named_but_missing_block
+
+        shortlist = Product.objects.filter(store=self.store, name="Ambero")
+        return _named_but_missing_block(message, self.store, shortlist)
+
+    def test_a_named_perfume_absent_from_the_shortlist_gets_its_row(self):
+        block = self._block("ليه مرشحتش versace eros")
+
+        self.assertIn("Eros", block)
+        self.assertIn("1019", block)
+
+    def test_the_block_says_outright_that_it_is_available(self):
+        """Without this the persona's own red line turns the gap into a denial."""
+        self.assertIn("ممنوع تقول إنه مش موجود", self._block("عايز حاجة زي Eros"))
+
+    def test_a_perfume_already_in_the_shortlist_is_not_duplicated(self):
+        self.assertEqual(self._block("عايز حاجة زي Ambero"), "")
+
+    def test_no_named_perfume_means_no_block(self):
+        self.assertEqual(self._block("عايز عطر رجالي فواح"), "")
+
+    def test_the_block_is_none_safe(self):
+        from products.services.ai.recommendation import _named_but_missing_block
+
+        shortlist = Product.objects.filter(store=self.store, name="Ambero")
+
+        self.assertEqual(_named_but_missing_block("", self.store, shortlist), "")
+        self.assertEqual(_named_but_missing_block("eros", None, shortlist), "")
+
+    def test_polarity_is_not_inferred(self):
+        """The row states existence only. Guessing direction from a bare name is what produced
+        avoid_traits ["heavy"] for a customer asking FOR a heavy perfume."""
+        block = self._block("مش عايز versace eros")
+
+        self.assertIn("Eros", block)
+        for leaked in ("similar_to", "exclude", "avoid", "مش عايزه", "بيحبه"):
+            self.assertNotIn(leaked, block)
+
+    def test_the_guarantee_is_on_the_normal_path_not_just_the_empty_one(self):
+        """It used to guard only the nothing-found branch, which is not where 1099 failed."""
+        import inspect
+
+        from products.services.ai import recommendation
+
+        source = inspect.getsource(recommendation.recommend)
+        case_one = source[: source.index("# Case 2")]
+
+        self.assertIn("_named_but_missing_block(message, store, products", case_one)
+
+    def test_the_extractor_is_told_never_to_drop_a_named_perfume(self):
+        import inspect
+
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+
+        self.assertIn("A PERFUME NAMED IN THE LATEST MESSAGE IS NEVER DROPPED", source)
+        self.assertIn("ليه مرشحتش", source)
 
 
 class NamedPerfumeIsNeverDeniedTests(TestCase):

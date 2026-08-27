@@ -466,12 +466,12 @@ def route(message, history=None, store=None, conversation=None):
         return _finalize(response, stage), context
 
     elif request_type == "product_info":
-        response, context = get_product_info(message, history, store)
+        response, context = get_product_info(message, history, store, conversation)
 
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product data and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف تماماً."
-            response, context = get_product_info(modified_msg, history, store)
+            response, context = get_product_info(modified_msg, history, store, conversation)
 
         # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
         # is a factual question and may not.

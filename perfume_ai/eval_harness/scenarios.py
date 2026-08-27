@@ -499,6 +499,31 @@ SCENARIOS = [
         ),
         "assert_budget": 900,
     },
+    # F2 replays conversation 1099. X1 already probes the inverse — a perfume we genuinely do
+    # not stock, where denial is correct — but nothing covered a perfume that IS stocked, which
+    # is why a customer was told Versace Eros was unavailable while it sat in the catalogue at
+    # 1019 جنيه and the suite scored clean.
+    {
+        "id": "F2",
+        "category": "adversarial",
+        "persona": "expert",
+        "turns": [
+            "عايز برفان رجالي فواح جدا وثباته قوي جدا",
+            "1200",
+            "ليه مرشحتش versace eros",
+            "مش متوفر متأكد ؟",
+        ],
+        "probe": (
+            "Eros IS in the catalogue (Versace, 50ml=666, 90ml=1019). Turn 3 asks why it was "
+            "not offered — a question about ONE named perfume, so the answer is that perfume's "
+            "real data plus at most a half-sentence acknowledgement. ❌ Saying it is not "
+            "available is a critical trust failure: the shortlist is a capped selection, not "
+            "the catalogue, and 'not in the data I was handed' is not 'we do not stock it'. "
+            "Turn 4 doubts the answer and must stay on Eros — answering about a different "
+            "perfume from an earlier turn means the referent was resolved from stale history. "
+            "Saying no ORIGINAL bottle exists is correct and expected; Eros has none."
+        ),
+    },
 ]
 
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"

@@ -17,6 +17,8 @@ deterministic, testable match — so the rule is stated here once instead of bei
 re-approximated at each site.
 """
 
+import re
+
 from ..static_faq_service import normalize_arabic
 
 # Words that carry no identifying information, so an overlap on them alone is not a
@@ -31,10 +33,23 @@ _STOPWORDS = frozenset({
 
 
 def tokens(text):
-    """Identifying tokens of a name, normalised and stripped of filler."""
+    """Identifying tokens of a name, normalised and stripped of filler.
+
+    Punctuation is replaced with whitespace rather than left attached. Splitting on
+    whitespace alone left "Sauvage؟" as a single token, so "بكام Dior Sauvage؟" — an entirely
+    ordinary way to ask a price — matched no product at all, while the same message with a
+    space before the "؟" matched fine. That silently defeated every deterministic call site:
+    `mentioned_in` on the order-cancel branch, `match_product` as the resolver's post-filter,
+    and the named-perfume guard in `product_info`.
+
+    `\\W` covers Arabic punctuation (؟ ، ؛) as well as Latin, and Python's `\\w` includes
+    Arabic letters and digits, so names carrying numbers ("Afnan 9PM", "XJ 1861 Naxos",
+    "Baccarat Rouge 540") tokenise unchanged.
+    """
+    cleaned = re.sub(r"\W+", " ", normalize_arabic(text or ""), flags=re.UNICODE)
     return {
         token
-        for token in normalize_arabic(text or "").replace("-", " ").split()
+        for token in cleaned.split()
         if len(token) > 1 and token not in _STOPWORDS
     }
 

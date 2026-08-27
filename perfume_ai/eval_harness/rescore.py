@@ -87,6 +87,7 @@ def _all_text(record, upto):
 def rescore(record, truth, scenario_budget=None):
     findings = []
     previous_reply = None
+    budget_stated = False
 
     for turn in record["turns"]:
         reply = turn["reply"] or ""
@@ -179,7 +180,12 @@ def rescore(record, truth, scenario_budget=None):
         similarity = (turn.get("search") or {}).get("similarity")
         if similarity and not similarity.get("has_close_match"):
             claimed = re.search(r"(شبه|بديل|نفس\s+الريح|نفس\s+الجو)", reply)
-            admitted = re.search(r"(مفيش|مش\s+لاقي|مختلف|مش\s+نفس|مش\s+قريب)", reply)
+            # "مش موجود عندنا حاجة شبهه" is the agent admitting the gap in as many words, but
+            # the marker list did not carry "مش موجود" — so an honest admission that happened
+            # to contain the word "شبه" was scored as an overclaim.
+            admitted = re.search(
+                r"(مفيش|مش\s+لاقي|مختلف|مش\s+نفس|مش\s+قريب|مش\s+موجود)", reply
+            )
             if claimed and not admitted:
                 add("similarity_overclaim", "critical",
                     f"band '{similarity.get('best_band')}' for "
@@ -194,6 +200,23 @@ def rescore(record, truth, scenario_budget=None):
                 f"it was shortlisted as a candidate — and its self-similarity of 1.0 is what "
                 f"set has_close_match={similarity.get('has_close_match')}")
 
+        # ── denying a perfume we actually stock ──
+        # `_DENIAL` sat in checks.py unused, and the docstring at the top of this file already
+        # promised the false-positive rule ("Naming an out-of-stock perfume to say it is
+        # unavailable is correct behaviour") with nothing implementing it. Both halves land here.
+        #
+        # Stricter than the checks.py pass in one way that matters: a denial is excused when the
+        # perfume's own injected row says it is gone. `format_product` writes
+        # "❌ هذا المنتج غير متوفر حالياً بجميع أحجامه" as its Stock Status when nothing is
+        # sellable, so a reply relaying that is telling the truth about this turn's data even if
+        # the row looks sellable now.
+        denied = checks._false_denial(reply, truth)
+        if denied and "غير متوفر حالياً بجميع أحجامه" not in (context or ""):
+            add("false_denial", "critical",
+                f"told the customer '{denied}' is not available, but it is active in the "
+                f"catalogue with a sellable bottle"
+                + (f" and was in this turn's shortlist {matched}" if denied in matched else ""))
+
         # ── verbatim-ish repetition across turns ──
         if previous_reply and reply:
             ratio = SequenceMatcher(None, reply.strip(), previous_reply.strip()).ratio()
@@ -206,7 +229,16 @@ def rescore(record, truth, scenario_budget=None):
         # ── a stated order total, checked against the scenario's budget ──
         # Independent of _allowed_numbers, which whitelists price x1-4 and every pairwise
         # sum, so a fabricated total is unflaggable there by construction.
-        budget = scenario_budget
+        #
+        # Only from the turn the customer actually states the budget. runner.py already gates
+        # this; rescore did not, so M1's turn 1 — a price answer of 944 given two turns BEFORE
+        # the customer mentioned 700 — was scored as breaking a budget that did not exist yet.
+        if not budget_stated and scenario_budget:
+            budget_stated = (
+                str(int(scenario_budget)) in (turn.get("user") or "")
+                or bool(intent.get("max_price"))
+            )
+        budget = scenario_budget if budget_stated else None
         if budget:
             for value in checks.check_stated_total(reply, budget, truth):
                 add("over_budget_total", "critical",

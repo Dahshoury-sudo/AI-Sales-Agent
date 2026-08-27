@@ -9,6 +9,7 @@ Everything here is read-only against the database.
 """
 
 import re
+from collections import namedtuple
 
 # Latin tokens that appear in replies without naming a product.
 _LATIN_ALLOWLIST = {
@@ -98,6 +99,86 @@ _DENIAL = (
     re.compile(r"مفيش\s+حاليا"),
 )
 
+# Denials that are correct, and which the patterns above match anyway. `مش\s+متوفر` has no
+# trailing boundary, so it also matches متوفرة / متوفرين / متوفر منه.
+#
+#   * A bottle-type-scoped denial. `product_formatting._original_bottle_status` dictates
+#     "للاسف مش متوفر منه زجاجة أوريجينال حالياً" verbatim for any global-brand perfume with no
+#     original variant, and prompts.py tells the model to reproduce it بالحرف — so it appears in
+#     correct replies by design. Versace Eros has no original bottle, so the *fixed* 1099 reply
+#     still contains this sentence.
+#   * A size-scoped denial ("حجم 50 ملي غير متوفر", "الـ50 ملي مش متوفر"). Only original bottles
+#     can run out, so these can be true; suppressed rather than validated, because `truth` has
+#     no per-size availability and a conservative miss beats a false alarm.
+_DENIAL_SCOPED = (
+    re.compile(r"[أا]وريجينال"),
+    re.compile(r"زجاج[ةه]\s+(?:ال)?[أا]وريجينال"),
+    re.compile(r"زجاجات\s+(?:ال)?براند"),
+    re.compile(r"حجم\s+\d+"),
+    re.compile(r"الـ?\s*\d+\s*ملي"),
+)
+
+# "مفيش عندنا حاجة شبه X" denies a RESEMBLANCE, not a product. It says nothing about whether X
+# is stocked — and it is the honest answer the similarity rules ask for when no close match
+# exists. Scenario S1 produces it verbatim, then recommends two perfumes in the same breath.
+_DENIAL_SIMILARITY = (
+    re.compile(r"شبه"),
+    re.compile(r"زي\s"),
+    re.compile(r"مثل"),
+    re.compile(r"بديل"),
+    re.compile(r"نفس\s"),
+)
+
+# A reply that denies one thing and offers another is ordinary, so the denied name has to sit in
+# the same clause as the denial. Without this, S1's "مفيش عندنا حاجة شبه Dior Sauvage… لكن ممكن
+# يعجبك Luna Rossa Carbon" was read as denying Luna Rossa Carbon — a perfume it was recommending.
+_CLAUSE = re.compile(r"[.،,؛;!?؟\n]+")
+
+# `naming.mentioned_in` reads only `.name`, so the catalogue names can be handed to it without
+# dragging ORM instances into a `truth` dict that the runner shares across five threads.
+_NameOnly = namedtuple("_NameOnly", "name")
+
+
+def _false_denial(reply, truth):
+    """An active, sellable perfume the reply says we do not have.
+
+    The 1099 defect: "عطر Versace Eros مش متوفر عندنا حالياً" while Eros was active at 1019 EGP.
+
+    Three kinds of correct denial are excluded — one scoped to a bottle type (dictated verbatim
+    by `product_formatting._original_bottle_status`, so it appears in correct replies by design),
+    one scoped to a size (only original bottles can run out, so it may well be true), and one
+    denying a resemblance rather than a product.
+
+    Name matching goes through `sales.naming.mentioned_in` rather than a substring test, so a
+    reordered or slightly mistyped name still resolves — "9pm by Afnan" for "Afnan 9PM" is that
+    function's own documented case, and a substring test missed it entirely. The catalogue names
+    are wrapped in a name-only stand-in because `mentioned_in` reads nothing but `.name`, which
+    keeps ORM instances out of a `truth` dict shared across the runner's thread pool.
+
+    Returns the offending name, or None.
+    """
+    from products.services.sales import naming
+
+    available = truth.get("available_names") or ()
+    if not available:
+        return None
+
+    candidates = [_NameOnly(name) for name in available if name]
+
+    for clause in _CLAUSE.split(reply or ""):
+        if not any(pattern.search(clause) for pattern in _DENIAL):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SCOPED):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SIMILARITY):
+            continue
+        hits = naming.mentioned_in(clause, candidates)
+        if hits:
+            # Longest wins: catalogue names nest, and "Stronger With You Intensely" in the text
+            # also satisfies every token of "Stronger With You".
+            return max((hit.name for hit in hits), key=len)
+    return None
+
 
 def _numbers(text):
     return {match.group().replace(",", "") for match in _NUM.finditer(text or "")}
@@ -106,14 +187,28 @@ def _numbers(text):
 def build_ground_truth(store):
     """Everything the agent is factually allowed to say about this store."""
     from products.models import Product
+    from products.services.product_formatting import is_variant_available
 
     prices, volumes, names, name_tokens, brands = set(), set(), set(), set(), set()
     longevity_numbers = set()
+    # Active products with at least one sellable bottle. A denial of one of these is always
+    # wrong, which is what the denial check needs and what `names` cannot express: `names`
+    # deliberately stays unfiltered so it can still catch a hallucinated or deactivated
+    # product being named, and narrowing it would turn a deactivated name into an
+    # `unknown_latin_token` false positive instead.
+    #
+    # `is_variant_available` is reused rather than re-derived: a brand bottle is compounded to
+    # order so it always counts, an original counts only while stock remains.
+    available_names = set()
 
     products = Product.objects.filter(store=store).prefetch_related("variants").select_related("brand")
     for product in products:
         names.add(product.name)
         brands.add(product.brand.name)
+        if product.is_active and any(
+            is_variant_available(variant) for variant in product.variants.all()
+        ):
+            available_names.add(product.name)
         for token in re.findall(r"[A-Za-z0-9]+", f"{product.name} {product.brand.name}"):
             if len(token) > 1:
                 name_tokens.add(token.lower())
@@ -142,6 +237,7 @@ def build_ground_truth(store):
         "prices": prices,
         "volumes": volumes,
         "names": names,
+        "available_names": available_names,
         "name_tokens": name_tokens,
         "brands": brands,
         "longevity_numbers": longevity_numbers,
@@ -229,6 +325,15 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
                     f"named '{name}' on a turn where no product data was injected",
                 ))
                 break
+
+    # ── Denying a perfume we actually stock ────────────────────────────────
+    denied = _false_denial(reply, truth)
+    if denied:
+        findings.append((
+            "false_denial", "critical",
+            f"told the customer '{denied}' is not available, but it is active in the "
+            f"catalogue with a sellable bottle",
+        ))
 
     # ── Unsupported certainty ─────────────────────────────────────────────
     for pattern in _GUARANTEE:
@@ -351,7 +456,12 @@ def check_budget_respected(reply, budget, truth):
 
 
 # "الإجمالي: 1560 جنيه" / "المجموع 1753" / "الطلب كله بـ 1560"
+#
+# `سعره الإجمالي 944` is excluded by the negative lookbehind: that is one bottle's total price,
+# not an order total, and reading it as one flagged a correct product_info reply about Dior
+# Sauvage's 90ml. "الإجمالي" only means a cart when it is not qualifying a price.
 _STATED_TOTAL = re.compile(
+    r"(?<!سعره\s)(?<!سعرها\s)(?<!السعر\s)(?<!سعر\s)"
     r"(?:الإجمالي|الاجمالي|المجموع|الطلب\s+كله)\s*"
     r"(?:هيبقى|بيبقى|يبقى|هو|بـ|ب|:)?\s*(\d[\d.,]*)"
 )

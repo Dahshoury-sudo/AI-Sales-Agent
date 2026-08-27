@@ -1,0 +1,314 @@
+[
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 7,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": 8,
+      "sales_effectiveness": 7,
+      "closing_timing": 7,
+      "human_feel": 9,
+      "trust": 8
+    },
+    "what_worked": [
+      "أنصحك بـ Stronger With You Intensely 90 ملي بـ 780 جنيه، ريحته دافية وقوية مع توفي وقرفة تناسب السهرات والشتا، وفيه كمان الـ50 ملي بـ 450 جنيه",
+      "ذكّر العميل صريحًا بأن المجموع الحالي أعلى من الميزانية: \"⚠️ للعلم: Stronger With You Intensely (90 ملي) بـ 1560 — أعلى من الميزانية اللي قلتها (900 جنيه). لو مش مقصود، قولي وأشيله.\"",
+      "حساب المجموع كان صحيحاً: 2 × 90ml × 780 = 1560 جنيه — الأرقام المطروحة تطابق بيانات القاعدة."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "sales",
+        "what": "لم يعرض طريقة عملية ومباشرة لإبقاء الإجمالي داخل الميزانية بعد أن صار المجموع أعلى من 900",
+        "why_wrong": "العميل أعطى ميزانية ثابتة 900 جنيه، والعامل ذكر أن المجموع 1560 لكنه عرض خيارًا واحدًا فقط (إزالة المنتج) بدلاً من اقتراح بدائل مناسبة. من قواعد البيانات: Stronger With You Intensely 50ml = 450 EGP، فاقتراح 2×50ml = 900 جنيه كان سيطابق الميزانية تمامًا لكن لم يُعرض.",
+        "expected": "كان يجب اقتراح بدائل واضحة ومحاسبة: مثلاً تحويل الطلب إلى 2×50ml (450×2=900) ليطابق الميزانية، أو اقتراح تغيير إحدى القطع إلى حجم أصغر أو منتج أرخص، وشرح الفروق قصيرة المدى."
+      },
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "سأل العميل 'أوريجينال أم زجاجة البراند؟' بدون توضيح سياسة المتجر حول 'أصلي أم تركيب'",
+        "why_wrong": "في STORE-CONFIGURED FACTS واضح: العطور كلها 'عطور تركيب' ومسموح ذكر أن بعض العطور متاحة بزجاجات أوريجينال. الطلب بهذه الصيغة قد يُسيء تفسيره كأن العطور أصلية، بينما المطلوب توضيح: 'العطر تركيب، لكن متاح لبعض العطور زجاجة أوريجينال'.",
+        "expected": "كان يفترض توضيح سياسة المتجر فورًا: 'منتجاتنا تركيب؛ لو بتحب ممكن أختار لك زجاجة براند (مظهر الأصلي) متاحة لبعض الأنواع — تحبها كده؟' قبل اتخاذ طلب الإرجاع."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "طلب بيانات الاتصال والعنوان قبل حل مشكلة الميزانية نهائيًا",
+        "why_wrong": "بمجرد ظهور أن المجموع أعلى من الميزانية، الأهم هو الوصول لاتفاق على التشكيلة والأسعار. طلب الاسم ورقم الموبايل والعنوان مرتين (Turn 3 وTurn 4) كان سابقًا لأوانه ويمكن أن يشعر العميل بالضغط.",
+        "expected": "أولًا الاتفاق على التشكيلة والسعر أو تقديم بدائل، ثم طلب بيانات الشحن والدفع لتأكيد الطلب."
+      }
+    ],
+    "salesperson_verdict": "الرد عملي وصحيح حسابياً — حسب قواعد البيانات الحسابات والأسعار دقيقة والإنذار بالميزانية موجود — لكن المندوب فشل في اقتناص فرصة سهلة للحفاظ على الصفقة ضمن الميزانية (مثلاً عرض 2×50ml = 900). كمُدير مبيعات، أُقرّ الجهد لكن أطلب تعديل سريع: اعرض البدائل المناسبة ووضّح سياسة 'تركيب/زجاجة أوريجينال' قبل أخذ بيانات الشحن.",
+    "id": "F1",
+    "category": "purchase",
+    "persona": "hard_budget"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 7,
+      "similarity_accuracy": 10,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": 9,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "فهم المطلوب: Agent ركّز على ثبات العطر باعتباره الأولوية النهائية («Ambero هو الأنسب لطلبك من حيث الثبات القوي اللي بيوصل لـ 10 ساعات»).",
+      "احترام القيود: الاقتراحان داخل الميزانية (Ambero 50ml = 601ج، Dark Aura 50ml = 680ج) — الأرقام مطابقة لقاعدة البيانات.",
+      "صدق حول التشابه: Agent اعترف سابقًا بعدم وجود تطابق تام مع Dior Sauvage («مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا»)، ثم قدّم بدائل مناسبة مع توضيح أن الاختيار مبني على الثبات.",
+      "لغة طبيعية ومصرية: الصياغة ودودة وطبيعية («أنا أرشحلك Ambero أكتر...») وتناسب التعامل البيع على الأرض."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم تُذكر Safrano كأول خيار للثبات رغم أنه أطول ثباتًا (11 ساعة) ومتوفر بسعر 50ml = 651ج داخل الميزانية.",
+        "why_wrong": "قيمة الثبات كانت الأولوية القصوى من العميل. قاعدة البيانات تُظهر Safrano ثبات 11 ساعة و50ml بسعر 651EGP، وبالتالي كان يجب عرضه كخيار أول أو على الأقل ذكره ضمن الخيارات الأعلى ثباتًا.",
+        "expected": "بائع مخضرم كان سيعرض Safrano أولًا (11 ساعة، 651ج) ثم يذكر Ambero (10س) وLeatherio (9س) مع مقارنة بسيطة لترتيبها حسب الثبات."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يُعرض دعوة واضحة لتجربة العطور في الستور أو عرض طريقة الطلب/الدفع بعد التوصية.",
+        "why_wrong": "حسب STORE-CONFIGURED FACTS، الترحيب بالدخول للستور وتجربة العينات مهم ومشجّع على البيع؛ العميل أعطى تفضيلات محددة وقرار جزئي ممكن يستلزم تجربة. Agent لم يقترح زيارة الستور أو ذكر كيفية تأكيد الطلب (مثلاً عربون أو رابط الطلب).",
+        "expected": "عرض دعوة لتجربة العينات في الفرع أو شرح سريع لعملية الطلب (رابط الموقع/عربون 250ج وطرق التحويل) لزيادة فرصة الإغلاق أو المتابعة."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "لم يُسأل سؤال متابعة بسيط لتأكيد تفضيلات ثانوية (هل تفضّل نغمات دافئة/توابلية أم شيء أقرب للـ ambroxan البارد) بعد أن ذكر العميل أن الثبات هو الأهم.",
+        "why_wrong": "السؤال كان يمكنه تحسين التوصية (مثلاً اختيار Ambero vs Safrano vs Leatherio حسب الطيف الدافئ/بارد)، والعميل أعطى تفاصيل كافية للتجنّب من طرح أسئلة كان من الممكن استنتاجها.",
+        "expected": "سؤال سريع واحد لتحسين التوصية أو لتأكيد الاختيار قبل إكمال عملية البيع."
+      }
+    ],
+    "salesperson_verdict": "مقبول — البائع فهم الطلب ونصح بخيارات مدعومة بالبيانات وبطريقة واثقة وطبيعية، لكن أغفل عرض أفضل خيار من حيث الثبات (Safrano 11 ساعة) وترك فرص بسيطة للتقريب نحو الإغلاق (دعوة للتجربة أو شرح طريقة الطلب). مع تعديل بسيط في التوصية كان سيعتبر أداءً ممتازًا.",
+    "id": "M1",
+    "category": "memory",
+    "persona": "mind_changer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 8,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 7,
+      "similarity_accuracy": null,
+      "product_accuracy": 6,
+      "confidence_calibration": 6,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": 7,
+      "human_feel": 8,
+      "trust": 5
+    },
+    "what_worked": [
+      "حافظ على القيود: التوصية داخل ميزانية 500 وابتعد عن العود (قدم Tom Ford Ombre Leather 50ml بـ 344ج) — فولفكت شرط العميل 'مش بحب العود'.",
+      "استخدم لغة مصرية طبيعية ومباشرة: \"أنا أرشحلك Tom Ford Ombre Leather أوريجينال 50 ملي أكتر لطلبك 👌\" — نغمة ودودة وقصيرة.",
+      "ذكر بدائل أساسية وأسعارها (brand 50ml vs original 50ml) مما يساعد العميل يقارن سعرياً."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "الصياغة عن الأصلي مخالفة لتعليمات المتجر",
+        "why_wrong": "قاعدة المتجر توضح: ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — يجب أن تقول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\". الوكيل قال \"عندنا زجاجة أوريجينال Tom Ford...\" مما يخالف التوجيه ويُحتمل أن يضلل العميل حول طبيعة المنتج.",
+        "expected": "صياغة واضحة وصحيحة مثل: \"متاح لبعض البرفانات زجاجات أوريجينال، لكن العطور عندنا بشكل عام تركيب/ميكسات — لو حابب أوضح لك الفرق أو حاجة أصلية متاحة هقولك بالضبط\"."
+      },
+      {
+        "severity": "medium",
+        "category": "data",
+        "what": "ادّعى أن كل أحجام Dior Sauvage أغلى من الميزانية بشكل مطلق",
+        "why_wrong": "القاعدة في قاعدة البيانات تظهر أن هناك original 60ml بسعر 456ج (داخل الميزانية) لكن stock=0. الوكيل قال \"Dior Sauvage متوفر بس كل الأحجام أغلى بكتير من ميزانيتك.\" البيان غير دقيق: هناك حجم سعري داخل حد الميزانية لكنه غير متوفر، والوكيل لم يوضح مسألة المخزون.",
+        "expected": "التحقق من التوفر وذكره بدقة: مثلاً \"الـ original 60ml سعره 456ج لكنه غير متوفر حالياً (stock=0)، بقية الأحجام أغلى من 500ج\"، أو تقديم بدائل متوفرة."
+      },
+      {
+        "severity": "low",
+        "category": "recommendation",
+        "what": "قدّم خيار واحد فقط بدل عدة بدائل مناسبة",
+        "why_wrong": "العميل قال \"طيب ايه اللي عندك؟\" بعد استبعاد أسماء، توقع من البايع عرض 2-3 خيارات غير مستبعدة داخل الميزانية لتسهيل المقارنة. الوكيل قدم خياراً واحداً بشكل نهائي.",
+        "expected": "عرض 2-3 عطور مناسبة ضمن القيود (سعر، لا عود) مع لمحة قصيرة عن الطابع لكل منها، حتى لو بعضها 'أوريجينال' أو 'براند'."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر بوضوح أن معظم العطور تركيب/ميكس من المتجر",
+        "why_wrong": "قواعد المتجر تشترط توضيح أن العطور هي تركيب مع وجود بعض زجاجات أوريجينال متاحة. الوكيل لم يذكر أن المنتج بشكل عام تركيب، فقط ذكر أوريجينال مما قد يخلق التباساً.",
+        "expected": "توضيح بسيط: \"العطور عندنا تركيب بجودة عالية، ومتاح لبعض العطور زجاجات أوريجينال — لو تفضّل تركيبة أو أوريجينال أأكدلك التوفر\"."
+      }
+    ],
+    "salesperson_verdict": "مقبول عمومًا — الوكيل فهم القيود وقدم خيار مناسب داخل الميزانية مع نبرة مصرية طبيعية، لكن يحتاج تصحيح في صياغة المعلومات عن الأوريجينال والتأكد من توافر الأحجام قبل الإدلاء ببيانات عن مدى توافرها أو سعرها.",
+    "id": "M3",
+    "category": "memory",
+    "persona": "price_sensitive"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 10,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 9,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "Agent immediately summarized the order: \"🛍️ الطلب لحد دلوقتي: - 1 × Ambero (90ml) بـ 1180 جنيه\" (correct price from DB).",
+      "Agent asked only for missing information (name/phones/address) and did NOT re-ask what was already provided.",
+      "Agent gave a clear final summary with all customer details and the order + total: \"🛍️ الطلب: - 1 × Ambero (90ml) - زجاجة البراند (السعر: 1180.00 جنيه) \\n💰 الإجمالي: 1180.00 جنيه.\"",
+      "Tone and language felt natural and appropriate for an Egyptian customer (friendly, concise)."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "Did not provide next steps to confirm the order (deposit/payment instructions).",
+        "why_wrong": "STORE-CONFIGURED FACTS require a deposit (عربون) of at least 250ج to confirm shipping and provide payment options/links. The agent confirmed the order details but did not tell the customer how to pay the deposit or the available payment methods (e.g., Instapay link) or ask whether to proceed with payment.",
+        "expected": "After confirming details, a senior salesperson would state the deposit requirement and give the payment options/link (or ask whether the customer wants to pay now), and request the transfer screenshot to proceed."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "Did not mention delivery cost or expected delivery time.",
+        "why_wrong": "STORE-CONFIGURED FACTS include estimated shipping cost (≈50–60ج) and delivery time (2–4 working days). Not informing the customer leaves them uninformed about extra charges and timing.",
+        "expected": "State approximate shipping fee and delivery ETA when confirming an order, so the customer sees the full expected cost and timing upfront."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "Missed offering easy options (pay now vs cash on delivery, or pickup in-store) while confirming.",
+        "why_wrong": "The store facts list payment methods and that the store has a physical location. The agent didn't offer these choices when asking for final confirmation, a good moment to remove friction.",
+        "expected": "Offer available payment methods (Cash/Instapay/Fawry/etc.), mention deposit vs COD, and offer store pickup with address if the customer prefers to try in-store."
+      }
+    ],
+    "salesperson_verdict": "Acceptable turn — the agent collected exactly the missing info and gave a correct, clear summary with the right total. A sales manager would accept this, but expect the agent next to give payment/deposit instructions, shipping estimate, and ask whether to proceed with the payment to finalize the order.",
+    "id": "P2",
+    "category": "purchase",
+    "persona": "ready_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": 9,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 4,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "فهم الطلب: Agent قال مفيش حاجة قريبة من Dior Sauvage بالظبط — متوافق مع الملخص الداخلي (has_close_match = false).",
+      "قدم بدائل منطقية: عرض Luna Rossa Carbon كخيار 'نضيف وأخف' وAmbero كخيار 'دافي وتوابل' — الاتنين وصفهم يتطابق مع صفة العطر في قاعدة البيانات.",
+      "لغة محلية ومريحة: الصياغة المصرية ('ممكن يعجبك...، أخف وأريح للنهار') جعلت الرد طبيعي وقريب من العميل."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يذكر الملاحظات المشتركة صراحة (مثل Ambroxan وPepper) عند ترشيح Luna Rossa Carbon.",
+        "why_wrong": "العميل صرح إنه يبحث عن شيء 'شبه سوفاج' وذكر ملاحظات محددة (bergamot, pepper, ambroxan). في قاعدة البيانات Luna Rossa Carbon تحتوي على Bergamot, Pepper, Lavender وAmbroxan، فذكر هذه النقاط كان سيقوي مصداقية الترشيح.",
+        "expected": "يكشف التشابه بوضوح: 'Luna Rossa Carbon فيه bergamot و pepper و lavender و قاعدة ambroxan، عشان كده أقرب حاجة لسوفاج عندنا.'"
+      },
+      {
+        "severity": "high",
+        "category": "sales",
+        "what": "لم يُدعَ العميل لتجربة العطر في الستور أو يُعرض عليه خيارات الشراء/الأحجام/الأسعار بعد الترشيح.",
+        "why_wrong": "سلوك البيع الجيد حسب سياسات المحل هو تشجيع العميل على زيارة الستور لتجربة العطور أو إعطاء معلومات جاهزة عن الأحجام والأسعار ليسهل الانتقال للشراء. الرد توقف عند الترشيح فقط وفوّت فرصة تحويل الاهتمام إلى زيارة/طلب.",
+        "expected": "عرض دعوة للتجربة بالستور مع عنوانه أو سؤال متابعة عن تفضيل النهار/سهره ثم ذكر الأحجام والأسعار المتوفرة أو عرض إرسال رابط الطلب."
+      },
+      {
+        "severity": "medium",
+        "category": "similarity",
+        "what": "اقتراح Ambero بعدم كونه مماثل في الطابع العام لسوفاج قد يربك العميل إذا كان يقصد نفس الطابع الطازج-الأمبروكسانى.",
+        "why_wrong": "قاعدة البيانات تصف Ambero كعطر شرقي دافئ وقوي للمساء (Cinnamon, Bergamot, Pink Pepper) بينما Sauvage معروف بالطابع النظيف والأمبروكساني؛ المقارنة بينهما تحتاج تأطير أو توضيح أن Ambero بديل بطابع مختلف.",
+        "expected": "لو قدمت Ambero يجب توضيح أنها بديلة بطابع دافي/توابلي وليست 'شبه' لسوفاج في الطابع العام، أو الاكتفاء بترشيحات أقرب فقط."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يذكر توفر المنتج/الكمية أو حالة الستوك أو خيارات الطلب (موقع/بوت/عربون) بعد أن أبدى العميل اهتماماً.",
+        "why_wrong": "المتجر يتيح معلومات طلب واضحة (موقع، طرق دفع، عربون) ويحث على ذكرها عند تحريك المحادثة نحو البيع. تجاهلها فقد يمنع الانتقال السلس إلى عملية الطلب.",
+        "expected": "عند تأكيد اهتمام العميل، ذكر 'تقدر تطلب من خلال موقعنا أو البوت الذكي' وشرح عربون التحويل أو دعوته للزيارة."
+      }
+    ],
+    "salesperson_verdict": "عرض مناسب وفهم جيد للطلب — ترشيح Luna Rossa Carbon قوي ومبرر، لكن البايع فشل في تدعيم الترشيح بذكر الملاحظات المشتركة، ولم يحوّل الاهتمام لدعوة للتجربة أو لإعطاء معلومات طلب/أسعار، فالمعلومات المفقودة تقلّل فرص الإغلاق.",
+    "id": "S1",
+    "category": "similarity",
+    "persona": "clone_hunter"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 6,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": 8,
+      "human_feel": 9,
+      "trust": 5
+    },
+    "what_worked": [
+      "اعترف بالمطالبة غير الواقعية: \"ثبات يومين وفوحان قوي بميزانية 300 جنيه مش هتلاقيه معانا للأسف\" — صحّي المعلومة بدلاً من الوعد الكاذب.",
+      "قدم توصية قريبة ومحددة: \"أقرب حاجة ممكن تناسبك هي Tom Ford Ombre Leather ... بس سعرها 344 جنيه\" — عرض منتج محدد بدلاً من إجابة عامة.",
+      "أظهر تَمييزًا ومرونة في الوصف: \"ثباته قوي وفوحانه قوي، بس ريحته ممكن تكون تقيلة شوية\" — استخدم لغة احتمالية ولم يبالغ.",
+      "طرح سؤال مؤهل في الختام لتمهيد الخطوة التالية: \"العطر لراجل ولا لست؟\""
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "trust",
+        "what": "ذكر توفر \"زجاجة أوريجينال 50 ملي\" دون توضيح أن العطر نفسه تركيب من عندنا.",
+        "why_wrong": "قواعد المتجر تنص صراحة أن تذكر أن العطور كلها تركيب وأنه \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\" — الوكيل لم يقل هذا، فالمعلومة عن الأوريجينال أعطت انطباعاً مضللاً خلاف سياسة المتجر.",
+        "expected": "يجب أن يوضح البائع: \"العطر تركيب من عندنا، ومتوفر لده زجاجة بشكل أوريجينال (50مل) بس السعر 344\" أو صياغة مماثلة صريحة توضح الفرق."
+      },
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يقترح بوضوح أي قيد يجب التنازل عنه أو بدائل عملية تلائم الميزانية (مثل تركيبات أقوى أو أحجام مختلفة).",
+        "why_wrong": "السيناريو المتوقع: كشف التعارض بين نيش + ثبات يومين + فوحان قوي + مش تقيل + 300ج وشرح أي قيد لازم يتنازل عنه، مع اقتراح بدائل ضمن قيود العميل. الوكيل اكتفى بطلب زيادة الميزانية دون اقتراح بدائل عملية.",
+        "expected": "البائع الجيد يذكر بوضوح: \"لو مصمم على 300 هنقدر نعمل تركيبة مخصصة أقوى (تركيب من عندنا) لكنها مش هتكون نيش أصلي؛ أو لو تحب نزيد الميزانية لحد 450-600 نقدر نجيب شيء نيش أقرب\" ويعرض أمثلة لكل خيار."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "ما دعاش العميل صراحةً لتجربة العطور في الستور ولا عرض عنوان الفرع عندما بدا العميل مهتماً.",
+        "why_wrong": "بيانات المتجر تشجّع بشدة على تجربة المنتجات في الستور ويطلبون إعطاء العنوان فور موافقة العميل؛ الوكيل اكتفى بس سؤال تأهيلي ووقف.",
+        "expected": "لو العميل أبدى استجابة أو اهتمام، البائع كان لازم يقول: \"تتعالى تجربها عندنا في الستور، عنواننا ...\" ثم يقدم تفاصيل الزيارة أو خيار الطلب."
+      },
+      {
+        "severity": "low",
+        "category": "product_accuracy",
+        "what": "لم يذكر مدة ثبات محددة لعطر Tom Ford (8–12 ساعة) أو يوضح أنها بعيدة عن طلب العميل (يومين).",
+        "why_wrong": "قاعدة البيانات تذكر ثبات Ombre Leather 8–12 ساعة؛ الإشارة إلى رقم واضح كان سيساعد العميل على فهم الفجوة بدقة.",
+        "expected": "ذكر رقم الثبات من قاعدة البيانات: \"ثباته عادة 8–12 ساعة، يعني بعيد عن 'يومين' اللي طلبته\"."
+      }
+    ],
+    "salesperson_verdict": "قبول مش كامل — إجابة عملية ومألوفة على طلب غير ممكن، لكن لا يكفي: يجب تصحيح صياغة توفر الأوريجينال (توضيح أن العطر تركيب) وطرح بدائل واضحة (تركيبات داخل الميزانية أو رفع ميزانية مع أمثلة) ودعوة للتجربة بالمحل. بدون هذه التصحيحات، لا أقبل الدور كـمدير مبيع.",
+    "id": "X3",
+    "category": "adversarial",
+    "persona": "contradictory"
+  }
+]

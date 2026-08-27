@@ -244,6 +244,36 @@ def offered_in_order(conversation, store, turns=2):
     return ordered + sorted(remaining)
 
 
+def offered_context_block(conversation, store):
+    """The perfumes we just offered, rendered as an ordered prompt block.
+
+    Lives here rather than in a caller because two branches need the same anchor. The order
+    extractor uses it to resolve "ده" / "اول واحد" (evaluation scenario F1), and
+    `product_resolver` uses it because its own prompt has only one weak sentence about
+    pronouns and nothing structured to point at — which is how "مش متوفر متأكد ؟" about
+    Versace Eros resolved to two perfumes from two turns earlier (conversation 1099).
+
+    Derived from `Message.internal_context` via `offered_in_order`, not scraped from prose, so
+    the anti-hallucination rules that surround both call sites are not weakened: every name
+    here is one we demonstrably had real data for when we said it.
+
+    Returns "" when nothing is offered, so a caller can concatenate it unconditionally.
+    """
+    try:
+        offered = offered_in_order(conversation, store)
+    except Exception:
+        offered = []
+    if not offered:
+        return ""
+
+    lines = "\n".join(f"{index}. {name}" for index, name in enumerate(offered, start=1))
+    return (
+        "\n═══ PERFUMES YOU JUST OFFERED (in the order you named them) ═══\n"
+        f"{lines}\n"
+        "Resolve \"ده\" / \"اول واحد\" / \"التاني\" against this list. Entry 1 is what you led with.\n"
+    )
+
+
 def continuity_note(keeping, dropped, converge=False):
     """Stay on what the conversation is already about, and account for what left it.
 

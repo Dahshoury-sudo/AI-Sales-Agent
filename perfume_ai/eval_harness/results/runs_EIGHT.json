@@ -1,0 +1,1662 @@
+[
+  {
+    "id": "F1",
+    "category": "purchase",
+    "persona": "hard_budget",
+    "probe": "A hard 900 budget, then a second line added, then a size upgrade. Correct move: the running TOTAL must be checked against the 900, not each line separately. When the second item or the size upgrade pushes the cart over 900, say so plainly and offer a real way back under (smaller size, drop one). The final total must be arithmetically correct from the database and must reflect the LATEST size only. Silently assembling a 1700+ cart against a stated 900 is a trust failure, and re-asking the budget it was already given is a memory failure.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز عطر رجالي ميزانيتي 900",
+        "reply": "أنصحك بـ Stronger With You Intensely زجاجة 90 ملي بـ 780 جنيه، ريحته دافية وقوية مع توفي وقرفة وفانيليا، والثبات حوالي 8 ساعات. وفيه كمان حجم 50 ملي بـ 450 جنيه لو حابب حاجة أصغر. \n\nلو تحب حاجة أخف وأكتر كاجوال، Dior Homme Sport 50 ملي بـ 450 جنيه خيار منعش وحيوي للربيع والصيف.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 900,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 900,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "discovery",
+        "search": {
+          "matched": [
+            "Stronger With You",
+            "Dior Homme Sport",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely",
+            "Acqua di Gio",
+            "Afnan 9PM",
+            "Leatherio",
+            "1 Million",
+            "Oudora",
+            "Invictus",
+            "Oud Wood",
+            "Dior Homme Intense"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {}
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 11665,
+        "context": "\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1100.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 330 جنيه في الإجمالي (780 مقابل 450)، بس سعر الملي أرخص: 8.7 بدل 9.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1032.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1077.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\n- زجاجة أوريجينال 100 ملي: 881.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n\nName (الاسم الصحيح): 1 Million\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 514.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 888.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 374 جنيه في الإجمالي (888 مقابل 514)، بس سعر الملي أرخص: 9.9 بدل 10.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Blood Mandarin, Grapefruit, Mint\nMiddle Notes: Cinnamon, Rose, Spicy Notes\nBase Notes: Leather, Amber, Patchouli\nDescription: A bold, gold-toned fragrance radiating confidence and luxury\n\n-------------------------\n\nName (الاسم الصحيح): Oudora\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 514.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 988.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 12 hours\nProjection: Very Strong\nTop Notes: Saffron, Rose, Cardamom\nMiddle Notes: Oud, Agarwood, Cinnamon\nBase Notes: Amber, Musk, Patchouli\nDescription: A bold, opulent oud composition for those who like to be remembered. Deep agarwood and saffron blend with a smoky, resinous base for a scent that commands the room.\n\n-------------------------\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1102.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1300.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "تمام هاخد ده، وضيف كمان واحد للهدية",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Stronger With You Intensely (90ml) بـ 1560 جنيه\nالمجموع: 1560 جنيه.\n\n⚠️ للعلم: Stronger With You Intensely (90 ملي) بـ 1560 — أعلى من الميزانية اللي قلتها (900 جنيه). لو مش مقصود، قولي وأشيله.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 70,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 2 (1560.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "خليه 90 ملي بدل الـ50",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Stronger With You Intensely (90ml) بـ 1560 جنيه\nالمجموع: 1560 جنيه.\n\n⚠️ للعلم: Stronger With You Intensely (90 ملي) بـ 1560 — أعلى من الميزانية اللي قلتها (900 جنيه). لو مش مقصود، قولي وأشيله.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 70,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 2 (1560.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 4,
+        "user": "الاجمالي بقى كام؟",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Stronger With You Intensely (90ml) بـ 1560 جنيه\nالمجموع: 1560 جنيه.\n\n⚠️ للعلم: Stronger With You Intensely (90 ملي) بـ 1560 — أعلى من الميزانية اللي قلتها (900 جنيه). لو مش مقصود، قولي وأشيله.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 70,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 2 (1560.00 EGP)",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "gender": "male",
+      "max_price": 900
+    },
+    "seconds": 73.8
+  },
+  {
+    "id": "F2",
+    "category": "adversarial",
+    "persona": "expert",
+    "probe": "Eros IS in the catalogue (Versace, 50ml=666, 90ml=1019). Turn 3 asks why it was not offered — a question about ONE named perfume, so the answer is that perfume's real data plus at most a half-sentence acknowledgement. ❌ Saying it is not available is a critical trust failure: the shortlist is a capped selection, not the catalogue, and 'not in the data I was handed' is not 'we do not stock it'. Turn 4 doubts the answer and must stay on Eros — answering about a different perfume from an earlier turn means the referent was resolved from stale history. Saying no ORIGINAL bottle exists is correct and expected; Eros has none.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز برفان رجالي فواح جدا وثباته قوي جدا",
+        "reply": "ريحته قوية وثباته عالي، دي حاجة واضحة في طلب حضرتك. ميزانيتك في حدود كام؟",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "discovery",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 0,
+        "context": "",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "1200",
+        "reply": "أنا أرشحلك Afnan 9PM زجاجة البراند 90 ملي بـ 1077 جنيه، ثباته من 8 لـ 11 ساعة وفوحانه قوي جداً، مناسب جداً لطلبك. وفيه كمان الـ50 ملي بـ 508 جنيه وزجاجة أوريجينال 100 ملي بـ 881 جنيه لو حابب تختار حجم أصغر أو شكل مختلف.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200.0,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200.0,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Afnan 9PM",
+            "Safrano",
+            "Eros",
+            "Ambero",
+            "Dior Sauvage",
+            "Lattafa Asad",
+            "Leatherio",
+            "Aventus",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely",
+            "Dark Aura",
+            "Fahrenheit"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Afnan 9PM": {
+              "score": 6.5,
+              "reasons": [
+                "ثباته بيطابق طلبه (8–11 hrs)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Safrano": {
+              "score": 6.5,
+              "reasons": [
+                "ثباته بيطابق طلبه (11 hours)",
+                "فوحانه بيطابق طلبه (Very Strong)"
+              ],
+              "mismatches": []
+            },
+            "Eros": {
+              "score": 6.5,
+              "reasons": [
+                "ثباته بيطابق طلبه (11 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Ambero": {
+              "score": 6.45,
+              "reasons": [
+                "ثباته بيطابق طلبه (10 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Dior Sauvage": {
+              "score": 6.45,
+              "reasons": [
+                "ثباته بيطابق طلبه (8–10 hrs)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Lattafa Asad": {
+              "score": 6.45,
+              "reasons": [
+                "ثباته بيطابق طلبه (8–10 hrs)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 6.4,
+              "reasons": [
+                "ثباته بيطابق طلبه (9 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Aventus": {
+              "score": 6.4,
+              "reasons": [
+                "ثباته بيطابق طلبه (9 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 6.35,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 6.35,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 6.35,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            },
+            "Fahrenheit": {
+              "score": 6.35,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": []
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 14497,
+        "context": "\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1077.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 881.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–11 hrs) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 373 جنيه في الإجمالي (1024 مقابل 651)، بس سعر الملي أرخص: 11.4 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | فوحانه بيطابق طلبه (Very Strong)\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1019.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1180.00 EGP ✅ (داخل الميزانية)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (10 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 944.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 1200.00 EGP (2 زجاجة فقط) ✅ (داخل الميزانية)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Lattafa Asad\nBrand: Lattafa\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 982.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 794.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 340 جنيه في الإجمالي (982 مقابل 642)، بس سعر الملي أرخص: 10.9 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Evening, Casual, Winter\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Black Pepper, Pineapple, Tobacco\nMiddle Notes: Coffee, Patchouli, Iris\nBase Notes: Amber, Vanilla, Dry Woods, Benzoin\nDescription: Warm spicy fragrance inspired by high-end niche scents with excellent value.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ✅ (داخل الميزانية)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 631.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 990.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 50 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 764.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 359 جنيه في الإجمالي (990 مقابل 631)، بس سعر الملي أرخص: 11.0 بدل 12.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Pineapple, Blackcurrant, Apple\nMiddle Notes: Birch, Patchouli, Jasmine\nBase Notes: Musk, Oakmoss, Ambergris\nDescription: A bold, fruity-smoky fragrance symbolizing strength and success\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 330 جنيه في الإجمالي (780 مقابل 450)، بس سعر الملي أرخص: 8.7 بدل 9.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1151.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Fahrenheit\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 900.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1200.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 5000.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 9000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (1200 مقابل 900)، بس سعر الملي أرخص: 13.3 بدل 18.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Nutmeg Flower, Lavender, Mandarin Orange, Bergamot, Lemon\nMiddle Notes: Violet Leaf, Sandalwood, Carnation, Jasmine\nBase Notes: Leather, Vetiver, Musk, Amber, Patchouli, Tonka Bean\nDescription: An iconic aromatic fougere famous for its bold leather and violet dry-down.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "ليه مرشحتش versace eros",
+        "reply": "رشحتلك Afnan 9PM الأول لأنه ثابت وفواح جداً، لكن Versace Eros كمان خيار ممتاز لو عايز ريحة رجالي قوية وفوحان عالي. الـ90 ملي من Eros بـ1019 جنيه، وهو ثابت حوالي 11 ساعة وفوحانه قوي، وفيه كمان الـ50 ملي بـ666 جنيه. للاسف مش متوفر منه زجاجة أوريجينال حالياً.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 1256,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 4,
+        "user": "مش متوفر متأكد ؟",
+        "reply": "Versace Eros متوفر عندنا، والـ90 ملي منه بـ1019 جنيه، ثابت حوالي 11 ساعة وفوحانه قوي، ريحته رجالي وشبابي. وفيه كمان الـ50 ملي بـ666 جنيه. للاسف مش متوفر منه زجاجة أوريجينال حالياً.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 1256,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "gender": "male",
+      "max_price": 1200.0,
+      "longevity": "long-lasting",
+      "projection": "strong"
+    },
+    "seconds": 68.5
+  },
+  {
+    "id": "M1",
+    "category": "memory",
+    "persona": "mind_changer",
+    "probe": "The canonical accumulation test. By turn 4 the ACTIVE requirement set is: male, Sauvage-like, uncommon, <=700, longevity is the top priority. Correct move: the final reply must respect all four — especially longevity, which was just made the top priority — and must not re-ask the budget or the gender. Dropping or contradicting an earlier constraint is a memory failure.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "بحب سوفاج",
+        "reply": "Dior Sauvage متوفر عندنا، والـ 90 ملي هو أفضل اختيار من حيث القيمة بسعر 944 جنيه، لأنه كمية أكبر بـ 80% بس الفرق في السعر 302 جنيه بس. وكمان متوفر الـ 50 ملي بسعر 642 جنيه، وفيه زجاجات أوريجينال 100 و200 ملي لو حابب.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 1040,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 1200.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "بس مش عايز حاجه منتشره",
+        "reply": "مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا، بس ممكن يعجبك Ambero لو بتحب التوابل والريحة الدافية، وهو تركيب حصري مش منتشر عند حد تاني. كمان Dark Aura مختلف وفيه طابع شرقي غامق وقوي، مناسب للاستخدام اليومي والمناسبات. أنا أرشحلك Ambero أكتر لطلبك 👌.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": "Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": "Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Ambero",
+            "Dark Aura",
+            "Marino",
+            "Luna Rossa Carbon",
+            "Leatherio",
+            "Safrano",
+            "Eros",
+            "Le Male",
+            "Stronger With You Intensely",
+            "Afnan 9PM",
+            "Stronger With You Absolutely",
+            "Armani Code"
+          ],
+          "alternatives": [],
+          "similarity": {
+            "reference_name": "Dior Sauvage",
+            "reference_source": "catalogue",
+            "best_band": "loose",
+            "has_close_match": false
+          },
+          "reasons": {
+            "Ambero": {
+              "score": 6.755,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 5.899,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Marino": {
+              "score": 5.803,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Luna Rossa Carbon": {
+              "score": 5.718,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 5.436,
+              "reasons": [
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Safrano": {
+              "score": 5.324,
+              "reasons": [
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Eros": {
+              "score": 5.002,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Le Male": {
+              "score": 4.995,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 4.665,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Afnan 9PM": {
+              "score": 4.602,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 4.444,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Armani Code": {
+              "score": 4.378,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {
+          "Dior Sauvage": null
+        },
+        "context_chars": 14837,
+        "context": "\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP\n- الـ 90 ملي: 1180.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP\n- الـ 90 ملي: 1093.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 444 جنيه في الإجمالي (1093 مقابل 649)، بس سعر الملي أرخص: 12.1 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP\n- الـ 90 ملي: 950.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 250 جنيه في الإجمالي (950 مقابل 700)، بس سعر الملي أرخص: 10.6 بدل 14.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP\n- الـ 90 ملي: 1075.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP\n- الـ 90 ملي: 1024.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 373 جنيه في الإجمالي (1024 مقابل 651)، بس سعر الملي أرخص: 11.4 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (856 مقابل 623)، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 330 جنيه في الإجمالي (780 مقابل 450)، بس سعر الملي أرخص: 8.7 بدل 9.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Armani Code\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 633.00 EGP\n- الـ 90 ملي: 866.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (866 مقابل 633)، بس سعر الملي أرخص: 9.6 بدل 12.7 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Lemon\nMiddle Notes: Guaiac Wood, Star Anise, Olive Blossom\nBase Notes: Tonka Bean, Leather, Tobacco\nDescription: A seductive, mysterious oriental fragrance for the evening\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "وبالمناسبه ميزانيتي 700",
+        "reply": "مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا، لكن عندك خيارين مختلفين ومناسبين لميزانيتك:\n\n🔹 Ambero زجاجة 50 ملي بـ 601 جنيه، تركيب حصري مش منتشر عند حد تاني، أنسب لو بتحب التوابل والريحة الدافية. \n🔹 Dark Aura زجاجة 50 ملي بـ 680 جنيه، برضه تركيب حصري ومناسب للاستخدام اليومي والمناسبات.\n\nأنا أرشحلك Ambero أكتر لطلبك 👌، لأنه داخل الميزانية وأقرب في الطابع.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 700,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Dior Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Dior Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 700,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Dior Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Dior Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Ambero",
+            "Dark Aura",
+            "Marino",
+            "Luna Rossa Carbon",
+            "Leatherio",
+            "Safrano",
+            "Eros",
+            "Le Male",
+            "Stronger With You Intensely",
+            "Afnan 9PM",
+            "Stronger With You Absolutely",
+            "Armani Code"
+          ],
+          "alternatives": [],
+          "similarity": {
+            "reference_name": "Dior Sauvage",
+            "reference_source": "catalogue",
+            "best_band": "loose",
+            "has_close_match": false
+          },
+          "reasons": {
+            "Ambero": {
+              "score": 10.755,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 9.899,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Marino": {
+              "score": 7.303,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Luna Rossa Carbon": {
+              "score": 7.218,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 6.936,
+              "reasons": [
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Safrano": {
+              "score": 6.824,
+              "reasons": [
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Eros": {
+              "score": 6.502,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Le Male": {
+              "score": 6.495,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 6.165,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Afnan 9PM": {
+              "score": 6.102,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 5.944,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Armani Code": {
+              "score": 5.878,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            }
+          }
+        },
+        "keeping": [
+          "Ambero",
+          "Dark Aura"
+        ],
+        "dropped": {
+          "Dior Sauvage": null
+        },
+        "context_chars": 13029,
+        "context": "\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1180.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1151.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1093.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 950.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1019.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1077.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 881.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Armani Code\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 633.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 866.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Lemon\nMiddle Notes: Guaiac Wood, Star Anise, Olive Blossom\nBase Notes: Tonka Bean, Leather, Tobacco\nDescription: A seductive, mysterious oriental fragrance for the evening\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n",
+        "findings": []
+      },
+      {
+        "n": 4,
+        "user": "بس اهم حاجه الثبات",
+        "reply": "مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا، وده استثناء لازم أوضحه. بالنسبة للثبات، Ambero هو الأفضل عندنا بثبات 10 ساعات، والـ50 ملي منه بـ601 جنيه داخل ميزانيتك، وهو تركيب حصري مش منتشر عند حد تاني. \n\nكمان Dark Aura ثابت 8 ساعات، والـ50 ملي بـ680 جنيه، برضه تركيب حصري ومناسب لو عايز حاجة مختلفة. \n\nأنا أرشحلك Ambero أكتر لطلبك لأنه الأعلى ثباتاً والأقرب في المواصفات.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 700,
+          "longevity": "long-lasting",
+          "projection": null,
+          "exclude_names": [
+            "Dior Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Dior Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 700,
+          "longevity": "long-lasting",
+          "projection": null,
+          "exclude_names": [
+            "Dior Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Dior Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": true
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Ambero",
+            "Dark Aura",
+            "Luna Rossa Carbon",
+            "Leatherio",
+            "Safrano",
+            "Marino",
+            "Eros",
+            "Le Male",
+            "Afnan 9PM",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely",
+            "Bleu de Chanel"
+          ],
+          "alternatives": [],
+          "similarity": {
+            "reference_name": "Dior Sauvage",
+            "reference_source": "catalogue",
+            "best_band": "loose",
+            "has_close_match": false
+          },
+          "reasons": {
+            "Ambero": {
+              "score": 11.905,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (10 hours)",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 10.949,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (8 hours)",
+                "العميل بيتكلم عنه بالفعل",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Luna Rossa Carbon": {
+              "score": 8.268,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (6–8 hours)"
+              ],
+              "mismatches": []
+            },
+            "Leatherio": {
+              "score": 8.036,
+              "reasons": [
+                "ثباته بيطابق طلبه (9 hours)",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Safrano": {
+              "score": 8.024,
+              "reasons": [
+                "ثباته بيطابق طلبه (11 hours)",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Marino": {
+              "score": 7.803,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته أقل من اللي طلبه شوية",
+                "تركيب حصري بتاعنا — مش منتشر عند حد تاني"
+              ],
+              "mismatches": []
+            },
+            "Eros": {
+              "score": 7.702,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (11 hours)"
+              ],
+              "mismatches": []
+            },
+            "Le Male": {
+              "score": 7.495,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (7 hours)"
+              ],
+              "mismatches": []
+            },
+            "Afnan 9PM": {
+              "score": 7.302,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (8–11 hrs)"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 7.215,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "ثباته بيطابق طلبه (8 hours)"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 6.995,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Bleu de Chanel": {
+              "score": 6.987,
+              "reasons": [
+                "ثباته بيطابق طلبه (8–10 hrs)"
+              ],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            }
+          }
+        },
+        "keeping": [
+          "Ambero",
+          "Dark Aura"
+        ],
+        "dropped": {
+          "Dior Sauvage": null
+        },
+        "context_chars": 13507,
+        "context": "\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1180.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (10 hours) | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1151.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (8 hours) | العميل بيتكلم عنه بالفعل | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 950.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (6–8 hours)\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1093.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته أقل من اللي طلبه شوية | تركيب حصري بتاعنا — مش منتشر عند حد تاني\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1019.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (11 hours)\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1077.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 881.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (8–11 hrs)\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه. | ثباته بيطابق طلبه (8 hours)\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours)\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1015.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 852.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 1300.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 150 ملي: 1500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs)\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "gender": "male",
+      "max_price": 700,
+      "longevity": "long-lasting",
+      "similar_to": "Dior Sauvage",
+      "similar_to_notes": [
+        "bergamot",
+        "pepper",
+        "ambroxan"
+      ],
+      "wants_uncommon": true
+    },
+    "seconds": 59.3
+  },
+  {
+    "id": "M3",
+    "category": "memory",
+    "persona": "price_sensitive",
+    "probe": "Budget then a negative preference then a vague follow-up. Correct move: the third turn must still honour BOTH the 500 budget and the oud exclusion without re-asking either. Recommending an oud-heavy perfume here is a hard failure.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز عطر رجالي ميزانيتي 500",
+        "reply": "عندك Stronger With You زجاجة البراند 50 ملي بـ 400 جنيه داخل الميزانية، ريحته دافية ومزيج من التوابل والفانيليا مناسب للشتا والسهرات. كمان Dior Homme Sport 50 ملي بـ 450 جنيه، ريحته منعشة وحيوية تناسب الربيع والصيف. أنا أرشحلك Stronger With You أكتر لو بتحب الريحة الدافية، أما Dior Homme Sport فهو أخف وأنعش.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "discovery",
+        "search": {
+          "matched": [
+            "Stronger With You",
+            "Dior Homme Sport",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {}
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 3486,
+        "context": "\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 700.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1100.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "مش بحب العود خالص",
+        "reply": "لو مش بتحب العود، Stronger With You 50 ملي بـ 400 جنيه داخل ميزانيتك، دافي ومناسب للشتا والسهرات. كمان Stronger With You Absolutely 50 ملي بـ 480 جنيه، أقوى شويه وفيه طابع فخم أكتر. أنا أرشحلك Stronger With You عشان سعره أوفر، ولو حابب حاجة أقوى وأغنى ممكن تجرب Absolutely.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [
+            "oud"
+          ],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [
+            "oud"
+          ],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Stronger With You",
+            "Dior Homme Sport",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Stronger With You": {
+              "score": 7.0,
+              "reasons": [
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
+            },
+            "Dior Homme Sport": {
+              "score": 7.0,
+              "reasons": [
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            }
+          }
+        },
+        "keeping": [
+          "Dior Homme Sport",
+          "Stronger With You"
+        ],
+        "dropped": {},
+        "context_chars": 3562,
+        "context": "\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 700.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1100.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 780.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 830.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "طيب ايه اللي عندك؟",
+        "reply": "Dior Homme Sport 50 ملي بـ 450 جنيه داخل ميزانيتك، وهو مناسب للربيع والصيف ومتوفر حالياً. الأحجام الأكبر زي 90 ملي سعرها أعلى بكتير عن ميزانيتك، فلو حابب الحجم الأكبر ممكن تفكر تزود الميزانية. أنا أرشحلك الـ50 ملي أكتر لطلبك 👌.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Stronger With You",
+            "Stronger With You Absolutely"
+          ],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [
+            "oud"
+          ],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": "male",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 500,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Stronger With You",
+            "Stronger With You Absolutely"
+          ],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [
+            "oud"
+          ],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Dior Homme Sport"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Dior Homme Sport": {
+              "score": 7.0,
+              "reasons": [
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
+            }
+          }
+        },
+        "keeping": [
+          "Dior Homme Sport"
+        ],
+        "dropped": {
+          "Stronger With You": null,
+          "Stronger With You Absolutely": null
+        },
+        "context_chars": 871,
+        "context": "\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1100.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "gender": "male",
+      "max_price": 500,
+      "avoid_notes": [
+        "oud"
+      ]
+    },
+    "seconds": 38.4
+  },
+  {
+    "id": "P2",
+    "category": "purchase",
+    "persona": "ready_buyer",
+    "probe": "Clear purchase with details supplied across turns. Correct move: collect what is missing without re-asking what was already given, then show a summary WITH the total before any confirmation. Prices and total must be arithmetically correct from the DB.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز اطلب امبيرو 90 ملي",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Ambero (90ml) بـ 1180 جنيه\nالمجموع: 1180 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 49,
+        "context": "Ambero (90 ملي) (زجاجة البراند) x 1 (1180.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "اسمي بلال حسن، 01012345678، ورقم تاني 01198765432",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Ambero (90ml) بـ 1180 جنيه\nالمجموع: 1180 جنيه.\n\nولسه ناقص العنوان.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 49,
+        "context": "Ambero (90 ملي) (زجاجة البراند) x 1 (1180.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "العنوان مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: بلال حسن\n📱 الموبايل: 01012345678\n📞 موبايل بديل: 01198765432\n📍 العنوان: مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3\n\n🛍️ الطلب:\n- 1 × Ambero (90ml) - زجاجة البراند (السعر: 1180.00 جنيه)\n\n💰 الإجمالي: 1180.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 49,
+        "context": "Ambero (90 ملي) (زجاجة البراند) x 1 (1180.00 EGP)",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {},
+    "seconds": 24.2
+  },
+  {
+    "id": "S1",
+    "category": "similarity",
+    "persona": "clone_hunter",
+    "probe": "Sauvage IS in the catalogue, so its real notes are known (bergamot/mandarin/lavender/ambroxan/vanilla). Correct move: offer something that genuinely shares that fresh-ambroxan character and name the shared notes as evidence. A heavy oud, a leather, or a gourmand is NOT similar to Sauvage no matter how the reply words it. Sharing one note is not similarity. No similarity percentage may be quoted.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز حاجه شبه سوفاج",
+        "reply": "مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا، لكن ممكن يعجبك Luna Rossa Carbon لو بتحب الريحة النضيفة والهادية شوية، أو Ambero لو تحب الريحة الدافية والتوابل أكتر. Luna Rossa أخف وأريح للنهار، أما Ambero فمناسب أكتر للسهرات والشتا.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Sauvage"
+          ],
+          "notes": [],
+          "similar_to": "Sauvage",
+          "similar_to_notes": [
+            "bergamot",
+            "pepper",
+            "ambroxan"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [
+            "Luna Rossa Carbon",
+            "Ambero",
+            "Eros",
+            "Le Male",
+            "Dark Aura",
+            "Stronger With You Intensely",
+            "Marino",
+            "Afnan 9PM",
+            "Stronger With You Absolutely",
+            "Armani Code",
+            "Bleu de Chanel",
+            "Fahrenheit"
+          ],
+          "alternatives": [],
+          "similarity": {
+            "reference_name": "Dior Sauvage",
+            "reference_source": "catalogue",
+            "best_band": "loose",
+            "has_close_match": false
+          },
+          "reasons": {
+            "Luna Rossa Carbon": {
+              "score": 5.718,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Ambero": {
+              "score": 5.555,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Eros": {
+              "score": 5.002,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Le Male": {
+              "score": 4.995,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Dark Aura": {
+              "score": 4.699,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 4.665,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Marino": {
+              "score": 4.603,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Afnan 9PM": {
+              "score": 4.602,
+              "reasons": [
+                "Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Absolutely": {
+              "score": 4.444,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Armani Code": {
+              "score": 4.378,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Bleu de Chanel": {
+              "score": 4.338,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            },
+            "Fahrenheit": {
+              "score": 4.337,
+              "reasons": [],
+              "mismatches": [
+                "مش قريب من Dior Sauvage"
+              ]
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 14426,
+        "context": "\nName (الاسم الصحيح): Luna Rossa Carbon\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Prada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 700.00 EGP\n- الـ 90 ملي: 950.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 250 جنيه في الإجمالي (950 مقابل 700)، بس سعر الملي أرخص: 10.6 بدل 14.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual/Office/Everyday\nLongevity: 6–8 hours\nProjection: Moderate\nTop Notes: Bergamot, Pepper\nMiddle Notes: Lavender, Metallic Notes, Watery Notes\nBase Notes: Ambroxan, Patchouli\nDescription: A fresh and modern aromatic fougere fragrance combining fresh lavender, green bergamot, spicy pepper, mineral metallic notes, and a smooth woody ambroxan and patchouli base. Clean, masculine, versatile, and suitable for everyday wear.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: ambroxan، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Ambero\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 601.00 EGP\n- الـ 90 ملي: 1180.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Cinnamon, Bergamot, Pink Pepper\nMiddle Notes: Amber, Cedarwood, Nutmeg\nBase Notes: Vanilla, Musk, Sandalwood\nDescription: A warm, magnetic scent built for cold nights out. Spiced cinnamon and pepper open into a rich amber heart, settling into a smooth base of vanilla and musk that lingers on skin and clothes alike.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، nutmeg، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 11 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\nrecommend this perfume if the customer wants a perfume that is masucline, has high projection, high longevity and for self confident men\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، ambroxan. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (856 مقابل 623)، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 680.00 EGP\n- الـ 90 ملي: 1151.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 471 جنيه في الإجمالي (1151 مقابل 680)، بس سعر الملي أرخص: 12.8 بدل 13.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, Bergamot, Cardamom\nMiddle Notes: Leather, Tobacco, Dark Chocolate\nBase Notes: Oud, Amber, Vanilla, Patchouli\nDescription: A highly addictive, dark and mysterious fragrance. It starts with a spicy kick of black pepper and saffron, melting into a luxurious heart of leather and tobacco. The dry down is a warm, sensual blend of oud and vanilla that lasts for hours.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 330 جنيه في الإجمالي (780 مقابل 450)، بس سعر الملي أرخص: 8.7 بدل 9.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Marino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 649.00 EGP\n- الـ 90 ملي: 1093.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 444 جنيه في الإجمالي (1093 مقابل 649)، بس سعر الملي أرخص: 12.1 بدل 13.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport/Casual\nLongevity: 5 hours\nProjection: Light\nTop Notes: Sea Salt, Bergamot, Grapefruit\nMiddle Notes: Marine Accord, Lavender, Geranium\nBase Notes: Musk, Ambergris, Driftwood\nDescription: A crisp, energizing splash inspired by sea breeze and morning air. Aquatic notes and citrus keep it light and refreshing, ideal for hot days and active routines.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Dior Sauvage — مشترك في: vanilla، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Armani Code\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 633.00 EGP\n- الـ 90 ملي: 866.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 233 جنيه في الإجمالي (866 مقابل 633)، بس سعر الملي أرخص: 9.6 بدل 12.7 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Lemon\nMiddle Notes: Guaiac Wood, Star Anise, Olive Blossom\nBase Notes: Tonka Bean, Leather, Tobacco\nDescription: A seductive, mysterious oriental fragrance for the evening\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 852.00 EGP\n- زجاجة أوريجينال 100 ملي: 1300.00 EGP\n- زجاجة أوريجينال 150 ملي: 1500.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 370 جنيه في الإجمالي (1015 مقابل 645)، بس سعر الملي أرخص: 11.3 بدل 12.9 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n\nName (الاسم الصحيح): Fahrenheit\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 900.00 EGP\n- الـ 90 ملي: 1200.00 EGP\n- زجاجة أوريجينال 100 ملي: 5000.00 EGP\n- زجاجة أوريجينال 200 ملي: 9000.00 EGP (2 زجاجة فقط)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (1200 مقابل 900)، بس سعر الملي أرخص: 13.3 بدل 18.0 جنيه للملي. ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Nutmeg Flower, Lavender, Mandarin Orange, Bergamot, Lemon\nMiddle Notes: Violet Leaf, Sandalwood, Carnation, Jasmine\nBase Notes: Leather, Vetiver, Musk, Amber, Patchouli, Tonka Bean\nDescription: An iconic aromatic fougere famous for its bold leather and violet dry-down.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Dior Sauvage\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "similar_to": "Sauvage",
+      "similar_to_notes": [
+        "bergamot",
+        "pepper",
+        "ambroxan"
+      ]
+    },
+    "seconds": 68.9
+  },
+  {
+    "id": "X1",
+    "category": "adversarial",
+    "persona": "novice",
+    "probe": "Named perfume that is NOT in the catalogue. Correct move: say plainly it is not available and offer 1-2 real alternatives. Must NOT claim it is available, must NOT silently answer about a different perfume as if it were the one asked for.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عندكم عطر اسمه بلاك اوركيد؟",
+        "reply": "عطر Black Orchid مش متوفر عندنا حالياً يا فندم، لكن ممكن أنصحك بـ Stronger With You من Emporio Armani، ريحته دافية وفيها لمسة لافندر وتوفي، متوفر عندنا بـ 700 جنيه للـ 90 ملي، وفيه كمان 50 ملي والأوريجينال لو تحب. أو لو تحب حاجة ريحتها نشيطة أكتر، Dior Homme Sport برضه متوفر بـ 1100 جنيه للـ 90 ملي.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 1368,
+        "context": "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\nGender: male\nPerfume Type: عطور غربية\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n-----------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nGender: male\nPerfume Type: عطور غربية\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n-----------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\nGender: male\nPerfume Type: عطور غربية\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n-----------------------\n",
+        "findings": [
+          [
+            "unknown_latin_token",
+            "high",
+            "'Orchid' is not part of any catalogue product or brand name"
+          ]
+        ]
+      }
+    ],
+    "findings": [
+      [
+        "unknown_latin_token",
+        "high",
+        "'Orchid' is not part of any catalogue product or brand name"
+      ]
+    ],
+    "error": null,
+    "final_preferences": {},
+    "seconds": 63.0
+  },
+  {
+    "id": "X3",
+    "category": "adversarial",
+    "persona": "contradictory",
+    "probe": "Mutually unsatisfiable: niche + 2-day longevity + huge projection + not heavy + 300 EGP. Correct move: surface the conflict honestly and propose the best achievable trade-off, naming which constraint has to give. Silently dropping constraints and presenting something as though it met all of them is a trust failure. Inventing a 'ثبات يومين' claim is a hard failure.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز عطر نيش ثباته يومين وفواح جدا بس مش تقيل وميزانيتي 300",
+        "reply": "بالنسبة للثبات يومين والفوحان القوي مع الريحة مش تقيلة، مع ميزانيتك 300 جنيه، للأسف مفيش عندنا عطر نيش بالحجم ده والسعر ده. أقرب حاجة ممكن تناسبك هي عطور نيش بس بأسعار أعلى، زي Tom Ford Ombre Leather أو Aventus، لكن الـ50 ملي بتاعهم سعره فوق الميزانية شوية.\n\nلو تقدر تزود شوية في الميزانية، ممكن تختار حجم 50 ملي منهم، وهيكون عندك ثبات وفوحان قوي. والعطر لراجل ولا لست؟",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": "niche",
+          "season": null,
+          "occasion": null,
+          "max_price": 300.0,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [
+            "heavy"
+          ],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": "niche",
+          "season": null,
+          "occasion": null,
+          "max_price": 300.0,
+          "longevity": "long-lasting",
+          "projection": "strong",
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [
+            "heavy"
+          ],
+          "wants_uncommon": false
+        },
+        "stage": "recommendation",
+        "search": {
+          "matched": [],
+          "alternatives": [
+            "Green Irish Tweed",
+            "Baccarat Rouge 540",
+            "Silver Mountain Water",
+            "Tom Ford Ombre Leather",
+            "Aventus",
+            "Oud Wood"
+          ],
+          "similarity": null,
+          "reasons": {
+            "Green Irish Tweed": {
+              "score": 2.15,
+              "reasons": [
+                "خفيف ومش خانق",
+                "ثباته بيطابق طلبه (7 hours)",
+                "فوحانه أقل من اللي طلبه شوية"
+              ],
+              "mismatches": [
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            },
+            "Baccarat Rouge 540": {
+              "score": 1.9,
+              "reasons": [
+                "ثباته بيطابق طلبه (9 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": [
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            },
+            "Silver Mountain Water": {
+              "score": 1.65,
+              "reasons": [
+                "خفيف ومش خانق",
+                "ثباته أقل من اللي طلبه شوية",
+                "فوحانه أقل من اللي طلبه شوية"
+              ],
+              "mismatches": [
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            },
+            "Tom Ford Ombre Leather": {
+              "score": -0.95,
+              "reasons": [
+                "ثباته بيطابق طلبه (8–12 hrs)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": [
+                "ممكن يكون تقيل على العميل",
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            },
+            "Aventus": {
+              "score": -1.1,
+              "reasons": [
+                "ثباته بيطابق طلبه (9 hours)",
+                "فوحانه بيطابق طلبه (Strong)"
+              ],
+              "mismatches": [
+                "ممكن يكون تقيل على العميل",
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            },
+            "Oud Wood": {
+              "score": -1.55,
+              "reasons": [
+                "ثباته بيطابق طلبه (8 hours)",
+                "فوحانه أقل من اللي طلبه شوية"
+              ],
+              "mismatches": [
+                "ممكن يكون تقيل على العميل",
+                "مفيش حجم متاح داخل ميزانيته"
+              ]
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 5870,
+        "context": "\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 6000.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مفيش حجم متاح داخل ميزانيته\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 1136.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مفيش حجم متاح داخل ميزانيته\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 5700.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مفيش حجم متاح داخل ميزانيته\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 873.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 750.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–12 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل | مفيش حجم متاح داخل ميزانيته\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 631.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 990.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 1000.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 764.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Pineapple, Blackcurrant, Apple\nMiddle Notes: Birch, Patchouli, Jasmine\nBase Notes: Musk, Oakmoss, Ambergris\nDescription: A bold, fruity-smoky fragrance symbolizing strength and success\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل | مفيش حجم متاح داخل ميزانيته\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- الـ 90 ملي: 1160.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل | مفيش حجم متاح داخل ميزانيته\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "max_price": 300.0,
+      "perfume_type": "niche",
+      "longevity": "long-lasting",
+      "projection": "strong",
+      "avoid_traits": [
+        "heavy"
+      ]
+    },
+    "seconds": 50.8
+  }
+]

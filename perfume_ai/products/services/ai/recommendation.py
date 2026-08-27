@@ -110,6 +110,39 @@ def _gender_note(gender_unknown):
     )
 
 
+def _named_but_missing_block(message, store, products, max_price=None):
+    """The row for a perfume the customer named that the shortlist happens to omit.
+
+    The shortlist is filtered and capped at twelve out of a much larger catalogue, so a perfume
+    the customer named by name can simply not be in it. Two things then go wrong at once: the
+    model has no data to answer with, and the persona's own red line ("do not mention a product
+    absent from your data") turns that gap into a denial.
+
+    The extractor is *asked* to keep a named perfume in `similar_to`/`exclude_names`, but a
+    prompt is advice. This is the guarantee: if they named it, its row is present. Deliberately
+    no polarity inference — the row says nothing about whether they want it, only that it
+    exists, which is the part the model cannot make up. Guessing direction from a bare name is
+    what produced `avoid_traits: ["heavy"]` for a customer asking *for* a heavy perfume.
+
+    Returns "" when the perfume is already in the shortlist, so nothing is rendered twice.
+    """
+    named = _named_in_message(message, store)
+    if not named:
+        return ""
+
+    already = {product.name for product in products}
+    missing = [product for product in named if product.name not in already]
+    if not missing:
+        return ""
+
+    return (
+        "\n═══ عطر العميل ذكره بالاسم وهو موجود عندنا (مكانش في القائمة فوق لأنها مختارة، "
+        "مش الكتالوج كله) ═══\n"
+        + format_products(missing, max_price=max_price)
+        + "🔴 ده متوفر. ❌ ممنوع تقول إنه مش موجود أو مش متوفر.\n"
+    )
+
+
 def _named_in_message(message, store):
     """Catalogue perfumes the customer named, matched deterministically.
 
@@ -279,6 +312,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
             products, max_price=max_price,
             ranked=(search or {}).get("ranked"), brief_for=brief_for,
         )
+        context += _named_but_missing_block(message, store, products, max_price)
         user_content = f"""
 ═══ طلب العميل ═══
 {message}

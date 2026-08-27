@@ -327,25 +327,12 @@ def _offered_context(conversation, store):
     could not be resolved and the customer was asked which perfume they meant, twice, after the
     bot had just named two (evaluation scenario F1).
 
-    Derived from `Message.internal_context` via sales.described, not scraped from prose, so the
-    anti-hallucination rule above is not weakened: every name here is one we demonstrably had
-    real data for when we said it.
+    Thin wrapper over `sales.described.offered_context_block`, which `product_resolver` needs
+    for the same reason. Kept as a name here because this is where the order extractor reads it.
     """
     from .sales import described as sales_described
 
-    try:
-        offered = sales_described.offered_in_order(conversation, store)
-    except Exception:
-        offered = []
-    if not offered:
-        return ""
-
-    lines = "\n".join(f"{index}. {name}" for index, name in enumerate(offered, start=1))
-    return (
-        "\n═══ PERFUMES YOU JUST OFFERED (in the order you named them) ═══\n"
-        f"{lines}\n"
-        "Resolve \"ده\" / \"اول واحد\" / \"التاني\" against this list. Entry 1 is what you led with.\n"
-    )
+    return sales_described.offered_context_block(conversation, store)
 
 
 _WHICH_PERFUME = "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟"

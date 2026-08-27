@@ -36,12 +36,58 @@ def _named_in_message(message, store):
     return naming.mentioned_in(message, candidates)
 
 
-def get_product_info(message, history=None, store=None):
+def _referent_from_conversation(message, store, conversation):
+    """The perfume we just offered, when the customer's message names none itself.
 
-    products = resolve_products(message, history, store)
+    Every `product_info` message of that shape is a question *about the perfume under
+    discussion* — "بكام؟", "ريحته عاملة ايه؟", "فيه أحجام تانية؟", "متأكد؟" — so the perfume we
+    led with is the subject, and the LLM resolver has nothing to anchor on. In conversation
+    1099 it anchored on the wrong thing: "مش متوفر متأكد ؟" about Versace Eros resolved to
+    Dior Sauvage and Lattafa Asad from two turns earlier, and the reply was only correct
+    because the model happened to read Eros's prices out of the history rather than out of the
+    injected data.
+
+    Resolved from `Message.internal_context` rather than prose, so a perfume named while being
+    withdrawn is never the referent.
+
+    Returns [] unless a conversation is present and something is genuinely under discussion —
+    that gate is what keeps this off the first turn of a conversation and out of the callers
+    that pass no conversation at all.
+    """
+    if conversation is None or store is None:
+        return []
+
+    from .sales import described as sales_described
+
+    try:
+        offered = sales_described.offered_in_order(conversation, store)
+    except Exception:
+        return []
+    if not offered:
+        return []
+
+    from products.models import Product
+
+    return list(
+        Product.objects.filter(store=store, is_active=True, name=offered[0])
+        .prefetch_related("variants")
+        .select_related("brand")
+    )
+
+
+def get_product_info(message, history=None, store=None, conversation=None):
+
+    # An explicit name in this message beats anything inferred from earlier turns.
+    products = _named_in_message(message, store)
+
+    # Nothing named here: the subject is whatever we just offered. Decided in Python because
+    # the resolver demonstrably gets this wrong, and `internal_context` is a harder record
+    # than an 8-message prose window.
+    if not products:
+        products = _referent_from_conversation(message, store, conversation)
 
     if not products:
-        products = _named_in_message(message, store)
+        products = resolve_products(message, history, store, conversation)
 
     if products:
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
