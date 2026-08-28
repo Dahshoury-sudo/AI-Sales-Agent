@@ -258,8 +258,20 @@ def search_products(intent, store=None, keep=()):
     # itself, which both handed the model the very perfume the customer already knows as
     # the top "similar to X" result and — worse — set has_close_match=True off that self
     # match, so the honesty path reported a close match that did not exist.
+    #
+    # Exception: when the reference perfume is already under discussion (`keep`), the
+    # customer is talking *about* it — asking follow-ups, confirming interest — not asking
+    # for a replacement. Excluding it here removed it from `base` before the keep/dropped
+    # logic could see it, so the model received no data about the perfume the customer was
+    # actively discussing and hallucinated reasons it was unavailable (conversation 630:
+    # "Intensely مش مناسب لميزانيتك" for a 780 EGP perfume on an 800 EGP budget).
     if reference is not None and reference.product is not None:
-        base = base.exclude(pk=reference.product.pk)
+        ref_under_discussion = (
+            keep
+            and reference.product.name in frozenset(keep)
+        )
+        if not ref_under_discussion:
+            base = base.exclude(pk=reference.product.pk)
 
     exact = base
     if notes:
@@ -358,8 +370,9 @@ def _similarity_summary(reference, ranked):
         return None
 
     best = 0.0
+    ref_pk = reference.product.pk if reference.product else None
     for entry in ranked:
-        if entry.result is not None:
+        if entry.result is not None and entry.product.pk != ref_pk:
             best = max(best, entry.result.score)
 
     return {
