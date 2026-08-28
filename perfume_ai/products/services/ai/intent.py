@@ -15,23 +15,56 @@ from .client import chat
 # Arabic prompt as the literal string "مش mainstream".
 AVOID_TRAITS = frozenset({"heavy", "suffocating", "sweet", "loud", "strong", "old"})
 
+# Traits that describe the same axis as a positive `projection` request. You cannot want a
+# strong projection and simultaneously want to avoid strength — the extractor emitting both is
+# a polarity slip, not two constraints, and `_WANTED_PROJECTION` in ranking maps
+# "strong"/"heavy"/"loud" as *requests* while `avoid_heavy` reads the identical strings as
+# *exclusions*. When they collide the positive request wins, because it is the one the customer
+# has to have said out loud: nothing sets `projection` by accident.
+#
+# This is the deterministic half of the polarity fix. The prompt asks for it too, but a prompt
+# is advice and `avoid_traits` is the only extracted field scored as a penalty — "عايزه حاجه
+# تقيله للشتا" came back as avoid_traits ["heavy"], which put -3.0 on every heavy perfume and
+# had the reply describe a winter oriental as "خفيف ومش خانق" to a customer who asked for heavy.
+_PROJECTION_AXIS = frozenset({"heavy", "loud", "strong"})
+
+# The `projection` values that mean "I want strength". Mirrors the upper half of
+# ranking._WANTED_PROJECTION; a request for "moderate" or "intimate" contradicts nothing.
+_WANTED_STRENGTH = frozenset({"strong", "heavy", "loud", "enormous", "beast", "nuclear"})
+
 
 def _sanitize(intent):
-    """Drop extracted values that are outside a closed vocabulary.
+    """Drop extracted values that are outside a closed vocabulary or contradict each other.
 
     Only `avoid_traits` is filtered. The other free-text fields are matched against the
     catalogue downstream, where an unknown value simply fails to match; this one is scored
-    directly, so an unknown value has to be removed before it reaches the ranker.
+    directly, so a bad value has to be removed before it reaches the ranker.
+
+    Two filters:
+      * outside the closed vocabulary — "mainstream" reached the Arabic prompt as the literal
+        string "مش mainstream";
+      * contradicting a positive request on the same axis — see `_PROJECTION_AXIS`.
     """
     if not isinstance(intent, dict):
         return {}
 
     traits = intent.get("avoid_traits")
     if isinstance(traits, (list, tuple, set)):
-        intent["avoid_traits"] = [
+        kept = [
             trait for trait in traits
             if str(trait).strip().lower() in AVOID_TRAITS
         ]
+
+        # A positive projection request outranks an avoid on the same axis. Deliberately not
+        # inferred from the message — only from two extracted fields disagreeing, so no
+        # polarity is being guessed here.
+        if str(intent.get("projection") or "").strip().lower() in _WANTED_STRENGTH:
+            kept = [
+                trait for trait in kept
+                if str(trait).strip().lower() not in _PROJECTION_AXIS
+            ]
+
+        intent["avoid_traits"] = kept
 
     return intent
 
@@ -89,6 +122,11 @@ Rules:
   ❌ Returning gender/budget/season and no reference to the perfume they just named is the failure this rule exists to stop: the name then never becomes a search key, and whether that perfume reaches the customer is luck. A customer asked "ليه مرشحتش versace eros" and was told it was unavailable while it sat in the catalogue at 1019 جنيه.
   ❌ NAMING A PERFUME IS NOT NAMING A BRAND. "بحب سوفاج" and "ليه مرشحتش versace eros" set 'similar_to' ONLY — do NOT also set 'brand' to that perfume's house. 'brand' is exclusively for an explicit request for a house ("عندك حاجة من ديور", "براند شانيل"). Inferring brand='Dior' from "سوفاج" collapsed a twelve-perfume shortlist down to two Dior products, and the customer had just said "مش عايز حاجه منتشره" — so the one constraint they cared about was answered with the two most mainstream perfumes in the store.
 - CRITICAL — EXCLUSIONS: If the user says what they do NOT want, capture it:
+  🔴🔴 POLARITY FIRST. 'avoid_traits' is ONLY for what they said they do NOT want. Before you put anything in it, check whether the sentence was negated. The SAME word means opposite things:
+    • "عايز عطر تقيل" / "عايزه حاجه تقيله للشتا" / "بحب العطور التقيلة" → they WANT heaviness. That is `projection: "strong"` (and `perfume_type: "oriental"` if they said شرقي). ❌ avoid_traits stays EMPTY.
+    • "مش عايز حاجة تقيلة" / "من غير تقل" / "حاجة خفيفة" → they do NOT want it. NOW `avoid_traits: ["heavy"]`.
+    Same for فواح / قوي: wanted → 'projection', rejected → 'avoid_traits'. Getting this backwards is the single most damaging error you can make: avoid_traits is scored as a PENALTY, so inverting it pushes away the exact perfumes they asked for and the reply then tells them their heavy winter perfume is "خفيف ومش خانق". A customer who said "عايزه حاجه تقيله للشتا" was handed avoid_traits ["heavy"].
+    ❌ NEVER return the same axis as both a want and an avoid — `projection: "strong"` together with `avoid_traits: ["strong"]` (or `["heavy"]`, or `["loud"]`) is a contradiction, and it will be discarded.
   • A specific ingredient they don't want (e.g. "مش بحب العود", "من غير مسك") → 'avoid_notes' (English).
   • A characteristic they don't want → 'avoid_traits'. This is a CLOSED list of exactly six values and you may return NOTHING else: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة). A value outside this list is discarded, so inventing one silently loses the customer's constraint.
   • Example: "مش عايز حاجة تقيلة أو تخنق اللي حواليا" → avoid_traits: ["heavy", "suffocating"].

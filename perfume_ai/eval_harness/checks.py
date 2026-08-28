@@ -43,16 +43,24 @@ _URGENCY = (
 
 # Closing questions — asking for the order. Broader than reply_sanitizer's patterns
 # on purpose: the point is to measure what leaks PAST the sanitizer.
+#
+# `تحب أجهزلك` was missing, which is why R3's "تحبي أجهزلك واحدة؟" showed no finding here while
+# rescore.py would have flagged it high. The size-choice pattern moved to _NARROWING, since a
+# size question is earned one stage earlier than an order ask.
 _CLOSING = (
-    re.compile(r"تحب\s+[أا]?ساعدك\s+في\s+(?:ال)?(?:طلب|[أا]وردر)"),
-    re.compile(r"تحب\s+[نت]طلب"),
+    re.compile(r"تحب[يى]?\s+[أا]?ساعدك\s+في\s+(?:ال)?(?:طلب|[أا]وردر)"),
+    re.compile(r"تحب[يى]?\s+[نت]طلب"),
+    re.compile(r"تحب[يى]?\s+[أا]?جهز\s*ل?ك"),
     re.compile(r"ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|[أا]وردر)"),
-    re.compile(r"[أا]جيبلك\s+(?:الـ?\s*)?\d+"),
     re.compile(r"[أا]سجلك?\s*(?:ال)?طلب"),
-    re.compile(r"تحب\s+نكمل"),
+    re.compile(r"تحب[يى]?\s+نكمل"),
     re.compile(r"عايز\s+تطلب"),
     re.compile(r"نبعتلك\S*\s+الطلب"),
 )
+
+# A size choice. Narrowing rather than closing, so it is premature only before a
+# recommendation has been made.
+_NARROWING = (re.compile(r"[أا]جيبلك\s+(?:الـ?\s*)?\d+"),)
 
 # Not a close, even though `عايز تطلب` matches above: asking WHICH perfume is a clarifying
 # question, and the agent cannot close on an order it has not identified yet. This produced
@@ -66,7 +74,7 @@ _NOT_A_CLOSE = (
 _FILLER = (
     re.compile(r"(?:عايز|محتاج|تحب)\s+حاج[هة]\s+تاني[هة]\s*[؟?]"),
     re.compile(r"محتاج\s+مساعد[هة]"),
-    re.compile(r"تحب\s+تعرف\s+(?:ال)?[أا]?سعار"),
+    re.compile(r"تحب[يى]?\s+تعرف\s+(?:ال)?[أا]?سعار"),
     re.compile(r"عطر\s+معين\s+في\s+بالك"),
     re.compile(r"[أا]قدر\s+[أا]ساعدك\s+(?:في\s+)?[أا]?ي[هة]?\s*[؟?]"),
 )
@@ -127,6 +135,10 @@ _DENIAL_SIMILARITY = (
     re.compile(r"مثل"),
     re.compile(r"بديل"),
     re.compile(r"نفس\s"),
+    # "مفيش عندنا حاجة قريبة من X" — the same statement in the wording the similarity
+    # instruction actually produces. Scenario S3 says it verbatim and was scored a critical
+    # false_denial for it while recommending two alternatives in the same breath.
+    re.compile(r"قريب"),
 )
 
 # A reply that denies one thing and offers another is ordinary, so the denied name has to sit in
@@ -353,9 +365,21 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             break
 
     # ── Premature closing ─────────────────────────────────────────────────
+    # Stage sets are imported from production rather than restated. Three hardcoded copies of
+    # the same set had already drifted: R3's "تحبي أجهزلك واحدة؟" was invisible here while
+    # rescore.py would have flagged it high and the judge scored it 9.
+    from products.services.sales.stage import CLOSING_STAGES, SOFT_CLOSING_STAGES
+
     stage = turn_state.get("stage")
-    closing_ok = stage in ("purchase_intent", "order_collection")
+    closing_ok = stage in CLOSING_STAGES
     if not any(pattern.search(reply) for pattern in _NOT_A_CLOSE):
+        for pattern in _NARROWING:
+            if pattern.search(reply) and stage not in SOFT_CLOSING_STAGES:
+                findings.append((
+                    "premature_close", "medium",
+                    f"size-choice CTA at stage '{stage}', before a recommendation was made",
+                ))
+                break
         for pattern in _CLOSING:
             if pattern.search(reply):
                 if not closing_ok:

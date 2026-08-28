@@ -38,7 +38,7 @@ _LEAD = r"\s*(?:(?:و\s*)?لو\s+|(?:و\s*)?هل\s+|و\s*)?"
 BANNED_CLOSERS = (
     # "تحب تعرف الأسعار والأحجام المتاحة؟" / "تحب تعرف أسعارهم والأحجام؟"
     re.compile(
-        _LEAD + r"تحب\s+تعرف\s+(?:ال)?[أاإ]?سعار\S*"
+        _LEAD + r"تحب[يى]?\s+تعرف\s+(?:ال)?[أاإ]?سعار\S*"
         r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
     ),
     # The same forbidden move in the first person, which is how the model actually
@@ -46,11 +46,11 @@ BANNED_CLOSERS = (
     # The pattern above requires "تعرف" and matched none of these, so the single
     # question the persona quotes verbatim as forbidden went out repeatedly.
     re.compile(
-        _LEAD + r"تحب\s+[أاإ](?:عرفك|قولك)\s+(?:على\s+)?(?:ال)?[أاإ]?سعار\S*"
+        _LEAD + r"تحب[يى]?\s+[أاإ](?:عرفك|قولك)\s+(?:على\s+)?(?:ال)?[أاإ]?سعار\S*"
         r"(?:\s*و\s*(?:ال)?[أاإ]?حجام\S*)?(?:\s+المتاحة)?\s*[؟?]"
     ),
     # "تحب أعرفك أكتر عن الأحجام دي؟" — same emptiness, different noun.
-    re.compile(_LEAD + r"تحب\s+[أاإ]عرفك\s+[أاإ]كتر\s+عن\s+[^؟?]{0,40}[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+[أاإ]عرفك\s+[أاإ]كتر\s+عن\s+[^؟?]{0,40}[؟?]"),
     # "عايز حاجة تانية؟" / "محتاج مساعدة في حاجة؟" / "محتاج حاجة تانية؟"
     re.compile(_LEAD + r"(?:عايز|محتاج|تحب)\s+(?:حاجة\s+تانية|مساعدة(?:\s+في\s+حاجة)?)\s*[؟?]"),
     # The statement form, which carries no question mark and so escaped the pattern
@@ -60,6 +60,11 @@ BANNED_CLOSERS = (
     re.compile(_LEAD + r"(?:فيه\s+)?عطر\s+معين\s+في\s+بالك\s*[؟?]"),
     # "أقدر أساعدك إزاي؟" / "أقدر أساعدك في إيه؟" — the persona's own banned opener.
     re.compile(_LEAD + r"[أاإ]قدر\s+[أاإ]ساعدك\s+(?:في\s+)?[أاإ]?(?:يه|زاي)\s*[؟?]"),
+    # "لو في حاجة تانية ممكن أساعدك فيها دلوقتي، تحت أمرك." — the same banned filler with the
+    # verb moved, so none of the patterns above reach it. It survived a handoff reply in CS1.
+    re.compile(
+        _LEAD + r"(?:في\s+)?حاج[ةه]\s+تاني[ةه]\s+ممكن\s+[أاإ]?ساعدك[^.؟?]*[.؟?]?"
+    ),
 )
 
 
@@ -117,44 +122,76 @@ def sanitize_reply(reply, conversation=None):
 # customer has not earned a close yet: still comparing, still objecting, still trying to
 # remember a name. sanitize_reply must stay byte-identical for a legitimate close —
 # "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟" is pinned as passing through untouched.
-PREMATURE_CLOSERS = (
+#
+# Split into two tiers because the gate was mechanically one-sided. Every pattern here is an
+# *online* closer; none of them matches "تنورنا في الستور تشم وتجرب؟". So at six of the eight
+# stages the only CTA that could physically survive to the customer was a walk-in invite —
+# backwards for a business that sells online, and most of why the evaluation's
+# sales_effectiveness sat at 6.9 with "no concrete next step" as its commonest complaint.
+#
+# Every `تحب` also accepts `تحبي` / `تحبى`. The masculine-only form let R3's
+# "تحبي أجهزلك واحدة؟" through all three layers at once — production, checks.py and
+# rescore.py — which for a store whose customers are largely women is half the conversations.
+#
+# HARD asks for the order. SOFT narrows toward it. A size choice right after a recommendation
+# is not a close; it is how the sale moves, and the persona already ships it as a recommended
+# CTA (prompts.py, the CTA menu).
+_HARD_CLOSERS = (
     # "تحب أساعدك في الطلب؟" / "تحب اساعدك في طلب واحد فيهم؟"
     # `[^؟?]{0,30}` rather than `\S*\s*` because every one of these patterns used to
     # require the question mark to sit immediately after the order word. Real replies put
     # words in between — "تحب أساعدك في طلب واحد فيهم؟", "تحب تطلبه تاني؟" — and every
     # one of them walked straight through.
-    re.compile(_LEAD + r"تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,30}[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,30}[؟?]"),
     # The same close without the "في": "تحب أساعدك تطلب واحد فيهم؟".
-    re.compile(_LEAD + r"تحب\s+[أاإ]?ساعدك\s+[نت]طلب[^؟?]{0,30}[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+[أاإ]?ساعدك\s+[نت]طلب[^؟?]{0,30}[؟?]"),
     # "تحب أجهزلك واحد منهم؟" — a close carrying no order word at all.
-    re.compile(_LEAD + r"تحب\s+[أاإ]?جهز\s*ل?ك[^؟?]{0,40}[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+[أاإ]?جهز\s*ل?ك[^؟?]{0,40}[؟?]"),
     # "تحب تطلب؟" / "تحب تطلبه تاني؟" / "تحب نطلبه؟"
-    re.compile(_LEAD + r"تحب\s+[نت]طلب[^؟?]{0,30}[؟?]"),
-    # "أجيبلك الـ90 ولا الـ50؟" — a size close.
-    re.compile(_LEAD + r"[أا]جيبلك\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*ولا\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+[نت]طلب[^؟?]{0,30}[؟?]"),
     # "نسجل الطلب؟" / "نكمل الاوردر؟" / "تحب نكمل الطلب؟"
     # The optional "تحب" matters for ordering: without it this pattern matched only
     # "نكمل الطلب؟" out of "تحب نكمل الطلب؟" and left the verb stranded, because it is
     # tried before the "تحب نكمل" pattern below and consumed the tail first.
-    re.compile(_LEAD + r"(?:تحب\s+)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,20}[؟?]"),
+    re.compile(_LEAD + r"(?:تحب[يى]?\s+)?ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|اوردر|أوردر)[^؟?]{0,20}[؟?]"),
     # "تحب نكمل؟" — the same close with no order word for the pattern above to anchor on.
-    re.compile(_LEAD + r"تحب\s+نكمل[^؟?]{0,25}[؟?]"),
+    re.compile(_LEAD + r"تحب[يى]?\s+نكمل[^؟?]{0,25}[؟?]"),
     # The statement form, which carries no question mark and so escaped every pattern above:
     # "لو تحب أساعدك في الطلب أو تحب تجرب العطور في الستور تحت أمرك." went out at stage
     # 'discovery'. BANNED_CLOSERS already carries a statement variant for the same reason;
     # this family needed one too.
     re.compile(
-        _LEAD + r"تحب\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^.؟?]*[.؟?]?"
+        _LEAD + r"تحب[يى]?\s+[أاإ]?ساعدك\s+في\s+(?:ال)?(?:طلب|اوردر|أوردر)[^.؟?]*[.؟?]?"
+    ),
+    # And the same for أجهزلك. Once the persona started leading with an online close the model
+    # phrased it as a statement — "لو تحب أجهزلك الطلب وأبعتلك التفاصيل." — which the
+    # question-mark form above cannot see. It leaked at stage 'recommendation' in F2 and R3.
+    re.compile(
+        _LEAD + r"تحب[يى]?\s+[أاإ]?جهز\s*ل?ك[^.؟?]*[.؟?]?"
     ),
 )
 
+_SOFT_CLOSERS = (
+    # "أجيبلك الـ90 ولا الـ50؟" — a size choice. Narrowing, not closing: it commits the
+    # customer to nothing and is the next step a seller actually takes after recommending.
+    re.compile(_LEAD + r"[أا]جيبلك\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*ولا\s+(?:الـ?\s*)?\d+\s*(?:ملي)?\s*[؟?]"),
+)
 
-def strip_premature_closing(reply, stage=None):
+# Kept as the union so anything reasoning about "the closers" still sees all of them.
+PREMATURE_CLOSERS = _HARD_CLOSERS + _SOFT_CLOSERS
+
+
+def strip_premature_closing(reply, stage=None, allow_soft=False):
     """Remove an order-closing question the current stage has not earned.
 
     Enforced here rather than asked for in the persona because the persona already asks:
     it says to close only when the customer is clearly buying, and the bot closed three
     replies in a row anyway. A stage that permits closing leaves the reply untouched.
+
+    `allow_soft` keeps a *narrowing* next step — a size choice — while still removing the
+    hard asks. The caller decides, via `sales.stage.soft_closing_allowed`, so this module
+    stays free of any dependency on the stage table. It defaults to False so every existing
+    caller and test keeps the old all-or-nothing behaviour.
 
     As with sanitize_reply, a reply that is *nothing but* a closing question is kept —
     sending an empty message is worse than sending a premature one.
@@ -162,9 +199,11 @@ def strip_premature_closing(reply, stage=None):
     if not reply:
         return reply
 
+    patterns = _HARD_CLOSERS if allow_soft else PREMATURE_CLOSERS
+
     cleaned = reply
     removed = 0
-    for pattern in PREMATURE_CLOSERS:
+    for pattern in patterns:
         cleaned, count = pattern.subn("", cleaned)
         removed += count
 

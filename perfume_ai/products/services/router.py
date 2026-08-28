@@ -53,7 +53,12 @@ def _finalize(reply, stage):
     """
     reply = soften_marketing_language(reply)
     if not sales_stage.closing_allowed(stage):
-        reply = strip_premature_closing(reply, stage)
+        # A narrowing next step ("أجيبلك الـ90 ولا الـ50؟") survives one stage earlier than a
+        # hard ask does. Without that, the only CTA that could reach a customer mid-conversation
+        # was a walk-in invite, which nothing in this module matches.
+        reply = strip_premature_closing(
+            reply, stage, allow_soft=sales_stage.soft_closing_allowed(stage)
+        )
     return reply
 
 

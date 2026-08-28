@@ -31,7 +31,12 @@ from eval_harness import checks  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 _NUM = re.compile(r"\d+(?:[.,]\d+)?")
-_NEGATED_GUARANTEE = re.compile(r"(?:مش|مِش|لا|بدون|من\s+غير)\s+(?:هقدر\s+)?[أا]?ضمن|مش\s+مضمون")
+# The agent refusing to guarantee is the opposite of the defect, so the negated forms have to
+# be recognised. `أقدر` was missing beside `هقدر`, so "بس مش أقدر أضمن" — a correct refusal, and
+# exactly what the gift scenario asks for — was scored a high unsupported_guarantee (G1).
+_NEGATED_GUARANTEE = re.compile(
+    r"(?:مش|مِش|لا|بدون|من\s+غير)\s+(?:[هأا]قدر\s+)?[أا]?ضمن|مش\s+مضمون"
+)
 
 # Asking for the budget again — must actually be a question.
 _ASK_BUDGET_Q = (
@@ -48,27 +53,41 @@ _ASK_GENDER_Q = (
 # The closer family the persona bans by name. Production's BANNED_CLOSERS only matches
 # "تحب تعرف الأسعار"; every variant below is the same forbidden move and gets through.
 _BANNED_CLOSER_VARIANTS = (
-    re.compile(r"تحب\s+[أا]عرفك\s+(?:على\s+)?(?:ال)?[أا]?سعار"),
-    re.compile(r"تحب\s+[أا]قولك\s+(?:ال)?[أا]?سعار"),
-    re.compile(r"تحب\s+[أا]عرفك\s+[أا]كتر\s+عن"),
-    re.compile(r"تحب\s+تعرف\s+(?:ال)?[أا]?سعار"),
+    re.compile(r"تحب[يى]?\s+[أا]عرفك\s+(?:على\s+)?(?:ال)?[أا]?سعار"),
+    re.compile(r"تحب[يى]?\s+[أا]قولك\s+(?:ال)?[أا]?سعار"),
+    re.compile(r"تحب[يى]?\s+[أا]عرفك\s+[أا]كتر\s+عن"),
+    re.compile(r"تحب[يى]?\s+تعرف\s+(?:ال)?[أا]?سعار"),
     re.compile(r"[أا]قدر\s+[أا]ساعدك\s+(?:في\s+)?[أا]?يه"),
     re.compile(r"حاج[هة]\s+تاني[هة]\s+ممكن\s+[أا]ساعدك"),
     re.compile(r"لو\s+حابب\s+[أا]ساعدك\s+في\s+حاج[هة]\s+تاني[هة]"),
 )
 
-# Order-closing moves. Production's PREMATURE_CLOSERS misses every variant marked (*).
+# Order-closing moves, split the way production splits them. The bool is whether production's
+# reply_sanitizer misses the variant entirely (*), which drives severity.
+#
+# The size-choice pattern moved to _NARROWING: production now permits a narrowing next step one
+# stage earlier than a hard ask, because the closer patterns were mechanically one-sided — every
+# one of them is an online closer and none matches a walk-in invite, so the only CTA that could
+# survive mid-conversation was "come to the shop".
 _CLOSING_VARIANTS = (
-    (re.compile(r"تحب\s+[أا]ساعدك\s+في\s+(?:ال)?(?:طلب|[أا]وردر)"), False),
-    (re.compile(r"تحب\s+[أا]ساعدك\s+[تن]طلب"), True),
-    (re.compile(r"تحب\s+[أا]جهزلك"), True),
-    (re.compile(r"تحب\s+[أا]جهز\s+لك"), True),
-    (re.compile(r"تحب\s+[نت]طلب"), False),
-    (re.compile(r"[أا]جيبلك\s+(?:الـ?\s*)?\d+"), False),
+    (re.compile(r"تحب[يى]?\s+[أا]ساعدك\s+في\s+(?:ال)?(?:طلب|[أا]وردر)"), False),
+    (re.compile(r"تحب[يى]?\s+[أا]ساعدك\s+[تن]طلب"), True),
+    (re.compile(r"تحب[يى]?\s+[أا]جهزلك"), True),
+    (re.compile(r"تحب[يى]?\s+[أا]جهز\s+لك"), True),
+    (re.compile(r"تحب[يى]?\s+[نت]طلب"), False),
     (re.compile(r"ن(?:سجل|كمل)\s+(?:ال)?(?:طلب|[أا]وردر)"), False),
 )
 
-CLOSING_STAGES = {"purchase_intent", "order_collection"}
+# "أجيبلك الـ90 ولا الـ50؟" — a size choice, permitted from the recommendation stage on.
+_NARROWING = (re.compile(r"[أا]جيبلك\s+(?:الـ?\s*)?\d+"),)
+
+# Imported rather than restated. These were three hardcoded copies of the same set — production,
+# checks.py and here — and they had already drifted: R3's "تحبي أجهزلك واحدة؟" scored 9 from the
+# judge, was invisible to checks.py, and would have been a high-severity finding here.
+from products.services.sales.stage import (  # noqa: E402
+    CLOSING_STAGES,
+    SOFT_CLOSING_STAGES,
+)
 
 
 def _all_text(record, upto):
@@ -140,6 +159,15 @@ def rescore(record, truth, scenario_budget=None):
                         f"order-closing question at stage '{stage}'"
                         + (" — variant NOT matched by reply_sanitizer.PREMATURE_CLOSERS"
                            if missed_by_production else " — sanitizer should have caught this"))
+                break
+
+        # ── narrowing one stage too early ──
+        # Separate from the above because a size choice is not an order ask. It is earned from
+        # the recommendation stage on, and is only premature before that.
+        for pattern in _NARROWING:
+            if pattern.search(reply) and stage not in SOFT_CLOSING_STAGES:
+                add("premature_close", "medium",
+                    f"size-choice CTA at stage '{stage}', before a recommendation was made")
                 break
 
         # ── the banned-closer family, in variants production misses ──

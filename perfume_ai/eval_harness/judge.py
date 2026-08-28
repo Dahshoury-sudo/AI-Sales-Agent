@@ -54,7 +54,13 @@ HARD RULES for grading:
    But do NOT call a claim invented merely because it is absent from DATABASE FACTS —
    check STORE-CONFIGURED FACTS too. Oil ratios, available bottle sizes, the similarity
    percentage, delivery times, payment terms and the store branch all live there, and
-   relaying them is correct behaviour.
+   relaying them is correct behaviour. Read BOTH blocks in full before calling anything
+   invented; scoring a supported claim as fabricated is as wrong as missing a real one.
+4b. ABSENCE IN THE SIZE LIST IS EVIDENCE, NOT A GAP. The `sizes:` field lists every bottle
+   that exists. If it shows no `original` bottle, then "مش متوفر منه زجاجة أوريجينال" is
+   TRUE and is the wording the store dictates verbatim — do NOT score it as an unsupported
+   claim. The same holds for a volume that is simply not listed. Only a claim that
+   CONTRADICTS the listed sizes is a product_accuracy failure.
 5. The customer's LATEST explicit preference outranks anything they said earlier. If a
    reply follows a stale preference over a fresh one, Memory scores 0-2.
 6. A good salesperson does NOT always sell. If the customer signalled low intent or said

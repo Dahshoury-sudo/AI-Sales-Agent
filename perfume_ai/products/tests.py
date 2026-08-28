@@ -93,6 +93,7 @@ from products.services.order_service import (
 from products.services.router import (
     _count_recent_repetitions,
     _detect_semantic_repetition,
+    _finalize,
     _is_goodbye_loop,
     _is_repetitive,
     _was_already_handed_off,
@@ -7045,6 +7046,293 @@ class ProductInfoReferentTests(TestCase):
 
         self.assertIn("THE NEWEST TURN WINS", source)
         self.assertIn("PERFUMES YOU JUST OFFERED", source)
+
+
+class WantedHeavyIsNotAvoidedTests(TestCase):
+    """Wanting a heavy perfume and rejecting one are opposites, and were the same output.
+
+    "عايزه حاجه تقيله للشتا" — I want something HEAVY for winter — came back as
+    avoid_traits ["heavy"] and persisted for the whole conversation. `avoid_traits` is the only
+    extracted field scored as a penalty (-3.0), and `notes.HEAVY_NOTES` includes musk and amber,
+    the two commonest bases and the fixatives that produce high longevity. So the inversion put
+    -3.0 on precisely the perfumes the customer asked for, and the reply then described a winter
+    oriental as "خفيف ومش خانق" to someone who wanted heavy. Scenario M2 scored 5.3 on it.
+
+    The deterministic half guesses no polarity: it only resolves two extracted fields
+    contradicting each other on the same axis.
+    """
+
+    def _clean(self, intent):
+        from products.services.ai.intent import _sanitize
+
+        return _sanitize(dict(intent))["avoid_traits"]
+
+    def test_wanting_strength_discards_an_avoid_on_the_same_axis(self):
+        self.assertEqual(
+            self._clean({"projection": "strong", "avoid_traits": ["heavy"]}), []
+        )
+
+    def test_every_projection_axis_trait_is_discarded(self):
+        for trait in ("heavy", "loud", "strong"):
+            with self.subTest(trait=trait):
+                self.assertEqual(
+                    self._clean({"projection": "strong", "avoid_traits": [trait]}), []
+                )
+
+    def test_a_different_axis_survives_the_contradiction_check(self):
+        """Wanting strength says nothing about sweetness."""
+        self.assertEqual(
+            self._clean({"projection": "strong", "avoid_traits": ["heavy", "sweet"]}),
+            ["sweet"],
+        )
+
+    def test_a_genuine_avoid_is_untouched(self):
+        """No positive request means nothing to contradict — this is a real exclusion."""
+        self.assertEqual(self._clean({"avoid_traits": ["heavy"]}), ["heavy"])
+
+    def test_a_moderate_request_is_not_a_contradiction(self):
+        self.assertEqual(
+            self._clean({"projection": "moderate", "avoid_traits": ["heavy"]}), ["heavy"]
+        )
+
+    def test_the_prompt_states_the_polarity_rule(self):
+        import inspect
+
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+
+        self.assertIn("POLARITY FIRST", source)
+        self.assertIn("عايزه حاجه تقيله للشتا", source)
+        self.assertIn("مش عايز حاجة تقيلة", source)
+
+    def test_the_ranker_cannot_penalise_a_wanted_strength(self):
+        """End to end: the intent a wanted-heavy customer produces must not carry the penalty."""
+        from products.services.ai.intent import _sanitize
+        from products.services.sales import ranking
+
+        store = Store.objects.create(name="Perfamix Test")
+        brand = Brand.objects.create(store=store, name="Perfamix Test")
+        heavy = Product.objects.create(
+            store=store, brand=brand, name="Ambero", gender="male",
+            projection="Strong", base_notes="Amber, Musk, Sandalwood",
+        )
+        ProductVariant.objects.create(
+            product=heavy, volume=50, price=601, bottle_type="normal"
+        )
+
+        intent = _sanitize({"projection": "strong", "avoid_traits": ["heavy"]})
+        entry = sales_ranking.rank([heavy], intent)[0]
+
+        self.assertEqual(
+            [m for m in entry.mismatches if "تقيل" in m], [],
+            "a wanted strength must not be scored as an avoided one",
+        )
+
+
+class OnlineFirstCallToActionTests(TestCase):
+    """The default next step is completing the purchase in chat, not a shop visit.
+
+    The brands this agent ships to sell mainly online. The persona listed "تحب تطلب؟" and
+    "تنورنا في الستور تشم وتجرب؟" as peers with no priority, and the closing gate then deleted
+    every online closer while matching nothing about a visit — so the walk-in invite was the
+    only CTA that could survive mid-conversation. The evaluation scored that as
+    sales_effectiveness 6.9, with "no concrete next step" as its commonest complaint.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.settings = StoreSettings.objects.create(
+            store=self.store,
+            payment_instructions="عربون لا يقل عن ٢٥٠ج والباقي عند الاستلام.",
+        )
+
+    def test_the_online_close_is_the_default_path(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("الأصل إن العميل يطلب من هنا", prompt)
+        self.assertIn("يختار الحجم", prompt)
+
+    def test_the_store_visit_is_demoted_to_a_secondary_option(self):
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("الزيارة للستور اختيار **تاني**", prompt)
+
+    def test_the_visit_is_no_longer_a_peer_in_the_cta_menu(self):
+        """It used to sit beside "تحب تطلب؟" with no priority between them."""
+        self.assertNotIn("تنورنا في الستور تشم وتجرب", get_system_prompt(self.store))
+
+    def test_payment_terms_reach_the_agent(self):
+        """They only ever reached the post-order confirmation, so the persona could neither
+        state the deposit nor invent it — it just stopped short of closing."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("٢٥٠ج", prompt)
+        self.assertIn("للحظة إتمام الطلب بس", prompt)
+
+    def test_a_store_with_no_payment_terms_gets_no_block(self):
+        """The close must degrade to collecting details rather than inventing a method."""
+        self.settings.payment_instructions = "   "
+        self.settings.save()
+
+        prompt = get_system_prompt(self.store)
+
+        self.assertNotIn("شروط الدفع والشحن بتاعة الستور", prompt)
+        self.assertIn("الأصل إن العميل يطلب من هنا", prompt)
+
+    def test_payment_facts_are_not_a_blanket_ban_any_more(self):
+        """Rule 8 forbade saying anything about دفع/تحويل/شحن/توصيل, which made an online CTA
+        a rule violation. It now defers to whether the terms were actually injected."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertNotIn(
+            "أو استرجاع أو دفع أو تحويل أو شحن أو توصيل أو عروض", prompt
+        )
+
+    def test_the_address_contradiction_is_gone(self):
+        """One line ordered the bot to send the address; another forbade inventing it, and the
+        address is not in the prompt at all."""
+        self.assertNotIn("ابعتله العنوان — مش ترشيحات", get_system_prompt(self.store))
+
+    def test_low_intent_still_suppresses_the_close(self):
+        """Scenario D3 scores closing_timing 10 for declining to close. Online-first must not
+        turn into pressure."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("بيتفرج بس", prompt)
+        self.assertIn("من غير أي سؤال قفل", prompt)
+
+    def test_no_store_still_renders(self):
+        self.assertTrue(get_system_prompt(None))
+
+
+class NarrowingVersusClosingTests(TestCase):
+    """A size choice is a next step, not an order ask, and is earned a stage earlier.
+
+    The closing gate was mechanically one-sided: every pattern in PREMATURE_CLOSERS is an
+    *online* closer and none of them matches "تنورنا في الستور تشم وتجرب؟". So at six of the
+    eight stages the only CTA that could physically survive to the customer was a walk-in
+    invite — backwards for a business that sells online, and most of why the evaluation's
+    sales_effectiveness sat at 6.9 with "no concrete next step" as its commonest complaint.
+    """
+
+    SIZE = "ده أنسب ليك. أجيبلك الـ90 ولا الـ50؟"
+    HARD = "ده أنسب ليك. تحب تطلب؟"
+
+    def test_a_size_choice_survives_from_the_recommendation_stage_on(self):
+        for stage in (
+            sales_stage.RECOMMENDATION,
+            sales_stage.PURCHASE_INTENT,
+            sales_stage.ORDER_COLLECTION,
+        ):
+            with self.subTest(stage=stage):
+                self.assertIn("أجيبلك", _finalize(self.SIZE, stage))
+
+    def test_a_size_choice_is_still_stripped_before_a_recommendation(self):
+        for stage in (
+            sales_stage.DISCOVERY,
+            sales_stage.COMPARISON,
+            sales_stage.OBJECTION,
+            sales_stage.IDENTIFICATION,
+            sales_stage.COMPLAINT,
+        ):
+            with self.subTest(stage=stage):
+                self.assertNotIn("أجيبلك", _finalize(self.SIZE, stage))
+
+    def test_a_hard_ask_is_still_gated_to_the_purchase_stages(self):
+        """Widening the gate wholesale would have let a close onto a factual question."""
+        for stage in (
+            sales_stage.DISCOVERY,
+            sales_stage.RECOMMENDATION,
+            sales_stage.COMPARISON,
+            sales_stage.OBJECTION,
+            sales_stage.IDENTIFICATION,
+            sales_stage.COMPLAINT,
+        ):
+            with self.subTest(stage=stage):
+                self.assertNotIn("تحب تطلب", _finalize(self.HARD, stage))
+
+        for stage in (sales_stage.PURCHASE_INTENT, sales_stage.ORDER_COLLECTION):
+            with self.subTest(stage=stage):
+                self.assertIn("تحب تطلب", _finalize(self.HARD, stage))
+
+    def test_soft_closing_is_strictly_wider_than_closing(self):
+        for stage in sales_stage.STAGES:
+            with self.subTest(stage=stage):
+                if sales_stage.closing_allowed(stage):
+                    self.assertTrue(sales_stage.soft_closing_allowed(stage))
+
+    def test_the_default_call_still_strips_both_tiers(self):
+        """Every existing caller and test passes no allow_soft, so behaviour is unchanged."""
+        self.assertNotIn("أجيبلك", strip_premature_closing(self.SIZE))
+        self.assertNotIn("تحب تطلب", strip_premature_closing(self.HARD))
+
+    # ── the feminine form escaped all three layers at once ────────────────
+    def test_the_feminine_address_is_caught(self):
+        """R3 said "تحبي أجهزلك واحدة؟". Every pattern required `تحب` followed by whitespace,
+        so the feminine form slipped past production, checks.py and rescore.py together — for a
+        store whose customers are largely women, half the conversations."""
+        feminine = "أنصحك بـ Ambero. تحبي أجهزلك واحدة؟"
+
+        self.assertNotIn("أجهزلك", _finalize(feminine, sales_stage.RECOMMENDATION))
+
+    def test_both_grammatical_forms_of_every_hard_ask_are_caught(self):
+        for reply in (
+            "ده حلو. تحب أساعدك في الطلب؟",
+            "ده حلو. تحبي أساعدك في الطلب؟",
+            "ده حلو. تحب نكمل الطلب؟",
+            "ده حلو. تحبي نكمل الطلب؟",
+            "ده حلو. تحبى تطلب؟",
+        ):
+            with self.subTest(reply=reply):
+                cleaned = _finalize(reply, sales_stage.RECOMMENDATION)
+
+                self.assertTrue(cleaned.rstrip().endswith("حلو."), cleaned)
+
+    # ── the three layers must agree ───────────────────────────────────────
+    def _harness_codes(self, reply, stage):
+        from eval_harness import checks, rescore
+
+        truth = checks.build_ground_truth(self.store)
+        first = [
+            code for code, _, _ in checks.check_reply(
+                reply, truth=truth, context="x", customer_text="",
+                turn_state={"stage": stage},
+            )
+        ]
+        record = {"id": "T", "turns": [{
+            "n": 1, "user": "x", "reply": reply, "context": "x",
+            "search": {}, "merged_intent": {}, "stage": stage,
+        }]}
+        second = [f["code"] for f in rescore.rescore(record, truth)]
+        return first, second
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+
+    def test_all_three_layers_agree_a_size_choice_is_fine(self):
+        """They had drifted: rescore flagged this high, checks.py never saw it, the judge
+        scored it 9."""
+        first, second = self._harness_codes(self.SIZE, sales_stage.RECOMMENDATION)
+
+        self.assertNotIn("premature_close", first)
+        self.assertNotIn("premature_close", second)
+        self.assertIn("أجيبلك", _finalize(self.SIZE, sales_stage.RECOMMENDATION))
+
+    def test_all_three_layers_agree_a_hard_ask_is_premature(self):
+        first, second = self._harness_codes(
+            "أنصحك بـ Ambero. تحبي أجهزلك واحدة؟", sales_stage.RECOMMENDATION
+        )
+
+        self.assertIn("premature_close", first)
+        self.assertIn("premature_close", second)
+
+    def test_the_harness_reads_the_production_stage_sets(self):
+        """Three hardcoded copies had already drifted apart."""
+        from eval_harness import rescore
+
+        self.assertIs(rescore.CLOSING_STAGES, sales_stage.CLOSING_STAGES)
+        self.assertIs(rescore.SOFT_CLOSING_STAGES, sales_stage.SOFT_CLOSING_STAGES)
 
 
 class NamedPerfumeSurvivesTheShortlistTests(TestCase):

@@ -86,6 +86,11 @@ def get_product_info(message, history=None, store=None, conversation=None):
     if not products:
         products = _referent_from_conversation(message, store, conversation)
 
+    # Each branch is exclusive on purpose. Unioning the referent with the resolver's output
+    # was tried and reverted: it put the resolver's wrong guess back into the context and
+    # undid the whole point of resolving the referent in Python. A partially-resolved
+    # multi-perfume question (three Arabic transliterations in, two out) is fixed in the
+    # resolver's own prompt instead, since `naming` cannot match Arabic at all.
     if not products:
         products = resolve_products(message, history, store, conversation)
 
