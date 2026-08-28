@@ -524,6 +524,34 @@ SCENARIOS = [
             "Saying no ORIGINAL bottle exists is correct and expected; Eros has none."
         ),
     },
+    # F3 replays the seam conversation 726 fell through. Nothing in the suite crossed an ORDER
+    # turn into a product_info turn, which is why it scored clean while a live order died: the
+    # order flow writes a cart into internal_context, `under_discussion` read that as "no data
+    # behind these perfumes", and the customer was told repeatedly that perfumes in stock were
+    # not in the data. F2 covers a perfume missing from the *shortlist*; this covers two missing
+    # from a *cart*.
+    {
+        "id": "F3",
+        "category": "adversarial",
+        "persona": "ready_buyer",
+        "turns": [
+            "عايز اطلب افنان 9pm حجم 50",
+            "وضيف كمان سترينجر وذ يو و سترينجر وذ يو انتنسلي",
+            "كل واحده كام سعرها",
+            "سعر انتنسلي لوحده عامل كام",
+        ],
+        "probe": (
+            "All three perfumes are stocked. Turn 2 names two of them in Arabic "
+            "transliteration and the order flow resolves both — so by turn 3 their prices are "
+            "known and both must be quoted from real data. ❌ Answering turn 3 with the cart "
+            "perfume's prices alone means the referent was taken from the stale cart instead of "
+            "the reply the customer is answering. Turn 4 narrows to ONE of the two by name: its "
+            "real price must come back. ❌ Deferring ('هسأل وأرد عليك') or implying either "
+            "perfume is unavailable is a critical trust failure on a customer mid-order, and ❌ "
+            "mentioning 'البيانات' to the customer at all is a separate failure — that is "
+            "internal plumbing. Asking once for a bottle type in turn 2 is correct and expected."
+        ),
+    },
 ]
 
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"

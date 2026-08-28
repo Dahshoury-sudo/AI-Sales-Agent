@@ -100,15 +100,28 @@ _ASK_GENDER = (
 )
 
 # Availability denial — used to catch "we don't have it" while stock exists.
+#
+# "مش موجود" was added after conversation 726: the reply said "مش موجودين في البيانات اللي
+# معايا دلوقتي" about two perfumes that were active with both bottle types in stock, and the
+# four patterns above it all missed, so the suite scored the turn clean.
 _DENIAL = (
     re.compile(r"مفيش\s+عندنا"),
     re.compile(r"مش\s+متوفر"),
     re.compile(r"غير\s+متوفر"),
     re.compile(r"مفيش\s+حاليا"),
+    re.compile(r"مش\s+موجود"),
+    re.compile(r"غير\s+موجود"),
+    re.compile(r"مش\s+عندنا"),
 )
 
+# Telling the customer about "البيانات" at all is a leak, whatever it denies. The catalogue,
+# the injected shortlist and the system's own plumbing are internal; a salesperson says
+# "لحظة أتأكدلك", not "it is not in the data I have". prompts.py rule 3 forbids it explicitly.
+_DATA_LEAK = re.compile(r"في\s+البيانات|البيانات\s+اللي\s+معاي")
+
 # Denials that are correct, and which the patterns above match anyway. `مش\s+متوفر` has no
-# trailing boundary, so it also matches متوفرة / متوفرين / متوفر منه.
+# trailing boundary, so it also matches متوفرة / متوفرين / متوفر منه — and `مش\s+موجود` matches
+# موجودة / موجودين the same way.
 #
 #   * A bottle-type-scoped denial. `product_formatting._original_bottle_status` dictates
 #     "للاسف مش متوفر منه زجاجة أوريجينال حالياً" verbatim for any global-brand perfume with no
@@ -345,6 +358,18 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             "false_denial", "critical",
             f"told the customer '{denied}' is not available, but it is active in the "
             f"catalogue with a sellable bottle",
+        ))
+
+    # ── Talking to the customer about the injected data ───────────────────
+    # No ground truth needed: the customer should never learn that "البيانات" exists. This is
+    # how conversation 726's false denial was phrased, which is also why it slipped past
+    # `_false_denial` for as long as it did.
+    leak = _DATA_LEAK.search(reply or "")
+    if leak:
+        findings.append((
+            "internal_data_leak", "high",
+            f"told the customer about the injected data ('{leak.group()}') instead of "
+            f"saying لحظة أتأكدلك",
         ))
 
     # ── Unsupported certainty ─────────────────────────────────────────────

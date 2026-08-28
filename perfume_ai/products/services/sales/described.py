@@ -15,6 +15,8 @@ first turn, so `ranking.reasons_note` re-injected the same evidence line every t
 literal rendering of that line.
 """
 
+import re
+
 from ..static_faq_service import normalize_arabic
 
 # A customer asking us to pick between options already on the table. Not a new request: the
@@ -124,6 +126,58 @@ def repeat_ban_hint(described, follow_up):
     )
 
 
+# The order flow writes its own `internal_context`: one line per cart item, formatted at
+# order_service.py:732 as "Afnan 9PM (50 ملي) (زجاجة البراند) x 1 (508.00 EGP)" and joined with
+# commas, or the "No products found" sentinel. It records what is being *bought*, not the
+# product data a reply was handed.
+_CART_LINE = re.compile(r"\bx\s*\d+\s*\(\s*[\d.]+\s*EGP\s*\)")
+
+
+def _is_cart_context(context):
+    """Was this reply's `internal_context` written by the order flow rather than injected?
+
+    Detected by the cart's own shape rather than by the absence of a product-data label,
+    because that label is not stable: `format_products` emits "Name (الاسم الصحيح):" while
+    older rows and some fixtures carry a bare "Name:". Matching the cart positively means
+    only contexts that provably came from the order flow take the branch below, and it works
+    on rows already in the database.
+    """
+    text = (context or "").strip()
+    return bool(text) and (text == "No products found" or bool(_CART_LINE.search(text)))
+
+
+# "I will check and come back to you" is not "we do not have it". prompts.py rules 2 and 3
+# dictate these phrasings whenever the bot does not know something — rule 3 specifically for a
+# perfume the customer named that is missing from the injected data — so they are both common
+# and correct. Read as withdrawals they drop the perfume out of the very next turn's referent,
+# which is the loop that let conversation 726 repeat its false denial four turns running: a
+# customer waiting to hear back about a perfume is maximally on that perfume.
+_DEFERRAL = (
+    "هسأل وأرد",
+    "هسأل و أرد",
+    "أتأكدلك",
+    "أتأكد لك",
+    "هشوفه لك",
+    "هشوفهولك",
+)
+
+# Clause boundaries, so a reply that withdraws one perfume and defers on another is read
+# correctly on both counts. Same split, for the same reason, as eval_harness/checks.py.
+_CLAUSE = re.compile(r"[.،,؛;!?؟\n]+")
+
+
+def _deferred_in(content, names):
+    """Catalogue names this reply promised to check on, rather than declared gone."""
+    deferred = set()
+    for clause in _CLAUSE.split(content or ""):
+        normalized = normalize_arabic(clause)
+        if not any(normalize_arabic(marker) in normalized for marker in _DEFERRAL):
+            continue
+        lowered = clause.lower()
+        deferred |= {n for n in names if n and n.lower() in lowered}
+    return deferred
+
+
 def under_discussion(conversation, store, turns=2):
     """Perfumes we actually put in front of the customer in our last `turns` replies.
 
@@ -149,6 +203,21 @@ def under_discussion(conversation, store, turns=2):
         perfume is absent from the injected data by definition, so the intersection excludes it
         and the withdrawal is announced exactly once.
 
+    That rule assumes `internal_context` holds injected product data, and on an ORDER turn it
+    does not — it holds a cart (`_is_cart_context`). There the prose alone decides, because the
+    order flow names a perfume only after resolving it against the catalogue and clearing every
+    stock branch, and it deliberately omits one it is still waiting on a bottle type for
+    (order_service.py:621-624). Reading that omission as "no data behind it" inverted the
+    meaning of the most confident evidence in the system: conversation 726 treated the question
+    "نوع الزجاجة ... من عطر Stronger With You" as a withdrawal of both perfumes it asked about,
+    left a stale cart line as the only thing under discussion, and told a customer four times
+    that perfumes sitting in stock in both bottle types were not in its data.
+
+    A *deferral* is not a withdrawal either (`_deferred_in`). "لحظة أتأكدلك منه" is what rule 3
+    of the persona asks for when a named perfume is missing from the injected data, so it is
+    correct output — but with no data behind the name it looked identical to a withdrawal, and
+    the perfume the customer was waiting to hear about dropped out of the next turn.
+
     Two replies is the window: it covers the common shape of a recommendation followed by a
     price question about the same perfumes, without pinning the conversation to perfumes the
     customer has moved past.
@@ -169,17 +238,29 @@ def under_discussion(conversation, store, turns=2):
     names = list(Product.objects.filter(store=store).values_list("name", flat=True))
 
     def shown_in(content, context):
-        prose, data = (content or "").lower(), (context or "").lower()
+        prose = (content or "").lower()
+        # On an order turn the prose is the record and the cart is not — see the docstring.
+        if _is_cart_context(context):
+            return {n for n in names if n and n.lower() in prose}
+        data = (context or "").lower()
         return {n for n in names if n and n.lower() in prose and n.lower() in data}
 
     def withdrawn_in(content, context):
         """Named to the customer with no data behind it — i.e. we said it is gone."""
+        # Nothing is withdrawn on an order turn: a perfume we are asking a question about is
+        # the opposite of one we have dropped.
+        if _is_cart_context(context):
+            return set()
         prose, data = (content or "").lower(), (context or "").lower()
-        return {n for n in names if n and n.lower() in prose and n.lower() not in data}
+        gone = {n for n in names if n and n.lower() in prose and n.lower() not in data}
+        # Nor is one we promised to go and check on.
+        return gone - _deferred_in(content, names)
 
     found = set()
     for content, context in recent:
-        found |= shown_in(content, context)
+        # A perfume we promised to check on has no data behind it by definition, so `shown_in`
+        # cannot see it — yet it is precisely what the customer is waiting to hear about.
+        found |= shown_in(content, context) | _deferred_in(content, names)
 
     # A withdrawal announced in our most recent reply settles the matter. Without this the
     # perfume stayed "under discussion" from the earlier reply that recommended it — still
@@ -189,7 +270,7 @@ def under_discussion(conversation, store, turns=2):
     return frozenset(found - withdrawn_in(latest_content, latest_context))
 
 
-def offered_in_order(conversation, store, turns=2):
+def offered_in_order(conversation, store, turns=2, latest_only=False):
     """The perfumes under discussion, in the order we named them in our latest reply.
 
     `under_discussion` answers "which perfumes are we on", and a set is the right shape for
@@ -213,6 +294,13 @@ def offered_in_order(conversation, store, turns=2):
     Intensely" — so a per-name `find` returns the same index for both and the shorter, more
     generic name wins the tie. That would point "ده" at the wrong perfume, which is the whole
     thing this function exists to get right.
+
+    `latest_only` drops the older-reply tail, so the answer is strictly "what we named in the
+    reply the customer is responding to". `product_info` needs that: the tail is what carried a
+    stale cart-resident Afnan 9PM into conversation 726's referent while the customer was
+    asking about the two perfumes the previous reply had just named. It falls back to the full
+    list when the latest reply named nothing at all, which is the case a withdrawal-only or
+    FAQ reply produces and where the older turn is genuinely the best anchor available.
     """
     names = under_discussion(conversation, store, turns=turns)
     if not names:
@@ -241,6 +329,8 @@ def offered_in_order(conversation, store, turns=2):
 
     # Whatever is under discussion from the older reply but absent from the latest one sorts
     # after everything we just said — the right precedence for resolving a reference.
+    if latest_only and ordered:
+        return ordered
     return ordered + sorted(remaining)
 
 

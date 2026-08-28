@@ -5720,6 +5720,22 @@ class ConversationContinuityTests(TestCase):
             content=text, internal_context=context,
         )
 
+    def _order_reply(self, text, cart=()):
+        """One exchange as the ORDER flow saves it, whose internal_context is a cart rather
+        than injected product data. `cart` is (name, volume, quantity, price) tuples, rendered
+        in the exact shape order_service.py:732 writes."""
+        Message.objects.create(
+            conversation=self.conversation, role="user", content="تمام"
+        )
+        context = ", ".join(
+            f"{name} ({volume} ملي) (زجاجة البراند) x {qty} ({price} EGP)"
+            for name, volume, qty, price in cart
+        ) or "No products found"
+        Message.objects.create(
+            conversation=self.conversation, role="assistant",
+            content=text, internal_context=context,
+        )
+
     # ── what the conversation is on ──────────────────────────────────────
     def test_perfumes_shown_and_named_are_under_discussion(self):
         self._reply(
@@ -5776,6 +5792,117 @@ class ConversationContinuityTests(TestCase):
         self.assertEqual(
             self.described.under_discussion(self.conversation, self.store), frozenset()
         )
+
+    # ── an order turn's context is a cart, not product data ──────────────
+    def test_the_cart_shape_is_told_apart_from_product_data(self):
+        """Matched positively, so neither product-data label shape nor an empty context takes
+        the order branch. The label itself is not a usable discriminator: format_products
+        emits "Name (الاسم الصحيح):" while older rows and fixtures carry a bare "Name:"."""
+        self.assertTrue(
+            self.described._is_cart_context(
+                "Le Male (50 ملي) (زجاجة البراند) x 1 (623.00 EGP)"
+            )
+        )
+        self.assertTrue(self.described._is_cart_context("No products found"))
+        self.assertFalse(self.described._is_cart_context("Name (الاسم الصحيح): Le Male"))
+        self.assertFalse(self.described._is_cart_context("Name: Le Male"))
+        self.assertFalse(self.described._is_cart_context(""))
+        self.assertFalse(self.described._is_cart_context(None))
+
+    def test_a_perfume_the_order_flow_is_asking_about_is_under_discussion(self):
+        """Conversation 726. The order flow omits a perfume from its cart context while it
+        waits for a bottle type (order_service.py:621-624), so the perfume it was *asking
+        about* scored zero and was subtracted as withdrawn, leaving a cart-resident Le Male as
+        the only thing under discussion. The customer was then told four times that perfumes
+        sitting in stock, in both bottle types, were not in the data."""
+        self._order_reply(
+            "الطلب لحد دلوقتي: 1 × Le Male. "
+            "محتاج أعرف نوع الزجاجة (أوريجينال أم زجاجة البراند؟) من عطر Dior Sauvage.",
+            cart=(("Le Male", 50, 1, "623.00"),),
+        )
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Dior Sauvage", under)
+        self.assertIn("Le Male", under)
+
+    def test_a_cart_perfume_absent_from_the_latest_reply_does_not_outrank_it(self):
+        """`latest_only` is what keeps the stale line out: Le Male stays in the cart across the
+        turn, but the reply the customer is answering is about Dior Sauvage."""
+        self._order_reply(
+            "الطلب لحد دلوقتي: 1 × Le Male.", cart=(("Le Male", 50, 1, "623.00"),)
+        )
+        self._order_reply(
+            "محتاج أعرف نوع الزجاجة من عطر Dior Sauvage.",
+            cart=(("Le Male", 50, 1, "623.00"),),
+        )
+
+        self.assertEqual(
+            self.described.offered_in_order(
+                self.conversation, self.store, latest_only=True
+            ),
+            ["Dior Sauvage"],
+        )
+        # The default still sorts the older turn after everything we just said.
+        self.assertEqual(
+            self.described.offered_in_order(self.conversation, self.store),
+            ["Dior Sauvage", "Le Male"],
+        )
+
+    def test_latest_only_falls_back_when_the_latest_reply_named_nothing(self):
+        """An FAQ or shipping reply names no perfume, so the older turn is the best anchor
+        available — returning nothing would drop the referent entirely."""
+        self._reply("أرشحلك Le Male.", shown=("Le Male",))
+        self._reply("الشحن 60 جنيه لكل المحافظات.", shown=())
+
+        self.assertEqual(
+            self.described.offered_in_order(
+                self.conversation, self.store, latest_only=True
+            ),
+            ["Le Male"],
+        )
+
+    def test_a_deferral_is_not_a_withdrawal(self):
+        """"لحظة أتأكدلك منه" is what persona rule 3 asks for when a named perfume is missing
+        from the injected data — correct output that looked identical to a withdrawal, so the
+        perfume the customer was waiting to hear about dropped out of the next turn."""
+        self._reply("أرشحلك Le Male.", shown=("Le Male",))
+        self._reply("عطر Dior Sauvage لحظة أتأكدلك منه وأرد عليك.", shown=())
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Dior Sauvage", under)
+        self.assertIn("Le Male", under)
+
+    def test_a_deferral_elsewhere_does_not_rescue_a_withdrawal(self):
+        """Clause-scoped, so a reply that drops one perfume and defers on another is read
+        correctly on both counts — otherwise conversation 1012's repeat-withdrawal loop
+        comes back."""
+        self._reply("أرشحلك Le Male.", shown=("Le Male",))
+        self._reply(
+            "Green Irish Tweed خرج من الاختيارات. عطر Dior Sauvage هسأل وأرد عليك.",
+            shown=(),
+        )
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Dior Sauvage", under)
+        self.assertNotIn("Green Irish Tweed", under)
+
+    def test_an_out_of_stock_announcement_still_withdraws(self):
+        """order_service's stock returns save an empty context, so the perfume they name has to
+        stay withdrawn. The cart branch must not swallow that case."""
+        self._reply("أرشحلك Le Male.", shown=("Le Male",))
+        Message.objects.create(
+            conversation=self.conversation, role="assistant",
+            content="للأسف عطر Dior Sauvage نفد من المخزون بجميع أحجامه حالياً 😔",
+            internal_context="",
+        )
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Le Male", under)
+        self.assertNotIn("Dior Sauvage", under)
 
     # ── the ranking signal ───────────────────────────────────────────────
     def test_continuity_lifts_a_perfume_that_previously_lost(self):
@@ -6402,6 +6529,19 @@ class DemonstrativeReferenceTests(TestCase):
             offered, ["Stronger With You Intensely", "Stronger With You"]
         )
 
+    def test_latest_only_keeps_both_when_the_latest_reply_named_both(self):
+        """`latest_only` drops the older-reply tail, not perfumes we just named together."""
+        from products.services.sales import described
+
+        self._recommended_both()
+
+        self.assertEqual(
+            described.offered_in_order(
+                self.conversation, self.store, latest_only=True
+            ),
+            ["Stronger With You Intensely", "Stronger With You"],
+        )
+
     def test_a_perfume_named_without_data_behind_it_is_not_a_referent(self):
         """A withdrawal names a perfume with no data — it must not become "ده"."""
         from products.services.sales import described
@@ -6561,9 +6701,45 @@ class HarnessFalseDenialCheckTests(TestCase):
             "للأسف Eros مش متوفر عندنا.",
             "Eros غير متوفر حالياً.",
             "مفيش عندنا Eros.",
+            # Conversation 726's phrasing. None of the four original patterns matched it, so a
+            # perfume in stock in both bottle types was denied and the suite scored it clean.
+            "عطر Eros مش موجود في البيانات اللي معايا دلوقتي، هسأل وأرد عليك يا فندم.",
+            "Eros غير موجود حالياً.",
+            "مش عندنا Eros خلاص.",
         ):
             with self.subTest(reply=reply):
                 self.assertEqual(self._denied(reply), "Eros")
+
+    # ── telling the customer about the injected data ──────────────────────
+    def _leak(self, reply):
+        from eval_harness import checks
+
+        return [
+            code for code, _, _ in checks.check_reply(
+                reply, truth=self.truth, context="", customer_text="", turn_state={},
+            )
+        ]
+
+    def test_talking_about_the_data_is_its_own_finding(self):
+        """Independent of ground truth: the customer should never learn "البيانات" exists."""
+        self.assertIn(
+            "internal_data_leak",
+            self._leak("عطر Eros مش موجود في البيانات اللي معايا، هسأل وأرد عليك."),
+        )
+
+    def test_the_leak_fires_even_for_a_perfume_we_do_not_stock(self):
+        """A perfume we genuinely lack is a correct denial but still not an excuse to describe
+        the plumbing — ✅ "لحظة أتأكدلك" says the same thing without it."""
+        codes = self._leak("Black Orchid مش موجود في البيانات اللي معايا.")
+
+        self.assertIn("internal_data_leak", codes)
+        self.assertNotIn("false_denial", codes)
+
+    def test_a_clean_deferral_is_not_a_leak(self):
+        """The sanctioned escape hatch from prompts.py rule 2 must stay clean."""
+        self.assertNotIn(
+            "internal_data_leak", self._leak("لحظة أتأكدلك منه يا فندم وأرد عليك.")
+        )
 
     # ── the false positives it must not produce ───────────────────────────
     def test_an_original_bottle_denial_is_not_a_false_denial(self):
@@ -6913,6 +7089,49 @@ class ProductInfoReferentTests(TestCase):
             p.name for p in
             _referent_from_conversation(message, self.store, self.conversation)
         ]
+
+    def _offered_both(self):
+        """One reply naming two perfumes, with both rows behind it."""
+        save_message(
+            self.conversation, "assistant",
+            "Eros بـ 1019 جنيه، و Dior Sauvage بـ 944 جنيه.",
+            internal_context=(
+                "Name (الاسم الصحيح): Eros\nName (الاسم الصحيح): Dior Sauvage"
+            ),
+        )
+
+    def test_the_referent_is_every_perfume_the_latest_reply_named(self):
+        """Conversation 726 asked "كل واحده كام سعرها" about two perfumes and `offered[0]`
+        handed the model one row. It also forced a guess when the customer went on to name one
+        of the two in Arabic, which `_named_in_message` cannot match at all."""
+        self._offered_both()
+
+        self.assertEqual(
+            self._referent("كل واحده كام سعرها"), ["Eros", "Dior Sauvage"]
+        )
+
+    def test_the_full_726_sequence_stays_on_both_perfumes(self):
+        """The whole seam, end to end: an ORDER turn that asks a bottle type about two perfumes
+        (cart context, both omitted from it while pending), then the price answer, then a
+        follow-up naming one of the two in Arabic. Every turn has to stay on the two perfumes;
+        the cart's own perfume must never become the subject."""
+        save_message(
+            self.conversation, "assistant",
+            "الطلب لحد دلوقتي: 1 × Le Male. محتاج أعرف نوع الزجاجة "
+            "(أوريجينال أم زجاجة البراند؟) من عطر Eros و من عطر Dior Sauvage؟",
+            internal_context="Le Male (50 ملي) (زجاجة البراند) x 1 (623.00 EGP)",
+        )
+
+        self.assertEqual(
+            self._referent("كل واحده كام سعرها"), ["Eros", "Dior Sauvage"]
+        )
+
+        # The reply that referent then produces, saved the way the router saves it.
+        self._offered_both()
+
+        self.assertEqual(
+            self._referent("سعر سوفاج لوحده عامل كام"), ["Eros", "Dior Sauvage"]
+        )
 
     def test_a_doubt_utterance_resolves_to_the_perfume_just_offered(self):
         self._offered("Eros")

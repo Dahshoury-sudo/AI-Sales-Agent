@@ -37,11 +37,11 @@ def _named_in_message(message, store):
 
 
 def _referent_from_conversation(message, store, conversation):
-    """The perfume we just offered, when the customer's message names none itself.
+    """The perfumes we just offered, when the customer's message names none itself.
 
-    Every `product_info` message of that shape is a question *about the perfume under
-    discussion* — "بكام؟", "ريحته عاملة ايه؟", "فيه أحجام تانية؟", "متأكد؟" — so the perfume we
-    led with is the subject, and the LLM resolver has nothing to anchor on. In conversation
+    Every `product_info` message of that shape is a question *about the perfumes under
+    discussion* — "بكام؟", "ريحته عاملة ايه؟", "فيه أحجام تانية؟", "متأكد؟" — so what we just
+    named is the subject, and the LLM resolver has nothing to anchor on. In conversation
     1099 it anchored on the wrong thing: "مش متوفر متأكد ؟" about Versace Eros resolved to
     Dior Sauvage and Lattafa Asad from two turns earlier, and the reply was only correct
     because the model happened to read Eros's prices out of the history rather than out of the
@@ -49,6 +49,14 @@ def _referent_from_conversation(message, store, conversation):
 
     Resolved from `Message.internal_context` rather than prose, so a perfume named while being
     withdrawn is never the referent.
+
+    Returns **every** perfume the latest reply named, not just the one it led with. Taking
+    `offered[0]` alone answered a plural question with one row — conversation 726's
+    "كل واحده كام سعرها" was about two perfumes — and, worse, it forced a guess when the
+    customer went on to name one of them in Arabic, which `_named_in_message` cannot match.
+    Handing over both rows lets the model answer about whichever was named, and instruction 8
+    below already forbids volunteering the other one's detail. `latest_only` keeps the set to
+    the reply actually being responded to, so a stale cart line cannot ride along.
 
     Returns [] unless a conversation is present and something is genuinely under discussion —
     that gate is what keeps this off the first turn of a conversation and out of the callers
@@ -60,7 +68,9 @@ def _referent_from_conversation(message, store, conversation):
     from .sales import described as sales_described
 
     try:
-        offered = sales_described.offered_in_order(conversation, store)
+        offered = sales_described.offered_in_order(
+            conversation, store, latest_only=True
+        )
     except Exception:
         return []
     if not offered:
@@ -68,11 +78,16 @@ def _referent_from_conversation(message, store, conversation):
 
     from products.models import Product
 
-    return list(
-        Product.objects.filter(store=store, is_active=True, name=offered[0])
+    # Ordered by what we said, which `name__in` does not preserve on its own.
+    by_name = {
+        product.name: product
+        for product in Product.objects.filter(
+            store=store, is_active=True, name__in=offered
+        )
         .prefetch_related("variants")
         .select_related("brand")
-    )
+    }
+    return [by_name[name] for name in offered if name in by_name]
 
 
 def get_product_info(message, history=None, store=None, conversation=None):
@@ -96,7 +111,10 @@ def get_product_info(message, history=None, store=None, conversation=None):
 
     if products:
         context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
-        context += format_products(products)
+        # Capped as a prompt-size safety net. The referent branch can now hand over every
+        # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
+        # window — the limit only guards the pathological case.
+        context += format_products(products, limit=6)
         instructions = """
 ═══ تعليمات صارمة ═══
 1. 🔴 استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل في كتابته.

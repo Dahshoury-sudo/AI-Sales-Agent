@@ -245,6 +245,17 @@ def rescore(record, truth, scenario_budget=None):
                 f"catalogue with a sellable bottle"
                 + (f" and was in this turn's shortlist {matched}" if denied in matched else ""))
 
+        # ── talking to the customer about the injected data ──
+        # No excuse clause and no ground truth: whatever the row says, the customer should
+        # never learn that "البيانات" exists. Conversation 726 phrased its false denial this
+        # way ("مش موجودين في البيانات اللي معايا دلوقتي"), which is exactly why the denial
+        # patterns missed it — so this fires independently of the block above.
+        leak = checks._DATA_LEAK.search(reply or "")
+        if leak:
+            add("internal_data_leak", "high",
+                f"told the customer about the injected data ('{leak.group()}') instead of "
+                f"saying لحظة أتأكدلك")
+
         # ── verbatim-ish repetition across turns ──
         if previous_reply and reply:
             ratio = SequenceMatcher(None, reply.strip(), previous_reply.strip()).ratio()
