@@ -201,15 +201,64 @@ NOTE_FAMILIES = {
 }
 
 
-def families(notes):
+# Shortest key allowed to match as a bare substring in the tolerant pass below. "rum" is
+# inside "geranium" and "tea" inside "steam", so the short keys are exact/word-only; four
+# characters is long enough that "amber" reaching into "amberwood" is the intended reading
+# rather than a collision.
+_SUBSTRING_KEY_FLOOR = 4
+
+_WORD_SPLIT = re.compile(r"[^\w؀-ۿ]+")
+
+
+def note_families(note, tolerant=False):
+    """The families one note reads as.
+
+    Exact lookup only, unless `tolerant`. The tolerant pass exists because store-typed
+    notes are frequently a known ingredient wearing an adjective — "marine notes",
+    "sicilian lemon", "woody notes", "amberwood" — and an exact lookup scores every one of
+    them as an unknown string with no family at all. Invictus is the case that matters:
+    its `marine notes` yielded no `aquatic`, so the one genuine aquatic in the catalogue
+    read as having no aquatic character.
+
+    Three passes, narrowest first, stopping at the first that finds anything — so a note
+    whose own name is in the table is never re-read as something else. "pineapple leaf"
+    resolves through its word `pineapple` and never reaches the substring pass, where
+    `pine` would have made it woody.
+    """
+    exact = NOTE_FAMILIES.get(note)
+    if exact:
+        return frozenset(exact)
+    if not tolerant:
+        return frozenset()
+
+    found = set()
+    for word in _WORD_SPLIT.split(note):
+        found.update(NOTE_FAMILIES.get(word, ()))
+    if found:
+        return frozenset(found)
+
+    for key, value in NOTE_FAMILIES.items():
+        if len(key) >= _SUBSTRING_KEY_FLOOR and key in note:
+            found.update(value)
+    return frozenset(found)
+
+
+def families(notes, tolerant=False):
     """The accord families a set of notes reads as.
 
     Unknown notes contribute nothing rather than a catch-all family: an unrecognised
     string is genuinely unknown, and bucketing it would invent similarity.
+
+    `tolerant` is opt-in rather than the default because the callers divide on it.
+    Similarity, the `avoid_heavy` penalty and `value.py` compare two products against each
+    other, and there a missed family costs both sides equally; the note-fit scorer asks how
+    much of *one* perfume is a requested accord, and there a missed family is the whole
+    answer. Flipping the default would move similarity bands that are tuned against this
+    catalogue.
     """
     found = set()
     for note in notes:
-        found.update(NOTE_FAMILIES.get(note, ()))
+        found.update(note_families(note, tolerant=tolerant))
     return frozenset(found)
 
 
@@ -225,3 +274,58 @@ HEAVY_NOTES = frozenset({
 
 # The reverse: what reads as light and airy, used as a bonus for the same request.
 LIGHT_FAMILIES = frozenset({"citrus", "aquatic", "green", "aromatic"})
+
+# What an accord word *means*, stated rather than derived from its note expansion.
+#
+# Deriving it was a mistake worth naming: `families(FRESH_NOTE_EXPANSION)` picks up `floral`,
+# because `neroli` is legitimately both citrus and floral. So `floral` became a fresh family,
+# and Le Male — a vanilla-tonka fougère whose `orange blossom` is a white floral — collected
+# freshness credit for it, outscoring Dior Homme Sport on a gym request. The expansion is a
+# list of notes that should make a perfume a *candidate*; it is not a definition of the
+# accord, and using it as one lets any note's secondary family widen what the customer asked
+# for.
+#
+# Fresh is exactly LIGHT_FAMILIES, which is worth stating as an identity — those four
+# families *are* what "منعش" describes, and the heaviness penalty already reads them that way.
+REQUEST_FAMILIES = (
+    (FRESH_REQUEST_TERMS, LIGHT_FAMILIES),
+    (SWEET_REQUEST_TERMS, frozenset({"gourmand"})),
+)
+
+
+def request_families(term):
+    """The families a requested term stands for.
+
+    An accord word returns its stated definition; an ordinary ingredient returns whatever
+    families that one note reads as, tolerantly — so "bergamot" still means citrus and an
+    unmapped "elemi" still means nothing rather than something invented.
+    """
+    lowered = str(term or "").strip().lower()
+    if not lowered:
+        return frozenset()
+    for triggers, accord in REQUEST_FAMILIES:
+        if lowered in triggers:
+            return accord
+    return families((lowered,), tolerant=True)
+
+
+def opposing_families(wanted):
+    """The families that argue *against* a request for `wanted`.
+
+    Asking for فريش is not only a request for citrus and mint — it is a statement about
+    what the perfume should not mostly be. Stronger With You reaches the fresh expansion
+    through `mint` and `lavender` while being vanilla, chestnut and amberwood at full
+    weight, and with no counterweight it scored exactly what a genuine aquatic scored.
+
+    Symmetric for the other direction: a مسكر request is answered less well by something
+    predominantly citrus. A request that leans neither way — a bare "cedar", "pepper" —
+    has nothing to oppose, and returns empty rather than inventing an opposite.
+    """
+    wanted = frozenset(wanted or ())
+    light = len(wanted & LIGHT_FAMILIES)
+    heavy = len(wanted & HEAVY_FAMILIES)
+    if light > heavy:
+        return HEAVY_FAMILIES
+    if heavy > light:
+        return LIGHT_FAMILIES
+    return frozenset()

@@ -9,17 +9,9 @@
   "D3": [],
   "F1": [],
   "F2": [],
-  "F3": [],
   "G1": [],
   "G2": [],
-  "M1": [
-    {
-      "turn": 2,
-      "code": "reference_in_own_shortlist",
-      "severity": "high",
-      "detail": "'Dior Sauvage' is the perfume the customer asked to be matched against, yet it was shortlisted as a candidate — and its self-similarity of 1.0 is what set has_close_match=False"
-    }
-  ],
+  "M1": [],
   "M2": [],
   "M3": [],
   "M4": [],
@@ -49,14 +41,7 @@
   "S4": [],
   "X1": [],
   "X2": [],
-  "X3": [
-    {
-      "turn": 1,
-      "code": "invented_number",
-      "severity": "critical",
-      "detail": "'590' is not a catalogue price, a store fact, or anything said earlier in this conversation"
-    }
-  ],
+  "X3": [],
   "X4": [],
   "X5": []
 }

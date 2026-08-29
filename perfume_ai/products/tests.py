@@ -3686,6 +3686,421 @@ class RankingWeightTests(TestCase):
         self.assertTrue(sales_ranking.has_signal({"notes": ["oud"]}))
 
 
+class AccordProminenceTests(TestCase):
+    """Conversation 736: "عايز حاجه للجيم تكون فريش", 1200 جنيه, male — eight perfumes tied
+    at exactly 7.50 and the shortlist came out price-ascending.
+
+    `notes` was a boolean. With `notes: ["fresh"]` the fraction `len(matched)/len(wanted)`
+    could only be 1/1 or 0/1, so a Fall/Winter gourmand holding a trace of mint scored the
+    same 2.0 as an aquatic — and since `ranked.sort` is stable, an all-equal list kept
+    `search_service._by_value`'s cheapest-brand-bottle order. Stronger With You led the gym
+    request at 400 جنيه; Invictus, the one product recorded `Sport`, came fourth and was
+    offered last.
+
+    The weights were there all along — `similarity.note_profile` computes base 1.0 / middle
+    0.7 / top 0.45 — and the boolean threw every one of them away.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+
+    def _make(self, name, top="", middle="", base="", **extra):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base, **extra
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=600, bottle_type="normal"
+        )
+        return product
+
+    def test_a_trace_of_a_fresh_note_is_not_a_fresh_perfume(self):
+        """The exact 736 shape: a gourmand reaches the fresh expansion through mint and
+        lavender while being vanilla and amberwood at full weight."""
+        gourmand = self._make(
+            "Stronger With You", "Mint, Cardamom", "Lavender, Sage, Cinnamon",
+            "Vanilla, Chestnut, Amberwood, Cedar",
+        )
+        aquatic = self._make(
+            "Invictus", "Grapefruit, Mandarin, Marine Notes", "Bay Leaf",
+            "Guaiac Wood, Oakmoss",
+        )
+
+        ranked = sales_ranking.rank([gourmand, aquatic], {"notes": ["fresh"]})
+
+        self.assertEqual(ranked[0].product.name, "Invictus")
+
+    def test_both_still_count_as_matched_so_neither_loses_its_reason(self):
+        """Graded, not filtered. A trace of mint is weaker evidence, not absent evidence —
+        scoring it as zero would take the ✅ line away and leave the model nothing to say."""
+        gourmand = self._make("Gourmand", "Mint", "", "Vanilla, Amberwood, Cedar")
+
+        entry = sales_ranking.rank([gourmand], {"notes": ["fresh"]})[0]
+
+        self.assertGreater(entry.score, 0)
+        self.assertTrue(any("fresh" in reason for reason in entry.reasons))
+
+    def test_the_fit_value_never_reaches_the_reason_line(self):
+        """reasons_note is read straight into a prompt, and a number there is how
+        "شبهه بنسبة 95%" gets born."""
+        product = self._make("Any", "Bergamot, Lemon", "", "Cedar")
+
+        entry = sales_ranking.rank([product], {"notes": ["fresh"]})[0]
+        note = sales_ranking.reasons_note(entry)
+
+        self.assertNotIn(str(entry.score), note)
+        self.assertFalse(
+            any(character.isdigit() for character in note),
+            f"no digits belong in the evidence line: {note!r}",
+        )
+
+    def test_a_dominant_accord_outscores_a_buried_one(self):
+        """Same requested accord, same number of matching notes, different prominence."""
+        buried = self._make("Buried", "Bergamot", "", "Oud, Amber, Leather, Vanilla")
+        dominant = self._make("Dominant", "Bergamot", "Neroli", "Cedar")
+
+        ranked = sales_ranking.rank([buried, dominant], {"notes": ["fresh"]})
+
+        self.assertEqual(ranked[0].product.name, "Dominant")
+
+    def test_an_unmapped_ingredient_is_still_scored_on_its_own_weight(self):
+        """"elemi" and "hedione" are outside the family table. They can still be matched
+        literally, and a product built on one must not read as a total miss."""
+        strong = self._make("Strong", "", "", "Elemi")
+        trace = self._make("Trace", "Elemi", "", "Vanilla, Cedar, Amber, Musk")
+
+        ranked = sales_ranking.rank([strong, trace], {"notes": ["elemi"]})
+
+        self.assertEqual(ranked[0].product.name, "Strong")
+        self.assertGreater(ranked[-1].score, 0)
+
+
+class SportOccasionAxisTests(TestCase):
+    """The other half of conversation 736: `gym` sat in the same tuple as `office`.
+
+    `_DAYTIME_TERMS` was one flat bucket containing daily/casual/office *and* sport/gym, so
+    `_occasion_verdict("Casual/Evening", "gym")` matched on the word "casual" and collected
+    the full occasion weight. A perfume recorded `Sport` earned exactly what one recorded
+    `Office, Formal, Daily` earned, and the single field in the catalogue that says "this is
+    a gym fragrance" bought nothing.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+
+    def _entry(self, intent, **fields):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Test", gender="male", **fields
+        )
+        return sales_ranking.rank([product], intent)[0]
+
+    def test_a_sport_perfume_outranks_a_casual_one_for_the_gym(self):
+        sport = Product.objects.create(
+            store=self.store, brand=self.brand, name="Invictus",
+            gender="male", occasion="Sport",
+        )
+        casual = Product.objects.create(
+            store=self.store, brand=self.brand, name="Acqua di Gio",
+            gender="male", occasion="Casual",
+        )
+
+        ranked = sales_ranking.rank([casual, sport], {"occasion": "gym"})
+
+        self.assertEqual(ranked[0].product.name, "Invictus")
+
+    def test_a_casual_perfume_still_earns_a_reason_and_no_warning(self):
+        """Partial credit, not CONFLICT. A casual fresh scent really is wearable to the gym,
+        and calling half the catalogue a mismatch would manufacture a warning the reply then
+        has to explain away."""
+        entry = self._entry({"occasion": "gym"}, occasion="Casual")
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+        self.assertFalse(entry.mismatches)
+        self.assertGreater(entry.score, 0)
+
+    def test_a_casual_perfume_earns_less_than_a_sport_one(self):
+        self.assertGreater(
+            self._entry({"occasion": "gym"}, occasion="Sport").score,
+            self._entry({"occasion": "gym"}, occasion="Casual").score,
+        )
+
+    def test_an_evening_perfume_is_flagged_for_a_gym_request(self):
+        entry = self._entry({"occasion": "gym"}, occasion="Evening")
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Evening", entry.mismatches[0])
+
+    def test_a_mixed_casual_evening_perfume_is_read_on_its_casual_half(self):
+        """"Casual/Evening" answers a gym request partly and contradicts it partly. The half
+        that answers wins, because a warning here would be the stronger claim and the
+        recorded value does not support it."""
+        entry = self._entry({"occasion": "gym"}, occasion="Casual/Evening")
+
+        self.assertFalse(entry.mismatches)
+        self.assertLess(
+            entry.score, self._entry({"occasion": "gym"}, occasion="Sport").score
+        )
+
+    def test_a_sport_perfume_still_satisfies_a_daytime_request(self):
+        """The asymmetry, pinned. Sport leaves the *asked* side of the tuple but stays on the
+        *recorded* side, because a sport fragrance genuinely is a daytime fragrance — taking
+        it off both sides would silently downgrade "بالنهار" against `Sport` to UNKNOWN."""
+        entry = self._entry({"occasion": "daily"}, occasion="Sport")
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+        self.assertFalse(entry.mismatches)
+
+    def test_the_arabic_word_for_gym_resolves_on_the_same_axis(self):
+        entry = self._entry({"occasion": "جيم"}, occasion="Sport")
+
+        self.assertIn("مناسب للمناسبة اللي قالها", entry.reasons)
+        self.assertFalse(entry.mismatches)
+
+    def test_season_credit_is_never_graded(self):
+        """Unlike occasion there is no half-right season, and grading this axis would quietly
+        rescale a signal deliberately sized at 0.8."""
+        self.assertEqual(
+            sales_ranking._season_verdict("Spring/Summer", "summer"),
+            (sales_ranking.MATCH, 1.0),
+        )
+        self.assertEqual(
+            sales_ranking._season_verdict("All Seasons", "winter"),
+            (sales_ranking.MATCH, 1.0),
+        )
+        self.assertEqual(
+            sales_ranking._season_verdict("Fall/Winter", "summer"),
+            (sales_ranking.CONFLICT, 0.0),
+        )
+
+
+class OccasionImpliesSeasonTests(TestCase):
+    """A gym request carries a season the customer never named.
+
+    After the note-prominence and sport-axis fixes, Dior Homme Sport (Spring/Summer) still sat
+    *below* four All-Seasons gourmands for "عايز حاجه للجيم تكون فريش", and a Fall/Winter one
+    was 0.06 behind it. The season field was free: `rank()`'s season block only runs when
+    `intent["season"]` is set, and a customer who names an activity never sets it.
+
+    Inferring one into the intent was not an option. `intent["season"]` is a hard SQL filter in
+    search_service, so a phantom season would *delete* every Fall/Winter perfume from the
+    candidate set; `_drop_reason` would then report them as "مش لنفس الموسم اللي قاله",
+    `constraints._SEASON` would echo "للصيف" back at someone who never said it, and
+    `constraints.TASTE_KEYS` counts the slot toward the gate deciding whether we know enough to
+    recommend at all. Hence a ranking-only signal that reads the field and never writes it.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+
+    def _entry(self, intent, **fields):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Test", gender="male", **fields
+        )
+        return sales_ranking.rank([product], intent)[0]
+
+    def test_warm_beats_year_round_beats_cold_for_the_gym(self):
+        warm = self._entry({"occasion": "gym"}, season="Spring/Summer")
+        year_round = self._entry({"occasion": "gym"}, season="All Seasons")
+        cold = self._entry({"occasion": "gym"}, season="Fall/Winter")
+
+        self.assertGreater(warm.score, year_round.score)
+        self.assertGreater(year_round.score, cold.score)
+
+    def test_a_cold_season_perfume_is_warned_about_by_name(self):
+        """The reply has to be able to say why it is steering away, not just steer."""
+        entry = self._entry({"occasion": "gym"}, season="Fall/Winter")
+
+        self.assertTrue(entry.mismatches)
+        self.assertIn("Fall/Winter", entry.mismatches[0])
+        self.assertIn("Fall/Winter", sales_ranking.reasons_note(entry))
+
+    def test_a_year_round_perfume_earns_neither_bonus_nor_warning(self):
+        """The store said it works all year, so it is not disfavoured — and ranking has to
+        agree with _season_verdict about what "All Seasons" means."""
+        entry = self._entry({"occasion": "gym"}, season="All Seasons")
+
+        self.assertFalse(entry.mismatches)
+        self.assertFalse(entry.reasons)
+        self.assertEqual(entry.score, 0)
+
+    def test_a_blank_season_is_unknown_not_a_mismatch(self):
+        entry = self._entry({"occasion": "gym"}, season="")
+
+        self.assertFalse(entry.mismatches)
+        self.assertFalse(entry.reasons)
+
+    def test_an_explicitly_named_season_owns_the_question(self):
+        """A stated season is the stronger statement, so the implied one must stand down
+        rather than score the same field twice."""
+        entry = self._entry(
+            {"occasion": "gym", "season": "summer"}, season="Spring/Summer"
+        )
+
+        self.assertEqual(entry.score, sales_ranking.WEIGHTS["season"])
+        self.assertEqual(entry.reasons, ["مناسب للموسم"])
+
+    def test_a_non_sport_occasion_implies_nothing_about_season(self):
+        """Office is a time of day, not a claim about exertion. Only sport gets an entry."""
+        entry = self._entry({"occasion": "office"}, season="Fall/Winter")
+
+        self.assertFalse(entry.mismatches)
+        self.assertFalse(entry.reasons)
+        self.assertEqual(entry.score, 0)
+
+    def test_a_perfume_recorded_across_both_halves_is_credited_not_warned(self):
+        warm_and_cold = self._entry({"occasion": "gym"}, season="Summer/Winter")
+
+        self.assertFalse(warm_and_cold.mismatches)
+        self.assertGreater(warm_and_cold.score, 0)
+
+    def test_the_arabic_seasons_resolve_too(self):
+        self.assertGreater(
+            self._entry({"occasion": "gym"}, season="الصيف").score,
+            self._entry({"occasion": "gym"}, season="الشتا").score,
+        )
+
+    def test_a_spring_summer_perfume_now_outranks_an_all_seasons_gourmand(self):
+        """The reported bug, end to end on the real shapes. Dior Homme Sport's citrus is all
+        top-layer over a woody-amber base, so it loses the note axis to Le Male's four
+        expansion hits — the recorded season is what has to carry it."""
+        dior_homme_sport = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Homme Sport", gender="male",
+            season="Spring/Summer", occasion="Casual",
+            top_notes="Lemon, Bergamot, Aldehydes", middle_notes="Elemi, Pink Pepper",
+            base_notes="Woody Notes, Amber, Olibanum",
+        )
+        le_male = Product.objects.create(
+            store=self.store, brand=self.brand, name="Le Male", gender="male",
+            season="All Seasons", occasion="Casual",
+            top_notes="Mint, Lavender, Bergamot",
+            middle_notes="Cinnamon, Cumin, Orange Blossom",
+            base_notes="Vanilla, Sandalwood, Tonka Bean",
+        )
+
+        ranked = sales_ranking.rank(
+            [le_male, dior_homme_sport],
+            {"notes": ["fresh"], "gender": "male", "occasion": "gym"},
+        )
+
+        self.assertEqual(ranked[0].product.name, "Dior Homme Sport")
+
+
+class AccordDefinitionTests(TestCase):
+    """An accord's families are stated, not derived from its note expansion.
+
+    Deriving them read `neroli`'s secondary `floral` into "fresh", so Le Male — a vanilla-tonka
+    fougère whose `orange blossom` is a white floral — collected freshness credit for being
+    floral and outscored Dior Homme Sport on a gym request. The expansion lists notes that
+    should make a perfume a *candidate*; it was never a definition of the accord.
+    """
+
+    def test_fresh_does_not_include_floral(self):
+        self.assertNotIn("floral", sales_notes.request_families("fresh"))
+        self.assertNotIn("floral", sales_notes.request_families("فريش"))
+
+    def test_deriving_from_the_expansion_would_have_included_it(self):
+        """Pins the mechanism, so nobody reintroduces the derivation as a simplification."""
+        self.assertIn(
+            "floral", sales_notes.families(sales_notes.FRESH_NOTE_EXPANSION, tolerant=True)
+        )
+
+    def test_fresh_is_exactly_the_light_families(self):
+        self.assertEqual(sales_notes.request_families("fresh"), sales_notes.LIGHT_FAMILIES)
+
+    def test_sweet_is_gourmand(self):
+        self.assertEqual(sales_notes.request_families("sweet"), frozenset({"gourmand"}))
+        self.assertEqual(sales_notes.request_families("مسكر"), frozenset({"gourmand"}))
+
+    def test_a_plain_ingredient_still_derives_from_its_own_note(self):
+        self.assertEqual(sales_notes.request_families("bergamot"), frozenset({"citrus"}))
+        self.assertEqual(
+            sales_notes.request_families("oud"), frozenset({"woody", "amber"})
+        )
+
+    def test_an_unmapped_ingredient_stays_empty(self):
+        """_note_fit falls back to mass alone for these rather than inventing a composition."""
+        self.assertEqual(sales_notes.request_families("elemi"), frozenset())
+        self.assertEqual(sales_notes.request_families(""), frozenset())
+
+    def test_the_expansion_table_itself_is_untouched(self):
+        """search_service._notes_query builds its SQL OR from these, and neroli genuinely is a
+        fresh note — it must keep making a perfume a candidate."""
+        self.assertIn("neroli", sales_notes.FRESH_NOTE_EXPANSION)
+        self.assertIn("citrus", sales_notes.request_families("neroli"))
+
+    def test_a_white_floral_no_longer_outscores_a_citrus_aquatic(self):
+        store = Store.objects.create(name="Perfamix Test")
+        brand = Brand.objects.create(store=store, name="Dior")
+        floral = Product.objects.create(
+            store=store, brand=brand, name="Floral", gender="male",
+            top_notes="Bergamot", middle_notes="Orange Blossom, Jasmine",
+            base_notes="Vanilla, Tonka Bean",
+        )
+        aquatic = Product.objects.create(
+            store=store, brand=brand, name="Aquatic", gender="male",
+            top_notes="Bergamot, Grapefruit", middle_notes="Calone",
+            base_notes="Cedar, Musk",
+        )
+
+        ranked = sales_ranking.rank([floral, aquatic], {"notes": ["fresh"]})
+
+        self.assertEqual(ranked[0].product.name, "Aquatic")
+
+
+class TolerantFamilyLookupTests(TestCase):
+    """`families()` did an exact dict lookup while note *matching* used substrings, so a
+    store-typed adjective silently erased a note's whole accord.
+
+    Invictus is the case that mattered: its `marine notes` yielded no `aquatic`, so the one
+    genuine aquatic in the catalogue read as having no aquatic character at the exact moment
+    a customer asked for فريش.
+    """
+
+    def test_an_adjectived_note_resolves_only_when_tolerant(self):
+        for note, family in (
+            ("marine notes", "aquatic"),
+            ("woody notes", "woody"),
+            ("sicilian lemon", "citrus"),
+            ("madagascar vanilla", "gourmand"),
+        ):
+            with self.subTest(note=note):
+                self.assertIn(family, sales_notes.families([note], tolerant=True))
+                self.assertNotIn(family, sales_notes.families([note]))
+
+    def test_a_compound_word_resolves_through_the_substring_pass(self):
+        """"amberwood" is one word, so the word pass cannot split it."""
+        found = sales_notes.families(["amberwood"], tolerant=True)
+
+        self.assertIn("amber", found)
+        self.assertIn("woody", found)
+
+    def test_a_known_note_never_reaches_the_substring_pass(self):
+        """"pineapple" contains "pine". Resolving exactly and then by word, and only falling
+        through to substrings when both find nothing, is what stops a fruit becoming a wood."""
+        self.assertEqual(sales_notes.families(["pineapple"], tolerant=True), {"fruity"})
+        self.assertEqual(
+            sales_notes.families(["pineapple leaf"], tolerant=True), {"fruity"}
+        )
+
+    def test_short_keys_do_not_match_as_substrings(self):
+        """"rum" is inside "geranium" and "tea" inside "steam"."""
+        self.assertNotIn("gourmand", sales_notes.families(["chrysanthemum"], tolerant=True))
+        self.assertNotIn("green", sales_notes.families(["steamed milk"], tolerant=True))
+
+    def test_the_default_stays_exact_for_every_existing_caller(self):
+        """similarity.compare, the avoid_heavy penalty and value.py compare two products
+        against each other, where a missed family costs both sides equally. Flipping the
+        default would move similarity bands tuned against this catalogue."""
+        self.assertEqual(sales_notes.families(["marine notes"]), frozenset())
+        self.assertEqual(sales_notes.families(["bergamot"]), {"citrus"})
+
+    def test_an_unknown_note_still_contributes_nothing(self):
+        self.assertEqual(sales_notes.families(["hedione"], tolerant=True), frozenset())
+
+
 class SimilaritySearchTests(TestCase):
     """search_products end-to-end for "عايز حاجة شبه X".
 

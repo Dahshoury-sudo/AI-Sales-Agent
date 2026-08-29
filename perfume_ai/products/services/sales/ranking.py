@@ -21,6 +21,17 @@ Two properties worth preserving deliberately:
     the caller's ordering. That used to be `(-oil_stock_grams, id)`; oil tracking is gone,
     and `search_service._by_value` now hands candidates over cheapest-brand-bottle first,
     so an all-equal set comes back in that order.
+
+That second property is load-bearing and was also, for a while, a trap. Weighing signals is
+only half the job: a signal that every candidate satisfies *identically* weighs the same as
+no signal at all. Conversation 736 ("عايز حاجه للجيم تكون فريش", 1200, male) tied eight
+perfumes at exactly 7.50 — notes 2.0 + occasion 1.0 + gender 3.0 + budget 1.5 — because
+`notes` was a boolean and every daytime occasion answered "gym" in full. The sort is stable,
+so what reached the model was the fallback ordering: cheapest first. A Fall/Winter gourmand
+led a gym request at 400 جنيه and the only `Sport`-tagged perfume in the catalogue came
+fourth. Hence `_note_fit` and `_PARTIAL_OCCASION_CREDIT`: both exist to make a signal
+capable of ordering the candidates that satisfy it, not just separating them from the ones
+that do not.
 """
 
 from dataclasses import dataclass, field
@@ -33,6 +44,8 @@ from .notes import (
     LIGHT_FAMILIES,
     expand_request_term,
     families,
+    opposing_families,
+    request_families,
 )
 
 # Signal weights. The relative sizes are the point: an explicit request to be *like*
@@ -61,6 +74,17 @@ WEIGHTS = {
     "budget": 1.5,
     "longevity": 1.0,
     "occasion": 1.0,
+    # What a *stated* occasion implies about season, when the customer named no season of
+    # their own. Equal to `season` deliberately: nothing here is inferred about the customer
+    # — they said "للجيم" outright — so this is a stated preference read against a recorded
+    # field, and it should weigh what the same field weighs when named directly. It also has
+    # to clear ~0.47 to do anything at all: below that an All-Seasons gourmand still outranks
+    # the Spring/Summer perfume it was beating, and the signal changes no ordering.
+    #
+    # Still below `continuity` (2.5), so it cannot pull the conversation off a perfume the
+    # customer is converging on, and occasion + season + occasion_season + projection = 3.6
+    # stays under `similarity` (5.0).
+    "occasion_season": 0.8,
     "projection": 0.8,
     "season": 0.8,
     "uncommon": 1.2,
@@ -227,6 +251,61 @@ def _affordable_and_obtainable(product, max_price):
     return False
 
 
+# How a requested note's fit splits between "how much of this perfume literally is that
+# ingredient" and "does its accord composition lean that way". Sized to mirror
+# similarity.NOTE_SHARE / FAMILY_SHARE, for the same reason: an exact note is stronger
+# evidence, but store-typed note text is too sparse for exact matching alone to rank.
+NOTE_MASS_SHARE = 0.6
+ACCORD_SHARE = 0.4
+
+
+def _note_fit(term, profile, accords):
+    """How well one perfume answers one requested note or accord, 0.0-1.0.
+
+    This replaces a boolean membership test, and the boolean is the whole bug behind
+    conversation 736. `notes: ["fresh"]` made `len(matched) / len(wanted)` either 1/1 or
+    0/1, so eight perfumes collected an identical 2.0 and the shortlist fell through to
+    `search_service._by_value` — price ascending. A Fall/Winter gourmand led a gym request
+    because it costs 400 جنيه, and the one perfume the catalogue tags `Sport` came fourth.
+
+    Note that layer weight is deliberately *not* the discriminator on its own.
+    `similarity.LAYER_WEIGHTS` puts base at 1.0 and top at 0.45, which is right for "what
+    does this smell like after an hour" and backwards for "is this fresh": citrus lives in
+    the top. Ranking by the strongest matching note would put Stronger With You (`lavender`
+    0.7, a middle note) above Invictus (`grapefruit` 0.45, a top note). The accord balance
+    carries the discrimination; the mass term keeps a literal one-ingredient request honest.
+    """
+    total = sum(profile.values())
+    if not total:
+        return 0.0
+
+    expansion = expand_request_term(term)
+    matched_mass = sum(
+        weight for note, weight in profile.items()
+        if any(wanted in note for wanted in expansion)
+    )
+    if not matched_mass:
+        return 0.0
+    mass_share = matched_mass / total
+
+    # Tolerant lookup on the product side: an accord request has to be able to see through
+    # "marine notes" and "amberwood", or the perfumes whose note fields are written that way
+    # read as having no character at all. The request side is a *stated* definition rather
+    # than one derived from the expansion — deriving it let `neroli`'s secondary `floral`
+    # widen "fresh" until a white floral counted as fresh. See notes.REQUEST_FAMILIES.
+    wanted_families = request_families(term)
+    if not wanted_families or not accords:
+        # An ingredient outside the family table ("elemi", "hedione") can still be matched
+        # literally; there is simply no composition to weigh it against.
+        return mass_share
+
+    opposed = opposing_families(wanted_families)
+    balance = (
+        len(accords & wanted_families) - len(accords & opposed)
+    ) / len(accords)
+    return NOTE_MASS_SHARE * mass_share + ACCORD_SHARE * max(balance, 0.0)
+
+
 def rank(products, intent, reference=None, keep=()):
     """Score and order candidates, best first.
 
@@ -261,24 +340,32 @@ def rank(products, intent, reference=None, keep=()):
         profile = similarity.note_profile(product)
         accords = families(profile)
 
-        matched_notes = [
-            note for note in wanted_notes
-            # Scored through the same expansion table the SQL filter uses. Without this
-            # an accord request ("مسكر") filtered to the gourmands and then scored every
-            # one of them zero, because no product has a note literally named "sweet" —
-            # so the ordering fell back to bulk-oil stock and the reasons line came out
-            # empty, leaving the model no evidence to recommend from.
-            if any(
-                term in existing
-                for term in expand_request_term(note)
-                for existing in profile
-            )
-        ]
+        matched_notes = []
         if wanted_notes:
+            # Tolerant families here only. `accords` above stays exact because it feeds the
+            # avoid_heavy penalty, which compares two products against each other; this asks
+            # how much of *one* perfume is the requested accord, where a family missed for
+            # want of an adjective is the whole answer.
+            fit_accords = families(profile, tolerant=True)
+            fits = []
+            for note in wanted_notes:
+                # Scored through the same expansion table the SQL filter uses. Without this
+                # an accord request ("مسكر") filtered to the gourmands and then scored every
+                # one of them zero, because no product has a note literally named "sweet" —
+                # so the ordering fell back to bulk-oil stock and the reasons line came out
+                # empty, leaving the model no evidence to recommend from.
+                fit = _note_fit(note, profile, fit_accords)
+                fits.append(fit)
+                if fit > 0:
+                    matched_notes.append(note)
             # Proportional, not all-or-nothing: matching two of three requested notes is
             # a real partial match, and the AND-filter this replaces scored it as zero.
-            entry.score += WEIGHTS["notes"] * (len(matched_notes) / len(wanted_notes))
+            # A term that matches nothing contributes a zero to the mean, which is what
+            # keeps that proportionality intact now the per-term value is graded.
+            entry.score += WEIGHTS["notes"] * (sum(fits) / len(fits))
             if matched_notes:
+                # The requested terms, never the fit value: a number rendered here is how
+                # "شبهه بنسبة 95%" gets born, and reasons_note is read straight into a prompt.
                 entry.reasons.append("فيه " + "، ".join(str(n) for n in matched_notes))
 
         hit_avoided = [
@@ -313,9 +400,9 @@ def rank(products, intent, reference=None, keep=()):
                 # made the old icontains AND-filter delete every sparsely-filled product the
                 # moment a customer named an occasion; _missing_data_note covers the gap.
                 continue
-            verdict = verdict_for(recorded, wanted)
+            verdict, credit = verdict_for(recorded, wanted)
             if verdict == MATCH:
-                entry.score += WEIGHTS[key]
+                entry.score += WEIGHTS[key] * credit
                 entry.reasons.append(label)
             elif verdict == CONFLICT:
                 # A conflicting value used to produce nothing at all, so the model saw a ✅
@@ -324,6 +411,32 @@ def rank(products, intent, reference=None, keep=()):
                 # correctly called it an evening scent. The recorded value is named so the
                 # reply can state the truth and pivot, rather than only stay quiet.
                 entry.mismatches.append(mismatch_template.format(recorded=recorded))
+
+        # What the occasion implies about season, when the customer named no season.
+        #
+        # Ranking-only, and that is not a stylistic choice: `intent["season"]` is a *hard SQL
+        # filter* (search_service.py, `season__icontains`), so writing an inferred season into
+        # the intent would delete every Fall/Winter perfume from the candidate set instead of
+        # ranking it lower. Three more things read that slot and would all start lying —
+        # `_drop_reason` would report "مش لنفس الموسم اللي قاله", `constraints._SEASON` would
+        # echo "للصيف" back at a customer who never said it, and `constraints.TASTE_KEYS`
+        # counts it toward the gate that decides whether we know enough to recommend at all.
+        #
+        # Guarded on the customer not having named a season, because if they did, that axis
+        # already owns the question and is the stronger statement.
+        if intent.get("occasion") and not intent.get("season"):
+            recorded_season = (getattr(product, "season", "") or "").strip()
+            lean = _occasion_season_lean(intent["occasion"], recorded_season)
+            if lean == FAVOURED:
+                entry.score += WEIGHTS["occasion_season"]
+                entry.reasons.append(f"موسمه المسجل ({recorded_season}) مناسب للنشاط اللي قاله")
+            elif lean == DISFAVOURED:
+                entry.score -= WEIGHTS["occasion_season"]
+                # Named rather than silent, for the same reason the occasion conflict is: the
+                # reply has to be able to say why it is steering away from this one.
+                entry.mismatches.append(
+                    f"موسمه المسجل {recorded_season}، مش الأنسب للمجهود اللي قاله"
+                )
 
         # Graded, not substring-matched — see _ordinal_hit. Partial credit is reported as
         # a mismatch rather than a reason so the reply cannot claim a perfume "matches"
@@ -396,46 +509,137 @@ def rank(products, intent, reference=None, keep=()):
 _DAYTIME_TERMS = ("daily", "casual", "everyday", "office", "work", "business", "sport", "gym")
 _EVENING_TERMS = ("evening", "night", "dinner", "party", "parties", "club")
 
+# Working out and going to the office are not the same errand, and collapsing them into one
+# bucket is the second half of conversation 736. `_occasion_verdict("Casual/Evening", "gym")`
+# matched on the word "casual" and took the full occasion weight, so Stronger With You —
+# Fall/Winter, Casual/Evening — scored exactly what Invictus scored, and Invictus is the one
+# product in the catalogue whose occasion field literally reads `Sport`.
+_SPORT_TERMS = ("sport", "gym", "athletic", "training", "workout", "رياضة", "جيم")
+
+# Asymmetric on purpose, and the asymmetry is the point. A sport fragrance genuinely *is* a
+# daytime fragrance, so `Sport` has to keep satisfying "بالنهار" — sport therefore stays in
+# the recorded-side tuple above. What was wrong was the *asked* side: a request for the gym
+# was read as a request for daytime, which any office scent then answered in full.
+_ASKED_DAYTIME_TERMS = tuple(
+    term for term in _DAYTIME_TERMS if term not in _SPORT_TERMS
+)
+
+# What a Casual perfume earns against a gym request. Partial rather than CONFLICT because a
+# casual fresh scent really is wearable to the gym — just less apt than something built for
+# it — and calling half the catalogue a mismatch would manufacture warnings the reply then
+# has to explain away. Graded credit is the pattern `_ordinal_hit` already uses for the two
+# performance slots.
+_PARTIAL_OCCASION_CREDIT = 0.5
+
 # A perfume the store marked as year-round matches any season asked for. search_service
 # already ORs `season__icontains="All Seasons"` into its filter; ranking has to agree, or a
 # year-round perfume gets warned about for every specific season.
 _ALL_SEASONS = ("all season", "all-season", "كل الفصول", "كل المواسم")
 
+# An occasion can carry a season the customer never named. Going to the gym is exertion and
+# heat, so what the store recorded as a Fall/Winter perfume is a worse answer than what it
+# recorded as Spring/Summer — and after the two fixes above that difference still cost
+# nothing, because the season block only runs when `intent["season"]` is set and a customer
+# who says "عايز حاجه للجيم" never sets it. Dior Homme Sport (Spring/Summer) sat below four
+# All-Seasons gourmands, and a Fall/Winter one was 0.06 behind it.
+#
+# Extensible by design — beach and travel belong here eventually — but only sport has an
+# entry, because only sport is a claim about exertion rather than about a time of day.
+_OCCASION_SEASON_LEAN = (
+    (
+        _SPORT_TERMS,
+        ("spring", "summer", "ربيع", "صيف"),
+        ("fall", "autumn", "winter", "خريف", "شتا"),
+    ),
+)
+
+NEUTRAL, FAVOURED, DISFAVOURED = 0, 1, -1
+
+
+def _occasion_season_lean(wanted, recorded):
+    """Whether a recorded season suits the activity the customer named.
+
+    NEUTRAL covers three different kinds of "no opinion" on purpose: a blank field, a
+    year-round perfume, and an occasion that implies nothing about season. None of them is a
+    mismatch — the same rule `_occasion_verdict` and `_season_verdict` follow, and the reason
+    the old `icontains` AND-filter had to be replaced in the first place.
+    """
+    lowered = str(recorded or "").strip().lower()
+    if not lowered:
+        return NEUTRAL
+    # Deferring to _ALL_SEASONS rather than re-listing the markers, so this cannot come to
+    # disagree with _season_verdict about what the store meant by "All Seasons".
+    if any(marker in lowered for marker in _ALL_SEASONS):
+        return NEUTRAL
+
+    asked = str(wanted or "").strip().lower()
+    for terms, favoured, against in _OCCASION_SEASON_LEAN:
+        if asked not in terms:
+            continue
+        # Favoured is checked first, so a perfume recorded across both halves of the year
+        # ("Summer/Winter") is credited rather than warned about.
+        if any(marker in lowered for marker in favoured):
+            return FAVOURED
+        if any(marker in lowered for marker in against):
+            return DISFAVOURED
+    return NEUTRAL
+
 MATCH, CONFLICT, UNKNOWN = "match", "conflict", "unknown"
 
 
 def _occasion_verdict(recorded, wanted):
-    """MATCH, CONFLICT or UNKNOWN for a recorded occasion against a requested one."""
+    """(verdict, credit) for a recorded occasion against a requested one.
+
+    The credit is a fraction of `WEIGHTS["occasion"]`, so a full match and a workable-but-
+    not-ideal one are separable without either becoming a warning.
+    """
     lowered = str(recorded).lower()
     asked = str(wanted).strip().lower()
 
+    # First, always: a store that typed the customer's own word has already answered, and no
+    # vocabulary table should get to second-guess it. "للجيم" against "للجيم والرياضة" is
+    # decided here and never reaches the axis logic below.
     if _text_hit(lowered, asked):
-        return MATCH
+        return MATCH, 1.0
 
+    recorded_sport = any(term in lowered for term in _SPORT_TERMS)
     recorded_daytime = any(term in lowered for term in _DAYTIME_TERMS)
     recorded_evening = any(term in lowered for term in _EVENING_TERMS)
-    asked_daytime = asked in _DAYTIME_TERMS
+    asked_sport = asked in _SPORT_TERMS
+    asked_daytime = asked in _ASKED_DAYTIME_TERMS
     asked_evening = asked in _EVENING_TERMS
 
+    if asked_sport:
+        if recorded_sport:
+            return MATCH, 1.0
+        # Checked before the evening branch so "Casual/Evening" is read on the half that
+        # answers the request rather than the half that contradicts it.
+        if recorded_daytime:
+            return MATCH, _PARTIAL_OCCASION_CREDIT
+        return (CONFLICT, 0.0) if recorded_evening else (UNKNOWN, 0.0)
     if asked_daytime:
         if recorded_daytime:
-            return MATCH
-        return CONFLICT if recorded_evening else UNKNOWN
+            return MATCH, 1.0
+        return (CONFLICT, 0.0) if recorded_evening else (UNKNOWN, 0.0)
     if asked_evening:
         if recorded_evening:
-            return MATCH
-        return CONFLICT if recorded_daytime else UNKNOWN
+            return MATCH, 1.0
+        return (CONFLICT, 0.0) if recorded_daytime else (UNKNOWN, 0.0)
 
     # A register or an event ("formal", "wedding") says nothing about time of day, so there
     # is nothing here to contradict.
-    return UNKNOWN
+    return UNKNOWN, 0.0
 
 
 def _season_verdict(recorded, wanted):
-    """Seasons are a closed, unambiguous vocabulary, so a miss really is a conflict."""
+    """Seasons are a closed, unambiguous vocabulary, so a miss really is a conflict.
+
+    Always full credit or none: unlike occasion there is no half-right season, and grading
+    this axis would quietly rescale a signal already deliberately sized at 0.8.
+    """
     if any(marker in str(recorded).lower() for marker in _ALL_SEASONS):
-        return MATCH
-    return MATCH if _text_hit(recorded, wanted) else CONFLICT
+        return MATCH, 1.0
+    return (MATCH, 1.0) if _text_hit(recorded, wanted) else (CONFLICT, 0.0)
 
 def reasons_note(entry, mismatches_only=False):
     """The evidence line attached to a product block in the prompt.
