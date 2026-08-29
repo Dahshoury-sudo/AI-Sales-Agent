@@ -225,8 +225,9 @@ def rescore(record, truth, scenario_budget=None):
         if reference and reference in matched:
             add("reference_in_own_shortlist", "high",
                 f"'{reference}' is the perfume the customer asked to be matched against, yet "
-                f"it was shortlisted as a candidate — and its self-similarity of 1.0 is what "
-                f"set has_close_match={similarity.get('has_close_match')}")
+                f"it was shortlisted as a candidate — so a perfume was offered as its own "
+                f"lookalike, and a real candidate lost a context slot to it "
+                f"(best_band={similarity.get('best_band')})")
 
         # ── denying a perfume we actually stock ──
         # `_DENIAL` sat in checks.py unused, and the docstring at the top of this file already

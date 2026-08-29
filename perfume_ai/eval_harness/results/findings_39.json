@@ -1,0 +1,62 @@
+{
+  "C1": [],
+  "C2": [],
+  "C3": [],
+  "CS1": [],
+  "CS2": [],
+  "D1": [],
+  "D2": [],
+  "D3": [],
+  "F1": [],
+  "F2": [],
+  "F3": [],
+  "G1": [],
+  "G2": [],
+  "M1": [
+    {
+      "turn": 2,
+      "code": "reference_in_own_shortlist",
+      "severity": "high",
+      "detail": "'Dior Sauvage' is the perfume the customer asked to be matched against, yet it was shortlisted as a candidate — and its self-similarity of 1.0 is what set has_close_match=False"
+    }
+  ],
+  "M2": [],
+  "M3": [],
+  "M4": [],
+  "O1": [],
+  "O2": [],
+  "O3": [],
+  "O4": [],
+  "O5": [],
+  "P1": [],
+  "P2": [],
+  "P3": [
+    {
+      "turn": 2,
+      "code": "repeated_reply",
+      "severity": "high",
+      "detail": "95% similar to the previous reply — the customer asked for something new and got the same answer"
+    }
+  ],
+  "R1": [],
+  "R2": [],
+  "R3": [],
+  "R4": [],
+  "R5": [],
+  "S1": [],
+  "S2": [],
+  "S3": [],
+  "S4": [],
+  "X1": [],
+  "X2": [],
+  "X3": [
+    {
+      "turn": 1,
+      "code": "invented_number",
+      "severity": "critical",
+      "detail": "'590' is not a catalogue price, a store fact, or anything said earlier in this conversation"
+    }
+  ],
+  "X4": [],
+  "X5": []
+}

@@ -8511,3 +8511,198 @@ class OverBudgetLineTests(TestCase):
         )
 
         self.assertIn("بس هي اللي خرجت", note)
+
+
+class ReferenceIsNotItsOwnLookalikeTests(TestCase):
+    """Evaluation scenario M1: "بحب سوفاج" → the reply names Dior Sauvage → the next turn asks
+    for something less mainstream, and Dior Sauvage comes back *first in its own lookalike
+    shortlist*, pushing a real candidate off the twelve-slot context.
+
+    The exclusion existed already but carved out a reference under discussion (`keep`), because
+    removing it from `base` also removed it from the keep/dropped logic and the model then had
+    no data about the perfume being discussed — conversation 630, "Intensely مش مناسب لميزانيتك"
+    about a 780 EGP perfume on an 800 EGP budget. M1 is where both hold at once, so `keep`
+    membership was the wrong test. Candidacy and data are separated instead.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.sauvage = self._make("Dior Sauvage", "Bergamot", "Lavender", "Ambroxan", 642)
+        self.lookalike = self._make("Ambero", "Bergamot", "Lavender", "Ambroxan", 700)
+
+    def _make(self, name, top, middle, base, price):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base,
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _names(self, results):
+        found = []
+        for key in ("products", "alternatives"):
+            queryset = results.get(key)
+            if queryset is not None:
+                found += [product.name for product in queryset]
+        return found
+
+    def test_a_reference_under_discussion_is_not_a_candidate(self):
+        results = search_products(
+            {"similar_to": "Dior Sauvage", "wants_uncommon": True},
+            store=self.store, keep={"Dior Sauvage"},
+        )
+
+        self.assertNotIn("Dior Sauvage", self._names(results))
+        self.assertIn("Ambero", self._names(results))
+
+    def test_a_reference_not_under_discussion_is_not_a_candidate_either(self):
+        """Regression guard: the pre-existing half of the exclusion still holds."""
+        results = search_products({"similar_to": "Dior Sauvage"}, store=self.store)
+
+        self.assertNotIn("Dior Sauvage", self._names(results))
+
+    def test_the_reference_is_still_reported_so_its_row_can_be_injected(self):
+        """Conversation 630's requirement, expressed as data rather than prose. Losing the
+        candidacy must not lose the perfume."""
+        for keep in ({"Dior Sauvage"}, set()):
+            with self.subTest(keep=keep):
+                results = search_products(
+                    {"similar_to": "Dior Sauvage"}, store=self.store, keep=keep,
+                )
+                self.assertEqual(results["reference_product"], self.sauvage)
+
+    def test_no_reference_reports_none(self):
+        results = search_products({"gender": "male"}, store=self.store)
+
+        self.assertIsNone(results["reference_product"])
+
+    def test_the_self_match_never_set_the_band(self):
+        """The harness blamed has_close_match, and that was never the mechanism:
+        _similarity_summary already skips the reference when computing the best band. Pinned so
+        a future reader does not go hunting for a bug that is not there."""
+        results = search_products(
+            {"similar_to": "Dior Sauvage"}, store=self.store, keep={"Dior Sauvage"},
+        )
+
+        self.assertEqual(results["similarity"]["reference_name"], "Dior Sauvage")
+        self.assertTrue(
+            results["similarity"]["has_close_match"], "Ambero is a real close match"
+        )
+
+    # ── the prompt half ──────────────────────────────────────────────────
+    def _block(self, keep=frozenset()):
+        from products.services.ai.recommendation import _reference_block
+
+        results = search_products(
+            {"similar_to": "Dior Sauvage"}, store=self.store, keep=keep,
+        )
+        return _reference_block(results)
+
+    def test_the_block_carries_the_real_row(self):
+        block = self._block()
+
+        self.assertIn("Dior Sauvage", block)
+        self.assertIn("642", block)
+
+    def test_the_block_says_it_is_available(self):
+        self.assertIn("ممنوع تقول إنه مش موجود", self._block())
+
+    def test_the_block_says_it_is_the_comparison_target_not_a_recommendation(self):
+        """Without this the row reads as one more candidate and we are back to M1, just with an
+        extra header above it."""
+        block = self._block()
+
+        self.assertIn("مرجع المقارنة", block)
+        self.assertIn("ممنوع ترشحه", block)
+
+    def test_no_reference_renders_nothing(self):
+        from products.services.ai.recommendation import _reference_block
+
+        self.assertEqual(_reference_block({}), "")
+        self.assertEqual(_reference_block(None), "")
+        self.assertEqual(
+            _reference_block(search_products({"gender": "male"}, store=self.store)), ""
+        )
+
+    def test_both_branches_inject_the_block(self):
+        import inspect
+        from products.services.ai import recommendation
+
+        source = inspect.getsource(recommendation.recommend)
+
+        self.assertEqual(
+            source.count("_reference_block(search, max_price)"), 2,
+            "the exact-match and alternatives branches both need it",
+        )
+
+
+class NothingAffordableStillQuotesARealPriceTests(TestCase):
+    """Evaluation scenario X3, a critical `invented_number`: budget 300, every size in the
+    shortlist labelled "❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)", and the reply said
+    "الـ50 ملي بتاعهم فوق 590 جنيه". No such price exists in the catalogue.
+
+    The model had the real numbers. It was told never to present a ❌ size and, a line later, to
+    present the nearest size with its price difference — both impossible at once when every size
+    is ❌, and the way out it found was a figure it invented. So the one true figure is named and
+    every other number forbidden, instead of asking for a number it is simultaneously banned
+    from giving.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Creed")
+
+    def _note(self, max_price, variants):
+        from products.services.ai.recommendation import _in_budget_note
+
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Aventus", gender="male",
+        )
+        for volume, price, bottle_type, stock in variants:
+            ProductVariant.objects.create(
+                product=product, volume=volume, price=price,
+                bottle_type=bottle_type, stock=stock,
+            )
+        return _in_budget_note(
+            Product.objects.filter(pk=product.pk), Decimal(str(max_price))
+        )
+
+    def test_the_cheapest_size_is_named_with_its_real_price(self):
+        note = self._note(300, [(50, 1240, "normal", None), (100, 2100, "normal", None)])
+
+        self.assertIn("1240", note)
+        self.assertNotIn("2100", note)
+
+    def test_only_that_figure_is_permitted(self):
+        note = self._note(300, [(50, 1240, "normal", None)])
+
+        self.assertIn("الرقم الوحيد", note)
+        self.assertIn("ممنوع تقرّب", note)
+
+    def test_the_quoted_size_must_be_sellable(self):
+        """A cheaper original with stock=0 cannot be the sanctioned figure — the affordable
+        branch already learned this when it named a stock-0 60ml at 456."""
+        note = self._note(300, [(60, 900, "original", 0), (50, 1240, "normal", None)])
+
+        self.assertIn("1240", note)
+        self.assertNotIn("900", note)
+
+    def test_it_still_refuses_to_generalise_about_the_store(self):
+        note = self._note(300, [(50, 1240, "normal", None)])
+
+        self.assertIn("مفيش أي حجم في القائمة دي", note)
+        self.assertIn("ممنوع تعمم على الستور كله", note)
+
+    def test_an_affordable_size_takes_the_other_branch_unchanged(self):
+        note = self._note(1500, [(50, 1240, "normal", None)])
+
+        self.assertIn("فيه أحجام داخل ميزانية العميل", note)
+        self.assertNotIn("الرقم الوحيد", note)
+
+    def test_no_budget_still_renders_nothing(self):
+        from products.services.ai.recommendation import _in_budget_note
+
+        self.assertEqual(_in_budget_note(Product.objects.none(), None), "")

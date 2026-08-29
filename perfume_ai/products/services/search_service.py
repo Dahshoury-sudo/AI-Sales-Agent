@@ -254,24 +254,28 @@ def search_products(intent, store=None, keep=()):
     # occasion field the store never filled in. They are ranking signals now.
     reference = _resolve_reference(intent, store)
 
-    # A perfume cannot be its own lookalike. Left in the pool it scored 1.0 against
-    # itself, which both handed the model the very perfume the customer already knows as
-    # the top "similar to X" result and — worse — set has_close_match=True off that self
-    # match, so the honesty path reported a close match that did not exist.
+    # A perfume cannot be its own lookalike. Left in the pool it scores 1.0 against itself —
+    # the largest single term in the table — so it wins its own "similar to X" search and hands
+    # the model the one perfume the customer has already told us they know.
     #
-    # Exception: when the reference perfume is already under discussion (`keep`), the
-    # customer is talking *about* it — asking follow-ups, confirming interest — not asking
-    # for a replacement. Excluding it here removed it from `base` before the keep/dropped
-    # logic could see it, so the model received no data about the perfume the customer was
-    # actively discussing and hallucinated reasons it was unavailable (conversation 630:
-    # "Intensely مش مناسب لميزانيتك" for a 780 EGP perfume on an 800 EGP budget).
+    # Unconditional, and it did not used to be. There was a carve-out for a reference already
+    # under discussion (`keep`), because excluding it removed it from `base` before the
+    # keep/dropped logic could see it, and the model then had no data about the perfume the
+    # customer was actively talking about — conversation 630: "Intensely مش مناسب لميزانيتك"
+    # for a 780 EGP perfume on an 800 EGP budget.
+    #
+    # But `keep` membership is a proxy for "talking about it rather than wanting a replacement",
+    # and the proxy fails whenever both are true at once. Evaluation scenario M1: the customer
+    # says "بحب سوفاج", the reply names Dior Sauvage, and the next turn asks for something less
+    # mainstream — so Sauvage was under discussion *and* the reference, and it came back first
+    # in its own lookalike shortlist, pushing a real candidate off the twelve-slot context.
+    #
+    # The two needs are about *where* the perfume appears, not whether its data reaches the
+    # model, so they are separated: it leaves the candidate list here, and `reference_product`
+    # below carries it to the prompt as the comparison target instead
+    # (recommendation._reference_block). Conversation 630 stays fixed without M1 breaking.
     if reference is not None and reference.product is not None:
-        ref_under_discussion = (
-            keep
-            and reference.product.name in frozenset(keep)
-        )
-        if not ref_under_discussion:
-            base = base.exclude(pk=reference.product.pk)
+        base = base.exclude(pk=reference.product.pk)
 
     exact = base
     if notes:
@@ -310,11 +314,17 @@ def search_products(intent, store=None, keep=()):
         for name in lost:
             dropped.setdefault(name, None)
 
+    # The reference leaves the candidate list above, so this is the only route its data has to
+    # the prompt. Carried on every return path — including the empty ones, where the customer
+    # named a perfume and got nothing back and the reply most needs to be able to talk about it.
+    reference_product = reference.product if reference is not None else None
+
     # No ranking signal means nothing can discriminate between candidates, so the legacy
     # ordering is used untouched. This is what keeps the existing shortlist tests honest
     # rather than shuffling an all-equal list through a scorer.
     if not ranking.has_signal(intent, reference) and not keep:
-        report = {"keeping": sorted(surviving), "dropped": dropped}
+        report = {"keeping": sorted(surviving), "dropped": dropped,
+                  "reference_product": reference_product}
         if exact.exists():
             return {"products": _shortlist(exact), "alternatives": None,
                     "similarity": None, **report}
@@ -332,7 +342,8 @@ def search_products(intent, store=None, keep=()):
     pool = exact if matched else base
     if not pool.exists():
         return {"products": base.none(), "alternatives": None, "similarity": None,
-                "keeping": sorted(surviving), "dropped": dropped}
+                "keeping": sorted(surviving), "dropped": dropped,
+                "reference_product": reference_product}
 
     candidates = list(_by_value(pool)[:MAX_CANDIDATES_TO_SCORE])
     if surviving:
@@ -356,6 +367,7 @@ def search_products(intent, store=None, keep=()):
         "ranked": {entry.product.id: entry for entry in top},
         "keeping": sorted(surviving),
         "dropped": dropped,
+        "reference_product": reference_product,
     }
 
 

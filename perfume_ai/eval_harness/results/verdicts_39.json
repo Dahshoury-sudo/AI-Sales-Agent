@@ -1,0 +1,1869 @@
+[
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "قدم تمييز واضح بين الاثنين على أساس النوتات: \"لو بتحب ريحة منعشة ونظيفة مع لمسة من الحمضيات والنعناع، Bleu de Chanel...\" — متوافق مع بيانات الـ database (top notes: grapefruit, lemon, mint).",
+      "حدّد مناسبة كل واحد بشكل مناسب: ربط Bleu بالـ Office/Daily وذكر Sauvage مناسب للـ Daily/Office/Dates — مطابق لحقول occasion في الـ database.",
+      "سأل سؤال متابعة مناسب وملائم للمرحلة: \"بتستخدمه بالنهار ولا بالليل؟\" ليفرّع التوصية بدلاً من محاولة الإغلاق المبكر."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "product",
+        "what": "استخدام عبارة \"عايز حاجة تناسب كل الأوقات برضه\" لوصف Sauvage بدون تحديد ما المقصود بـ 'كل الأوقات'.",
+        "why_wrong": "قاعدة البيانات تذكر للسفاج \"season=All Seasons\" و\"occasion=Daily, Office, Dates\" — 'All Seasons' يدعم تنوّع المواسم، لكن 'كل الأوقات' توهم تغطية كل المناسبات، وهو تعميم أوسع من الحقول المدعومة.",
+        "expected": "كان المفروض يقول 'سفاج مناسب لمختلف المواسم (All Seasons) ومناسب للاستخدام اليومي/في الشغل وللمواعيد' أو يضيف توضيح/سؤال لتحديد أي 'أوقات' يقصد العميل."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يُقدّم قاعدة قرار بسيطة نهائية للعميل ليتخذ بها قراراً بين الاثنين (مثلاً: لو تحب حاجة أفتح وأنضف اختار Bleu، لو تفضل ريحة أقوى وتثبيت أكبر اختار Sauvage).",
+        "why_wrong": "العميل طلب مقارنة صريحة؛ رغم أن الوكيل أعطى فروقاً صحيحة، البيع الناجح عادة يعطي قاعدة قرار مباشرة تساعد العميل على الاختيار أو يقدّم اقتراحاً واضحاً بناءً على تفضيل مباشر.",
+        "expected": "كان يجب تقديم قاعدة قرار قصيرة وواضحة بناءً على التفضيل (مثلاً: 'لو تهمك النظافة والعملية للشتغل خليك مع Bleu، لو عايز حاجة تلفت وتفوح خليك مع Sauvage') ثم متابعة بالسؤال الذي سُئل."
+      }
+    ],
+    "salesperson_verdict": "قبول مبدئي — الرد محترف ومبني على حقائق المتجر، سلوك المندوب مناسب (سؤال متابعة بدل إغلاق)، لكن يلزم تجنّب تعميمات غير دقيقة وتقديم قاعدة قرار أوضح لمساعدة العميل على الاختيار.",
+    "id": "C1",
+    "category": "comparison",
+    "persona": "comparer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 8,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "أجاب مباشرة على السؤال بالمقارنة المطلوبة: \"Oudora أنسب ليك لأنه ثابت حوالي 12 ساعة... Safrano خيار ممتاز بثبات حوالي 11 ساعة\" — دقيق ومبني على بيانات المتجر.",
+      "استخدم لغة مصرية طبيعية ومناسب للسياق: \"لو بتحب...\" وطرح سؤال متابعة مفيد: \"تحب تستخدمه بالليل ولا النهار؟\" — تحويل طبيعي للحوار نحو تفضيل الاستخدام."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يذكر الفروق من ناحية الجنس (gender) بوضوح.",
+        "why_wrong": "في قاعدة البيانات Safrano محدد كـ gender=male بينما Oudora مكتوب unisex — هذه معلومة قد تؤثر على قرار العميل لكنها لم تُذكر.",
+        "expected": "البائع الخبير يذكر أن Safrano رجالي بينما Oudora يونيسكس ويشرح إن الفرق ده مهم لو العميل مهتم بجنس العطر."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر أن العطور متجرنا 'تركيب' أو يقدم تذكيراً عن طبيعة المنتج.",
+        "why_wrong": "الـ STORE-CONFIGURED FACTS تؤكد ضرورة توضيح أن العطور تركيب إذا سئل أو عند عرض المنتج بشكل واضح؛ رغم أن العميل لم يسأل صراحة، ذكر ذلك كان سيزيد الشفافية.",
+        "expected": "لو البائع أضاف سطر سريع زي \"احنا بنقدم العطر تركيب بجودة عالية\" أو عرض تجربة في الستور، كان هيزود ثقة العميل من غير ضغط."
+      }
+    ],
+    "salesperson_verdict": "مقبول جداً — إجابة صحيحة ومباشرة وانتقال طبيعي لسؤال متابعة. مدير مبيعات يقبلها لكن يطالب بتحسين صغير: ذكر جنس كل عطر ودعوة صريحة لتجربة الستور/تأكيد أن المنتج تركيب لو العميل محتاج طمأنة.",
+    "id": "C2",
+    "category": "comparison",
+    "persona": "comparer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 8,
+      "constraint_extraction": 7,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": 8,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "Agent correctly contrasted the two options using database-backed attributes: 'لو مراتك بتحب الريحة القوية والدافيّة ... Good Girl ... خصوصاً للسهرة والشتا' — matches Good Girl's top notes (Almond, Coffee), base (Vanilla, Tonka, Cacao), season Fall/Winter and occasion Evening.",
+      "'أما لو بتحب ريحة أنعم وأحلى تناسب كل المواسم والنهار، مع مزيج فواكه وزهور وفانيليا، La Vie Est Belle' — matches La Vie Est Belle's fruit/floral/vanilla profile, All Seasons and Casual/day occasion.",
+      "Good tone and calibration: used conditional language ('لو ...') instead of overstating facts, and finished with a soft next-step question 'تحب أساعدك تضيق الاختيار أكتر؟' to keep the sale moving without pressure."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "No single, clear gift recommendation tied to the recipient.",
+        "why_wrong": "Customer asked 'انهي احسن كهديه لمراتي' (which is best as a gift). A senior salesperson should deliver a direct recommendation based on what is known about the recipient; the agent only gave conditional alternatives without choosing one.",
+        "expected": "Ask one quick clarifying question (e.g. 'بتحب ريحات ثقيلة ودافئة ولا أنعم وحلوة؟' or 'بتستخدم عطور للنهار ولا للسهر؟') and then give a direct pick (e.g. 'لو مراتك بتحب السهرات والروائح الدافئة خذ Good Girl، أما لو بتحب حاجة يومية أنعم خذ La Vie Est Belle')"
+      },
+      {
+        "severity": "low",
+        "category": "intent",
+        "what": "Missed opportunity to ask a brief clarifying question about the wife's known preferences before recommending.",
+        "why_wrong": "Agent assumed the deciding factor but didn't ask the single quick question that would allow a confident single recommendation. The customer explicitly asked for the 'best' gift; follow-up question would improve confidence and conversion.",
+        "expected": "Quickly ask one targeted question about the wife's usual taste or where she'll wear it (day/night), then tie recommendation to that answer."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "Did not mention helpful store facts that could aid the gift decision (sizes/prices, gift packaging, or store-visit invitation).",
+        "why_wrong": "The STORE-CONFIGURED FACTS provide ready-to-use selling info (sizes 50/90, prices, in-store trial and store address). The agent could have offered those proactively for a gift buyer to help close.",
+        "expected": "After recommending, offer practical options: 'لو حابب أجيب لك حجم 90 أو 50 عندنا متوفر، وأسهل لو حابب تجي تشمهم في الستورد أو أرسلك صور البوكس' and mention prices/sizes if customer asks."
+      }
+    ],
+    "salesperson_verdict": "Acceptable turn from a competent salesperson: clear, accurate comparison and a polite next-step question, but missed the chance to ask one quick preference question and give a definitive gift recommendation or offer concrete store options to close.",
+    "id": "C3",
+    "category": "comparison",
+    "persona": "gift_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 4,
+      "confidence_calibration": 3,
+      "objection_handling": 10,
+      "sales_effectiveness": 7,
+      "closing_timing": 10,
+      "human_feel": 9,
+      "trust": 7
+    },
+    "what_worked": [
+      "Agent apologized promptly and directly: \"أنا آسف جداً على التأخير اللي حصل يا فندم\" — correct tone for an angry customer.",
+      "Agent escalated on the customer's explicit request: \"حولت طلبك لفريق خدمة العملاء وهم هيتواصلوا مع حضرتك قريب جداً.\" — handoff performed on the second turn as required.",
+      "Agent kept the reply short and did not blame the customer, matching the expected escalation flow."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "Promised that customer service 'will contact you very soon' without a verifiable backing in the store-configured facts.",
+        "why_wrong": "STORE-CONFIGURED FACTS do not include a guaranteed internal promise that agents will escalate and that CS will definitely call within a timeframe. Per grading rules, factual claims must be traceable to the database or store facts; this promise is unverified and presented with certainty.",
+        "expected": "A senior salesperson would apologise and escalate, but phrase follow-up realistically (e.g., 'سأحول طلبك الآن وفريق خدمة العملاء هيتواصل مع حضرتك — هابعت لك رقم التواصل لو حابب تتكلم دلوقتي') or immediately offer a direct contact (phone/WhatsApp) so the customer can verify."
+      },
+      {
+        "severity": "medium",
+        "category": "ux",
+        "what": "Did not provide immediate contact options or concrete next steps.",
+        "why_wrong": "Customer explicitly demanded to 'speak to someone responsible now' — the agent only said they transferred the request instead of giving a direct number or offering to connect the call. The store-configured facts include contact numbers and WhatsApp; those should have been offered.",
+        "expected": "Provide the store contact (e.g., 'رقم التواصل للطلبات او واتس: 01127027327' or offer to connect the customer immediately), or confirm exact estimated response time/method."
+      },
+      {
+        "severity": "low",
+        "category": "confidence_calibration",
+        "what": "Overconfident phrasing about immediate follow-up.",
+        "why_wrong": "Phrases like 'قريب جدًا' are vague and give an impression of guaranteed fast action; without store-backed SLA details the agent should hedge slightly.",
+        "expected": "Use calibrated language: 'سأحول طلبك الآن وفريقنا سيحاول التواصل فور توفر المعلومات' or 'هم سيتواصلوا مع حضرتك خلال وقت قصير، أو تقدر تتواصل على 01127027327 الآن'."
+      }
+    ],
+    "salesperson_verdict": "Acceptable handling: the agent followed the correct escalation pattern (brief apology then handoff on the second turn) which a floor manager would approve. Coach the agent to provide direct contact info or a concretely worded next step and avoid unverified promises to increase trust.",
+    "id": "CS1",
+    "category": "customer_service",
+    "persona": "angry"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 9,
+      "memory": 8,
+      "recommendation_quality": 10,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": 10,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "الاعتذار الفوري: \"أنا آسف إن العطر ما عجبكش يا فندم.\" — صحىء نفسياً ويخفض الاحتكاك.",
+      "سؤال تشخيصي واحد وموجَّه: \"ممكن تقول لي إيه اللي مش عاجبك فيه بالظبط؟ ريحته تقيلة أو مسكرة أو حاجة تانية؟\" — بالضبط السلوك المتوقع (سؤال واحد لتحديد المشكلة قبل اقتراح بديل)."
+    ],
+    "failures": [
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يعرض دعوة بسيطة لزيارة الستور أو لم يطمئن العميل بسياسة الاستبدال بعد رفض التوصية.",
+        "why_wrong": "قواعد المتجر توصي بالترحيب الشديد بالعميل لتجربة العطور في الستور ('لو العميل طلب يجرب أو يشم العطور، رحّب بيه بشدة وقوله يشرفنا في الستور يجرب كل العطور قبل الشراء.') كما أن سياسة الاستبدال مدوّنة بالـ STORE-CONFIGURED FACTS ('ضمان الاستبدال لمدة يومين من وقت الاستلام'). بعد أن العميل قال 'مش عاجبني خالص' وكان الوكيل يسأل تشخيصياً، خطوة طبيعية ومفيدة هي دعوته لتجربة أخرى أو طمأنته بشأن الاستبدال.",
+        "expected": "بعد السؤال التشخيصي القصير، يدعو العميل بشكل ودّي للمجيء وتجربة بدائل ('تقدر تشرفنا في الستور وتجرب بدائل ونلاقي ريحة تناسبك') أو يطمئنه سريعاً عن حقه في الاستبدال خلال يومين. هذه الاضافة بسيطة لكنها تخفف الاحتكاك وتزيد فرص إتمام البيع."
+      }
+    ],
+    "salesperson_verdict": "مقبول — نفس تصرف بائع ممتاز على الأرض: اعترف بالرفض وطرح سؤال تشخيصي واحد بدل الرد العشوائي. كان من الأفضل إضافة دعوة قصيرة لتجربة الستور أو ذكر سياسة الاستبدال لطمأنة العميل، لكن هذا تكميل بسيط.",
+    "id": "CS2",
+    "category": "customer_service",
+    "persona": "burned"
+  },
+  {
+    "scores": {
+      "intent_understanding": 6,
+      "constraint_extraction": 3,
+      "memory": 9,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 3,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 9
+    },
+    "what_worked": [
+      "سؤال مباشر وواضح للايضاح: \"بتدور على عطر رجالي ولا حريمي؟\" — صياغة مصرية بسيطة وطبيعية.",
+      "لم يقدّم توصية مبكرة أو معلومات خاطئة — حافظ على الحيادية بدور الاكتشاف."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "intent",
+        "what": "لم يسأل سؤال الاكتشاف الصحيح الواحد الذي يوجّه المحادثة (عطر فريش ولا دوا؟ وما الميزانية).",
+        "why_wrong": "التعليمات الصريحة للسيناريو تقول: يجب سؤال واحد موجَّه واحد مع خيارات محددة (مثلاً: fresh vs warm vs sweet) مع تحديد الميزانية، في رسالة واحدة. العميل قال فقط 'عايز عطر حلو' فالمسؤولية كانت توجهه بخيارات واضحة بدلاً من سؤال الجنس فقط.",
+        "expected": "طرح سؤال واحد موجّه في رسالة واحدة مثلاً: \"عايز ريحة فريش ولا دافية/حلوه؟ وبرغبتك يبقى رجالي ولا حريمي؟ وميزانيتك تقريباً كام؟\" (أو دمج الجنس ضمن الخيارات) — هذا ما سيفتح الطريق بسرعة لاختيار مناسب."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "فقد فرصة تسريع البيع بجمع المعلومات الأساسية (نوع الريحة والميزانية) في نفس الرسالة.",
+        "why_wrong": "سؤال واحد عن الجنس سيركز المحادثة بشكل ضيق ويطيل الجولة، بينما العميل مبتدئ ويحتاج إرشاد بأمثلة وخيارات قصيرة.",
+        "expected": "سؤال موجه واحد يوفر خيارات يسهل على العميل الرد ويقود إلى توصية سريعة؛ هذا يزيد احتمالية تحويل المحادثة إلى تجربة أو اقتراح منتجات."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "طرح سؤال واحد فقط (الجنس) قد يجعل العميل يفكر أن البائع لا يملك أسلوب استكشاف منظم.",
+        "why_wrong": "العميل قال فقط \"عايز عطر حلو\"؛ الأفضل كان عرض خيارات بسيطة بدل سؤال مفتوح مبكرًا عن النوع الجنسي فقط.",
+        "expected": "سلوك أكثر مرونة وقيادة للمحادثة بإعطاء بدائل واضحة ومساحة للعميل للاختيار بسرعة."
+      }
+    ],
+    "salesperson_verdict": "غير مقبول كخطوة أولى من بائع متمرس — السؤال مباشر ومصري لكن ناقص: كان لازم سؤال موجّه واحد يتضمن خيارات واضحة والميزانية بدل الاقتصار على سؤال الجنس فقط.",
+    "id": "D1",
+    "category": "discovery",
+    "persona": "novice"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 7,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "Agent opened politely: \"اهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\" — a friendly welcome that invites help.",
+      "Agent asked one simple, answerable clarifying question: \"بتدور على عطر رجالي ولا حريمي يا فندم؟\" — appropriate for a novice and avoids jargon."
+    ],
+    "failures": [
+      {
+        "severity": "low",
+        "category": "intent",
+        "what": "Did not explicitly acknowledge the customer's stated confusion/novice status.",
+        "why_wrong": "Customer said \"مش فاهم حاجه في العطور\" which signals a need for reassurance and very simple guidance; the agent did not mirror or reassure that specific worry in the second turn.",
+        "expected": "Say a short reassurance in simple words (e.g. \"مفيش مشكلة أنا هاساعدك وبسألك سؤالين بس عشان أختار لك\") before or while asking the clarifying question."
+      },
+      {
+        "severity": "low",
+        "category": "memory",
+        "what": "Missed an opportunity to use customer goal 'عايز حاجه تعجب الناس' as a follow-up hint.",
+        "why_wrong": "Customer explicitly asked for 'حاجة تعجب الناس' but agent didn't reference that preference to shape the next question (e.g. asking if it's for work/خروج/هدية or if they want something عام/خاص).",
+        "expected": "Reference the expressed goal briefly and then ask the one simple question: \"عايز حاجة تعجب الناس؟ ممتاز — برضه دي لنفسك ولا هدية؟\" or similar, to keep the thread cohesive."
+      }
+    ],
+    "salesperson_verdict": "Acceptable turn — the agent followed the right pattern for a novice (simple clarifying question, no jargon). With a tiny coaching note: explicitly reassure the customer and briefly echo their 'تعجب الناس' goal before proceeding.",
+    "id": "D2",
+    "category": "discovery",
+    "persona": "novice"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": 10,
+      "sales_effectiveness": 9,
+      "closing_timing": 10,
+      "human_feel": 8,
+      "trust": 9
+    },
+    "what_worked": [
+      "Agent correctly explained what the store sells and formats: \"إحنا بنبيع عطور تركيب Perfamix مستوحاة من الماركات العالمية\" (matches STORE-CONFIGURED FACTS).",
+      "Agent gave accurate size information: \"العطور متوفرة بأحجام 50 و90 ملي\" (matches configured sizes).",
+      "Agent respected the customer's low-intent signal and stopped selling: \"ولا يهمك يا فندم، تحت أمرك في أي وقت. لو حبيت تجرب أو تشم أي عطر، الستور مفتوح ليك.\" — appropriate handling for 'مش هشتري دلوقتي'."
+    ],
+    "failures": [
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "Wording about 'زجاجات أوريجينال' could be clearer and follow store phrasing exactly.",
+        "why_wrong": "STORE-CONFIGURED FACTS require the specific clarification that the product is always تركيب and that 'متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا'. The agent said \"وكمان لبعض العطور زجاجات أوريجينال بنفس التركيبة\" which risks being read as 'we have originals' without the required explicit clarification.",
+        "expected": "A senior salesperson would use the exact permitted phrasing to avoid any misinterpretation: state clearly the perfume is تركيب and that only some parfy bottles are available in original-looking bottles."
+      },
+      {
+        "severity": "low",
+        "category": "human_feel",
+        "what": "Tone slightly more formal than the customer's casual 'بتفرج'.",
+        "why_wrong": "Customer used casual language and low intent; agent replied politely but with repeated 'يا فندم', which can create a slight social distance for a casual browser.",
+        "expected": "A top-floor salesperson would mirror the customer's casual tone (e.g., 'تمام، ماشي — اتفرج براحتك، أي وقت تحب تيجي نجربك') to strengthen rapport while still stopping the sale."
+      }
+    ],
+    "salesperson_verdict": "Acceptable turn — the agent correctly stopped selling after the clear 'مش هشتري دلوقتي' signal and left the door open; a sales manager would approve with a note to tighten the exact store phrasing about 'أوريجينال' and slightly adapt tone to match the customer.",
+    "id": "D3",
+    "category": "discovery",
+    "persona": "browser"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 7,
+      "memory": 9,
+      "recommendation_quality": 6,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": 8,
+      "sales_effectiveness": 7,
+      "closing_timing": 7,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "ذكرت الأسعار الصحيحة من قاعدة البيانات: \"Stronger With You 90 ملي بـ 700 جنيه\" و\"50 ملي بـ 400 جنيه\" و\"Stronger With You Intensely 90 ملي بـ 780 جنيه...50 ملي بـ 450\".",
+      "حسبت الإجمالي صح وعلّمت العميل بصراحة إن الطلب صار أعلى من الميزانية: \"⚠️ Stronger With You (90 ملي) بـ 1400 — أعلى من الميزانية اللي قلتها (900 جنيه). لو مش مقصود، قولي وأشيله.\"",
+      "نبرة ودودة ومصرية طبيعية، استخدمت رموز وعلامات مألوفة (👌 🛍️) فحس المتحدث طبيعي ومريح."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يقترح حلولاً عملية لإرجاع الإجمالي تحت 900 غير عرض \"شيله\".",
+        "why_wrong": "سيناريو F1 يفرض صراحة عرض طرق حقيقية للعودة تحت الحد (حجم أصغر، إسقاط صنف). عندنا في الـ DATABASE Stronger With You 50ml = 400 و90ml = 700؛ بدل 2×90 (1400) كان المفروض اقتراح 2×50 = 800 كحل واضح يحترم الميزانية أو اقتراح 90+50 أو عطر بديل أرخص مع حساب الإجمالي قبل الطلب.",
+        "expected": "البائع الخبير كان هيحسب ويعرض بداهة خيارات مثل: \"نخلي واحدة 50 مل (المجموع هيبقى 1100) لو عايز أقل خالص نختار 2×50 مل يبقى 800 ومناسب للميزانية\" أو يقترح عطر بديل مناسب وسعره يسمح بالبقاء ضمن 900."
+      },
+      {
+        "severity": "low",
+        "category": "intent",
+        "what": "سأل عن نوع الزجاجة (أوريجينال أم زجاجة البراند) قبل توضيح أي تفاصيل عن الهدية أو التأكد إن الهدية نفس العطر.",
+        "why_wrong": "العميل قال \"هاخد ده، وضيف كمان واحد للهدية\" ولم يحدد إنه نفس العطر أو الحجم. السؤال عن نوع الزجاجة مفروض يجي بعد تأكيد أي عطر/حجم للهدية، وإلا بتضيع دور أسئلة التحديد الأساسية (هل الهدية نفس العطر؟ أي حجم؟).",
+        "expected": "سؤال أوضح مثل \"هل الهدية نفس Stronger With You؟ وحجمها 50 ولا 90؟\" قبل سؤال نوع الزجاجة."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "بدأ بجمع بيانات الشحن (الاسم ورقم الموبايل والعنوان) قبل أن يؤكد العميل الموقف النهائي بعد إعلامه بتجاوز الميزانية.",
+        "why_wrong": "العميل لم يؤكد أنه يريد المتابعة رغم التحذير أن الإجمالي أعلى من الميزانية. جمع بيانات الشحن في هذه اللحظة قد يُشعر العميل بضغطة بيع قبل الاتفاق على تعديل يبقيه ضمن ميزانيته.",
+        "expected": "بعد الإعلام بالتجاوز، طلب تأكيد من العميل على خيار محدد (مثلاً قبول الزيادة، أو اختيار 50 مل، أو إسقاط الهدية) ثم جمع البيانات لإتمام الطلب."
+      }
+    ],
+    "salesperson_verdict": "مقبول لكنه يحتاج تصحيح: البائع صحّح إجمالي وامتثل لمعيار الميزانية (مهم جداً)، لهجة الناسية ممتازة، لكن كان يجب اقتراح حلول عملية فوراً للبقاء ضمن 900 وطلب التفاصيل بعد تأكيد الخيار النهائي.",
+    "id": "F1",
+    "category": "purchase",
+    "persona": "hard_budget"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 8,
+      "objection_handling": 7,
+      "sales_effectiveness": 8,
+      "closing_timing": 6,
+      "human_feel": 8,
+      "trust": 8
+    },
+    "what_worked": [
+      "Agent captured the customer's main constraints (رجالي، ثبات قوي، فوحان قوي، ميزانية 1200) and recommended matching options: \"أنصحك بـ Afnan 9PM...\" (matches DB longevity/projection and prices).",
+      "Gave correct, specific prices and sizes for Afnan and Safrano that match the DATABASE FACTS (e.g. Afnan 50مل=508، 90مل=1077، original 100مل=881).",
+      "When asked about Versace Eros, the agent provided accurate product details and prices from the database: \"Versace Eros... ثباته حوالي 11 ساعة... الـ90 ملي بـ1019... 50 ملي بـ666\".",
+      "Tone and phrasing feel natural and Egyptian (uses comforting politeness like \"يا فندم\" and friendliness), and the agent offered a clear next step when the customer showed interest: \"لو حابب أجهزلك الطلب؟\"."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "No explicit clarification about 'تركيب' versus 'أوريجينال' when confirming availability of Eros.",
+        "why_wrong": "STORE-CONFIGURED FACTS require that agents present our products as 'عطور تركيب' and when customers ask about availability/stock it can be important to clarify whether they mean the brand-style (الـ brand sizes) or an 'original' bottle. The database shows Eros only in 'brand' sizes (no original), so failing to mention that our product is a تركيب (and that Eros has no listed original size) risks later customer confusion.",
+        "expected": "A senior salesperson would confirm availability AND remind briefly that our perfumes are تركيب (and that Eros has only brand 50/90 according to the catalogue), e.g.: \"نعم متوفر عندنا كزجاجة براند (تركيب) — في 50ملي و90ملي بس، مفيش زجاجة أوريجينال مسجّلة.\""
+      },
+      {
+        "severity": "low",
+        "category": "closing_timing",
+        "what": "Premature offer to 'جهز الطلب' after a simple stock-confirmation question.",
+        "why_wrong": "The customer only asked \"مش متوفر متأكد ؟\" (checking availability). Immediately offering to prepare the order moves straight to closing without confirming the customer's buying intent or preferred size.",
+        "expected": "A senior salesperson would first confirm stock and clarify size preference or buying intention, e.g. ask \"هل تقصد حجم 50 ولا 90؟ تحب أجهزلك واحد ولا هتزور الستور لتجربته؟\" before preparing the order."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "Turn 3 answer was longer than strictly necessary for the customer's 'why not recommended' question.",
+        "why_wrong": "Scenario guidance expected a short confirmation of Eros data and a brief acknowledgement why it wasn't top of shortlist. The agent repeated a full product pitch rather than a concise reply.",
+        "expected": "Provide the Eros facts succinctly and a one-line reason why it wasn't the top pick (e.g. 'هو مناسب لكن اخترت Afnan لأن طابعه مناسب للسهرات والدوران على طلبك')."
+      }
+    ],
+    "salesperson_verdict": "Acceptable turn for the floor: product facts and prices are accurate and the agent handled the Eros question correctly. Fixes needed: briefly state our products are تركيب when availability is confirmed, avoid premature 'prepare order' closes, and keep stock confirmations concise.",
+    "id": "F2",
+    "category": "adversarial",
+    "persona": "expert"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 5,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 3,
+      "objection_handling": null,
+      "sales_effectiveness": 5,
+      "closing_timing": 4,
+      "human_feel": 8,
+      "trust": 7
+    },
+    "what_worked": [
+      "جاوب بسرعة على طلب الأسعار وذكر كل الأحجام المتاحة: \"بالنسبة لـ Stronger With You ... الـ50 ملي بـ400 جنيه ... الـ90 ملي بـ700 جنيه ... original 100 و200 ملي\" و\"Stronger With You Intensely ... الـ50 ملي بـ450 جنيه ... الـ90 ملي بـ780 جنيه ... original 100 و200 ملي\" — الأسعار المطروحة تطابق بيانات قاعدة البيانات.",
+      "الأسلوب و اللغة مناسبة ومريحة (مثلاً: \"تمام 👌\").",
+      "الوكيل سأل عن نوع الزجاجة (أوريجينال أم زجاجة البراند) صح في الدور السابق، وهو سؤال منطقي لتمييز الأحجام والأسعار."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "ادّعى أن الـ90 ملي \"أحسن اختيار من حيث القيمة\" بدون دعم.",
+        "why_wrong": "لا توجد عبارة أو بيانات في DATABASE FACTS أو STORE-CONFIGURED FACTS تدعم ادعاء 'أحسن اختيار من حيث القيمة'؛ هذا تقييم/استنتاج غير موثق حسب القواعد.",
+        "expected": "بدلاً من التصريح كحقيقة اعرض الأرقام وأفسر السبب شرطاً (مثلاً: \"لو بتدور على قيمة بالسعر لكل ملي، الـ90 غالبًا بيكون أوفر لأن السعر لكل مل أقل\") أو اطلب موافقة العميل قبل تقديم توصية."
+      },
+      {
+        "severity": "high",
+        "category": "sales",
+        "what": "ما تمش تحويل لحظة اهتمام العميل إلى خطوة بيع واضحة بعد ما سأله عن السعر (مافيش سؤال تأكيد حجم/نوع أو إضافة للعربة أو عرض لخطوة الدفع).",
+        "why_wrong": "العميل واضح إنه في مرحلة نية شراء (سأل \"كل واحده كام سعرها\" ثم عزّز بالسؤال عن 'انتنسلي لوحده') — هذه مناسبة لطلب تأكيد الحجم/النوع أو عرض إضافة سريعة للطلب. عدم القيام بذلك أهدر فرصة لإتمام البيع.",
+        "expected": "سؤال مباشر مثل: \"تحب أضيف الـ90 ملي من Intensely للعربة؟ تفضّل البراند ولا أوريجينال؟\" أو عرض طريقة الدفع/عربون لتأكيد الطلب."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يُوضّح الفرق البنيوي بين 'عطر تركيب' و'زجاجات أوريجينال' بصياغة المتجر المصرح بها.",
+        "why_wrong": "STORE-CONFIGURED FACTS تطلب صياغة محددة عند ذكر الأوريجينال: التأكيد أن 'العطر تركيب من عندنا' و'متاح لبعض البرفانات زجاجات أوريجينال'. الرد ذكر فقط \"زجاجات أوريجينال 100 و200 ملي\" دون توضيح أن المنتج تركيب بشكل عام، مما قد يربك العملاء أو يوحي بوجود أصلي كامل.",
+        "expected": "ذكر بصراحة وبالصياغة المسموح بها: مثلا \"العطر عندنا تركيب من Perfamix، ومتاح لبعض البرفانات زجاجات أوريجينال بنفس شكل الماركة — ونقدر نوفر 100 و200 ملي أوريجينال لو حابب.\""
+      }
+    ],
+    "salesperson_verdict": "الوكيل أعطى أسعار صحيحة وسريع الاستجابة، لكن رفع ادعاءات غير موثقة ('أحسن اختيار من حيث القيمة') وفقد فرصة مباشرة لتأكيد الطلب — يحتاج تعديل بسيط في الصياغة وسؤال تأكيد الحجم/نوع قبل المتابعة للدفعة لإرضاء مدير المبيعات.",
+    "id": "F3",
+    "category": "adversarial",
+    "persona": "ready_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "\"بصراحة صعب نضمن ذوقها من غير ما نعرف حاجات بتحبها\" — صراحة واعتراف بعدم القدرة على ضمان الذوق، ده صح",
+      "\"لو فاكر اسم برفان كانت بتحبه أو بتستخدمه قبل كده، ابعتهولي ده هيساعدني أختار لها حاجة مناسبة\" — سألت سؤال القيمة العالية المطلوب (اسم برفان معروف عندها)",
+      "\"لو مش فاكر، ممكن أرشحلك حاجة آمنة... تحب؟\" — عرض خيار آمن واحد مع طلب إذن للاستمرار، مناسب لسيناريو هدية بمتلقي غير معروف",
+      "اللغة طبيعية ومخاطبة مصرية مناسبة: 'يا فندم' و'ابعتولي' و'تحب؟'"
+    ],
+    "failures": [
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "ما فيش دعوة مباشرة للزيارة أو تجربة العطور بالستور أو سؤال عن الميزانية",
+        "why_wrong": "الستور يرحب بتجربة العطور فعلياً حسب STORE-CONFIGURED FACTS، والسؤال عن الميزانية كان فرصة مفيدة بعد سؤال اسم البرفان لتحسين التوصية أو تقديم بدائل مناسبة السعر",
+        "expected": "بعد سؤال اسم البرفان، يطلب من العميل إن كان يحب يجيلكم يشم العينات بالستور أو يسأل بسرعة عن نطاق السعر للترشيح الفوري (مثلاً: ميزانيتك تقريباً كام؟)"
+      }
+    ],
+    "salesperson_verdict": "مقبول جدًا — هذا دور ممتاز من موظف متمرس: صريح، سأل سؤال القيمة العالية، وعرض خيار آمن بدون مبالغة. يمكن تحسينه بإضافة دعوة خفيفة لزيارة الستور أو سؤال بسيط عن الميزانية كي نغلق الترشيح بشكل أدق.",
+    "id": "G1",
+    "category": "gift",
+    "persona": "gift_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "فهم الطلب بدقة وافتتح بـ: \"لو بتدور على هدية لشاب في عمر 22 سنة وميزانيتك 500 جنيه\" — صح استنتاج الجنس والميزانية والعمر.",
+      "قدّم خيارات مناسبة ضمن الميزانية وذكر الأحجام: \"Stronger With You 50 ملي بـ 400 جنيه\" و\"Dior Homme Sport 50 ملي بـ 450 جنيه\" (تطابقت مع DATABASE FACTS).",
+      "الادعاءات عن الموسم/المناسبة/الثبات كانت صحيحة ومدعومة: \"مناسبة للخريف والشتا...\" و\"ثبات جيد حوالي 6 ساعات\" (Strong With You longevity = 6h).",
+      "نبرة محلية وطبيعية: \"أنا أرشحلك Stronger With You أكتر لأنه دافي...\" — أسلوب بيتي ومناسب لمشتري هدية شاب."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يعرض تفاصيل مرتبطة بالشراء كهدية (تغليف هدية، حجز زجاجة، أو سؤال عن التسليم/استلام).",
+        "why_wrong": "العميل قال بصراحة إنه يشتري هدية؛ مندوب متمرس كان هيعرض خيارات تغليف هدية أو يسأل إذا هيستلم من الستور ولا يطلب توصيل، ويذكر سياسات العربون/الدفع لو العميل جاهز. هذه المعلومات موجودة في STORE-CONFIGURED FACTS (عربون ٢٥٠ج، طرق الدفع، والتوصيل 2-4 أيام)، وعدم طرحها ضيّع فرصة لتقريب العميل لعملية الشراء.",
+        "expected": "سؤال بسيط مثل «تحبها متغلفة هدية؟ تفضل تستلم من الستور ولا نوصّلها؟» مع عرض ذكر خيارات الدفع والعربون لتسهيل الإغلاق."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر بشكل استباقي أن المنتجات 'تركيب' وفق سياسة المتجر.",
+        "why_wrong": "STORE-CONFIGURED FACTS توضح أنه عند السؤال يجب التأكيد أن العطر تركيب وأن بعض الزجاجات أوريجينال متاحة؛ كمشتري هدية بعض العملاء يتوقعوا أوريجينال. ترك هذا الجانب غائب قد يترك لبسًا لو العميل افترض أصلي.",
+        "expected": "بمجرد الاقتراح كهدية كان من الجيد إضافة جملة توضيحية قصيرة مثل «منتجاتنا تركيب (مستوحاة)، ولو محتاج زجاجة أورجينال لبعض البرفانات متاحة» لضمان وضوح التوقعات."
+      }
+    ],
+    "salesperson_verdict": "قبول مش كامل — التعامل جيد ودقيق من حيث الفهم والحقائق واللغة المحلية، لكن ينقصه خطوة مبيعاتية بسيطة مرتبطة ببيع هدية (عرض تغليف، توصيل، أو شرح عملية الدفع/عربون) لرفع فرصة الإغلاق.",
+    "id": "G2",
+    "category": "gift",
+    "persona": "gift_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 7,
+      "constraint_extraction": 5,
+      "memory": 2,
+      "recommendation_quality": 4,
+      "similarity_accuracy": 6,
+      "product_accuracy": 9,
+      "confidence_calibration": 6,
+      "objection_handling": 6,
+      "sales_effectiveness": 5,
+      "closing_timing": null,
+      "human_feel": 7,
+      "trust": 5
+    },
+    "what_worked": [
+      "التاجر فهم إن الثبات (longevity) هو أهم حاجة ورد بسرعة بخيارات لها أرقام ثبات مدعومة: \"Ambero هو الأفضل عندنا بثبات 10 ساعات\" (صح من الداتابيز).",
+      "عرض بدائل داخل الميزانية وصياغة إجابة باللهجة المصرية الطبيعية: \"أنا أرشحلك Ambero أكتر لطلبك 👌.\"",
+      "ذكر أسعار الأحجام المتاحة المتوافقة مع الداتا: \"50 ملي بـ601 جنيه\" لـ Ambero و\"50 ملي بـ680 جنيه\" لـ Dark Aura — كلاهما مطابق لملفات الداتا."
+    ],
+    "failures": [
+      {
+        "severity": "critical",
+        "category": "memory",
+        "what": "استبعاد Dior Sauvage بالكامل بناءً على سعر زجاجة 90 ملي فقط.",
+        "why_wrong": "العميل لم يطلب تحديدًا حجم 90 ملي، والداتابيز يبيّن وجود زجاجة 50 ملي من Dior Sauvage بسعر 642 جنيه (أقل من ميزانية 700). حذف المنتج كليًا تعارض مع حقائق الداتا ومع قيود الميزانية التي قدمها العميل.",
+        "expected": "كان المفروض إما إبقاء خيار Dior Sauvage مُتاح (لأن 50 ملي بـ642 داخل الميزانية) أو تفسر بوضوح أنك تستبعد فقط 90 ملي وتعرض 50 ملي كخيار. على الأقل تسأل إذا يهمه الحجم قبل الاستبعاد النهائي."
+      },
+      {
+        "severity": "high",
+        "category": "recommendation",
+        "what": "تجاهل Safrano كخيار أفضل من ناحية الثبات ضمن نفس النطاق السعري.",
+        "why_wrong": "العميل ركز على الثبات وذكر ميزانية 700؛ الداتابيز يُظهر Safrano بثبات 11 ساعة وسعر 50 مل = 651 جنيه وهو داخل الميزانية ويطابق طلب 'مش منتشر' لأنه تركيب Perfamix. عدم ذكره هو غياب فرصة واضحة لتحسين التوصية.",
+        "expected": "ذكر Safrano أولًا كأقوى خيار للثبات (11 ساعة، 50 مل 651ج) ثم قارن بينه وAmbero وDark Aura وفسر الاختيار لمساعدة العميل على القرار."
+      },
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "لم يقدم مقارنة واضحة بين كل الخيارات من ناحية ثبات مقابل سعر، مما جعل التوصية تبدو متحيزة أو غير كاملة.",
+        "why_wrong": "العميل طلب أن تكون الثبات أهم معيار؛ مع وجود عدة عطور بالداتا كلها ضمن الميزانية وبثباتات مختلفة (Safrano 11h, Ambero 10h, Dark Aura 8h). ذكر Ambero فقط كـ 'الأفضل' بدون مقارنة يخفض الثقة.",
+        "expected": "تقديم جدول كلامي قصير: اسم - ثبات - سعر 50مل - لماذا مناسب، ثم اقتراح الأفضل بناءً على الأولوية (ثبات)."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يُقدّم أي دعوة فعلية للزيارة أو تجربة العطور في الستور أو سؤال تشجيعي لتحريك الصفقة.",
+        "why_wrong": "الستور مُعلن أنه يرحب بتجربة العطور في المكان، وكون العميل مهتم بالتفاصيل والميزانية والثراء الحسي (ثبات) يجعل دعوة للتجربة أو سؤال هل تفضّل توصيل/حجز مفيدة للاقتراب من الشراء.",
+        "expected": "بعد التوصية، اسأل 'تحب تيجي تجربها في الستور؟ ولا تفضل أرسللك رابط الطلب/أعملك حجز؟' مع إعطاء العنوان/خيار الطلب عبر الموقع إذا وافق."
+      }
+    ],
+    "salesperson_verdict": "لا، كمفتش مبيعات لن أقبل هذه الجولة نهائيًا — الوكيل عنده معلومات صحيحة عن بعض المنتجات لكنه أساء إدارة الذاكرة والفرص: استبعد منتج داخل الميزانية ودابّ نصيحة أقوى (Safrano) مما يؤثر على جودة التوصية وثقة العميل.",
+    "id": "M1",
+    "category": "memory",
+    "persona": "mind_changer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 7,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 8,
+      "objection_handling": null,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 8
+    },
+    "what_worked": [
+      "اقتراح عطور بخصائص فوحان قوي (Libre, Flowerbomb) متوافق مع طلب 'حاجة تقيلة للشتا' — مثال من الرد: \"Libre ريحته قوية وفواحة جداً\"",
+      "شرح مكونات محددة وواقعية لكل خيار مدعوم بصفوف قاعدة البيانات: \"فيه مزيج من اللافندر والبرتقالي والفانيليا\" (يتطابق مع بيانات Libre: Lavender, Mandarin/Orange Blossom, Vanilla).",
+      "قدم خيارين مع تفضيل واحد واضح: \"أنا أرشحلك Libre أكتر\" — هذا أسلوب مبيع صحيح (خيار ثم توصية).",
+      "اللغة طبيعية ومباشرة باللهجة المناسبة: جمل قصيرة ومباشرة مثل \"Flowerbomb برضه خيار ممتاز\"."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يتم ذكر العطور المصنفة صراحةً كـ Fall/Winter مثل Black Opium أو Good Girl",
+        "why_wrong": "العميل طلب 'حاجة تقيلة للشتا' وقاعدة البيانات تحدد Black Opium وGood Girl كـ season=Fall/Winter و projection=Strong، فهما خيارات بديهية ومناسبة أكثر للطلب من Libre/Flowerbomb التي موسميتها 'All Seasons'.",
+        "expected": "كان المفروض ذكر Black Opium وGood Girl كخيارات رئيسية أو على الأقل شرح لماذا Libre/Flowerbomb مفضلة بدلاً منهم."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "القول الحازم 'دافية ومناسبة للشتا' دون تأطير أو تلطيف",
+        "why_wrong": "قاعدة البيانات تصف Libre وFlowerbomb على أنهما 'All Seasons' لكن ليسا معنونين خصيصًا كـ 'Fall/Winter'. تصرّف الوكيل كأن هذا توصيف مباشر من البيانات بدل كونه استنتاج.",
+        "expected": "ذكر أن هذه العطور \"تعمل جيدًا في الشتاء أيضًا\" أو \"تُعطي إحساسًا دافئًا يناسب الشتاء\" بدلاً من تقديم الحكم كحقيقة مطلقة."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يتم عرض خطوة متابعة بسيطة (دعوة للتجربة في الستور أو سؤال عن الميزانية أو المناسبة المحددة)",
+        "why_wrong": "العميل أعطى تفضيل واضح وله نية شراء محتملة بعد تغير الرأي. قواعد المحل تشجع دعوة العميل لتجربة العطور في الستور وذكر العنوان أو سؤال الميزانية لتقديم اقتراح مناسب.",
+        "expected": "سؤال متابعة مثل \"تحبي تيجي تجربهالنا في الستور؟\" أو \"الموازنة عندك كام عشان أختار حجم/نسخة مناسبة؟\" وكان ينبغي إعطاء عنوان المتجر إذا أعربت عن رغبة في الزيارة."
+      },
+      {
+        "severity": "low",
+        "category": "constraint",
+        "what": "لم يتم استيضاح استخدام/المناسبة (سهرة، دوام يومي، هدية...) أو ميزانية بعد تغيير الطلب",
+        "why_wrong": "العميل قدّم تفضيل موسمي وفوحان قوي لكن لم يتم استخراج بقية القيود التي تؤثر على الاختيار (مثلاً هل بديل للسهرات المسائية أو للدوام في الشتاء؟).",
+        "expected": "سؤال متابع قصير لتصفية الخيارات: \"هي للسهرة ولا للاستخدام اليومي في الشتاء؟ وميزانيتك قد إيه؟\""
+      }
+    ],
+    "salesperson_verdict": "قبول مشروط — التوصية كانت مناسبة وبلغة طبيعية، لكن وكيل المبيعات أهدر فرصة لتعزيز البيع (لم يذكر خيارات Fall/Winter الواضحة، ولم يسأل عن الميزانية أو يعرض تجربة بالستور). مع تعديل صغير في المتابعة كان سيكون ممتاز.",
+    "id": "M2",
+    "category": "memory",
+    "persona": "mind_changer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 4,
+      "constraint_extraction": 3,
+      "memory": 2,
+      "recommendation_quality": 2,
+      "similarity_accuracy": null,
+      "product_accuracy": 3,
+      "confidence_calibration": 5,
+      "objection_handling": null,
+      "sales_effectiveness": 3,
+      "closing_timing": 3,
+      "human_feel": 8,
+      "trust": 4
+    },
+    "what_worked": [
+      "عرض بدائل محددة مع سعر/z (\"Acqua di Gio 50 ملي بـ 503 جنيه\" و\"Afnan 9PM 50 ملي بـ 508 جنيه\") — الأسعار هذه متطابقة مع DATABASE FACTS.",
+      "لغة محلية وطبيعية ومشجعة لرفع الميزانية: \"لو تقدر تزود شوية في الميزانية، دول أفضل البدائل المتاحة ليك.\"",
+      "عرض خطوة عملية متبوعة بسؤال إغلاق لطيفة: \"لو حابب أجهزلك طلب على أي واحد فيهم؟\""
+    ],
+    "failures": [
+      {
+        "severity": "critical",
+        "category": "memory",
+        "what": "لم يحترم قيود العميل المتعلقة بالميزانية (500 جنيه) عند تقديم التوصيات.",
+        "why_wrong": "العميل صرّح صراحة \"ميزانيتي 500\" في الدور الأول، ومع ذلك اقترح الوكيل الآن عطوراً سعرها أعلى من 500 (Acqua di Gio 503 و Afnan 9PM 508) بدلاً من عرض الخيارات المتوفرة داخل الميزانية (مثلاً Stronger With You 50ml بـ400 وDior Homme Sport 50ml بـ450 مُسجلة في DATABASE FACTS). هذا يكسر قاعدة التعامل مع التفضيل الأخير للعميل.",
+        "expected": "بائع خبير كان سيقترح أولاً العطور المتوفرة ضمن 500 جنيه (مثلاً Stronger With You 400، Dior Homme Sport 450، Stronger With You Intensely 450، Stronger With You Absolutely 480) أو بوضوح ذكر أنه لا يوجد بدائل بدون رفع الميزانية، قبل اقتراح خيارات أغلى."
+      },
+      {
+        "severity": "high",
+        "category": "intent",
+        "what": "تجاهل تفضيل العميل بعدم حب العود ولم يبرهن أنه تفادى أي عطور تحتوي على عود.",
+        "why_wrong": "العميل قال \"مش بحب العود خالص\"، وبائع ماهر يجب أن يتأكد أن التوصيات لا تحتوي على مكونات عود أو يُطمئن العميل بذلك. رغم أن العطور المقترحة هنا (وفق DATABASE FACTS) لا تسجل العود كنوتة أساسية، الوكيل لم يعالج التفضيل أو يؤكد صراحة عدم وجود عود.",
+        "expected": "من المفترض أن يؤكد البائع صراحة أنه تفهم تفضيل عدم العود ويعرض فقط عطور خالية من العود أو يوضح أن البدائل المقترحة لا تحتوي على عود حسب مواصفات المنتج."
+      },
+      {
+        "severity": "medium",
+        "category": "data",
+        "what": "ادعاء عام غير دقيق: \"العطور اللي ذكرتها كلها أسعارها أعلى من 500 جنيه\" مع تجاهل توصيات سابقة ضمن الميزانية.",
+        "why_wrong": "في الرد السابق والـ DATABASE FACTS توجد عطور ضمن 500 (مثل Stronger With You 50ml بـ400 وDior Homme Sport 50ml بـ450). قوله \"كلها أعلى من 500\" يخالف الحقائق المعروفة في المحادثة وقاعدة البيانات.",
+        "expected": "يجب أن يكون البيان محدداً: مثلاً 'العطور الإضافية اللي طرحتها عموماً أعلى من 500' أو توضيح أي أصناف بالتحديد أغلى، وعدم إعطاء عمومية خاطئة."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "اقتراح الزيادة في الميزانية ومحاولة إعداد الطلب مباشرة يمكن أن يكون سابقاً للوقت دون أول ما يؤمن راحة العميل.",
+        "why_wrong": "العميل سأل فقط 'طيب ايه اللي عندك؟' بعد استبعاد بعض الاقتراحات؛ ليس مؤشر شراء واضح. دفع محاولة تجهيز طلب على عطور أغلى قد يضع ضغطًا غير ضروري ويقلل من فرصة البيع.",
+        "expected": "بائع محترف يسرد البدائل المناسبة ضمن القيود أولاً، يسأل تفضيلات أُخرى إن وُجدت (مثلاً 'تفضل منعش ولا دافي؟')، ثم يسأل إن كان يريد أن يرفع الميزانية قبل محاولة تجهيز طلب."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر سياسة المتجر أو طبيعة المنتجات (تركيب/أوريجينال) رغم أن STORE-CONFIGURED FACTS تسمح بذلك، فرصة ضائعة لبناء الثقة.",
+        "why_wrong": "الوثائق المخزنة تُمكّن البائع من طمأنة العميل بأن المنتجات تركيب وبأسعار أفضل أو عرض خيار زجاجة أورجينال متى توفر. عدم ذكر هذا أثر على الشفافية وبناء الثقة.",
+        "expected": "ذكر بإيجاز أن العطور 'تركيب' بحسب سياسة المتجر وأن هنالك زجاجات أوريجينال لبعض المنتجات لو العميل سأل عن الأصلي."
+      }
+    ],
+    "salesperson_verdict": "غير مقبول — الوكيل فشل في احترام قيود العميل الأساسية (ميزانية 500 ومنع العود) وعرض بدائل أغلى مباشرة. كرئيس مبيعات لا أقبل هذه الجولة؛ يتطلب تصحيح فوري والاقتراح مجدداً ضمن الميزانية مع تأكيد عدم وجود عود.",
+    "id": "M3",
+    "category": "memory",
+    "persona": "price_sensitive"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 9,
+      "recommendation_quality": 9,
+      "similarity_accuracy": 10,
+      "product_accuracy": 8,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "اعترف بصراحة: \"مفيش حاجة قريبة من Ambero بالظبط عندنا\" — صراحة مناسبة وُفِّقت في توقعات العميل.",
+      "قدَّم اقتراحين مناسبين لصنف العطر اللي العميل أحبه: \"ممكن يعجبك Safrano...\" و\"Leatherio خيار كويس برضه\" — اختيارات متوافقة مع موسم ومراد العميل.",
+      "طابق خواص أساسية من قاعدة البيانات بدقة عند وصف الروائح والثبات والفوحان (مثلاً Safrano ثبات 11 ساعة وفوحان Very Strong، ووصف Leatherio جلد وتبغ).",
+      "نهي التحاور دون ضغط بيع مباشر: \"أنا أرشحلك Safrano أكتر لطلبك 👌\" — ترشيح واضح ومهذب يحافظ على عنصر الاختيار عند العميل."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "product",
+        "what": "ادّعاء أن Safrano \"مناسب للسهرات\" كصياغة مباشرة",
+        "why_wrong": "قاعدة البيانات تذكر مناسبته كـ Occasion = Special Occasion، وليس حرفياً 'سهرات'. القفز من 'Special Occasion' إلى 'سهرات' هو استنتاج غير موجود صراحة في DATABASE FACTS.",
+        "expected": "كان من الأفضل قول: \"Safrano مذكور عندنا كمناسبات خاصة (Special Occasion) — غالباً مناسب للسهرات الرسمية، لو تحب أذكر لك أمثلة أو نقارنه بعطر Ambero بشكل أدق.\""
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يذكر الأحجام والأسعار المتوفرة أو أن العطور تركيب (Perfamix) عند عرض البدائل",
+        "why_wrong": "العملاء العائدين عادةً يتوقعون مقارنة عملية (سعر/حجم) لإتخاذ قرار فوري. STORE-CONFIGURED FACTS تُمكّن البائع من ذكر أن الأحجام البراندية المتاحة 50/90 ملي والأسعار المسجلة في DATABASE FACTS لكل عطر.",
+        "expected": "ذكر الأحجام المتاحة (50/90) وأسعار Safrano وLeatherio من قاعدة البيانات، والتأكيد أن المنتج 'تركيب من Perfamix' لتقوية الثقة وتحريك العميل نحو الشراء."
+      },
+      {
+        "severity": "low",
+        "category": "recommendation",
+        "what": "لم يذكر Oudora كخيار رغم أنه يناسب الشتاء والسهرات ويملك ثباتاً وفوحاناً أعلى (12h, Very Strong)",
+        "why_wrong": "Oudora في DATABASE FACTS مذكور كـ Fall/Winter، Occasion = Evening، longevity 12 hours وprojection Very Strong — كل هذه تخص مطلوب العميل.",
+        "expected": "يُفضّل تقديم Oudora كخيار ثالث سريع وشرح الفرق عنه (أقوى ثبات وفوحان، نبرة Oud/Cinnamon) لتمكين المقارنة."
+      },
+      {
+        "severity": "low",
+        "category": "data",
+        "what": "لم يؤكد صراحة للعميل أن كل العطور 'تركيب' أو عرض خيار تجربة في الستور بعد ترشيح العطور",
+        "why_wrong": "STORE-CONFIGURED FACTS تشجّع على توضيح أن المنتجات 'عطور تركيب' وعلى دعوة العميل للتجربة بالستور. عدم ذكر ذلك أضاع فرصة لبناء ثقة وتعجيل التحويل.",
+        "expected": "يجب ذكر أن العطور تركيب من Perfamix وأنه يسرنا استضافته في الستور لتجربة الروائح أو إرسال صور/عينة، حسب رغبة العميل."
+      }
+    ],
+    "salesperson_verdict": "الرد قوي ومناسب: اعتراف صريح بعدم وجود مطابق تمامًا، وترشيح خيارات مناسبة. لكن يعوزه تفاصيل عملية (أحجام/أسعار/تأكيد تركيب) وعرض خيار ثالث (Oudora) أو دعوة للتجربة لزيادة احتمالية البيع.",
+    "id": "M4",
+    "category": "memory",
+    "persona": "returning"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 6,
+      "memory": 8,
+      "recommendation_quality": 7,
+      "similarity_accuracy": null,
+      "product_accuracy": 6,
+      "confidence_calibration": 5,
+      "objection_handling": 7,
+      "sales_effectiveness": 7,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 8
+    },
+    "what_worked": [
+      "\"فاهم حضرتك، السعر فعلاً ممكن يكون عالي شوية.\" — اعتراف مباشر بالاعتراض من غير اعتذار، وده مناسب.",
+      "\"ممكن تبدأ بحجم 50 ملي، اللي بيكون أقل في السعر\" — عرض خيار حجم أصغر كحل دخول، متوافق مع حقائق المتجر عن الأحجام المتاحة.",
+      "\"لو حابب، ممكن تزور الستور وتجرب العطور بنفسك قبل الشراء.\" — دعوة لزيارة المتجر وتجربة العطور، ممتازة لخفض المخاطرة.",
+      "\"تحب أساعدك في اختيار الحجم المناسب؟\" — سؤال مفتوح لاستمرار الحوار بدل الإغلاق القسري."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "sales",
+        "what": "ما تمش تحويل الاعتراض لقيمة رقمية ملموسة (سعر لكل مل أو أرقام فعلية).",
+        "why_wrong": "التعليمات الصريحة عن التعامل مع اعتراض السعر تطلب تحويل السعر لقيمة (مثل تكلفة لكل مل، أو مقارنة أحجام وأرقام)، والرد اكتفى بذكر '50 ملي أقل في السعر' بدون أرقام. هذا يفقد العميل فرصة رؤية القيمة الحقيقية للبديل.",
+        "expected": "ذكر أرقام ملموسة مثل نطاق الأسعار المتاح (استنادًا لحقائق المتجر) وحساب سعر/مل أو مقارنة بين 50ملي و90ملي لتوضيح التوفير."
+      },
+      {
+        "severity": "medium",
+        "category": "product",
+        "what": "ادعاء أن 50 ملي 'معاك لفترة كويسة' دون سند من حقائق المتجر.",
+        "why_wrong": "قاعدة البيانات والمتجر لا تعطي أرقام ثابتة للعمر الزمني للثبات حسب الحجم، لذلك وصف مدة الاستخدام كحقيقة غير مدعوم.",
+        "expected": "التخفيف من الحدة عبر صياغة متحيزة مثل 'غالبًا هيديك مدة مناسبة' أو اقتباس أرقام دعم إذا كانت متاحة."
+      },
+      {
+        "severity": "medium",
+        "category": "constraint",
+        "what": "ما تمش سؤال العميل عن ميزانية رقمية محددة بعد قوله 'مش معايا الفلوس دي'.",
+        "why_wrong": "بدل ما يعرض بديل عام، كان من الأفضل استخراج حدود الميزانية الحقيقية عشان تقدّم اقتراحات أدق أو عرض بدائل في نطاقه.",
+        "expected": "سؤال متابع بسيط مثل 'تقدر تحدد ليا ميزانيتك التقريبية؟' أو اقتراح نطاقات سعرية محددة مبنية على حقائق المتجر."
+      },
+      {
+        "severity": "low",
+        "category": "confidence",
+        "what": "تم تقديم اقتراحات بصيغة حازمة بدون تمييز واضح بين معلومة مؤكدة واستنتاج.",
+        "why_wrong": "مثلاً عبارة 'أقل في السعر وكمان معاك لفترة كويسة' تقدم كحقيقة مطلقة بينما جزء منها استنتاجي.",
+        "expected": "معايرة الكلام بتعابير مثل 'غالبًا' أو 'الأغلب' أو الإشارة إلى أن السعر الفعلي يعتمد على الاختيار، خصوصًا عندما لا توجد أرقام دقيقة في الحقائق."
+      }
+    ],
+    "salesperson_verdict": "مقبول كاستجابة أولية — الاعتراض اتفهم واتقدمت بديل منطقي (50مل) ودعوة للتجربة، لكن ينقصها تحويل السعر لقيمة رقمية وطلب ميزانية محددة. كمدير مبيعات، أطلب تحسينين قبل قبول الحركة: عرض أرقام ملموسة وسؤال مباشر عن الميزانية.",
+    "id": "O1",
+    "category": "objection",
+    "persona": "price_sensitive"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 10,
+      "recommendation_quality": 5,
+      "similarity_accuracy": null,
+      "product_accuracy": 4,
+      "confidence_calibration": 3,
+      "objection_handling": 4,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 5
+    },
+    "what_worked": [
+      "افتتح برد تعاطفي: \"فعلاً ده شيء مزعج لما تحس إن العطر مش ثابت زي ما متوقع.\" — اعتراف بالشعور مهم ويقلل من تصعيد العميل.",
+      "عرض حل عملي ومناسب للسياق: \"لو حابب، ممكن تيجي تجرب العطور في الستور بنفسك قبل الشراء عشان تتأكد من الريحة والثبات.\" — دعوة للستور كخطوة لتقليل المخاطرة.",
+      "طلب معلومات مفيدة للمتابعة: \"هل في عطر معين كنت جربته وحابب نتكلم عنه؟\" — محاولة لتضييق المشكلة على منتج محدد."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "data",
+        "what": "ادّعى وجود عطور مكتوب عنها ثبات \"حوالي 8 ساعات\" كبيان عام.",
+        "why_wrong": "الادعاء \"وفي بعض العطور مكتوب عنها ثبات حوالي 8 ساعات\" غير مدعوم لا في DATABASE FACTS ولا في STORE-CONFIGURED FACTS. القاعدة الصارمة: أي ادعاء عن ثبات يجب أن يستند للبيانات المتاحة أو لاسم العطر المحدد.",
+        "expected": "كان المفروض إما أن يعيد كلام العميل بصيغة تأكيد (مثلاً \"انت قلت مكتوب 8 ساعات\") أو يقول بوضوح أنه لا توجد بيانات مفصلة الآن ويطلب اسم الطلب/العطر ليتحقق من معلومات المنتج أو سياسـة الاستبدال."
+      },
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "لم يذكر سياسة الاستبدال/الضمان المتوفرة في المتجر.",
+        "why_wrong": "في STORE-CONFIGURED FACTS هناك سياسة استبدال واضحة (ضمان الاستبدال لمدة يومين، شروط الاستبدال والاسترجاع). تجاهل ذكرها فقد ترك العميل بدون معلومات عملية لتقليل المخاطرة.",
+        "expected": "بعد الاعتراف بالمشكلة، كان يجب توضيح الخيارات الواقعية: شرح سياسة الاستبدال خلال يومين وشروطها، وطلب تفاصيل الطلب لتقييم إمكانية الاستبدال."
+      },
+      {
+        "severity": "medium",
+        "category": "objection",
+        "what": "قدم تفسيراً عاماً عن اختلاف الثبات بدلاً من الاعتماد على بيانات المحل أو اتباع خطوات تحقق عملية.",
+        "why_wrong": "التفسير \"الثبات بيختلف حسب نوع العطر والتركيبة\" مقبول كتعاطف، لكن السيناريو يطالب باستخدام بيانات مسجلة أولاً وعدم فتح المناقشة بتبريرات قد يشعر العميل أنها تبرير للمشكلة.",
+        "expected": "الأفضل أن يبدأ بالاعتذار الصريح ثم يسأل عن تفاصيل الشراء (تاريخ الاستلام، اسم العطر، رقم الطلب) ثم يشرح الخيارات وفق سياسة المتجر."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "لم يقدم اعتذاراً صريحاً أو لغة تهدئة أقوى مثل \"نأسف جدًا\".",
+        "why_wrong": "الرد صحيح تعاطفياً لكنه بدأ بـ'فعلاً ده شيء مزعج' بدلاً من 'نأسف جدًا على ده'؛ اعتذار صريح يناسب شكوى عن تجربة سيئة.",
+        "expected": "جملة افتتاحية أقوى: \"آسفين جدًا إن التجربة ما كانتش على مستوى توقعات حضرتك، خليني أساعدك فورًا.\""
+      },
+      {
+        "severity": "medium",
+        "category": "prompt",
+        "what": "لم يطلب بيانات عملية مهمة للتحقق (تاريخ الشراء/الاستلام، صورة للزجاجة/الملصق، رقم الطلب).",
+        "why_wrong": "من دون معلومات عن الشراء لا يمكن التأكد مما إذا كانت الشروط تسمح بالاستبدال (مثلاً سياسة الـ2 يوم) أو تحديد سبب قصر الثبات.",
+        "expected": "يطلب تفاصيل الطلب ويعرض خطوات عملية: إرسال صورة للزجاجة أو رقم الطلب، أو تحديد إذا كان يريد زيارة الستور لعمل فحص/استبدال."
+      }
+    ],
+    "salesperson_verdict": "مقبول كمحاولة أولية للتعاطف وتحويل العميل للستور، لكن كخطوة خدمة عملاء العملية غير مكتملة — المدير لن يقبل هذا الرد لوحده؛ مطلوب ذكر سياسة الاستبدال، طلب تفاصيل الشراء، وامتناع عن أي ادعاءات غير مدعومة.",
+    "id": "O2",
+    "category": "objection",
+    "persona": "longevity_worrier"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": 8,
+      "sales_effectiveness": 8,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "فاهم شكوك حضرتك، وده طبيعي لما بتتعامل مع عطور تركيب. — مباشرة اعترف بالشك وهدأ العميل بدل الإنكار.",
+      "Chloe Eau de Parfum تركيب من عندنا، متاح بحجمين 50 و90 ملي — بيان واضح ومباشر لحالة المنتج ومتوافق مع بيانات المتجر والداتابيس.",
+      "الـ90 ملي هو الأفضل من حيث القيمة لأن سعر الملي فيه أقل. — تفسير منطقي مدعوم بالأسعار المسجلة (50=692، 90=1058).",
+      "للأسف مش متوفر منه زجاجة أوريجينال حالياً. — صياغة متوافقة مع قاعدة المتجر (غياب نسخة أوريجينال مدعوم بحقل الأحجام).",
+      "لو حابب تجرب العطر بنفسك قبل الشراء، ياريت تشرفنا في الستور وتجرب كل العطور براحتك. تحب أعرفك على العنوان؟ — دعوة مناسبة لتقليل مخاطر الشك والانتقال للمتجر الحقيقي."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "لم يوصل نسبة التطابق المدعومة من المتجر كوسيلة للتطمين",
+        "why_wrong": "توجيه السيناريو وحقائق المتجر يشيران إلى ضرورة الإقرار بأن المنتجات 'تركيب' وإيضاح نسبة التطابق المصرح بها من المتجر (business_facts و StaticFAQ تحتويان على أرقام تقريبية: 90% و95%). المكالمة تجاهلت ذكر أي رقم مما ضيع فرصة لطمأنة العميل بناءً على حقائق المتجر.",
+        "expected": "كان يجب أن يقول نصًا واحدًا مدعومًا من الـ STORE-CONFIGURED FACTS مثل: 'العطور تركيب من عندنا وتطابقها بتوصل لحوالي 90–95% حسب النوع' (أو صيغة موحدة يطبقها المتجر)، لتقليل القلق دون اختراع أرقام."
+      },
+      {
+        "severity": "low",
+        "category": "recommendation",
+        "what": "لم يقدم تفاصيل أسعار أو أمثلة عملية لتأكيد خطاب 'قيمة الـ90 مل أفضل'",
+        "why_wrong": "الوكيل ادّعى أن 90 مل أفضل من حيث القيمة، وهو ادعاء صحيح نسبةً للأسعار الموجودة في الداتا، لكن لم يعرض الأرقام (692 و1058) أو حساب سعر/مل لزيادة الشفافية والقبول لدى العميل الشكّاك.",
+        "expected": "أفضل بائع يظهر الأرقام بسرعة: 'الـ50 بـ692 والـ90 بـ1058، يعني سعر الملي في الـ90 أقل — لو تحب أحسبه لك.'"
+      },
+      {
+        "severity": "low",
+        "category": "objection",
+        "what": "لم يتطرق إلى سياسات الاستبدال/الضمان المتعلقة بمخاوف الأصالة",
+        "why_wrong": "عميل يقلق من الأصالة قد يحتاج لطمأنة عملية (سياسة الاسترجاع أو تجربة داخل الستور). المتجر يملك سياسات استبدال/ضمان في الـ StaticFAQ لكنه لم يُستعمل لتهدئة المخاوف.",
+        "expected": "الإشارة السريعة إلى سياسة الاستبدال أو فرصة تجربة داخل المتجر أو أن بعض الزجاجات الأوريجينال قابلة للاستبدال كان سيزيد الاطمئنان."
+      }
+    ],
+    "salesperson_verdict": "مقابلة جيدة للاعتراض — قال الحقيقة مباشرة ودعا العميل للتجربة بالستور، لذا مقبول من مدير المبيعات، لكن يحتاج تحسين: ذكر نسبة تطابق المتجر المدعومة وإضافة أرقام أو سياسة استبدال لتعزيز الاطمئنان. ",
+    "id": "O3",
+    "category": "objection",
+    "persona": "authenticity_worrier"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 6,
+      "similarity_accuracy": null,
+      "product_accuracy": 6,
+      "confidence_calibration": 3,
+      "objection_handling": 7,
+      "sales_effectiveness": 8,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 6
+    },
+    "what_worked": [
+      "«فاهم حضرتك، السعر فرق كبير فعلاً.» — اعترف بالاعتراض وظهر تعاطف.",
+      "«الـ 90 ملي من Fahrenheit سعر الملي فيه 13.3 جنيه» — أعطى تفصيل رقمي واضح مدعوم بالسعر الموجود في قاعدة البيانات (1200 جنيه لـ90 مل).",
+      "«عطر رجالي لفصل الشتا والسهرات، ثابت وقوي في الفوحان» — صفات مدعومة ببيانات الموسم، المناسبة، الثبات والفوحان من قاعدة البيانات.",
+      "«لو حابب تبدأ بحاجة أرخص تناسب استخدام يومي أو صيفي، ممكن أشوف لك حاجة مناسبة في حدود ميزانيتك. تحب؟» — فتح باب لحل عملي ومتابعة دون ضغط."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "data",
+        "what": "تعميم غير مدعوم عن المنتجات بـ≈500 جنيه",
+        "why_wrong": "الوكيل قال: «أما العطور اللي سعرها حوالي 500 جنيه غالباً بتكون خفيفة أو لفصول تانية.» لا توجد أي حقيقة في DATABASE FACTS أو STORE-CONFIGURED FACTS تدعم هذه المقارنة العامة بين شريحة السعر 500 والعطور الأغلى. القاعدة تمنع اختراع فروق غير مسجلة (Rule 4).",
+        "expected": "ذكر الفروق المسجلة فقط (مثلاً السعر الفعلي لزجاجة 90 مل من Fahrenheit = 1200 وحساب سعر الملِّي) واظهار قبول أن الخيار الأرخص قد يكون أنسب للعميل، بدون اختراع مميزات/عيوب عامة لشريحة سعرية."
+      },
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يقدم بدائل محددة أو بيانات متجرية مساندة",
+        "why_wrong": "العميل أشار لسعر 500، والرد اكتفى بعرض نية للبحث عن خيار أرخص بدون اقتراحات فعلية أو أمثلة من نطاق أسعار المتجر (الذي يذكر أن الأسعار تبدأ من 450). كان من الممكن ذكر نموذج فعلي أو عرض زجاجة 50مل/90مل متوفرة ضمن النطاق.",
+        "expected": "اقتراح بدائل حقيقية ضمن المتجر أو ذكر أن عندنا خيارات تبدأ من 450 جنيه، أو عرض إرسال أمثلة/مقترحات محددة مع ذكر الأحجام المتاحة (50 و90 مل) أو دعوته للتجربة في الستور."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر أن منتجات المتجر هي 'عطور تركيب' مع بيان الفروقات",
+        "why_wrong": "STORE-CONFIGURED FACTS تطلب توضيح أن العطور في المتجر 'تركيب' وأن التطابق يصل لنسبة معينة عند السؤال عن الأصلي/التركيب. حتى لو العميل لم يسأل صراحة، ذكر أن لدينا تركيبات وبداية الأسعار (450) كان سيعزز الشفافية.",
+        "expected": "عند مناقشة السعر، ذكر أن منتجاتنا 'عطور تركيب' وبإمكان ذكر أن الأسعار في المتجر تبدأ من 450 لتوضيح سبب اختلاف الأسعار بشكل شفاف."
+      }
+    ],
+    "salesperson_verdict": "مستوى مقبول — فهم الاعتراض وتعاطف معه وحسب سعر الملِّي وفتح خيار متابعة. لكن لا يُقبل اختراع فروق بين شريحتين سعريتين؛ مطلوب تدريب على الالتزام فقط بالحقائق المسجلة وتقديم بدائل محددة أو دعوة صريحة للتجربة بالستور.",
+    "id": "O4",
+    "category": "objection",
+    "persona": "price_sensitive"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 9,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": 10,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "Agent accepted the customer's 'هفكر' gracefully: \"تمام يا فندم، خذ وقتك في التفكير.\"",
+      "Offered a single, non-pushy concrete hook to try in-store: \"لو حابب تجرب العطور بنفسك قبل ما تختار، إحنا موجودين في الستور وجاهزين نستقبلك.\"",
+      "Kept the door open for future help without repeating the same recommendation: \"لو حابب أعرفك على العطور المناسبة للسهرات لما تكون جاهز، تحت أمرك.\""
+    ],
+    "failures": [],
+    "salesperson_verdict": "مقبول — تعامل مناسب للاعتراض 'هفكر'. أحسنِت عدم الضغط وتقديم دعوة واقعية للستور كـحافز واحد. يمكن متابعة لطيفة لاحقًا لو رغبنا.",
+    "id": "O5",
+    "category": "objection",
+    "persona": "indecisive"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 9,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 6
+    },
+    "what_worked": [
+      "قدّم السعر المطلوب مباشرة: \"الـ 90 ملي من Dior Sauvage بـ 944 جنيه، وفيه كمان الـ 50 ملي بـ 642 جنيه\" — الأرقام مطابقة لقاعدة البيانات.",
+      "قدّم خيار متابعة البيع بدعوة بسيطة وغير ملحة: \"تحب أجهزلك الحجم اللي يناسبك؟\" — خطوة بيع مناسبة للعميل الجاهز للشراء.",
+      "الأسلوب طبيعي ومصري: استخدام \"لو حابب\" و\"تحب أجهزلك\" مناسب لزبون جاهز."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "ذكر \"زجاجات أوريجينال 100 و200 ملي\" بدون توضيح وضع المنتج (تركيب vs أوريجينال) وبصياغة قد توحي بتوفر أوريجينال دون الامتثال لصيغة المتجر.",
+        "why_wrong": "قواعد المتجر تشترط صياغة محددة عند الحديث عن الأصلي/التركيب: العطور عندنا \"عطور تركيب\" ومسموح القول \"متاح لبعض البرفانات زجاجات أوريجينال\" مع توضيح أن العطر تركيب من عندنا؛ الوكيل لم يذكر أن العطر تركيب ولم يقل الصيغة المصرح بها.",
+        "expected": "صياغة واضحة مثل: \"العطر تركيب من عندنا، ومتاح لبعض الإصدارات زجاجات بأشكال أوريجينال — بالنسبة لسوفاج فيه زجاجات أوريجينال 100 و200 ملي\" أو تجنّب ذكر الأوريجينال إلا بصياغة المتجر."
+      },
+      {
+        "severity": "low",
+        "category": "product",
+        "what": "لم يذكر أسعار زجاجات الأوريجينال رغم أن قاعدة البيانات تتضمن أسعارها (100ml و200ml).",
+        "why_wrong": "قاعدة البيانات تظهر original 100ml=1200EGP و original 200ml=1623EGP. ذكر الأحجام بدون الأسعار يترك فجوة معلومات عند عميل يسأل عن السعر فقط.",
+        "expected": "إذا ذُكرت زجاجات أوريجينال فاذكر أسعارها أو لا تذكرها على الإطلاق. مثال مقترح: \"والأوريجينال 100 مل بـ1200 جنيه، و200 مل بـ1623 جنيه — مع العلم العطر تركيب من عندنا\"."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "فرصة لتقوية الترشيح والالتحاق بالبيع ضاعت — لم يذكر لماذا 90 مل هو الخيار الموصى به (قيمة/توفير/مخزون).",
+        "why_wrong": "في سيناريو مشتري جاهز، البائع الخبير يقود بالـ 'value-pick' مع سبب موجز لتشجيع القرار. الرد ذكر الأسعار لكنه لم يعزّز سبب اختيار 90 مل للشراء.",
+        "expected": "إضافة سطر قصير: \"الـ90 ملي أفضل قيمة لو هتستخدمه يومياً\" أو تقديم اقتراح بديل سريع (مثلاً 50 مل لو تجربة أولى أو هدية)."
+      }
+    ],
+    "salesperson_verdict": "مقبول كلفة أولية — البائع فهم الطلب وأجاب بالسعر وفتح خطوة لإكمال الطلب، لكن يحتاج تعديل بسيط في الصياغة حول الأوريجينال والتأكيد أن العطر تركيب، وإضافة أسعار أو تفسير قصير لتعزيز البيع.",
+    "id": "P1",
+    "category": "purchase",
+    "persona": "ready_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": 9,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "فهم واضح للطلب: «1 × Ambero (90ml) بـ 1180 جنيه» — المعلومة مطابقة لقاعدة البيانات.",
+      "لم يُعاد سؤال العميل عن بيانات سبق وأدّاها — الاسم وأرقام الموبايل أُدرجت في الملخّص.",
+      "العرض قدم ملخّص كامل للطلب مع الإجمالي قبل طلب التأكيد: «الإجمالي: 1180.00 جنيه. كل البيانات كده تمام ونأكد الطلب؟»",
+      "الأسلوب طبيعى ومصرى: استخدام رموز وتراكيب مألوفة («تمام، راجع معايا تفاصيل الطلب كده:»)."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يُطلب أو يُقدّم أسلوب الدفع/تعليمات العربون قبل طلب التأكيد",
+        "why_wrong": "قواعد المتجر الصريحة تنص على أنه لتأكيد وشحن الأوردر يجب تحويل عربون لا يقل عن ٢٥٠ج أو الدفع كاملًا، ويُطلب إرسال سكرين شوت بالتحويل. المحادثة انتهت بطلب تأكيد دون توجيه العميل لكيفيّة تأكيد الطلب مالياً.",
+        "expected": "بائع خبير يسأل عن طريقة الدفع ويعطي تعليمات العربون (مثلاً: رابط الانستاباي أو خيار دفع عند الاستلام، ومطالبة بسكرين شوت التحويل) قبل تأكيد نهائي للطلب."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يتم إعلام العميل بتكلفة الشحن المقدّرة أو زمن التوصيل عند طلب التأكيد",
+        "why_wrong": "معلومات المتجر تتضمن مصاريف شحن تقريبية (50-60 جنيه) ومدة توصيل داخل مصر 2-4 أيام عمل، وهذه معلومات مفيدة ومرتفعة الأثر على قرار العميل لكنها لم تُذكر.",
+        "expected": "ذكر تقدير مصاريف الشحن والمدة المتوقعة (مثلاً: «مصاريف الشحن عادة 50-60ج والتوصيل خلال 2-4 أيام») قبل أو مع طلب التأكيد لزيادة الشفافية."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "لم يُعرض تأكيد تفضيل الاستلام من الفرع أو الرغبة في تجربة العطر بالستور",
+        "why_wrong": "المتجر لديه فرع حقيقي وترحيب واضح بالزيارة لتجربة العطور، والعميل لم يُعرض عليه خيار الاستلام من الفرع أو الحضور للتجربة قبل الإرسال.",
+        "expected": "البائع يعرض خيار الاستلام من الفرع أو الدعوة للتجربة مع إعطاء عنوان المتجر حال عبّر العميل عن الرغبة."
+      }
+    ],
+    "salesperson_verdict": "الرد جيد ومهني — جمع كل البيانات وقدم ملخص وإجمالي بشكل صحيح. لكن كبائع أولى إضافة خطوة المصاريف/العربون وطريقة الدفع أو عرض خيارات الاستلام قبل تأكيد الطلب النهائي.",
+    "id": "P2",
+    "category": "purchase",
+    "persona": "ready_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 9,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 10
+    },
+    "what_worked": [
+      "Agent correctly applied the customer's change: \"2 × Oudora\" — updated quantity immediately.",
+      "Agent asked the only missing detail (size): \"تحب 50 ملي ولا 90 ملي؟\" which is the necessary next question.",
+      "Tone is natural and Egyptian: short, friendly phrasing with an emoji — fits a quick sales flow."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "ux",
+        "what": "Repeated reply flagged (95% similar to previous message) — felt robotic and didn't advance the order beyond asking the same question again.",
+        "why_wrong": "Code flagged the reply as almost identical to the previous turn. The customer changed quantity and needed explicit acknowledgement plus next actionable info (price/confirmation), not just a repeated size question in the same form.",
+        "expected": "Explicitly acknowledge the change and move the sale forward in one sentence: e.g. \"تمام خَليتها 2 بأسم Oudora — هتحبهم 50 ولا 90؟ لو 90 يبقالك 2 × 988 = 1976ج، تقدر تأكد بدفعة عربون 250ج أو كامل\""
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "Missed immediate opportunity to present price and a relevant promotion for buying two.",
+        "why_wrong": "Database/store facts include exact prices (50ml=514EGP; 90ml=988EGP) and a store offer: \"الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\". The agent didn't mention prices or that promo — a buyer who just increased quantity expects price/offer info next.",
+        "expected": "State price and applicable promotions immediately after confirming quantity: e.g. quote 50ml/90ml prices and mention the two-90ml promo so the customer can decide fast."
+      },
+      {
+        "severity": "low",
+        "category": "prompt",
+        "what": "Did not confirm whether both bottles should be the same size or mixed.",
+        "why_wrong": "Asking \"تحب 50 ملي ولا 90 ملي؟\" implies both are the same but doesn't explicitly confirm. The customer might want 1×50 + 1×90 or two different scents/sizes.",
+        "expected": "Clarify: \"تقصد زجاجتين بنفس الحجم ولا تحب مزيج (مثلاً واحدة 90 ومجموعة 50)؟\" then proceed."
+      }
+    ],
+    "salesperson_verdict": "مقبول كخطوة أولية — الوكيل فهم وطبّق تغيير الكمية بسرعة وبطريقة ودية، لكن لم يستغل الفرصة لإغلاق أسرع (سعر، عرض، تأكيد أحجام)؛ كمدير مبيعات أقبله مع ملاحظة التدريب على ذكر السعر والعروض والتأكيد الوااضح للحجم.",
+    "id": "P3",
+    "category": "purchase",
+    "persona": "ready_buyer"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "عرضت خيارات حقيقية ضمن الميزانية: \"Stronger With You الـ50 ملي بـ400 جنيه، وDior Homme Sport الـ50 ملي بـ450 جنيه، وكمان Stronger With You Intensely الـ50 ملي بـ450 جنيه، وStronger With You Absolutely الـ50 ملي بـ480 جنيه.\" (الأسعار مدعومة من قاعدة البيانات).",
+      "قدمت تمييزًا مفيدًا للعميل بين توجهات الريحة: \"لو بتحب ريحة دافية وتوابل، أنا أرشحلك Stronger With You أكتر، أما لو عايز ريحة منعشة وحيوية، Dior Homme Sport خيار كويس.\" — التمييز مدعوم بملفات العطور في قاعدة البيانات.",
+      "لم تطلب الميزانية مرة أخرى واحترمت القيد المالي، وهو المطلوب في السيناريو."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "قدمت أربع توصيات بدل 1-2 كما يشير معيار البائع الكبير في السيناريو.",
+        "why_wrong": "المطلوب: \"Correct move: recommend 1-2 real perfumes with real prices at or under 600\"؛ هنا اقترحت 4 عطور رغم أن العميل طلب حل سريع وبسيط ضمن 600 جنيه.",
+        "expected": "اختيار واحد أو اثنين كأفضل خيارات واضحة مع سبب مختصر، مثلاً: \"لو عايز حاجة يومية دافئة خليك على Stronger With You 50مل بـ400، ولو عايز حاجة منعشة للنهار اختار Dior Homme Sport 50مل بـ450\"."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم تُعرض خطوة متابعة للاقتراب من البيع (دعوة للستور أو اقتراح تجربة أو سؤال ضيق لتفضيل الريحة).",
+        "why_wrong": "الزبون أعطى ميزانية واضحة — فرصة للاقتراب من البيع عبر دعوة بسيطة: تجربة في الستور أو سؤال إذا يحب نهاري/مسائي أو ثبات/قوة.",
+        "expected": "بعد التوصية، يسأل البائع شيء قصير أو يعرض زيارة: \"تحب تيجى تجربهم فى الستور؟ نشرفك\" أو \"تحب أرسللك صور الزجاجات والأسعار أو أصل للخدمة؟\""
+      }
+    ],
+    "salesperson_verdict": "Turn مقبول من حيث الدقة والأسعار — البائع عرف الطلب وقدم خيارات مدعومة، لكن كمدير مبيعات أطلب تقليل الاقتراحات إلى 1-2 واضحة وإضافة دعوة بسيطة للتجربة أو خطوة متابعة لزيادة فرصة البيع.",
+    "id": "R1",
+    "category": "recommendation",
+    "persona": "hard_budget"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 8,
+      "confidence_calibration": 7,
+      "objection_handling": 8,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 8
+    },
+    "what_worked": [
+      "المندوب فهم المتطلبات بسرعة ورد بتوصية واضحة: \"Dior Homme Intense هو اختيار ممتاز ليك\" — مناسب (ذكر مناسبتها ومدة الثبات بدقة).",
+      "استخدم بديل مناسب من الكتالوج الداخلي وعلّم العميل بملاحظة مهمة: \"Ambero ... لكنه ممكن يكون أثقل شوية\" — أعطى خيارين (المرشح والبديل) مع تحذير عن الثقل.",
+      "الأسلوب طبيعي ومصري: \"أنا أرشحلك Dior Homme Intense أكتر 👌\" — ودود ومباشر، بيقرب العميل للشراء."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "product_accuracy",
+        "what": "وصف Dior Homme Intense بأنه \"خفيفة مش خانقة\" كحقيقة مطلقة.",
+        "why_wrong": "قواعد البيانات تذكر Dior Homme Intense projection=Moderate وlongevity=8 hours وoccasion=Evening/Formal، لكنها لا تذكر نصاً أنه \"خفيفة\" أو \"مش خانقة\". تحويل \"projection=Moderate\" إلى عبارة قاطعة \"مش خانقة\" هو تعميم لم يتم دعمه حرفياً في بيانات المتجر/القاعدة.",
+        "expected": "يُذكر الحقائق المدعومة أولاً (ثبات 8 ساعات، مناسِبة للمساء، إسقاط متوسط)، ثم تضاف ملاحظة مؤدّبة/استدراجية مثل: «الإسقاط متوسط عادةً وما بيبقى خانق، لكن لو تحب تتأكد تشمه عندنا في الستور»."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يعرض المندوب خطوات متابعة واضحة مثل الأحجام المتاحة أو السعر أو دعوة للتجربة في الستور أو سؤال تفضيلي بسيط.",
+        "why_wrong": "المحادثة انتهت بعد التوصية بدون سؤال متابعة (مثلاً: تحب 50 ولا 90؟ تحب أحتفظلك زجاجة؟ تحب تيجي وتجربها؟)، بينما STORE-CONFIGURED FACTS توصي بالترحيب بالعميل في الستور وتوضيح الأحجام المتاحة والأسعار.",
+        "expected": "بعد التوصية، يسأل مندوب مخاريط البيع الناجحين: «تحب أجيبلك الحجم 50 ولا 90؟ أو تيجي تشمه عندنا في الستور؟» ويعرض السعر/التوفر أو يحجز زجاجة لو العميل مهتم."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر المندوب أن العطور عادةً \"تركيب\" من المتجر (السياسة المتاحة في STORE-CONFIGURED FACTS).",
+        "why_wrong": "إذا عميل مهتم بشراء أو يسأل عن أصلي/تركيب، يجب استخدام الصياغة المصرح بها. هنا العميل لم يسأل صراحة، لكن ذكر صراحة أن بعض العطور تصميم المتجر (Ambero) كان صحيحاً، وكان من الأفضل أن يُذكر بصيغة الشركة عند الاقتضاء.",
+        "expected": "لو الموضوع يتجه للشراء أو العميل يسأل، يوضح المندوب الصيغة المصرح بها: «العطور عندنا تركيب بجودة عالية... وبعض العطور متاحة بزجاجات أوريجينال» حسب الحاجة."
+      }
+    ],
+    "salesperson_verdict": "قبول مشروط — المندوب فهم العميل واختر منتجًا مناسبًا وقدم بديلاً مع تحذير سليم، لكن كان يمكن تحسين الدقة في صياغة خواص الرائحة (لا تقدم تعميمات غير مدعومة حرفياً) وإضافة خطوة متابعة عملية (سؤال عن الحجم/السعر أو دعوة للتجربة) لتقوية فرصة البيع.",
+    "id": "R2",
+    "category": "recommendation",
+    "persona": "performance_seeker"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 9,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "عندنا كذا عطر حريمي مسكر وفيه ريحة حلوة تناسب ميزانيتك، زي Good Girl الـ50 ملي بـ650 جنيه، وLa Vie Est Belle الـ50 ملي بـ669 جنيه. كمان Black Opium والـ50 ملي بـ677 جنيه خيار ممتاز.",
+      "أنا أرشحلك Good Girl أكتر لأنه فيه مزيج من القهوة والفانيليا اللي هتحسسك بالحلويات بشكل واضح، وفيه ثبات وفوحان قوي للسهرات."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يدعِ العميل لتجربة العطر في الستور أو يقدّم خطوات سهلة للطلب",
+        "why_wrong": "في STORE-CONFIGURED FACTS الصريح: \"لو العميل طلب يجرب أو يشم العطور، رحّب بيه...\" ووجود فرع فعلي يجب استغلاله لرفع احتمالية البيع. العميل لم يُعرض عليه زيارة الستور أو تجربة العينات، ولا عُرضت طرق الطلب/الدفع أو رابط الموقع بعد ذكر عروض وأسعار.",
+        "expected": "البائع الخبير كان سيسأل هل تحبي تجربيهم في الستور أو يعرض رابط الموقع وطرق الطلب (مثلاً: تقدر تطلبي من خلال موقعنا أو البوت الذكي) ويعرض خيارات الدفع أو يسأل لو تحبي أجهزلك أوردر."
+      },
+      {
+        "severity": "low",
+        "category": "recommendation",
+        "what": "لم يُذكر كل البدائل الجيدة المتاحة ضمن الميزانية",
+        "why_wrong": "قائمة الـDATABASE تتضمن Vanilo (50ml=607) وJasmino (50ml=578) اللذان لهما خواص gourmand (Praline, Tonka, Vanilla أو Vanilla في القاعدة)، وهما مناسبان لطلب 'مسكر اوي'. عدم ذكرهما يقلل من تنوّع العرض.",
+        "expected": "بائع متمرس يذكر 3–5 خيارات ضمن الميزانية، خصوصاً البدائل الأرخص أو المحلية، ويشرح باختصار الفرق بينها."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "لم يطرح أسئلة متابعة مفيدة بعد عرض الخيارات",
+        "why_wrong": "العميل قال 'مسكر اوي' وميزانيته، لكن لم يُسأل عن مناسبة الاستخدام (يومي أم سهرات) أو إذا كان يفضّل ريحة قهوة/شوكولاتة/براولين تحديدًا، مع أن ذلك يمكن تحسين الاقتراح.",
+        "expected": "يسأل بائع محترف سؤالاً واحداً توضيحياً مثل: 'تحبي للنهار ولا للسهرات؟ تحبي قهوة/براولين/شيكولاتة أكتر؟' ليخصّص التوصية."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر أن المنتجات هي 'عطور تركيب' أو علامة المتجر",
+        "why_wrong": "STORE-CONFIGURED FACTS تنص على أن العطور تركيب ويجب توضيح ذلك عند الاستفسار عن الأصلية. هنا لم تُقدّم معلومة عن نوع المنتج، وإن لم يُسأل العميل فلا خطأ فادح لكن ذكره مبكراً يعزز الشفافية.",
+        "expected": "لوحظ أفضل ممارسات البيع بالمتجر: عند التوصية يُمكن إضافة جملة قصيرة مثل: 'العطور عندنا تركيب Perfamix بجودة عالية وسعر أحسن' لطمأنة العميل وتقوية الثقة."
+      }
+    ],
+    "salesperson_verdict": "قبول مع ملاحظات: الرد مناسب ودقيق من ناحية الأسعار والاختيارات الجوارمية، لكن كمدير مبيع أطلب دعوة واضحة للتجربة أو رابط للطلب وذكر بدائل إضافية والقيام بسؤال متابعة واحد لتحسين التحويل.",
+    "id": "R3",
+    "category": "recommendation",
+    "persona": "sweet_lover"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "Agent correctly offered niche options: \"عندنا Tom Ford Ombre Leather وBaccarat Rouge 540\" (both exist in the database).",
+      "Good, accurate scent summaries tied to the DB: \"Ombre Leather ريحته جلدية دافيه وقوية\" and \"Baccarat Rouge 540 فريحته أمبري وزهرية مع لمسة من الزعفران\" (matches DB top/mid notes and occasion).",
+      "Good next-step question to personalize: \"العطر لراجل ولا لست؟\" — moves conversation toward a sale."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يقدم خيارات 'غير منتشرة' أو عرض خاص بالمحل/طبخات حصرية",
+        "why_wrong": "الزبون طلب \"نيش مش منتشره\" صراحة. المندوب عرض اثنين من النيش المعروفة (Ombre Leather وBaccarat Rouge 540) بدل ما يبرز عطور أندر أو האקסקלוסיב של المتجر كما يتطلب معيار السيناريو.",
+        "expected": "البائع الفاخر كان يعرض عطور أندر/ألترا-نيش أو يقدّم blends حصرية من المتجر مع تمييز واضح لماذا هي نادرة، ويسأل تعريف العميل لـ\"مش منتشره\" لو مش واضح."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "ما عرضش دعوة لتجربة في الستور أو ذكر عنوان الستور بعد إبداء الاهتمام",
+        "why_wrong": "حسب STORE-CONFIGURED FACTS، الستور يرحب بالتجربة في المحل ويجب تزويد العنوان فوراً لو أبدى العميل رغبة بالزيارة. المندوب ما عرضش دعوة مباشرة لتجربة أو ذكر موقع المتجر عندما كان مناسبًا لتعزيز الموثوقية والفرصة للبيع.",
+        "expected": "لو العميل أظهر اهتمام، بائع خبير يدعوه لتجربة العينات بالمحل ويعطي العنوان (المقطم...) فورًا، أو يعرض إرسال عينات/معلومات طلب."
+      },
+      {
+        "severity": "low",
+        "category": "intent",
+        "what": "ما أكدش على عبارة العميل 'ومش مهم السعر' أو ما استغلها للتركيز على نُخبة فاخرة أكثر",
+        "why_wrong": "العميل بيقول إن السعر مش مهم؛ المندوب لم يعكس هذا التأكيد في الاقتراحات أو يسأل لو يرغب في استكشاف قطع أندر أو أحجام أورجنال متاحة.",
+        "expected": "السيِّال يرد بتأكيد على أن السعر مش عائق ويعرض خيارات فاخرة/أورجنال أو أحجام خاصة إن وجدت."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر بشكل طوعي أن المنتجات من عندنا \"تركيب\" رغم أن هذه معلومة مخزنة في STORE-CONFIGURED FACTS",
+        "why_wrong": "العميل لم يسأل مباشرة عن أصلي ولا تركيب، فعدم ذكرها ليس خطأ فادح، لكن أفضل ممارسة الشفافية في مرحلة لاحقة أو عند السؤال هو تأكيد أن العطور تركيب ومتوفرة زجاجات أوريجينال لبعض العطور حسب سياسة المتجر.",
+        "expected": "عند سؤال العميل أو قبل الإغلاق، توضيح أن العطور 'تركيب' والخيارات المتاحة من أوريجينال للشفافية وبناء الثقة."
+      }
+    ],
+    "salesperson_verdict": "منديوب محترف وقدم اقتراحات صحيحة وذات صلة — لكن كرئيس مبيعات أريد أن أراه يعرض قطع أندر أو يبرز blends حصرية للعميل اللي طالب \"مش منتشره\"، ويعرض تجربة المتجر أو يؤكد مرونة السعر قبل التقدم للخطوة التالية.",
+    "id": "R4",
+    "category": "recommendation",
+    "persona": "luxury"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 9,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 9
+    },
+    "what_worked": [
+      "قال: \"عندنا Dior Sauvage وLuna Rossa Carbon، الاتنين فيهم ambroxan وlavender\" — مطابقة مباشرة لمواصفات القاعدة والوسط في قاعدة البيانات (Sauvage: mid=Lavender, base=Ambroxan; Luna Rossa Carbon: mid=Lavender, base=Ambroxan).",
+      "حدد اختلافات مناسبة مدعومة بالبيانات: وصف Sauvage بأنه أقوى وثابت (DB: projection=Strong, longevity=8–10 hrs, season=All Seasons) ووصف Luna Rossa Carbon بأنها أخف وأنسب للربيع/الصيف (DB: season=Spring/Summer, projection=Moderate).",
+      "أعطى توصية واضحة: رشّح Dior Sauvage للطلب لأن العميل طلب شيء ثابت وقوي ومناسب للشغل — ومبرر الوصاية يتوافق مع حقائق القاعدة."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يذكر مواقع الجزيئات (placement) بشكل صريح ولا شرح كيف يؤثر ambroxan على الريحة",
+        "why_wrong": "المستخدم معطى كـ persona='expert' ويتوقع ذكر جزيئات فعلية وتفاصيل تقنية؛ بينما قاعدة البيانات تبين أن Ambroxan في Dior Sauvage وLuna Rossa Carbon هو في القاعدة وLavender في الوسط/المنتصف، فكان المفروض الإشارة لذلك لتقوية التوصية.",
+        "expected": "ذكر أن Lavender تظهر في الطبقات الوسطى في كلا العطرين بينما Ambroxan جزء من القاعدة (مسؤول عن الدفء والدوام)، وشرح تأثير ذلك على تجربة المكتب (مثلاً كيف Ambroxan يعطي طابع خامسي/خشبي ويدعم الثبات)."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يسأل أي سؤال متابعة مهم (ميزانية، تفضيل للثبات/خفة، حجم، أو رغبة في تجربة بالستور)",
+        "why_wrong": "العميل لم يذكر ميزانية أو إذا يفضل شيء خفيف جداً للمكتب؛ القفز مباشرة للتوصية يمنع تخصيص أفضل للعرض. حسب STORE-CONFIGURED FACTS مطلوب تشجيع العميل على تجربة في الستور وإعطاء تفاصيل الأحجام لو سأل.",
+        "expected": "سؤال موجز: \"تحبها خفيفة جداً ولا ثابتة؟ عندك ميزانية محددة؟ تحب تجي تجرب في الستور؟\" ثم عرض أحجام/أسعار أو دعوة لتجربة في المحل."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر طبيعة المنتج كـ 'تركيب' أو توضيح وجود زجاجات أوريجينال لبعض العطور",
+        "why_wrong": "العميل لم يسأل صراحة عن أصلي/تركيب، لكن STORE-CONFIGURED FACTS توصي بكون الوكيل واضح عند الحاجة. عدم ذكرها الآن ليس خطأ فادح لكنه فرصة لبناء ثقة ضاعت.",
+        "expected": "لو العميل استفسر ثانية، أو كجزء من المتابعة، ذكر أن منتجاتنا 'عطور تركيب' مع إمكانية وجود زجاجات أوريجينال لبعض البرفانات."
+      },
+      {
+        "severity": "low",
+        "category": "human_feel",
+        "what": "الإجابات كانت موجزة جداً دون نبرة استشارية تقنية متوقعة من 'خبير'",
+        "why_wrong": "Persona يطلب مستوى خبير؛ العميل قد يرحب بشرح تقني أعمق (مثلاً ذكر bergamot top أو أثر nutmeg في Sauvage). إجابة موجزة صحيحة لكنها لم تعطي العمق المطلوب.",
+        "expected": "نقطة فنية أو اثنتين إضافيتين عن تركيب كل عطر، مثل: 'Sauvage أعلى بالbergamot ونوتات التوابل: يعظّم دور Ambroxan في القاعدة، بينما Luna Rossa Carbon أكثر معدنّية/معدنية بلمسة فلفل وملاحظات مائية.'"
+      }
+    ],
+    "salesperson_verdict": "التعامل مقنع ودقيق من ناحية الحقائق — الاختياران منطقيان ومبررين — لكن كبائع خبير كان يجب إضافة شرح تقني أقوى وطرح سؤال متابعة ودعوة لتجربة أو عرض الأحجام/الأسعار لزيادة فرص الإتمام. بصفتي مدير مبيعات: أقبل الرد كنقطة انطلاق لكن أطلب تحسين المتابعة التفصيلية.",
+    "id": "R5",
+    "category": "recommendation",
+    "persona": "expert"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": 8,
+      "product_accuracy": 9,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 5,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "قال: \"مفيش حاجة قريبة من Dior Sauvage بالظبط عندنا\" — صريح وواقعي ومناسب عند عدم وجود تطابق كامل.",
+      "قدّم خيارين واضحين: Luna Rossa Carbon و Ambero، وشرح الفرق في الاستخدام (يومي/خفيف vs ليلي/أقوى).",
+      "وصف Luna Rossa Carbon بأنه \"فيها لمسة من اللافندر والبرغموت\" — وصف متوافق مع حقائق قاعدة البيانات (top= Bergamot, Pepper; mid= Lavender).",
+      "وصف Ambero بأنه \"دافي وقوي مع توابل وفانيليا\" — يتوافق مع القاعدة (top=Cinnamon, Bergamot, Pink Pepper; base=Vanilla; season=Fall/Winter; projection=Strong).",
+      "الأسلوب طبيعي ومصري: لغة مصرية بسيطة ومباشرة، مش روبوتي."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "similarity",
+        "what": "لم يذكر صراحة الـ Ambroxan والـ Pepper كمبررات للشبه مع Sauvage.",
+        "why_wrong": "العميل صرّح بأنه يبحث عن شيء شبه سوفاج وذِكر داخليًا نوتات مثل ambroxan وpepper؛ في قاعدة البيانات Luna Rossa Carbon تحتوي على Pepper (top) وAmbroxan (base)، فعدم ذكرهما ضيّع فرصة لربط المنتج صراحة بما طلبه العميل.",
+        "expected": "كمبيون سينيور كان هيذكر النقاط المشتركة الواضحة: برغموت + لافندر + Pepper + Ambroxan، ويشرح إن الشبه 'فضفاض' لأن Luna Rossa أكثر مائية/معدنية بينما Sauvage أكثر خامة أمبروكسانية."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "لم يتم توجيه دعوة بسيطة للتجربة بالستور أو سؤال تفضيلات إضافية (نهار/ليل / أوريجينال/تركيب / ميزانية).",
+        "why_wrong": "وفقًا لحقائق المتجر، من الجيد جدًا تشجيع العميل على تجربة العطر في الستور ("
+      },
+      "expected_text_fixing_note_placeholder"
+    ],
+    "salesperson_verdict": "الرد مقبول من ناحية معلومات المنتج والصدق لكن ناقصه خطوات مبيعات مهمة؛ كمدير مبيعات أقبله كمبادرة أولية لكن أطالب متابعة سريعة (سؤال توضيحي ودعوة لتجربة أو عرض أحجام/أسعار).",
+    "id": "S1",
+    "category": "similarity",
+    "persona": "clone_hunter"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 8,
+      "similarity_accuracy": 8,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "\"لو بتدور على حاجة قريبة من 9PM، أنصحك بـ Le Male\" — المفروش صحيح: الممثل اختار عطرين من القايمة اللي فعلاً متقاربة سجلّياً مع 9PM (Le Male و Ambero).",
+      "\"لأنه فيه نوتات الفانيليا، التونكا بين، القرفة، والبرتقال\" — ذكر نوتات مشتركة موجودة في قاعدة البيانات لـLe Male (قرفة، تونكا، فانيليا، ووجود نغمة برتقالية/زهرية).",
+      "\"Ambero خيار ممتاز... أقرب للشتا والسهرات\" — الوصف متوافق مع حقائق القاعدة (Ambero: cinnamon, bergamot, vanilla; season=Fall/Winter; occasion=Evening).",
+      "نبرة ومخاطبة مصرية طبيعية وموجزة، وما في مبالغات أو وعود غير مدعومة بالبيانات."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "اختيار Le Male كترشيح أولي ممكن يكون أقل ملاءمة من Ambero كنظير لـ Afnan 9PM.",
+        "why_wrong": "المطلوب طبق السيناريو: 9PM وصفته \"apple/cinnamon/vanilla/tonka/amber — sweet spicy\"؛ Ambero يحتوى على cinnamon, bergamot, vanilla, amber (قاعدة البيانات) ويصنف كـoriental دافئ ومناسب لليل والشتا — هو أقرب في الطابع الحلو-الداخلي. Le Male يشارك نوتات مهمة لكنه طابعه fougère أبكر (mint, lavender) وهو أخف، فالمستخدم طلب \"زي 9PM\" ومن الأفضل تقديم الأقرب أولاً أو توضيح الفرق بوضوح أكبر.",
+        "expected": "بصفتك بائع خبير تقول بصراحة \"أقرب خيار عندي هو Ambero لأنه أقرب في الطابع الحلو والدافي للـ9PM، ولو تحب حاجة أخف يومية ممكن Le Male\" ثم توضح النوتات المشتركة مع كل واحد."
+      },
+      {
+        "severity": "medium",
+        "category": "sales",
+        "what": "مافيش دعوة واضحة للتجربة في الستور أو سؤال متابعة لتفضيلات العميل بعد الترشيح.",
+        "why_wrong": "قاعدة المتجر تؤكد الترحيب الشديد وتشجيع العميل على تجربة العطور في الستور، وعميل طلب شبيه محتمل يحب يشم أو يجرب. الرد اكتفى بالترشيح بدون عرض تجربة أو سؤال عن المفضلات أو الميزانية.",
+        "expected": "عرض دعوة للتجربة في المتجر فوراً (حسب STORE-CONFIGURED FACTS: 'يشرفنا في الستور تجرب كل العطور') أو سؤال بسيط: \"تحب أجيبلك نبدة من الاتنين تجربهم؟ ولا تفضل أبعتهملك للبيت؟\""
+      },
+      {
+        "severity": "low",
+        "category": "data",
+        "what": "استبدال 'Orange Blossom' بكلمة عامة 'البرتقال'.",
+        "why_wrong": "قاعدة البيانات تذكر 'Orange Blossom' كـmid في Le Male. القول 'البرتقال' قريب لغوياً لكنه أقل دقة من المصدر المحدد.",
+        "expected": "الالتزام بصياغة أقرب للبيانات: مثلا \"زهر البرتقال (Orange Blossom)\" أو ببساطة نقل النص كما في القاعدة."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "لم يُذكر أن العطور في المتجر 'تركيب' أو لم يُطمئن العميل حول نوع المنتج.",
+        "why_wrong": "الـ STORE-CONFIGURED FACTS تنصح بالوضوح عند السؤال عن أصلي ولا تركيب؛ حتى لو العميل لم يسأل صراحة، ذكر أن المنتج تركيب سيساعد بناء الثقة عند عرض بدائل أو أسعار.",
+        "expected": "لوحظ كخيار تحسيسي: \"العطور عندنا تركيب (Perfamix) بجودة زيت عالية لو حابب التأكيد أبلغك التفاصيل أو أوريك الزجاجات\"."
+      }
+    ],
+    "salesperson_verdict": "مقبول كدور أولي — البائع فهم الطلب واختار خيارات مدعومة بالبيانات وبلغة طبيعية، لكن كمدير ميداني أطالب بتحسين الترتيب (أعرض الأقرب أولاً: Ambero)، دعوة واضحة لتجربة في الستور أو متابعة بسيطة، ودقة أصغر بالمصطلحات.",
+    "id": "S2",
+    "category": "similarity",
+    "persona": "clone_hunter"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 7,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": 10,
+      "product_accuracy": 8,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "قال: \"مفيش حاجة قريبة من Baccarat Rouge 540 بالظبط عندنا\" — اعتراف صريح بعدم وجود تطابق تام، ده مناسب لطلب العميل.",
+      "اقترح بدائل مناسبة: \"Oudora اللي ريحته شرقية دافية وفيها زعفران\" — مطابق لبيانات القاعدة (Oudora: top=Saffron, نوع=oriental، occasion=Evening، projection=Very Strong).",
+      "اقترح خيار يومي/رسمي: \"Bleu de Chanel ... فيه خشب ياسمين ... أنسب للاستخدام اليومي والرسمية\" — مطابق لبيانات القاعدة (Bleu de Chanel: mid=Jasmine, base=Cedar، occasion=Office/Formal/Daily).",
+      "طرح سؤال مفيد للتخصيص: \"العطر لراجل ولا لست؟\" لتحديد التفضيل الجنسي."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يذكر Safrano كخيار بديل مع زعفران وطبعة شرقية",
+        "why_wrong": "قاعدة البيانات تظهر Safrano (top=Saffron, Cardamom; mid=Oud; base=Amber, Leather) الذي يشارك عناصر مهمة مع Baccarat Rouge 540 وقد يكون خيارًا مناسبًا للمشبّهات الشرقية، لكنه لم يُعرض.",
+        "expected": "قدّم أقرب البدائل المتاحة كلها التي تشترك بميزات رئيسية (مثلاً Oudora وSafrano) مع توضيح لماذا كل واحد مناسب أو مختلف."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "ما فيش دعوة صريحة لتجربة العطور في الستور أو ذكر طرق الطلب والأسعار/الأحجام المتاحة",
+        "why_wrong": "قواعد المتجر تنصح بالترحيب ودعوة العميل لتجربة العطور في الستور (STORE-CONFIGURED FACTS)، وبتوجد معلومات واضحة عن الأحجام (50/90 مل للتركيب) وأسعار ممكن ذكرها لو العميل مهتم.",
+        "expected": "بعد الاقتراح، اعرض دعوة لتجربة العطر في الفرع واذكر الأحجام المتاحة كخيار (50/90) أو عرض إمكانية الطلب أونلاين."
+      },
+      {
+        "severity": "medium",
+        "category": "constraint",
+        "what": "ما سألش عن تفضيلات إضافية مهمة زي الميزانية، إذا كان يفضل عطراً تركيباً في زجاجة 'أوريجينال'، أو قوة الثبات والتوقعات",
+        "why_wrong": "العميل قال بس 'عايز حاجة شبه Baccarat Rouge' لكن ممكن يكون عنده تفضيلات أخرى (ميزانية، حجم، رغبة بالأوريجينال). عدم الاستخراج يقلل من جودة التوصية.",
+        "expected": "اسأل سؤال أو اثنين لتصفية الخيارات: ميزانية تقريبية؟ حجم تفضله (50/90)؟ تحبها 'أوريجينال' بتغليف براند ولا لا؟ تحبها خفيفة ولا قوية؟"
+      },
+      {
+        "severity": "low",
+        "category": "product",
+        "what": "ادّعى بصيغة عامة 'مفيش حاجة قريبة ...' بدون اقتباس صريح من بيانات المتجر أو المنتج الذي يبرر ذلك",
+        "why_wrong": "القاعدة تسمح بالاستدلال من قائمة المنتجات، لكن عبارة عامة كهذه يمكن أن تبدو غير مدعومة بالمقارنة التفصيلية (وفي الواقع يوجد عطور تتشارك بمكونات مهمة مثل Safrano وOudora).",
+        "expected": "لو هتقول مفيش تطابق تام، ضيف تفسير قصير: 'مافيش تطابق تام لأن BR540 فيه saffron+amberwood+ambergris وبنلاقي تشابه جزئي في Oudora (زعفران) وSafrano (زعفران/عود)'."
+      }
+    ],
+    "salesperson_verdict": "مقبول — الموظف فهم المطلوب وصارح بعدم وجود تطابق تام وقدم بدائل منطقية وسأل سؤال متابعة مهم. لكنه كان ممكن يقوّي الدور بالعرض الكامل للبدائل (مثلاً Safrano)، والسؤال عن ميزانية/حجم، ودعوة واضحة لتجربة العطور في الستور.",
+    "id": "S3",
+    "category": "similarity",
+    "persona": "clone_hunter"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 9,
+      "similarity_accuracy": 6,
+      "product_accuracy": 9,
+      "confidence_calibration": 3,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 5
+    },
+    "what_worked": [
+      "سجل اقتِباس الوكيل: «عندنا عطرين قريبين من Lattafa Khamrah... Oudora ... و Safrano...» — قدّم فوراً بدائل مناسبة من الكاتالوج.",
+      "ذكر نوتات المتشابهة فعلًا: Oudora (زعفران، ورد، عود، عنبر) و Safrano (زعفران، ورد، عود، عنبر) — وهذا يتطابق مع حقول النوتات في قاعدة البيانات.",
+      "اختار ترشيح واضح: «أرشحلك Oudora أكتر لأنه يناسب الرجالة والستات مع بعض.» — يتطابق مع gender=unisex في سجل Oudora.",
+      "طرح سؤال متابع مفيد لتخصيص الاختيار: «العطر لراجل ولا لست؟»."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "similarity",
+        "what": "لم يوضح أن Lattafa Khamrah غير موجود في الكاتالوج وأن المقارنة مبنية على معرفة خارجية/بروفايل عام للعطر.",
+        "why_wrong": "قواعد السيناريو وصيغة التعامل المطلوبة تشترط أن يكون الوكيل صريحًا إذا كانت المقارنة مع عطر غير متوفر لدينا. في قاعدة البيانات لا يوجد مدخل لـ Lattafa Khamrah، والرد لم يذكر ذلك صراحة مما قد يضلّل العميل بأننا نبيع Khamrah أو أن المقارنة قائمة على منتج مخزّن عندنا.",
+        "expected": "كان المفروض يقول: «احنا ما عندناش Lattafa Khamrah في الكاتالوج — المقارنة هنا على البروفايل المعروف للعطر — وفيه في عندنا عطور تركيب تشبه البروفايل ده زي Oudora وSafrano» أو يقرّ بصراحة إنّه ما فيش مطابق تام لو ما كانش."
+      },
+      {
+        "severity": "medium",
+        "category": "confidence",
+        "what": "نبرة عرض التشابه جاءت كحقائق مؤكدة بدون تمييز بين معلومة من قاعدة البيانات وبين استنتاج/مقارنة خارجية.",
+        "why_wrong": "القواعد تمنع تقديم تقديرات أو تشبيهات كحقائق إذا كانت مبنية على معلومات خارجية غير مخزنة في قاعدة البيانات؛ التوصية كانت صحيحة لكن الوكيل لم يعكس مستوى اليقين أو مصدر المقارنة.",
+        "expected": "التوضيح البسيط «على حسب البروفايل المعروف للعطر ده...» أو «دا تقريب على نوتاته» كان يضمن معايرة ثقة أوضح للعميل."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يذكر صراحة أن منتجات المتجر هي 'عطور تركيب' عند المقارنة، مما قد يترك العميل مع انطباع خاطئ حول كوننا نبيع الأوريجنال.",
+        "why_wrong": "الـ STORE-CONFIGURED FACTS توصي بتوضيح أن العطور تركيب متاحة لدينا، خصوصًا عند مقارنة بعطر أصلي معروف. عدم ذِكر ذلك هنا يترك فجوة في الشفافية.",
+        "expected": "ذكر جملة قصيرة مثل «العطور عندنا تركيب (Perfamix) وموجودة بأصناف بتشبه الأوريجينال» عند تقديم بدائل مقابل عطر أصلي معروف."
+      }
+    ],
+    "salesperson_verdict": "الرد عملي وسريع وقدّم بدائل مناسبة من الكتالوج وفتح حوار جيد، لكنّ الوكيل فشل في الإفصاح المهم بأن Khamrah ليس عندنا وأن المقارنة مبنية على بروفايل خارجي — هذا يضُر بالثقة ويحتاج تصحيح فوري قبل إتمام البيع.",
+    "id": "S4",
+    "category": "similarity",
+    "persona": "clone_hunter"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 5,
+      "memory": 10,
+      "recommendation_quality": 3,
+      "similarity_accuracy": null,
+      "product_accuracy": 9,
+      "confidence_calibration": 8,
+      "objection_handling": null,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 7
+    },
+    "what_worked": [
+      "Agent clearly told the customer: \"في الوقت الحالي مش شايف العطر ده عندنا\" — correctly admitting the asked perfume isn't available in the catalogue.",
+      "Agent offered concrete alternatives and included supported size/price info: e.g. \"Stronger With You ... 50 ملي بـ 400 جنيه والـ 90 ملي بـ 700 جنيه\" and \"Dior Homme Sport ... 50 ملي بـ 450 جنيه والـ 90 ملي بـ 1100 جنيه\" (these match the database).",
+      "Tone is polite and welcoming (Egyptian register, uses \"يا فندم\")."
+    ],
+    "failures": [
+      {
+        "severity": "high",
+        "category": "recommendation",
+        "what": "Offered alternatives that do not match the customer's implied request for the same perfume profile.",
+        "why_wrong": "Customer asked about 'بلاك اوركيد' (a dark, floral-oriental Tom Ford profile). The agent suggested Stronger With You (sweet vanilla/chestnut gourmand) and Dior Homme Sport (fresh citrus/aldehydic), neither share the overall scent DNA of Black Orchid. This produces a poor recommendation for a customer who likely wanted either availability or a similar fragrance.",
+        "expected": "Admit unavailability (done), then offer 1–2 alternatives that match the scent family or ask a quick clarifying question (e.g. 'تحبّ رائحة زهرية داكنة/أورينتال زي Black Orchid ولا دورك لروائح منعشة/حلوة؟') before suggesting specific substitutes."
+      },
+      {
+        "severity": "medium",
+        "category": "trust",
+        "what": "Wording about 'زجاجات أوريجينال' doesn't follow the store-configured phrasing rules.",
+        "why_wrong": "Store instructions forbid saying 'عندنا عطور أوريجينال' and require the specific framing: 'متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا'. The agent said simply 'وفيه كمان زجاجات أوريجينال', which risks misleading the customer about whether the perfume is original or a mix.",
+        "expected": "Use the exact allowed phrasing: clarify that perfumes are mixes and that some parfums have original-style bottles, e.g. 'العطر نفسه دايماً تركيب من عندنا، ومتاح لبعض العطور زجاجات أوريجينال.'"
+      },
+      {
+        "severity": "medium",
+        "category": "constraint",
+        "what": "Assumed customer gender/preference and suggested only 'رجالي' options without checking preferences.",
+        "why_wrong": "Customer only asked availability of a named perfume. Black Orchid is commonly unisex/leaning feminine — offering only men's fragrances may miss the customer's needs.",
+        "expected": "Ask a quick clarifying question (gender/scent preference/price range) or offer alternatives across genders/profiles when unsure."
+      },
+      {
+        "severity": "low",
+        "category": "sales",
+        "what": "Missed quick follow-ups that would move the sale: no offer to check stock of originals, to order, or to invite to store for a smell.",
+        "why_wrong": "Store-configured facts encourage inviting customers to try in-store and offer ordering channels. The agent didn't offer those after saying the item wasn't in stock.",
+        "expected": "After confirming unavailability, offer 'نقدر نجيبلكه لو تحب' or invite them to the store to try samples, or ask if they'd like one of the suggested alternatives sent/held."
+      }
+    ],
+    "salesperson_verdict": "Not acceptable as-is: the agent correctly said the requested perfume isn't available and gave supported price/size info, but suggested irrelevant alternatives, used imprecise wording about originals, and failed to clarify customer preferences — needs coaching before a manager would approve this turn.",
+    "id": "X1",
+    "category": "adversarial",
+    "persona": "novice"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 8,
+      "recommendation_quality": 7,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": 8,
+      "human_feel": 8,
+      "trust": 9
+    },
+    "what_worked": [
+      "صَحَّح أسماء العطور وقدمها بصيغة واضحة: 'Dior Sauvage', 'Bleu de Chanel', 'Eros'.",
+      "ذكر سعر كل عطر للـ 90 مل بدقة: 'Dior Sauvage ... 90 ملي بـ 944 جنيه', 'Bleu de Chanel ... 90 ملي بـ 1015 جنيه', 'Eros ... 90 ملي بـ 1019 جنيه' (يتطابق مع DATABASE FACTS).",
+      "أوضح توافر الأحجام العامة لكل عطر وذكر أن Eros لا يوجد له زجاجة أوريجينال حالياً، وهو مطابق لقائمة الأحجام في DATABASE FACTS.",
+      "نقطة بيع مناسبة: سؤال متابعة ناعمة لدفع الخطوة التالية 'تحب أجهزلك أي حجم منهم؟' — ينقل المحادثة نحو إتمام الطلب بدون ضغط."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يُعطَ أسعار الأحجام الأخرى (50 ملي أو الأحجام الأوريجينال) رغم ذكر توفرها.",
+        "why_wrong": "العميل سأل 'بكام التلاته؟' وكان التوقع ذكر أسعار متسقة لكل منتج. DATABASE FACTS يحتوي على أسعار 50ml وأوريجينال لBleu وDior، والمعلومات كانت متاحة لعرضها (مثلاً Bleu original 50ml=852EGP, Dior original 100ml=1200EGP...).",
+        "expected": "كان يجب عرض سعر كل عطر بشكل كامل على الأقل للأحجام المتداولة (50 و90 والأوريجينال المتاحة) أو سؤال سريع إذا كان العميل يقصد حجمًا معينًا قبل المتابعة."
+      },
+      {
+        "severity": "low",
+        "category": "data",
+        "what": "حذف ذكر إحدى الأحجام الأوريجينال لـ Dior (original 60ml موجودة في DB).",
+        "why_wrong": "DATABASE FACTS يظهر original 60ml=800EGP لDior Sauvage مع stock=0. من الأفضل الإشارة لإمكانية وجود حجم 60ml لكن نفاد المخزون إذا كان ذلك صحيحاً، بدلاً من عدم ذكره إطلاقاً.",
+        "expected": "الإبلاغ عن جميع الأحجام المسجلة في القاعدة وذكر حالة التوفر (مثلاً 'فيه أوريجينال 60 مل بس نفد حالياً')، لتفادي انطباع السهو أو معلومات ناقصة."
+      },
+      {
+        "severity": "low",
+        "category": "ux",
+        "what": "الرد مختصر ورجعي قليلًا عن عرض تفاصيل المتجر/خيارات الشحن أو الدفع عندما أبدى العميل نية شراء.",
+        "why_wrong": "بما أن العميل واضح النية ('عايز ... بكام التلاته؟')، كان مناسبًا ذكر خيارات الطلب السريعة المتاحة (مثلاً 'تقدر تطلب من خلال موقعنا أو البوت' وعرض طريقة العربون أو طرق الدفع) أو عرض زيارة الستور لتجربة العينات حسب STORE-CONFIGURED FACTS.",
+        "expected": "اقتراح طرق الطلب الملائمة (انستاباي/كاش) أو عرض عنوان الستور/التجربة لو العميل عايز يجرب قبل الشراء."
+      }
+    ],
+    "salesperson_verdict": "مقبول: المحادثة مفهومة وصحيحة معلوماتياً بالنسبة للأسعار الأساسية، والاقتراح لتجهيز الأحجام مناسب، لكن كان يجب إظهار أسعار الأحجام الأخرى وذكر حالة نفاد أي حجم مسجل لرفع الاحترافية وزيادة احتمالات الإغلاق.",
+    "id": "X2",
+    "category": "adversarial",
+    "persona": "novice"
+  },
+  {
+    "scores": {
+      "intent_understanding": 8,
+      "constraint_extraction": 7,
+      "memory": 9,
+      "recommendation_quality": 6,
+      "similarity_accuracy": null,
+      "product_accuracy": 2,
+      "confidence_calibration": 6,
+      "objection_handling": null,
+      "sales_effectiveness": 7,
+      "closing_timing": null,
+      "human_feel": 8,
+      "trust": 3
+    },
+    "what_worked": [
+      "«النيش اللي ثباته يومين وفواح جداً وفي حدود 300 جنيه مش متوفر عندنا» — صحح تضارب الطلبات ورفض التوقعات غير الواقعية بدل ما يعد بالشيء المستحيل.",
+      "ذكر أمثلة ملموسة: «Tom Ford Ombre Leather وAventus من Creed ثباتهم وفوحانهم قويين» — أمثلة مناسبة للمقارنة.",
+      "عرض بدائل واضحة: إما تزود الميزانية أو أجيب لك حاجة أقل في الفوحان أو الثبات — قدم خيارات قابلة للتنفيذ.",
+      "سأل عن الجنس: «العطر لراجل ولا لست؟» — سؤال مفيد لتضييق النتائج."
+    ],
+    "failures": [
+      {
+        "severity": "critical",
+        "category": "data",
+        "what": "ذكر رقم 'فوق 590 جنيه' كحقيقة مطلقة.",
+        "why_wrong": "الخطأ تم كشفه بالتحقق الحتمي ('invented_number'). قاعدة البيانات تحتوي على أسعار دقيقة (Tom Ford 50ml = 592EGP، Aventus 50ml = 631EGP). استخدام '590' كرقم مرجعي غير موجود بالضبط في البيانات وصُنّف كإدخال مُختلق.",
+        "expected": "استخدم الأرقام الدقيقة من قاعدة البيانات أو قُل نطاقًا مدعومًا (مثلاً: 'أغلب الـ50 مل بتبدأ من ~592 جنيه') أو اسأل للموافقة قبل تقريب الأرقام."
+      },
+      {
+        "severity": "medium",
+        "category": "intent",
+        "what": "لم يعالج العميل صراحةً تفضيله 'مش تقيل'.",
+        "why_wrong": "العميل صرّح صراحةً 'بس مش تقيل'، والوكلاء الجيدون يوضحون ما إذا كان 'مش تقيل' يعني يفضل فاميليز معينة أو يريد شيئًا أخف في القاعدة. الرد لم يذكر هذا القيد أو كيف سيأخذونه في الاعتبار عند اقتراح بدائل.",
+        "expected": "كرر القيد ('فهمت إنك عايز حاجة متوسطة الخفة مش تقيلة—هل تقصد أقل من العطور الشرقية؟') ثم اقترح بدائل مناسبة (نيش أخف أو ما شابه) أو اشرح أي تنازلات مطلوبة."
+      },
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يسمِ أي خيار متاح فعليًا داخل ميزانية العميل أو يقترح بدائل محددة ضمن 300 جنيه.",
+        "why_wrong": "العميل طلب حلول داخل 300؛ بينما صحيح أن النيش المشهور يخرج عن الميزانية، العميل استحق عرضًا محددًا (مثلاً: اقتراح برفانات تركيب لدينا ضمن 300 أو توضيح أن الحد الأدنى الفعلي يبدأ من 450 حسب حقائق المتجر).",
+        "expected": "اقترح بوضوح أكثر: إمّا زيادة الميزانية إلى مستوى ملموس (مثلاً: 'لو تزود لـ450-600 هتلاقي نسخ تركيب قريبة') أو اعرض أسماء/فئات ممكنة فعلاً ضمن 300 إن وُجدت، أو وضّح أن الحد الأدنى عندنا يبدأ من 450 جنيه (مذكور في حقائق المتجر)."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "لم يوضح أي قيود يجب أن تتنازل عنها العميل (أي تحديد أي من المطالبات المتناقضة يجب أن تُتخَلَّى).",
+        "why_wrong": "التوجيه في سيناريو X3 يطلب صراحة تسمية التنازل المطلوب (مثلاً: 'لا يمكن تحقيق ثبات يومين — لو حابب فواح جداً لازم تزود الميزانية أو تتنازل عن كونه نيش'). الرد بدى عامًا ('لو ممكن تزود... أو أجيب أقل فوحان/ثبات') بدل تسمية تنازل واحد واضح.",
+        "expected": "كن واضحاً وصريحاً: 'عشان الحقائق: لا يوجد عطر نيش بثبات 48 ساعة عندنا — إذا لازم الثبات ليومين، لازم نغير نوع العطر أو نبحث عن أورجينال أغلى؛ لو الميزانية ثابتة 300 فخلي التنازل على الفوحان والثبات.'"
+      }
+    ],
+    "salesperson_verdict": "هذا رد مقبول من بائع ميداني: واجه الطلب غير الواقعي وفتح باب للتنازلات، وسأل سؤال تضييقى مهم. لكن الرقم المخترع (590) وفشل في معالجة قيد 'مش تقيل' بدقة يقلل الثقة — يحتاج تصحيح فوري وتقديم بدائل ملموسة ضمن ميزانية العميل.",
+    "id": "X3",
+    "category": "adversarial",
+    "persona": "contradictory"
+  },
+  {
+    "scores": {
+      "intent_understanding": 9,
+      "constraint_extraction": 8,
+      "memory": 9,
+      "recommendation_quality": 8,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 9,
+      "objection_handling": null,
+      "sales_effectiveness": 6,
+      "closing_timing": null,
+      "human_feel": 9,
+      "trust": 9
+    },
+    "what_worked": [
+      "قال: \"القريب من Lattafa Asad، بس مش متأكد.\" — مناسب التهدئة وعدم اليقين.",
+      "ذكر مكونات فعلية من قاعدة المنتج: \"فيه نوتة فانيليا في القاعدة مع لمسة دافية من العنبر والأخشاب الجافة.\" — كل ده موجود في سجل Lattafa Asad.",
+      "سأل سؤال واحد ضابط للتضييق: \"فاكر إذا كانت الريحه فيها قهوة أو حاجة زهرية؟\" — سؤال مفيد ومركّز، ويُسمح بسؤال واحد فقط."
+    ],
+    "failures": [
+      {
+        "severity": "medium",
+        "category": "recommendation",
+        "what": "لم يربط الوكيل صراحة صفة العميل 'ثابته' بالبيانات المعروفة للعطر",
+        "why_wrong": "العميل ذكر 'ثابته' كخاصية مهمة، وقاعدة البيانات تشير إلى Longevity 8–10 hrs وProjection=Strong لعطر Lattafa Asad؛ البائع كان بإمكانه قول 'غالبًا ثابت وقوي' للاستفادة من هذه المعلومة مع التحفظ.",
+        "expected": "كمندوب مخضرم كنت أتوقع جملة مُهذبة وموضّحة مثل: 'غالبًا ثابت وقوي — ممكن يكون Lattafa Asad' مع استمرار سؤال تضييقي واحد."
+      },
+      {
+        "severity": "low",
+        "category": "intent",
+        "what": "لم يستوضح البائع ما إذا كان العطر المطلوب للرجال أم للنساء أو استخدامه (هدية/لنفسه)",
+        "why_wrong": "قاعدة البيانات تصنف Lattafa Asad كـ gender=male، والعميل لم يذكر جنس المستخدم؛ سؤال واحد مسموح به حسب السيناريو، لكن لو كان الخيار بالسؤال عن الجنس لكان ضابطًا أيضًا.",
+        "expected": "كان من الممكن طرح سؤال وحيد واضح يتيح تضييقًا أقوى (مثلاً: 'كان للرجالة ولا للسيدات؟') أو الاستمرار بالسؤال الحالي لكنه كان سيُقترح كخيار بديل."
+      },
+      {
+        "severity": "low",
+        "category": "trust",
+        "what": "استخدم تعبير عام 'توابل' بدون تحديد مصدرها من بيانات المنتج",
+        "why_wrong": "القاعدة تذكر Black Pepper وTobacco وPatchouli؛ 'توابل' عامة مقبولة لكنها أقل دقة من ذكر 'فلفل/تبغ' كما في السجل.",
+        "expected": "تكرار المكونات بدقة من السجل (مثلاً: 'فلفل أو تبغ') للحفاظ على دقة وصف المكونات."
+      }
+    ],
+    "salesperson_verdict": "مقبول؛ البائع فهم المطلوب وقدم اقتراحًا مضبوطًا ومتشككًا مع سؤال تضييقي واحد — يعمل على أرض المتجر. يحتاج فقط لربط أوضح لخاصية 'ثابته' وإدخال دقة طفيفة بالمكونات أو استبدال السؤال بآخر عن الجنس إذا كان ذلك أنسب.",
+    "id": "X4",
+    "category": "adversarial",
+    "persona": "novice"
+  },
+  {
+    "scores": {
+      "intent_understanding": 10,
+      "constraint_extraction": 10,
+      "memory": 10,
+      "recommendation_quality": 10,
+      "similarity_accuracy": null,
+      "product_accuracy": 10,
+      "confidence_calibration": 10,
+      "objection_handling": null,
+      "sales_effectiveness": 8,
+      "closing_timing": null,
+      "human_feel": 10,
+      "trust": 10
+    },
+    "what_worked": [
+      "Agent asked a clear, simple clarification: \"مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟\"",
+      "Polite Egyptian phrasing (يا فندم) and no jokes, no invented product details, no premature recommendation."
+    ],
+    "failures": [],
+    "salesperson_verdict": "Yes — a sales manager would accept this turn. The agent correctly asked for clarification in a short, polite way and did not invent information or push a sale.",
+    "id": "X5",
+    "category": "adversarial",
+    "persona": "novice"
+  }
+]

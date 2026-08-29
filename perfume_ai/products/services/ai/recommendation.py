@@ -110,6 +110,37 @@ def _gender_note(gender_unknown):
     )
 
 
+def _reference_block(search, max_price=None):
+    """The row for the perfume the customer asked to be matched against.
+
+    A perfume cannot be its own lookalike, so `search_service` excludes the reference from the
+    candidate list — evaluation scenario M1 had Dior Sauvage come back first in its own "شبه
+    Sauvage" shortlist, which is both nonsense and a wasted context slot.
+
+    But the customer is plainly talking about it, and the earlier attempt at that exclusion is
+    what produced conversation 630: with the row gone from the data, the persona's own red line
+    ("do not mention a product absent from your data") turned the gap into an invention —
+    "Intensely مش مناسب لميزانيتك" about a 780 EGP perfume on an 800 EGP budget. The data has to
+    be here; only the candidacy is withdrawn.
+
+    So the header says both halves out loud, which is the part `_named_but_missing_block` has no
+    need to: this perfume is available, *and* it is the thing being compared against rather than
+    an answer to the request.
+    """
+    product = (search or {}).get("reference_product")
+    if product is None:
+        return ""
+
+    return (
+        "\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n"
+        + format_products([product], max_price=max_price)
+        + f"🔴 {product.name} متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، "
+        "ولو سأل عنه جاوبه من البيانات دي.\n"
+        "🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه "
+        "له كإجابة على طلبه. رشّح من القائمة اللي فوق.\n"
+    )
+
+
 def _named_but_missing_block(message, store, products, max_price=None):
     """The row for a perfume the customer named that the shortlist happens to omit.
 
@@ -217,24 +248,47 @@ def _in_budget_note(products, max_price):
         return ""
 
     affordable = []
+    cheapest = None
     for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
         for variant in product.variants.all():
-            if variant.price > max_price:
-                continue
             # Sellable, not merely cheap. Filtering on price alone named Dior Sauvage's
             # original 60ml — which is in budget at 456 and has stock=0 — so the reply
-            # offered a bottle that cannot be sold.
+            # offered a bottle that cannot be sold. The same rule has to govern the
+            # cheapest-overall figure below, or the one number we sanction is unbuyable.
             if not is_variant_available(variant):
                 continue
             label = (
                 "زجاجة أوريجينال" if variant.bottle_type == "original" else "زجاجة البراند"
             )
-            affordable.append(f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}")
+            line = f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}"
+            if cheapest is None or variant.price < cheapest[0]:
+                cheapest = (variant.price, line)
+            if variant.price > max_price:
+                continue
+            affordable.append(line)
     if not affordable:
+        # Naming the figure rather than asking for it, for the same reason the affordable
+        # branch does — and because *not* naming it is what produced a critical finding.
+        #
+        # Evaluation scenario X3: budget 300, every size in the shortlist labelled
+        # "❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)". The model was told never to present a ❌
+        # size and, one line later, to present the nearest size with its price difference. Both
+        # cannot be obeyed when every size is ❌, and the way out it found was a number it made
+        # up: "الـ50 ملي بتاعهم فوق 590 جنيه" — no such price exists in the catalogue.
+        #
+        # So the contradiction is resolved explicitly, in favour of the one true figure: this
+        # single price is carved out of the ❌ ban, and every other number is forbidden outright.
+        gap = (
+            f"\n🔴 أرخص حجم متاح في القائمة دي هو {cheapest[1]} جنيه، وده الرقم الوحيد "
+            "المسموح تذكره من القائمة دي رغم إنه فوق الميزانية — قوله بصراحة كده عشان "
+            "العميل يعرف الفرق الحقيقي ويقرر.\n"
+            "❌ ممنوع تقرّب أو تخمّن أو تقول \"فوق كذا\" برقم مش مكتوب في البيانات.\n"
+            if cheapest else "\n"
+        )
         return (
             "\n🔴 مفيش أي حجم في القائمة دي داخل ميزانية العميل. قوله كده بصراحة عن "
-            "العطور اللي بتعرضها، واعرض أقرب حجم بفرق السعر بوضوح. ❌ ممنوع تعمم على "
-            "الستور كله.\n"
+            "العطور اللي بتعرضها. ❌ ممنوع تعمم على الستور كله.\n"
+            + gap
         )
     return (
         "\n✅ فيه أحجام داخل ميزانية العميل في القائمة دي: "
@@ -313,6 +367,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
             ranked=(search or {}).get("ranked"), brief_for=brief_for,
         )
         context += _named_but_missing_block(message, store, products, max_price)
+        context += _reference_block(search, max_price)
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
@@ -337,6 +392,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
             alternatives, max_price=max_price,
             ranked=(search or {}).get("ranked"), brief_for=brief_for,
         )
+        context += _reference_block(search, max_price)
         price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."
         user_content = f"""
 ═══ طلب العميل ═══
