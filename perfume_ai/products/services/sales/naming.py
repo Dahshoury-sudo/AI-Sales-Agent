@@ -54,6 +54,71 @@ def tokens(text):
     }
 
 
+# The vocabulary a customer uses to ask about a perfume already on the table, rather than to
+# name a new one. Written in `normalize_arabic` form — "زجاجه" not "زجاجة", "متاكد" not "متأكد" —
+# because `tokens` normalises before comparing. Words already in `_STOPWORDS` ("عطر", "برفان",
+# "من") never reach this set.
+#
+# 🔴 Never add a word here that could be part of a perfume name, transliterated or not. "سبورت",
+# "هوم", "بلو", "دارك" and "مليون" are all name components in this catalogue and are all absent
+# on purpose. Adding one would make `may_name_a_perfume` blind to that perfume for good.
+_REFERENTIAL = frozenset({
+    # Pointers and pronouns.
+    "ده", "دي", "دا", "هو", "هي", "اللي", "منه", "منها", "بتاعه", "بتاعها",
+    # Question words.
+    "بكام", "كام", "ايه", "ليه", "امتي", "فين", "هل", "عامل", "عامله", "ازاي",
+    # Price, size and bottle vocabulary.
+    "سعر", "سعره", "سعرها", "الاسعار", "اسعار", "حجم", "حجمه", "الحجم",
+    "الاحجام", "احجام", "ملي", "ml", "زجاجه", "الزجاجه", "اوريجينال",
+    "الاوريجينال", "علبه", "بوكس",
+    # Attribute vocabulary.
+    "ريحه", "ريحته", "ريحتها", "ثبات", "ثباته", "ثباتها", "فوحان", "فوحانه",
+    "نوتات", "نوتاته", "مكونات", "مكوناته", "مناسب", "مناسبه", "ينفع", "يناسب",
+    "موسم", "موسمه",
+    # Availability and doubt.
+    "متوفر", "متوفره", "موجود", "موجوده", "متاح", "متاكد", "بجد", "مش", "ولا",
+    "فيه", "في", "عندكم", "عندك", "عندكو", "لسه",
+    # Discourse particles and confirmations.
+    "طب", "طيب", "بقول", "بقولك", "قول", "قولي", "ماشي", "تمام", "ايوه", "اه",
+    "لا", "كمان", "برضه", "بس", "خلاص", "يعني", "امال",
+    # Quantifiers and ordinals.
+    "كل", "واحد", "واحده", "لوحده", "لوحدها", "الاتنين", "التلاته", "التاني",
+    "الاول", "الاخير", "بعض", "تاني", "تانيه",
+})
+
+
+def may_name_a_perfume(text):
+    """Could this message be naming a perfume, as opposed to asking about one already offered?
+
+    A gate, not a matcher: it answers "is it worth looking a name up at all", and it exists
+    because `mentioned_in` cannot answer that question. `mentioned_in` needs the catalogue's
+    Latin tokens to appear in the text, so an Arabic-script name matches nothing — and
+    `product_info` was reading that empty result as proof the customer had named nothing, then
+    answering about whatever it had offered on the previous turn. A customer asked
+    "طب اكوا دي جيو ؟" and was told about Y Eau de Parfum, a different perfume from a different
+    brand that happened to be the previous recommendation (conversation 738).
+
+    Deliberately liberal, and the asymmetry is the whole point:
+
+      * True on a message that names nothing costs one resolver call, which comes back empty,
+        and the caller falls back to the referent it would have used anyway — latency, never a
+        wrong answer.
+      * False on a message that DOES name a perfume is the conversation-738 bug.
+
+    So `_REFERENTIAL` never has to be exhaustive. A word missing from it makes this slower, not
+    wrong, which is why the list above is safe to extend but dangerous to extend carelessly.
+    """
+    for token in tokens(text):
+        if token in _REFERENTIAL:
+            continue
+        # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
+        # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
+        if token.isdigit():
+            continue
+        return True
+    return False
+
+
 def _similar_enough(left, right):
     """One-edit tolerance for a single-token difference.
 

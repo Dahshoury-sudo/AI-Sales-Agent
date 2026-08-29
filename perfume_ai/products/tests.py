@@ -8706,3 +8706,225 @@ class NothingAffordableStillQuotesARealPriceTests(TestCase):
         from products.services.ai.recommendation import _in_budget_note
 
         self.assertEqual(_in_budget_note(Product.objects.none(), None), "")
+
+
+class ArabicNameIsNotTheReferentTests(TestCase):
+    """Conversation 738: an Arabic-written perfume name answered with the previous turn's perfume.
+
+    The customer had just been recommended Y Eau de Parfum, then asked "طب اكوا دي جيو ؟" and was
+    answered with Y's data. They repeated themselves — "بقول اكوا دي جيو" — and were told
+    "Acqua Di Gio اسمه الصحيح Y Eau de Parfum". Both perfumes are in the catalogue; they are
+    different perfumes from different brands.
+
+    Two independent defects, both fixed here.
+
+    `get_product_info` read `_named_in_message` returning [] as proof the customer had named
+    nothing. That matcher needs the catalogue's Latin tokens to appear in the message, so an
+    Arabic-script name matches it never — the referent branch therefore claimed every such turn
+    and `resolve_products`, the only component that reads Arabic, was skipped. Worse, the lock was
+    self-reinforcing: by the correction turn the referent came from the bot's own wrong reply, so
+    repeating the name could not break out.
+
+    And instruction 1 said to use the injected name "even if the customer wrote it wrong", with no
+    guard for the injected perfume being the wrong one. That is what turned a wrong subject into a
+    fabricated claim about two real perfumes.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.armani = Brand.objects.create(store=self.store, name="Giorgio Armani")
+        self.ysl = Brand.objects.create(store=self.store, name="Yves Saint Laurent")
+
+        self.gio = Product.objects.create(
+            store=self.store, brand=self.armani, name="Acqua di Gio", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.gio, volume=50, price=503, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.gio, volume=90, price=1032, bottle_type="normal"
+        )
+
+        self.y = Product.objects.create(
+            store=self.store, brand=self.ysl, name="Y Eau de Parfum", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.y, volume=50, price=594, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.y, volume=90, price=900, bottle_type="normal"
+        )
+
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _offered_y(self, content="عندك Y Eau de Parfum 90 ملي بـ900 جنيه."):
+        """A reply that put Y in front of the customer, saved as the router saves it."""
+        save_message(
+            self.conversation, "assistant", content,
+            internal_context="Name (الاسم الصحيح): Y Eau de Parfum",
+        )
+
+    # ── the gate ──────────────────────────────────────────────────────────
+    def test_a_referential_question_names_nothing(self):
+        """Every message the six ProductInfoReferentTests pin, plus debug_739's turn 3. These
+        must keep reaching the referent without spending a resolver call."""
+        for message in (
+            "بكام؟", "متأكد؟", "مش متوفر متأكد ؟", "كل واحده كام سعرها",
+            "ريحته عاملة ايه؟", "فيه أحجام تانية؟", "ينفع ولا لا ؟",
+        ):
+            with self.subTest(message=message):
+                self.assertFalse(sales_naming.may_name_a_perfume(message))
+
+    def test_an_arabic_written_name_is_recognised_as_a_name(self):
+        for message in (
+            "طب اكوا دي جيو ؟", "بقول اكوا دي جيو", "بكام سوفاج؟",
+            "طب انفاكتوس ؟", "سترينجر وذ يو انتنسلي", "عندكم بلاك اوركيد؟",
+        ):
+            with self.subTest(message=message):
+                self.assertTrue(sales_naming.may_name_a_perfume(message))
+
+    def test_a_size_alone_is_not_a_name(self):
+        self.assertFalse(sales_naming.may_name_a_perfume("90 ملي بكام؟"))
+
+    def test_a_name_carrying_digits_survives_the_digit_skip(self):
+        """The digit skip exists for "90 ملي" and must not swallow a name that carries numbers."""
+        self.assertTrue(sales_naming.may_name_a_perfume("Afnan 9PM"))
+        self.assertTrue(sales_naming.may_name_a_perfume("XJ 1861 Naxos"))
+
+    def test_no_referential_word_is_part_of_a_catalogue_name(self):
+        """The one genuinely dangerous edit to `_REFERENTIAL` is a word that is also a name
+        component — the gate would go permanently blind to that perfume.
+
+        The `if name_tokens` guard is not slack: "Y Eau de Parfum" tokenises to nothing at all,
+        because "eau"/"de"/"parfum" are stopwords and the single-character "Y" is below
+        `tokens`' length floor. That is a pre-existing limitation of the tokeniser — the same one
+        that stops `mentioned_in` and `match_product` matching that perfume — not something this
+        gate introduces, and widening the floor here would make every stray letter an identifying
+        token.
+        """
+        for product in Product.objects.filter(store=self.store):
+            with self.subTest(product=product.name):
+                name_tokens = sales_naming.tokens(product.name)
+                self.assertEqual(name_tokens & sales_naming._REFERENTIAL, set())
+                if name_tokens:
+                    self.assertTrue(sales_naming.may_name_a_perfume(product.name))
+
+    def test_a_single_letter_name_tokenises_to_nothing(self):
+        """Pinning the limitation the test above works around, so it is a known quantity rather
+        than a surprise: nothing deterministic can match "Y Eau de Parfum" by name."""
+        self.assertEqual(sales_naming.tokens("Y Eau de Parfum"), set())
+        self.assertEqual(sales_naming.mentioned_in("عندكم Y Eau de Parfum؟", [self.y]), [])
+
+    def test_the_gate_is_none_safe(self):
+        self.assertFalse(sales_naming.may_name_a_perfume(None))
+        self.assertFalse(sales_naming.may_name_a_perfume(""))
+
+    # ── conversation 738, end to end ──────────────────────────────────────
+    def test_an_arabic_name_beats_the_perfume_we_just_offered(self):
+        self._offered_y()
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.gio],
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "طب اكوا دي جيو ؟", [], self.store, self.conversation
+            )
+
+        self.assertTrue(resolver.called, "the only resolver that reads Arabic must run")
+        self.assertIn("Acqua di Gio", context)
+        self.assertNotIn("Y Eau de Parfum", context)
+        self.assertIn("503", context)
+
+    def test_repeating_the_name_is_not_locked_to_the_wrong_perfume(self):
+        """The correction turn. By this point the referent is derived from the bot's own wrong
+        reply, which is why saying the name a second time used to change nothing."""
+        self._offered_y()
+        self._offered_y("Y Eau de Parfum متوفر 90 ملي بـ900 جنيه.")
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.gio],
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "بقول اكوا دي جيو", [], self.store, self.conversation
+            )
+
+        self.assertIn("Acqua di Gio", context)
+        self.assertNotIn("Y Eau de Parfum", context)
+
+    def test_a_message_naming_nothing_still_prefers_the_referent(self):
+        """ProductInfoReferentTests:7611 from this side: the gate must not hand a no-name message
+        to the resolver, whose guess was the wrong perfume in conversation 1099."""
+        self._offered_y()
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.gio],
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "مش متوفر متأكد ؟", [], self.store, self.conversation
+            )
+
+        self.assertFalse(resolver.called)
+        self.assertIn("Y Eau de Parfum", context)
+        self.assertNotIn("Acqua di Gio", context)
+
+    def test_a_resolver_miss_degrades_to_the_referent_not_to_a_denial(self):
+        """What makes a liberal gate safe. The resolver is asked once, comes back empty, and the
+        turn lands on the referent it would have used anyway — never on the not-found branch,
+        which would tell the customer nothing was recognised."""
+        self._offered_y()
+
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "طب اكوا دي جيو ؟", [], self.store, self.conversation
+            )
+
+        self.assertEqual(resolver.call_count, 1)
+        self.assertIn("Y Eau de Parfum", context)
+        self.assertNotIn("لم يتم التعرف على اسم منتج محدد", context)
+
+    def test_a_latin_name_still_needs_no_model_call_at_all(self):
+        """The deterministic path is untouched and still wins outright."""
+        self._offered_y()
+
+        with mock.patch(
+            "products.services.product_info.resolve_products"
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "بكام Acqua di Gio؟", [], self.store, self.conversation
+            )
+
+        self.assertFalse(resolver.called)
+        self.assertIn("Acqua di Gio", context)
+        self.assertNotIn("Y Eau de Parfum", context)
+
+    # ── the instruction that fabricated the identity ──────────────────────
+    def test_the_prompt_forbids_renaming_the_customers_perfume(self):
+        source = inspect.getsource(get_product_info)
+
+        self.assertIn("عطر **تاني خالص**", source)
+        self.assertIn("ممنوع توحي إنهم نفس العطر", source)
+        self.assertIn("لحظة أتأكدلك منه", source)
+        self.assertNotIn(
+            "استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل",
+            source,
+        )
+
+    def test_the_persona_still_carries_the_deferral_the_rule_defers_to(self):
+        """Instruction 1 now routes a mismatch to red line 3. If that line ever moves, the
+        instruction is pointing at nothing."""
+        self.assertIn("لحظة أتأكدلك منه", get_system_prompt(self.store))

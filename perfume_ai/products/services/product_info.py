@@ -61,6 +61,12 @@ def _referent_from_conversation(message, store, conversation):
     Returns [] unless a conversation is present and something is genuinely under discussion —
     that gate is what keeps this off the first turn of a conversation and out of the callers
     that pass no conversation at all.
+
+    Whether the message names a perfume itself is decided by the caller via
+    `naming.may_name_a_perfume`, NOT by `_named_in_message` coming back empty. That conflation is
+    what made this function answer conversation 738's "طب اكوا دي جيو ؟" with the previous turn's
+    perfume: an Arabic-written name matches `_named_in_message` never, so a message that named a
+    perfume outright looked identical to one that named nothing.
     """
     if conversation is None or store is None:
         return []
@@ -91,13 +97,29 @@ def _referent_from_conversation(message, store, conversation):
 
 
 def get_product_info(message, history=None, store=None, conversation=None):
+    from .sales import naming
 
     # An explicit name in this message beats anything inferred from earlier turns.
     products = _named_in_message(message, store)
 
+    # `_named_in_message` is Latin-only, so its empty result does NOT mean the customer named
+    # nothing — an Arabic transliteration matches it never. Treating the two as the same thing is
+    # what broke conversation 738: "طب اكوا دي جيو ؟" fell straight through to the referent branch
+    # below and was answered with Y Eau de Parfum, the previous turn's recommendation, while the
+    # one resolver that can read Arabic was skipped entirely. So ask whether the message could be
+    # naming a perfume at all, and if it could, resolve it before reaching for the referent.
+    #
+    # The gate is liberal by design: a false alarm costs this one call, which comes back empty and
+    # falls through to exactly the referent it would have used anyway.
+    resolver_ran = False
+    if not products and naming.may_name_a_perfume(message):
+        products = resolve_products(message, history, store, conversation)
+        resolver_ran = True
+
     # Nothing named here: the subject is whatever we just offered. Decided in Python because
     # the resolver demonstrably gets this wrong, and `internal_context` is a harder record
-    # than an 8-message prose window.
+    # than an 8-message prose window. This is also the recovery path when the gate fired but the
+    # resolver could not place the name, which is what keeps a false alarm above harmless.
     if not products:
         products = _referent_from_conversation(message, store, conversation)
 
@@ -106,7 +128,11 @@ def get_product_info(message, history=None, store=None, conversation=None):
     # undid the whole point of resolving the referent in Python. A partially-resolved
     # multi-perfume question (three Arabic transliterations in, two out) is fixed in the
     # resolver's own prompt instead, since `naming` cannot match Arabic at all.
-    if not products:
+    #
+    # `resolver_ran` keeps this to at most one resolver call per turn: a message that tripped the
+    # gate and came back empty has already had its chance, and asking twice would only spend a
+    # second call on the same answer.
+    if not products and not resolver_ran:
         products = resolve_products(message, history, store, conversation)
 
     if products:
@@ -117,7 +143,8 @@ def get_product_info(message, history=None, store=None, conversation=None):
         context += format_products(products, limit=6)
         instructions = """
 ═══ تعليمات صارمة ═══
-1. 🔴 استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل في كتابته.
+1. 🔴 لما العطر اللي في البيانات يكون هو نفس العطر اللي العميل سأل عنه، اكتب اسمه بالإملاء الموجود في البيانات — حتى لو العميل غلط في الكتابة أو كتبه بالعربي.
+   🔴🔴 لكن لو العميل سمّى عطر والبيانات فيها عطر **تاني خالص**: ده مش غلطة إملائية منه، ده عطر مختلف. ❌ ممنوع تقول إن العطر اللي سأل عنه "اسمه الصحيح" هو العطر اللي في البيانات، وممنوع توحي إنهم نفس العطر أو نفس الريحة أو نفس التركيبة. جاوب على العطر اللي هو سأل عنه، ولو مش معاك بياناته قول "لحظة أتأكدلك منه" زي ما الخط الأحمر رقم 3 بيقول. (عميل سأل عن Acqua di Gio واتقاله "اسمه الصحيح Y Eau de Parfum" — دول عطرين مختلفين من براندين مختلفين، والعميل كرر السؤال واتقاله نفس الكلام تاني.)
 1. 🔴 فرّق بين نوع السؤال:
    • لو العميل بيسأل عن التوافر بس (زي "عندكم سوفاج؟" أو "فيه بلو دي شانيل؟" أو "موجود عندكم X؟") → أكّد إنه متوفر **وكمّل في نفس الرد بخطوة تقرّب البيعة**: إما تقوله سعر الحجم اللي في سطر 💡 Value Pick، أو تسأله سؤال يضيّق (بيدور على أنهي حجم؟ لنفسه ولا هدية؟). ❌ ممنوع ترد "أه متوفر عندنا" وتسكت — ده رد ميت وبيوقف المحادثة.
    • لو العميل سأل عن السعر أو الحجم صراحة (زي "بكام؟" أو "الأحجام إيه؟") → 🔴 ابدأ بالحجم اللي في سطر 💡 Value Pick ورشّحه بالأرقام اللي فيه، وبعدها اذكر باقي الأحجام في نص جملة. ❌ ممنوع تسرد الأسعار كلها في صف واحد زي فاتورة.
