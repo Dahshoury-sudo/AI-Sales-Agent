@@ -2172,6 +2172,32 @@ class CallSiteProfileTests(TestCase):
                 self.assertEqual(profile, "converse")
 
 
+def _price_for_saving(baseline_price, baseline_volume, target_volume, saving_pct):
+    """A price for `target_volume` whose per-ml rate sits `saving_pct` below the baseline's.
+
+    Tests that need a *strong* value pick derive their prices from
+    `sales_value.STRONG_VALUE_SAVING_PCT` through this rather than hard-coding a figure.
+    Hard-coded ones silently became weak-tier the first time the threshold moved (15% → 22%),
+    which broke six tests that were not actually about the threshold at all.
+
+    Truncated rather than rounded to nearest, so the realised saving is always *at least*
+    `saving_pct`. Rounding to nearest made "exactly the threshold counts as strong" depend on
+    which way the last penny fell: at 22% it rounded down and passed, at 30% it rounded up to
+    a 29.99% saving and failed.
+    """
+    baseline_per_ml = Decimal(baseline_price) / Decimal(baseline_volume)
+    target_per_ml = baseline_per_ml * (1 - Decimal(saving_pct) / 100)
+    return int(target_per_ml * Decimal(target_volume))
+
+
+def _comfortably_strong_price(baseline_price, baseline_volume, target_volume):
+    """A price a clear margin above the strong-tier threshold, wherever that currently sits."""
+    return _price_for_saving(
+        baseline_price, baseline_volume, target_volume,
+        sales_value.STRONG_VALUE_SAVING_PCT + 6,
+    )
+
+
 class SalesQualityTests(TestCase):
     """Sales behaviour that used to depend on the model following a prompt rule.
 
@@ -2228,6 +2254,11 @@ class SalesQualityTests(TestCase):
         self.assertEqual(value_pick_note(self.product, self._variants()), "")
 
     def test_value_pick_reaches_the_prompt_block(self):
+        """Plumbing, not tiering: priced into the strong tier so the assertion is about the
+        line reaching the block rather than about where the threshold happens to sit."""
+        self.large.price = _comfortably_strong_price(self.small.price, self.small.volume, 90)
+        self.large.save()
+
         self.assertIn("💡 Value Pick", format_product(self.product))
 
     def test_brand_bottles_never_claim_scarcity(self):
@@ -4319,19 +4350,33 @@ class ValueLanguageTests(TestCase):
     # value verdict. These pin the tier that reserves the claim for a gap worth selling on.
 
     def _weaken_to(self, saving_pct):
-        """Reprice the 90ml so its per-ml saving lands just under/over a given percentage."""
-        baseline_per_ml = Decimal(self.small.price) / Decimal(self.small.volume)
-        target_per_ml = baseline_per_ml * (1 - Decimal(saving_pct) / 100)
-        self.large.price = (target_per_ml * Decimal(self.large.volume)).quantize(Decimal("1"))
+        """Reprice the 90ml so its per-ml saving lands at or just over a given percentage."""
+        self.large.price = _price_for_saving(
+            self.small.price, self.small.volume, self.large.volume, saving_pct
+        )
         self.large.save()
 
-    def test_the_default_fixture_is_a_strong_saving(self):
-        """18.3% — the anchor the rest of this file's expectations rest on."""
+    def test_the_transcript_fixture_is_below_the_threshold(self):
+        """The real prices from the transcript are an 18.3% saving, which the 22% threshold
+        deliberately leaves in the weak tier. Sauvage is the shop's most-asked perfume and
+        eval scenario P1 quotes it, so this records the consequence rather than hiding it:
+        the reply still leads with the 90ml, it just no longer calls it the best value."""
         value = sales_value.size_value(list(self.product.variants.all()))
 
-        self.assertTrue(value.is_strong)
-        self.assertIn("💡 Value Pick", self._note())
-        self.assertIn("أحسن value", self._note())
+        self.assertFalse(value.is_strong)
+        self.assertEqual(value.saving_pct.quantize(Decimal("0.1")), Decimal("18.3"))
+        self.assertIn("💡 اقتراح حجم", self._note())
+        self.assertIn("ابدأ بيه", self._note())
+
+    def test_a_comfortably_strong_saving_is_sold_as_the_value_pick(self):
+        self.large.price = _comfortably_strong_price(self.small.price, self.small.volume, 90)
+        self.large.save()
+
+        note = self._note()
+
+        self.assertIn("💡 Value Pick", note)
+        self.assertIn("أحسن value", note)
+        self.assertNotIn("💡 اقتراح حجم", note)
 
     def test_a_small_saving_is_not_sold_as_the_value_pick(self):
         self._weaken_to(5)
@@ -4372,22 +4417,25 @@ class ValueLanguageTests(TestCase):
         self.assertIn('ممنوع تقول إنه "أرخص"', self._note())
 
     def test_the_threshold_boundary_is_exact_and_decimal(self):
-        """Real rows straddle this by hundredths of a point: Asad is 15.022% and Eros
-        14.998%, and both render as "15.0%". A float round-trip would make their tier a
-        coin toss, so the comparison stays in Decimal."""
-        variants = list(self.product.variants.all())
-        self.small.price, self.small.volume = 642, 50
-        self.small.save()
+        """A hair either side of the threshold must land on the correct side, deterministically.
 
-        # 15.022% — Asad's real numbers.
-        self.large.price, self.large.volume = 982, 90
+        Rows have sat 0.03 of a point apart in the real catalogue — Asad at 15.022% against
+        Eros at 14.998%, both of which render as "15.0%" — so if the comparison ever went
+        through float, the tier of a pair like that would be a coin toss whenever the
+        threshold happened to fall between them. Derived from the threshold so this keeps
+        testing the boundary wherever it is moved to.
+        """
+        threshold = sales_value.STRONG_VALUE_SAVING_PCT
+
+        self.large.price = _price_for_saving(
+            self.small.price, self.small.volume, 90, threshold + Decimal("0.05")
+        )
         self.large.save()
         self.assertTrue(sales_value.size_value(list(self.product.variants.all())).is_strong)
 
-        # 14.998% — Eros's real numbers, three hundredths the other side.
-        self.small.price, self.small.volume = 666, 50
-        self.small.save()
-        self.large.price, self.large.volume = 1019, 90
+        self.large.price = _price_for_saving(
+            self.small.price, self.small.volume, 90, threshold - Decimal("0.5")
+        )
         self.large.save()
         self.assertFalse(sales_value.size_value(list(self.product.variants.all())).is_strong)
 
@@ -4396,7 +4444,7 @@ class ValueLanguageTests(TestCase):
 
         value = sales_value.size_value(list(self.product.variants.all()))
 
-        self.assertEqual(value.saving_pct.quantize(Decimal("1")), Decimal("15"))
+        self.assertGreaterEqual(value.saving_pct, sales_value.STRONG_VALUE_SAVING_PCT)
         self.assertTrue(value.is_strong)
 
     def test_saving_pct_never_goes_through_float(self):
@@ -4496,7 +4544,12 @@ class ComparisonSuppressesPricesTests(TestCase):
             store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
             top_notes="Bergamot", )
         ProductVariant.objects.create(product=self.product, volume=50, price=642)
-        ProductVariant.objects.create(product=self.product, volume=90, price=944)
+        # Priced into the strong tier: this class is about whether the line appears at all,
+        # so it must not turn over when the threshold moves.
+        ProductVariant.objects.create(
+            product=self.product, volume=90,
+            price=_comfortably_strong_price(642, 50, 90),
+        )
 
     def test_prices_and_the_value_pick_are_dropped_in_comparison_mode(self):
         block = format_product(self.product, show_prices=False)
@@ -4553,7 +4606,12 @@ class RecommendationDropsTheSizeVerdictTests(TestCase):
             store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
         )
         ProductVariant.objects.create(product=self.product, volume=50, price=642)
-        ProductVariant.objects.create(product=self.product, volume=90, price=944)
+        # Strong tier, so test_a_stated_budget_keeps_the_size_verdict is testing the budget
+        # gate rather than the materiality threshold.
+        ProductVariant.objects.create(
+            product=self.product, volume=90,
+            price=_comfortably_strong_price(642, 50, 90),
+        )
 
     def _context(self, max_price):
         from products.services.ai.recommendation import _format_products

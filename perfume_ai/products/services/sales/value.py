@@ -28,12 +28,18 @@ from decimal import Decimal
 
 # The per-ml saving a size must clear before it is sold as *the* value pick. Set from the
 # catalogue's own distribution: the median gap is 12.6%, so a lower bar makes the verdict the
-# default rather than a recommendation. At 15% it applies to 22 of 92 products.
+# default rather than a recommendation. At 22% it applies to 10 of 92 products — Light Blue,
+# Black Opium, Fahrenheit, Armani Code and Le Male, the only ones where the per-ml gap is wide
+# enough for the claim to carry its own weight.
 #
-# Compared in Decimal, never float. Real catalogue rows straddle this by hundredths of a
-# point — Asad is 15.022% and Eros 14.998%, both of which render as "15.0%" — so a float
-# round-trip would make the tier of those two products a coin toss.
-STRONG_VALUE_SAVING_PCT = Decimal("15")
+# There is clear air around this number: no catalogue row sits between 18.3% and 23.7%, so
+# anything from 20% to 23.6% selects the same ten products, and a repricing has to move a
+# perfume a long way to change its tier.
+#
+# Compared in Decimal, never float. Rows have sat hundredths of a point apart before — Asad at
+# 15.022% against Eros at 14.998%, both of which render as "15.0%" — so a float round-trip
+# would make the tier of a pair like that a coin toss whenever the threshold lands near them.
+STRONG_VALUE_SAVING_PCT = Decimal("22")
 
 
 def price_per_ml(variant):
