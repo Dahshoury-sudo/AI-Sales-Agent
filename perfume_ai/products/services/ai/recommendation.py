@@ -6,6 +6,7 @@ from ..product_formatting import format_products, is_variant_available
 from ..sales import described
 from ..sales.constraints import acknowledgement_hint
 from ..sales.ranking import reasons_note
+from ..sales.value import budget_tier
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
@@ -260,6 +261,7 @@ def _in_budget_note(products, max_price):
         return ""
 
     affordable = []
+    tolerable = []
     cheapest = None
     for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
         for variant in product.variants.all():
@@ -275,9 +277,26 @@ def _in_budget_note(products, max_price):
             line = f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}"
             if cheapest is None or variant.price < cheapest[0]:
                 cheapest = (variant.price, line)
-            if variant.price > max_price:
-                continue
-            affordable.append(line)
+            tier = budget_tier(variant.price, max_price)
+            if tier == "in":
+                affordable.append(line)
+            elif tier == "near":
+                tolerable.append(line)
+    if not affordable and tolerable:
+        # The middle case, which used to fall into the "nothing is in budget" branch below and
+        # get the single-figure treatment meant for an all-❌ shortlist. These sizes are ⚠️:
+        # over the stated number but inside the tolerance band, which `budget_label` already
+        # tells the model it may offer. Saying "nothing here is in your budget" about them and
+        # then permitting exactly one price is both untrue and the reason a well-matched
+        # perfume lost to a badly-matched cheaper one in conversation 757.
+        return (
+            "\n⚠️ مفيش حجم داخل الميزانية بالظبط في القائمة دي، بس دي أعلى منها شوية بس "
+            "ومسموح تعرضها: "
+            + "، ".join(tolerable[:4])
+            + ".\n🔴 اعرض منها اللي الأنسب لطلب العميل وقول سعره الحقيقي وإنه أعلى من "
+            "ميزانيته بكام بصراحة. ❌ ممنوع تقول \"مفيش حاجة في الميزانية\" وتسكت، وممنوع "
+            "ترشح عطر مش مناسب لطلبه بس لأنه أرخص.\n"
+        )
     if not affordable:
         # Naming the figure rather than asking for it, for the same reason the affordable
         # branch does — and because *not* naming it is what produced a critical finding.
@@ -321,10 +340,10 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     max_price = _coerce_budget(intent.get("max_price") if intent else None)
     budget_note = ""
     if max_price:
-        budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. لازم تذكر الأسعار والأحجام اللي داخل الميزانية. متسألوش عن الميزانية تاني. لو فيه حجم أكبر أغلى شوية بس قريب من الميزانية، ممكن تذكره كمان مع التوضيح.\n"
-        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره يتخطى ميزانيته، أخبره بوضوح ولطف أن الحجم المطلوب غير متاح بهذه الميزانية، واعرض عليه الحجم الأصغر (مثل 50 ملي) الذي يناسب ميزانيته كبديل، ووضح له أن الحجم الأكبر متاح أيضاً إذا أمكنه زيادة الميزانية قليلاً، دون أي ضغط أو إلحاح.\n"
-        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌.\n"
-    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل ميزانيته مع الترشيح. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). متسألوش عن الميزانية تاني."
+        budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. اذكر الأسعار والأحجام اللي داخل الميزانية، واللي أعلى منها شوية (⚠️) كمان لو هي الأنسب لطلبه. متسألوش عن الميزانية تاني.\n"
+        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته شوية (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه بسعره الحقيقي ووضّح إنه أعلى بكام، واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
+        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول سعره وفرقه بصراحة.\n"
+    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها شوية (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول سعره وإنه أعلى بكام، واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
 
     # What the customer already told us, so the reply can nod to it once instead of
     # answering five stated constraints as though none had registered.
@@ -393,7 +412,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 {context}
 
 ═══ تعليمات الرد ═══
-1. اختر أفضل 1-2 منتج بيطابق شروط العميل كلها مع بعض. لو مفيش منتج بيطابق كل الشروط، ماترشحوش.
+1. اختر أفضل 1-2 منتج بيطابق شروط العميل كلها مع بعض. لو مفيش منتج بيطابق كل الشروط، ماترشحوش. 🔴 الترتيب اللي فوق مرتّب بالمطابقة لطلب العميل، فابدأ من أوله. **الاختيار بيكون بالمطابقة بس — مش بسطر 💡.** سطر "💡 Value Pick" / "💡 اقتراح حجم" بيقولك أنهي *حجم* تبدأ بيه جوه العطر بعد ما تختاره، وعطر مالوش سطر 💡 مش أقل مناسبة — ده بس معناه إن أحجامه مفيهاش فرق في سعر الملي. ❌ ممنوع تنزل تحت في الترتيب وتختار عطر أقل مطابقة عشان هو اللي عليه سطر 💡.
 2. 🔴 لو رشحت عطرين، لازم تقارن بينهم في جملة واحدة سريعة تساعده يختار، **وترجّح واحد بالاسم** وتقول ليه: "أنا أرشحلك كذا أكتر لطلبك 👌". مثال: "Ambero أنسب لو بتحب التوابل والريحة الدافية، أما Afnan 9PM فهو أحلى ومسَكّر أكتر وفيه طابع فاكهي." ❌ ممنوع تسيبه بين خيارين من غير ترجيح — ده بيرجّع القرار لعميل سألك عشان تساعده يقرر، ومهم بشكل خاص لو الطلب هدية أو لو هو محتار.
 3. {price_instruction}
 4. {gender_instruction}

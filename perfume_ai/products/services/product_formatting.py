@@ -14,13 +14,29 @@ trying to prevent. Both drifts are resolved by including the superset.
 from decimal import Decimal
 from itertools import islice
 
-from .sales.value import is_store_exclusive, size_value, size_value_note
+from .sales.value import (
+    BUDGET_TOLERANCE,
+    budget_tier,
+    is_store_exclusive,
+    size_value,
+    size_value_note,
+)
 
 
 # A size priced just over the stated budget is still worth offering as an upsell —
 # recommendation's budget_note asks for exactly that. Past this multiple it is far
 # enough out that offering it reads as not having listened to the customer.
-BUDGET_TOLERANCE = Decimal("1.2")
+#
+# The number and the predicate that reads it live in sales.value now, because selection and
+# labelling both need them and having only this module know the number is what let the two
+# drift apart. Imported above rather than redefined, so `product_formatting.BUDGET_TOLERANCE`
+# keeps resolving for existing callers.
+
+_BUDGET_LABELS = {
+    "in": " ✅ (داخل الميزانية)",
+    "near": " ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)",
+    "far": " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)",
+}
 
 
 def budget_label(price, max_price):
@@ -29,14 +45,14 @@ def budget_label(price, max_price):
     Without this the model sees a bare list of sizes and prices and cannot tell
     which are affordable, so a customer who said 500 could be shown a 3800 bottle
     as though it were a normal option.
+
+    The tiering itself is `sales.value.budget_tier`, shared with the search filter and the
+    ranking bonus so that a size this function calls offerable cannot have had its product
+    dropped upstream.
     """
     if max_price is None:
         return ""
-    if price <= max_price:
-        return " ✅ (داخل الميزانية)"
-    if price <= max_price * BUDGET_TOLERANCE:
-        return " ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)"
-    return " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)"
+    return _BUDGET_LABELS[budget_tier(price, max_price)]
 
 
 # Original bottles are counted physical units, so a low count is a real fact worth

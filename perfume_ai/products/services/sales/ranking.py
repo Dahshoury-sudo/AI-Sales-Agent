@@ -47,6 +47,7 @@ from .notes import (
     opposing_families,
     request_families,
 )
+from .value import budget_tier
 
 # Signal weights. The relative sizes are the point: an explicit request to be *like*
 # something specific is the strongest thing a customer can say, and an explicit exclusion
@@ -215,6 +216,18 @@ _BAND_FLOOR, _BAND_CEILING = 7, 12
 # only reason was a longevity match still has one.
 _WITHIN_BAND_FRACTION = 0.25
 
+# What a product earns on budget when its best offerable size is over the stated number but
+# inside the tolerance band. Half, so the two facts stay ordered correctly: a perfume the
+# customer can buy at the price they named still beats an equally good one that costs more,
+# but half a point cannot outweigh a real match — occasion (1.0) + occasion_season (0.8) +
+# notes (2.0) clear it comfortably.
+#
+# That ordering is the whole fix for conversation 757. Full credit here would have made an
+# over-budget perfume score the same as an affordable one, which is a different bug in the
+# opposite direction; no credit at all would leave a product eligible for the candidate list
+# and simultaneously flagged as having nothing the customer can afford.
+_TOLERANCE_BUDGET_FRACTION = 0.5
+
 
 def _within_band_bonus(key, recorded, hit):
     """Break a tie inside an ordinal band using the recorded hours.
@@ -233,22 +246,34 @@ def _within_band_bonus(key, recorded, hit):
     return WEIGHTS[key] * _WITHIN_BAND_FRACTION * (above / span)
 
 
-def _affordable_and_obtainable(product, max_price):
-    """Is there a bottle that is both within budget and actually sellable?
+def _best_budget_tier(product, max_price):
+    """The best budget tier among this product's *sellable* bottles.
 
     A brand bottle is compounded to order so it always counts; an original counts only
     while stock remains. Worth checking separately from the SQL price filter, which
     qualifies a product through *any* variant under budget — so a product whose only
     affordable size is a sold-out original would otherwise score as in-budget.
+
+    Returns "in" when some sellable size is inside the budget, "near" when the best one is
+    only inside the tolerance band, and "far" when nothing is offerable. Replaces the old
+    boolean: with the tolerance band now eligible, "affordable or not" could no longer
+    express the difference between a perfume the customer can buy today and one that costs
+    a little more than they said.
     """
+    best = "far"
     for variant in product.variants.all():
-        if max_price is not None and variant.price > max_price:
-            continue
         if variant.bottle_type == "normal":
-            return True
-        elif (variant.stock or 0) > 0:
-            return True
-    return False
+            sellable = True
+        else:
+            sellable = (variant.stock or 0) > 0
+        if not sellable:
+            continue
+        tier = budget_tier(variant.price, max_price)
+        if tier == "in":
+            return "in"
+        if tier == "near":
+            best = "near"
+    return best
 
 
 # How a requested note's fit splits between "how much of this perfume literally is that
@@ -481,8 +506,12 @@ def rank(products, intent, reference=None, keep=()):
                 entry.reasons.append("تركيب حصري بتاعنا — مش منتشر عند حد تاني")
 
         if max_price is not None:
-            if _affordable_and_obtainable(product, max_price):
+            tier = _best_budget_tier(product, max_price)
+            if tier == "in":
                 entry.score += WEIGHTS["budget"]
+            elif tier == "near":
+                entry.score += WEIGHTS["budget"] * _TOLERANCE_BUDGET_FRACTION
+                entry.reasons.append("أقرب حجم مناسب أعلى شوية من ميزانيته")
             else:
                 entry.mismatches.append("مفيش حجم متاح داخل ميزانيته")
 

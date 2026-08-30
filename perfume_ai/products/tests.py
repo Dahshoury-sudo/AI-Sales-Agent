@@ -55,6 +55,7 @@ from products.services.meta_service import (
     send_platform_message,
 )
 from products.services.product_formatting import (
+    budget_label,
     format_product,
     format_products,
     value_pick_note,
@@ -510,6 +511,76 @@ class BudgetLabellingTests(TestCase):
 
     def test_boundary_price_equal_to_budget_is_in_budget(self):
         self.assertIn("✅", self._line_for(self._context(400), "400"))
+
+
+class BudgetTierTests(TestCase):
+    """The one predicate behind the labels, the search filter and the ranking bonus.
+
+    Those three used to answer "is this offerable against the budget?" separately, and only
+    the labels knew about BUDGET_TOLERANCE — the other two compared against the bare number.
+    That divergence is what lost conversation 757: a customer wanting a fresh gym perfume with
+    1000 to spend was shown a Formal and an Evening/Fall-Winter perfume, because the two that
+    actually matched had their 90ml at 1032 and 1100 and the selection layer could not see the
+    band the labelling layer was already calling offerable.
+    """
+
+    def test_at_or_under_the_budget_is_in(self):
+        self.assertEqual(sales_value.budget_tier(999, 1000), "in")
+        self.assertEqual(sales_value.budget_tier(1000, 1000), "in")
+
+    def test_just_over_the_budget_is_near(self):
+        self.assertEqual(sales_value.budget_tier(1001, 1000), "near")
+
+    def test_the_top_of_the_tolerance_band_is_still_near(self):
+        self.assertEqual(sales_value.budget_tier(1200, 1000), "near")
+
+    def test_past_the_tolerance_band_is_far(self):
+        self.assertEqual(sales_value.budget_tier(1201, 1000), "far")
+        self.assertEqual(sales_value.budget_tier(3300, 1000), "far")
+
+    def test_no_budget_means_nothing_can_be_over_it(self):
+        self.assertEqual(sales_value.budget_tier(99999, None), "in")
+
+    def test_the_conversation_757_prices_are_all_offerable(self):
+        """The real numbers: Acqua di Gio 1032, Dior Homme Sport 1100, Invictus 1102."""
+        for price in (1032, 1100, 1102):
+            with self.subTest(price=price):
+                self.assertEqual(sales_value.budget_tier(price, 1000), "near")
+
+    def test_the_labels_are_driven_by_the_same_predicate(self):
+        """A size the label calls offerable must not be one selection has already dropped."""
+        for price, marker in ((1000, "✅"), (1100, "⚠️"), (3300, "❌")):
+            with self.subTest(price=price):
+                self.assertIn(marker, budget_label(Decimal(price), Decimal(1000)))
+
+    def test_every_type_the_intent_can_emit_is_accepted(self):
+        """The intent schema says float, and a model may answer "1000" or "1000.0".
+
+        This is the gap that shipped a TypeError: `float * Decimal` is unsupported while
+        `int * Decimal` is fine, so tests passing 1000 all passed and the first real
+        conversation — which arrives as 1000.0 — died in the search filter.
+        """
+        for value in (1000, 1000.0, "1000", "1000.0", Decimal("1000")):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    sales_value.budget_ceiling(value), Decimal("1200")
+                )
+                self.assertEqual(sales_value.budget_tier(1100, value), "near")
+
+    def test_an_unusable_budget_yields_no_ceiling(self):
+        """Callers skip the filter rather than crash or silently drop the budget."""
+        for value in (None, 0, -5, "abc", ""):
+            with self.subTest(value=value):
+                self.assertIsNone(sales_value.budget_ceiling(value))
+
+    def test_a_fractional_budget_keeps_decimal_precision(self):
+        """Routed through str, so 999.99 does not become the binary 999.98999… and flip a
+        boundary comparison."""
+        self.assertEqual(
+            sales_value.budget_ceiling(999.99), Decimal("1199.988")
+        )
+        self.assertEqual(sales_value.budget_tier(1199.98, 999.99), "near")
+        self.assertEqual(sales_value.budget_tier(1200.00, 999.99), "far")
 
 
 class BudgetCoercionTests(TestCase):
@@ -4366,7 +4437,7 @@ class ValueLanguageTests(TestCase):
         self.assertFalse(value.is_strong)
         self.assertEqual(value.saving_pct.quantize(Decimal("0.1")), Decimal("18.3"))
         self.assertIn("💡 اقتراح حجم", self._note())
-        self.assertIn("ابدأ بيه", self._note())
+        self.assertIn("ابدأ بالحجم ده", self._note())
 
     def test_a_comfortably_strong_saving_is_sold_as_the_value_pick(self):
         self.large.price = _comfortably_strong_price(self.small.price, self.small.volume, 90)
@@ -4395,7 +4466,7 @@ class ValueLanguageTests(TestCase):
         note = self._note()
 
         self.assertIn("90 ملي", note)
-        self.assertIn("ابدأ بيه", note)
+        self.assertIn("ابدأ بالحجم ده", note)
         self.assertIn("سعر الملي أرخص", note)
 
     def test_a_small_saving_bans_the_superlatives_by_name(self):
@@ -4451,6 +4522,37 @@ class ValueLanguageTests(TestCase):
         value = sales_value.size_value(list(self.product.variants.all()))
 
         self.assertIsInstance(value.saving_pct, Decimal)
+
+    def test_both_tiers_scope_the_lead_instruction_to_the_size(self):
+        """Conversation 762. The line used to end in a bare "ابدأ بيه", which reads as "open
+        your reply with this" — and since it is attached to one product and was the only
+        per-product "start with" instruction in the context, the model obeyed it as a choice of
+        *perfume*. Invictus was ranked first with its 50ml in budget and lost to the 4th-ranked
+        perfume, the only one of the top four carrying this line.
+        """
+        for label, saving in (("strong", None), ("weak", 5)):
+            with self.subTest(tier=label):
+                if saving is not None:
+                    self._weaken_to(saving)
+                else:
+                    self.large.price = _comfortably_strong_price(
+                        self.small.price, self.small.volume, 90
+                    )
+                    self.large.save()
+
+                note = self._note()
+
+                self.assertIn("لما تذكر أسعار العطر ده", note)
+                self.assertIn("ترتيب الأحجام جوه العطر ده بس", note)
+                self.assertNotIn("ابدأ بيه بدل", note)
+
+    def test_neither_tier_invites_preferring_this_perfume(self):
+        """The line must say out loud what it does not mean, because the failure was the model
+        reading a size instruction as a product instruction."""
+        note = self._note()
+
+        self.assertIn("مش سبب تبدأ بيه ردك", note)
+        self.assertIn("ولا تفضّله على عطر تاني أنسب لطلب العميل", note)
 
     def test_cross_product_value_reports_only_recorded_dimensions(self):
         """"ليه أدفع 1200 بدل 500؟" must be answered from data, not invention."""
@@ -5372,6 +5474,105 @@ class SalesScenarioTests(TestCase):
         entry = results["ranked"][expensive.id]
 
         self.assertIn("مفيش حجم متاح داخل ميزانيته", entry.mismatches)
+
+    def test_a_tolerance_band_product_is_eligible_but_a_far_over_one_is_not(self):
+        """Conversation 757's defect, at the selection layer.
+
+        A perfume whose fitting size is a little over the stated number has not been ruled
+        out — `budget_label` calls exactly that size offerable. The old filter compared
+        against the bare budget, so the label and the filter disagreed and the better match
+        never reached the prompt.
+        """
+        near = self._make("Near Rose", "Rose", "", "Musk")
+        near.variants.all().delete()
+        ProductVariant.objects.create(product=near, volume=50, price=1100)  # +10%
+        far = self._make("Far Rose", "Rose", "", "Musk")
+        far.variants.all().delete()
+        ProductVariant.objects.create(product=far, volume=50, price=1300)  # +30%
+
+        names = [
+            product.name
+            for product in search_products(
+                {"gender": "male", "max_price": 1000, "notes": ["rose"]},
+                store=self.store,
+            )["products"]
+        ]
+
+        self.assertIn("Near Rose", names)
+        self.assertNotIn("Far Rose", names)
+
+    def test_an_in_budget_product_still_outscores_a_tolerance_band_one(self):
+        """Half credit, not full. Widening eligibility must not erase affordability from the
+        ranking — otherwise the fix trades one bug for its mirror image."""
+        inside = self._make("Inside Rose", "Rose", "", "Musk")
+        inside.variants.all().delete()
+        ProductVariant.objects.create(product=inside, volume=50, price=900)
+        near = self._make("Near Rose", "Rose", "", "Musk")
+        near.variants.all().delete()
+        ProductVariant.objects.create(product=near, volume=50, price=1100)
+
+        results = search_products(
+            {"gender": "male", "max_price": 1000, "notes": ["rose"]}, store=self.store
+        )
+        ranked = results["ranked"]
+
+        self.assertGreater(ranked[inside.id].score, ranked[near.id].score)
+
+    def test_a_tolerance_band_product_is_not_flagged_as_unaffordable(self):
+        """It is in the candidate list, so claiming it has nothing the customer can afford
+        would contradict its own presence there."""
+        near = self._make("Near Rose", "Rose", "", "Musk")
+        near.variants.all().delete()
+        ProductVariant.objects.create(product=near, volume=50, price=1100)
+
+        results = search_products(
+            {"gender": "male", "max_price": 1000, "notes": ["rose"]}, store=self.store
+        )
+
+        self.assertNotIn(
+            "مفيش حجم متاح داخل ميزانيته", results["ranked"][near.id].mismatches
+        )
+
+    def test_a_tolerance_band_perfume_is_not_blamed_on_price(self):
+        """A withdrawal needs a true cause, and this perfume has not been withdrawn."""
+        near = self._make("Near Rose", "Rose", "", "Musk")
+        near.variants.all().delete()
+        ProductVariant.objects.create(product=near, volume=50, price=1100)
+
+        results = search_products(
+            {"gender": "male", "max_price": 1000}, store=self.store, keep={"Near Rose"},
+        )
+
+        self.assertNotIn("Near Rose", results["dropped"])
+
+    def test_the_search_survives_a_float_budget(self):
+        """The production regression. `route` passes the intent's raw max_price straight
+        through, and the intent schema asks for a float — so the search filter has to accept
+        one. Every other budget test in this file passes an int, which is why a TypeError on
+        `float * Decimal` reached a real conversation."""
+        self._make("Rose One", "Rose", "", "Musk")
+
+        for value in (1000.0, "1000.0", "1000", Decimal("1000")):
+            with self.subTest(value=value):
+                results = search_products(
+                    {"gender": "male", "max_price": value, "notes": ["rose"]},
+                    store=self.store,
+                )
+                self.assertIn(
+                    "Rose One", [p.name for p in results["products"]]
+                )
+
+    def test_an_unusable_budget_does_not_break_the_search(self):
+        """A model can return something uncoercible. Better to search without the bound than
+        to 500 the whole turn."""
+        self._make("Rose One", "Rose", "", "Musk")
+
+        results = search_products(
+            {"gender": "male", "max_price": "غير محدد", "notes": ["rose"]},
+            store=self.store,
+        )
+
+        self.assertIn("Rose One", [p.name for p in results["products"]])
 
     def test_g_a_saved_budget_survives_a_later_turn(self):
         """merge_preferences must still restore it — the memory path is unchanged."""
@@ -8920,6 +9121,137 @@ class NothingAffordableStillQuotesARealPriceTests(TestCase):
         from products.services.ai.recommendation import _in_budget_note
 
         self.assertEqual(_in_budget_note(Product.objects.none(), None), "")
+
+    def test_tolerance_band_sizes_get_their_own_branch(self):
+        """The middle case, which used to fall into the all-❌ branch.
+
+        A size 10% over the stated number is ⚠️, and `budget_label` already tells the model it
+        may offer it. Sending it down the "nothing here is in your budget" path — which
+        sanctions exactly one price and forbids every other number — was both untrue and how a
+        well-matched perfume lost to a cheaper badly-matched one in conversation 757.
+        """
+        note = self._note(1000, [(50, 1100, "normal", None)])
+
+        self.assertIn("أعلى منها شوية", note)
+        self.assertIn("1100", note)
+        self.assertNotIn("مفيش أي حجم في القائمة دي", note)
+        self.assertNotIn("الرقم الوحيد", note)
+
+    def test_the_tolerance_branch_still_forbids_the_cheap_mismatch(self):
+        note = self._note(1000, [(50, 1100, "normal", None)])
+
+        self.assertIn("ممنوع ترشح عطر مش مناسب لطلبه بس لأنه أرخص", note)
+
+    def test_an_all_far_over_shortlist_still_names_exactly_one_figure(self):
+        """Evaluation scenario X3 must not regress: when every size is ❌ the note carves out
+        the single cheapest price and forbids the rest."""
+        note = self._note(300, [(50, 1240, "normal", None), (100, 2100, "normal", None)])
+
+        self.assertIn("الرقم الوحيد", note)
+        self.assertIn("1240", note)
+        self.assertNotIn("2100", note)
+        self.assertNotIn("أعلى منها شوية", note)
+
+    def test_an_in_budget_size_still_wins_over_a_tolerance_band_one(self):
+        """With something genuinely affordable present, the ⚠️ branch must not fire."""
+        note = self._note(1000, [(50, 900, "normal", None), (90, 1100, "normal", None)])
+
+        self.assertIn("فيه أحجام داخل ميزانية العميل", note)
+        self.assertNotIn("أعلى منها شوية", note)
+
+
+class GymRequestBeatsACheaperMismatchTests(TestCase):
+    """Conversation 757, end to end at the selection and ranking layers.
+
+    The customer asked for a fresh gym perfume, said 1000, then asked for a 90ml. The reply
+    offered Y Eau de Parfum (Formal) and Armani Code (Evening / Fall-Winter) — and when
+    challenged, conceded Armani Code is "مناسب أكتر للسهرات والليل".
+
+    The ranking was never the problem: the two perfumes that matched were already first in the
+    model's context. What beat them was price. Every genuine gym perfume's 90ml sat just over
+    1000, and three separate instructions told the model to lead with a size strictly inside
+    budget — while `budget_label` was labelling those same sizes offerable. This pins the
+    selection half: the matching perfumes must be present, and must outrank the cheap
+    mismatches.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Test House")
+
+    def _make(self, name, occasion, season, prices):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender="male",
+            occasion=occasion, season=season,
+            top_notes="Bergamot, Marine Notes", middle_notes="Hedione",
+            base_notes="Musk",
+        )
+        for volume, price in prices:
+            ProductVariant.objects.create(
+                product=product, volume=volume, price=price, bottle_type="normal"
+            )
+        return product
+
+    def _ranked_names(self):
+        intent = {
+            "gender": "male", "max_price": 1000,
+            "occasion": "sport", "notes": ["fresh"],
+        }
+        results = search_products(intent, store=self.store)
+        ranked = sales_ranking.rank(list(results["products"]), intent)
+        return [entry.product.name for entry in ranked]
+
+    def test_the_gym_match_outranks_the_cheaper_evening_perfume(self):
+        # The real catalogue numbers from the conversation.
+        self._make("Acqua di Gio", "Casual", "Spring/Summer", [(50, 503), (90, 1032)])
+        self._make("Armani Code", "Evening", "Fall/Winter", [(50, 633), (90, 866)])
+        self._make("Y Eau de Parfum", "Formal", "All Seasons", [(50, 594), (90, 900)])
+
+        names = self._ranked_names()
+
+        self.assertLess(names.index("Acqua di Gio"), names.index("Armani Code"))
+        self.assertLess(names.index("Acqua di Gio"), names.index("Y Eau de Parfum"))
+
+    def test_the_only_sport_perfume_is_visible_on_a_tight_budget(self):
+        """Invictus is the catalogue's only Sport perfume. At a 500 budget the strict filter
+        hid it from a customer who had asked for something for the gym."""
+        invictus = self._make("Invictus", "Sport", "Spring/Summer", [(50, 540), (90, 1102)])
+
+        names = [
+            product.name
+            for product in search_products(
+                {"gender": "male", "max_price": 500, "occasion": "sport"},
+                store=self.store,
+            )["products"]
+        ]
+
+        self.assertIn(invictus.name, names)
+
+    def test_the_over_budget_size_is_offered_rather_than_hidden(self):
+        """The 90ml the customer asked for must reach the prompt, labelled — not vanish."""
+        product = self._make(
+            "Acqua di Gio", "Casual", "Spring/Summer", [(50, 503), (90, 1032)]
+        )
+
+        block = format_product(product, max_price=Decimal("1000"))
+
+        self.assertIn("1032", block)
+        self.assertIn("⚠️", block)
+        self.assertIn("تقدر تعرضه مع التوضيح", block)
+
+    def test_the_persona_states_the_perfume_before_size_ordering(self):
+        """Conversation 762's fix, at the persona layer: the 💡 line decides which *size* to
+        lead with, never which *perfume* to pick."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("العطر الأول، الحجم بعده", prompt)
+        self.assertIn("مش سبب تختار عطر", prompt)
+        self.assertIn("مش أقل مناسبة", prompt)
+
+    def test_the_persona_marker_budget_is_not_raised_to_fit_the_rule(self):
+        """The ratchet's own instruction is to consolidate rather than raise the number, and
+        adding this rule tripped it — so two overlapping 💡 bullets were merged into one."""
+        self.assertLess(get_system_prompt(self.store).count("🔴"), 35)
 
 
 class ArabicNameIsNotTheReferentTests(TestCase):

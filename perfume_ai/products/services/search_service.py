@@ -4,6 +4,7 @@ from products.models import Product, ProductVariant
 from .product_formatting import is_variant_available
 from .sales import naming, ranking, similarity
 from .sales.notes import expand_request_term
+from .sales.value import budget_ceiling, budget_tier
 
 
 # The AI only ever picks 1-2 perfumes out of whatever we hand it, but every
@@ -191,11 +192,15 @@ def _drop_reason(product, intent, max_price):
             return "مش من البراند اللي طلبه"
 
     # Budget last, and only when it is demonstrably the blocker.
+    #
+    # "Demonstrably" now includes the tolerance band: a perfume whose cheapest size is a little
+    # over the stated number has not been ruled out by price, it is an upsell the reply is
+    # allowed to make. Blaming price for it would withdraw a perfume that is still on offer.
     if max_price:
         cheapest = min(
             (variant.price for variant in product.variants.all()), default=None
         )
-        if cheapest is not None and cheapest > max_price:
+        if cheapest is not None and budget_tier(cheapest, max_price) == "far":
             return f"أرخص حجم فيه {cheapest:.0f} جنيه، فوق ميزانيته"
 
     return None
@@ -281,7 +286,22 @@ def search_products(intent, store=None, keep=()):
     if notes:
         exact = exact.filter(_notes_query(notes)).distinct()
     if max_price:
-        exact = exact.filter(variants__price__lte=max_price).distinct()
+        # The tolerance band, not the bare budget. A product qualifies on having *a* size worth
+        # offering, and a size a little over the stated number is one — budget_label says so to
+        # the model in as many words, and every size still arrives labelled so the reply can be
+        # honest about which is which.
+        #
+        # Conversation 757 is the cost of the stricter rule: at a 1000 budget it was inert (30
+        # of 30 products qualified either way), but at 500 it admitted 4 products out of 30 and
+        # hid Invictus — the only Sport perfume in the catalogue — from a customer who had asked
+        # for something for the gym.
+        #
+        # The bound comes from `budget_ceiling` rather than being multiplied out here: the
+        # intent hands over a float, and float × Decimal raises TypeError. Inlining it cost a
+        # production error on the first real conversation after the change.
+        ceiling = budget_ceiling(max_price)
+        if ceiling is not None:
+            exact = exact.filter(variants__price__lte=ceiling).distinct()
 
     # Split what the conversation is on into what still qualifies and what a new constraint
     # has just ruled out. The second half matters as much as the first: a perfume vanishing
@@ -298,7 +318,11 @@ def search_products(intent, store=None, keep=()):
     if keep:
         qualifying = base.filter(name__in=keep)
         if max_price:
-            qualifying = qualifying.filter(variants__price__lte=max_price).distinct()
+            ceiling = budget_ceiling(max_price)
+            if ceiling is not None:
+                qualifying = qualifying.filter(
+                    variants__price__lte=ceiling
+                ).distinct()
         surviving = frozenset(qualifying.values_list("name", flat=True))
     else:
         surviving = frozenset()

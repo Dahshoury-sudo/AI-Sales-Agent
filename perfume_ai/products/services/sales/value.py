@@ -41,6 +41,78 @@ from decimal import Decimal
 # would make the tier of a pair like that a coin toss whenever the threshold lands near them.
 STRONG_VALUE_SAVING_PCT = Decimal("22")
 
+# How far above a stated budget a size may sit and still be worth offering. A size just over
+# the number the customer named is a real option — `budget_label` has always said so in as many
+# words ("تقدر تعرضه مع التوضيح") — and past this multiple it is far enough out that offering it
+# reads as not having listened.
+#
+# Lives here, next to the rest of the price arithmetic, because three separate places needed to
+# answer "is this offerable against the budget?" and only one of them used this number. The
+# other two compared against the bare budget, which is what lost conversation 757: a customer
+# asked for a fresh gym perfume with 1000 to spend, and the two perfumes that actually matched
+# had their 90ml at 1032 and 1100 — inside this band, labelled offerable, ranked first in the
+# model's own context — while the reply went to a Formal and an Evening/Fall-Winter perfume
+# whose only merit was a 90ml under 1000.
+BUDGET_TOLERANCE = Decimal("1.2")
+
+
+def as_budget(value):
+    """Coerce an extracted budget to Decimal, or None when it is unusable.
+
+    The intent schema asks for a float and a model may answer "500" or "500.0", so this goes
+    through `str` rather than `Decimal(value)` directly — `Decimal(999.99)` is the binary
+    expansion 999.98999…, which can fall the wrong side of a boundary comparison.
+
+    Mirrors `recommendation._coerce_budget` and `ranking._as_decimal`, which each predate this
+    module owning the budget arithmetic. Callers that already hold a Decimal do not need it.
+    """
+    if value is None:
+        return None
+    try:
+        budget = Decimal(str(value))
+    except (ArithmeticError, TypeError, ValueError):
+        return None
+    return budget if budget > 0 else None
+
+
+def budget_ceiling(max_price):
+    """The highest price still worth offering against this budget, or None if unusable.
+
+    Exists because a caller needs the bound as a *number* for a SQL comparison rather than a
+    predicate. Doing that inline cost a production TypeError: `max_price` arrives from the
+    intent as a float, and float × Decimal is unsupported — the one arithmetic pairing
+    `_coerce_budget`'s own docstring warns about. Int × Decimal is fine, which is exactly why
+    tests passing 1000 did not catch what 1000.0 does.
+    """
+    budget = as_budget(max_price)
+    return None if budget is None else budget * BUDGET_TOLERANCE
+
+
+def budget_tier(price, max_price):
+    """Where one price sits against a budget: "in", "near", or "far".
+
+    One rule with three callers — `product_formatting.budget_label` for what the model is told
+    about a size, `search_service` for which products are eligible, and `ranking` for how much
+    budget credit a product earns. Those had drifted apart, and the drift was invisible because
+    each was locally reasonable: the label said a size 3% over was offerable while the search
+    filter had already dropped its product.
+
+    "near" means over the budget but within `BUDGET_TOLERANCE` — recommendable, with the real
+    price and the overage said out loud. "far" is not offerable at all.
+
+    No budget means nothing can be over it, so everything is "in".
+    """
+    budget = as_budget(max_price)
+    if budget is None:
+        return "in"
+    ceiling = budget * BUDGET_TOLERANCE
+    price = Decimal(str(price))
+    if price <= budget:
+        return "in"
+    if price <= ceiling:
+        return "near"
+    return "far"
+
 
 def price_per_ml(variant):
     """Cost of one millilitre, or None when the size makes that meaningless."""
@@ -172,24 +244,39 @@ def size_value_note(value):
     the size is still named and every number still given, but the superlatives are banned by
     name rather than left for the model to reach for: a 0.4% per-ml gap presented as
     "أحسن اختيار من حيث القيمة" is a claim the data does not support.
+
+    Both tiers say "ابدأ بالحجم ده" and then say what that does *not* mean. The old wording was
+    a bare "ابدأ بيه", which reads as "open your reply with this" — and because the line is
+    attached to one product and was the only per-product "start with" instruction in the whole
+    context, the model obeyed it as a choice of *perfume*. Conversation 762: a customer wanted a
+    fresh gym perfume with 1000 to spend, Invictus was ranked first and listed first with its
+    50ml in budget at 540, and the reply led with Le Male — the 4th-ranked perfume, and the only
+    one of the top four carrying this line. Invictus carries none, because its 90ml is dearer
+    per ml than its 50ml, so a perfume was passed over for a reason that has nothing to do with
+    whether it suits the gym.
     """
     if value is None:
         return ""
 
     money, warning = _money_and_warning(value)
+    # Said on both tiers: this line orders *sizes inside this perfume*, and nothing else.
+    scope = (
+        f"لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر "
+        f"باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك "
+        f"ولا تفضّله على عطر تاني أنسب لطلب العميل."
+    )
 
     if value.is_strong:
         return (
             f"💡 Value Pick: الـ {value.best.volume} ملي أحسن value — "
             f"كمية أكتر بـ {value.extra_volume_pct}%، {money}. "
-            f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام "
-            f"باختصار. {warning}"
+            f"{scope} {warning}"
         )
 
     return (
         f"💡 اقتراح حجم: الـ {value.best.volume} ملي — "
         f"كمية أكتر بـ {value.extra_volume_pct}%، {money}. "
-        f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. "
+        f"{scope} "
         f"❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" "
         f"ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. "
         f"{warning}"
