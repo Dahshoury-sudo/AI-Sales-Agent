@@ -13,10 +13,27 @@ Also fixed here: the old comparison picked its baseline by smallest *volume* whi
 the winner by lowest *price per ml*, with nothing guaranteeing the winner cost more. Sizes
 like 30ml@500 alongside 50ml@400 produced "بفرق -100 جنيه بس". The baseline is now the
 lowest-*priced* bottle, so the difference cannot be negative.
+
+Third defect, fixed by the tier below: correct arithmetic is not automatically a selling
+point. `size_value` fires on any per-ml gap at all, which is 60 of 92 catalogue products —
+the smallest being 0.4% — and every one of them arrived labelled "أحسن value" with an order
+to lead with it, so the bot opened nearly every reply with a value verdict and the
+superlative stopped carrying information. The gap is still reported below
+STRONG_VALUE_SAVING_PCT, because the misreading guarded against above does not get less
+likely when the saving is small; what goes is the claim that a 0.4% gap is the best choice.
 """
 
 from dataclasses import dataclass
 from decimal import Decimal
+
+# The per-ml saving a size must clear before it is sold as *the* value pick. Set from the
+# catalogue's own distribution: the median gap is 12.6%, so a lower bar makes the verdict the
+# default rather than a recommendation. At 15% it applies to 22 of 92 products.
+#
+# Compared in Decimal, never float. Real catalogue rows straddle this by hundredths of a
+# point — Asad is 15.022% and Eros 14.998%, both of which render as "15.0%" — so a float
+# round-trip would make the tier of those two products a coin toss.
+STRONG_VALUE_SAVING_PCT = Decimal("15")
 
 
 def price_per_ml(variant):
@@ -49,6 +66,20 @@ class SizeValue:
     @property
     def costs_more(self):
         return self.extra_price > 0
+
+    @property
+    def saving_pct(self):
+        """How much cheaper the best size is per millilitre, as a percentage.
+
+        Decimal in, Decimal out — see STRONG_VALUE_SAVING_PCT on why this must not go
+        through float.
+        """
+        return (self.baseline_per_ml - self.best_per_ml) / self.baseline_per_ml * 100
+
+    @property
+    def is_strong(self):
+        """Whether the per-ml gap is wide enough to sell as the value pick."""
+        return self.saving_pct >= STRONG_VALUE_SAVING_PCT
 
 
 def size_value(variants):
@@ -94,16 +125,14 @@ def size_value(variants):
     )
 
 
-def size_value_note(value):
-    """Render a SizeValue for a prompt, keeping "costs more" and "better per ml" apart.
+def _money_and_warning(value):
+    """The price facts, and the ban that stops them being read backwards.
 
-    The explicit ban at the end is not decoration. The persona already says not to invent
-    prices and the model still called a dearer bottle cheaper, because the input sentence
-    invited it. This one states the direction of the difference in words.
+    Shared by both tiers of `size_value_note`. The direction of the price difference has to
+    be stated in words whether or not the gap is worth selling on, because the regression
+    this module exists to prevent — a dearer bottle described as saving the customer money —
+    does not get less likely when the saving is small.
     """
-    if value is None:
-        return ""
-
     if value.costs_more:
         money = (
             f"أغلى بـ {value.extra_price:.0f} جنيه في الإجمالي "
@@ -122,11 +151,42 @@ def size_value_note(value):
         )
         warning = "❌ ممنوع تخترع فرق سعر مش موجود."
 
+    return money, warning
+
+
+def size_value_note(value):
+    """Render a SizeValue for a prompt, at whatever strength the arithmetic earns.
+
+    The explicit ban at the end is not decoration. The persona already says not to invent
+    prices and the model still called a dearer bottle cheaper, because the input sentence
+    invited it. This one states the direction of the difference in words.
+
+    Two tiers, because having only the loud one was its own defect — see the module
+    docstring. Above STRONG_VALUE_SAVING_PCT the size is sold as the value pick. Below it
+    the size is still named and every number still given, but the superlatives are banned by
+    name rather than left for the model to reach for: a 0.4% per-ml gap presented as
+    "أحسن اختيار من حيث القيمة" is a claim the data does not support.
+    """
+    if value is None:
+        return ""
+
+    money, warning = _money_and_warning(value)
+
+    if value.is_strong:
+        return (
+            f"💡 Value Pick: الـ {value.best.volume} ملي أحسن value — "
+            f"كمية أكتر بـ {value.extra_volume_pct}%، {money}. "
+            f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام "
+            f"باختصار. {warning}"
+        )
+
     return (
-        f"💡 Value Pick: الـ {value.best.volume} ملي أحسن value — "
+        f"💡 اقتراح حجم: الـ {value.best.volume} ملي — "
         f"كمية أكتر بـ {value.extra_volume_pct}%، {money}. "
-        f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام "
-        f"باختصار. {warning}"
+        f"ابدأ بيه بدل ما تسرد الأسعار كلها من الأول، وبعدها اذكر باقي الأحجام باختصار. "
+        f"❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" "
+        f"ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. "
+        f"{warning}"
     )
 
 

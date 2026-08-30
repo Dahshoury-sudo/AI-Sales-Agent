@@ -204,7 +204,8 @@ def _field_or_placeholder(value):
     return value if (value or "").strip() else _NOT_RECORDED
 
 
-def format_product(product, max_price=None, brief=False, show_prices=True):
+def format_product(product, max_price=None, brief=False, show_prices=True,
+                   show_value_pick=True):
     """Render one product as a prompt block.
 
     brief=True drops stock status, out-of-stock sizes and the scent/performance
@@ -215,6 +216,12 @@ def format_product(product, max_price=None, brief=False, show_prices=True):
     prompt forbids mentioning any price, while this block was simultaneously instructing
     the model to lead with them — two opposite orders in one request, and an "أوفر" verdict
     about one perfume's size ladder could be read back as a verdict about the other.
+
+    show_value_pick=False drops only the value pick, keeping sizes and prices. Recommendation
+    needs the narrower version: with a budget stated it must still show every price so the
+    ✅/⚠️/❌ budget labels mean something, but a turn about *which perfume* should not open
+    with a verdict about *which size*. Leading with the size on every recommended perfume is
+    how one injected line became the opening sentence of nearly every reply.
     """
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
@@ -250,7 +257,8 @@ Description: {product.description}
     out_of_stock_text = "، ".join(out_of_stock) if out_of_stock else "لا يوجد"
     extras = "\n".join(
         line for line in (
-            value_pick_note(product, variants, max_price) if show_prices else "",
+            value_pick_note(product, variants, max_price)
+            if show_prices and show_value_pick else "",
             _exclusive_selling_note(product),
             _missing_data_note(product),
         ) if line
@@ -281,7 +289,8 @@ Description: {product.description}
 """
 
 
-def format_products(products, max_price=None, limit=None, brief=False, show_prices=True):
+def format_products(products, max_price=None, limit=None, brief=False, show_prices=True,
+                    show_value_pick=True):
     """Render several products, optionally capped.
 
     The cap is a safety net on prompt size: callers should already be handing over
@@ -290,6 +299,9 @@ def format_products(products, max_price=None, limit=None, brief=False, show_pric
     """
     selected = islice(products, limit) if limit else products
     return "".join(
-        format_product(product, max_price=max_price, brief=brief, show_prices=show_prices)
+        format_product(
+            product, max_price=max_price, brief=brief,
+            show_prices=show_prices, show_value_pick=show_value_pick,
+        )
         for product in selected
     )

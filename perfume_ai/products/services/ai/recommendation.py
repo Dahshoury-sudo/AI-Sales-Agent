@@ -26,7 +26,8 @@ def _coerce_budget(value):
     return budget if budget > 0 else None
 
 
-def _format_products(products, max_price=None, ranked=None, brief_for=()):
+def _format_products(products, max_price=None, ranked=None, brief_for=(),
+                     show_value_pick=True):
     """Thin wrapper over the shared renderer, capped for prompt size.
 
     search_products already applies the LIMIT; the cap here only bounds the
@@ -43,6 +44,11 @@ def _format_products(products, max_price=None, ranked=None, brief_for=()):
     turn, and instruction 7 asks the model to lean on it, so the same sentence came back four
     times. Prices and sizes stay, so a follow-up can still answer "بكام".
 
+    `show_value_pick=False` keeps those prices while dropping the size verdict. A
+    recommendation turn is about which *perfume*, not which *size*, and with three perfumes
+    in context the old behaviour handed the model three separate "lead with this size" orders
+    at once.
+
     The ⚠️ mismatch half is deliberately kept. It is a safety signal, not a selling point,
     and it never goes stale — dropping it along with the reasons is what let a reply offer an
     Evening/Formal perfume as "أنسب للنهار في المكتب" on the very turn the warning fired.
@@ -50,12 +56,18 @@ def _format_products(products, max_price=None, ranked=None, brief_for=()):
     value appears.
     """
     if not ranked and not brief_for:
-        return format_products(products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT)
+        return format_products(
+            products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT,
+            show_value_pick=show_value_pick,
+        )
 
     blocks = []
     for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
         seen = product.name in brief_for
-        block = format_products([product], max_price=max_price, brief=seen)
+        block = format_products(
+            [product], max_price=max_price, brief=seen,
+            show_value_pick=show_value_pick,
+        )
         note = reasons_note((ranked or {}).get(product.id), mismatches_only=seen)
         blocks.append(f"{block}{note}\n" if note else block)
     return "".join(blocks)
@@ -365,6 +377,11 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         context = _format_products(
             products, max_price=max_price,
             ranked=(search or {}).get("ranked"), brief_for=brief_for,
+            # Only when a budget is on the table. Without one, `price_instruction` below
+            # forbids mentioning prices or sizes at all, so injecting a line that orders the
+            # model to lead with a size put two opposite instructions in one request — the
+            # same defect ComparisonSuppressesPricesTests pinned for comparison mode.
+            show_value_pick=bool(max_price),
         )
         context += _named_but_missing_block(message, store, products, max_price)
         context += _reference_block(search, max_price)
@@ -391,6 +408,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         context = _format_products(
             alternatives, max_price=max_price,
             ranked=(search or {}).get("ranked"), brief_for=brief_for,
+            show_value_pick=bool(max_price),  # same reasoning as case 1
         )
         context += _reference_block(search, max_price)
         price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."

@@ -4312,6 +4312,98 @@ class ValueLanguageTests(TestCase):
 
         self.assertIsNone(sales_value.price_per_ml(self.small))
 
+    # ── Materiality tier ──────────────────────────────────────────────────────────────
+    # size_value fires on any per-ml gap at all: 60 of 92 catalogue products, the smallest
+    # being 0.4%, every one labelled "أحسن value" with an order to lead with it. The
+    # superlative stopped meaning anything and the bot opened nearly every reply with a
+    # value verdict. These pin the tier that reserves the claim for a gap worth selling on.
+
+    def _weaken_to(self, saving_pct):
+        """Reprice the 90ml so its per-ml saving lands just under/over a given percentage."""
+        baseline_per_ml = Decimal(self.small.price) / Decimal(self.small.volume)
+        target_per_ml = baseline_per_ml * (1 - Decimal(saving_pct) / 100)
+        self.large.price = (target_per_ml * Decimal(self.large.volume)).quantize(Decimal("1"))
+        self.large.save()
+
+    def test_the_default_fixture_is_a_strong_saving(self):
+        """18.3% — the anchor the rest of this file's expectations rest on."""
+        value = sales_value.size_value(list(self.product.variants.all()))
+
+        self.assertTrue(value.is_strong)
+        self.assertIn("💡 Value Pick", self._note())
+        self.assertIn("أحسن value", self._note())
+
+    def test_a_small_saving_is_not_sold_as_the_value_pick(self):
+        self._weaken_to(5)
+
+        note = self._note()
+
+        self.assertNotIn("💡 Value Pick", note)
+        self.assertNotIn("أحسن value", note)
+        self.assertIn("💡 اقتراح حجم", note)
+
+    def test_a_small_saving_still_names_the_size_and_the_numbers(self):
+        """Silence here would regress eval scenario P1, which marks a bare price list with
+        no recommendation as a weak sales answer."""
+        self._weaken_to(5)
+
+        note = self._note()
+
+        self.assertIn("90 ملي", note)
+        self.assertIn("ابدأ بيه", note)
+        self.assertIn("سعر الملي أرخص", note)
+
+    def test_a_small_saving_bans_the_superlatives_by_name(self):
+        """The phrasing customers were actually seeing on every perfume."""
+        self._weaken_to(5)
+
+        note = self._note()
+
+        for banned in ('"أحسن قيمة"', '"أحسن اختيار"', '"أفضل قيمة"', '"أحسن قيمة مقابل سعر"'):
+            with self.subTest(banned=banned):
+                self.assertIn(banned, note)
+
+    def test_a_small_saving_keeps_the_not_cheaper_guard(self):
+        """The whole reason the weak tier still renders. Dropping the line below the
+        threshold would strip this guard from 38 catalogue products and reopen the
+        regression this module was written for."""
+        self._weaken_to(5)
+
+        self.assertIn('ممنوع تقول إنه "أرخص"', self._note())
+
+    def test_the_threshold_boundary_is_exact_and_decimal(self):
+        """Real rows straddle this by hundredths of a point: Asad is 15.022% and Eros
+        14.998%, and both render as "15.0%". A float round-trip would make their tier a
+        coin toss, so the comparison stays in Decimal."""
+        variants = list(self.product.variants.all())
+        self.small.price, self.small.volume = 642, 50
+        self.small.save()
+
+        # 15.022% — Asad's real numbers.
+        self.large.price, self.large.volume = 982, 90
+        self.large.save()
+        self.assertTrue(sales_value.size_value(list(self.product.variants.all())).is_strong)
+
+        # 14.998% — Eros's real numbers, three hundredths the other side.
+        self.small.price, self.small.volume = 666, 50
+        self.small.save()
+        self.large.price, self.large.volume = 1019, 90
+        self.large.save()
+        self.assertFalse(sales_value.size_value(list(self.product.variants.all())).is_strong)
+
+    def test_exactly_the_threshold_counts_as_strong(self):
+        self._weaken_to(sales_value.STRONG_VALUE_SAVING_PCT)
+
+        value = sales_value.size_value(list(self.product.variants.all()))
+
+        self.assertEqual(value.saving_pct.quantize(Decimal("1")), Decimal("15"))
+        self.assertTrue(value.is_strong)
+
+    def test_saving_pct_never_goes_through_float(self):
+        value = sales_value.size_value(list(self.product.variants.all()))
+
+        self.assertIsInstance(value.saving_pct, Decimal)
+
     def test_cross_product_value_reports_only_recorded_dimensions(self):
         """"ليه أدفع 1200 بدل 500؟" must be answered from data, not invention."""
         cheap = Product.objects.create(
@@ -4425,6 +4517,70 @@ class ComparisonSuppressesPricesTests(TestCase):
 
         self.assertIn("642", block)
         self.assertIn("💡 Value Pick", block)
+
+    def test_show_value_pick_false_drops_the_verdict_but_keeps_the_prices(self):
+        """The narrower flag recommendation needs: with a budget stated it must still show
+        every price so the ✅/⚠️/❌ labels mean something, but a turn about which *perfume*
+        should not open with a verdict about which *size*."""
+        block = format_product(self.product, show_value_pick=False)
+
+        self.assertIn("642", block)
+        self.assertIn("Available Sizes", block)
+        self.assertNotIn("💡 Value Pick", block)
+        self.assertNotIn("💡 اقتراح حجم", block)
+
+    def test_show_prices_false_still_implies_no_value_pick(self):
+        """Comparison mode relies on the broader flag continuing to cover both."""
+        block = format_product(self.product, show_prices=False)
+
+        self.assertNotIn("💡 Value Pick", block)
+        self.assertNotIn("💡 اقتراح حجم", block)
+
+
+class RecommendationDropsTheSizeVerdictTests(TestCase):
+    """A recommendation turn is about which perfume, not which size.
+
+    recommendation.py's no-budget branch tells the model 🔴🔴 "ممنوع تذكر الأسعار أو الأحجام
+    في الترشيح" while the product block it injected simultaneously ordered it to lead with a
+    size — the same two-opposite-orders defect ComparisonSuppressesPricesTests pinned for
+    comparison mode, and with three perfumes in context it arrived three times over.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+        )
+        ProductVariant.objects.create(product=self.product, volume=50, price=642)
+        ProductVariant.objects.create(product=self.product, volume=90, price=944)
+
+    def _context(self, max_price):
+        from products.services.ai.recommendation import _format_products
+
+        return _format_products(
+            Product.objects.filter(pk=self.product.pk),
+            max_price=max_price,
+            show_value_pick=bool(max_price),
+        )
+
+    def test_no_budget_means_no_size_verdict(self):
+        context = self._context(None)
+
+        self.assertNotIn("💡 Value Pick", context)
+        self.assertNotIn("💡 اقتراح حجم", context)
+
+    def test_a_stated_budget_keeps_the_size_verdict(self):
+        """With a budget the prompt does mention prices, so the steer is coherent again."""
+        context = self._context(Decimal("1000"))
+
+        self.assertIn("💡 Value Pick", context)
+
+    def test_the_perfume_is_still_recommendable_without_a_budget(self):
+        """Dropping the verdict must not drop the perfume."""
+        context = self._context(None)
+
+        self.assertIn("Dior Sauvage", context)
 
 
 class ObjectionDetectionTests(TestCase):
