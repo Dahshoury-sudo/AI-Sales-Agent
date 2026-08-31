@@ -29,7 +29,7 @@ perfumes at exactly 7.50 — notes 2.0 + occasion 1.0 + gender 3.0 + budget 1.5 
 `notes` was a boolean and every daytime occasion answered "gym" in full. The sort is stable,
 so what reached the model was the fallback ordering: cheapest first. A Fall/Winter gourmand
 led a gym request at 400 جنيه and the only `Sport`-tagged perfume in the catalogue came
-fourth. Hence `_note_fit` and `_PARTIAL_OCCASION_CREDIT`: both exist to make a signal
+fourth. Hence `note_fit` and `_PARTIAL_OCCASION_CREDIT`: both exist to make a signal
 capable of ordering the candidates that satisfy it, not just separating them from the ones
 that do not.
 """
@@ -284,8 +284,13 @@ NOTE_MASS_SHARE = 0.6
 ACCORD_SHARE = 0.4
 
 
-def _note_fit(term, profile, accords):
+def note_fit(term, profile, accords):
     """How well one perfume answers one requested note or accord, 0.0-1.0.
+
+    Public because `fallback.suggest_alternatives` needs the same verdict. It cannot reach it
+    through `rank`: a `Ranked.matched_something` is true for a budget reason as well as a note
+    one, and the fallback path must promote a perfume only because it actually smells like
+    what the customer asked for.
 
     This replaces a boolean membership test, and the boolean is the whole bug behind
     conversation 736. `notes: ["fresh"]` made `len(matched) / len(wanted)` either 1/1 or
@@ -379,7 +384,7 @@ def rank(products, intent, reference=None, keep=()):
                 # one of them zero, because no product has a note literally named "sweet" —
                 # so the ordering fell back to bulk-oil stock and the reasons line came out
                 # empty, leaving the model no evidence to recommend from.
-                fit = _note_fit(note, profile, fit_accords)
+                fit = note_fit(note, profile, fit_accords)
                 fits.append(fit)
                 if fit > 0:
                     matched_notes.append(note)

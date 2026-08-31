@@ -3,6 +3,8 @@ from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .fallback import suggest_alternatives
+from .static_faq_service import normalize_arabic
+from .sales import described as sales_described
 
 
 def _named_in_message(message, store):
@@ -96,6 +98,97 @@ def _referent_from_conversation(message, store, conversation):
     return [by_name[name] for name in offered if name in by_name]
 
 
+# Vocabulary that makes a message a question about whether we *stock* something, and vocabulary
+# that makes it a question about price or size. A message carrying the first and none of the second
+# is asking one thing only, and answering it with a price list is answering something else.
+_AVAILABILITY_WORDS = ("متوفر", "متوفرة", "موجود", "موجودة", "عندكو", "عندكم", "عندك", "بتوفروا")
+_PRICE_OR_SIZE_WORDS = (
+    "بكام", "كام", "سعر", "اسعار", "ثمن", "غالي", "رخيص", "ملي", "مل ", "حجم", "احجام", "اوفر",
+)
+
+
+def _availability_only_hint(message):
+    """One line saying this message asked about availability and nothing else.
+
+    Instruction 1 below already forbids both halves of what conversation 795 turn 2 did — the dead
+    "أه متوفر عندنا" that stops the conversation, and the price dump nobody asked for — and the
+    reply did both anyway, four sizes deep. A rule the model reads past is worth restating as a
+    fact about *this* message, which is the one thing a static prompt cannot know.
+
+    Derived rather than guessed, and deliberately not `show_prices=False`: hiding the prices on the
+    strength of a keyword match means a customer who did want them gets nothing, and the model
+    then has no data to fall back on. A labelled hint it can weigh is the safer shape.
+
+    Returns "" for every other message, so the caller concatenates it unconditionally.
+    """
+    normalized = normalize_arabic(message or "")
+    if not normalized:
+        return ""
+    if not any(word in normalized for word in _AVAILABILITY_WORDS):
+        return ""
+    if any(word in normalized for word in _PRICE_OR_SIZE_WORDS):
+        return ""
+    return (
+        "\n🔴 ملاحظة على الرسالة دي: العميل سأل عن التوفر بس — مفيش في كلامه أي سؤال عن سعر "
+        "ولا حجم. أكّد التوفر في جملة واحدة وكمّل بسؤال يضيّق. ❌ ممنوع تسرد أسعار أو أحجام "
+        "في الرد ده.\n"
+    )
+
+
+def _pending_lookup_block(message):
+    """Record, inside the turn's own context, a question the catalogue could not answer.
+
+    The customer named a perfume, `naming.may_name_a_perfume` agreed it was a name, and neither
+    the deterministic matcher nor the resolver could place it. The honest reply to that is
+    "لحظة أتأكدلك منه" — and until now the pipeline forgot it had said so the instant the reply
+    was sent, because `described._deferred_in` tracks deferrals by *catalogue* name and a deferral
+    is by definition about a name the catalogue does not have.
+
+    Conversation 795 is that amnesia end to end. Turn 1 deferred on "لادور بخور"; turn 2's
+    "طب اتأكدلي" found no record of it, fell through to `_referent_from_conversation`, and was
+    answered with the previous turn's perfume; turn 3 asked the same question again and got the
+    same wrong perfume, this time with an invented بخور note attached to make it fit.
+
+    The customer's **raw message** is stored, not a name extracted from it. Extracting one means
+    guessing which words were the perfume, and a guess written into the record is a fabrication
+    the next turn will treat as fact. The wording is already in the history; what was missing is
+    the flag that it is still open.
+
+    `described.pending_lookup` reads this back, and `router` escalates on the count.
+    """
+    return (
+        "═══ سؤال معلّق ═══\n"
+        f"{sales_described.PENDING_LOOKUP_MARKER} {(message or '').strip()}\n"
+        "العميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n"
+        "🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش "
+        "في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n"
+    )
+
+
+# What the injected rows are, on a turn where the customer named something else. Without this the
+# model reads a block headed "بيانات المنتجات الحقيقية" and reasonably concludes the perfume in it
+# is the perfume being asked about — which is how conversation 795 answered "عندكو لادور بخور ؟"
+# with Stronger With You's price list twice, and the second time grew it a بخور note to match.
+_NOT_THE_PERFUME_ASKED_ABOUT = (
+    "⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل "
+    "عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي "
+    "نوتة أو ريحة أو سعر منهم.\n"
+)
+
+
+# Appended to the found-branch instructions when the rows in context are the *referent* and the
+# customer named something else. Rule 1 up there already says most of this in the abstract;
+# conversation 795 turns 2 and 3 are what it costs when nothing in the data marks which perfume is
+# which. Numbered 14 to continue that list rather than restart it.
+_DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى عطر مش موجود في البيانات اللي فوق (شوف قسم "سؤال معلّق" في أول الرسالة).
+   • الرد الصح على العطر اللي سأل عنه: "لحظة أتأكدلك منه" — وبس.
+   • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص.
+   • ❌ وممنوع تجمع النفي مع الوعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
+   • ❌ ممنوع تسرد أسعار أو مواصفات العطور اللي فوق كأنها ردك على سؤاله. ولو العميل بيستعجلك على التأكد (زي "طب اتأكدلي") فهو مستني رد على العطر اللي **هو** سأل عنه — مش على عطر تاني: قوله إنك لسه بتتأكد وإنك هترد عليه، مش أسعار عطر مسألش عنه.
+   • ✅ لو حابب تعرض عليه حاجة وهو مستني، قوله بوضوح إنها عطر **تاني** بالاسم الكامل.
+"""
+
+
 def get_product_info(message, history=None, store=None, conversation=None):
     from .sales import naming
 
@@ -116,6 +209,11 @@ def get_product_info(message, history=None, store=None, conversation=None):
         products = resolve_products(message, history, store, conversation)
         resolver_ran = True
 
+    # A name we could not place. Kept as a fact about this turn rather than inferred later from an
+    # empty `products`, because the referent lookup below is about to fill that list with a
+    # different perfume entirely — which is exactly the confusion conversation 795 was built on.
+    named_but_unresolved = resolver_ran and not products
+
     # Nothing named here: the subject is whatever we just offered. Decided in Python because
     # the resolver demonstrably gets this wrong, and `internal_context` is a harder record
     # than an 8-message prose window. This is also the recovery path when the gate fired but the
@@ -135,8 +233,14 @@ def get_product_info(message, history=None, store=None, conversation=None):
     if not products and not resolver_ran:
         products = resolve_products(message, history, store, conversation)
 
+    pending_block = _pending_lookup_block(message) if named_but_unresolved else ""
+    availability_hint = _availability_only_hint(message)
+
     if products:
-        context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
+        context = pending_block
+        context += "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
+        if named_but_unresolved:
+            context += _NOT_THE_PERFUME_ASKED_ABOUT
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
         # window — the limit only guards the pathological case.
@@ -162,29 +266,49 @@ def get_product_info(message, history=None, store=None, conversation=None):
 12. 🔴🔴 ممنوع تحسب إجمالي طلب. البيانات اللي فوق فيها أسعار الأحجام بس — مفيش فيها عربة ولا كميات ولا إجمالي. ❌ ممنوع تضرب سعر في كمية، وممنوع تجمع أسعار، وممنوع تقول "الإجمالي" أو "المجموع" أو تتكلم عن "الطلبين" أو أي عدد قطع. لو العميل سأل الطلب بقى بكام، قوله إنك هتراجع الطلب معاه وابدأ تجمع تفاصيله — الإجمالي بيتحسب من الطلب نفسه مش من الأسعار دي. (عميل اتقاله إجمالي 1560 جنيه لطلب مش موجود، وهو أصلاً قال إن ميزانيته 900.)
 13. 🔴🔴 لو العميل قال إنك قلت سعرين مختلفين لنفس العطر (زي "انت قولت سعرين مختلفين للسترونجر") — بص على سطر `⚠️ عطر مختلف عن` الأول. لو السعرين بيرجعوا لعطرين مختلفين على نفس الخط، يبقى **السعرين صح**: ❌ ممنوع تعتذر، وممنوع تقول إن فيه لبس أو غلط، وممنوع تسحب سعر أو تقول إن واحد منهم "هو السعر الصحيح". وضّح إن ده عطر وده عطر تاني بالاسم الكامل، وقول سعر كل واحد لوحده. ولو مش متأكد هو بيقصد أنهي واحد، اسأله. (عميل اتقاله 780 لـ Stronger With You Intensely وبعدين 700 لـ Stronger With You — دول عطرين مختلفين — وسأل، فاتقاله "أعتذر على اللبس، 700 ده السعر الصحيح"، ومشي فاكر إن Intensely بـ 700.)
 """
+        if named_but_unresolved:
+            instructions += _DEFERRAL_RULES
+        instructions += availability_hint
     else:
         # Product not found, let's get some alternatives. Chosen deterministically and
         # with the customer's gender in mind: `order_by('?')` here offered a women's
         # perfume and a men's perfume side by side to someone whose gender was never
         # established, and made the reply impossible to reproduce.
         from .sales import gender as sales_gender
+        from .sales import notes as sales_notes
 
         alternatives = suggest_alternatives(
             store,
             gender=sales_gender.resolve({}, message, history, store),
+            # The accords the customer actually asked for. Without them this ranked on price
+            # alone, so conversation 795's "عندكو لادور بخور صح ؟" was answered with the
+            # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
+            # Chanel (incense) sat in it unoffered.
+            notes=sales_notes.terms_in(message),
         )
-        
-        context = "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
+
+        context = pending_block
+        context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives:
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
-            context += format_products(alternatives, brief=True)
-        
+            # Not `brief=True` any more. Brief withholds the note and performance fields, and
+            # conversation 795 turn 1 shows what that costs here: an alternative is a perfume the
+            # customer has never heard of, quoted a price and pitched "بشكل جذاب" by rule 5 below,
+            # and the model filled the missing scent data itself — "فيها لمسة بخور خفيفة" on a
+            # perfume whose notes are cardamom, pineapple, cinnamon, vanilla, chestnut and
+            # amberwood. Handing over the real notes is what lets the pitch be true, and it is
+            # the whole point of ranking these by the accord that was asked for.
+            #
+            # The value pick still goes, for recommendation's reason: a turn about *which perfume*
+            # must not open with a verdict about *which size*.
+            context += format_products(alternatives, show_value_pick=False)
+
         instructions = """
 ═══ تعليمات ═══
 1. اقرأ سجل المحادثة جيداً. لو كان العميل يستفسر عن منتج تم التحدث عنه بالفعل في المحادثة، أجب من سياق المحادثة وتجاهل قائمة البدائل تماماً.
 2. ❌ إياك أن تقول أن المنتج "غير متوفر" إذا كان قد تم إخباره بأنه متوفر في الرسائل السابقة. النظام هنا لم يتعرف على اسم منتج جديد فقط.
 3. 🔴🔴 قانون مهم جداً — فرّق بين أربع حالات مختلفة تماماً:
-   • **(أ) العميل سمّى عطر معين باسمه بوضوح** (مثل "عندكو ديور هوم" أو "سعر أمبريو أرماني") والعطر مش موجود عندنا → اعتذر بلباقة وقوله إن العطر ده مش متوفر عندنا حالياً، ورشحله 1-2 بديل من القائمة أدناه.
+   • **(أ) العميل سمّى عطر معين باسمه بوضوح** (مثل "عندكو ديور هوم" أو "سعر أمبريو أرماني") والاسم ده مش موجود في البيانات المتاحة → 🔴 ده **مش** معناه إن العطر مش عندنا. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص. قوله "لحظة أتأكدلك منه" وبس. ❌ ممنوع تقول "مش متوفر" ولا "مش موجود عندنا" ولا "للأسف مش عندنا" ولا تعتذر عن عدم توفره — إحنا مش عارفين، والاعتذار نفسه بيقول إنه مش موجود. بعد كده تقدر تعرض عليه 1-2 من البدائل أدناه على إنهم عطور **تانية** ممكن تعجبه وهو مستني الرد.
    • **(ب) سؤال واضح عن الستور أو المنتجات بشكل عام** — مش عن عطر معين بالاسم (مثل "الأحجام المتاحة إيه؟"، "عندكم 90 ملي؟"، "بتحطوا كام جرام زيت؟"، "العطر أصلي ولا تركيب؟"، "عندكم فرع؟") → 🔴 ده سؤال مفهوم تماماً، جاوب عليه من التعليمات والحقائق الموجودة في رسالة الـ system فوق.
      - لو الإجابة موجودة في الحقائق → قولها للعميل مباشرة.
      - لو العميل سأل عن حجم أو حاجة والحقائق بتقول إنها مش متوفرة → قوله بوضوح إنها مش متوفرة واذكرله المتاح فعلاً (مثال: "لا يا فندم، عندنا 50 و 90 ملي بس").
@@ -192,9 +316,11 @@ def get_product_info(message, history=None, store=None, conversation=None):
      - ❌❌ ممنوع تماماً ترد على السؤال ده بـ "مش فاهم قصد حضرتك" — أنت فاهم السؤال، بس ممكن تكون مش عارف الإجابة، وده فرق كبير.
    • **(ج) العميل بيتفرج بشكل مبهم** (مثل "عندكو حاجة من شانيل" أو "عايز حاجة حلوة") → ❌ ممنوع تقول "مش متوفر"! اسأله يحدد: "تقصد أنهي عطر بالظبط يا فندم؟".
    • **(د) الرسالة نفسها غير مفهومة فعلاً** (حروف عشوائية، كلام مبتور، مفيش معنى واضح) → دي الحالة الوحيدة اللي تقول فيها: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟".
-3. بعد الاعتذار (في حالة (أ) فقط)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
-4. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور.
+4. 🔴🔴 ممنوع تجمع النفي مع الوعد بالتأكد في رد واحد. "مش موجود عندنا، لحظة أتأكدلك منه" جملة بتنقض نفسها: يا إنك عارف إنه مش موجود يا إنك لسه هتتأكد. اختار التأكد دايماً. (عميل سأل "طب عندكو الكساندريا 2 ؟" واتقاله بالحرف: "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه".)
+5. بعد ما تقول إنك هتتأكد (في حالة (أ) فقط)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب — والبدائل دي مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
+6. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
 """
+        instructions += availability_hint
 
     messages = [
         {

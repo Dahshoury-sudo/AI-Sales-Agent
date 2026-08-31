@@ -257,6 +257,28 @@ def rescore(record, truth, scenario_budget=None):
                 f"told the customer about the injected data ('{leak.group()}') instead of "
                 f"saying لحظة أتأكدلك")
 
+        # ── denying and deferring in one breath ──
+        # Mirrored here for the reason `false_denial` and the leak are: checks.py findings only
+        # reach runs.json, and findings.json — the file anyone actually reads — comes from this
+        # pass. No excuse clause and no ground truth, because the contradiction is internal to the
+        # sentence: conversation 795 turn 4 said "الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه"
+        # about a perfume in no catalogue, so `_false_denial` had nothing to match and scored it
+        # clean.
+        contradiction = checks._contradictory_availability(reply)
+        if contradiction:
+            add("contradictory_availability", "critical",
+                f"denied a perfume and promised to check on it in one breath: "
+                f"'{contradiction}'")
+
+        # ── denying on a turn whose data said nothing either way ──
+        # Scoped to the not-found and pending-lookup contexts, so the size and bottle-type denials
+        # that come with real data behind them are untouched.
+        unbacked = checks._unbacked_denial(reply, context)
+        if unbacked:
+            add("unbacked_denial", "critical",
+                f"told the customer a perfume is not available on a turn whose injected data "
+                f"said nothing about it: '{unbacked}'")
+
         # ── verbatim-ish repetition across turns ──
         if previous_reply and reply:
             ratio = SequenceMatcher(None, reply.strip(), previous_reply.strip()).ratio()

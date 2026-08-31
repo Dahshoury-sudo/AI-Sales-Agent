@@ -7,7 +7,7 @@ from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
-from .notification_service import notify_handoff
+from .notification_service import create_notification, notify_handoff
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
@@ -167,6 +167,91 @@ def _count_recent_repetitions(history):
             break
     
     return count
+
+
+def _count_repeated_customer_questions(message, history):
+    """How many earlier customer messages are this same question again.
+
+    The mirror of `_count_recent_repetitions`, which watches the bot. A bot repeating itself is
+    a style failure; a *customer* repeating themselves is the bot failing to answer, and nothing
+    in the pipeline noticed it. Conversation 795 asked "عندكو لادور بخور صح ؟" at turn 1 and
+    again at turn 3, was answered both times with a different perfume's price list, and the
+    conversation simply ended.
+
+    Not consecutive, unlike the bot counter. A customer who asks, gets a non-answer, says
+    "طب اتأكدلي", and then asks again has intervening messages — and that is precisely the
+    shape worth catching. The whole recent window is searched instead.
+    """
+    if not history or not (message or "").strip():
+        return 0
+
+    current = message.strip()
+    count = 0
+    for msg in history:
+        if msg.get("role") != "user":
+            continue
+        earlier = (msg.get("content") or "").strip()
+        if not earlier:
+            continue
+        # 0.7, the same threshold `_count_recent_repetitions` uses. Reusing it keeps one
+        # definition of "the same message again" in this module rather than two.
+        if SequenceMatcher(None, current, earlier).ratio() > 0.7:
+            count += 1
+
+    return count
+
+
+# Three near-identical questions — this one plus two before it — is a customer who has asked and
+# not been answered twice. Two is not enough: a customer who rephrases once is normal.
+_REPEATED_QUESTION_LIMIT = 2
+
+
+def _escalate_pending_lookup(conversation, store, context, pending_before, message, history):
+    """Pull the owner in when the bot has promised to check and cannot deliver.
+
+    `context` is this turn's own prompt context, so `PENDING_LOOKUP_MARKER` in it means *this*
+    reply is a deferral. `pending_before` is how many of the previous turns already were —
+    read before this turn's context is persisted, so it never counts the current one.
+
+    The policy is notify on the first deferral, hand off on the second. The first is not a
+    failure: a customer naming a perfume this catalogue does not carry is ordinary, and the
+    honest "لحظة أتأكدلك" is the right reply — but somebody has to actually go and look, and
+    until now nothing told them to. The second means the customer has now asked twice and the
+    bot has said "hold on" twice, which it cannot resolve by itself.
+
+    A repeated customer question hands off on its own account. It catches the case the deferral
+    count cannot: the customer asked, the bot answered about something else entirely, and no
+    marker was ever written.
+
+    Returns nothing and raises nothing that matters to the reply — the customer's answer has
+    already been generated, and an owner notification is not worth losing it over.
+    """
+    if conversation is None or store is None:
+        return
+    if getattr(conversation, "needs_human", False):
+        return
+
+    deferring = sales_described.PENDING_LOOKUP_MARKER in (context or "")
+    repeats = _count_repeated_customer_questions(message, history)
+
+    hand_off = (deferring and pending_before >= 1) or repeats >= _REPEATED_QUESTION_LIMIT
+    if hand_off:
+        conversation.needs_human = True
+        conversation.save()
+        notify_handoff(conversation)
+        return
+
+    if deferring:
+        create_notification(
+            store=store,
+            notif_type="handoff",
+            title="عميل سأل عن عطر مش في الكتالوج 🔍",
+            message=(
+                f"محادثة #{conversation.id}: البوت قال للعميل \"لحظة أتأكدلك\" على سؤاله "
+                f"«{(message or '').strip()}» — والعطر ده مش في بيانات المتجر. "
+                f"راجع المحادثة ورد على العميل."
+            ),
+        )
 
 
 def _was_already_handed_off(history):
@@ -471,12 +556,21 @@ def route(message, history=None, store=None, conversation=None):
         return _finalize(response, stage), context
 
     elif request_type == "product_info":
+        # Read before the turn runs. `pending_lookup` scans persisted assistant rows, and this
+        # turn's reply is not one yet, so the count is strictly "how many earlier turns already
+        # deferred" — which is what the escalation policy is written against.
+        _, pending_before = sales_described.pending_lookup(conversation)
+
         response, context = get_product_info(message, history, store, conversation)
 
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product data and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف تماماً."
             response, context = get_product_info(modified_msg, history, store, conversation)
+
+        # After the retry, so a deferral the retry introduced or removed is judged on the context
+        # actually being sent.
+        _escalate_pending_lookup(conversation, store, context, pending_before, message, history)
 
         # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
         # is a factual question and may not.

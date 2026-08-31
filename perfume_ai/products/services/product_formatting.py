@@ -217,6 +217,22 @@ def _missing_data_note(product):
     return f"⚠️ بيانات ناقصة للعطر ده ({labels}): {bans}."
 
 
+# Brief mode withholds the note and performance fields. `_missing_data_note` covers a field the
+# *store* never filled in; this covers one that is filled in and simply not being shown — which
+# reads to the model exactly the same way, as a gap to fill.
+#
+# Conversation 795 filled one. An unanchored "Stronger With You" rendered brief, priced at
+# 400/700, and sold with "فيها لمسة بخور خفيفة". Its recorded notes are cardamom, pineapple,
+# cinnamon, vanilla, chestnut and amberwood — no incense at any layer — so the invented note was
+# the whole reason to buy, and nothing in the block said not to invent one.
+_WITHHELD_DATA_NOTE = (
+    "⚠️ النوتات والثبات والفوحان والموسم والمناسبة مش معروضين للعطر ده هنا: "
+    "❌ ممنوع تقول ريحته فيها إيه، ولا تقيّم ثباته أو فوحانه، ولا تقول إنه مناسب لموسم "
+    "أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من "
+    "عندك، مش من البيانات."
+)
+
+
 def _line_mate_note(mates):
     """Name the other perfumes on this one's line, and forbid merging them into one.
 
@@ -256,9 +272,12 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
                    show_value_pick=True, line_mates=None):
     """Render one product as a prompt block.
 
-    brief=True drops stock status, out-of-stock sizes and the scent/performance
-    fields — used when suggesting alternatives, where the model only needs enough
-    to name something plausible rather than to answer detailed questions.
+    brief=True drops stock status, out-of-stock sizes and the scent/performance fields, and
+    says so in `_WITHHELD_DATA_NOTE` — because a withheld field and an unrecorded one read to
+    the model identically, and both read as a gap to fill. Two callers want it:
+    `recommendation._format_products` for a perfume the customer has already had described, so
+    the same scent sentence stops coming back every turn, and `identification_service` for a
+    guess we do not stock. Prices stay in both cases, so "بكام" is still answerable.
 
     show_prices=False drops sizes, prices and the value pick. Comparison needs it: that
     prompt forbids mentioning any price, while this block was simultaneously instructing
@@ -272,8 +291,9 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     how one injected line became the opening sentence of nearly every reply.
 
     line_mates is the list of catalogue names on this perfume's line (see `_line_mate_note`),
-    supplied by `format_products` because it takes a query the whole batch can share. Absent
-    on the brief block, which renders throwaway alternatives nobody is being priced on.
+    supplied by `format_products` because it takes a query the whole batch can share. Present on
+    the brief block too: brief means the customer has heard of this perfume already, which is
+    when confusing it with its flanker is most likely, not least.
     """
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
@@ -291,13 +311,25 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
         # The exclusive note stays even in brief mode: brief is what the "no exact
         # match" branch renders, which is the branch that answered "النيش مش متوفرة"
         # while holding three store-exclusive blends.
-        exclusive_note = _exclusive_selling_note(product)
-        exclusive_block = f"{exclusive_note}\n" if exclusive_note else ""
+        #
+        # The flanker warning stays for a sharper reason. Brief is also what
+        # `recommendation._format_products` renders for a perfume the customer has *already* had
+        # described, and re-offering a perfume the customer half-remembers is conversation 768's
+        # exact shape — the turn where two correct prices became one retracted apology. Withholding
+        # the warning on precisely the turn it matters most is backwards.
+        brief_extras = "\n".join(
+            line for line in (
+                _line_mate_note(line_mates),
+                _exclusive_selling_note(product),
+                _WITHHELD_DATA_NOTE,
+            ) if line
+        )
         return f"""
 Name (الاسم الصحيح): {product.name}
 Brand: {brand_display}
 Original Bottle: {_original_bottle_status(product, variants)}
-{sizes_block}{exclusive_block}Gender: {product.gender}
+{sizes_block}{brief_extras}
+Gender: {product.gender}
 Perfume Type: {perfume_type}
 Description: {product.description}
 -----------------------
@@ -395,9 +427,13 @@ def format_products(products, max_price=None, limit=None, brief=False, show_pric
     The slice is materialised so the line-mate lookup can be done once for the batch instead of
     once per product — and so an `islice` over a queryset is not consumed by the lookup before the
     render sees it.
+
+    The lookup runs for brief batches too. It used to be skipped on the grounds that brief was
+    throwaway; brief is what an already-described perfume renders as, which is exactly when a
+    flanker gets mistaken for it.
     """
     selected = list(islice(products, limit) if limit else products)
-    mates = {} if brief else _line_mates_for(selected)
+    mates = _line_mates_for(selected)
     return "".join(
         format_product(
             product, max_price=max_price, brief=brief,

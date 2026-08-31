@@ -93,6 +93,7 @@ from products.services.order_service import (
 )
 from products.services.router import (
     _count_recent_repetitions,
+    _count_repeated_customer_questions,
     _detect_semantic_repetition,
     _finalize,
     _is_goodbye_loop,
@@ -2002,9 +2003,16 @@ class UnifiedProductFormattingTests(TestCase):
     def test_a_perfume_with_no_flankers_gets_no_such_line(self):
         self.assertNotIn("⚠️ عطر مختلف عن", format_products(self.queryset))
 
-    def test_the_brief_block_gets_no_flanker_line(self):
-        """Brief renders throwaway alternatives, which nobody is being priced on."""
-        self.assertNotIn(
+    def test_the_brief_block_keeps_its_flanker_line(self):
+        """Brief was assumed to render throwaway alternatives nobody is being priced on.
+
+        Conversation 795 turn 1 priced one: 400 and 700, quoted straight off a brief block for an
+        unanchored "Stronger With You" whose line also holds Intensely and Absolutely — reviving
+        conversation 768's exact confusion from the fallback path instead of the recommendation
+        one. Brief withholds the scent and performance fields; it does not withhold prices, and a
+        priced perfume needs to be identified.
+        """
+        self.assertIn(
             "⚠️ عطر مختلف عن", format_products(self._stronger_line(), brief=True)
         )
 
@@ -9709,3 +9717,772 @@ class ArabicNameIsNotTheReferentTests(TestCase):
         """Instruction 1 now routes a mismatch to red line 3. If that line ever moves, the
         instruction is pointing at nothing."""
         self.assertIn("لحظة أتأكدلك منه", get_system_prompt(self.store))
+
+
+class PendingLookupSurvivesTheTurnTests(TestCase):
+    """Conversation 795: the pipeline forgot a question it had promised to check on.
+
+    A customer asked for لادور بخور, a bakhoor this store does not carry. The bot said
+    "لحظة أتأكدلك" — correct — and then the record of having said it evaporated. Turn 2's
+    "طب اتأكدلي" found nothing pending, fell through `_referent_from_conversation`, and was
+    answered with the previous turn's perfume; turn 3 asked the same question and got the same
+    wrong perfume again.
+
+    `described._deferred_in` cannot cover this. It tracks deferrals by *catalogue* name, and a
+    deferral is by definition about a name the catalogue does not have — so "لادور بخور" was
+    untrackable by construction. The record therefore goes in `Message.internal_context`, which is
+    where `under_discussion` and `offered_in_order` already read from, and not in
+    `Conversation.preferences`, which `merge_preferences` rewrites wholesale every recommendation
+    turn.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        self.stronger = Product.objects.create(
+            store=self.store, brand=self.armani, name="Stronger With You", gender="male",
+            top_notes="Cardamom, Pink Pepper, Violet Leaf, Mint",
+            middle_notes="Pineapple, Cinnamon, Melon, Sage, Lavender",
+            base_notes="Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood",
+        )
+        ProductVariant.objects.create(
+            product=self.stronger, volume=50, price=400, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.stronger, volume=90, price=700, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _offered_stronger(self):
+        """Turn 1's reply, saved the way the router saves it."""
+        save_message(
+            self.conversation, "assistant",
+            "لحظة أتأكدلك من لادور بخور، بس ممكن أنصحك بـ Stronger With You.",
+            internal_context="Name (الاسم الصحيح): Stronger With You",
+        )
+
+    def _ask(self, message):
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            return get_product_info(message, [], self.store, self.conversation)
+
+    # ── the marker is written ─────────────────────────────────────────────
+    def test_an_unresolvable_name_leaves_a_record_of_itself(self):
+        from products.services.sales import described
+
+        _, context = self._ask("عندكو لادور بخور صح ؟")
+
+        self.assertIn(described.PENDING_LOOKUP_MARKER, context)
+        self.assertIn("لادور بخور", context)
+
+    def test_the_record_carries_the_raw_message_not_a_guessed_name(self):
+        """Extracting "لادور بخور" from the sentence means guessing which words were the perfume,
+        and a guess written into the record is a fabrication the next turn reads as fact."""
+        from products.services.sales import described
+
+        _, context = self._ask("عندكو لادور بخور صح ؟")
+        line = next(
+            row for row in context.splitlines()
+            if row.startswith(described.PENDING_LOOKUP_MARKER)
+        )
+
+        self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندكو لادور بخور صح ؟")
+
+    def test_a_resolved_name_leaves_no_pending_record(self):
+        from products.services.sales import described
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.stronger],
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            _, context = get_product_info(
+                "عندكو سترونجر ويز يو ؟", [], self.store, self.conversation
+            )
+
+        self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
+
+    def test_a_referential_message_leaves_no_pending_record(self):
+        """"بكام؟" never reaches the resolver, so an empty `products` there is not a miss."""
+        from products.services.sales import described
+
+        self._offered_stronger()
+        _, context = self._ask("بكام؟")
+
+        self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
+        self.assertIn("Stronger With You", context)
+
+    # ── the referent is labelled, not discarded ───────────────────────────
+    def test_the_referent_rows_are_marked_as_a_different_perfume(self):
+        """Turn 3's failure in one assertion: the rows stay — an availability follow-up may
+        genuinely be about them — but nothing may read them as the perfume asked for."""
+        self._offered_stronger()
+        _, context = self._ask("عندكو لادور بخور ؟")
+
+        self.assertIn("Stronger With You", context)
+        self.assertIn("**مش** العطر اللي العميل سأل", context)
+
+    def test_chasing_the_answer_is_not_a_question_about_the_referent(self):
+        """Turn 2. "طب اتأكدلي" is a customer chasing turn 1's promise, and it was answered with
+        four sizes of a perfume they never asked about."""
+        self._offered_stronger()
+        _, context = self._ask("طب اتأكدلي")
+
+        self.assertIn("**مش** العطر اللي العميل سأل", context)
+        self.assertIn("طب اتأكدلي", context)
+
+    def test_a_plain_price_question_is_left_alone(self):
+        self._offered_stronger()
+        _, context = self._ask("بكام؟")
+
+        self.assertNotIn("**مش** العطر اللي العميل سأل", context)
+
+    # ── reading it back across turns ──────────────────────────────────────
+    def test_pending_lookup_reads_the_marker_back(self):
+        from products.services.sales import described
+
+        _, context = self._ask("عندكو لادور بخور صح ؟")
+        save_message(self.conversation, "assistant", "لحظة أتأكدلك.", internal_context=context)
+
+        question, count = described.pending_lookup(self.conversation)
+
+        self.assertEqual(question, "عندكو لادور بخور صح ؟")
+        self.assertEqual(count, 1)
+
+    def test_the_count_is_the_escalation_signal(self):
+        from products.services.sales import described
+
+        for message in ("عندكو لادور بخور صح ؟", "طب اتأكدلي"):
+            _, context = self._ask(message)
+            save_message(
+                self.conversation, "assistant", "لحظة أتأكدلك.", internal_context=context
+            )
+
+        _, count = described.pending_lookup(self.conversation)
+
+        self.assertEqual(count, 2)
+
+    def test_the_oldest_open_question_is_the_one_returned(self):
+        """The newest marker is "طب اتأكدلي", which is not a perfume name. An owner told to go and
+        look up "طب اتأكدلي" has been told nothing."""
+        from products.services.sales import described
+
+        for message in ("عندكو لادور بخور صح ؟", "طب اتأكدلي", "عندكو لادور بخور ؟"):
+            _, context = self._ask(message)
+            save_message(
+                self.conversation, "assistant", "لحظة أتأكدلك.", internal_context=context
+            )
+
+        question, _ = described.pending_lookup(self.conversation)
+
+        self.assertEqual(question, "عندكو لادور بخور صح ؟")
+
+    def test_a_clean_conversation_has_nothing_pending(self):
+        from products.services.sales import described
+
+        self._offered_stronger()
+
+        self.assertEqual(described.pending_lookup(self.conversation), ("", 0))
+        self.assertEqual(described.pending_lookup(None), ("", 0))
+
+
+class NeverDeniesAndDefersTests(TestCase):
+    """Conversation 795 turn 4: "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه".
+
+    A denial and a promise to check, contradicting each other inside one sentence. The customer
+    cannot tell which half is true, and one of them is a claim about the shop's stock the system
+    had no basis for making.
+
+    It happened because two instruction layers disagreed. `ai/prompts.py` forbids saying
+    "مش موجود عندنا" about a perfume missing from the injected data; `product_info`'s not-found
+    rule 3(أ) mandated exactly that phrase. The reply obeyed both.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _prompt(self, message="طب عندكو الكساندريا 2 ؟"):
+        """The prompt the model actually receives, not the source that produces it."""
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat:
+            get_product_info(message, [], self.store, self.conversation)
+
+        return chat.call_args[0][0][-1]["content"]
+
+    def test_the_mandated_denial_is_gone(self):
+        self.assertNotIn("العطر ده مش متوفر عندنا حالياً", self._prompt())
+
+    def test_the_instructions_ban_pairing_a_denial_with_a_deferral(self):
+        prompt = self._prompt()
+
+        self.assertIn("ممنوع تجمع النفي مع الوعد بالتأكد في رد واحد", prompt)
+        self.assertIn("مش موجود عندنا، لحظة أتأكدلك منه", prompt)
+
+    def test_the_not_found_branch_still_forbids_asserting_absence(self):
+        prompt = self._prompt()
+
+        self.assertIn("لحظة أتأكدلك منه", prompt)
+        self.assertIn("النظام هو اللي مالقاهوش", prompt)
+
+    def test_the_apology_is_named_as_a_denial_too(self):
+        """"للأسف مش عندنا" says the perfume is absent in a softer voice. The rule has to say so,
+        because a model told not to deny will still apologise."""
+        self.assertIn("الاعتذار نفسه بيقول إنه مش موجود", self._prompt())
+
+    def test_the_rule_numbers_are_sequential_and_unique(self):
+        """Two rules were numbered 1 and two were numbered 3, and rule 3's "في حالة (أ) فقط"
+        pointed at cases defined under the *other* rule 3 — which is why the live-reply
+        requirement was buried."""
+        import re
+
+        block = self._prompt().split("═══ تعليمات ═══")[-1]
+        numbers = [int(match) for match in re.findall(r"^(\d+)\.", block, re.M)]
+
+        self.assertEqual(numbers, list(range(1, len(numbers) + 1)))
+
+
+class AlternativesAnswerTheRequestTests(TestCase):
+    """Conversation 795: a بخور request answered with the cheapest perfume in the catalogue.
+
+    `fallback.suggest_alternatives` sorted on price and nothing else, so being cheap stood in for
+    answering the question. Two perfumes that genuinely answer a بخور request were sitting in the
+    catalogue: Dior Homme Sport (base note Olibanum) and Bleu de Chanel (base note Incense).
+
+    `notes.py` already maps بخور, incense, frankincense and olibanum onto the `amber` family, and
+    `ranking.note_fit` already scores note-fit correctly — so this is wiring, not new logic, and it
+    belongs in `fallback` and `notes` rather than in another prompt rule.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        chanel = Brand.objects.create(store=self.store, name="Chanel")
+
+        self.stronger = self._perfume(
+            armani, "Stronger With You", 400,
+            top="Cardamom, Pink Pepper, Violet Leaf, Mint",
+            middle="Pineapple, Cinnamon, Melon, Sage, Lavender",
+            base="Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood",
+        )
+        self.sport = self._perfume(
+            dior, "Dior Homme Sport", 450,
+            top="Bergamot, Lemon, Ginger",
+            middle="Pepper, Cardamom, Nutmeg",
+            base="Woody Notes, Amber, Olibanum",
+        )
+        self.bleu = self._perfume(
+            chanel, "Bleu de Chanel", 645,
+            top="Grapefruit, Lemon, Mint",
+            middle="Ginger, Nutmeg, Jasmine",
+            base="Incense, Cedar, Sandalwood, Patchouli",
+        )
+
+    def _perfume(self, brand, name, price, top="", middle="", base=""):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="male",
+            top_notes=top, middle_notes=middle, base_notes=base,
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=price, bottle_type="normal"
+        )
+        return product
+
+    # ── reading the request out of the message ────────────────────────────
+    def test_the_asked_for_accord_is_found_in_the_message(self):
+        self.assertEqual(sales_notes.terms_in("عندكو لادور بخور صح ؟"), ("بخور",))
+
+    def test_the_definite_article_does_not_hide_the_request(self):
+        """A note field says "بخور"; a customer says "البخور" or "وبخور". `normalize_arabic` folds
+        letters and does not strip proclitics, so an exact lookup missed all of them."""
+        for message, expected in (
+            ("عايز البخور", "بخور"), ("حاجة فيها وبخور", "بخور"), ("بالعود كده", "عود"),
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(sales_notes.terms_in(message), (expected,))
+
+    def test_prose_is_not_mined_for_ingredients(self):
+        """The tolerant pass exists to find "amberwood" inside a note field. Turned loose on a
+        sentence, its substring stage reads "الاسعار" and "عندنا" as notes."""
+        for message in ("الاسعار كام؟", "عندنا ايه؟", "طب اتأكدلي", "عندكو الكساندريا 2 ؟"):
+            with self.subTest(message=message):
+                self.assertEqual(sales_notes.terms_in(message), ())
+
+    def test_a_bare_perfume_name_contributes_nothing_on_its_own(self):
+        self.assertEqual(sales_notes.terms_in("عندكو لادور صح ؟"), ())
+
+    def test_terms_in_is_none_safe(self):
+        self.assertEqual(sales_notes.terms_in(None), ())
+        self.assertEqual(sales_notes.terms_in(""), ())
+
+    # ── an Arabic request reaching an English-typed note field ───────────
+    def test_the_incense_request_expands_to_its_synonyms(self):
+        """The half of M3 that was missing. `note_fit` matches the expansion against note names
+        *literally*, so بخور scored 0.0 against every perfume in an English-typed catalogue —
+        including the two built on frankincense — and the price sort underneath handed back the
+        cheapest bottle in the shop. Exactly conversation 795 turn 1."""
+        expansion = sales_notes.expand_request_term("بخور")
+
+        self.assertIn("olibanum", expansion)
+        self.assertIn("frankincense", expansion)
+        self.assertEqual(
+            sales_notes.expand_request_term("incense"),
+            sales_notes.expand_request_term("لبان"),
+        )
+
+    def test_the_expansion_is_the_ingredient_not_its_family(self):
+        """`بخور` reads as `amber`, and so do amberwood, labdanum, benzoin and ambroxan.
+        Expanding to the family would make Stronger With You a valid answer to an incense
+        request all over again, on the strength of one amberwood note."""
+        expansion = sales_notes.expand_request_term("بخور")
+
+        for foreign in ("amberwood", "amber", "labdanum", "ambroxan", "vanilla"):
+            self.assertNotIn(foreign, expansion)
+
+    def test_the_accord_definition_is_unchanged(self):
+        """The expansion widens what counts as a candidate; it is not a definition of the
+        accord, and `AccordDefinitionTests` pins that distinction for fresh and sweet."""
+        self.assertEqual(sales_notes.request_families("بخور"), frozenset({"amber"}))
+
+    # ── the alternatives that come back ──────────────────────────────────
+    def _alternatives(self, **kwargs):
+        from products.services.fallback import suggest_alternatives
+
+        return [product.name for product in suggest_alternatives(self.store, **kwargs)]
+
+    def test_an_incense_request_outranks_the_cheapest_perfume(self):
+        """Turn 1's defect. Being cheap is not an answer to being asked for بخور."""
+        names = self._alternatives(notes=("بخور",))
+
+        self.assertEqual(names[:2], ["Dior Homme Sport", "Bleu de Chanel"])
+        self.assertEqual(names[-1], "Stronger With You")
+
+    def test_the_english_spelling_of_the_same_request_ranks_the_same(self):
+        self.assertEqual(self._alternatives(notes=("incense",))[0], "Dior Homme Sport")
+
+    def test_without_notes_the_price_order_is_unchanged(self):
+        """The other two call sites — the router's repetition redirect and order_service's
+        unresolved-product branch — pass no notes and must be unaffected."""
+        self.assertEqual(
+            self._alternatives(),
+            ["Stronger With You", "Dior Homme Sport", "Bleu de Chanel"],
+        )
+
+    def test_price_order_survives_underneath_the_note_tier(self):
+        """The note sort is stable, which is what keeps budget-first ordering intact: two
+        perfumes answering the request equally well stay in price order."""
+        self._perfume(
+            Brand.objects.create(store=self.store, name="Dior Two"), "Sport Twin", 900,
+            top="Bergamot, Lemon, Ginger",
+            middle="Pepper, Cardamom, Nutmeg",
+            base="Woody Notes, Amber, Olibanum",
+        )
+
+        names = self._alternatives(notes=("بخور",), limit=4)
+
+        self.assertLess(names.index("Dior Homme Sport"), names.index("Sport Twin"))
+        self.assertEqual(names[-1], "Stronger With You")
+
+    def test_an_unrecognised_request_changes_nothing(self):
+        self.assertEqual(
+            self._alternatives(notes=("elemi",)),
+            ["Stronger With You", "Dior Homme Sport", "Bleu de Chanel"],
+        )
+
+    def test_the_budget_tier_still_applies(self):
+        self.assertEqual(self._alternatives(notes=("بخور",), max_price=500)[0], "Dior Homme Sport")
+
+    # ── and product_info actually asks for it ────────────────────────────
+    def _turn(self, message="عندكو لادور بخور صح ؟"):
+        """The data block the branch injects, and the prompt it actually delivers.
+
+        Two different surfaces, and the difference is easy to get wrong: `get_product_info`
+        returns only `context` — the rows — because that is what the router persists into
+        `Message.internal_context`. The instructions are appended to the user message and never
+        appear in the return value, so a rule asserted against `context` is a rule nothing
+        checked.
+        """
+        conversation = Conversation.objects.create(store=self.store)
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info(message, [], self.store, conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    def _context(self, message="عندكو لادور بخور صح ؟"):
+        return self._turn(message)[0]
+
+    def test_product_info_passes_the_request_to_the_fallback(self):
+        context = self._context()
+
+        self.assertIn("Dior Homme Sport", context)
+        self.assertLess(context.index("Dior Homme Sport"), context.index("Stronger With You"))
+
+    def test_the_alternatives_carry_their_real_notes(self):
+        """The whole point of ranking these by the accord asked for: the pitch can now cite the
+        note the perfume actually has, instead of the model inventing one that fits. Turn 1 was
+        handed a brief block with no notes in it at all and filled the gap itself."""
+        context, prompt = self._turn()
+
+        self.assertIn("Olibanum", context)
+        self.assertIn("ممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته", prompt)
+
+    def test_the_rows_reach_the_model_and_not_just_the_return_value(self):
+        """`context` is interpolated into the prompt, but nothing pinned that. If the two ever
+        come apart, every assertion above this line would keep passing against a prompt the model
+        never saw."""
+        context, prompt = self._turn()
+
+        self.assertIn(context, prompt)
+
+
+class BriefBlockCannotInviteInventionTests(TestCase):
+    """Conversation 795 turn 3: "مع لمسة بخور خفيفة" attached to a perfume that has no incense.
+
+    The brief block is what the alternatives path renders. It withholds the note, longevity,
+    projection, season and occasion fields — and said nothing about having withheld them. A
+    withheld field and an unrecorded one read to the model identically, and both read as a gap to
+    fill, so `_missing_data_note`'s whole purpose was silently dropped on the one path where the
+    model is simultaneously told to sell what it is looking at.
+
+    Brief keeps dropping those fields: it exists so a perfume the customer has already had
+    described stops getting the same scent sentence recited every turn. What changes is that the
+    gap is now labelled as a gap.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Homme Sport", gender="male",
+            top_notes="Bergamot, Lemon, Ginger",
+            middle_notes="Pepper, Cardamom, Nutmeg",
+            base_notes="Woody Notes, Amber, Olibanum",
+            season="Winter", occasion="Evening", longevity="8 hours", projection="Strong",
+            description="Spicy woody",
+        )
+        ProductVariant.objects.create(
+            product=self.product, volume=50, price=450, bottle_type="normal"
+        )
+        self.queryset = Product.objects.filter(pk=self.product.pk)
+
+    def _brief(self):
+        return format_products(self.queryset, brief=True)
+
+    def test_the_withheld_fields_are_named_as_withheld(self):
+        self.assertIn("النوتات والثبات والفوحان والموسم والمناسبة مش معروضين", self._brief())
+
+    def test_inventing_a_note_is_banned_in_so_many_words(self):
+        """Turn 3's exact move. The perfume was sold on a note nobody had shown the model."""
+        self.assertIn("ممنوع تقول ريحته فيها إيه", self._brief())
+
+    def test_claiming_a_season_or_an_occasion_is_banned_too(self):
+        """Turn 1's "مناسبة للشتا والسهرات" was correct only by luck — the row does carry Winter
+        and Evening, and the model had not been shown either."""
+        self.assertIn("ولا تقول إنه مناسب لموسم", self._brief())
+
+    def test_the_description_line_is_the_one_permitted_source(self):
+        """A blanket ban would contradict the block itself, which still renders Description."""
+        brief = self._brief()
+
+        self.assertIn("إلا لو مكتوب حرفياً في سطر Description", brief)
+        self.assertIn("Description: Spicy woody", brief)
+
+    def test_the_detail_fields_are_still_dropped(self):
+        """The anti-recital purpose survives: this is a label on the gap, not the data back."""
+        brief = self._brief()
+
+        for omitted in ("Top Notes:", "Base Notes:", "Season:", "Longevity:", "Stock Status:"):
+            self.assertNotIn(omitted, brief)
+
+    def test_the_full_block_carries_no_such_warning(self):
+        """Nothing is withheld there, so the line would be false."""
+        self.assertNotIn("مش معروضين للعطر ده هنا", format_products(self.queryset))
+
+
+class DeferralReachesAHumanTests(TestCase):
+    """Conversation 795: the bot promised to check three times and no human was ever told.
+
+    "لحظة أتأكدلك" is a promise only the store owner can keep — the perfume is not in the data, so
+    no amount of retrieval will resolve it. Made twice with nothing behind it, the promise becomes
+    a way of ending the conversation rather than answering it, which is what happened here across
+    four turns and one lost customer.
+
+    Policy: the first deferral notifies the owner and leaves the conversation with the bot; a
+    second one, or a question the customer has now asked twice, hands over.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(store=self.store, platform="whatsapp")
+        self.pending_context = (
+            "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندكو لادور بخور صح ؟\n"
+        )
+
+    def _escalate(self, context, pending_before=0, message="عندكو لادور بخور صح ؟", history=None):
+        from products.services.router import _escalate_pending_lookup
+
+        with mock.patch("products.services.router.notify_handoff") as notify:
+            _escalate_pending_lookup(
+                self.conversation, self.store, context, pending_before, message, history or []
+            )
+        self.conversation.refresh_from_db()
+        return notify
+
+    # ── counting a question the customer has already asked ────────────────
+    def test_the_same_question_asked_twice_is_counted(self):
+        """Turns 1 and 3 are the same question. Nothing counted them, because
+        `_count_recent_repetitions` watches the bot's replies, not the customer's messages."""
+        history = [
+            {"role": "user", "content": "عندكو لادور بخور صح ؟"},
+            {"role": "assistant", "content": "لحظة أتأكدلك"},
+            {"role": "user", "content": "طب اتأكدلي"},
+            {"role": "assistant", "content": "Stronger With You بـ400"},
+        ]
+
+        self.assertEqual(
+            _count_repeated_customer_questions("عندكو لادور بخور ؟", history), 1
+        )
+
+    def test_the_count_is_not_limited_to_consecutive_asks(self):
+        """"طب اتأكدلي" sits between the two asks. A consecutive-only counter sees nothing."""
+        history = [
+            {"role": "user", "content": "عندكو لادور بخور صح ؟"},
+            {"role": "user", "content": "طب اتأكدلي"},
+            {"role": "user", "content": "عندكو لادور بخور ؟"},
+        ]
+
+        self.assertEqual(
+            _count_repeated_customer_questions("عندكو لادور بخور", history), 2
+        )
+
+    def test_the_bots_own_messages_are_not_counted(self):
+        history = [
+            {"role": "user", "content": "عايز حاجة للشتا"},
+            {"role": "assistant", "content": "عندكو لادور بخور صح ؟"},
+        ]
+
+        self.assertEqual(
+            _count_repeated_customer_questions("عندكو لادور بخور صح ؟", history), 0
+        )
+
+    def test_an_empty_message_or_history_counts_nothing(self):
+        self.assertEqual(
+            _count_repeated_customer_questions("", [{"role": "user", "content": "x"}]), 0
+        )
+        self.assertEqual(_count_repeated_customer_questions("عندكو لادور", []), 0)
+        self.assertEqual(_count_repeated_customer_questions("عندكو لادور", None), 0)
+
+    # ── first deferral: tell the owner, keep the conversation ────────────
+    def test_the_first_deferral_notifies_the_owner(self):
+        notify = self._escalate(self.pending_context, pending_before=0)
+
+        notification = Notification.objects.get(store=self.store)
+        self.assertEqual(notification.type, "handoff")
+        self.assertIn("لادور بخور", notification.message)
+        self.assertIn(str(self.conversation.id), notification.message)
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+
+    def test_a_turn_with_no_deferral_notifies_nobody(self):
+        notify = self._escalate("Name (الاسم الصحيح): Stronger With You")
+
+        self.assertEqual(Notification.objects.count(), 0)
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+
+    # ── second deferral: hand over ───────────────────────────────────────
+    def test_a_second_deferral_hands_the_conversation_over(self):
+        notify = self._escalate(self.pending_context, pending_before=1, message="طب اتأكدلي")
+
+        self.assertTrue(self.conversation.needs_human)
+        self.assertTrue(notify.called)
+
+    def test_asking_the_same_thing_twice_hands_over_on_its_own(self):
+        """Even on a turn that produced no deferral: a question asked twice and still unanswered
+        is the signal, whatever this turn's context happens to look like."""
+        history = [
+            {"role": "user", "content": "عندكو لادور بخور صح ؟"},
+            {"role": "user", "content": "عندكو لادور بخور ؟"},
+        ]
+        notify = self._escalate("", message="عندكو لادور بخور", history=history)
+
+        self.assertTrue(self.conversation.needs_human)
+        self.assertTrue(notify.called)
+
+    def test_an_already_handed_off_conversation_is_left_alone(self):
+        """The owner is already in it. A second notification is noise, and re-notifying on every
+        subsequent turn is how a handoff alert stops being read."""
+        self.conversation.needs_human = True
+        self.conversation.save()
+
+        notify = self._escalate(self.pending_context, pending_before=1)
+
+        self.assertEqual(Notification.objects.count(), 0)
+        self.assertFalse(notify.called)
+
+    def test_a_missing_conversation_or_store_is_not_an_error(self):
+        """`route` always has both, but a crash on this path would cost the customer the reply for
+        the sake of a notification."""
+        from products.services.router import _escalate_pending_lookup
+
+        _escalate_pending_lookup(None, self.store, self.pending_context, 1, "x", [])
+        _escalate_pending_lookup(self.conversation, None, self.pending_context, 1, "x", [])
+
+        self.assertEqual(Notification.objects.count(), 0)
+
+    # ── and the router actually calls it ────────────────────────────────
+    def test_the_product_info_branch_escalates(self):
+        with mock.patch(
+            "products.services.router.classify", return_value="product_info"
+        ), mock.patch(
+            "products.services.router.get_product_info",
+            return_value=("لحظة أتأكدلك منه.", self.pending_context),
+        ):
+            route("عندكو لادور بخور صح ؟", [], self.store, self.conversation)
+
+        # Filtered on the type rather than counting every row: `route` bills the turn through
+        # `usage_service`, which raises its own notification when a store crosses its cap.
+        self.assertEqual(Notification.objects.filter(type="handoff").count(), 1)
+
+    def test_the_pending_count_is_read_before_this_turn_is_saved(self):
+        """`pending_lookup` scans persisted assistant rows. Reading it after the reply is saved
+        would count this turn's own marker and hand off on the very first deferral."""
+        save_message(
+            self.conversation, "assistant", "لحظة أتأكدلك.",
+            internal_context=self.pending_context,
+        )
+
+        with mock.patch(
+            "products.services.router.classify", return_value="product_info"
+        ), mock.patch(
+            "products.services.router.get_product_info",
+            return_value=("لحظة أتأكدلك منه.", self.pending_context),
+        ), mock.patch("products.services.router.notify_handoff") as notify:
+            route("طب اتأكدلي", [], self.store, self.conversation)
+
+        self.conversation.refresh_from_db()
+        self.assertTrue(self.conversation.needs_human)
+        self.assertTrue(notify.called)
+
+
+class HarnessCatchesConv795Tests(TestCase):
+    """The evaluation scored conversation 795's worst reply clean, so it needed catching too.
+
+    `checks._false_denial` returns None unless the denied name is in `truth["available_names"]`.
+    Turn 4 denied الكساندريا 2, which is in no catalogue — so the one reply that both invented a
+    stock fact and contradicted itself passed every deterministic check in the suite. A fix nobody
+    can measure is a fix that regresses silently.
+    """
+
+    def setUp(self):
+        from eval_harness import checks
+
+        self.checks = checks
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.pending_context = "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب عندكو الكساندريا 2 ؟\n"
+
+    # ── denying and deferring in one breath ──────────────────────────────
+    def test_turn_fours_exact_sentence_is_flagged(self):
+        flagged = self.checks._contradictory_availability(
+            "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه."
+        )
+
+        self.assertIsNotNone(flagged)
+        self.assertIn("مش موجود عندنا", flagged)
+
+    def test_a_deferral_on_its_own_is_correct_behaviour(self):
+        self.assertIsNone(
+            self.checks._contradictory_availability("لحظة أتأكدلك منه وأرد عليك.")
+        )
+
+    def test_a_denial_on_its_own_is_left_to_the_other_checks(self):
+        """`_false_denial` and `_unbacked_denial` judge a bare denial. This check is only about
+        the contradiction, and firing twice on one sentence would double-count it."""
+        self.assertIsNone(
+            self.checks._contradictory_availability("العطر ده مش موجود عندنا.")
+        )
+
+    def test_a_size_scoped_denial_next_to_a_deferral_is_not_a_contradiction(self):
+        """"الـ50 ملي مش متوفر" is a fact the data can support, and it can sit beside a deferral
+        about something else without either being wrong."""
+        self.assertIsNone(
+            self.checks._contradictory_availability(
+                "الـ50 ملي مش متوفر حالياً، لحظة أتأكدلك من الـ90."
+            )
+        )
+
+    def test_a_missing_resemblance_beside_a_deferral_is_not_a_contradiction(self):
+        self.assertIsNone(
+            self.checks._contradictory_availability(
+                "مفيش عندنا حاجة شبهه بالظبط، لحظة أتأكدلك من التفاصيل."
+            )
+        )
+
+    # ── denying with nothing behind it ───────────────────────────────────
+    def test_a_denial_against_a_pending_lookup_context_is_flagged(self):
+        flagged = self.checks._unbacked_denial(
+            "الكساندريا 2 مش موجود عندنا.", self.pending_context
+        )
+
+        self.assertIsNotNone(flagged)
+        self.assertIn("مش موجود عندنا", flagged)
+
+    def test_a_denial_against_the_not_found_context_is_flagged(self):
+        context = (
+            "═══ تنبيه للنظام ═══\n"
+            "لم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة."
+        )
+
+        self.assertIsNotNone(
+            self.checks._unbacked_denial("للأسف العطر ده مش متوفر عندنا.", context)
+        )
+
+    def test_a_deferral_against_the_same_context_is_clean(self):
+        """The behaviour M2 asks for has to score clean, or the check punishes the fix."""
+        self.assertIsNone(
+            self.checks._unbacked_denial("لحظة أتأكدلك منه وأرد عليك.", self.pending_context)
+        )
+
+    def test_a_denial_on_a_turn_that_had_real_data_is_untouched(self):
+        """An original bottle that was never made, or a size that ran out. Those turns carry
+        product rows and the denial is the truth."""
+        context = "Name (الاسم الصحيح): Versace Eros\nOriginal Bottle: ❌ مش متوفر"
+
+        self.assertIsNone(
+            self.checks._unbacked_denial("للاسف مش متوفر منه زجاجة أوريجينال حالياً.", context)
+        )
+
+    def test_an_empty_context_is_not_treated_as_a_no_data_turn(self):
+        self.assertIsNone(self.checks._unbacked_denial("مش موجود عندنا.", ""))
+        self.assertIsNone(self.checks._unbacked_denial("مش موجود عندنا.", None))
+
+    # ── wired into the pass that produces the findings ───────────────────
+    def test_check_reply_reports_both_codes(self):
+        findings = self.checks.check_reply(
+            "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه.",
+            truth=self.checks.build_ground_truth(self.store),
+            context=self.pending_context,
+            customer_text="طب عندكو الكساندريا 2 ؟",
+            turn_state={},
+        )
+        codes = {code for code, _, _ in findings}
+
+        self.assertIn("contradictory_availability", codes)
+        self.assertIn("unbacked_denial", codes)
+
+    def test_the_replay_scenario_is_registered(self):
+        """A scenario file nothing imports is a file nobody runs."""
+        from eval_harness import runner
+
+        self.assertEqual(runner._REPLAYS.get("conv795"), "scenarios_conv795")

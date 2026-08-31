@@ -70,6 +70,22 @@ FRESH_NOTE_EXPANSION = (
     "green tea", "lavender", "petitgrain",
 )
 
+# Incense, and every word a customer or a store uses for it. Conversation 795's customer asked
+# for بخور; this catalogue types its notes in English; `expand_request_term` matches literally —
+# so the request scored 0.0 against every perfume in the store, including the two built on
+# frankincense, and the price sort underneath handed back the cheapest bottle in the catalogue.
+#
+# Unlike the two groups above, this is one ingredient rather than an accord, so the expansion is
+# the ingredient's synonyms and NOT its family. `بخور` reads as `amber`, and so do amberwood,
+# labdanum, benzoin and ambroxan — expanding to the family would have made Stronger With You a
+# valid answer to an incense request all over again, on the strength of one amberwood note.
+# Myrrh and opoponax are in because a bakhoor blend is those resins; عنبر is out because amber
+# is a different material that merely shares the family.
+INCENSE_REQUEST_TERMS = ("incense", "frankincense", "olibanum", "بخور", "لبان")
+INCENSE_NOTE_EXPANSION = (
+    "incense", "frankincense", "olibanum", "myrrh", "opoponax", "بخور", "لبان",
+)
+
 
 # Request term -> the notes it should be searched and scored as. One table so the SQL
 # filter and the Python ranker cannot drift apart: they did, and the consequence was
@@ -79,6 +95,7 @@ FRESH_NOTE_EXPANSION = (
 _REQUEST_EXPANSIONS = (
     (SWEET_REQUEST_TERMS, SWEET_NOTE_EXPANSION),
     (FRESH_REQUEST_TERMS, FRESH_NOTE_EXPANSION),
+    (INCENSE_REQUEST_TERMS, INCENSE_NOTE_EXPANSION),
 )
 
 
@@ -260,6 +277,67 @@ def families(notes, tolerant=False):
     for note in notes:
         found.update(note_families(note, tolerant=tolerant))
     return frozenset(found)
+
+
+# Arabic proclitics a customer's wording carries and a note field does not. "البخور",
+# "وبخور" and "بالعود" are the same request as "بخور" and "عود", but `normalize_arabic`
+# folds letters only — it does not strip these — so an exact lookup misses all three.
+# Longest first, so "وبال" is consumed whole rather than leaving "بالعود" behind.
+_PROCLITICS = ("وبال", "فبال", "بال", "وال", "فال", "لل", "ال", "و", "ف", "ب", "ل")
+
+# Shortest form allowed to match a word in customer prose. The only table key below it is
+# "فل" (jasmine), and in a sentence that is far likelier to be a stray syllable than a note
+# request — prose is full of two-letter words, a store-typed note field is not.
+_PROSE_KEY_FLOOR = 3
+
+
+def _prose_candidates(word):
+    """The word itself, then each form left by stripping one leading proclitic.
+
+    The bare word is yielded first so a note that merely *starts* with a proclitic is never
+    mangled into something else: "لبان" is frankincense, and stripping its "ل" would leave
+    "بان", which is nothing.
+    """
+    yield word
+    for clitic in _PROCLITICS:
+        if word.startswith(clitic) and len(word) > len(clitic):
+            yield word[len(clitic):]
+
+
+def terms_in(text):
+    """The note and accord terms a customer's own message asks for, order preserved.
+
+    `parse_notes` reads a store-typed note *field*; this reads a *message*, and the two need
+    different rules. A field is a list of ingredients, so every piece of it is a note. A
+    sentence is not: only the words that happen to be in the table are, and they arrive
+    wearing the definite article and whatever conjunction preceded them.
+
+    Exact lookup only — never `note_families(tolerant=True)`. That pass exists to find
+    "amberwood" inside a note field, and its substring stage turned loose on prose reads
+    "الاسعار" and "عندنا" as ingredients.
+
+    A perfume name that happens to contain a note word resolves through it on purpose: a
+    customer asking for a "Tobacco Vanille" we do not stock is best answered with the
+    closest tobacco gourmand we do.
+
+    Exists for conversation 795. "عندكو لادور بخور صح ؟" named a bakhoor the store does not
+    carry, and `fallback.suggest_alternatives` — which ranked on price alone — answered with
+    the cheapest perfume in the catalogue. Two genuine incense perfumes were sitting in it.
+    """
+    found = []
+    for word in _WORD_SPLIT.split(normalize_arabic(text or "")):
+        for candidate in _prose_candidates(word):
+            if len(candidate) < _PROSE_KEY_FLOOR:
+                continue
+            if (
+                candidate in NOTE_FAMILIES
+                or candidate in SWEET_REQUEST_TERMS
+                or candidate in FRESH_REQUEST_TERMS
+            ):
+                if candidate not in found:
+                    found.append(candidate)
+                break
+    return tuple(found)
 
 
 # What "تقيلة" / "تخنق" means in data terms. Used as a penalty when the customer asks

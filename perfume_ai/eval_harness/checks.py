@@ -205,6 +205,87 @@ def _false_denial(reply, truth):
     return None
 
 
+def _contradictory_availability(reply):
+    """A clause that denies a perfume and promises to check on it in the same breath.
+
+    Conversation 795 turn 4, verbatim: "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه". Both
+    halves cannot be true — either we know it is absent or we are still finding out — and the
+    customer is left unable to tell which. `_false_denial` scores this clean, because الكساندريا 2
+    is in no catalogue and so never reaches `truth["available_names"]`.
+
+    Needs no ground truth at all, which is the point: the defect is internal to the sentence.
+
+    The deferral markers come from `described._DEFERRAL` rather than a second copy, so a new
+    phrasing added for the referent logic is caught here too. The clause split is the same one
+    `_false_denial` uses — but note that a comma *inside* the offending sentence would separate
+    the two halves, so a denial clause is also paired with the clause that follows it. That is
+    the shape turn 4 actually has.
+
+    Returns the offending text, or None.
+    """
+    from products.services.sales.described import _DEFERRAL
+    from products.services.static_faq_service import normalize_arabic
+
+    clauses = [clause for clause in _CLAUSE.split(reply or "") if clause.strip()]
+    markers = [normalize_arabic(marker) for marker in _DEFERRAL]
+
+    for index, clause in enumerate(clauses):
+        if not any(pattern.search(clause) for pattern in _DENIAL):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SCOPED):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SIMILARITY):
+            continue
+        # This clause and the next one: "مش موجود عندنا، لحظة أتأكدلك منه" is one sentence to a
+        # reader and two clauses to the splitter.
+        window = " ".join(clauses[index:index + 2])
+        normalized = normalize_arabic(window)
+        if any(marker in normalized for marker in markers):
+            return window.strip()
+    return None
+
+
+# The context blocks that say, in so many words, that the system has no data on what was asked.
+# `product_info` emits the first when the resolver could not place a name and the second on its
+# not-found branch. A denial written against either is a denial the agent had no basis for.
+_NO_DATA_CONTEXT = (
+    "═══ سؤال معلّق ═══",
+    "لم يتم التعرف على اسم منتج محدد",
+)
+
+
+def _unbacked_denial(reply, context):
+    """A denial made on a turn where the injected data said nothing either way.
+
+    `prompts.py` rule 3 is unconditional: the agent may never tell a customer a perfume is
+    absent on the strength of the catalogue not containing it. Missing from the data and missing
+    from the shop are different facts, and only the store owner knows the second.
+
+    `_false_denial` cannot see this. It asks whether the denied name is a *stocked* product, so
+    it is silent on exactly the perfumes the agent knows least about — every name outside the
+    catalogue, which is every name this branch fires on.
+
+    Scoped to the no-data contexts rather than run on every reply, because a denial is legitimate
+    elsewhere: a size that has run out, or an original bottle that was never made, both come with
+    real data behind them. Those turns carry product rows, not one of these markers.
+
+    Returns the offending clause, or None.
+    """
+    context = context or ""
+    if not any(marker in context for marker in _NO_DATA_CONTEXT):
+        return None
+
+    for clause in _CLAUSE.split(reply or ""):
+        if not any(pattern.search(clause) for pattern in _DENIAL):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SCOPED):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SIMILARITY):
+            continue
+        return clause.strip()
+    return None
+
+
 def _numbers(text):
     return {match.group().replace(",", "") for match in _NUM.finditer(text or "")}
 
@@ -358,6 +439,26 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             "false_denial", "critical",
             f"told the customer '{denied}' is not available, but it is active in the "
             f"catalogue with a sellable bottle",
+        ))
+
+    # ── Denying and deferring in the same breath ──────────────────────────
+    # No ground truth needed: the sentence contradicts itself whatever the catalogue holds, and
+    # a catalogue lookup is exactly what `_false_denial` needs and cannot have here. Conversation
+    # 795 turn 4 said both halves about a perfume in no catalogue and scored clean.
+    contradiction = _contradictory_availability(reply)
+    if contradiction:
+        findings.append((
+            "contradictory_availability", "critical",
+            f"denied a perfume and promised to check on it in one breath: '{contradiction}'",
+        ))
+
+    # ── Denying on a turn with no data either way ──────────────────────────
+    unbacked = _unbacked_denial(reply, context)
+    if unbacked:
+        findings.append((
+            "unbacked_denial", "critical",
+            f"told the customer a perfume is not available on a turn whose injected data said "
+            f"nothing about it: '{unbacked}'",
         ))
 
     # ── Talking to the customer about the injected data ───────────────────

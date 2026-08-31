@@ -341,6 +341,65 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
     return ordered + sorted(remaining)
 
 
+# The marker `product_info` writes into a turn's injected context when the customer named a
+# perfume and nothing in the catalogue could be matched to it. It lives here, next to the only
+# code that reads it back, because a marker one side of the pipe spells differently is a silent
+# failure rather than a loud one.
+PENDING_LOOKUP_MARKER = "PENDING_LOOKUP:"
+
+
+def pending_lookup(conversation, turns=4):
+    """The question we promised to check on and still have not answered, and how stale it is.
+
+    `_deferred_in` above answers the neighbouring question — which *catalogue* perfume are we
+    waiting on — and by construction cannot answer this one. A deferral happens precisely because
+    the name is absent from the catalogue, so there is no name for `names_in` to match, and the
+    whole of conversation 795 fits through that gap: "عندكو لادور بخور صح ؟" was deferred on,
+    nothing recorded it, and "طب اتأكدلي" one message later fell through to
+    `_referent_from_conversation` and was answered with a full price list for the previous turn's
+    perfume — which the customer had never asked about.
+
+    Read out of recent assistant rows' `internal_context` rather than a new field. That column is
+    already this codebase's hard record of what a turn was given, `tasks.py` and `views.py`
+    persist it for free, and it needs no migration. `Conversation.preferences` is not an option:
+    `conversation_service.merge_preferences` rewrites it wholesale to PERSISTED_PREFERENCE_KEYS
+    on every recommendation turn, so anything else parked there is silently dropped.
+
+    Returns `(question, count)`.
+
+    `count` is how many of the last `turns` replies carry a marker, and it is the escalation
+    signal: one is a promise we have only just made, two means the customer has come back and we
+    still have no answer, which is the point a person has to see it.
+
+    `question` is the **oldest** marker in the window, not the newest, because that is the one
+    still unanswered. Every message after it is a chase — "طب اتأكدلي" is not a perfume name, and
+    an owner told to go and look up "طب اتأكدلي" has been told nothing. The `turns` window is what
+    bounds the staleness: wide enough for ask → defer → ask again, narrow enough that a lookup
+    from ten turns back is not still escalating.
+    """
+    if conversation is None:
+        return "", 0
+
+    contexts = list(
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("internal_context", flat=True)[:turns]
+    )
+
+    question = ""
+    count = 0
+    for context in contexts:
+        for line in (context or "").splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(PENDING_LOOKUP_MARKER):
+                continue
+            count += 1
+            # Newest first, so the last assignment wins and `question` ends up the oldest.
+            question = stripped[len(PENDING_LOOKUP_MARKER):].strip() or question
+            break
+    return question, count
+
+
 def offered_context_block(conversation, store):
     """The perfumes we just offered, rendered as an ordered prompt block.
 
