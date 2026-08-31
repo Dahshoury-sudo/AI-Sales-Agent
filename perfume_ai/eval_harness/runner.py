@@ -39,6 +39,7 @@ _REPLAYS = {
     "conv1005": "scenarios_conv1005",
     "conv726": "scenarios_conv726",
     "conv738": "scenarios_conv738",
+    "conv768": "scenarios_conv768",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

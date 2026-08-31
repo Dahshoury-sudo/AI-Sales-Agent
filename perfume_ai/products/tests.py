@@ -1964,6 +1964,158 @@ class UnifiedProductFormattingTests(TestCase):
 
         self.assertEqual(context.count("Name (الاسم الصحيح):"), 2)
 
+    # ── naming a perfume's line-mates (conversation 768) ──────────────────
+    def _stronger_line(self):
+        """The three nesting Emporio Armani names, each with one size."""
+        armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        for name, price in (
+            ("Stronger With You", 400),
+            ("Stronger With You Intensely", 450),
+            ("Stronger With You Absolutely", 480),
+        ):
+            product = Product.objects.create(
+                store=self.store, brand=armani, name=name, gender="male",
+            )
+            ProductVariant.objects.create(
+                product=product, volume=50, price=price, bottle_type="normal"
+            )
+        return Product.objects.filter(brand=armani, name="Stronger With You")
+
+    def test_a_perfume_with_flankers_says_they_are_different_perfumes(self):
+        """Conversation 768: nothing in the data said the two rows were two perfumes, so the bot
+        agreed they were one and retracted a correct price."""
+        block = format_products(self._stronger_line())
+
+        self.assertIn("⚠️ عطر مختلف عن", block)
+        self.assertIn("Stronger With You Intensely", block)
+        self.assertIn("Stronger With You Absolutely", block)
+        self.assertIn("ممنوع تعاملهم كعطر واحد", block)
+
+    def test_the_flanker_line_names_perfumes_absent_from_the_request(self):
+        """The turn that broke had ONLY the base's row injected. A note built by intersecting the
+        batch would have left that turn exactly as it was."""
+        block = format_products(self._stronger_line())
+
+        self.assertNotIn("Name (الاسم الصحيح): Stronger With You Intensely", block)
+        self.assertIn("Stronger With You Intensely", block)
+
+    def test_a_perfume_with_no_flankers_gets_no_such_line(self):
+        self.assertNotIn("⚠️ عطر مختلف عن", format_products(self.queryset))
+
+    def test_the_brief_block_gets_no_flanker_line(self):
+        """Brief renders throwaway alternatives, which nobody is being priced on."""
+        self.assertNotIn(
+            "⚠️ عطر مختلف عن", format_products(self._stronger_line(), brief=True)
+        )
+
+
+class LineMatesTests(TestCase):
+    """Conversation 768: which catalogue names count as the same perfume, and which do not.
+
+    Two primitives, one defect. `names_in` decides what a reply actually said when one catalogue
+    name nests inside another; `line_mates` decides which perfumes a customer's shorthand could
+    mean, so the block can say they are different.
+    """
+
+    def setUp(self):
+        from products.services.sales import naming
+
+        self.naming = naming
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.names = [
+            "Stronger With You",
+            "Stronger With You Intensely",
+            "Stronger With You Absolutely",
+        ]
+
+    # ── names_in ─────────────────────────────────────────────────────────
+    def test_only_the_flanker_is_found_when_only_it_was_said(self):
+        """The bug in one line: `"stronger with you" in text` is True here."""
+        self.assertEqual(
+            self.naming.names_in("أرشحلك Stronger With You Intensely", self.names),
+            ["Stronger With You Intensely"],
+        )
+
+    def test_only_the_base_is_found_when_only_it_was_said(self):
+        self.assertEqual(
+            self.naming.names_in("أرشحلك Stronger With You بـ 700", self.names),
+            ["Stronger With You"],
+        )
+
+    def test_both_are_found_when_both_were_said_in_either_order(self):
+        self.assertEqual(
+            self.naming.names_in(
+                "Stronger With You بـ 700 و Stronger With You Intensely بـ 780", self.names
+            ),
+            ["Stronger With You", "Stronger With You Intensely"],
+        )
+        self.assertEqual(
+            self.naming.names_in(
+                "Stronger With You Intensely بـ 780 و Stronger With You بـ 700", self.names
+            ),
+            ["Stronger With You Intensely", "Stronger With You"],
+        )
+
+    def test_a_name_is_reported_once_and_empty_text_finds_nothing(self):
+        self.assertEqual(
+            self.naming.names_in("Le Male و Le Male تاني", ["Le Male"]), ["Le Male"]
+        )
+        self.assertEqual(self.naming.names_in("", self.names), [])
+        self.assertEqual(self.naming.names_in(None, self.names), [])
+
+    # ── line_mates ───────────────────────────────────────────────────────
+    def _catalogue(self):
+        armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        for brand, names in (
+            (armani, self.names),
+            (dior, ["Dior Homme Intense", "Dior Homme Sport", "Dior Sauvage"]),
+        ):
+            for name in names:
+                Product.objects.create(
+                    store=self.store, brand=brand, name=name, gender="male",
+                )
+        return list(
+            Product.objects.filter(store=self.store).values_list("name", "brand_id")
+        )
+
+    def test_the_flanker_sees_the_base_and_the_other_flanker(self):
+        """Resolved through the line's root, not pairwise: Absolutely is neither a subset nor a
+        superset of Intensely, so pairwise containment would have found only the base."""
+        self.assertEqual(
+            self.naming.line_mates("Stronger With You Intensely", self._catalogue()),
+            ["Stronger With You", "Stronger With You Absolutely"],
+        )
+
+    def test_the_base_sees_both_flankers(self):
+        self.assertEqual(
+            self.naming.line_mates("Stronger With You", self._catalogue()),
+            ["Stronger With You Absolutely", "Stronger With You Intensely"],
+        )
+
+    def test_two_siblings_that_do_not_nest_are_not_one_line(self):
+        """The documented limit. Neither name's tokens contain the other's, so `Dior Homme Intense`
+        and `Dior Homme Sport` are not grouped — nesting is what makes a shorthand ambiguous and
+        breaks a substring test, and that is the condition worth guarding."""
+        self.assertEqual(
+            self.naming.line_mates("Dior Homme Sport", self._catalogue()), []
+        )
+
+    def test_a_perfume_alone_on_its_line_has_no_mates(self):
+        self.assertEqual(self.naming.line_mates("Dior Sauvage", self._catalogue()), [])
+
+    def test_a_name_the_catalogue_does_not_hold_has_no_mates(self):
+        self.assertEqual(self.naming.line_mates("Le Male", self._catalogue()), [])
+
+    def test_a_different_brand_is_never_a_line_mate(self):
+        """Same-brand is a hard condition: two houses can share a word without sharing a line."""
+        catalogue = self._catalogue() + [("Stronger With You Freeze", 999)]
+
+        self.assertNotIn(
+            "Stronger With You Freeze",
+            self.naming.line_mates("Stronger With You", catalogue),
+        )
+
 
 class HotLookupIndexTests(TestCase):
     """Indexes on the columns every inbound message touches."""
@@ -6261,6 +6413,23 @@ class AlreadyDescribedTests(TestCase):
         self.assertIn("ممنوع تعيد وصف", hint)
         self.assertNotIn("سطر واحد قصير", hint)
 
+    def test_a_nested_name_is_not_described_by_naming_only_the_flanker(self):
+        """Conversation 768. Describing "Stronger With You Intensely" used to report the base
+        "Stronger With You" as described too, so `repeat_ban_hint` forbade re-describing a perfume
+        the customer had never heard of — and the next turn had to offer it in one bare line."""
+        for name in ("Stronger With You", "Stronger With You Intensely"):
+            Product.objects.create(
+                store=self.store, brand=self.brand, name=name, gender="male",
+            )
+        history = [
+            {"role": "assistant", "content": "أرشحلك Stronger With You Intensely."},
+        ]
+
+        described = self.described.already_described(history, self.store)
+
+        self.assertIn("Stronger With You Intensely", described)
+        self.assertNotIn("Stronger With You", described)
+
 
 class ContradictedFieldWarningTests(TestCase):
     """A populated-but-different occasion or season must be flagged, not passed over.
@@ -6621,6 +6790,72 @@ class ConversationContinuityTests(TestCase):
 
         self.assertEqual(
             self.described.under_discussion(self.conversation, self.store), frozenset()
+        )
+
+    # ── names that nest (conversation 768) ───────────────────────────────
+    def _stronger_line(self):
+        """The three Emporio Armani perfumes whose names nest, as the catalogue holds them."""
+        return (
+            self._make("Stronger With You", price=400),
+            self._make("Stronger With You Intensely", price=450),
+            self._make("Stronger With You Absolutely", price=480),
+        )
+
+    def test_naming_only_the_flanker_leaves_the_base_out(self):
+        """Conversation 768, the regression. The search injected both rows, the reply named only
+        Intensely — and "Stronger With You" is a prefix of it, so the substring test recorded the
+        base as under discussion too. `continuity` (2.5) then promoted a perfume the customer had
+        never been shown into the next answer, and two turns later the bot was apologising for a
+        price that was right."""
+        self._stronger_line()
+        self._reply(
+            "أرشحلك Stronger With You Intensely — سعره 780.",
+            shown=("Stronger With You", "Stronger With You Intensely"),
+        )
+
+        under = self.described.under_discussion(self.conversation, self.store)
+
+        self.assertIn("Stronger With You Intensely", under)
+        self.assertNotIn("Stronger With You", under)
+
+    def test_naming_both_keeps_both(self):
+        """The nested name is still found where it genuinely appears."""
+        self._stronger_line()
+        self._reply(
+            "Stronger With You بـ 700 و Stronger With You Intensely بـ 780.",
+            shown=("Stronger With You", "Stronger With You Intensely"),
+        )
+
+        self.assertEqual(
+            self.described.under_discussion(self.conversation, self.store),
+            {"Stronger With You", "Stronger With You Intensely"},
+        )
+
+    def test_naming_only_the_base_keeps_only_the_base(self):
+        """The other direction: the shorter name must not drag the longer one in either."""
+        self._stronger_line()
+        self._reply(
+            "أرشحلك Stronger With You — سعره 700.",
+            shown=("Stronger With You", "Stronger With You Intensely"),
+        )
+
+        self.assertEqual(
+            self.described.under_discussion(self.conversation, self.store),
+            {"Stronger With You"},
+        )
+
+    def test_nesting_names_are_ordered_by_where_they_were_said(self):
+        """Guards the refactor: `offered_in_order` had this scan inline and now shares it, so the
+        longest-match rule that decides what "ده" points at must survive the move."""
+        self._stronger_line()
+        self._reply(
+            "أرشحلك Stronger With You Intensely، وفيه كمان Stronger With You.",
+            shown=("Stronger With You", "Stronger With You Intensely"),
+        )
+
+        self.assertEqual(
+            self.described.offered_in_order(self.conversation, self.store),
+            ["Stronger With You Intensely", "Stronger With You"],
         )
 
     # ── an order turn's context is a cart, not product data ──────────────

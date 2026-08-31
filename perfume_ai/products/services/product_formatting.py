@@ -14,6 +14,7 @@ trying to prevent. Both drifts are resolved by including the superset.
 from decimal import Decimal
 from itertools import islice
 
+from .sales import naming
 from .sales.value import (
     BUDGET_TOLERANCE,
     budget_tier,
@@ -216,12 +217,43 @@ def _missing_data_note(product):
     return f"⚠️ بيانات ناقصة للعطر ده ({labels}): {bans}."
 
 
+def _line_mate_note(mates):
+    """Name the other perfumes on this one's line, and forbid merging them into one.
+
+    This catalogue holds Stronger With You, Stronger With You Intensely and Stronger With You
+    Absolutely: one brand, one name family, three different scents at three different prices.
+    Nothing in the data said so. In conversation 768 the bot recommended Intensely at 780, offered
+    the base at 700 two turns later without a word about it being a different perfume, and when the
+    customer said "انت قولت سعرين مختلفين للسترونجر" it apologised and declared 700
+    "السعر الصحيح". Both prices were right, and the customer left believing Intensely costs 700.
+
+    On that last turn only the base's row was injected, so the model had nothing to reason from —
+    which is why `naming.line_mates` reads the catalogue rather than this batch, and the names here
+    may well have no data behind them. That is what the closing clause is for: an unpriced name in
+    a prompt is otherwise an invitation to offer it.
+
+    Empty for every perfume with no flankers, which is nearly all of them, and the note vanishes.
+    """
+    if not mates:
+        return ""
+    return (
+        f"⚠️ عطر مختلف عن: {'، '.join(mates)} — نفس البراند ونفس بداية الاسم، "
+        "بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n"
+        "   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n"
+        "   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n"
+        "   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر "
+        "تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n"
+        "   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم "
+        "بياناته مش موجودة فوق."
+    )
+
+
 def _field_or_placeholder(value):
     return value if (value or "").strip() else _NOT_RECORDED
 
 
 def format_product(product, max_price=None, brief=False, show_prices=True,
-                   show_value_pick=True):
+                   show_value_pick=True, line_mates=None):
     """Render one product as a prompt block.
 
     brief=True drops stock status, out-of-stock sizes and the scent/performance
@@ -238,6 +270,10 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     ✅/⚠️/❌ budget labels mean something, but a turn about *which perfume* should not open
     with a verdict about *which size*. Leading with the size on every recommended perfume is
     how one injected line became the opening sentence of nearly every reply.
+
+    line_mates is the list of catalogue names on this perfume's line (see `_line_mate_note`),
+    supplied by `format_products` because it takes a query the whole batch can share. Absent
+    on the brief block, which renders throwaway alternatives nobody is being priced on.
     """
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
@@ -273,6 +309,9 @@ Description: {product.description}
     out_of_stock_text = "، ".join(out_of_stock) if out_of_stock else "لا يوجد"
     extras = "\n".join(
         line for line in (
+            # Identity before price: which perfume this is has to settle before the model
+            # starts recommending a size of it.
+            _line_mate_note(line_mates),
             value_pick_note(product, variants, max_price)
             if show_prices and show_value_pick else "",
             _exclusive_selling_note(product),
@@ -305,6 +344,46 @@ Description: {product.description}
 """
 
 
+def _line_mates_for(products):
+    """Map each product's name to its line-mates, with one catalogue query for the batch.
+
+    Deliberately reads the catalogue rather than intersecting the batch. The turn that broke
+    conversation 768 had *only* the base's row injected, so a batch-relative answer would have
+    left that turn exactly as broken — the whole point is to name a perfume whose data is not
+    here.
+
+    Skipped unless the batch resolves to exactly one store. `Product.store` is nullable, callers
+    may hand over rows built in a test or drawn from more than one catalogue, and "same brand"
+    only means "same line" inside one of them.
+
+    Never raises. This is the reply hot path: a missing warning costs a disclaimer, an exception
+    costs the whole reply.
+
+    One query per call, and `recommendation._format_products` calls the renderer once per product
+    when ranking ran — so a recommendation turn pays a handful. Left alone deliberately: it is a
+    two-column scan of one store's catalogue on a turn already spending seconds in LLM calls, and
+    a cache here would either go stale on a newly added perfume or need invalidation nobody asked
+    for.
+    """
+    stores = {getattr(product, "store_id", None) for product in products}
+    if len(stores) != 1 or None in stores:
+        return {}
+
+    try:
+        from products.models import Product
+
+        catalogue = list(
+            Product.objects.filter(store_id=stores.pop(), is_active=True)
+            .values_list("name", "brand_id")
+        )
+        return {
+            product.name: naming.line_mates(product.name, catalogue)
+            for product in products
+        }
+    except Exception:
+        return {}
+
+
 def format_products(products, max_price=None, limit=None, brief=False, show_prices=True,
                     show_value_pick=True):
     """Render several products, optionally capped.
@@ -312,12 +391,18 @@ def format_products(products, max_price=None, limit=None, brief=False, show_pric
     The cap is a safety net on prompt size: callers should already be handing over
     a bounded queryset, but one unsliced queryset here used to serialise an entire
     catalogue into a single request.
+
+    The slice is materialised so the line-mate lookup can be done once for the batch instead of
+    once per product — and so an `islice` over a queryset is not consumed by the lookup before the
+    render sees it.
     """
-    selected = islice(products, limit) if limit else products
+    selected = list(islice(products, limit) if limit else products)
+    mates = {} if brief else _line_mates_for(selected)
     return "".join(
         format_product(
             product, max_price=max_price, brief=brief,
             show_prices=show_prices, show_value_pick=show_value_pick,
+            line_mates=mates.get(product.name),
         )
         for product in selected
     )

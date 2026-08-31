@@ -252,3 +252,98 @@ def mentioned_in(text, products):
         ):
             found.append(product)
     return found
+
+
+def names_in(text, names):
+    """Which of `names` the text actually says, in order of first appearance.
+
+    Catalogue names nest. "Stronger With You" is a prefix of "Stronger With You Intensely",
+    so the obvious `name.lower() in text` reports the base as said whenever only the flanker
+    was said — and every caller downstream then treats two perfumes as one.
+
+    Conversation 768 is what that costs. Turn 1 named only Intensely, the search had injected
+    both rows, so `described.under_discussion` recorded the base as under discussion without
+    it ever having been said; `ranking.WEIGHTS["continuity"]` promoted that phantom into turn
+    3's answer, and the customer was quoted two prices for what they reasonably read as one
+    perfume. Asked about it, the bot apologised and retracted the correct one.
+
+    The rule is to consume the LONGEST match at each position: a span already claimed by
+    "Stronger With You Intensely" cannot also be claimed by the shorter name nested inside it.
+    A name that genuinely appears elsewhere in the text is still found there, so a reply naming
+    both perfumes yields both.
+
+    Matched case-insensitively on the stored spelling, which is what every caller needs —
+    names are stored and emitted in Latin. An Arabic transliteration matches nothing here, the
+    same limitation `already_described` already documents, and that turn behaves as it does
+    today.
+    """
+    haystack = (text or "").lower()
+    if not haystack:
+        return []
+
+    longest_first = sorted((name for name in names if name), key=len, reverse=True)
+    found, remaining = [], set(longest_first)
+    position = 0
+    while position < len(haystack) and remaining:
+        for name in longest_first:
+            if name in remaining and haystack.startswith(name.lower(), position):
+                found.append(name)
+                remaining.discard(name)
+                position += len(name)
+                break
+        else:
+            position += 1
+    return found
+
+
+def line_mates(name, catalogue):
+    """The other perfumes on `name`'s line: same brand, one name nested in the other.
+
+    A flanker is not "a completely different perfume" the way conversation 738's Acqua di Gio
+    was — it shares a brand, a name and a family, and differs in scent, composition and price.
+    Nothing in the injected data said so, so on conversation 768's last turn, where only the
+    base's row was injected, the model had no way to know the 780 it had quoted three turns
+    earlier belonged to a *different* perfume. It apologised for a mistake it had not made and
+    declared the base's 700 "السعر الصحيح", leaving the customer believing Intensely costs 700.
+
+    `catalogue` is (name, brand_id) pairs, so one query serves a whole batch.
+
+    "Same line" is deliberately narrow: same brand, and one name's identifying tokens
+    contained in the other's. Nesting is the condition that both makes a customer's shorthand
+    ambiguous ("سترونجر" fits three rows) and defeats a substring test, so it is the condition
+    worth guarding. `Dior Homme Intense` and `Dior Homme Sport` are NOT grouped — neither
+    name's tokens contain the other's — and that is an accepted limit, not an oversight.
+    Widening to "same brand + 2 shared tokens" would be a change to this function alone.
+
+    Resolved through the line's ROOT rather than pairwise, which is what makes it transitive.
+    Asked about Intensely, pairwise containment finds only the base: Absolutely is neither a
+    subset nor a superset of it. Rooting on {stronger, with, you} finds both.
+    """
+    own = tokens(name)
+    if not own:
+        return []
+
+    brand = None
+    for other_name, brand_id in catalogue:
+        if other_name == name:
+            brand = brand_id
+            break
+    if brand is None:
+        return []
+
+    same_brand = [
+        (other_name, tokens(other_name))
+        for other_name, brand_id in catalogue
+        if brand_id == brand and other_name
+    ]
+
+    # The fewest-token name this one contains — itself, when it is already the line's base.
+    root = own
+    for _, other in same_brand:
+        if other and other < root:
+            root = other
+
+    return sorted(
+        other_name for other_name, other in same_brand
+        if other_name != name and other >= root
+    )

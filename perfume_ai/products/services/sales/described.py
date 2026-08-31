@@ -37,10 +37,15 @@ def already_described(history, store):
     Only assistant messages are scanned. A perfume the *customer* named is not something we
     have described — they may be asking about it for the first time.
 
-    Matched by substring on the stored name, which is reliable here because names are stored
-    and emitted in Latin: "Dior Homme Intense", "Le Male", "Y Eau de Parfum" and
-    "XJ 1861 Naxos" all appear verbatim in the transcript this was written for. A name the
-    bot rendered in Arabic transliteration is missed, and that turn behaves as it does today.
+    Matched on the stored name, which is reliable here because names are stored and emitted in
+    Latin: "Dior Homme Intense", "Le Male", "Y Eau de Parfum" and "XJ 1861 Naxos" all appear
+    verbatim in the transcript this was written for. A name the bot rendered in Arabic
+    transliteration is missed, and that turn behaves as it does today.
+
+    Matched via `naming.names_in` rather than a plain substring, because catalogue names nest:
+    a reply naming only "Stronger With You Intensely" used to report the base "Stronger With
+    You" as described too, so `repeat_ban_hint` forbade re-describing a perfume the customer
+    had never heard of.
 
     "Named" is treated as "described" deliberately. Telling the two apart would need to parse
     the reply, and once a perfume has been put in front of a customer they have been told
@@ -59,8 +64,10 @@ def already_described(history, store):
 
     from products.models import Product
 
+    from .naming import names_in
+
     names = Product.objects.filter(store=store).values_list("name", flat=True)
-    return frozenset(name for name in names if name and name.lower() in said)
+    return frozenset(names_in(said, names))
 
 
 def _asked_a_question(history):
@@ -168,13 +175,14 @@ _CLAUSE = re.compile(r"[.،,؛;!?؟\n]+")
 
 def _deferred_in(content, names):
     """Catalogue names this reply promised to check on, rather than declared gone."""
+    from .naming import names_in
+
     deferred = set()
     for clause in _CLAUSE.split(content or ""):
         normalized = normalize_arabic(clause)
         if not any(normalize_arabic(marker) in normalized for marker in _DEFERRAL):
             continue
-        lowered = clause.lower()
-        deferred |= {n for n in names if n and n.lower() in lowered}
+        deferred |= set(names_in(clause, names))
     return deferred
 
 
@@ -218,6 +226,14 @@ def under_discussion(conversation, store, turns=2):
     correct output — but with no data behind the name it looked identical to a withdrawal, and
     the perfume the customer was waiting to hear about dropped out of the next turn.
 
+    Both halves of the test go through `naming.names_in`, not a substring, because catalogue
+    names nest. "Stronger With You" is a prefix of "Stronger With You Intensely", so a reply
+    naming only Intensely satisfied *both* halves for the base as well — the base's own row was
+    sitting in the same injected context — and the base was recorded as under discussion
+    without ever having been said. `ranking.WEIGHTS["continuity"]` (2.5) then promoted that
+    phantom into the next answer, which is how conversation 768 quoted a customer two prices
+    for what they read as one perfume, then apologised and retracted the correct one.
+
     Two replies is the window: it covers the common shape of a recommendation followed by a
     price question about the same perfumes, without pinning the conversation to perfumes the
     customer has moved past.
@@ -226,6 +242,8 @@ def under_discussion(conversation, store, turns=2):
         return frozenset()
 
     from products.models import Product
+
+    from .naming import names_in
 
     recent = list(
         conversation.messages.filter(role="assistant")
@@ -238,12 +256,11 @@ def under_discussion(conversation, store, turns=2):
     names = list(Product.objects.filter(store=store).values_list("name", flat=True))
 
     def shown_in(content, context):
-        prose = (content or "").lower()
+        said = set(names_in(content, names))
         # On an order turn the prose is the record and the cart is not — see the docstring.
         if _is_cart_context(context):
-            return {n for n in names if n and n.lower() in prose}
-        data = (context or "").lower()
-        return {n for n in names if n and n.lower() in prose and n.lower() in data}
+            return said
+        return said & set(names_in(context, names))
 
     def withdrawn_in(content, context):
         """Named to the customer with no data behind it — i.e. we said it is gone."""
@@ -251,8 +268,7 @@ def under_discussion(conversation, store, turns=2):
         # the opposite of one we have dropped.
         if _is_cart_context(context):
             return set()
-        prose, data = (content or "").lower(), (context or "").lower()
-        gone = {n for n in names if n and n.lower() in prose and n.lower() not in data}
+        gone = set(names_in(content, names)) - set(names_in(context, names))
         # Nor is one we promised to go and check on.
         return gone - _deferred_in(content, names)
 
@@ -289,11 +305,12 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
     them in. Soundness is inherited from `under_discussion`: a perfume must appear in both the
     prose and that reply's injected data, so a withdrawn perfume is never offered as a referent.
 
-    The scan matches the LONGEST name at each position rather than asking each name where it
-    occurs. Catalogue names nest — "Stronger With You" is a prefix of "Stronger With You
-    Intensely" — so a per-name `find` returns the same index for both and the shorter, more
-    generic name wins the tie. That would point "ده" at the wrong perfume, which is the whole
-    thing this function exists to get right.
+    Ordered by `naming.names_in`, which matches the LONGEST name at each position rather than
+    asking each name where it occurs. Catalogue names nest — "Stronger With You" is a prefix of
+    "Stronger With You Intensely" — so a per-name `find` returns the same index for both and the
+    shorter, more generic name wins the tie. That would point "ده" at the wrong perfume, which is
+    the whole thing this function exists to get right. The scan lived inline here; it is shared
+    now because `under_discussion` needed the same rule and had a plain substring instead.
 
     `latest_only` drops the older-reply tail, so the answer is strictly "what we named in the
     reply the customer is responding to". `product_info` needs that: the tail is what carried a
@@ -312,20 +329,10 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
         .values_list("content", flat=True)
         .first()
     )
-    prose = (latest or "").lower()
+    from .naming import names_in
 
-    longest_first = sorted(names, key=len, reverse=True)
-    ordered, remaining = [], set(names)
-    position = 0
-    while position < len(prose) and remaining:
-        for name in longest_first:
-            if name in remaining and prose.startswith(name.lower(), position):
-                ordered.append(name)
-                remaining.discard(name)
-                position += len(name)
-                break
-        else:
-            position += 1
+    ordered = names_in(latest, names)
+    remaining = set(names) - set(ordered)
 
     # Whatever is under discussion from the older reply but absent from the latest one sorts
     # after everything we just said — the right precedence for resolving a reference.
