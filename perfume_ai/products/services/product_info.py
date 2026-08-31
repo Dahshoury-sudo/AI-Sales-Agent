@@ -217,7 +217,9 @@ def _pending_lookup_block(question, exhausted=False):
     return block + (
         f"{LOOKUP_EXHAUSTED_MARKER}\n"
         "العميل سأل عن العطر ده قبل كده، ووعدناه إننا نتأكد، وأهو رجع يسأل تاني — ولسه مفيش "
-        "أي إجابة. الرد ده آخر رد هيوصله من عندك قبل ما زميل بشري يتسلم المحادثة.\n\n"
+        "أي إجابة.\n"
+        "🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من "
+        "البدائل اللي بتعرضها عليه في نفس الرد.\n\n"
     )
 
 
@@ -270,7 +272,22 @@ _ABSENT_RULES = """🔴🔴🔴 قاعدة فوق كل القواعد اللي �
 """
 
 
-def get_product_info(message, history=None, store=None, conversation=None):
+def get_product_info(message, history=None, store=None, conversation=None, retry_hint=""):
+    """Answer a question about a named perfume.
+
+    `retry_hint` is instruction text for the model, not something the customer said, and it is kept
+    out of `message` for that reason. `router` used to append its anti-repetition warning to the
+    message itself and call again — and every name-reading step below then read the warning as the
+    customer's words. "اتأكد" plus "⚠️ تنبيه: ردك السابق كان مكرر..." clears
+    `naming.may_name_a_perfume` on the strength of the warning's own vocabulary, comes back
+    unresolvable because it is not a perfume, and so sets `named_but_unresolved` — which recorded the
+    warning text as an open customer question and put the turn back on the deferral rules.
+
+    816 turn 4 is that: "اتأكد" arriving after the denial was correctly denied again, the denial read
+    as repetitive, and the retry replaced it with "لحظة أتأكدلك منه يا فندم، وهرد عليك أول ما أعرف" —
+    a promise to look up a perfume the customer had just been told we do not stock. The retry undid
+    the right answer, which is why nothing in the deferral logic could be blamed for it.
+    """
     from .sales import naming
 
     # An explicit name in this message beats anything inferred from earlier turns.
@@ -372,8 +389,25 @@ def get_product_info(message, history=None, store=None, conversation=None):
     # anchor and needs no adjacency, and that is precisely what makes 816 turn 3 reachable: turn 2
     # was answered about Stronger With You and its reply carried no marker at all, so the narrow
     # window sees nothing and the open question would be lost.
+    #
+    # `named_but_unresolved` is not enough to gate this, which the harness replay of 816 showed and
+    # a unit test with `resolve_products` mocked to `[]` could not. On turn 3 the resolver *placed*
+    # الكساندريا 2 — on Stronger With You, the perfume the deferral had volunteered — so `products`
+    # came back full, the flag went False, and the turn fell through to the plain product branch and
+    # was answered "حضرتك تقصد Stronger With You ولا Absolutely؟". That is `_chasing_open_lookup`'s
+    # failure exactly, arriving by the named route instead of the pronoun one, so it is the same
+    # provenance test that answers it: everything in `products` being perfume we already offered is
+    # the signature of a resolved reference, not of a name this message placed. A deterministic
+    # catalogue match is excluded because that is proof we stock the thing, and denying it would
+    # break red line 3 — the same carve-out `chasing` makes with `named_here`.
+    #
+    # Provenance alone would be too loose ("الديور بكام؟" after the same deferral is also all
+    # offered perfume, and it is a price question we should answer). `naming.re_asks` is the half
+    # that keeps it tight: the customer's own words have to name the open question again.
     re_asked = ""
-    if named_but_unresolved:
+    if named_but_unresolved or (
+        not named_here and _chasing_open_lookup(products, conversation, store)
+    ):
         re_asked = next(
             (
                 question
@@ -385,7 +419,7 @@ def get_product_info(message, history=None, store=None, conversation=None):
 
     exhausted = chasing or bool(re_asked)
 
-    if named_but_unresolved:
+    if named_but_unresolved or re_asked:
         # `re_asked` is the wording the question was first asked in, and recording that rather than
         # this message keeps the record stable — which is what lets a third ask match the same
         # question instead of starting a new one. Empty when this name is new here, and a name we
@@ -507,7 +541,7 @@ def get_product_info(message, history=None, store=None, conversation=None):
 {message}
 
 {context}
-{instructions}
+{instructions}{retry_hint}
 """
     })
 

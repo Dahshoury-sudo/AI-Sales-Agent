@@ -10147,6 +10147,20 @@ class ChasedDeferralTests(TestCase):
         self.assertFalse(re_asks("عندك الكساندريا 2؟", "اتأكدلي منه"))
         self.assertFalse(re_asks("", "عندك الكساندريا 2؟"))
 
+    def test_a_bare_chase_word_is_not_a_name(self):
+        """816 turn 4 is a bare "اتأكد". Reading it as an unplaceable name sets
+        `named_but_unresolved`, and that flag vetoes the chase carry — so the one message that is
+        nothing but a chase became the one message that could not be read as one, and got a fresh
+        "لحظة أتأكدلك منه" a turn after the perfume had been denied. `_CHASING`'s own comment is the
+        licence: verb forms only, and no catalogue name tokenises to any of them."""
+        from products.services.sales.naming import identifying_tokens, may_name_a_perfume
+
+        self.assertEqual(identifying_tokens("اتأكد"), set())
+        self.assertFalse(may_name_a_perfume("اتأكد"))
+        self.assertFalse(may_name_a_perfume("ها لقيت اي ؟"))
+        # A chase carrying a name is still a name: the veto has to keep working.
+        self.assertTrue(may_name_a_perfume("اتأكدلي من الكساندريا 2"))
+
     def test_a_chase_that_also_names_a_new_perfume_defers_afresh(self):
         """"اتأكدلي من الكساندريا 2" both chases and names. The name is the part that has not been
         deferred on yet, so the unplaceable-name veto has to outrank the chase."""
@@ -10353,9 +10367,13 @@ class ReAskedDeferralTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def _deferred_on(self, question, marker=True):
+    def _deferred_on(self, question, marker=True, volunteered=False):
         """One past reply. `marker=False` is 816 turn 2 — an ordinary answer about the volunteered
-        perfume, which records no open question and is what a one-turn window would stop at."""
+        perfume, which records no open question and is what a one-turn window would stop at.
+
+        `volunteered=True` names the alternative in the reply prose, the way every real deferral
+        does ("لحظة أتأكدلك منه... زي Stronger With You"). That is what puts the perfume in
+        `described.offered_in_order`, and provenance is unreadable without it."""
         from products.services.sales import described
 
         context = "Name (الاسم الصحيح): Stronger With You"
@@ -10363,8 +10381,29 @@ class ReAskedDeferralTests(TestCase):
             context = (
                 f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n" + context
             )
+        reply = "لحظة أتأكدلك منه يا فندم."
+        if volunteered:
+            reply += " ممكن أشوف لك عطر تاني زي Stronger With You؟"
         save_message(
-            self.conversation, "assistant", "لحظة أتأكدلك منه يا فندم.", internal_context=context
+            self.conversation, "assistant", reply, internal_context=context
+        )
+
+    def _denied_on(self, question):
+        """The exhausted reply — the one that says the perfume is not stocked and offers an
+        alternative. It keeps the open question in its record, because a customer who pushes past a
+        denial is still asking about the same perfume."""
+        from products.services import product_info
+        from products.services.sales import described
+
+        save_message(
+            self.conversation,
+            "assistant",
+            f"بعتذر يا فندم، مش موجود عندنا. ممكن أشيرلك على Stronger With You؟",
+            internal_context=(
+                f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n"
+                f"{product_info.LOOKUP_EXHAUSTED_MARKER}\n"
+                "Name (الاسم الصحيح): Stronger With You"
+            ),
         )
 
     def _turn(self, message):
@@ -10372,6 +10411,21 @@ class ReAskedDeferralTests(TestCase):
         which is what makes the re-typed name `named_but_unresolved` and vetoes the chase path."""
         with mock.patch(
             "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info(message, [], self.store, self.conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    def _turn_resolved_to(self, message, products):
+        """The same turn, except the resolver comes back with something.
+
+        816 turn 3 in the harness: the resolver answered "بتكلم علي الكساندريا 2؟" with Stronger
+        With You — the perfume the deferral had volunteered — so `named_but_unresolved` was False and
+        `_turn`'s `[]` could never reproduce it. Provenance is what separates that from a name this
+        message really placed."""
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=products
         ), mock.patch(
             "products.services.product_info.chat", return_value="ok"
         ) as chat_call:
@@ -10477,6 +10531,119 @@ class ReAskedDeferralTests(TestCase):
         context, _ = self._turn("بسأل علي لادور بخور")
 
         self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+
+    # ── the resolver placing the unplaceable name does not hide the re-ask ──
+    def test_a_resolver_that_answers_with_the_offered_perfume_is_still_a_re_ask(self):
+        """The harness replay of 816 turn 3, which the `[]` mock could not reach. Everything the
+        resolver returned is perfume we had already offered, which is a resolved reference rather
+        than a name this message placed — so the open question is still open."""
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._deferred_on("", marker=False, volunteered=True)
+        context, prompt = self._turn_resolved_to(
+            "بتكلم علي الكساندريا 2؟", [self.stronger]
+        )
+
+        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn("مش موجود عندنا", prompt)
+
+    def test_a_perfume_we_never_offered_is_answered_not_denied(self):
+        """Red line 3 the other way round. A name the resolver places on something outside the
+        offered set is a perfume we demonstrably stock, and provenance has to let it through — 815's
+        own alternative would otherwise be deniable the moment its name overlapped the question."""
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        sauvage = Product.objects.create(
+            store=self.store,
+            brand=Brand.objects.create(store=self.store, name="Dior"),
+            name="Dior Sauvage",
+            gender="male",
+        )
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        context, _ = self._turn_resolved_to("الكساندريا 2؟", [sauvage])
+
+        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+
+    def test_a_price_question_about_the_offered_perfume_is_not_a_re_ask(self):
+        """Provenance on its own is too loose: this resolves entirely to offered perfume too, and
+        it is a question we should answer rather than an insistence we should deny. `re_asks` is the
+        half that keeps it tight."""
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        context, _ = self._turn_resolved_to("سترونجر ويذ يو بكام؟", [self.stronger])
+
+        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+
+    def test_a_bare_chase_after_the_denial_does_not_promise_again(self):
+        """816 turn 4. "اتأكد" — go on, check — arriving *after* the denial, and it came back
+        "لحظة أتأكدلك منه يا فندم، وهرد عليك أول ما أعرف": a promise to look up a perfume we had
+        just told the customer we do not stock. Nothing may take a settled question back to the
+        deferral rules."""
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟")
+        context, prompt = self._turn("اتأكد")
+
+        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        # The phrase itself appears in the prompt as a *prohibition*, so the discriminator has to be
+        # which rule set shipped: `_ABSENT_RULES` forbids re-promising, `_DEFERRAL_RULES` mandates it.
+        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
+        self.assertNotIn("الرد الصح: \"لحظة أتأكدلك منه\"", prompt)
+
+    def test_the_denial_does_not_read_as_a_sign_off(self):
+        """The block used to tell the model this was the last reply before a human took over, which
+        was true of the old hand-off-on-denial policy and is not true now. A model told it is signing
+        off writes a closing line, and the alternatives in the same reply are then unusable — the
+        whole point of keeping the bot in the conversation."""
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        context, prompt = self._turn("بتكلم علي الكساندريا 2؟")
+
+        self.assertNotIn("زميل بشري", prompt)
+        self.assertIn("المحادثة مكمّلة", context)
+
+    # ── the anti-repetition retry must not invent a question ──────────────
+    def test_the_retry_hint_is_not_read_as_the_customers_words(self):
+        """816 turn 4, the whole way down. The denial was repeated correctly, read as repetitive, and
+        the retry re-asked with "⚠️ تنبيه: ردك السابق كان مكرر..." glued onto the message — whose own
+        vocabulary clears `may_name_a_perfume`, resolves to nothing, and so registers the warning as
+        an unanswered customer question. The reply became a promise to check a perfume we had just
+        told the customer we do not stock."""
+        from products.services import product_info
+        from products.services.sales import described
+
+        hint = "\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده.\n"
+        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟")
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = product_info.get_product_info(
+                "اتأكد", [], self.store, self.conversation, retry_hint=hint
+            )
+        prompt = chat_call.call_args[0][0][-1]["content"]
+
+        # The hint reaches the model...
+        self.assertIn("ردك السابق كان مكرر", prompt)
+        # ...without becoming the open question or taking the turn off the denial.
+        self.assertNotIn(f"{described.PENDING_LOOKUP_MARKER} اتأكد", context)
+        self.assertIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+
+    def test_the_router_keeps_the_hint_out_of_the_message(self):
+        """The parameter only helps if the caller uses it, and appending to `message` is the shape
+        that caused this — so the call itself is worth pinning."""
+        import inspect
+
+        from products.services import router
+
+        source = inspect.getsource(router.route)
+
+        self.assertIn("retry_hint=", source)
+        self.assertNotIn("get_product_info(modified_msg", source)
 
     def test_the_replay_scenarios_are_registered(self):
         """A scenario file nothing imports is a file nobody runs. Both keys point at the one

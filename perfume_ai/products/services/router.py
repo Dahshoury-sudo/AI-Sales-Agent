@@ -600,9 +600,22 @@ def route(message, history=None, store=None, conversation=None):
         response, context = get_product_info(message, history, store, conversation)
 
         if _is_repetitive(response, history):
-            # Re-try with anti-repetition hint instead of handle_general (which lacks product data and may hallucinate)
-            modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف تماماً."
-            response, context = get_product_info(modified_msg, history, store, conversation)
+            # Re-try with an anti-repetition hint instead of handle_general (which lacks product
+            # data and may hallucinate). The hint goes in as instruction text, not appended to the
+            # customer's message: `get_product_info` reads the message to decide what perfume was
+            # named, and a warning glued onto it reads as a perfume name we cannot place. See that
+            # function's docstring for what it did to conversation 816's last turn.
+            response, context = get_product_info(
+                message,
+                history,
+                store,
+                conversation,
+                retry_hint=(
+                    "\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف "
+                    "تماماً. ❌ ومتغيّرش إجابتك نفسها عشان كده — لو العطر مش موجود عندنا، فهو لسه "
+                    "مش موجود؛ غيّر الصيغة مش الحقيقة.\n"
+                ),
+            )
 
         # After the retry, so a deferral the retry introduced or removed is judged on the context
         # actually being sent.

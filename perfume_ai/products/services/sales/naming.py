@@ -119,17 +119,25 @@ _REFERENTIAL = frozenset({
 def identifying_tokens(text):
     """The tokens of a message that could belong to a perfume name.
 
-    `tokens` minus the vocabulary `_REFERENTIAL` collects, minus bare digits — the residue left
-    once every way of asking *about* a perfume has been stripped out. Split out because two
-    callers need the same residue for opposite questions and must not drift: `may_name_a_perfume`
-    asks whether it is non-empty, and `re_asks` asks whether two messages share it.
+    `tokens` minus the vocabulary `_REFERENTIAL` and `_CHASING` collect, minus bare digits — the
+    residue left once every way of asking *about* a perfume has been stripped out. Split out because
+    two callers need the same residue for opposite questions and must not drift:
+    `may_name_a_perfume` asks whether it is non-empty, and `re_asks` asks whether two messages
+    share it.
+
+    `_CHASING` is excluded for the reason its own comment gives — verb forms and question particles
+    only, and no name in this catalogue tokenises to any of them. Leaving it in made a bare "اتأكد"
+    look like an unplaceable name: `may_name_a_perfume` said yes, the resolver came back empty,
+    `named_but_unresolved` went True, and that flag vetoes the chase carry in `product_info`. So the
+    one message that is nothing *but* a chase could not be read as one. 816 turn 4 is that message,
+    and it was answered "لحظة أتأكدلك منه" one turn after being told the perfume is not stocked.
     """
     return {
         token
         for token in tokens(text)
         # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
         # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
-        if token not in _REFERENTIAL and not token.isdigit()
+        if token not in _REFERENTIAL and token not in _CHASING and not token.isdigit()
     }
 
 
