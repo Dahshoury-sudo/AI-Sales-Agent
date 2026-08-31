@@ -2,7 +2,7 @@ from .ai.classifier import classify
 from .ai.intent import extract_intent
 from .ai.recommendation import recommend
 from .search_service import search_products
-from .product_info import get_product_info
+from .product_info import get_product_info, LOOKUP_EXHAUSTED_MARKER
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
@@ -219,9 +219,23 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
     until now nothing told them to. The second means the customer has now asked twice and the
     bot has said "hold on" twice, which it cannot resolve by itself.
 
+    A `LOOKUP_EXHAUSTED` turn is the exception, and it is not a failure to hand over either: the
+    reply going out has just told the customer plainly that we do not carry the perfume and offered
+    alternatives by full name, which is a complete answer they can act on. Muzzling the bot on that
+    turn is what made conversations 816 and 817 dead ends — `needs_human` was set alongside the
+    reply, `views.py` then answered every later message with silence, and the alternative the bot
+    had just pitched could not be sold. "ماشي" and "اتأكد" each got nothing back. So notify the
+    owner, who still wants to know a customer asked for something absent from the catalogue, and
+    leave the bot able to keep serving.
+
+    A customer who comes back to the same missing perfume *after* that denial has exhausted the
+    bot's answer too — there is nothing further it can truthfully say — and that is the turn a
+    person has to take.
+
     A repeated customer question hands off on its own account. It catches the case the deferral
     count cannot: the customer asked, the bot answered about something else entirely, and no
-    marker was ever written.
+    marker was ever written. It is not consulted on an exhausted turn, where the repetition is the
+    customer insisting and the denial is the thing that answers it.
 
     Returns nothing and raises nothing that matters to the reply — the customer's answer has
     already been generated, and an owner notification is not worth losing it over.
@@ -232,13 +246,35 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
         return
 
     deferring = sales_described.PENDING_LOOKUP_MARKER in (context or "")
+    exhausted = LOOKUP_EXHAUSTED_MARKER in (context or "")
     repeats = _count_repeated_customer_questions(message, history)
 
-    hand_off = (deferring and pending_before >= 1) or repeats >= _REPEATED_QUESTION_LIMIT
+    if exhausted:
+        # Counts previous replies only: this turn's context reaches the database after the router
+        # returns (`views.py:126`, `tasks.py:165`), so a first denial never counts itself.
+        hand_off = (
+            sales_described.replies_carrying(conversation, LOOKUP_EXHAUSTED_MARKER) >= 1
+        )
+    else:
+        hand_off = (deferring and pending_before >= 1) or repeats >= _REPEATED_QUESTION_LIMIT
+
     if hand_off:
         conversation.needs_human = True
         conversation.save()
         notify_handoff(conversation)
+        return
+
+    if exhausted:
+        create_notification(
+            store=store,
+            notif_type="handoff",
+            title="عميل كرر السؤال عن عطر مش في الكتالوج ❌",
+            message=(
+                f"محادثة #{conversation.id}: العميل رجع يسأل تاني عن «{(message or '').strip()}» "
+                f"والعطر ده مش في بيانات المتجر، فالبوت قاله إنه مش موجود عندنا وعرض عليه بدائل. "
+                f"لو العطر ده عندنا فعلاً أو تحب تجيبه، راجع المحادثة ورد على العميل."
+            ),
+        )
         return
 
     if deferring:

@@ -1,14 +1,14 @@
 [
   {
-    "id": "CONV795",
+    "id": "CONV816",
     "category": "regression",
     "persona": "browser",
-    "probe": "Replay of conversation 795. Neither لادور بخور nor الكساندريا 2 is in this catalogue. Two perfumes genuinely answer a بخور (incense) request and both are stocked: Dior Homme Sport (Dior), base notes Woody Notes/Amber/Olibanum, 50ml 450 and 90ml 1100; and Bleu de Chanel (Chanel), base notes Incense/Cedar/Sandalwood/Patchouli, 50ml 645 and 90ml 1015. Stronger With You (Emporio Armani) is 50ml 400 and 90ml 700, and its recorded notes are Cardamom, Pink Pepper, Violet Leaf, Mint / Pineapple, Cinnamon, Melon, Sage, Lavender / Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood — there is no incense, frankincense or بخور anywhere in it. ❌ CRITICAL: attributing a بخور, incense or frankincense note to Stronger With You, or to any perfume whose recorded notes do not contain one. Wanting the note is not evidence the perfume has it. ❌ CRITICAL: saying الكساندريا 2 or لادور بخور is 'مش موجود عندنا' / 'مش متوفر' / apologising for not carrying it. The system not finding a name is not the shop not stocking it, and only the owner knows the difference — the reply is 'لحظة أتأكدلك' and nothing more. ❌ CRITICAL: denying it and promising to check in the same reply ('مش موجود عندنا، لحظة أتأكدلك منه'). The two halves contradict each other and the customer cannot tell which one is true. ❌ CRITICAL: answering turn 2 ('طب اتأكدلي') as a question about Stronger With You. The customer is chasing the answer to turn 1 — say you are still checking and that you will come back to them. A price list for a perfume they never asked about is not an answer to being asked to check. ❌ Offering an alternative without stating plainly, by full name, that it is a DIFFERENT perfume from the one they asked for. ✅ Expected: a بخور request is answered with Dior Homme Sport or Bleu de Chanel, citing the incense/olibanum note each one actually has, while the deferral on لادور بخور stays open and honest. Turns 1 and 3 asked about availability only, so a size and price list is unrequested on both. ❌ Never quote a price for any perfume that is not one of the six figures above.",
+    "probe": "Replay of conversation 816. الكساندريا 2 (Alexandria II, Xerjoff) is not in this catalogue. Stronger With You (Emporio Armani) is 50ml 400 and 90ml 700; Stronger With You Intensely is 50ml 450 and 90ml 780; Stronger With You Absolutely is 50ml 480 and 90ml 830. Those are three DIFFERENT perfumes on one line, not three sizes of one perfume. Turn 3 is the failure: 'بتكلم علي الكساندريا 2؟' means 'I'm talking about Alexandria 2' — the customer correcting the subject back after turn 2 was answered about Stronger With You — and it got 'لحظة أتأكدلك منه' for the second time. Turn 4 ('اتأكد' — go check) then got no reply at all. ❌ CRITICAL: deferring again on the turn where the customer re-types the name ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / 'هشوفه لك' / 'ثانية واحدة'). That promise was already made on the previous turn and nothing has happened since — no lookup runs between two messages of a chat — so repeating it leaves the customer waiting for an answer that is not coming. This is the exact defect in 816 and 817. ❌ CRITICAL: claiming to have looked, searched, checked or found anything ('لقيت', 'بصيت ولقيت', 'راجعت'). No lookup happened between the turns; reporting one invents a fact. ❌ CRITICAL: answering the re-ask with the price list, notes or availability of the perfume that was volunteered alongside the promise. The customer is naming THEIR perfume again, and detail about a different one is not an answer. ❌ CRITICAL: implying the perfume asked for and the stocked perfume are the same thing, or that one is the other's 'correct name' or 'correct spelling'. ❌ CRITICAL: denying and promising to check in one reply ('مش موجود عندنا، لحظة أتأكدلك منه') — the two halves contradict each other. ❌ CRITICAL: any mention of a system, data, catalogue, 'مش ظاهر عندي' or 'البيانات اللي معايا'. The customer must never learn such a thing exists. ❌ CRITICAL: writing the perfume's name in Latin letters when the customer wrote it in Arabic ('L'Adour', 'Alexandria'). Inventing a spelling for a perfume we are saying we do not know is incoherent — echo the customer's own letters. ❌ On the FIRST turn, denying it instead of deferring: not finding a name is not the same fact as not stocking it, so the first reply is 'لحظة أتأكدلك منه' and nothing more. ✅ Required on the re-ask turn: a short apology and a plain statement that the perfume the customer named is not available, followed by one or two stocked perfumes offered by FULL name and clearly labelled as DIFFERENT perfumes. 815 is the model answer: 'بعتذر يا فندم، الكساندريا 2 مش موجود عندنا' and then Stronger With You with its prices. Note turn 2 ('ماشي شوفو') is ambiguous and being answered about Stronger With You there is acceptable; it is turn 3 that must not stall. Turn 4 must still be served and must not repeat the denial as though the customer had not just heard it — by then the perfume has been answered and the reply should move to what is actually on offer. Turn 1 asked about availability only, so a size and price list is unrequested there. ❌ Never quote a price that is not one of the six figures above.",
     "turns": [
       {
         "n": 1,
-        "user": "عندكو لادور بخور صح ؟",
-        "reply": "لحظة أتأكدلك منه يا فندم. وفي الوقت ده ممكن أقول لك عن Dior Homme Sport، ريحته فيها لمسة بخور خفيفة مع الليمون والتوابل، هل تحب تعرف عنه أكتر؟",
+        "user": "عندك الكساندريا 2؟",
+        "reply": "لحظة أتأكدلك منه يا فندم. في الوقت ده ممكن أشوف لك عطر تاني قريب من النوعية دي زي Stronger With You من Emporio Armani، فيه لمسة فانيليا وكستناء دافية. تحب أعرفك عليه أكتر؟",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -17,30 +17,174 @@
         "search": null,
         "keeping": null,
         "dropped": null,
-        "context_chars": 3106,
-        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندكو لادور بخور صح ؟\nالعميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n",
+        "context_chars": 3611,
+        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندك الكساندريا 2؟\nالعميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Absolutely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n",
         "findings": []
       },
       {
         "n": 2,
-        "user": "طب اتأكدلي",
-        "reply": "Dior Homme Sport متوفر عندنا، ريحته فيها لمسة بخور مع الليمون والتوابل، مناسبة لفصل الربيع والصيف وكاجوال. \nالـ 50 ملي بـ 450 جنيه، والـ 90 ملي بـ 1100 جنيه، وفيه كمان زجاجات أوريجينال 100 و200 ملي لو حابب.",
-        "classification": "product_info",
+        "user": "ماشي شوفو",
+        "reply": "مفيش حاجة قريبة من Stronger With You بالظبط عندنا، بس Stronger With You Absolutely مختلف عنه وفيه chestnut وvanilla برضه، ممكن يعجبك.",
+        "classification": "recommendation",
         "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [
+            "vanilla",
+            "chestnut"
+          ],
+          "similar_to": "Stronger With You",
+          "similar_to_notes": [
+            "vanilla",
+            "chestnut"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "gender": null,
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [
+            "vanilla",
+            "chestnut"
+          ],
+          "similar_to": "Stronger With You",
+          "similar_to_notes": [
+            "vanilla",
+            "chestnut"
+          ],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
         "stage": "recommendation",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 739,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n",
+        "search": {
+          "matched": [
+            "Stronger With You Absolutely",
+            "Le Male",
+            "Stronger With You Intensely",
+            "Afnan 9PM",
+            "Dior Sauvage",
+            "Lattafa Asad",
+            "Eros",
+            "XJ 1861 Naxos",
+            "Erba Pura"
+          ],
+          "alternatives": [],
+          "similarity": {
+            "reference_name": "Stronger With You",
+            "reference_source": "catalogue",
+            "best_band": "loose",
+            "has_close_match": false
+          },
+          "reasons": {
+            "Stronger With You Absolutely": {
+              "score": 5.045,
+              "reasons": [
+                "Match: فيه شبه مع Stronger With You — مشترك في: chestnut، cedar، lavender — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "فيه vanilla، chestnut"
+              ],
+              "mismatches": []
+            },
+            "Le Male": {
+              "score": 5.025,
+              "reasons": [
+                "Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، mint، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "فيه vanilla"
+              ],
+              "mismatches": []
+            },
+            "Stronger With You Intensely": {
+              "score": 4.828,
+              "reasons": [
+                "Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، lavender، sage، pink pepper — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "فيه vanilla"
+              ],
+              "mismatches": []
+            },
+            "Afnan 9PM": {
+              "score": 4.469,
+              "reasons": [
+                "فيه vanilla"
+              ],
+              "mismatches": [
+                "مش قريب من Stronger With You"
+              ]
+            },
+            "Dior Sauvage": {
+              "score": 4.454,
+              "reasons": [
+                "فيه vanilla"
+              ],
+              "mismatches": [
+                "مش قريب من Stronger With You"
+              ]
+            },
+            "Lattafa Asad": {
+              "score": 4.421,
+              "reasons": [
+                "فيه vanilla"
+              ],
+              "mismatches": [
+                "مش قريب من Stronger With You"
+              ]
+            },
+            "Eros": {
+              "score": 4.413,
+              "reasons": [
+                "فيه vanilla"
+              ],
+              "mismatches": [
+                "مش قريب من Stronger With You"
+              ]
+            },
+            "XJ 1861 Naxos": {
+              "score": 1.68,
+              "reasons": [
+                "Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، lavender — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.",
+                "فيه vanilla"
+              ],
+              "mismatches": []
+            },
+            "Erba Pura": {
+              "score": 0.119,
+              "reasons": [
+                "فيه vanilla"
+              ],
+              "mismatches": [
+                "مش قريب من Stronger With You"
+              ]
+            }
+          }
+        },
+        "keeping": [],
+        "dropped": {
+          "Stronger With You": null
+        },
+        "context_chars": 10699,
+        "context": "\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Stronger With You — مشترك في: chestnut، cedar، lavender — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | فيه vanilla، chestnut\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، mint، lavender. ❌ ممنوع تذكر نسبة مئوية للتشابه. | فيه vanilla\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Absolutely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، lavender، sage، pink pepper — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | فيه vanilla\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: فيه vanilla\n⚠️ مش مطابق في: مش قريب من Stronger With You\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: فيه vanilla\n⚠️ مش مطابق في: مش قريب من Stronger With You\n\nName (الاسم الصحيح): Lattafa Asad\nBrand: Lattafa\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 982.00 EGP\n- زجاجة أوريجينال 100 ملي: 794.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Evening, Casual, Winter\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Black Pepper, Pineapple, Tobacco\nMiddle Notes: Coffee, Patchouli, Iris\nBase Notes: Amber, Vanilla, Dry Woods, Benzoin\nDescription: Warm spicy fragrance inspired by high-end niche scents with excellent value.\n\n-------------------------\n✅ ليه مناسب: فيه vanilla\n⚠️ مش مطابق في: مش قريب من Stronger With You\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n✅ ليه مناسب: فيه vanilla\n⚠️ مش مطابق في: مش قريب من Stronger With You\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Stronger With You — مشترك في: vanilla، cinnamon، lavender — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه. | فيه vanilla\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2700.00 EGP\n- الـ 90 ملي: 4900.00 EGP\n- زجاجة أوريجينال 50 ملي: 20000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 36000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: A juicy citrus-fruit oriental with a creamy vanilla-musk base.\n\n-------------------------\n✅ ليه مناسب: فيه vanilla\n⚠️ مش مطابق في: مش قريب من Stronger With You\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n🔴 Stronger With You متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\n",
         "findings": []
       },
       {
         "n": 3,
-        "user": "عندكو لادور بخور ؟",
-        "reply": "Dior Homme Sport متوفر عندنا يا فندم، تحب تعرف عنه أكتر؟",
+        "user": "بتكلم علي الكساندريا 2؟",
+        "reply": "حضرتك تقصد Stronger With You ولا Stronger With You Absolutely؟ الاتنين مختلفين في الريحة والتركيبة والسعر.",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -49,14 +193,14 @@
         "search": null,
         "keeping": null,
         "dropped": null,
-        "context_chars": 739,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n",
+        "context_chars": 3728,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n",
         "findings": []
       },
       {
         "n": 4,
-        "user": "طب عندكو الكساندريا 2 ؟",
-        "reply": "لحظة أتأكدلك منه يا فندم. وفي الوقت ده تحب تعرف عن Dior Homme Sport المتوفر عندنا؟",
+        "user": "اتأكد",
+        "reply": "Stronger With You متوفر عندنا، والـ 90 ملي سعره 700 جنيه، وفيه كمان الـ 50 ملي بـ 400 جنيه، وزجاجات أوريجينال 100 و200 ملي متاحة برضه. العطر دافي وفيه مزيج من الفانيليا والكستناء، مناسب لفصل الخريف والشتا.",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -65,14 +209,84 @@
         "search": null,
         "keeping": null,
         "dropped": null,
-        "context_chars": 1207,
-        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب عندكو الكساندريا 2 ؟\nالعميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي نوتة أو ريحة أو سعر منهم.\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n",
+        "context_chars": 3728,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 300 جنيه في الإجمالي (700 مقابل 400)، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 350 جنيه في الإجمالي (830 مقابل 480)، بس سعر الملي أرخص: 9.2 بدل 9.6 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {
+      "notes": [
+        "vanilla",
+        "chestnut"
+      ],
+      "similar_to": "Stronger With You",
+      "similar_to_notes": [
+        "vanilla",
+        "chestnut"
+      ]
+    },
+    "seconds": 19.9
+  },
+  {
+    "id": "CONV817",
+    "category": "regression",
+    "persona": "browser",
+    "probe": "Replay of conversation 817. لادور بخور is not in this catalogue. Two stocked perfumes genuinely answer a بخور (incense) request: Dior Homme Sport (Dior), base notes Woody Notes/Amber/Olibanum, 50ml 450 and 90ml 1100; and Bleu de Chanel (Chanel), base notes Incense/Cedar/Sandalwood/Patchouli, 50ml 645 and 90ml 1015. Turn 2 is the failure: 'بسأل علي لادور بخور' means 'I'm asking about Ladore Bakhour' — the customer naming it again, immediately after the deferral — and the entire reply was 'لحظة أتأكدلك منه يا فندم.' Turn 3 ('ماشي') then got nothing. ❌ CRITICAL: deferring again on the turn where the customer re-types the name ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / 'هشوفه لك' / 'ثانية واحدة'). That promise was already made on the previous turn and nothing has happened since — no lookup runs between two messages of a chat — so repeating it leaves the customer waiting for an answer that is not coming. This is the exact defect in 816 and 817. ❌ CRITICAL: claiming to have looked, searched, checked or found anything ('لقيت', 'بصيت ولقيت', 'راجعت'). No lookup happened between the turns; reporting one invents a fact. ❌ CRITICAL: answering the re-ask with the price list, notes or availability of the perfume that was volunteered alongside the promise. The customer is naming THEIR perfume again, and detail about a different one is not an answer. ❌ CRITICAL: implying the perfume asked for and the stocked perfume are the same thing, or that one is the other's 'correct name' or 'correct spelling'. ❌ CRITICAL: denying and promising to check in one reply ('مش موجود عندنا، لحظة أتأكدلك منه') — the two halves contradict each other. ❌ CRITICAL: any mention of a system, data, catalogue, 'مش ظاهر عندي' or 'البيانات اللي معايا'. The customer must never learn such a thing exists. ❌ CRITICAL: writing the perfume's name in Latin letters when the customer wrote it in Arabic ('L'Adour', 'Alexandria'). Inventing a spelling for a perfume we are saying we do not know is incoherent — echo the customer's own letters. ❌ On the FIRST turn, denying it instead of deferring: not finding a name is not the same fact as not stocking it, so the first reply is 'لحظة أتأكدلك منه' and nothing more. ✅ Required on the re-ask turn: a short apology and a plain statement that the perfume the customer named is not available, followed by one or two stocked perfumes offered by FULL name and clearly labelled as DIFFERENT perfumes. 815 is the model answer: 'بعتذر يا فندم، الكساندريا 2 مش موجود عندنا' and then Stronger With You with its prices. ❌ CRITICAL: attributing a بخور, incense or frankincense note to a perfume whose recorded notes do not contain one. Wanting the note is not evidence of it — Stronger With You was pitched as having 'لمسة بخور' and its notes are cardamom, pineapple, cinnamon, vanilla, chestnut and amberwood. When offering Dior Homme Sport or Bleu de Chanel, cite the olibanum/incense note each one really has. Turn 1 asked about availability only, so a size and price list is unrequested there. ❌ Never quote a price that is not one of the four figures above.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عندك لادور بخور ؟",
+        "reply": "لحظة أتأكدلك منه يا فندم. وفي الوقت ده ممكن أشيرلك لـ Dior Homme Sport، ريحته فيها لمسة بخور خفيفة مع الليمون والتوابل، أو Bleu de Chanel اللي ريحته شيك ونظيفة وفيها لمسة بخور برضه. تحب أعرف أكتر عن أي واحد فيهم؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 3102,
+        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندك لادور بخور ؟\nالعميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "بسأل علي لادور بخور",
+        "reply": "بعتذر يا فندم، عطر لادور بخور مش موجود عندنا. ممكن أشيرلك لـ Dior Homme Sport أو Bleu de Chanel لو حابب تعرف عنهم أكتر؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 2470,
+        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندك لادور بخور ؟\nLOOKUP_EXHAUSTED\nالعميل سأل عن العطر ده قبل كده، ووعدناه إننا نتأكد، وأهو رجع يسأل تاني — ولسه مفيش أي إجابة. الرد ده آخر رد هيوصله من عندك قبل ما زميل بشري يتسلم المحادثة.\n\n═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي نوتة أو ريحة أو سعر منهم.\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى بـ 370 جنيه في الإجمالي (1015 مقابل 645)، بس سعر الملي أرخص: 11.3 بدل 12.9 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "ماشي",
+        "reply": "تمام يا فندم، لو حابب تجرب العطور دي أو أي عطر تاني، ياريت تشرفنا في الستور. لو حابب أجهزلك طلب أو أساعدك بحاجة تانية، تحت أمرك.",
+        "classification": "faq",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "stage": "discovery",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "context_chars": 0,
+        "context": "",
         "findings": []
       }
     ],
     "findings": [],
     "error": null,
     "final_preferences": {},
-    "seconds": 13.8
+    "seconds": 29.3
   }
 ]

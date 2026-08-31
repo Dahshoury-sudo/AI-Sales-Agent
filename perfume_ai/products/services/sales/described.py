@@ -348,6 +348,60 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
 PENDING_LOOKUP_MARKER = "PENDING_LOOKUP:"
 
 
+def _recent_contexts(conversation, turns):
+    """The injected context of the last `turns` assistant replies, newest first."""
+    if conversation is None:
+        return []
+    return list(
+        conversation.messages.filter(role="assistant")
+        .order_by("-created_at")
+        .values_list("internal_context", flat=True)[:turns]
+    )
+
+
+def replies_carrying(conversation, marker, turns=4):
+    """How many of the last `turns` assistant replies were handed `marker`.
+
+    Takes the marker as an argument rather than naming one, because the caller that needs this
+    asks about `product_info.LOOKUP_EXHAUSTED_MARKER` — and `product_info` imports this module,
+    so spelling that marker here would be a circular import bought for nothing.
+    """
+    return sum(
+        1 for context in _recent_contexts(conversation, turns) if marker in (context or "")
+    )
+
+
+def _pending_payloads(conversation, turns):
+    """What each marker-carrying reply in the window recorded, newest first.
+
+    One entry per reply, not per line: a reply defers about one question. Empty payloads are kept
+    so `pending_lookup`'s count stays a count of *replies that deferred*, which is what `router`
+    escalates on — a marker written without a question is still a deferral that happened.
+    """
+    payloads = []
+    for context in _recent_contexts(conversation, turns):
+        for line in (context or "").splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(PENDING_LOOKUP_MARKER):
+                continue
+            payloads.append(stripped[len(PENDING_LOOKUP_MARKER):].strip())
+            break
+    return payloads
+
+
+def pending_questions(conversation, turns=4):
+    """Every still-unanswered lookup in the window, newest first.
+
+    `pending_lookup` below collapses this to the oldest question plus a count, which was all its
+    callers needed while a pronoun chase was the only way back to an open question. Matching a
+    *re-typed* name needs the whole list: there can be more than one question open at a time —
+    795 turn 4 asks about الكساندريا 2 while لادور بخور is still owed — and comparing a re-ask
+    against the oldest alone would test it against the wrong perfume, so a genuine second ask
+    would read as a first and be deferred all over again.
+    """
+    return [payload for payload in _pending_payloads(conversation, turns) if payload]
+
+
 def pending_lookup(conversation, turns=4):
     """The question we promised to check on and still have not answered, and how stale it is.
 
@@ -377,27 +431,10 @@ def pending_lookup(conversation, turns=4):
     bounds the staleness: wide enough for ask → defer → ask again, narrow enough that a lookup
     from ten turns back is not still escalating.
     """
-    if conversation is None:
-        return "", 0
-
-    contexts = list(
-        conversation.messages.filter(role="assistant")
-        .order_by("-created_at")
-        .values_list("internal_context", flat=True)[:turns]
-    )
-
-    question = ""
-    count = 0
-    for context in contexts:
-        for line in (context or "").splitlines():
-            stripped = line.strip()
-            if not stripped.startswith(PENDING_LOOKUP_MARKER):
-                continue
-            count += 1
-            # Newest first, so the last assignment wins and `question` ends up the oldest.
-            question = stripped[len(PENDING_LOOKUP_MARKER):].strip() or question
-            break
-    return question, count
+    payloads = _pending_payloads(conversation, turns)
+    questions = [payload for payload in payloads if payload]
+    # Newest first, so the last entry is the oldest — the one still owed.
+    return (questions[-1] if questions else ""), len(payloads)
 
 
 def offered_context_block(conversation, store):

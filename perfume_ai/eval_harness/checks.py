@@ -269,10 +269,24 @@ def _unbacked_denial(reply, context):
     elsewhere: a size that has run out, or an original bottle that was never made, both come with
     real data behind them. Those turns carry product rows, not one of these markers.
 
+    One no-data turn is exempt, and it is the turn where a denial is not merely allowed but
+    required: the customer has chased a deferral and there is still no answer.
+    `product_info` marks it `LOOKUP_EXHAUSTED`, and the reply is required to deny plainly and offer
+    alternatives, because repeating "لحظة أتأكدلك" is a promise already made and not kept.
+    Flagging the denial there would score the fix as the defect — and
+    `_contradictory_availability` still holds that reply to not promising another check.
+
     Returns the offending clause, or None.
     """
+    # Imported here, not at module scope, like every other Django import in this file: it is not
+    # safe to touch `products.services` before the harness has configured settings. Imported at
+    # all rather than copied, so the marker cannot drift from the one `product_info` writes.
+    from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
     context = context or ""
     if not any(marker in context for marker in _NO_DATA_CONTEXT):
+        return None
+    if LOOKUP_EXHAUSTED_MARKER in context:
         return None
 
     for clause in _CLAUSE.split(reply or ""):

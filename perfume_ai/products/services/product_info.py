@@ -135,7 +135,45 @@ def _availability_only_hint(message):
     )
 
 
-def _pending_lookup_block(message):
+# Marks the turn where a deferral has been chased and there is still nothing to say. Read by the
+# prompt (`_ABSENT_RULES`), by `prompts.py` red line 3, and by `eval_harness.checks` — all three
+# forbid denying availability, and all three have to make the same single exception.
+LOOKUP_EXHAUSTED_MARKER = "LOOKUP_EXHAUSTED"
+
+
+def _chasing_open_lookup(products, conversation, store):
+    """True when nothing in `products` came from this message — it is all perfume we already named.
+
+    The provenance test behind the `chasing` gate below. It cannot be `not products`: on a chase
+    turn `products` is full. "ها لقيت اي ؟" and "اتأكدلي منه" name no perfume, but they clear
+    `naming.may_name_a_perfume`, so `resolve_products` runs and answers the pronoun with the
+    perfume the deferral reply had volunteered alongside its promise. Non-empty `products` then
+    reads as a resolved name, `named_but_unresolved` goes False, and the pending block, the
+    ⚠️ header and the deferral rules all disappear on the one turn that most needs them.
+
+    Conversations 798 and 799 are each that turn. 798 turn 6 answered "ها لقيت اي ؟" with
+    "لقيت Dior Homme Sport متوفر عندنا" — a completed lookup it never ran, on a perfume the
+    customer had not asked about — and 799 turn 4 answered "اتأكدلي منه" with Stronger With
+    You's full price list. 798 turn 8 is the control: there the customer re-typed the name, so
+    the guards fired the ordinary way and the reply was correct.
+
+    Everything offered is the signature of a resolved pronoun. A customer who names something new
+    that we do carry brings back a perfume we have *not* offered, and that drops the carry — as
+    does a deterministic match on this message, which the caller checks separately.
+    """
+    if not products:
+        return True
+    try:
+        offered = set(sales_described.offered_in_order(conversation, store))
+    except Exception:
+        # Never lose a reply over the carry: without provenance, fall back to today's behaviour.
+        return False
+    if not offered:
+        return False
+    return all(getattr(product, "name", None) in offered for product in products)
+
+
+def _pending_lookup_block(question, exhausted=False):
     """Record, inside the turn's own context, a question the catalogue could not answer.
 
     The customer named a perfume, `naming.may_name_a_perfume` agreed it was a name, and neither
@@ -154,14 +192,32 @@ def _pending_lookup_block(message):
     the next turn will treat as fact. The wording is already in the history; what was missing is
     the flag that it is still open.
 
-    `described.pending_lookup` reads this back, and `router` escalates on the count.
+    `described.pending_lookup` reads this back, and `router` escalates on the count. The caller
+    passes `question` rather than always the current message, because on a chase turn the
+    question is the *earlier* message — "اتأكدلي منه" names nothing to look up.
+
+    `exhausted` flips the instruction from "promise to check" to "say we do not have it". That
+    reads like a contradiction of the paragraph above and is not: the two describe different
+    turns. Deferring is right the first time, when the only fact in hand is that the catalogue
+    came back empty. It is wrong the second time, because nothing has happened in between — no
+    lookup runs between two turns of a chat — so repeating the promise is making it again without
+    having kept it, and it leaves the customer waiting for an answer that is never coming. The
+    denial is the only reply on that turn that lets them act.
     """
-    return (
+    block = (
         "═══ سؤال معلّق ═══\n"
-        f"{sales_described.PENDING_LOOKUP_MARKER} {(message or '').strip()}\n"
-        "العميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n"
-        "🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش "
-        "في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n"
+        f"{sales_described.PENDING_LOOKUP_MARKER} {(question or '').strip()}\n"
+    )
+    if not exhausted:
+        return block + (
+            "العميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n"
+            "🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش "
+            "في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n"
+        )
+    return block + (
+        f"{LOOKUP_EXHAUSTED_MARKER}\n"
+        "العميل سأل عن العطر ده قبل كده، ووعدناه إننا نتأكد، وأهو رجع يسأل تاني — ولسه مفيش "
+        "أي إجابة. الرد ده آخر رد هيوصله من عندك قبل ما زميل بشري يتسلم المحادثة.\n\n"
     )
 
 
@@ -189,11 +245,39 @@ _DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى عطر مش موجود �
 """
 
 
+# Replaces `_DEFERRAL_RULES` — and overrides the not-found branch's case (أ) — on the turn where
+# the customer has come back for a deferral we never delivered. Deliberately unnumbered so it
+# reads correctly appended to either branch's list, and deliberately stated as outranking them,
+# because both of those lists say "اختار التأكد دايماً" and on this one turn that is wrong.
+#
+# Nothing has happened between the two turns: no lookup runs between two messages of a chat, so
+# the second "لحظة أتأكدلك" is the same promise made again by someone who did not keep it the
+# first time, to a customer who is waiting for an answer that is not coming. Saying plainly that
+# we do not carry it is the only reply that leaves them able to act — which is what the store
+# owner asked for after reading 798 — and the alternatives that follow are what they can act on.
+#
+# `router._escalate_pending_lookup` notifies the owner on this turn and leaves the bot serving, so
+# the customer can take up one of those alternatives; a second denial about the same perfume is
+# where it hands over instead.
+_ABSENT_RULES = """🔴🔴🔴 قاعدة فوق كل القواعد اللي فوق — العميل رجع يسأل تاني (شوف LOOKUP_EXHAUSTED في قسم "سؤال معلّق"):
+   • ✅ الرد الصح: قوله بوضوح، وباعتذار قصير، إن العطر اللي سأل عنه مش موجود عندنا. جملة واحدة.
+   • ✅ سمّي العطر بنفس الحروف اللي العميل كتبها بيها — لو كتبه بالعربي، ردّه بالعربي زي ما هو. ❌ ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك ("L'Adour")، دي هجاء بتخترعه لعطر إحنا أصلاً بنقول إننا مش عارفينه.
+   • ❌ ممنوع توعده تتأكد تاني، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك" — الوعد ده اتقال قبل كده ومحصلش، وتكراره بيسيب العميل مستني حاجة مش جايه.
+   • ❌ وممنوع تجمع النفي مع وعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
+   • ❌ ممنوع تقول أي كلام عن نظام أو بيانات أو كتالوج أو "مش ظاهر عندي" — العميل مش المفروض يعرف إن في حاجة زي دي أصلاً.
+   • ✅ بعد النفي، اعرض عليه بديل أو اتنين من العطور اللي في البيانات، وقول بوضوح إنها عطور **تانية** بالاسم الكامل.
+   • ❌ ممنوع تسرد أسعار أو مواصفات عطر تاني كأنها إجابة على العطر اللي هو سأل عنه.
+"""
+
+
 def get_product_info(message, history=None, store=None, conversation=None):
     from .sales import naming
 
     # An explicit name in this message beats anything inferred from earlier turns.
     products = _named_in_message(message, store)
+    # Kept because the `chasing` gate below needs to know the name came from *this* message: a
+    # deterministic match is never a resolved pronoun, so it always ends a chase.
+    named_here = bool(products)
 
     # `_named_in_message` is Latin-only, so its empty result does NOT mean the customer named
     # nothing — an Arabic transliteration matches it never. Treating the two as the same thing is
@@ -233,13 +317,94 @@ def get_product_info(message, history=None, store=None, conversation=None):
     if not products and not resolver_ran:
         products = resolve_products(message, history, store, conversation)
 
-    pending_block = _pending_lookup_block(message) if named_but_unresolved else ""
+    # A deferral we already made and still owe. Read from the persisted record, because on this
+    # turn the customer is chasing it rather than re-naming it, and `named_but_unresolved` above is
+    # a fact about the current message alone — which is why all three guards below used to vanish
+    # on exactly the turn the customer came back to collect. See `_chasing_open_lookup`.
+    #
+    # Two windows would be one too many. The carry looks at the previous reply *only*: chasing
+    # means the promise is the last thing we said, and a wider window would let a customer who
+    # moved on to a perfume we do stock collect a denial about the old question two turns later.
+    # `router` keeps reading the full window for its own escalation count.
+    pending_question, _ = sales_described.pending_lookup(conversation, turns=1)
+    chasing = (
+        bool(pending_question)
+        # The message has to actually be collecting the promise. Resolving to something already
+        # offered is not enough on its own: "بكام؟" right after a deferral does that too, and it
+        # is a price question about the perfume we offered alongside the promise — answering it
+        # with "مش موجود عندنا" would deny a perfume the customer never named and drop the
+        # question they did ask. `naming` owns that vocabulary; see `chasing_a_promise`.
+        and naming.chasing_a_promise(message)
+        # Still vetoed by an unplaceable name in *this* message, which is a new question rather
+        # than the old one — "اتأكدلي من الكساندريا 2" both chases and names, and the name is the
+        # part that has not been deferred on yet.
+        and not named_but_unresolved
+        and not named_here
+        and _chasing_open_lookup(products, conversation, store)
+    )
+
+    # Asked once, promised once, asked again — about the *same* question. Two shapes reach this,
+    # and they need different windows because they carry different evidence.
+    #
+    # `chasing` is the pronoun shape ("اتأكدلي منه", "ها لقيت اي ؟"). It carries no name at all, so
+    # the only thing tying it to the open question is adjacency, and `turns=1` above is what
+    # supplies that: a chase implies exactly the `pending_before >= 1` that makes
+    # `_escalate_pending_lookup` act, and this reply the one that has to answer. See `_ABSENT_RULES`.
+    #
+    # `re_asked` is the re-typed shape ("بتكلم علي الكساندريا 2؟", "بسأل علي لادور بخور"), and it is
+    # the more natural way to insist. `chasing` cannot see it: re-typing an unplaceable name sets
+    # `named_but_unresolved`, which vetoes the carry above. That veto is right and stays — a
+    # raw-message record cannot tell one unplaceable name from another, so a brand-new name must not
+    # inherit an older one's exhaustion, and 795 turn 4 asks about الكساندريا 2 while لادور بخور is
+    # still open. What was missing is the thing that tells the two apart, which is `naming.re_asks`
+    # comparing the customer's own words; with that in hand the veto can stand and this sits beside
+    # it rather than loosening it.
+    #
+    # Conversations 816 and 817 are each the turn this exists for. 816: "عندك الكساندريا 2؟" was
+    # deferred, then "بتكلم علي الكساندريا 2؟" was deferred *again* — and `router` set `needs_human`
+    # on that same turn, so "لحظة أتأكدلك منه" was the last thing the customer ever heard, with the
+    # denial and the alternatives they were owed never sent. 817 is the same two turns with
+    # لادور بخور. This branch used to be dismissed as unreachable in production on the grounds that
+    # the chase before it had already handed off — but a chase whose vocabulary we do not recognise
+    # never happens, and 816 turn 2 ("ماشي شوفو") is one of those.
+    #
+    # The window is deliberately wider than the chase's `turns=1`. A re-typed name is its own
+    # anchor and needs no adjacency, and that is precisely what makes 816 turn 3 reachable: turn 2
+    # was answered about Stronger With You and its reply carried no marker at all, so the narrow
+    # window sees nothing and the open question would be lost.
+    re_asked = ""
+    if named_but_unresolved:
+        re_asked = next(
+            (
+                question
+                for question in sales_described.pending_questions(conversation)
+                if naming.re_asks(message, question)
+            ),
+            "",
+        )
+
+    exhausted = chasing or bool(re_asked)
+
+    if named_but_unresolved:
+        # `re_asked` is the wording the question was first asked in, and recording that rather than
+        # this message keeps the record stable — which is what lets a third ask match the same
+        # question instead of starting a new one. Empty when this name is new here, and a name we
+        # have not placed even once is a question we have not answered even once, so it gets the
+        # promise rather than the denial.
+        pending_block = _pending_lookup_block(re_asked or message, exhausted=bool(re_asked))
+    elif chasing:
+        pending_block = _pending_lookup_block(pending_question, exhausted=exhausted)
+    else:
+        pending_block = ""
+
+    # One name for "this turn owes an answer we do not have", however we found that out.
+    deferring = bool(pending_block)
     availability_hint = _availability_only_hint(message)
 
     if products:
         context = pending_block
         context += "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
-        if named_but_unresolved:
+        if deferring:
             context += _NOT_THE_PERFUME_ASKED_ABOUT
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
@@ -266,8 +431,8 @@ def get_product_info(message, history=None, store=None, conversation=None):
 12. 🔴🔴 ممنوع تحسب إجمالي طلب. البيانات اللي فوق فيها أسعار الأحجام بس — مفيش فيها عربة ولا كميات ولا إجمالي. ❌ ممنوع تضرب سعر في كمية، وممنوع تجمع أسعار، وممنوع تقول "الإجمالي" أو "المجموع" أو تتكلم عن "الطلبين" أو أي عدد قطع. لو العميل سأل الطلب بقى بكام، قوله إنك هتراجع الطلب معاه وابدأ تجمع تفاصيله — الإجمالي بيتحسب من الطلب نفسه مش من الأسعار دي. (عميل اتقاله إجمالي 1560 جنيه لطلب مش موجود، وهو أصلاً قال إن ميزانيته 900.)
 13. 🔴🔴 لو العميل قال إنك قلت سعرين مختلفين لنفس العطر (زي "انت قولت سعرين مختلفين للسترونجر") — بص على سطر `⚠️ عطر مختلف عن` الأول. لو السعرين بيرجعوا لعطرين مختلفين على نفس الخط، يبقى **السعرين صح**: ❌ ممنوع تعتذر، وممنوع تقول إن فيه لبس أو غلط، وممنوع تسحب سعر أو تقول إن واحد منهم "هو السعر الصحيح". وضّح إن ده عطر وده عطر تاني بالاسم الكامل، وقول سعر كل واحد لوحده. ولو مش متأكد هو بيقصد أنهي واحد، اسأله. (عميل اتقاله 780 لـ Stronger With You Intensely وبعدين 700 لـ Stronger With You — دول عطرين مختلفين — وسأل، فاتقاله "أعتذر على اللبس، 700 ده السعر الصحيح"، ومشي فاكر إن Intensely بـ 700.)
 """
-        if named_but_unresolved:
-            instructions += _DEFERRAL_RULES
+        if deferring:
+            instructions += _ABSENT_RULES if exhausted else _DEFERRAL_RULES
         instructions += availability_hint
     else:
         # Product not found, let's get some alternatives. Chosen deterministically and
@@ -320,6 +485,10 @@ def get_product_info(message, history=None, store=None, conversation=None):
 5. بعد ما تقول إنك هتتأكد (في حالة (أ) فقط)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب — والبدائل دي مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
 6. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
 """
+        # Case (أ) and rule 4 above both script a deferral unconditionally. On the chase turn that
+        # is the wrong reply, so this goes last and says so in as many words.
+        if exhausted:
+            instructions += _ABSENT_RULES
         instructions += availability_hint
 
     messages = [

@@ -54,6 +54,32 @@ def tokens(text):
     }
 
 
+# Asking for an answer we already promised, rather than about a perfume. Split out of
+# `_REFERENTIAL` below because two callers need it for opposite reasons: the gate needs these
+# words to count as naming nothing, and `product_info` needs to recognise them positively, to tell
+# a customer collecting a promise ("طب اتأكدلي") from one asking the price of what was offered
+# alongside it ("بكام؟"). Both messages are referential and both resolve to the same perfume, so
+# nothing else in this module separates them — and answering the second with "مش موجود عندنا"
+# would deny a perfume the customer never asked about while ignoring the question they did ask.
+#
+# Verb forms and question particles only; no name in this catalogue tokenises to any of them.
+_CHASING = frozenset({
+    "اتاكدلي", "اتاكد", "تاكدلي", "اتاكدت", "تاكدت", "لقيت", "لقيتلي", "عرفت",
+})
+
+
+def chasing_a_promise(text):
+    """True when the message asks for an answer that was promised rather than about a perfume.
+
+    Conversation 799 turn 2 is "اتأكدلي منه" and 798 turn 2 is "ها لقيت اي ؟" — go on, check;
+    so, what did you find. Both were answered with the price list of the perfume that had been
+    offered alongside the promise, because a referential message resolves to whatever was last
+    on the table and nothing distinguished "give me the answer you owe me" from "tell me about
+    this one". `product_info` requires this before it will treat an open lookup as chased.
+    """
+    return bool(tokens(text) & _CHASING)
+
+
 # The vocabulary a customer uses to ask about a perfume already on the table, rather than to
 # name a new one. Written in `normalize_arabic` form — "زجاجه" not "زجاجة", "متاكد" not "متأكد" —
 # because `tokens` normalises before comparing. Words already in `_STOPWORDS` ("عطر", "برفان",
@@ -65,8 +91,11 @@ def tokens(text):
 _REFERENTIAL = frozenset({
     # Pointers and pronouns.
     "ده", "دي", "دا", "هو", "هي", "اللي", "منه", "منها", "بتاعه", "بتاعها",
-    # Question words.
-    "بكام", "كام", "ايه", "ليه", "امتي", "فين", "هل", "عامل", "عامله", "ازاي",
+    # Question words. "اي" is the short spelling of "ايه" beside it, and "ها" is the particle
+    # that opens "ها لقيت اي ؟" — without both, that message still tripped the gate on its
+    # function words alone, so whether conversation 798 turn 2 was handled correctly came down
+    # to what the resolver happened to return for a message naming no perfume at all.
+    "بكام", "كام", "ايه", "اي", "ها", "ليه", "امتي", "فين", "هل", "عامل", "عامله", "ازاي",
     # Price, size and bottle vocabulary.
     "سعر", "سعره", "سعرها", "الاسعار", "اسعار", "حجم", "حجمه", "الحجم",
     "الاحجام", "احجام", "ملي", "ml", "زجاجه", "الزجاجه", "اوريجينال",
@@ -84,7 +113,24 @@ _REFERENTIAL = frozenset({
     # Quantifiers and ordinals.
     "كل", "واحد", "واحده", "لوحده", "لوحدها", "الاتنين", "التلاته", "التاني",
     "الاول", "الاخير", "بعض", "تاني", "تانيه",
-})
+}) | _CHASING  # a message that only chases names nothing, so the gate must not fire on it
+
+
+def identifying_tokens(text):
+    """The tokens of a message that could belong to a perfume name.
+
+    `tokens` minus the vocabulary `_REFERENTIAL` collects, minus bare digits — the residue left
+    once every way of asking *about* a perfume has been stripped out. Split out because two
+    callers need the same residue for opposite questions and must not drift: `may_name_a_perfume`
+    asks whether it is non-empty, and `re_asks` asks whether two messages share it.
+    """
+    return {
+        token
+        for token in tokens(text)
+        # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
+        # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
+        if token not in _REFERENTIAL and not token.isdigit()
+    }
 
 
 def may_name_a_perfume(text):
@@ -108,15 +154,7 @@ def may_name_a_perfume(text):
     So `_REFERENTIAL` never has to be exhaustive. A word missing from it makes this slower, not
     wrong, which is why the list above is safe to extend but dangerous to extend carelessly.
     """
-    for token in tokens(text):
-        if token in _REFERENTIAL:
-            continue
-        # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
-        # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
-        if token.isdigit():
-            continue
-        return True
-    return False
+    return bool(identifying_tokens(text))
 
 
 def _similar_enough(left, right):
@@ -141,6 +179,41 @@ def _overlap(wanted, candidate):
         if any(_similar_enough(token, other) for other in candidate):
             hits += 1
     return hits
+
+
+def re_asks(message, earlier):
+    """True when `message` asks about the same thing an earlier message named.
+
+    Both messages are ones the catalogue could not place, so there is no name on either side to
+    compare — only the customer's own words. `product_info` needs the comparison anyway, because
+    re-typing a name is how a customer insists and it must not read as a brand-new question:
+
+      816  "عندك الكساندريا 2؟"        → "لحظة أتأكدلك منه"
+           "بتكلم علي الكساندريا 2؟"    → "لحظة أتأكدلك منه" again, and that was the last reply
+                                          the customer ever got.
+      817  is the same two turns with لادور بخور.
+
+    Compares `identifying_tokens`, so every way of *asking* has already been stripped from both
+    sides and what is left is the closest thing to a name either message has. "بتكلم علي
+    الكساندريا 2؟" keeps {الكساندريا, بتكلم, علي} against {الكساندريا} — the leftover verb and
+    particle are why this is not a set equality.
+
+    The rule is that the shared tokens cover the **smaller** of the two residues. Requiring the
+    earlier message to be covered fails a customer who first asked verbosely and then re-asked in
+    two words; requiring the current one to be covered fails the reverse. Covering the smaller
+    side accepts both, and is still empty-handed on the case that has to stay negative: 795 turn 4
+    asks "طب عندكو الكساندريا 2 ؟" while لادور بخور is the open question, the two share nothing,
+    and that turn keeps the first deferral it has earned rather than inheriting a denial.
+
+    A short message that repeats only one word of a longer question ("عندكو بخور؟" after "عندكو
+    لادور بخور صح ؟") counts as a re-ask, which is the intended reading: the customer is still on
+    the same thread and has already been promised a check once.
+    """
+    wanted = identifying_tokens(earlier)
+    got = identifying_tokens(message)
+    if not wanted or not got:
+        return False
+    return _overlap(wanted, got) >= min(len(wanted), len(got))
 
 
 def match_product(name, store, products=None):

@@ -41,6 +41,13 @@ _REPLAYS = {
     "conv738": "scenarios_conv738",
     "conv768": "scenarios_conv768",
     "conv795": "scenarios_conv795",
+    # One file, both transcripts: 798 and 799 are the same failure reported twice.
+    "conv798": "scenarios_conv798",
+    "conv799": "scenarios_conv798",
+    # Likewise 816 and 817 — the same failure reached by re-typing the name instead of
+    # chasing it with a pronoun.
+    "conv816": "scenarios_conv816",
+    "conv817": "scenarios_conv816",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:
