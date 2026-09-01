@@ -8224,6 +8224,41 @@ class ProductInfoReferentTests(TestCase):
 
         self.assertEqual(self._referent("متأكد؟"), ["Eros"])
 
+    def test_a_plural_pointer_reaches_past_the_newest_reply(self):
+        """Conversation 842. "عندك سوفاج ؟" then "طب بلو دي شانيل ؟" — one perfume per reply, both
+        under discussion — then "بكام الاتنين". `latest_only=True` could only ever return the newest
+        reply's perfume, so the price of "the two" was answered for one, and the other was never in
+        the prompt at all. A plural pointer is the one referent that spans two replies.
+        """
+        self._offered("Dior Sauvage")
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("بكام الاتنين"), ["Eros", "Dior Sauvage"])
+
+    def test_the_841_typo_reaches_past_it_too(self):
+        """Same widening for "بكام لااتنين ؟" — the definite article typed "لا", as it arrived in
+        production. Listed as an exact literal, so it behaves identically to the correct spelling."""
+        self._offered("Dior Sauvage")
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("بكام لااتنين ؟"), ["Eros", "Dior Sauvage"])
+
+    def test_a_singular_pointer_still_sees_the_newest_reply_only(self):
+        """The regression that proves 726's protection survives the widening above. Identical
+        history, singular question: the older reply's perfume is noise here, and a stale cart line
+        in its place must not ride along into the answer."""
+        self._offered("Dior Sauvage")
+        self._offered("Eros")
+
+        self.assertEqual(self._referent("بكام ده"), ["Eros"])
+
+    def test_a_plural_pointer_over_one_reply_naming_both_is_unchanged(self):
+        """841's actual shape, and the case `latest_only` always handled correctly: both perfumes
+        came from ONE reply, so the widening changes nothing. Retrieval was never 841's bug."""
+        self._offered_both()
+
+        self.assertEqual(self._referent("بكام لااتنين ؟"), ["Eros", "Dior Sauvage"])
+
     def test_nothing_offered_yet_is_a_no_op(self):
         self.assertEqual(self._referent("بكام؟"), [])
 
@@ -11978,3 +12013,300 @@ class HarnessCatchesConv795Tests(TestCase):
         from eval_harness import runner
 
         self.assertEqual(runner._REPLAYS.get("conv795"), "scenarios_conv795")
+
+
+class PluralPointerTests(TestCase):
+    """A message that points at several perfumes at once, and the exact set that recognises it.
+
+    Two production conversations on the same day asked for two prices and got one:
+
+      842  "عندك سوفاج ؟" / "طب بلو دي شانيل ؟" / "بكام الاتنين"   → Bleu de Chanel only
+      841  one reply naming two perfumes, then "بكام لااتنين ؟"      → Dior Homme Sport only
+
+    842 is a retrieval failure and 841 a generation one, but both turn on the same question the
+    code could not previously ask: is this pointer plural? `naming.refers_to_several` answers it,
+    and everything downstream — the width of the referent window, and whether the reply owes every
+    row an answer — hangs off that.
+    """
+
+    def test_a_plural_pointer_is_recognised(self):
+        from products.services.sales import naming
+
+        for message in [
+            "بكام الاتنين",       # 842 turn 3
+            "بكام لااتنين ؟",     # 841 turn 3, "ال" typed "لا"
+            "طب عاملين كام دو",   # 835 turn 4
+            "بكام التلاته",
+            "بكام كلهم",
+            "بكام الكل",
+            "دول بكام",
+            "بكام العطرين",
+        ]:
+            with self.subTest(message=message):
+                self.assertTrue(naming.refers_to_several(message))
+
+    def test_a_singular_pointer_is_not(self):
+        """The distinction that keeps 726's stale-cart protection: "بكام ده" is one perfume, and a
+        two-row referent handed to it must still be narrowed to the newest reply."""
+        from products.services.sales import naming
+
+        for message in ["بكام ده", "بكام", "بكام دي", "عندك سوفاج ؟", "ريحته عاملة ايه"]:
+            with self.subTest(message=message):
+                self.assertFalse(naming.refers_to_several(message))
+
+    def test_a_plural_pointer_names_no_perfume(self):
+        """Ties `_unplaced_names` shut for the observed typo. "لااتنين" cannot be placed by
+        `match_product`, it was the customer's own word, and nothing else stopped it being recorded
+        as an open question about a perfume we do not carry — which the next turn would have denied
+        BY NAME. Only the resolver prompt stood in the way; now the token is not identifying at all.
+        """
+        from products.services.sales import naming
+
+        for message in ["بكام لااتنين ؟", "بكام الاتنين", "بكام كلهم", "بكام العطرين"]:
+            with self.subTest(message=message):
+                self.assertEqual(naming.identifying_tokens(message), set())
+                self.assertFalse(naming.may_name_a_perfume(message))
+
+    def test_the_match_is_exact_and_never_fuzzy(self):
+        """The design constraint, encoded so it cannot be quietly relaxed.
+
+        `_CHASE_STEMS` tolerates unlisted inflections because a missed chase is cheap. A false
+        positive HERE is not: it makes `may_name_a_perfume` blind to a perfume the customer actually
+        named, which is the conversation-738 failure. So an unlisted near-miss must fall back to
+        singular behaviour rather than be matched approximately.
+        """
+        from products.services.sales import naming
+
+        for message in ["بكام الاتنيين", "بكام اتنينن", "بكام كلهمم"]:
+            with self.subTest(message=message):
+                self.assertFalse(naming.refers_to_several(message))
+
+    def test_no_catalogue_name_is_a_plural_pointer(self):
+        """The safety proof, run against real rows rather than argued.
+
+        Both directions: no perfume name tokenises to a pointer, and no pointer matches a perfume.
+        This is what makes the set safe to extend — a new entry that would swallow a name fails here.
+        """
+        from products.services.sales import naming
+
+        store = Store.objects.create(name="Perfamix Test")
+        brand = Brand.objects.create(store=store, name="Chanel")
+        names = [
+            "Bleu de Chanel", "Dior Sauvage", "Dior Homme Sport", "Dior Homme Intense",
+            "Stronger With You", "Stronger With You Intensely", "Acqua di Gio", "1 Million",
+            "Baccarat Rouge 540", "XJ 1861 Naxos", "Afnan 9PM", "Y Eau de Parfum",
+            "Oud Wood", "Dark Aura", "Ambero", "Le Male", "Erba Pura", "Light Blue",
+        ]
+        products = [
+            Product.objects.create(store=store, brand=brand, name=name, gender="male")
+            for name in names
+        ]
+
+        for name in names:
+            self.assertEqual(naming.tokens(name) & naming._PLURAL_POINTERS, set(), name)
+
+        for pointer in sorted(naming._PLURAL_POINTERS):
+            self.assertIsNone(
+                naming.match_product(pointer, store, products=products), pointer
+            )
+
+
+class AnswerEveryRowTests(TestCase):
+    """Conversation 841 turn 4: both perfumes were in the context, one was priced.
+
+    Retrieval worked — turn 2 named Dior Homme Sport and Bleu de Chanel in ONE reply, so the
+    referent window held both and the saved `internal_context` carries both product blocks with
+    full prices. The reply quoted Dior Homme Sport's sizes and said nothing about Bleu de Chanel.
+
+    Nothing in the found branch asked for coverage. The one line that does —
+    "✅ جاوب على العطور اللي في البيانات عادي" — lives in `_PARTIAL_DEFERRAL_RULES`, which is gated
+    on `partially_resolved`; both names resolved cleanly here, so it never fired. 836 did better
+    only because its third name was unplaceable, which is to say it was carried by a rule it
+    received by accident of failing at something else.
+
+    Two found-branch rules actively push the other way: rule 1's price bullet is singular-shaped
+    (and on 841 the model led with the perfume that had NO value-pick line), and rule 7 forbids
+    volunteering what the customer did not ask for — which is what the second perfume looks like
+    until something says otherwise.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.dior = Brand.objects.create(store=self.store, name="Dior")
+        self.chanel = Brand.objects.create(store=self.store, name="Chanel")
+        self.sport = Product.objects.create(
+            store=self.store, brand=self.dior, name="Dior Homme Sport", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.sport, volume=90, price=1100, bottle_type="normal"
+        )
+        self.bleu = Product.objects.create(
+            store=self.store, brand=self.chanel, name="Bleu de Chanel", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.bleu, volume=90, price=1015, bottle_type="normal"
+        )
+        self.sauvage = Product.objects.create(
+            store=self.store, brand=self.dior, name="Dior Sauvage", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.sauvage, volume=90, price=944, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _offered_both(self):
+        """841 turn 2: one reply naming two perfumes, with both rows behind it."""
+        save_message(
+            self.conversation, "assistant",
+            "ممكن أشيرلك لـ Dior Homme Sport، أو Bleu de Chanel.",
+            internal_context=(
+                "Name (الاسم الصحيح): Dior Homme Sport\n"
+                "Name (الاسم الصحيح): Bleu de Chanel"
+            ),
+        )
+
+    def _prompt(self, message, resolved=None):
+        """The instruction block the model actually receives.
+
+        `get_product_info` returns the product context only; the numbered rules travel in the same
+        user message but are not part of that return value, so the prompt itself is the ground truth.
+        """
+        patches = [mock.patch("products.services.product_info.chat", return_value="ok")]
+        if resolved is not None:
+            patches.append(mock.patch(
+                "products.services.product_info.resolve_products", return_value=resolved
+            ))
+        with patches[0] as chat_mock:
+            for patch in patches[1:]:
+                patch.start()
+            try:
+                get_product_info(message, [], self.store, self.conversation)
+            finally:
+                for patch in patches[1:]:
+                    patch.stop()
+        return chat_mock.call_args[0][0][-1]["content"]
+
+    def test_a_plural_referent_owes_every_row_an_answer(self):
+        """841 turn 4 exactly."""
+        from products.services import product_info
+
+        self._offered_both()
+
+        self.assertIn(product_info._ANSWER_EVERY_ROW, self._prompt("بكام لااتنين ؟"))
+
+    def test_the_842_shape_owes_every_row_too(self):
+        """Two replies, one perfume each, plural pointer. Bug A widens the referent to both rows;
+        this is the instruction that stops the reply shrinking back to one of them."""
+        from products.services import product_info
+
+        save_message(
+            self.conversation, "assistant",
+            "Dior Sauvage متوفر عندنا يا فندم.",
+            internal_context="Name (الاسم الصحيح): Dior Sauvage",
+        )
+        save_message(
+            self.conversation, "assistant",
+            "Bleu de Chanel متوفر عندنا يا فندم.",
+            internal_context="Name (الاسم الصحيح): Bleu de Chanel",
+        )
+
+        prompt = self._prompt("بكام الاتنين")
+
+        self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn("Dior Sauvage", prompt)
+        self.assertIn("Bleu de Chanel", prompt)
+
+    def test_perfumes_the_customer_named_themselves_owe_every_row(self):
+        """The 836-shaped gap, with no plural pointer anywhere in the message: the customer named
+        both perfumes and both resolved, so no deferral fires and nothing used to ask for coverage."""
+        from products.services import product_info
+
+        prompt = self._prompt("اسعار Bleu de Chanel و Dior Sauvage")
+
+        self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+
+    def test_a_singular_question_keeps_rule_7(self):
+        """A two-row referent handed to "بكام ده" is there so the model can answer about whichever
+        perfume was meant — not so it can price both. Rule 7 still governs, and this is the case
+        `_referent_from_conversation`'s docstring has always leaned on it for."""
+        from products.services import product_info
+
+        self._offered_both()
+
+        self.assertNotIn(product_info._ANSWER_EVERY_ROW, self._prompt("بكام ده"))
+
+    def test_one_row_is_never_asked_to_cover_several(self):
+        from products.services import product_info
+
+        save_message(
+            self.conversation, "assistant",
+            "Bleu de Chanel متوفر عندنا يا فندم.",
+            internal_context="Name (الاسم الصحيح): Bleu de Chanel",
+        )
+
+        self.assertNotIn(product_info._ANSWER_EVERY_ROW, self._prompt("بكام"))
+
+    def test_a_deferral_is_never_asked_to_price_every_row(self):
+        """On a deferral the rows are labelled `_NOT_THE_PERFUME_ASKED_ABOUT` — pricing all of them
+        is precisely what that label forbids. Also the numbering check: both constants are rule 14,
+        and exactly one of them may ever reach the model."""
+        from products.services import product_info
+
+        self._offered_both()
+
+        prompt = self._prompt("عندك لادور بخور ؟", resolved=[])
+
+        self.assertNotIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn(product_info._DEFERRAL_RULES, prompt)
+        self.assertEqual(prompt.count("\n14."), 1)
+
+    def test_the_coverage_rule_is_numbered_once(self):
+        """The other half of the numbering check, on the turn the new rule does fire."""
+        self._offered_both()
+
+        self.assertEqual(self._prompt("بكام لااتنين ؟").count("\n14."), 1)
+
+    def test_the_replay_scenarios_are_registered(self):
+        """A scenario file nothing imports is a file nobody runs."""
+        from eval_harness import runner
+
+        self.assertEqual(runner._REPLAYS.get("conv841"), "scenarios_conv841")
+        self.assertEqual(runner._REPLAYS.get("conv842"), "scenarios_conv841")
+
+        from eval_harness import scenarios_conv841
+
+        self.assertEqual(
+            [s["id"] for s in scenarios_conv841.SCENARIOS], ["CONV841", "CONV842"]
+        )
+
+    def test_a_plural_pointer_after_a_denial_still_owes_every_row(self):
+        """835 turn 4's shape: "طب عاملين كام دو" arriving after the denial has landed.
+
+        Worth pinning separately because the gate excludes `deferring` and `exhausted` turns, and it
+        is not obvious from reading it that the turn *after* a denial is neither. Nothing is pending
+        by then, and a plural price question is an ordinary found-branch turn — so the coverage rule
+        has to reach it.
+        """
+        from products.services import product_info
+        from products.services.sales import described
+
+        save_message(
+            self.conversation, "assistant",
+            "لحظة أتأكدلك من لادور بخور.",
+            internal_context=f"{described.PENDING_LOOKUP_MARKER} عندك لادور بخور ؟",
+        )
+        save_message(
+            self.conversation, "assistant",
+            "بعتذر، لادور بخور مش متوفر عندنا. ممكن أشيرلك على Dior Homme Sport أو Bleu de Chanel.",
+            internal_context=(
+                f"{product_info.LOOKUP_EXHAUSTED_MARKER} عندك لادور بخور ؟\n"
+                "Name (الاسم الصحيح): Dior Homme Sport\n"
+                "Name (الاسم الصحيح): Bleu de Chanel"
+            ),
+        )
+
+        prompt = self._prompt("طب عاملين كام دو")
+
+        self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn("Dior Homme Sport", prompt)
+        self.assertIn("Bleu de Chanel", prompt)

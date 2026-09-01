@@ -57,8 +57,16 @@ def _referent_from_conversation(message, store, conversation):
     "كل واحده كام سعرها" was about two perfumes — and, worse, it forced a guess when the
     customer went on to name one of them in Arabic, which `_named_in_message` cannot match.
     Handing over both rows lets the model answer about whichever was named, and instruction 7
-    below already forbids volunteering the other one's detail. `latest_only` keeps the set to
-    the reply actually being responded to, so a stale cart line cannot ride along.
+    below already forbids volunteering the other one's detail.
+
+    How wide the window is depends on the message. `latest_only` normally keeps the set to the
+    reply actually being responded to, so a stale cart line cannot ride along — but it cannot
+    represent a referent that spans two replies, and a plural pointer is exactly that case.
+    Conversation 842 asked "عندك سوفاج ؟", then "طب بلو دي شانيل ؟", then "بكام الاتنين": both
+    perfumes were under discussion, each introduced by its **own** reply, so `latest_only` cut the
+    older one and the price of "the two" was answered for one. `naming.refers_to_several` is what
+    distinguishes that from the singular "بكام ده", which still gets the narrow window and 726's
+    stale-cart protection unchanged.
 
     Returns [] unless a conversation is present and something is genuinely under discussion —
     that gate is what keeps this off the first turn of a conversation and out of the callers
@@ -74,10 +82,16 @@ def _referent_from_conversation(message, store, conversation):
         return []
 
     from .sales import described as sales_described
+    from .sales import naming
+
+    # Outside the `try` on purpose: the handler below turns any failure into "no referent at all",
+    # which is the right answer for a database or window error and a silent misfire for a bug in
+    # here.
+    several = naming.refers_to_several(message)
 
     try:
         offered = sales_described.offered_in_order(
-            conversation, store, latest_only=True
+            conversation, store, latest_only=not several
         )
     except Exception:
         return []
@@ -321,6 +335,32 @@ _PARTIAL_DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى أكتر من ع
 """
 
 
+# Appended to the found-branch instructions when every row in context is a perfume the customer
+# asked about and there is more than one of them. Numbered 14 like `_DEFERRAL_RULES` and
+# `_PARTIAL_DEFERRAL_RULES`, and injected only on the `else` of `if deferring:` so it can never
+# appear alongside either of them.
+#
+# Exists because nothing else in the found branch asks for coverage. The line
+# "✅ جاوب على العطور اللي في البيانات عادي" lives in `_PARTIAL_DEFERRAL_RULES` and nowhere else, and
+# that constant is gated on `partially_resolved` — so a turn where every name resolved cleanly got no
+# coverage instruction at all. 841 turn 4 is that turn: both perfumes were in the context with full
+# prices, "بكام لااتنين ؟" asked for both, and the reply priced one.
+#
+# The found-branch rules actively push the other way, which is why this restates two of them:
+# rule 1's price bullet is singular-shaped ("ابدأ بالحجم اللي في سطر 💡 Value Pick" orders sizes
+# inside one perfume), and on 841 only Bleu de Chanel had that line while the model led with the
+# perfume that had none. Rule 7 forbids volunteering information the customer did not ask for, and
+# the second perfume looks exactly like that until something says it is not.
+_ANSWER_EVERY_ROW = """14. 🔴🔴 العميل سأل عن أكتر من عطر، وكل العطور اللي في البيانات فوق دي اللي هو سأل عنهم.
+   • ✅ جاوب على **كلهم** في الرد ده، كل واحد باسمه الكامل. لو سأل عن السعر، قول سعر كل عطر فيهم.
+   • ❌ ممنوع تجاوب على واحد وتسكت عن التاني وتسيب العميل يسأل تاني. لو عطر من اللي فوق مش في ردك، الرد ناقص.
+   • 🔴 القاعدة رقم 7 (متحشرش معلومات مسألش عنها) مش بتنطبق هنا — العطر التاني مش معلومة زيادة، هو نص السؤال.
+   • ✅ سطر 💡 Value Pick (أو 💡 اقتراح حجم) بيترتب **جوه كل عطر لوحده**: طبّقه على كل عطر عنده السطر ده، ومتخليهوش سبب تبدأ بعطر قبل التاني ولا تفضّل عطر على عطر. العطر اللي مالوش السطر ده، ابدأ بأحجامه زي ما هي مكتوبة.
+   • ❌ ومع كل ده، القاعدة رقم 12 لسه شغالة: ممنوع تجمع الأسعار في رقم واحد ولا تقول "الإجمالي". سعر كل عطر لوحده جنب التاني — ده رد، مش مجموع.
+   • 🔴 قبل ما تبعت الرد: عد أسماء العطور اللي في البيانات فوق، وتأكد إن كل اسم فيهم مكتوب في ردك وجنبه سعره. لو لقيت اسم ناقص، الرد ناقص — كمّله قبل ما تبعته.
+"""
+
+
 def _carried_price_intent_hint(message, history):
     """One line saying this message continues the previous question's subject on a new perfume.
 
@@ -428,6 +468,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # the resolver demonstrably gets this wrong, and `internal_context` is a harder record
     # than an 8-message prose window. This is also the recovery path when the gate fired but the
     # resolver could not place the name, which is what keeps a false alarm above harmless.
+    #
+    # Which branch produced the rows is recorded first, because the coverage instruction below needs
+    # it and nothing downstream can tell afterwards. Rows the customer named themselves are all
+    # theirs to be answered; rows that came from the referent are only all theirs when they pointed
+    # at several of them.
+    products_from_message = bool(products)
     if not products:
         products = _referent_from_conversation(message, store, conversation)
 
@@ -585,6 +631,28 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # push a price list onto the turn that has to deliver the denial.
     carried_intent_hint = "" if deferring else _carried_price_intent_hint(message, history)
 
+    # Does this turn owe the customer an answer about every row it is being given? Computed here,
+    # after the widening above, so `products` is final.
+    #
+    # `products_from_message`: the customer named them all, so they are all part of the question.
+    # This is the 836-shaped case where every name resolves and no deferral fires, which today
+    # receives no coverage instruction at all.
+    #
+    # `refers_to_several`: the rows came from the referent, and a plural pointer is what makes the
+    # whole referent the subject. A *singular* "بكام ده" against a two-row referent must keep rule 7's
+    # protection — the second row is there so the model can answer about whichever perfume was meant,
+    # not so it can volunteer both.
+    #
+    # `not deferring` is semantic and not just numbering hygiene: on a deferral the rows are labelled
+    # `_NOT_THE_PERFUME_ASKED_ABOUT`, and pricing all of them is precisely what that label forbids.
+    # `not exhausted` keeps the widened pool above out for the same reason.
+    answer_every_row = (
+        len(products) > 1
+        and not deferring
+        and not exhausted
+        and (products_from_message or naming.refers_to_several(message))
+    )
+
     if products:
         context = pending_block
         context += "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
@@ -614,7 +682,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 9. 🔴🔴 الزجاجة الأوريجينال: لو العميل سأل عن زجاجة أوريجينال، اقرأ خانة (Original Bottle) في بيانات المنتج وقول الرد المكتوب فيها بالحرف. ❌ ممنوع تقول على أي عطر إنه "حصري للمتجر" إلا لو مكتوب في الـ Brand بتاعه "عطر تركيب حصري خاص بالمتجر".
 10. 🔴 الفرق بين زجاجة البراند والأوريجينال: البرفان (التركيبة) واحد بالظبط. الفرق الوحيد شكل الزجاجة. فرق السعر بسبب تكلفة الزجاجة مش جودة البرفان. ❌ ممنوع توحي إن الأوريجينال فيها تركيبة أحسن.
 11. 🔴 لو العميل بيسأل يجيب 50 ملي ولا 90 ملي: ساعده يختار من نفس العطر. لو أول مرة → الأصغر أأمن. لو عاجبه → الأكبر أوفر. ❌ ممنوع تبدل العطر.
-12. 🔴🔴 ممنوع تحسب إجمالي طلب. البيانات اللي فوق فيها أسعار الأحجام بس — مفيش فيها عربة ولا كميات ولا إجمالي. ❌ ممنوع تضرب سعر في كمية، وممنوع تجمع أسعار، وممنوع تقول "الإجمالي" أو "المجموع" أو تتكلم عن "الطلبين" أو أي عدد قطع. لو العميل سأل الطلب بقى بكام، قوله إنك هتراجع الطلب معاه وابدأ تجمع تفاصيله — الإجمالي بيتحسب من الطلب نفسه مش من الأسعار دي. (عميل اتقاله إجمالي 1560 جنيه لطلب مش موجود، وهو أصلاً قال إن ميزانيته 900.)
+12. 🔴🔴 ممنوع تحسب إجمالي طلب. البيانات اللي فوق فيها أسعار الأحجام بس — مفيش فيها عربة ولا كميات ولا إجمالي. ❌ ممنوع تضرب سعر في كمية، وممنوع تجمع أسعار، وممنوع تقول "الإجمالي" أو "المجموع" أو تتكلم عن "الطلبين" أو أي عدد قطع. لو العميل سأل الطلب بقى بكام، قوله إنك هتراجع الطلب معاه وابدأ تجمع تفاصيله — الإجمالي بيتحسب من الطلب نفسه مش من الأسعار دي. (عميل اتقاله إجمالي 1560 جنيه لطلب مش موجود، وهو أصلاً قال إن ميزانيته 900.) ✅ بس خد بالك: إنك تقول سعر كل عطر لوحده جنب التاني في رد واحد **مش** إجمالي — ده هو الرد الصح لما العميل يسأل عن أكتر من عطر (زي "بكام الاتنين"). الممنوع هو إنك تجمعهم في رقم واحد أو تضربهم في كمية أو تقول كلمة "الإجمالي" أو "المجموع". ❌ ممنوع تسكت عن سعر عطر منهم عشان تتجنب القاعدة دي.
 13. 🔴🔴 لو العميل قال إنك قلت سعرين مختلفين لنفس العطر (زي "انت قولت سعرين مختلفين للسترونجر") — بص على سطر `⚠️ عطر مختلف عن` الأول. لو السعرين بيرجعوا لعطرين مختلفين على نفس الخط، يبقى **السعرين صح**: ❌ ممنوع تعتذر، وممنوع تقول إن فيه لبس أو غلط، وممنوع تسحب سعر أو تقول إن واحد منهم "هو السعر الصحيح". وضّح إن ده عطر وده عطر تاني بالاسم الكامل، وقول سعر كل واحد لوحده. ولو مش متأكد هو بيقصد أنهي واحد، اسأله. (عميل اتقاله 780 لـ Stronger With You Intensely وبعدين 700 لـ Stronger With You — دول عطرين مختلفين — وسأل، فاتقاله "أعتذر على اللبس، 700 ده السعر الصحيح"، ومشي فاكر إن Intensely بـ 700.)
 """
         if deferring:
@@ -622,6 +690,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
                 instructions += _PARTIAL_DEFERRAL_RULES
             else:
                 instructions += _ABSENT_RULES if exhausted else _DEFERRAL_RULES
+        elif answer_every_row:
+            instructions += _ANSWER_EVERY_ROW
         instructions += availability_hint
         instructions += carried_intent_hint
     else:

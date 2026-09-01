@@ -128,6 +128,28 @@ def chasing_a_promise(text):
     return any(_is_chase_token(token) for token in tokens(text))
 
 
+# Pointers meaning "more than one of the perfumes you just named", as opposed to the singular "ده".
+# Split out of `_REFERENTIAL` for the same reason `_CHASING` is: two callers need this subset for
+# opposite reasons. The gate needs these words to count as naming nothing, and
+# `product_info._referent_from_conversation` needs to recognise them positively — a plural pointer is
+# the one case where the referent has to reach past the newest reply, because conversation 842
+# introduced its two perfumes on two separate turns and "بكام الاتنين" meant both of them.
+#
+# 🔴 Exact membership only. Deliberately NOT stem-matched or edit-distance-matched the way
+# `_CHASE_STEMS` is: a false positive here is the conversation-738 failure — `may_name_a_perfume`
+# going blind to a perfume the customer actually named — so every entry is a literal that has been
+# checked against the catalogue rather than a pattern that might swallow one. A plural typo nobody
+# listed falls back to singular behaviour, which is the safe direction to fail in.
+#
+# Written in `normalize_arabic` form, like `_REFERENTIAL` itself, because `tokens` normalises before
+# comparing.
+_PLURAL_POINTERS = frozenset({
+    "دول", "دو", "الاتنين", "التلاته", "كلهم", "كلهما", "الكل", "عطرين", "العطرين",
+    # Observed in production: the definite article "ال" typed "لا" (conversation 841 turn 3,
+    # "بكام لااتنين ؟"). Listed as its own literal rather than reached by tolerating a typo.
+    "لااتنين",
+})
+
 # The vocabulary a customer uses to ask about a perfume already on the table, rather than to
 # name a new one. Written in `normalize_arabic` form — "زجاجه" not "زجاجة", "متاكد" not "متأكد" —
 # because `tokens` normalises before comparing. Words already in `_STOPWORDS` ("عطر", "برفان",
@@ -165,7 +187,23 @@ _REFERENTIAL = frozenset({
     # Quantifiers and ordinals.
     "كل", "واحد", "واحده", "لوحده", "لوحدها", "الاتنين", "التلاته", "التاني",
     "الاول", "الاخير", "بعض", "تاني", "تانيه",
-}) | _CHASING  # a message that only chases names nothing, so the gate must not fire on it
+# A message that only chases, or only points, names nothing — so the gate must not fire on either.
+}) | _CHASING | _PLURAL_POINTERS
+
+
+def refers_to_several(text):
+    """Does this message point at more than one of the perfumes we just named?
+
+    "بكام الاتنين" and "طب عاملين كام دو" — how much are *the two*, how much are *those*. Both name
+    no perfume, so the answer rests entirely on the referent, and both mean the referent is plural.
+    `product_info` needs that distinction twice: to widen the referent window past the newest reply
+    (conversation 842 introduced one perfume per turn, so the newest reply alone held half the
+    answer), and to require the reply to cover every row it was given.
+
+    Exact membership, per `_PLURAL_POINTERS`. False on an unlisted plural typo, which costs the
+    widening and nothing else — the caller falls back to the singular behaviour it has always had.
+    """
+    return any(token in _PLURAL_POINTERS for token in tokens(text))
 
 
 def identifying_tokens(text):

@@ -51,6 +51,10 @@ _REPLAYS = {
     # And 835 and 836: the deferral whose record was wrong, and the one that was never written.
     "conv835": "scenarios_conv835",
     "conv836": "scenarios_conv835",
+    # 841 and 842 both asked for two prices and got one, for two unrelated reasons: 842 never had
+    # the second perfume in its prompt, 841 had both and dropped one.
+    "conv841": "scenarios_conv841",
+    "conv842": "scenarios_conv841",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:
