@@ -98,6 +98,30 @@ def _referent_from_conversation(message, store, conversation):
     return [by_name[name] for name in offered if name in by_name]
 
 
+def _products_named(names, store):
+    """Rows for catalogue names, in the order given, dropping anything not currently stocked.
+
+    `described.offered_in_order` and its neighbours deal in names, because they read them back out of
+    `Message.internal_context`; everything downstream of here needs rows. Split out of
+    `_referent_from_conversation` when a second caller needed the same conversion — passing the names
+    straight through cost a crash inside `format_products`, which reasonably assumed it had products.
+    """
+    if not names:
+        return []
+
+    from products.models import Product
+
+    by_name = {
+        product.name: product
+        for product in Product.objects.filter(
+            store=store, is_active=True, name__in=list(names)
+        )
+        .prefetch_related("variants")
+        .select_related("brand")
+    }
+    return [by_name[name] for name in names if name in by_name]
+
+
 # Vocabulary that makes a message a question about whether we *stock* something, and vocabulary
 # that makes it a question about price or size. A message carrying the first and none of the second
 # is asking one thing only, and answering it with a price list is answering something else.
@@ -272,6 +296,73 @@ _ABSENT_RULES = """🔴🔴🔴 قاعدة فوق كل القواعد اللي �
 """
 
 
+# Replaces `_NOT_THE_PERFUME_ASKED_ABOUT` when the customer named several perfumes and we could place
+# some of them. That constant's whole claim — these rows are not what you were asked about — is false
+# here, and acting on it would withhold prices the customer did ask for. 836 turn 1 is the turn:
+# "عايز اعرف اسعار بلو دي شانيل وسوفاج والكساندريا 2", two in stock, one not.
+_PARTIALLY_ANSWERED = (
+    "⚠️ العميل سمّى أكتر من عطر في الرسالة دي. العطور اللي تحت دي **فعلاً** من اللي سأل عنهم — "
+    "جاوب عليهم عادي بالبيانات اللي تحت. بس فيه اسم واحد على الأقل سمّاه ومش موجود في البيانات "
+    "(مكتوب في قسم \"سؤال معلّق\" فوق) — العطر ده لوحده هو اللي محتاج \"لحظة أتأكدلك منه\".\n"
+)
+
+
+# Replaces `_DEFERRAL_RULES` on a partially-resolved turn. That list forbids quoting the prices of the
+# rows in context, which is right when they are a different perfume and wrong here: the customer asked
+# for these prices in the same breath as the name we could not place. What still has to hold is that
+# the unplaceable name does not quietly disappear — 836 answered two of three names for three turns
+# running and by the third had stopped mentioning the third one at all.
+_PARTIAL_DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى أكتر من عطر، وواحد منهم مش في البيانات اللي فوق (شوف قسم "سؤال معلّق" في أول الرسالة).
+   • ✅ جاوب على العطور اللي في البيانات عادي — قول أسعارها ومواصفاتها زي أي سؤال تمن طبيعي. دي أسئلة العميل وسألها بجد.
+   • ✅ وفي نفس الرد، اذكر العطر التاني بالاسم اللي العميل كتبه بيه وقول عليه "لحظة أتأكدلك منه" — وبس.
+   • ❌ ممنوع تنسى العطر ده أو تسيبه من الرد. لو جاوبت على اللي لقيته وسكت عن اللي مالقيتوش، العميل هيفضل يسأل عليه ومحدش بيدور له عليه.
+   • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص.
+   • ❌ ممنوع تنسب أي سعر أو نوتة من العطور اللي فوق للعطر ده، وممنوع توحي إنه واحد منهم أو إن ليه نفس الريحة.
+"""
+
+
+def _carried_price_intent_hint(message, history):
+    """One line saying this message continues the previous question's subject on a new perfume.
+
+    835 turn 5 is "وبلو دي شانيل ؟" — *and Bleu de Chanel?* — one turn after "طب عاملين كام دو" asked
+    a price. It carries no price word of its own, so instruction 1 read it as an availability question
+    and answered "أه متوفر"; the customer then had to type "بكام يعم" to ask a sixth time for the
+    thing they had already asked for. The elision is ordinary Arabic and ordinary everything else: a
+    bare name after a price question inherits the price question.
+
+    Deliberately narrow. A message carrying an availability word is asking about availability and is
+    left alone (that is `_availability_only_hint`'s turn), and a message carrying a price word needs no
+    help. Only the bare continuation qualifies, and only when the customer's own previous message is
+    what it continues — the assistant's offer does not count, because "تحب تعرف الأسعار؟" followed by a
+    name is the assistant's intent, not the customer's.
+
+    The caller must skip this when the turn is deferring; see the call site for why.
+
+    Returns "" for every other message, so the caller concatenates it unconditionally.
+    """
+    normalized = normalize_arabic(message or "")
+    if not normalized:
+        return ""
+    if any(word in normalized for word in _PRICE_OR_SIZE_WORDS):
+        return ""
+    if any(word in normalized for word in _AVAILABILITY_WORDS):
+        return ""
+
+    previous = ""
+    for entry in reversed(list(history or ())):
+        if entry.get("role") == "user":
+            previous = normalize_arabic(entry.get("content", ""))
+            break
+    if not previous or not any(word in previous for word in _PRICE_OR_SIZE_WORDS):
+        return ""
+
+    return (
+        "\n🔴 ملاحظة على الرسالة دي: العميل بيكمّل نفس السؤال اللي سأله قبل كده — سؤال السعر — بس "
+        "على العطر الجديد اللي سمّاه هنا. جاوبه بالسعر على طول. ❌ ممنوع ترد بتأكيد التوفر بس "
+        "وتستنى منه يسأل \"بكام\" تاني.\n"
+    )
+
+
 def get_product_info(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer a question about a named perfume.
 
@@ -310,10 +401,28 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         products = resolve_products(message, history, store, conversation)
         resolver_ran = True
 
+    # The names the resolver read out of this message and could not place. See
+    # `product_resolver.Resolution`; `getattr` because a plain list is still a valid return here and
+    # every mocked `resolve_products` in the test suite hands back one.
+    unplaced = tuple(getattr(products, "unplaced", ()))
+
     # A name we could not place. Kept as a fact about this turn rather than inferred later from an
     # empty `products`, because the referent lookup below is about to fill that list with a
     # different perfume entirely — which is exactly the confusion conversation 795 was built on.
-    named_but_unresolved = resolver_ran and not products
+    #
+    # `unplaced` is the first clause because an empty `products` only catches the case where *every*
+    # name failed. Conversation 836 turn 1 named three perfumes, two of them in stock, so `products`
+    # came back full and this flag stayed False — and with it False no pending record was written, no
+    # owner notification fired, and the third perfume was dropped in silence while the customer asked
+    # for its price three times. The second clause is the original condition, unchanged, so a total
+    # miss still reaches every path it reached before.
+    named_but_unresolved = bool(unplaced) or (resolver_ran and not products)
+
+    # A message that named some perfumes we have and some we do not. Kept apart from
+    # `named_but_unresolved` because the two need opposite instructions: on a total miss the rows in
+    # context are a different perfume and must not be priced as the answer, while here they *are*
+    # part of the answer and withholding them would drop a question the customer did ask.
+    partially_resolved = bool(unplaced) and bool(products)
 
     # Nothing named here: the subject is whatever we just offered. Decided in Python because
     # the resolver demonstrably gets this wrong, and `internal_context` is a harder record
@@ -425,7 +534,22 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # question instead of starting a new one. Empty when this name is new here, and a name we
         # have not placed even once is a question we have not answered even once, so it gets the
         # promise rather than the denial.
-        pending_block = _pending_lookup_block(re_asked or message, exhausted=bool(re_asked))
+        #
+        # `unplaced[0]` comes next, and only on a partially-resolved message. The docstring below
+        # insists on recording the raw message, and for a total miss it still is — that is the
+        # `or message` at the end. But 836 turn 1's raw message is "عايز اعرف اسعار بلو دي شانيل
+        # وسوفاج والكساندريا 2", and recording *that* as the open question means the next turn's
+        # denial denies Bleu de Chanel and Dior Sauvage too, both of which are in stock. Red line 3
+        # forbids exactly that. The unplaced span is the only payload here that is not a guess:
+        # `product_resolver._unplaced_names` has already proved the catalogue cannot place it, that it
+        # carries an identifying token, and that its words are the customer's own.
+        #
+        # Only the first, because `described._pending_payloads` reads one pending question per reply
+        # by design. A message that failed on two names defers on both in prose and records the first.
+        pending_block = _pending_lookup_block(
+            re_asked or (unplaced[0] if partially_resolved else "") or message,
+            exhausted=bool(re_asked),
+        )
     elif chasing:
         pending_block = _pending_lookup_block(pending_question, exhausted=exhausted)
     else:
@@ -433,12 +557,40 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 
     # One name for "this turn owes an answer we do not have", however we found that out.
     deferring = bool(pending_block)
+
+    # On the turn the denial lands, the rows in context are no longer a referent — they are the only
+    # thing the customer can act on, and `_ABSENT_RULES` asks for "بديل أو اتنين" of them. 835 turn 3
+    # had exactly one row to offer, because the resolver had placed the unplaceable name onto the one
+    # perfume it had seen most recently, so the denial could name a single alternative and turn 4's
+    # plural "طب عاملين كام دو" had one perfume to price instead of two.
+    #
+    # The comment above records that unioning the referent with the resolver's output was tried and
+    # reverted. That was the *found* branch, where the union put a wrong guess back in as the answer.
+    # Here the rows are already labelled `_NOT_THE_PERFUME_ASKED_ABOUT`: nothing in this context claims
+    # to be what the customer asked about, so widening the pool cannot mislabel anything. Gated on
+    # `exhausted` rather than `deferring` so a first deferral (816 and 817 turn 1) still gets no more
+    # data than it had, and no price list it never asked for.
+    if exhausted:
+        pool = list(products)
+        for product in _products_named(
+            sales_described.offered_in_order(conversation, store), store
+        ):
+            if product not in pool:
+                pool.append(product)
+        products = pool
+
     availability_hint = _availability_only_hint(message)
+    # Only when this turn is not already about something we could not find. 836 turn 2 is
+    # "ها لقيت اي" one turn after a message containing "اسعار", so without the guard the carry would
+    # push a price list onto the turn that has to deliver the denial.
+    carried_intent_hint = "" if deferring else _carried_price_intent_hint(message, history)
 
     if products:
         context = pending_block
         context += "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
-        if deferring:
+        if partially_resolved:
+            context += _PARTIALLY_ANSWERED
+        elif deferring:
             context += _NOT_THE_PERFUME_ASKED_ABOUT
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
@@ -466,8 +618,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 13. 🔴🔴 لو العميل قال إنك قلت سعرين مختلفين لنفس العطر (زي "انت قولت سعرين مختلفين للسترونجر") — بص على سطر `⚠️ عطر مختلف عن` الأول. لو السعرين بيرجعوا لعطرين مختلفين على نفس الخط، يبقى **السعرين صح**: ❌ ممنوع تعتذر، وممنوع تقول إن فيه لبس أو غلط، وممنوع تسحب سعر أو تقول إن واحد منهم "هو السعر الصحيح". وضّح إن ده عطر وده عطر تاني بالاسم الكامل، وقول سعر كل واحد لوحده. ولو مش متأكد هو بيقصد أنهي واحد، اسأله. (عميل اتقاله 780 لـ Stronger With You Intensely وبعدين 700 لـ Stronger With You — دول عطرين مختلفين — وسأل، فاتقاله "أعتذر على اللبس، 700 ده السعر الصحيح"، ومشي فاكر إن Intensely بـ 700.)
 """
         if deferring:
-            instructions += _ABSENT_RULES if exhausted else _DEFERRAL_RULES
+            if partially_resolved and not exhausted:
+                instructions += _PARTIAL_DEFERRAL_RULES
+            else:
+                instructions += _ABSENT_RULES if exhausted else _DEFERRAL_RULES
         instructions += availability_hint
+        instructions += carried_intent_hint
     else:
         # Product not found, let's get some alternatives. Chosen deterministically and
         # with the customer's gender in mind: `order_by('?')` here offered a women's
@@ -524,6 +680,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         if exhausted:
             instructions += _ABSENT_RULES
         instructions += availability_hint
+        instructions += carried_intent_hint
 
     messages = [
         {

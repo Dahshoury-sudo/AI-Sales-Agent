@@ -26,7 +26,11 @@ the last thing the bot ever said, and the denial and alternatives the customer w
 which is what lets the veto stand and the re-ask be recognised beside it.
 
 816 also needs the open question to outlive a reply that never mentions it: turn 2 was answered
-about Stronger With You and recorded no pending marker at all.
+about Stronger With You and recorded no pending marker at all. That reply is no longer the expected
+one either — "شوفو" is a chase, and `naming.chasing_a_promise` now recognises it as one (see
+`scenarios_conv835`, where the same unlisted inflection cost 835 its second turn), so the denial is
+owed at turn 2 and turn 3 is a customer who has already been told. The wider re-ask window stays
+regardless: it is what makes turn 3 reachable at all when turn 2's reply carries no marker.
 """
 
 _ALEXANDRIA_TRUTH = (
@@ -93,10 +97,15 @@ SCENARIOS = [
             "about Stronger With You — and it got 'لحظة أتأكدلك منه' for the second time. Turn 4 "
             "('اتأكد' — go check) then got no reply at all. "
             + _RE_ASK_RULES
-            + "Note turn 2 ('ماشي شوفو') is ambiguous and being answered about Stronger With You "
-            "there is acceptable; it is turn 3 that must not stall. Turn 4 must still be served "
-            "and must not repeat the denial as though the customer had not just heard it — by then "
-            "the perfume has been answered and the reply should move to what is actually on offer. "
+            + "Turn 2 ('ماشي شوفو' — 'go on then, look it up') is a chase, not a new question: it "
+            "collects the promise turn 1 made, and names no perfume of its own. The denial and the "
+            "alternatives belong here, and answering it about Stronger With You instead is the first "
+            "failure of the transcript rather than an acceptable reading of an ambiguous message. "
+            "That is also what left turn 3 with an open question and no record of it. "
+            "By turn 3 the customer has already been told, so that reply must hold the same answer "
+            "without reading the whole denial back as though they had not heard it, and must move to "
+            "what is actually on offer. Turn 4 must still be served and must not repeat the denial a "
+            "third time. "
             "Turn 1 asked about availability only, so a size and price list is unrequested there. "
             "❌ Never quote a price that is not one of the six figures above."
         ),

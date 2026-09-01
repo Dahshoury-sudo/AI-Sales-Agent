@@ -206,6 +206,35 @@ def _count_repeated_customer_questions(message, history):
 _REPEATED_QUESTION_LIMIT = 2
 
 
+def _deferred_question(context, message):
+    """The perfume the owner has to go and look up, as the customer wrote it.
+
+    Read out of this turn's `PENDING_LOOKUP` payload rather than taken from `message`, because the
+    two are not the same text and the notification asserts something about it: "والعطر ده مش في
+    بيانات المتجر". Quoting the whole message makes that claim about every perfume in it.
+
+    Two turns get it wrong. A partially-resolved question — 836 turn 1, "عايز اعرف اسعار بلو دي
+    شانيل وسوفاج والكساندريا 2" — names two perfumes we stock and one we do not, and the raw message
+    told the owner we carry none of the three. And on an exhausted turn the message is a chase, so
+    the owner was sent to look up "ها لقيت اي"; `described.pending_lookup` makes the same point about
+    the customer-facing side ("an owner told to go and look up 'طب اتأكدلي' has been told nothing").
+
+    The payload is the right text in both cases and is unchanged in the ordinary one: for a total
+    miss `product_info` records the raw message, so this returns exactly what it returned before.
+    Falls back to `message` when the context carries no payload, which keeps a marker written without
+    a question — still a deferral that happened — reporting something.
+    """
+    for line in (context or "").splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(sales_described.PENDING_LOOKUP_MARKER):
+            continue
+        payload = stripped[len(sales_described.PENDING_LOOKUP_MARKER):].strip()
+        if payload:
+            return payload
+        break
+    return (message or "").strip()
+
+
 def _escalate_pending_lookup(conversation, store, context, pending_before, message, history):
     """Pull the owner in when the bot has promised to check and cannot deliver.
 
@@ -248,6 +277,7 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
     deferring = sales_described.PENDING_LOOKUP_MARKER in (context or "")
     exhausted = LOOKUP_EXHAUSTED_MARKER in (context or "")
     repeats = _count_repeated_customer_questions(message, history)
+    question = _deferred_question(context, message)
 
     if exhausted:
         # Counts previous replies only: this turn's context reaches the database after the router
@@ -270,7 +300,7 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
             notif_type="handoff",
             title="عميل كرر السؤال عن عطر مش في الكتالوج ❌",
             message=(
-                f"محادثة #{conversation.id}: العميل رجع يسأل تاني عن «{(message or '').strip()}» "
+                f"محادثة #{conversation.id}: العميل رجع يسأل تاني عن «{question}» "
                 f"والعطر ده مش في بيانات المتجر، فالبوت قاله إنه مش موجود عندنا وعرض عليه بدائل. "
                 f"لو العطر ده عندنا فعلاً أو تحب تجيبه، راجع المحادثة ورد على العميل."
             ),
@@ -284,7 +314,7 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
             title="عميل سأل عن عطر مش في الكتالوج 🔍",
             message=(
                 f"محادثة #{conversation.id}: البوت قال للعميل \"لحظة أتأكدلك\" على سؤاله "
-                f"«{(message or '').strip()}» — والعطر ده مش في بيانات المتجر. "
+                f"«{question}» — والعطر ده مش في بيانات المتجر. "
                 f"راجع المحادثة ورد على العميل."
             ),
         )

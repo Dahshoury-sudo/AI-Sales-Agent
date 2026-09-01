@@ -48,6 +48,9 @@ _REPLAYS = {
     # chasing it with a pronoun.
     "conv816": "scenarios_conv816",
     "conv817": "scenarios_conv816",
+    # And 835 and 836: the deferral whose record was wrong, and the one that was never written.
+    "conv835": "scenarios_conv835",
+    "conv836": "scenarios_conv835",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

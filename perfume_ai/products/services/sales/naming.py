@@ -68,6 +68,51 @@ _CHASING = frozenset({
 })
 
 
+# The same vocabulary as stems, because the frozenset above is a wordlist over a dialect that suffixes
+# freely, and every form nobody happened to type is a silent *double* failure: `chasing_a_promise`
+# misses it, and the unmatched token then survives `identifying_tokens`, so `may_name_a_perfume` fires
+# and the resolver runs on a chase verb and returns whatever was last offered. 835 turn 2 is
+# "ها لقيتو ؟" and 836 turn 3 is "ماشي اعرفلي"; the first was answered with Dior Homme Sport's price
+# list, the second by repeating two price lists the customer already had. Only "لقيت" and "عرفت" were
+# ever in the set, so one suffix each was enough to break both.
+#
+# Matched as a *prefix* with at most three trailing characters — never as a substring. "لقي" appears
+# inside "القيمة" and "القيود", which are ordinary price words and must not read as chases; anchoring
+# at the start excludes them because they begin with "ال". The bound keeps the family to real
+# inflections ("لقيتو", "لقيتلي", "اعرفلي", "شوفتلي", "دورتلي").
+#
+# 🔴 The warning on `_REFERENTIAL` below applies here with more force, because a stem covers a whole
+# family rather than one word: every entry has to be unambiguously a verb. Bare "دور" is excluded for
+# exactly that reason — it is a plausible Arabic spelling of Dior, and swallowing it would blind the
+# gate to Dior Sauvage, Dior Homme Sport and Dior Homme Intense for good. Only "دورت", carrying the
+# past-tense ت, is listed. "لقي" and "عرف" are likewise reachable only through their affixed forms.
+#
+# "اعرف" and "تعرف" are excluded bare for a subtler version of the same problem: they are request
+# verbs, not collection verbs. "عايز اعرف اسعار بلو دي شانيل" is an opening question, and reading it
+# as a chase would answer it with a denial of whatever was still pending instead of the prices it asks
+# for — exactly what this function's callers guard against. Only the benefactive "اعرفلي" / "تعرفلي"
+# — *find out for me* — is a chase, so that is what is listed.
+#
+# Checked against all 46 catalogue names: no transliteration of any of them starts with any stem here.
+_CHASE_STEMS = ("لقيت", "عرفت", "اعرفلي", "تعرفلي", "اتاكد", "تاكد", "شوفت", "شوف", "دورت")
+
+_MAX_CHASE_SUFFIX = 3
+
+
+def _is_chase_token(token):
+    """True when one token is a chase verb, in any of its ordinary inflections.
+
+    The single place `_CHASING` and `_CHASE_STEMS` are read together, so the two callers that need
+    this judgement — `chasing_a_promise` and `identifying_tokens` — cannot drift apart. They failed
+    835 turn 2 together and have to be fixed together: recognising the chase without also keeping the
+    verb out of the identifying tokens would still leave "لقيتو" looking like an unplaceable name.
+    """
+    return token in _CHASING or any(
+        token.startswith(stem) and len(token) - len(stem) <= _MAX_CHASE_SUFFIX
+        for stem in _CHASE_STEMS
+    )
+
+
 def chasing_a_promise(text):
     """True when the message asks for an answer that was promised rather than about a perfume.
 
@@ -76,8 +121,11 @@ def chasing_a_promise(text):
     offered alongside the promise, because a referential message resolves to whatever was last
     on the table and nothing distinguished "give me the answer you owe me" from "tell me about
     this one". `product_info` requires this before it will treat an open lookup as chased.
+
+    Token-wise rather than substring-wise, via `_is_chase_token`: a chase is a whole word, and
+    "القيمة كام" is a price question that happens to contain the letters of one.
     """
-    return bool(tokens(text) & _CHASING)
+    return any(_is_chase_token(token) for token in tokens(text))
 
 
 # The vocabulary a customer uses to ask about a perfume already on the table, rather than to
@@ -89,13 +137,17 @@ def chasing_a_promise(text):
 # "هوم", "بلو", "دارك" and "مليون" are all name components in this catalogue and are all absent
 # on purpose. Adding one would make `may_name_a_perfume` blind to that perfume for good.
 _REFERENTIAL = frozenset({
-    # Pointers and pronouns.
-    "ده", "دي", "دا", "هو", "هي", "اللي", "منه", "منها", "بتاعه", "بتاعها",
+    # Pointers and pronouns. The plurals matter as much as the singulars: 835 turn 4 is
+    # "طب عاملين كام دو" — how much are *those* — and with "دو" and "عاملين" both unlisted the message
+    # read as naming a perfume, so the price question about what we had just offered went unanswered.
+    "ده", "دي", "دا", "دول", "دو", "هو", "هي", "هما", "اللي", "منه", "منها", "منهم",
+    "بتاعه", "بتاعها",
     # Question words. "اي" is the short spelling of "ايه" beside it, and "ها" is the particle
     # that opens "ها لقيت اي ؟" — without both, that message still tripped the gate on its
     # function words alone, so whether conversation 798 turn 2 was handled correctly came down
     # to what the resolver happened to return for a message naming no perfume at all.
-    "بكام", "كام", "ايه", "اي", "ها", "ليه", "امتي", "فين", "هل", "عامل", "عامله", "ازاي",
+    "بكام", "كام", "ايه", "اي", "ها", "ليه", "امتي", "فين", "هل", "عامل", "عامله", "عاملين",
+    "ازاي",
     # Price, size and bottle vocabulary.
     "سعر", "سعره", "سعرها", "الاسعار", "اسعار", "حجم", "حجمه", "الحجم",
     "الاحجام", "احجام", "ملي", "ml", "زجاجه", "الزجاجه", "اوريجينال",
@@ -131,13 +183,18 @@ def identifying_tokens(text):
     `named_but_unresolved` went True, and that flag vetoes the chase carry in `product_info`. So the
     one message that is nothing *but* a chase could not be read as one. 816 turn 4 is that message,
     and it was answered "لحظة أتأكدلك منه" one turn after being told the perfume is not stocked.
+
+    Excluded through `_is_chase_token` rather than set membership, so an inflection nobody listed is
+    excluded too. That is the other half of 835 turn 2: "لقيتو" was not in `_CHASING`, so it survived
+    as an identifying token, `may_name_a_perfume` read "ها لقيتو ؟" as naming something, and the
+    resolver was asked to place a verb.
     """
     return {
         token
         for token in tokens(text)
         # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
         # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
-        if token not in _REFERENTIAL and token not in _CHASING and not token.isdigit()
+        if token not in _REFERENTIAL and not _is_chase_token(token) and not token.isdigit()
     }
 
 
