@@ -276,8 +276,15 @@ _NOT_THE_PERFUME_ASKED_ABOUT = (
 # customer named something else. Rule 1 up there already says most of this in the abstract;
 # conversation 795 turns 2 and 3 are what it costs when nothing in the data marks which perfume is
 # which. Numbered 14 to continue that list rather than restart it.
+#
+# The bullet against a closing question is prose and unmeasured, unlike the classifier change in
+# `get_product_info` — it reduces the supply of ambiguous next turns rather than fixing how one is
+# read. Line 2 has always said "وبس" and nothing enforced it: 915 turn 12 ended a deferral with
+# "تحب أعرفلك عن حجم معين أو سعر؟" and the customer answered the question, so the next message
+# ("اه عايز اعرف اسعاره") was shaped by our own CTA and matched no vocabulary anywhere.
 _DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى عطر مش موجود في البيانات اللي فوق (شوف قسم "سؤال معلّق" في أول الرسالة).
    • الرد الصح على العطر اللي سأل عنه: "لحظة أتأكدلك منه" — وبس.
+   • ❌ ممنوع تقفل الرد ده بسؤال أو CTA ("تحب أعرفلك عن حجم معين أو سعر؟"، "تحب أرشحلك حاجة؟") — أنت لسه مدين له بإجابة، والسؤال ده بيخليه يرد على حاجة تانية وينسى إنه مستني. وعد التأكد لوحده هو الرد كله.
    • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص.
    • ❌ وممنوع تجمع النفي مع الوعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
    • ❌ ممنوع تسرد أسعار أو مواصفات العطور اللي فوق كأنها ردك على سؤاله. ولو العميل بيستعجلك على التأكد (زي "طب اتأكدلي") فهو مستني رد على العطر اللي **هو** سأل عنه — مش على عطر تاني: قوله إنك لسه بتتأكد وإنك هترد عليه، مش أسعار عطر مسألش عنه.
@@ -506,7 +513,19 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # is a price question about the perfume we offered alongside the promise — answering it
         # with "مش موجود عندنا" would deny a perfume the customer never named and drop the
         # question they did ask. `naming` owns that vocabulary; see `chasing_a_promise`.
-        and naming.chasing_a_promise(message)
+        and (naming.chasing_a_promise(message) or naming.insisting_on_a_promise(message))
+        # The second predicate covers the customer who insists without a collection verb and
+        # without re-typing the name: 915 turn 13 is "اه عايز اعرف اسعاره" after a deferral on
+        # لادور بخور. `chasing_a_promise` is False on it by design, so the turn was read as neither
+        # a chase nor a re-ask, the promise was repeated verbatim, and `router` — which counts
+        # content-free deferrals rather than reading `exhausted` — handed the conversation to a
+        # human. Nothing else here changes: the four conditions around it are what make the looser
+        # vocabulary safe, because a message that names a perfume never reaches this branch.
+        #
+        # Deliberately no router change. Once `exhausted` is True below, `_escalate_pending_lookup`
+        # takes its exhausted branch, finds no LOOKUP_EXHAUSTED reply on record yet, and notifies
+        # the owner without setting `needs_human` — so the bot denies plainly and keeps serving.
+        # The handoff was a symptom of this classification, not a second bug.
         # Still vetoed by an unplaceable name in *this* message, which is a new question rather
         # than the old one — "اتأكدلي من الكساندريا 2" both chases and names, and the name is the
         # part that has not been deferred on yet.

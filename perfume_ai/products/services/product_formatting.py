@@ -65,6 +65,18 @@ def budget_label(price, max_price):
     sizes with a difference to quote are the ones that have one, so on a ✅ line the request
     is unfillable rather than merely banned.
 
+    Naming the figure turned out to be necessary and not sufficient. Conversation 915, budget
+    900: this label read "أعلى شوية من الميزانية بـ 90 جنيه" beside a 990 price, and the reply
+    was "والـ90 ملي أعلى شوية بـ90 جنيه" — which says the 90 ملي costs 90. Correct arithmetic,
+    wrong sentence, because "بـ" is the price particle in every sibling clause of that same
+    reply ("الـ50 ملي بـ642"), so an overage introduced by a bare "بـ" is read as a price. The
+    size happening to equal the overage is what made it undetectable.
+
+    So the label states the *pair*, and asks for both numbers rather than for "the difference".
+    That is the same move as naming the figure, applied one level up: an instruction a single
+    number cannot satisfy. `sales.value._money_and_warning` writes "(990 مقابل 631)" for
+    exactly this reason — the comparison, not just the delta, is what fixes the direction.
+
     "far" deliberately gets no figure. It is the one tier the model may not offer at all, so
     a number there would only be a number to leak.
     """
@@ -75,8 +87,8 @@ def budget_label(price, max_price):
         return _BUDGET_LABELS[tier]
     over = Decimal(str(price)) - Decimal(str(max_price))
     return (
-        f" ⚠️ (أعلى شوية من الميزانية بـ {over:.0f} جنيه — تقدر تعرضه بشرط تقول الفرق ده "
-        f"بالرقم زي ما هو)"
+        f" ⚠️ (أعلى شوية من الميزانية — السعر {price:.0f} جنيه والفرق {over:.0f} جنيه. "
+        f"تقدر تعرضه بشرط تقول الرقمين مع بعض زي ما هما)"
     )
 
 

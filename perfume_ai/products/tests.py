@@ -528,7 +528,29 @@ class BudgetLabellingTests(TestCase):
         line = self._line_for(self._context(500), "550")
 
         self.assertIn("⚠️", line)
-        self.assertIn("بـ 50 جنيه", line)
+        self.assertIn("الفرق 50 جنيه", line)
+
+    def test_the_near_label_states_the_price_beside_the_difference(self):
+        """Conversation 915: naming the figure was necessary and not sufficient.
+
+        Budget 900, a 990 price, and the label read "أعلى شوية من الميزانية بـ 90 جنيه". The reply
+        was "والـ90 ملي أعلى شوية بـ90 جنيه" — which says the 90 ملي costs 90. The arithmetic was
+        right and the instruction was obeyed exactly; the sentence was still wrong, because "بـ" is
+        the price particle in every sibling clause of that same reply ("الـ50 ملي بـ642"), so an
+        overage introduced by a bare "بـ" reads as a price. The size happening to equal the overage
+        is what made it invisible.
+
+        So the label names the pair and asks for both numbers — an instruction one number cannot
+        satisfy, which is the 912 move applied one level up. `sales.value._money_and_warning`
+        writes "(990 مقابل 631)" for the same reason: the comparison fixes the direction, the delta
+        alone does not.
+        """
+        line = self._line_for(self._context(500), "550")
+
+        self.assertIn("السعر 550 جنيه", line)
+        self.assertIn("الفرق 50 جنيه", line)
+        # The regression itself: the difference must not be the thing "بـ" introduces.
+        self.assertNotIn("بـ 50", line)
 
     def test_an_in_budget_size_carries_no_figure_to_quote(self):
         """The half that fixes 912: on a ✅ line there is no difference to state.
@@ -558,7 +580,7 @@ class BudgetLabellingTests(TestCase):
         """
         line = self._line_for(self._context(500.0), "550")
 
-        self.assertIn("بـ 50 جنيه", line)
+        self.assertIn("الفرق 50 جنيه", line)
 
     def test_boundary_price_equal_to_budget_is_in_budget(self):
         self.assertIn("✅", self._line_for(self._context(400), "400"))
@@ -9818,10 +9840,12 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
         self.assertIn("1032", block)
         self.assertIn("⚠️", block)
         self.assertIn("تقدر تعرضه", block)
-        # And the overage arrives as a figure. Every instruction about a ⚠️ size asks the model
-        # to state how far over it is, and conversation 912 is what happens when that figure is
-        # nowhere in the data: the model produces one, including on sizes that are in budget.
-        self.assertIn("بـ 32 جنيه", block)
+        # And the overage arrives as a figure, beside the price. Every instruction about a ⚠️ size
+        # asks the model to state how far over it is, and conversation 912 is what happens when
+        # that figure is nowhere in the data: the model produces one, including on sizes that are
+        # in budget. 915 is what happens when the figure arrives *alone* — see the price assertion.
+        self.assertIn("الفرق 32 جنيه", block)
+        self.assertIn("السعر 1032 جنيه", block)
 
     def test_the_persona_states_the_perfume_before_size_ordering(self):
         """Conversation 762's fix, at the persona layer: the 💡 line decides which *size* to
@@ -11096,6 +11120,103 @@ class ChasedDeferralTests(TestCase):
         self.assertNotIn("═══ سؤال معلّق ═══", context)
         self.assertIn("Stronger With You", context)
         self.assertIn("700", context)
+
+    # ── insisting without a chase verb and without a name ─────────────────
+    def test_insisting_on_an_owed_answer_reaches_the_denial(self):
+        """Conversation 915 turns 11-14, the whole reported bug.
+
+        "عندك لادور بخور ؟" → "لحظة أتأكدلك منه". Then "اه عايز اعرف اسعاره" — and the customer got
+        the *same promise again*, plus a CTA, and the conversation was handed to a human, so the
+        next message ("تمام") was answered with silence.
+
+        `chasing_a_promise` is False on it by design: only the benefactive "اعرفلي" is a chase, and
+        bare "اعرف" has to stay a request verb so that "عايز اعرف اسعار بلو دي شانيل" reads as an
+        opening question. `re_asks` is empty-handed too, because nothing on either side is a name.
+        So the one shape left — insisting with neither verb nor name — matched nothing at all.
+        """
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        context, prompt = self._turn("اه عايز اعرف اسعاره")
+
+        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        # And about the perfume actually owed, not the message that insisted on it. 915 recorded
+        # "اه عايز اعرف اسعاره" as an open question in its own right, which is neither a name the
+        # owner can act on nor a subject the model can deny.
+        self.assertIn("لادور بخور", context)
+        # Denying instead of promising again. Asserted the way the sibling tests do: the phrase
+        # "لحظة أتأكدلك منه" is quoted inside `_ABSENT_RULES`'s own prohibition, so its absence is
+        # not what marks this turn — the deferral rules being *replaced* is.
+        self.assertIn("مش موجود عندنا", prompt)
+        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
+        self.assertNotIn("الرد الصح على العطر اللي سأل عنه", prompt)
+
+    def test_insisting_does_not_hand_the_conversation_over(self):
+        """The other half of what 915 reported: `needs_human` went True and turn 15 ("تمام") got
+        silence.
+
+        No router change was needed for this. `_escalate_pending_lookup` reads `exhausted` from the
+        context and hands over only on a *second* denial about the same perfume — but when the turn
+        is misclassified it never sees `exhausted` at all and falls through to
+        `deferring and pending_before >= 1`, which fires on the first insistence. The handoff was a
+        symptom of the classification, so fixing the classifier fixes both halves at once. Pinned
+        apart from the chase-shape test because this is the shape the customer complained about.
+        """
+        from products.services.router import _escalate_pending_lookup
+
+        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        context, _ = self._turn("اه عايز اعرف اسعاره")
+
+        with mock.patch("products.services.router.notify_handoff") as handoff, mock.patch(
+            "products.services.router.create_notification"
+        ) as notify:
+            _escalate_pending_lookup(
+                self.conversation, self.store, context, 1, "اه عايز اعرف اسعاره", []
+            )
+        self.conversation.refresh_from_db()
+
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(handoff.called)
+        self.assertTrue(notify.called)
+
+    def test_the_insistence_cannot_be_read_as_a_name(self):
+        """Determinism, and the more serious half of 915: the turn's fate was a coin flip.
+
+        With "عايز", "اعرف" and "اسعاره" all missing from `_REFERENTIAL`, the message tripped the
+        gate and its outcome depended on what an LLM returned. `resolve_products` gave [] in
+        production — `named_but_unresolved` went True, which vetoes the chase carry, hence the
+        repeated promise — and six already-offered perfumes on replay, which skipped the pending
+        block entirely and answered with Aventus's price list. Two different wrong replies for one
+        message. The gate saying False is what removes the veto and the coin flip together.
+        """
+        from products.services.sales.naming import may_name_a_perfume
+
+        for nameless in ["اه عايز اعرف اسعاره", "ممكن اعرف سعره", "اه عايز اعرفه"]:
+            self.assertFalse(may_name_a_perfume(nameless), nameless)
+        # Still liberal about anything that could be a name — the conversation-738 regression.
+        self.assertTrue(may_name_a_perfume("عايز اعرف اسعار بلو دي شانيل"))
+
+    def test_insisting_needs_an_open_deferral(self):
+        """The gate that makes the loose vocabulary safe. Nothing was promised here, so "عايز اعرف"
+        is an ordinary question about what is on the table and must be answered as one."""
+        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+
+        context, prompt = self._turn("اه عايز اعرف اسعاره")
+
+        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn("═══ سؤال معلّق ═══", context)
+        self.assertIn("Stronger With You", context)
+
+    def test_insisting_on_a_promise_is_not_a_price_question(self):
+        """The predicate carries no price vocabulary, on purpose. "بكام؟" after a deferral asks
+        about the perfume volunteered *alongside* the promise, not about the promise — the
+        distinction `test_a_price_question_after_a_deferral_is_not_a_chase` pins one level up."""
+        from products.services.sales.naming import insisting_on_a_promise
+
+        for insisting in ["اه عايز اعرف اسعاره", "ممكن اعرف سعره", "عايز اعرف"]:
+            self.assertTrue(insisting_on_a_promise(insisting), insisting)
+        for other in ["بكام؟", "ريحته ايه؟", "ده متوفر؟", "تمام", "لا مش عايز"]:
+            self.assertFalse(insisting_on_a_promise(other), other)
 
     def test_the_chase_never_reaches_the_resolver(self):
         """Determinism, and the reason 799 turn 2 behaved differently between two replays of the

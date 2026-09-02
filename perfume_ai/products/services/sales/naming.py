@@ -128,6 +128,38 @@ def chasing_a_promise(text):
     return any(_is_chase_token(token) for token in tokens(text))
 
 
+# The other shape of "you owe me an answer": insisting, without a collection verb and without
+# naming anything. Kept out of `_CHASING` on purpose — the comment above refuses these bare forms,
+# and that refusal is right for a set `identifying_tokens` also reads, because
+# "عايز اعرف اسعار بلو دي شانيل" has to stay an opening question. What makes them safe *here* is
+# the caller and not the words: `product_info` consults this only when a deferral is already open,
+# the message names nothing, and no product came back. Under those three conditions "عايز اعرف"
+# cannot be an opening question — there is nothing left for it to open.
+_INSISTING = frozenset({
+    "اعرف", "اعرفه", "اعرفها", "نعرف", "تعرف", "تعرفه", "تعرفها",
+})
+
+
+def insisting_on_a_promise(text):
+    """True when a nameless message presses for an answer we owe, without a collection verb.
+
+    Conversation 915 turn 13 is "اه عايز اعرف اسعاره": the customer had been told
+    "لحظة أتأكدلك منه" about لادور بخور and came back for it. `chasing_a_promise` is False there by
+    design — only the benefactive "اعرفلي" is a chase — so the turn was not read as the customer
+    returning, the promise was repeated word for word, and the router handed the conversation to a
+    human. That is the 816/817 dead end reached by a different route.
+
+    Exact whole-token membership, so an inflection nobody listed is False. That is the direction to
+    fail in: a miss costs the denial one more turn, while a false positive denies a perfume the
+    customer never asked about.
+
+    Deliberately no price vocabulary. "بكام؟" after a deferral asks about the perfume volunteered
+    *alongside* the promise, not about the promise — the distinction `_CHASING`'s own comment exists
+    to protect, and the one `test_a_price_question_after_a_deferral_is_not_a_chase` pins.
+    """
+    return any(token in _INSISTING for token in tokens(text))
+
+
 # Pointers meaning "more than one of the perfumes you just named", as opposed to the singular "ده".
 # Split out of `_REFERENTIAL` for the same reason `_CHASING` is: two callers need this subset for
 # opposite reasons. The gate needs these words to count as naming nothing, and
@@ -181,6 +213,18 @@ _REFERENTIAL = frozenset({
     # Availability and doubt.
     "متوفر", "متوفره", "موجود", "موجوده", "متاح", "متاكد", "بجد", "مش", "ولا",
     "فيه", "في", "عندكم", "عندك", "عندكو", "لسه",
+    # Wanting and knowing. Conversation 915 turn 13 is "اه عايز اعرف اسعاره" — the customer
+    # insisting on a price we had promised to go and check. With "عايز", "اعرف" and "اسعاره" all
+    # unlisted, that message read as naming a perfume: the gate said yes, the resolver was asked
+    # to place three verbs, and `named_but_unresolved` went True — which vetoes the chase carry in
+    # `product_info`, so the promise was repeated verbatim instead of turning into a denial and
+    # the router handed the conversation to a human. The resolver's answer was not even stable:
+    # [] in production, six already-offered perfumes on replay, so the turn had two different
+    # wrong outcomes depending on the call. "اسعار" and "الاسعار" were already listed above; the
+    # possessive forms were the gap.
+    "عايز", "عايزه", "عاوز", "عاوزه", "محتاج", "محتاجه", "ممكن",
+    "اعرف", "اعرفه", "اعرفها", "تعرف", "نعرف",
+    "اسعاره", "اسعارها",
     # Discourse particles and confirmations.
     "طب", "طيب", "بقول", "بقولك", "قول", "قولي", "ماشي", "تمام", "ايوه", "اه",
     "لا", "كمان", "برضه", "بس", "خلاص", "يعني", "امال",
