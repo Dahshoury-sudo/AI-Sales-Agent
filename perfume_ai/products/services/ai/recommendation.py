@@ -134,9 +134,17 @@ def _gender_note(gender_unknown):
     Shown as a ✅/❌ pair rather than described, which is the house style at prompts.py:91 and
     was not a stylistic choice here. Described in prose ("والسؤال يجي في نفس الجملة … مش سؤال
     ملحوق في الآخر") the model complied on content and ignored the shape, returning both picks
-    correctly labelled either-way and then "هو لمين عشان أظبطلك الاختيار؟" alone after a blank
-    line. Output shape is the thing prose instructions carry worst; one example of the line
-    carries it.
+    correctly labelled either-way and then the question alone after a blank line. Output shape
+    is the thing prose instructions carry worst; one example of the line carries it.
+
+    The question is worded "رجالي ولا حريمي" and NOT "هو لمين", which is what it asked first and
+    is a mistake worth keeping written down. Folding the question in went too far and made it
+    indirect: conversation 910 closed with "قولي هو لمين عشان أظبطلك الاختيار", and the answers
+    that invites — "ليا", "لنفسي", "هدية" — carry no gender word, so sales.gender.from_words
+    returns None on all three and the next turn has to ask again or guess. A question this
+    pipeline cannot parse the answer to is not a question, however natural it reads. These two
+    words are the ones the resolver handles most reliably, and they are what prompts.py:131
+    already tells the persona to ask.
     """
     if not gender_unknown:
         return ""
@@ -146,9 +154,12 @@ def _gender_note(gender_unknown):
         "بالفعل — ابدأ من أولها ومتفلترش بنفسك.\n"
         "- لو العطر مكتوب في بياناته \"ينفع للراجل وللست\" — قول ده في نص جملة، دي الحاجة "
         "اللي تخلي الترشيح صح مهما كانت إجابته.\n"
-        "- والسؤال جوه الجملة نفسها كسبب إنك بتظبط الاختيار، مش سطر لوحده في الآخر:\n"
-        "  ✅ \"Erba Pura حلو ومسكر وينفع للراجل وللست — قولي هو لمين وأظبطلك الاختيار.\"\n"
-        "  ❌ ترشيح، وبعده سطر جديد فيه \"هو لمين؟\" — ده بيبان إنك رشحت وانت مش عارف.\n"
+        "- واسأله صريح \"رجالي ولا حريمي\" جوه الجملة نفسها كسبب إنك بتظبط الاختيار، "
+        "مش سطر لوحده في الآخر:\n"
+        "  ✅ \"Erba Pura حلو ومسكر وينفع للراجل وللست — هو رجالي ولا حريمي عشان أظبطلك "
+        "الاختيار؟\"\n"
+        "  ❌ \"هو لمين؟\" — سؤال مفتوح ممكن يجاوبه \"ليا\" أو \"هدية\" ونرجع زي ما إحنا.\n"
+        "  ❌ ترشيح، وبعده سطر جديد فيه السؤال — ده بيبان إنك رشحت وانت مش عارف.\n"
         "- ❌ ممنوع تسأل السؤال ده لوحده من غير ما ترشح — ده بيضيّع دور العميل.\n"
         "- ❌ وممنوع تقول عن عطر إنه ينفع للاتنين إلا لو مكتوب كده في بياناته.\n"
     )
@@ -416,7 +427,8 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     gender_instruction = (
         "🔴 مش واضح رجالي ولا حريمي، بس العميل قال تفاصيل كفاية — رشّح من المتاح "
         "(البيانات مرتبة بالأنسب بالفعل، متدورش بنفسك) واسأله في نفس الجملة "
-        "هو لمين عشان تظبط الاختيار."
+        "\"رجالي ولا حريمي\" عشان تظبط الاختيار. ❌ مش \"هو لمين؟\" — سؤال مفتوح إجابته "
+        "مش بتحدد جنس."
         if gender_unknown else
         "🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال \"لخطيبتي\") رشّح على طول."
     )

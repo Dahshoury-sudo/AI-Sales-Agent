@@ -70,6 +70,7 @@ from products.services.reply_sanitizer import (
 )
 from products.services.sales import (
     constraints as sales_constraints,
+    gender as sales_gender,
     naming as sales_naming,
     notes as sales_notes,
     objection as sales_objection,
@@ -4008,7 +4009,7 @@ class UnresolvedGenderLeansUnisexTests(TestCase):
         self.assertEqual(ranked[0].product.name, "Unisex")
 
     def test_a_stated_occasion_outranks_the_hedge(self):
-        """Tie-break, not a steer: 0.8 sits below `occasion` (1.0) on purpose.
+        """Tie-break, not a steer: the hedge sits below `occasion` (1.0) on purpose.
 
         Identical notes on both, so the notes axis cancels exactly and what is left is one
         thing the customer said out loud against one thing we inferred. Raising `gender_safe`
@@ -4142,6 +4143,62 @@ class UnresolvedGenderLeansUnisexTests(TestCase):
         hedge = weights.pop("gender_safe")
 
         self.assertLess(hedge, min(abs(value) for value in weights.values()))
+
+
+class GenderAnswerVocabularyTests(TestCase):
+    """The vocabulary has to be able to read the answer to the question we ask.
+
+    Conversation 910: the customer said "عايز برفان فريش ينفع للجيم ميزانيتي 1200" — no gender —
+    and the reply closed with "قولي هو لمين عشان أظبطلك الاختيار". Every natural answer to that
+    ("ليا", "لنفسي", "هدية") is gender-free, so `from_words` returned None and the turn bought
+    nothing. The prompt now asks "رجالي ولا حريمي" instead, and these pin that the words such a
+    question actually comes back as are readable — including the bare ones a customer volunteers
+    without being asked.
+    """
+
+    def test_the_words_a_direct_question_comes_back_as(self):
+        for answer, expected in (
+            ("رجالي", "male"),
+            ("حريمي", "female"),
+            # The bare form, which the *old* prompt invited with "العطر لراجل ولا لست؟" and
+            # which matched nothing — so answering the question read as not answering it.
+            ("راجل", "male"),
+            ("عايز عطر راجل", "male"),
+            ("للست", "female"),
+            ("هو للست", "female"),
+        ):
+            with self.subTest(answer=answer):
+                self.assertEqual(sales_gender.from_words(answer), expected)
+
+    def test_the_open_question_that_replaced_it_resolves_nothing(self):
+        """Why "هو لمين؟" was the wrong question, stated as the reason and not as a style note.
+
+        Kept as a test rather than a comment so that reinstating the open question anywhere
+        has to argue with an assertion. None of these are fixable by adding vocabulary: they
+        are correct answers that genuinely carry no gender.
+        """
+        for answer in ("ليا", "لنفسي", "هدية", "لحد عزيز"):
+            with self.subTest(answer=answer):
+                self.assertIsNone(sales_gender.from_words(answer))
+
+    def test_egyptian_number_words_are_not_female(self):
+        """In Egyptian "ست" is six and "ستين" is sixty, and matching here is by substring.
+
+        This is why the female side has no bare short form while the male side has "راجل" —
+        the asymmetry is the language, not an oversight. Each phrase below resolved female
+        against a candidate entry that was tried and rejected: "الست" against the first,
+        "ستي" against the second, bare "ست" against the rest.
+        """
+        for phrase in (
+            "بكام الست حجات دي",
+            "حاجة بستين جنيه",
+            "عايز ستة",
+            "عايز هدايا لستة ناس",
+            "عندكم مستحضرات",
+            "الليستة بتاعتكم",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIsNone(sales_gender.from_words(phrase))
 
 
 class AccordProminenceTests(TestCase):

@@ -28,13 +28,34 @@ from ..static_faq_service import normalize_arabic
 # The single copy of the vocabulary the router used inline. Relationship words
 # ("لمراتي") are simultaneously gender clues and gift clues, which is why
 # sales.constraints reuses the same idea for gift detection.
+#
+# Matching is substring-based, so an entry earns its place only if it cannot appear inside an
+# unrelated word — and on the female side that rules out almost every short form, because in
+# Egyptian "ست" is also the number six. Rejected after testing against real phrasings:
+#
+#   * bare "ست" — inside "ستة", "مستحضر", and "لستة" (which normalize_arabic delivers as
+#     "لسته", since it maps ة→ه);
+#   * "الست" — "بكام الست حجات دي" is six items, not a woman, and it resolved female;
+#   * "ستي" — inside "ستين", so "حاجة بستين جنيه" resolved female.
+#
+# "للست" survives because the doubled lam does not occur in the number forms. The asymmetry
+# with "راجل" below is therefore a property of the language, not an oversight: there is no
+# equally safe bare female word. It is also why the recommendation prompt asks "رجالي ولا
+# حريمي" — those two are the least collision-prone words in this file, and a question whose
+# answer this vocabulary cannot read is not a question at all (conversation 910).
 MALE_WORDS = (
+    # Bare, because a direct question invites a bare answer. "راجل" is the most natural
+    # one-word reply and was the wording the *old* prompt invited with "العطر لراجل ولا لست؟",
+    # yet it matched nothing here — so a customer who answered the question was treated as
+    # never having answered it. Subsumes "لراجل", "انا راجل" and "أنا راجل", which is why
+    # those are gone rather than kept alongside it.
+    "راجل",
     "رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي", "شبابي", "شاب",
     "رجاله", "عريس", "لصاحبي", "لاخويا", "لأخويا", "لابويا", "لأبويا",
-    "لخطيبي", "لجوزي", "لابني", "لعمي", "لخالي", "انا راجل", "أنا راجل",
-    "انا ولد", "لراجل",
+    "لخطيبي", "لجوزي", "لابني", "لعمي", "لخالي", "انا ولد",
 )
 FEMALE_WORDS = (
+    "للست",
     "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي", "بنت",
     "بنات", "عروسة", "عروسه", "لصاحبتي", "لاختي", "لأختي", "لماما",
     "لخطيبتي", "لمراتي", "لبنتي", "لطنطي", "لخالتي", "انا بنت", "أنا بنت",
