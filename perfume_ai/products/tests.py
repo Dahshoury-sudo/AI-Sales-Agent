@@ -3943,9 +3943,205 @@ class RankingWeightTests(TestCase):
         self.assertNotIn(str(ranked[0].score), note)
 
     def test_no_discriminating_signal_is_detected_as_no_signal(self):
-        """Gender alone cannot order anything — it is already a hard filter."""
+        """Gender alone cannot order anything — it is already a hard filter.
+
+        Every case here pins a *resolved* gender. Once an unresolved one became a signal in
+        its own right (it credits `unisex` with WEIGHTS["gender_safe"]), `{"notes": ["oud"]}`
+        would have returned True through the missing-gender branch and stopped testing notes
+        at all — a passing assertion covering nothing.
+        """
         self.assertFalse(sales_ranking.has_signal({"gender": "male"}))
-        self.assertTrue(sales_ranking.has_signal({"notes": ["oud"]}))
+        self.assertTrue(sales_ranking.has_signal({"gender": "male", "notes": ["oud"]}))
+
+
+class UnresolvedGenderLeansUnisexTests(TestCase):
+    """When we do not know who the perfume is for, the safe pick must win genuine ties.
+
+    The failure: on a recommendation turn with taste information but no resolvable gender,
+    `search_products` applies no gender filter at all (search_service.py:244), so the pool
+    holds both genders — while `_gender_note` instructed the model "فضّل اللي ينفع للجنسين"
+    and `rank` scored `unisex` nowhere. The model was handed a mixed shortlist, ordered with
+    no such preference, and told to filter it by eye. Prompt asking, arithmetic not
+    delivering — the thing intent.py's header warns about.
+
+    Guessing wrong is not a one-turn cost either: `keep` / described.under_discussion holds
+    the wrong-gender picks near the top for two further turns at WEIGHTS["continuity"].
+
+    These pin both halves — that the lean exists, and that it stays a tie-break. It is sized
+    to separate candidates taste could not, never to overrule taste itself.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Perfamix Test")
+        cls.brand = Brand.objects.create(store=cls.store, name="Dior")
+
+    def _make(self, name, gender, top="", **extra):
+        product = Product.objects.create(
+            store=self.store, brand=self.brand, name=name, gender=gender,
+            top_notes=top, **extra
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=600, bottle_type="normal"
+        )
+        return product
+
+    def _scores(self, products, intent, keep=()):
+        return {
+            entry.product.name: entry.score
+            for entry in sales_ranking.rank(products, intent, keep=keep)
+        }
+
+    def test_unisex_wins_a_tie_when_gender_is_unresolved(self):
+        """The whole point: identical on taste, so the one that cannot be wrong goes first.
+
+        The recorded failure this mirrors is eight perfumes at exactly 7.50, where the sort
+        fell through to `_by_value` — price ascending — and the gender of the winner was
+        decided by which bottle was cheapest.
+        """
+        gendered = self._make("Gendered", "male", "Bergamot")
+        unisex = self._make("Unisex", "unisex", "Bergamot")
+
+        # Supplied gendered-first so a passing assertion cannot be the input order surviving.
+        ranked = sales_ranking.rank([gendered, unisex], {"notes": ["bergamot"]})
+
+        self.assertEqual(ranked[0].product.name, "Unisex")
+
+    def test_a_stated_occasion_outranks_the_hedge(self):
+        """Tie-break, not a steer: 0.8 sits below `occasion` (1.0) on purpose.
+
+        Identical notes on both, so the notes axis cancels exactly and what is left is one
+        thing the customer said out loud against one thing we inferred. Raising `gender_safe`
+        to 1.0 or above inverts this, and the bot starts answering "حاجة للسهرات" with a
+        daytime perfume for being safe.
+        """
+        gendered = self._make("Gendered", "male", "Bergamot", occasion="Daily")
+        unisex = self._make("Unisex", "unisex", "Bergamot")
+
+        scores = self._scores(
+            [unisex, gendered], {"notes": ["bergamot"], "occasion": "daily"}
+        )
+
+        self.assertAlmostEqual(
+            scores["Gendered"] - scores["Unisex"],
+            sales_ranking.WEIGHTS["occasion"] - sales_ranking.WEIGHTS["gender_safe"],
+        )
+
+    def test_a_better_taste_match_still_beats_unisex(self):
+        """Taste dominates — the property the tie-break-only decision rests on.
+
+        The premise is read off the scorer rather than hand-computed: `note_fit` grades a
+        partial match through mass share and accord balance, so the taste gap between these
+        two is whatever that arithmetic says, not something a test should assert from
+        memory. Pinning it as "gap > hedge, therefore this order" survives a change to how
+        notes are graded, and fails loudly if the gap ever stops exceeding the hedge —
+        which is the only condition under which the conclusion could flip.
+        """
+        gendered = self._make("Gendered", "male", "Bergamot, Pepper")
+        unisex = self._make("Unisex", "unisex", "Bergamot, Rose")
+        wanted = {"notes": ["bergamot", "pepper"]}
+
+        # A stated gender neither product carries: it suppresses both gender branches at once,
+        # leaving a score difference that is purely taste.
+        taste_only = self._scores([unisex, gendered], {**wanted, "gender": "female"})
+        taste_gap = taste_only["Gendered"] - taste_only["Unisex"]
+        self.assertGreater(taste_gap, sales_ranking.WEIGHTS["gender_safe"])
+
+        ranked = sales_ranking.rank([unisex, gendered], wanted)
+        self.assertEqual(ranked[0].product.name, "Gendered")
+
+    def test_a_stated_exclusion_still_sinks_a_unisex_product(self):
+        """`avoid` (-3.0) stays authoritative: the hedge cannot rescue what a "لا" sank."""
+        clean = self._make("Clean", "male", "Bergamot")
+        avoided = self._make("Avoided", "unisex", "Bergamot", base_notes="Oud")
+
+        ranked = sales_ranking.rank(
+            [avoided, clean], {"notes": ["bergamot"], "avoid_notes": ["oud"]}
+        )
+
+        self.assertEqual(ranked[0].product.name, "Clean")
+
+    def test_continuity_still_outranks_the_hedge(self):
+        """Why the hedge has to stay small, stated as the cost it avoids.
+
+        A wrong-gender pick is not a one-turn mistake: `keep` / described.under_discussion
+        holds it near the top for two further turns at `continuity` (2.5) each. The same
+        mechanism must not now be overridden *by* the hedge, or the bot walks away from the
+        perfume the customer is converging on in order to be safe about a question it is
+        asking in that very reply.
+        """
+        discussed = self._make("Discussed", "male", "Bergamot")
+        unisex = self._make("Unisex", "unisex", "Bergamot")
+
+        ranked = sales_ranking.rank(
+            [unisex, discussed], {"notes": ["bergamot"]}, keep=("Discussed",)
+        )
+
+        self.assertEqual(ranked[0].product.name, "Discussed")
+
+    def test_a_stated_gender_is_unaffected(self):
+        """No regression: with a gender stated, an exact match still outranks unisex.
+
+        search_service.py:245 lets unisex through the filter, but an exact match is the
+        better answer to a requirement the customer made out loud, and that ordering
+        predates this change. `gender_safe` must not leak into this branch and narrow the
+        3.0 gap — the `elif` is what keeps the two mutually exclusive.
+        """
+        exact = self._make("Exact", "male", "Bergamot")
+        unisex = self._make("Unisex", "unisex", "Bergamot")
+
+        scores = self._scores(
+            [unisex, exact], {"gender": "male", "notes": ["bergamot"]}
+        )
+
+        self.assertAlmostEqual(
+            scores["Exact"] - scores["Unisex"], sales_ranking.WEIGHTS["gender"]
+        )
+
+    def test_the_either_way_reason_reaches_the_prompt_only_when_unresolved(self):
+        """The reason is what lets the reply say it from data instead of asserting it.
+
+        recommendation._gender_note tells the model to state "ينفع للراجل وللست" only when the
+        perfume's own row carries it, because red line 6 forbids inventing a property. So the
+        string has to be in the rendered evidence line on an unresolved turn — and absent on a
+        resolved one, where saying it would be answering a question nobody asked.
+        """
+        unisex = self._make("Unisex", "unisex", "Bergamot")
+
+        unresolved = sales_ranking.rank([unisex], {"notes": ["bergamot"]})
+        resolved = sales_ranking.rank(
+            [unisex], {"gender": "female", "notes": ["bergamot"]}
+        )
+
+        self.assertIn("ينفع للراجل وللست", sales_ranking.reasons_note(unresolved[0]))
+        self.assertNotIn("ينفع للراجل وللست", sales_ranking.reasons_note(resolved[0]))
+
+    def test_an_unresolved_gender_is_a_signal_so_ranking_actually_runs(self):
+        """Without this the weight is unreachable on the turns that need it most.
+
+        search_service.py:349 skips `rank` entirely when nothing can discriminate. The router
+        counts `brand` as taste information (router.py:487-505) but `has_signal` never did, so
+        "عايز حاجة من ديور" with no gender reached the recommend-and-ask path and came back in
+        legacy cheapest-first order, never scored at all.
+
+        The second assertion is the boundary: gender alone still cannot order anything once it
+        is *resolved*, because then it is a hard filter and every survivor scores the same.
+        """
+        self.assertTrue(sales_ranking.has_signal({"brand": "Dior"}))
+        self.assertFalse(sales_ranking.has_signal({"brand": "Dior", "gender": "male"}))
+
+    def test_the_hedge_is_the_smallest_weight_in_the_table(self):
+        """The specification, not a restatement of the constant.
+
+        Every behavioural test above exercises one relationship at one point. This one closes
+        the set: a full match on *any* stated signal, including whichever is weakest today,
+        outranks the hedge. Written against `min` rather than a list of keys so that adding a
+        new signal cheaper than 0.4 fails here instead of quietly making the hedge decisive.
+        """
+        weights = dict(sales_ranking.WEIGHTS)
+        hedge = weights.pop("gender_safe")
+
+        self.assertLess(hedge, min(abs(value) for value in weights.values()))
 
 
 class AccordProminenceTests(TestCase):

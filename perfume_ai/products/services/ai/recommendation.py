@@ -112,14 +112,45 @@ def _gender_note(gender_unknown):
     when the customer supplied real taste information but no resolvable gender — a
     lookalike request for a perfume we do not stock, for instance. Answering and asking
     in one reply is what a salesperson does; spending the turn on the question is not.
+
+    This used to also carry "فضّل اللي ينفع للجنسين", which was advice the data did not
+    support: `search_products` applies no gender filter when gender is None and
+    ranking.py scored `unisex` nowhere, so the shortlist handed over was mixed-gender and
+    unordered on that axis. ranking.WEIGHTS["gender_safe"] does the preferring now, and the
+    "ينفع للراجل وللست" reason arrives attached to the perfume, so what is left here is only
+    how to say it.
+
+    Note what is *not* claimed: that the shortlist leads with a unisex perfume. The weight is
+    a tie-break by design and sized below every stated signal, so on a request whose taste
+    gaps are wide it changes no order at all — a real "فريش للصيف" query returns eight
+    gendered perfumes before the first unisex one. The instruction is therefore "start at the
+    top, do not re-filter", which holds either way, and the either-way line is spoken only
+    when the perfume's own row carries it.
+
+    The question is folded into the recommending sentence as the reason for narrowing rather
+    than appended after it. Trailing it is what made the reply read as a guess followed by an
+    afterthought — the customer can see you recommended before you knew.
+
+    Shown as a ✅/❌ pair rather than described, which is the house style at prompts.py:91 and
+    was not a stylistic choice here. Described in prose ("والسؤال يجي في نفس الجملة … مش سؤال
+    ملحوق في الآخر") the model complied on content and ignored the shape, returning both picks
+    correctly labelled either-way and then "هو لمين عشان أظبطلك الاختيار؟" alone after a blank
+    line. Output shape is the thing prose instructions carry worst; one example of the line
+    carries it.
     """
     if not gender_unknown:
         return ""
     return (
         "\n👤 مش واضح العطر لراجل ولا لست، وعندنا معلومات كفاية نرشح منها:\n"
-        "- رشّح حاجة واحدة أو اتنين مناسبين للوصف اللي قاله، وفضّل اللي ينفع للجنسين.\n"
-        "- واسأله في نفس الرد سؤال واحد قصير: العطر لراجل ولا لست؟\n"
+        "- رشّح حاجة واحدة أو اتنين مناسبين للوصف اللي قاله. البيانات مرتبة بالأنسب "
+        "بالفعل — ابدأ من أولها ومتفلترش بنفسك.\n"
+        "- لو العطر مكتوب في بياناته \"ينفع للراجل وللست\" — قول ده في نص جملة، دي الحاجة "
+        "اللي تخلي الترشيح صح مهما كانت إجابته.\n"
+        "- والسؤال جوه الجملة نفسها كسبب إنك بتظبط الاختيار، مش سطر لوحده في الآخر:\n"
+        "  ✅ \"Erba Pura حلو ومسكر وينفع للراجل وللست — قولي هو لمين وأظبطلك الاختيار.\"\n"
+        "  ❌ ترشيح، وبعده سطر جديد فيه \"هو لمين؟\" — ده بيبان إنك رشحت وانت مش عارف.\n"
         "- ❌ ممنوع تسأل السؤال ده لوحده من غير ما ترشح — ده بيضيّع دور العميل.\n"
+        "- ❌ وممنوع تقول عن عطر إنه ينفع للاتنين إلا لو مكتوب كده في بياناته.\n"
     )
 
 
@@ -373,10 +404,19 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     # now contradicts the router, which reaches this function with an unresolved gender
     # only when the customer *has* given usable taste information — so the instruction
     # has to flip with it rather than veto the recommendation the router just decided to
-    # make.
+    # make. The "متدورش بنفسك" half matters too: WEIGHTS["gender_safe"] has already leaned the
+    # order safe wherever taste left room, and a model re-filtering by eye undoes that.
+    #
+    # It says "مرتبة بالأنسب" and not "مقدّمة اللي ينفع للجنسين", which is what it said first,
+    # because the second claim is only sometimes true. The hedge is a tie-break: on a request
+    # whose taste gaps are wide it changes nothing, and a shortlist can legitimately hold no
+    # unisex perfume at all. Telling the model the data is always ordered that way is a claim
+    # it can catch us out on, and the instruction it actually needs — start at the top, do not
+    # re-filter — is true either way.
     gender_instruction = (
         "🔴 مش واضح رجالي ولا حريمي، بس العميل قال تفاصيل كفاية — رشّح من المتاح "
-        "(فضّل اللي ينفع للجنسين) واسأله في نفس الرد لراجل ولا لست."
+        "(البيانات مرتبة بالأنسب بالفعل، متدورش بنفسك) واسأله في نفس الجملة "
+        "هو لمين عشان تظبط الاختيار."
         if gender_unknown else
         "🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال \"لخطيبتي\") رشّح على طول."
     )

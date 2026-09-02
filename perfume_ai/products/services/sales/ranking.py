@@ -58,6 +58,51 @@ WEIGHTS = {
     "notes": 2.0,
     "avoid": -3.0,
     "gender": 3.0,
+    # A perfume that suits either sex, credited ONLY while `gender` is unresolved — a stated
+    # requirement is answered by the weight above and this one stays out of it.
+    #
+    # The arithmetic half of a preference that used to be prompt-only.
+    # recommendation._gender_note asked the model to "فضّل اللي ينفع للجنسين", but
+    # search_products applies no gender filter at all when gender is None
+    # (search_service.py:244) and nothing here scored `unisex` — so what reached the model was
+    # a mixed-gender shortlist, ordered with no such preference, plus an instruction to filter
+    # it by eye. Prompt asking, arithmetic not delivering.
+    #
+    # Sized *strictly below every other weight in this table*, which is the whole
+    # specification: a full match on any single stated signal — even the weakest, season at
+    # 0.8 — outranks it. It has to be able to break a tie, since the failure recorded at the
+    # top of this module is eight perfumes at exactly 7.50 where the sort fell through to
+    # cheapest-first, but it must never decide against something the customer said out loud.
+    #
+    # 0.8 was the first attempt and was wrong, in a way worth recording because the mistake is
+    # easy to repeat: it was reasoned from "a full note match earns WEIGHTS['notes'] = 2.0 and a
+    # half match 1.0, so 0.8 cannot bridge that". `note_fit` is not boolean — it grades by mass
+    # share, so a perfume whose two notes are the two requested ones scores ~0.5 per note, mean
+    # 0.5, notes 1.0. The real gap between that and a 1-of-2 match is 0.5, and 0.8 stepped
+    # straight over it: a unisex perfume matching one requested note outranked a gendered one
+    # matching both. The test named for this pins the gap end to end rather than the constant.
+    #
+    # Note what this cannot promise. `notes` is a mean, so the gap between n-of-n and
+    # (n-1)-of-n shrinks as n grows — at four requested notes it is ~0.25 — and no positive
+    # constant is below every fractional gap. The guarantee is over *whole* signals, not
+    # arbitrarily fine ones. Making it airtight would mean a secondary sort key instead of a
+    # weight, which buys a guarantee at the cost of never breaking a near-tie, and near-ties
+    # are most of the value here (the season lean below was worth adding over a gap of 0.06).
+    #
+    # Under `avoid` (-3.0) in magnitude so it cannot rescue a perfume a stated exclusion sank,
+    # and under `continuity` (2.5) so it cannot pull the conversation off a perfume the
+    # customer is converging on.
+    #
+    # What it buys off: a wrong-gender guess is not a one-turn cost. `keep` /
+    # described.under_discussion holds those picks near the top for two further turns at
+    # `continuity` each, so the mistake compounds before the customer's answer can undo it.
+    #
+    # Measured on the live catalogue (16 unisex of 80 active), it reorders the top five on
+    # roughly three of eight realistic gender-unknown requests and leaves the rest untouched —
+    # "سويت" promotes three unisex perfumes past a 0.01 gap, "فريش للصيف" changes nothing
+    # because the taste gaps there run 0.2-0.3 wide. That is the intended shape, and it is why
+    # neither prompt may tell the model the shortlist leads with a unisex perfume.
+    "gender_safe": 0.4,
     # Already under discussion. Sized against the rest of this table on purpose:
     #
     #   * above the sum of the slots that shift as a conversation narrows (budget 1.5,
@@ -128,11 +173,23 @@ def has_signal(intent, reference=None):
 
     When nothing can, the caller keeps the legacy ordering rather than shuffling an
     all-equal list through a scorer.
+
+    An unresolved gender counts, because `rank` now credits `unisex` with
+    WEIGHTS["gender_safe"] in exactly that case. Without this clause the weight would be
+    unreachable on the requests that need it most: search_service.py:349 skips `rank`
+    entirely when this returns false, and the router's own `has_taste_info` counts `brand`,
+    `perfume_type` and `max_price` (router.py:487-505) — none of which appear below. So
+    "عايز حاجة من ديور" with no gender reached the recommend-and-ask path and was never
+    scored at all, which is precisely the turn the unisex lean exists for.
     """
     if reference is not None and reference.is_usable:
         return True
     if not intent:
         return False
+    # Checked before the key sweep, not folded into it, because it is the *absence* of a
+    # value that discriminates here — `any()` over present keys cannot express that.
+    if not intent.get("gender"):
+        return True
     return any(
         intent.get(key)
         for key in ("notes", "avoid_notes", "avoid_traits", "occasion",
@@ -496,8 +553,23 @@ def rank(products, intent, reference=None, keep=()):
                 reason = f"{reason} ({str(recorded).strip()})"
             entry.reasons.append(reason)
 
-        if intent.get("gender") and product.gender == str(intent["gender"]).lower():
-            entry.score += WEIGHTS["gender"]
+        # A stated gender scores an exact match; an unresolved one leans safe instead.
+        #
+        # A unisex product deliberately earns nothing when a gender *was* stated, even though
+        # search_service.py:245 admits it through the filter — an exact match is the better
+        # answer to a requirement the customer made out loud, and that ordering predates this.
+        #
+        # The reason string is not decoration: reasons render into the "✅ ليه مناسب" line that
+        # reasons_instruction points the model at for its justification, so the reply can state
+        # the perfume works either way *from data* rather than asserting it — which red line 6
+        # in the persona forbids. It is also what lets _gender_note stop guessing.
+        wanted_gender = str(intent.get("gender") or "").lower()
+        if wanted_gender:
+            if product.gender == wanted_gender:
+                entry.score += WEIGHTS["gender"]
+        elif product.gender == "unisex":
+            entry.score += WEIGHTS["gender_safe"]
+            entry.reasons.append("ينفع للراجل وللست")
 
         if product.name in keep:
             entry.score += WEIGHTS["continuity"]
