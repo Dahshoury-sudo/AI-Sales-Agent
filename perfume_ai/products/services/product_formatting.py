@@ -50,10 +50,34 @@ def budget_label(price, max_price):
     The tiering itself is `sales.value.budget_tier`, shared with the search filter and the
     ranking bonus so that a size this function calls offerable cannot have had its product
     dropped upstream.
+
+    A "near" size carries the overage as a number, because every instruction about such a
+    size asks the model to state it — persona rule prompts.py:104, both of recommendation's
+    budget notes and its price_instruction all say some form of "قول إنه أعلى بكام". Asking
+    for a figure that is nowhere in the data is how the model learns to produce one, and it
+    then produces one on turns where there is nothing to state: conversation 912, budget
+    1200, reported an in-budget 1046 as "أعلى من ميزانيتك شوية بـ 124 جنيه" — a difference
+    invented in the wrong direction about a size labelled ✅.
+
+    Forbidding that in prose was tried first and did not hold (~1 in 20 turns still did it).
+    The fix that does is the one `recommendation._in_budget_note` already used for the same
+    failure in evaluation scenario X3: name the figure rather than ask for it. Now the only
+    sizes with a difference to quote are the ones that have one, so on a ✅ line the request
+    is unfillable rather than merely banned.
+
+    "far" deliberately gets no figure. It is the one tier the model may not offer at all, so
+    a number there would only be a number to leak.
     """
     if max_price is None:
         return ""
-    return _BUDGET_LABELS[budget_tier(price, max_price)]
+    tier = budget_tier(price, max_price)
+    if tier != "near":
+        return _BUDGET_LABELS[tier]
+    over = Decimal(str(price)) - Decimal(str(max_price))
+    return (
+        f" ⚠️ (أعلى شوية من الميزانية بـ {over:.0f} جنيه — تقدر تعرضه بشرط تقول الفرق ده "
+        f"بالرقم زي ما هو)"
+    )
 
 
 # Original bottles are counted physical units, so a low count is a real fact worth

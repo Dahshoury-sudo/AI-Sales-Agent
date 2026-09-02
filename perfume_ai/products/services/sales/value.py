@@ -260,9 +260,21 @@ def size_value_note(value):
 
     money, warning = _money_and_warning(value)
     # Said on both tiers: this line orders *sizes inside this perfume*, and nothing else.
+    #
+    # The scope clause carried a ⚠️ and no longer does. That glyph is the over-budget marker
+    # (product_formatting._BUDGET_LABELS["near"]), and four prompt rules bind it to that meaning
+    # by name — prompts.py:103-104 and recommendation's budget_note. Here it sat one clause after
+    # "أغلى بـ N جنيه في الإجمالي", inside the only other block in the context that talks about
+    # this perfume's prices, meaning something with no budget content at all.
+    #
+    # Dropped as hygiene rather than as the fix for conversation 912 — the measured fix for that
+    # is the ✅ prohibition in recommendation.budget_note, and this collision was never shown to
+    # contribute (at a ~1-in-6 failure rate, isolating one glyph would take hundreds of live
+    # turns). It costs nothing to remove a decoy, and ❌ carries the two clauses that follow more
+    # accurately anyway: they are prohibitions, which is what ❌ means in every other line here.
     scope = (
         f"لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر "
-        f"باقي أحجامه باختصار. ⚠️ ده ترتيب الأحجام جوه العطر ده بس — مش سبب تبدأ بيه ردك "
+        f"باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك "
         f"ولا تفضّله على عطر تاني أنسب لطلب العميل."
     )
 

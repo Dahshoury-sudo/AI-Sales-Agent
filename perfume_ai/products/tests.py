@@ -511,6 +511,55 @@ class BudgetLabellingTests(TestCase):
         for price in ("400", "550", "3800"):
             self.assertIn(price, context)
 
+    def test_the_overage_is_written_into_the_near_label(self):
+        """Conversation 912: the model invented an overage because none was in the data.
+
+        Budget 1200, and it told the customer an in-budget 1046 was "أعلى من ميزانيتك شوية
+        بـ 124 جنيه" — a figure that exists nowhere, about a size labelled ✅, and in the
+        wrong direction (1046 is 154 *under*). It was obeying instructions: persona rule
+        prompts.py:104, both of recommendation's budget notes and its price_instruction all
+        ask for the difference to be stated, and until this label carried one, stating it
+        meant computing it.
+
+        Forbidding the invention in prose was tried first and left ~1 turn in 20 still doing
+        it. Naming the figure is what closed it — the same resolution
+        `recommendation._in_budget_note` reached for evaluation scenario X3.
+        """
+        line = self._line_for(self._context(500), "550")
+
+        self.assertIn("⚠️", line)
+        self.assertIn("بـ 50 جنيه", line)
+
+    def test_an_in_budget_size_carries_no_figure_to_quote(self):
+        """The half that fixes 912: on a ✅ line there is no difference to state.
+
+        This is the point of moving the figure into the data rather than banning the
+        invention — the request "قول الفرق" becomes unfillable here instead of merely
+        forbidden, and an unfillable request is one the model cannot half-obey.
+        """
+        line = self._line_for(self._context(500), "400")
+
+        self.assertIn("✅", line)
+        self.assertNotIn("جنيه", line)
+        self.assertNotIn("أعلى", line)
+
+    def test_a_far_over_budget_size_is_given_no_figure_either(self):
+        """It is the one tier that may not be offered, so a number there is only a leak."""
+        line = self._line_for(self._context(500), "3800")
+
+        self.assertIn("❌", line)
+        self.assertNotIn("جنيه", line)
+
+    def test_the_figure_survives_a_float_budget(self):
+        """`max_price` arrives from the intent as a float, and float − Decimal raises.
+
+        The same pairing `value.budget_ceiling`'s docstring records as a production
+        TypeError, which tests passing an int would not have caught.
+        """
+        line = self._line_for(self._context(500.0), "550")
+
+        self.assertIn("بـ 50 جنيه", line)
+
     def test_boundary_price_equal_to_budget_is_in_budget(self):
         self.assertIn("✅", self._line_for(self._context(400), "400"))
 
@@ -9768,7 +9817,11 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
 
         self.assertIn("1032", block)
         self.assertIn("⚠️", block)
-        self.assertIn("تقدر تعرضه مع التوضيح", block)
+        self.assertIn("تقدر تعرضه", block)
+        # And the overage arrives as a figure. Every instruction about a ⚠️ size asks the model
+        # to state how far over it is, and conversation 912 is what happens when that figure is
+        # nowhere in the data: the model produces one, including on sizes that are in budget.
+        self.assertIn("بـ 32 جنيه", block)
 
     def test_the_persona_states_the_perfume_before_size_ordering(self):
         """Conversation 762's fix, at the persona layer: the 💡 line decides which *size* to

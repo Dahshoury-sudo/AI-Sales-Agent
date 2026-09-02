@@ -335,8 +335,8 @@ def _in_budget_note(products, max_price):
             "\n⚠️ مفيش حجم داخل الميزانية بالظبط في القائمة دي، بس دي أعلى منها شوية بس "
             "ومسموح تعرضها: "
             + "، ".join(tolerable[:4])
-            + ".\n🔴 اعرض منها اللي الأنسب لطلب العميل وقول سعره الحقيقي وإنه أعلى من "
-            "ميزانيته بكام بصراحة. ❌ ممنوع تقول \"مفيش حاجة في الميزانية\" وتسكت، وممنوع "
+            + ".\n🔴 اعرض منها اللي الأنسب لطلب العميل وقول سعره الحقيقي والفرق بالرقم المكتوب "
+            "جوه علامة الـ ⚠️ بتاعته. ❌ ممنوع تقول \"مفيش حاجة في الميزانية\" وتسكت، وممنوع "
             "ترشح عطر مش مناسب لطلبه بس لأنه أرخص.\n"
         )
     if not affordable:
@@ -383,9 +383,42 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     budget_note = ""
     if max_price:
         budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. اذكر الأسعار والأحجام اللي داخل الميزانية، واللي أعلى منها شوية (⚠️) كمان لو هي الأنسب لطلبه. متسألوش عن الميزانية تاني.\n"
-        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته شوية (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه بسعره الحقيقي ووضّح إنه أعلى بكام، واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
-        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول سعره وفرقه بصراحة.\n"
-    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها شوية (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول سعره وإنه أعلى بكام، واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
+        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته شوية (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه بسعره الحقيقي وقول الفرق بالرقم المكتوب جانبه في العلامة، واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
+        # The ✅ half of this rule is the one conversation 912 was missing.
+        #
+        # Everything above, plus persona rules prompts.py:103-104, describes what to say when a
+        # size is over budget: offer it anyway if it fits best, quote the real price, say by how
+        # much it exceeds the number. Five separate instructions on that case and, until this
+        # sentence, not one on what a ✅ obliges — so the label was authoritative in the
+        # arithmetic and merely suggestive in the prose, and the model occasionally applied the
+        # over-budget script to a size that was inside the budget.
+        #
+        # Conversation 912, budget 1200: "La Vie Est Belle 90 ملي بـ1046 جنيه أعلى شوية ⚠️ عن
+        # ميزانيتك". 1046 is in budget, its price line said "✅ (داخل الميزانية)", and
+        # _in_budget_note had *also* named that exact size in its affordable list. Two
+        # affirmations already pointed the right way and were overridden, which is why this is
+        # phrased as a prohibition instead of a third one: the model was not missing the fact,
+        # it was reaching for a script that had no stated stopping condition.
+        #
+        # This prohibition alone was not enough, and that is worth recording because the prose
+        # reads convincing. Measured on the failing turn: ~1 in 6 replies before it, still 2 in 44
+        # after, and both survivors invented an overage figure ("بـ 124 جنيه", "بـ 126 جنيه")
+        # against a real difference of 154 in the other direction. The model was doing budget
+        # arithmetic rather than reading a verdict sales.value.budget_tier had already computed.
+        #
+        # What closed it was removing the arithmetic to do: `budget_label` now writes the overage
+        # into the ⚠️ label itself and every instruction here points at that number instead of
+        # asking for one, so a ✅ line has no figure to quote and the request is unfillable rather
+        # than forbidden. That is the same move `_in_budget_note` made for evaluation scenario X3
+        # below — name the figure rather than ask for it — and the reason both were needed is that
+        # a ban only removes the permission, while this removes the gap that invited it.
+        #
+        # "مهما كان سعره قريب من الرقم" names the specific trap. A tolerance band exists
+        # (value.BUDGET_TOLERANCE), so "close to the budget" is a real category in the data — but
+        # it is ⚠️, and the model does not get to decide a ✅ price is close enough to count.
+        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). العلامة دي محسوبة وهي الحكم الوحيد على الميزانية — متحسبهاش بنفسك. التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول الفرق بالرقم المكتوب جوه العلامة نفسها.\n"
+        budget_note += "🔴 وحجم عليه ✅ يبقى داخل الميزانية خلاص، مهما كان سعره قريب من الرقم اللي قاله: ❌ ممنوع تقول عنه إنه \"أعلى شوية\" ولا \"أعلى من ميزانيتك\"، وممنوع تحسبله فرق — مفيش فرق أصلاً، ومفيش رقم فرق مكتوب جانبه. ده بيخلي العميل يفتكر إنه مش قادر على حاجة هو قادر عليها فعلاً.\n"
+    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها شوية (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول سعره والفرق بالرقم المكتوب جوه العلامة، واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
 
     # What the customer already told us, so the reply can nod to it once instead of
     # answering five stated constraints as though none had registered.
