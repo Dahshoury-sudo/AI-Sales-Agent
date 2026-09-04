@@ -55,6 +55,11 @@ OPENAI_MODEL = OPENAI_MODEL or 'gpt-4.1-mini'  # noqa: F405
 # the "reason" profile set it with override_settings.
 OPENAI_SMART_MODEL = None
 
+# Same reasoning for the resolver's model: pinned off so the suite exercises the
+# fallback branch deterministically. Tests that want the reasoning branch set it
+# with override_settings.
+OPENAI_RESOLVER_MODEL = None
+
 # Keep test output clean and fast.
 DEBUG = False
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

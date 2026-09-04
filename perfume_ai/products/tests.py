@@ -2418,6 +2418,41 @@ class ChatProfileTests(TestCase):
         self.assertEqual(kwargs["model"], settings.OPENAI_MODEL)
         self.assertEqual(kwargs["temperature"], 0)
 
+    @override_settings(OPENAI_RESOLVER_MODEL="gpt-5-mini")
+    def test_resolve_profile_uses_its_own_model_at_low_effort(self):
+        """The resolver reads Arabic against the catalogue, so it gets its own knob.
+
+        Effort is pinned rather than left at the API default because this call runs on
+        nearly every turn — six call sites reach it — and its latency is felt customer-side.
+        """
+        kwargs = self._request_kwargs("resolve")
+
+        self.assertEqual(kwargs["model"], "gpt-5-mini")
+        self.assertEqual(kwargs["reasoning_effort"], "low")
+        self.assertNotIn("temperature", kwargs)
+
+    @override_settings(OPENAI_RESOLVER_MODEL=None)
+    def test_resolve_falls_back_to_the_base_model_at_temperature_zero(self):
+        kwargs = self._request_kwargs("resolve")
+
+        self.assertEqual(kwargs["model"], settings.OPENAI_MODEL)
+        self.assertEqual(kwargs["temperature"], 0)
+        self.assertNotIn("reasoning_effort", kwargs)
+
+    @override_settings(OPENAI_RESOLVER_MODEL="gpt-4.1-mini")
+    def test_resolve_sends_no_reasoning_effort_to_a_non_reasoning_override(self):
+        """`reasoning_effort` 400s on a non-reasoning model, and that 400 is invisible.
+
+        product_resolver swallows the exception into `failed=True`, which files the turn as
+        UNKNOWN and asks the customer to retype the name — so pointing this setting at a
+        chat model would quietly degrade every turn instead of failing loudly once.
+        """
+        kwargs = self._request_kwargs("resolve")
+
+        self.assertEqual(kwargs["model"], "gpt-4.1-mini")
+        self.assertNotIn("reasoning_effort", kwargs)
+        self.assertEqual(kwargs["temperature"], 0)
+
     def test_response_format_still_passes_through(self):
         kwargs = self._request_kwargs("extract")
         self.assertNotIn("response_format", kwargs)
@@ -2491,19 +2526,36 @@ class CallSiteProfileTests(TestCase):
              lambda: classify("hi", []), '{"intent": "general"}'),
             ("products.services.ai.intent.chat",
              lambda: extract_intent("hi", [], self.store), '{}'),
-            ("products.services.product_resolver.chat",
-             lambda: resolve_products("hi", [], self.store), '{"perfumes": []}'),
-            # comparison_service is deliberately absent: it no longer has an extractor of
-            # its own. It had a private one that was never given the catalogue, so it
+            # product_resolver is deliberately absent: it asks for "resolve", its own
+            # profile, and is covered by test_resolver_asks_for_resolve below.
+            # comparison_service is deliberately absent too: it no longer has an extractor
+            # of its own. It had a private one that was never given the catalogue, so it
             # transliterated Arabic names blind — "اوداورا" resolved to *Dark Aura*, a
             # different real perfume the customer never named, and the bot compared that.
-            # Resolution now goes through product_resolver, which is covered above and
-            # does inject the product list.
+            # Resolution now goes through product_resolver, which does inject the product
+            # list. (Worth knowing: on that same input gpt-4.1-mini still placed *Dark Aura*
+            # while gpt-5-mini reported it unplaced — which is why the resolver moved.)
         ]
         for target, call, payload in cases:
             with self.subTest(target=target):
                 profile = self._profile_used(target, call, return_value=payload)
                 self.assertEqual(profile, "extract")
+
+    def test_resolver_asks_for_resolve(self):
+        """The only component that reads Arabic, and the witness for a denial.
+
+        `absence.catalogue_verdict` reads this extractor's unplaced report as grounds for
+        telling a customer we do not carry a perfume, so it gets a model chosen for that job
+        rather than sharing OPENAI_MODEL with the classifier — and its own setting rather
+        than sharing OPENAI_SMART_MODEL with the extractor that writes orders.
+        """
+        profile = self._profile_used(
+            "products.services.product_resolver.chat",
+            lambda: resolve_products("hi", [], self.store),
+            return_value='{"perfumes": []}',
+        )
+
+        self.assertEqual(profile, "resolve")
 
     def test_comparison_resolves_through_the_shared_resolver(self):
         """Comparison must not re-derive perfume names with a catalogue-blind prompt."""
