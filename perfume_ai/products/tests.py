@@ -66,6 +66,7 @@ from products.services.product_resolver import resolve_products
 from products.services.reply_sanitizer import (
     sanitize_reply,
     soften_marketing_language,
+    strip_false_over_budget,
     strip_premature_closing,
 )
 from products.services.sales import (
@@ -575,8 +576,9 @@ class BudgetLabellingTests(TestCase):
 
         So the label names the pair and asks for both numbers — an instruction one number cannot
         satisfy, which is the 912 move applied one level up. `sales.value._money_and_warning`
-        writes "(990 مقابل 631)" for the same reason: the comparison fixes the direction, the delta
-        alone does not.
+        names each price beside its own size for the same reason: the comparison fixes the
+        direction, the delta alone does not — and conversation 931 is what happens to a delta
+        whose referent is left to inference.
         """
         line = self._line_for(self._context(500), "550")
 
@@ -3134,6 +3136,424 @@ class OrphanedConnectorTests(TestCase):
         self.assertEqual(sanitize_reply(reply), reply)
 
 
+class FalseOverBudgetClaimTests(TestCase):
+    """A price the backend labelled in-budget must never be described as over it.
+
+    Conversation 931, budget 1200: "الـ90 ملي بـ1019 جنيه ⚠️ يعني أغلى من ميزانيتك بـ353 جنيه".
+    1019 fits 1200 and its price line said "✅ (داخل الميزانية)". 353 is 1019 − 666 — the gap
+    between the two *sizes*, printed one line below the budget labels by size_value_note. The
+    customer objected twice and the reply repeated the claim, the second time on a turn with no
+    injected product context at all, because the falsehood had been persisted to Message.content
+    and came back through build_llm_history.
+
+    Conversation 912 was the same failure at 1046 against 1200 and was answered with a prompt
+    prohibition, which measurably did not hold. Hence arithmetic: the claim is checked against
+    the numbers in the reply, and one the reply itself disproves never reaches the customer.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 1200},
+        )
+
+    # ── The transcripts this exists for ──────────────────────────────────────
+
+    def test_the_transcripts_false_claim_is_stripped(self):
+        """Conversation 931, message 20, verbatim."""
+        reply = (
+            "Eros من Versace رجالي، الـ90 ملي بـ1019 جنيه ⚠️ يعني أغلى من ميزانيتك "
+            "بـ353 جنيه، والـ50 ملي بـ666 جنيه داخل الميزانية."
+        )
+
+        cleaned = sanitize_reply(reply, self.conversation)
+
+        self.assertIn("1019", cleaned)
+        self.assertNotIn("353", cleaned)
+        self.assertNotIn("أغلى من ميزانيتك", cleaned)
+        self.assertNotIn("⚠️", cleaned)
+        self.assertNotIn("يعني", cleaned)
+        self.assertIn("والـ50 ملي بـ666 جنيه داخل الميزانية", cleaned)
+        self.assertEqual(
+            cleaned,
+            "Eros من Versace رجالي، الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه "
+            "داخل الميزانية.",
+        )
+
+    def test_the_intensifier_after_the_budget_word_goes_too(self):
+        """Conversation 931, message 22 — the repeat, and the reason the tail carries an
+        intensifier of its own. "أغلى من ميزانيتك شوية بـ353 جنيه" puts it *after* the budget
+        word, and removing only the claim left "شوية بـ353 جنيه" behind."""
+        reply = (
+            "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه أغلى من "
+            "ميزانيتك شوية بـ353 جنيه."
+        )
+
+        cleaned = sanitize_reply(reply, self.conversation)
+
+        self.assertEqual(cleaned, "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه.")
+        self.assertNotIn("شوية", cleaned)
+        self.assertNotIn("353", cleaned)
+
+    def test_conversation_912s_wording_is_stripped_too(self):
+        """The ⚠️ sits *inside* the clause here, and the preposition is عن not من."""
+        reply = "La Vie Est Belle 90 ملي بـ1046 جنيه أعلى شوية ⚠️ عن ميزانيتك."
+
+        cleaned = sanitize_reply(reply, self.conversation)
+
+        self.assertEqual(cleaned, "La Vie Est Belle 90 ملي بـ1046 جنيه.")
+
+    # ── The rule is one-directional ──────────────────────────────────────────
+
+    def test_a_true_overage_survives(self):
+        """1015 really is above 900, so the sentence is correct and must be left alone."""
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 900},
+        )
+        reply = "الـ90 ملي بـ1015، يعني أعلى من ميزانيتك بـ115 جنيه."
+
+        self.assertEqual(sanitize_reply(reply, conversation), reply)
+
+    def test_a_claim_with_no_price_quoted_survives(self):
+        """No price named, no evidence about the referent — so the claim stands.
+
+        This is why the price floor exists rather than being tidiness. budget_label's own
+        docstring records this shape ("الـ90 ملي أعلى شوية") as one the code produces, and it
+        can be perfectly true. Volumes must not be read as prices or it would be stripped.
+        """
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 900},
+        )
+        reply = "الـ90 ملي أعلى شوية من ميزانيتك."
+
+        self.assertEqual(sanitize_reply(reply, conversation), reply)
+
+    def test_a_negated_claim_survives(self):
+        """The retraction is the reply this guard exists to produce; deleting it would leave
+        the customer with nonsense on the exact turn they objected."""
+        for reply in (
+            "معاك حق، هو مش أعلى من ميزانيتك — 1019 جوه الـ1200.",
+            "لا مش هو أعلى من ميزانيتك، 1019 داخل الـ1200.",
+            # The quantified denial, which is how a retraction covering both sizes is phrased.
+            # It puts the negator three tokens out, and the two-token window this class shipped
+            # with stripped its own subject and left "ولا واحد منهم، 666 و1019". Caught by the
+            # harness's independent copy of the negation check.
+            "ولا واحد منهم أعلى من ميزانيتك، 666 و1019.",
+            "مفيش حاجة فيهم فوق الميزانية، 666 و1019 الاتنين جوه الـ1200.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(sanitize_reply(reply, self.conversation), reply)
+
+    def test_a_negator_in_the_previous_clause_does_not_protect_the_claim(self):
+        """The other side of widening the window. "مش بطال، بس أغلى من ميزانيتك" asserts the
+        falsehood — the مش belongs to the clause before it — so the scan has to stop at the
+        break. Without that bound, one مش anywhere in a long sentence disarms the guard."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ1019 جنيه مش بطال، بس أغلى من ميزانيتك.", self.conversation
+        )
+
+        self.assertNotIn("ميزاني", cleaned)
+        self.assertIn("مش بطال", cleaned)
+        self.assertIn("1019", cleaned)
+
+    def test_the_real_order_total_warning_survives(self):
+        """The one legitimate over-budget line the code itself emits.
+
+        Built by calling _over_budget_warning rather than hand-writing its wording, so the
+        guard and the warning cannot drift apart. It is immune by construction: the function
+        only speaks when a figure is above the budget, and it prints that figure.
+        """
+        brand = Brand.objects.create(store=self.store, name="Perfamix Test")
+        product = Product.objects.create(
+            store=self.store, brand=brand, name="Noirvel", gender="male",
+        )
+        variant = ProductVariant.objects.create(
+            product=product, volume=90, price=Decimal("1019"), bottle_type="normal",
+        )
+        from products.services.order_service import _over_budget_warning
+
+        warning = _over_budget_warning(
+            self.conversation,
+            [{"variant": variant, "price": Decimal("1019"), "quantity": 3}],
+        )
+        self.assertIn("أعلى من الميزانية", warning)
+
+        self.assertEqual(sanitize_reply(warning, self.conversation).strip(), warning.strip())
+
+    def test_no_budget_means_no_guard(self):
+        """Nothing to compare against, so nothing is touched."""
+        reply = "الـ90 ملي بـ1019 جنيه أغلى من ميزانيتك."
+        blank = Conversation.objects.create(store=self.store, preferences={})
+
+        self.assertEqual(sanitize_reply(reply, blank), reply)
+        self.assertEqual(sanitize_reply(reply, None), reply)
+        self.assertEqual(sanitize_reply(reply), reply)
+
+    # ── Coverage of the phrasings ────────────────────────────────────────────
+
+    def test_each_phrasing_variant_is_recognised(self):
+        """One prohibition the model can phrase eight ways. أغلى with غ matters most: it is the
+        word conversation 931 used, and the eval harness's own set carried only أعلى with ع."""
+        for claim in (
+            "أغلى من ميزانيتك",
+            "أعلى من ميزانيتك",
+            "اعلي من ميزانيتك",
+            "أكتر من ميزانيتك",
+            "فوق الميزانية",
+            "خارج ميزانيتك",
+            "برة الميزانية",
+            "زيادة عن ميزانيتك بـ353 جنيه",
+            "الفرق 353 جنيه عن ميزانيتك",
+            "مش داخل الميزانية",
+            "مش في ميزانيتك",
+        ):
+            with self.subTest(claim=claim):
+                cleaned = sanitize_reply(
+                    f"الـ90 ملي بـ1019 جنيه {claim}.", self.conversation
+                )
+                self.assertNotIn("ميزاني", cleaned)
+                self.assertIn("1019", cleaned)
+
+    def test_a_negation_word_inside_the_claim_is_not_read_as_a_negator(self):
+        """"مش داخل الميزانية" is the claim, not a denial of one."""
+        cleaned = sanitize_reply("الـ90 ملي بـ1019 جنيه مش داخل الميزانية.", self.conversation)
+
+        self.assertNotIn("مش داخل", cleaned)
+
+    def test_arabic_indic_digits_are_read_as_prices(self):
+        """The model occasionally writes ١٠١٩ rather than 1019; the floor must still see it."""
+        cleaned = sanitize_reply("الـ90 ملي بـ١٠١٩ جنيه أغلى من ميزانيتك.", self.conversation)
+
+        self.assertNotIn("ميزاني", cleaned)
+
+    def test_a_conditional_opener_leaves_no_orphaned_letter(self):
+        """The bug _LEAD documents, in this pattern set: a bare و matches the second letter of
+        لو and leaves the reply carrying a stranded ل."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ1019 جنيه، لو أغلى من ميزانيتك فيه الـ50.", self.conversation
+        )
+
+        self.assertNotIn("ميزاني", cleaned)
+        self.assertNotIn("جنيه، ل ", cleaned)
+        self.assertNotIn(" ل ", cleaned)
+
+    # ── What the first live replay of this guard found ────────────────────────
+    # Both runs of the conv931 replay fired the guard, on two different wordings, which is the
+    # evidence that it is load-bearing rather than decorative. Each also left something behind.
+
+    def test_the_claims_own_subject_goes_with_it(self):
+        """Replay run 1, turn 11 — the customer's second objection, answered correctly and then
+        spoiled. The claim was "يعني الـ90 أعلى من ميزانيتك بـ353 جنيه"; the connector run stopped
+        at الـ90 because a size reference is not a connector, so the reply went out as
+        "…والـ90 ملي بـ1019 جنيه، يعني الـ90." — a sentence with its predicate cut away."""
+        cleaned = sanitize_reply(
+            "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه، يعني الـ90 أعلى "
+            "من ميزانيتك بـ353 جنيه.",
+            self.conversation,
+        )
+
+        self.assertEqual(
+            cleaned, "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه."
+        )
+        self.assertNotIn("يعني", cleaned)
+
+    def test_the_subject_forms_the_model_actually_uses(self):
+        for subject in ("الـ90", "الـ90 ملي", "90 ملي", "ده", "دي", "هو", "الاتنين"):
+            with self.subTest(subject=subject):
+                cleaned = sanitize_reply(
+                    f"الـ50 بـ666 جنيه، والـ90 بـ1019 جنيه، يعني {subject} أغلى من ميزانيتك.",
+                    self.conversation,
+                )
+                self.assertEqual(cleaned, "الـ50 بـ666 جنيه، والـ90 بـ1019 جنيه.")
+
+    def test_a_claim_about_a_size_this_reply_never_priced_survives(self):
+        """The correction four archived eval runs forced on the guard, and the one place it had
+        been deleting true sentences. Scenario M1 turn 3, budget 700, verbatim: Sauvage's 90ml
+        really is over, its price is deliberately absent because the prompt forbids quoting an ❌
+        figure, and 601/680 belong to two other perfumes named in the next sentence. A reply-wide
+        `max(prices) <= budget` stripped the only clause that explained the exclusion."""
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 700},
+        )
+        reply = (
+            "Dior Sauvage خرج من طلبك لأنه سعر الـ90 ملي أعلى من ميزانيتك بكتير. عندنا بدائل "
+            "مختلفة داخل الميزانية زي Ambero والـ50 ملي بـ601 جنيه، وDark Aura والـ50 ملي "
+            "بـ680 جنيه."
+        )
+
+        self.assertEqual(sanitize_reply(reply, conversation), reply)
+
+    def test_a_claim_on_its_own_line_is_out_of_reach_of_the_prices_above_it(self):
+        """Scenario G2 turn 1, condensed to the shape that matters: bullet-listed in-budget prices,
+        then a closing line about the 90ml sizes with no figure on it. A line break ends a
+        referent's scope; a comma does not, which is what keeps conversation 912 catchable."""
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 500},
+        )
+        reply = (
+            "🔹 Stronger With You 50 ملي بـ 400 جنيه\n"
+            "🔹 Dior Homme Sport 50 ملي بـ 450 جنيه\n"
+            "🔹 Stronger With You Absolutely 50 ملي بـ 480 جنيه\n\n"
+            "لو حابب حجم أكبر، الـ90 ملي أغلى بكتير عن ميزانيتك، فالأفضل تبدأ بالـ50 ملي."
+        )
+
+        self.assertEqual(sanitize_reply(reply, conversation), reply)
+
+    def test_a_price_one_comma_away_is_still_in_scope(self):
+        """The other side of that bound, and the reason it is the sentence and not the clause.
+        Conversation 912 — the earlier report of this same bug — put the price exactly there."""
+        cleaned = sanitize_reply("سعره 1046 جنيه، أعلى شوية ⚠️ عن ميزانيتك.", self.conversation)
+
+        self.assertNotIn("ميزاني", cleaned)
+        self.assertIn("1046", cleaned)
+
+    def test_a_figure_stated_after_the_claim_is_in_scope_too(self):
+        """Word order. Conversation 931's own wording puts the number after the claim, so the scan
+        has to run forwards as well as back or the original bug walks straight through."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي أعلى من ميزانيتك بـ1019 جنيه.", self.conversation
+        )
+
+        self.assertNotIn("ميزاني", cleaned)
+
+    def test_a_subject_is_only_eaten_when_a_connector_marks_it_off(self):
+        """The bound on the clause above. With no connector there is nothing to say where the
+        fragment starts, and guessing is how a real price gets deleted — so the reply keeps its
+        own opening words. Note the claim here survives outright, and correctly: its own sentence
+        quotes no price, so nothing in the reply disproves it (`_has_a_price_in_scope`). Only the
+        second sentence carries a figure, and it is about the other size."""
+        reply = "الـ90 ملي أعلى من ميزانيتك. تحب الـ50 بـ666 جنيه؟"
+
+        self.assertEqual(sanitize_reply(reply, self.conversation), reply)
+
+    def test_a_price_is_never_mistaken_for_a_size_reference(self):
+        """Why the subject is capped at two digits. "الـ666" has the shape of a size reference and
+        is a price, and PRICE_FLOOR draws the line in the same place for the same reason."""
+        cleaned = sanitize_reply(
+            "الـ90 بـ1019 جنيه والـ50 بـ666 جنيه، يعني الـ666 مش أغلى من ميزانيتك... "
+            "لا استنى، الـ666 أغلى من ميزانيتك.",
+            self.conversation,
+        )
+
+        self.assertIn("666", cleaned)
+        self.assertIn("1019", cleaned)
+
+    def test_the_marker_alone_is_stripped_even_with_no_claim_attached(self):
+        """Replay run 1, turn 10, verbatim. The model lifted the ⚠️ and left the sentence out —
+        and ⚠️ has one meaning in this system, "أعلى شوية من الميزانية", which four prompt rules
+        bind it to by name. Turn 11 of that run is the customer asking "ازاي اعلي من ميزانيتي"
+        with nothing but the glyph to have prompted it, which is the whole original complaint."""
+        cleaned = sanitize_reply(
+            "أنسب اختيار لجوزك من Versace هو Eros الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي "
+            "بـ666 جنيه داخل الميزانية.",
+            self.conversation,
+        )
+
+        self.assertNotIn("⚠️", cleaned)
+        self.assertNotIn("⚠", cleaned)
+        self.assertEqual(
+            cleaned,
+            "أنسب اختيار لجوزك من Versace هو Eros الـ90 ملي بـ1019 جنيه، والـ50 ملي "
+            "بـ666 جنيه داخل الميزانية.",
+        )
+
+    def test_the_in_budget_tick_is_left_alone(self):
+        """Only the over-budget marker is false here. ✅ says what the labels said."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ1019 جنيه ⚠️ يعني أعلى من ميزانيتك شوية، والـ50 ملي بـ666 "
+            "جنيه ✅ داخل الميزانية.",
+            self.conversation,
+        )
+
+        self.assertIn("✅", cleaned)
+        self.assertNotIn("⚠️", cleaned)
+        self.assertEqual(
+            cleaned, "الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه ✅ داخل الميزانية."
+        )
+
+    def test_replay_run_2s_wording_is_stripped(self):
+        """The second run generated a different shape from the first — no invented figure at all,
+        just the intensifier — which is the answer to whether one wording could have been fixed by
+        asking the prompt more firmly."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ1019 جنيه ⚠️ يعني أعلى من ميزانيتك شوية.", self.conversation
+        )
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ1019 جنيه.")
+
+    def test_a_marker_beside_a_price_that_really_is_over_survives(self):
+        """The glyph pass sits behind the same preconditions as the claim pass, so the one turn
+        where ⚠️ is the truth keeps it."""
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 900},
+        )
+        reply = "الـ90 ملي بـ1015 جنيه ⚠️ أعلى من ميزانيتك بـ115 جنيه."
+
+        self.assertEqual(sanitize_reply(reply, conversation), reply)
+
+    def test_the_marker_is_left_alone_when_no_price_is_quoted(self):
+        """Precondition 2 covers the glyph as well: with no price in the reply there is no
+        evidence that the marker is false, and `budget_label` produces exactly that shape."""
+        reply = "الـ90 ملي ⚠️ أعلى شوية من ميزانيتك، والـ50 داخل فيها."
+
+        self.assertEqual(sanitize_reply(reply, self.conversation), reply)
+
+    # ── Invariants of the module ─────────────────────────────────────────────
+
+    def test_a_reply_that_is_nothing_but_the_claim_is_kept(self):
+        """Sending an empty message is worse than sending a wrong one — the same invariant
+        sanitize_reply and strip_premature_closing already hold.
+
+        Reaching it takes a reply whose *only* content is the claim and the figure it invented,
+        since the price floor means a claim with no number never gets this far.
+        """
+        reply = "أغلى من ميزانيتك بـ353 جنيه"
+
+        cleaned, removed = strip_false_over_budget(reply, 1200)
+
+        self.assertEqual(cleaned, reply)
+        self.assertEqual(removed, [])
+
+    def test_empty_and_none_are_passed_through(self):
+        for reply in ("", None):
+            with self.subTest(reply=reply):
+                self.assertEqual(strip_false_over_budget(reply, 1200)[0], reply)
+
+    def test_an_unusable_budget_is_ignored(self):
+        reply = "الـ90 ملي بـ1019 جنيه أغلى من ميزانيتك."
+        for budget in (None, 0, -100, "", "لا أعرف", object()):
+            with self.subTest(budget=budget):
+                self.assertEqual(strip_false_over_budget(reply, budget)[0], reply)
+
+    def test_a_float_budget_is_handled(self):
+        """max_price arrives from the intent schema as a float — the pairing budget_ceiling's
+        docstring warns about."""
+        cleaned, removed = strip_false_over_budget(
+            "الـ90 ملي بـ1019 جنيه أغلى من ميزانيتك.", 1200.0
+        )
+
+        self.assertTrue(removed)
+        self.assertNotIn("ميزاني", cleaned)
+
+    def test_a_legitimate_close_is_still_byte_identical(self):
+        """reply_sanitizer pins this reply as passing through untouched. A budget in
+        preferences must not perturb it."""
+        reply = "الـ 90 ملي أوفر بكتير. أجيبلك الـ 90 ولا الـ 50؟"
+
+        self.assertEqual(sanitize_reply(reply, self.conversation), reply)
+
+    def test_the_banned_closer_pass_still_runs(self):
+        """The budget pass goes first and must not shadow the pass that was already here."""
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ1019 جنيه أغلى من ميزانيتك. تحب تعرف الأسعار والأحجام؟",
+            self.conversation,
+        )
+
+        self.assertNotIn("ميزاني", cleaned)
+        self.assertNotIn("تحب تعرف", cleaned)
+        self.assertIn("1019", cleaned)
+
+
 class AvoidTraitVocabularyTests(TestCase):
     """A trait the customer never stated must not reach the ranker.
 
@@ -4975,6 +5395,83 @@ class ValueLanguageTests(TestCase):
         self.assertNotIn("أوفر بفرق", note)
         self.assertIn('ممنوع تقول إنه "أرخص"', note)
 
+    # ── Every figure bound to its referent (conversation 931) ─────────────────────────
+    # The 353 that reply re-pointed at the customer's budget was this block's size delta,
+    # printed one line under "✅ (داخل الميزانية)" and introduced by the same word the
+    # over-budget label uses. These pin the rebinding — and they are hygiene, exactly like
+    # the code they cover: `FalseOverBudgetClaimTests` is what stops the sentence.
+
+    def test_each_price_is_stated_as_the_price_of_a_named_size(self):
+        note = self._note()
+
+        self.assertIn("سعر الـ 90 ملي 944 جنيه", note)
+        self.assertIn("سعر الـ 50 ملي 642 جنيه", note)
+
+    def test_the_comparison_names_its_other_side_before_the_number(self):
+        """The old clause was "أغلى بـ 302 جنيه في الإجمالي (944 مقابل 642)". Dearer than *what*
+        was answerable only from a parenthetical two clauses later, and the model answered it
+        with "your budget"."""
+        note = self._note()
+
+        self.assertIn("أغلى من الـ 50 ملي في الإجمالي", note)
+        self.assertIn("والفرق بين الحجمين 302 جنيه", note)
+
+    def test_the_delta_is_not_introduced_by_the_price_particle(self):
+        """Conversation 915's construction, which `budget_label`'s docstring records: "بـ" is the
+        price particle in every sibling clause, so "أغلى … بـ 302 جنيه" reads as *costs 302*. The
+        one "بـ" left in this note introduces a percentage, which carries its own unit."""
+        note = self._note()
+
+        self.assertNotIn("بـ 302", note)
+        self.assertNotIn("بـ302", note)
+        # The figure itself stays. What changed is where it sits, not whether it is given.
+        self.assertIn("302", note)
+
+    def test_the_delta_is_scoped_to_the_two_sizes_and_denied_to_the_budget(self):
+        note = self._note(max_price=1200)
+
+        self.assertIn("فرق بين حجمين من نفس العطر", note)
+        self.assertIn("مش فرق عن ميزانية العميل", note)
+
+    def test_with_no_stated_budget_the_block_says_nothing_about_a_budget(self):
+        """Why that clause is gated rather than unconditional. `BudgetLabelsReachEveryPricePath
+        Tests` pins the whole injected context as budget-word-free when the customer named no
+        budget — a prompt that discusses a budget nobody stated is how a reply comes to. And the
+        re-attribution needs a budget to re-point the delta *at*, so the turns the clause is
+        dropped on are exactly the turns it could not have helped."""
+        note = self._note()
+
+        self.assertNotIn("ميزاني", note)
+        # The unconditional half — the referent binding itself — is still there.
+        self.assertIn("أغلى من الـ 50 ملي في الإجمالي", note)
+
+    def test_the_prohibition_is_worded_so_it_cannot_be_lifted_into_a_reply(self):
+        """A ban that spells out the banned sentence hands the model the sentence. Customers are
+        addressed as "ميزانيتك" throughout; this clause says "ميزانية العميل", which is prompt
+        voice — the reason the prohibition can name the collision without supplying it."""
+        note = self._note(max_price=1200)
+
+        self.assertIn("ميزانية العميل", note)
+        self.assertNotIn("ميزانيتك", note)
+
+    def test_the_value_note_does_not_reintroduce_the_over_budget_glyph(self):
+        """⚠️ is `_BUDGET_LABELS["near"]`, and four prompt rules bind it to that meaning by name.
+        It was removed from this block as a decoy — and the clause added above mentions the budget
+        by word, which is precisely the edit that could have carried the glyph back in with it."""
+        self.assertNotIn("⚠️", self._note(max_price=1200))
+
+    def test_nothing_in_this_block_reads_as_a_false_over_budget_claim(self):
+        """The cross-module invariant conversation 931 actually turned on. A model relaying this
+        block verbatim must not produce a sentence the guard would have to delete, so the property
+        is asserted against `strip_false_over_budget` itself rather than against wording I chose —
+        which is what stops the prompt and the guard drifting into disagreement about this block.
+
+        Both sizes are under 1200, so the guard is armed here: it bails only when some quoted price
+        exceeds the budget, and neither 944 nor 642 does."""
+        note = self._note(max_price=1200)
+
+        self.assertEqual(strip_false_over_budget(note, 1200)[0], note)
+
     def test_a_negative_price_difference_is_never_rendered(self):
         """The latent bug: the baseline was the smallest bottle while the winner was the
         cheapest per ml, with nothing guaranteeing the winner cost more. 30ml@500 beside
@@ -5327,6 +5824,300 @@ class RecommendationDropsTheSizeVerdictTests(TestCase):
         context = self._context(None)
 
         self.assertIn("Dior Sauvage", context)
+
+
+class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
+    """Conversation 931's other false statement: an apology for having shown everything, on a
+    turn that had shown nothing, blamed on a budget that had not been consulted.
+
+    The customer wanted a Versace for his wife. Versace + حريمي matches nothing in the catalogue
+    — Eros is a men's perfume — so `search_products` returned no products and no alternatives,
+    and `recommend` fell to its nothing-found branch. That branch had one instruction 1, written
+    for the customer who asks for *more* ("إيه تاني؟"), and a note above it offering the model
+    either reading with an `أو`. It duly apologised for the end of a list that never existed and
+    named the 1200 as the reason.
+
+    The budget being impossible here is structural, and `test_a_completely_empty_search_is_never
+    _the_budgets_fault` pins it: `search_products` puts gender/brand/type/season on `base` and
+    notes/price on `exact`, and every empty-`alternatives` path in that function needs `base`
+    itself to be empty — so by the time the price filter ran there was nothing left for it to
+    narrow. That is what lets the new instruction forbid naming the budget outright rather than
+    merely discouraging it.
+
+    The fork itself took two attempts, and the first one is recorded here because the replay
+    caught it and I did not. It was `already_described` — have we shown this customer anything?
+    Conversation 931 had shown three perfumes and sold them before the Versace turn, so that
+    answered yes, the branch took the exhausted half, and both replay runs reproduced the
+    original sentence word for word on the turn this class was written for. `seen` is a fact
+    about the transcript; "these are all the options" is a claim about the search. It is now
+    forked on `search_products`'s own `exhausted` — would dropping the name exclusions have
+    found anything — with `seen` demoted to choosing between two ways of *not* claiming a list.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        versace = Brand.objects.create(store=self.store, name="Versace")
+        self.eros = Product.objects.create(
+            store=self.store, brand=versace, name="Eros", gender="male",
+            top_notes="Mint, Green Apple", middle_notes="Tonka Bean",
+            base_notes="Vanilla, Vetiver",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+
+    # ── the prompt the empty branch actually delivers ─────────────────────
+    def _empty_turn(self, intent, history=None, search=None):
+        from products.services.ai import recommendation
+
+        with mock.patch.object(recommendation, "chat", return_value="ok") as chat_call:
+            recommendation.recommend(
+                "عايز فيرزاتشي لمراتي",
+                Product.objects.none(),
+                history=history,
+                alternatives=Product.objects.none(),
+                store=self.store,
+                intent=intent,
+                search=search,
+            )
+        return chat_call.call_args[0][0][-1]["content"]
+
+    CONV931 = {"brand": "Versace", "gender": "female", "max_price": 1200}
+
+    def _shown(self):
+        """A history in which we have named a catalogue perfume, which is what
+        `described.already_described` reads to decide there was a list at all."""
+        return [
+            {"role": "user", "content": "عايز حاجة حلوة"},
+            {"role": "assistant", "content": "أرشحلك Eros، ريحته منعشة."},
+        ]
+
+    def test_a_first_request_names_the_constraints_that_ruled_everything_out(self):
+        """Not "دي كل الخيارات" — there was no list — and not the budget either. The reply owes
+        the customer the one true reason: حريمي and Versace do not coexist in this catalogue."""
+        prompt = self._empty_turn(self.CONV931)
+
+        self.assertIn("حريمي + من Versace", prompt)
+        self.assertIn("مجموع", prompt)
+        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
+
+    def test_a_first_request_may_not_blame_the_budget(self):
+        """1200 fits the 90ml at 1019 with room to spare, and the price filter never ran."""
+        prompt = self._empty_turn(self.CONV931)
+
+        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
+        self.assertIn("مفيش حاجة في الميزانية دي", prompt)  # named so it can be forbidden
+
+    def test_it_offers_to_relax_one_of_the_named_constraints(self):
+        """An apology with no way forward is what the old wording gave. Naming the constraint is
+        only useful if the customer is told which one to drop."""
+        prompt = self._empty_turn(self.CONV931)
+
+        self.assertIn("يتنازل عن واحد منهم بالاسم", prompt)
+
+    def test_the_note_above_the_instructions_stops_offering_a_choice_of_facts(self):
+        """The note said "لم يتم العثور … **أو** تم ترشيح كل الخيارات بالفعل". A disjunction is
+        not a fact, and it is what licensed the wrong half."""
+        prompt = self._empty_turn(self.CONV931)
+
+        self.assertIn("محصلش أي ترشيح قبل كده", prompt)
+        self.assertNotIn("أو تم ترشيح كل الخيارات المتاحة بالفعل", prompt)
+
+    # ── the reading the old instruction was written for, kept ─────────────
+    EXHAUSTED = {"exhausted": True}
+
+    def test_a_follow_up_after_a_real_list_keeps_the_exhausted_wording(self):
+        """The old instruction was not wrong, it was unconditional. Where it is true it stays.
+
+        "True" is now `search_products`'s verdict rather than the presence of a history: the
+        exclusions are what emptied the search, so matching perfumes exist and have all been
+        offered. That is the one state in which apologising for the end of the list is a fact."""
+        prompt = self._empty_turn(self.CONV931, history=self._shown(),
+                                  search=self.EXHAUSTED)
+
+        self.assertIn("وقوله إن دي كل الخيارات المتاحة", prompt)
+        self.assertIn("تم ترشيح كل الخيارات المتاحة", prompt)
+        self.assertNotIn("محصلش أي ترشيح قبل كده", prompt)
+
+    def test_even_the_exhausted_wording_may_not_blame_the_budget(self):
+        """Both halves of the fork carry the prohibition: "مفيش حاجة في الميزانية" was available
+        on this turn too, and `base` was just as empty for reasons the price never touched."""
+        prompt = self._empty_turn(self.CONV931, history=self._shown(),
+                                  search=self.EXHAUSTED)
+
+        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
+
+    # ── shown things, but not these things (the replay's own failure) ──────
+    # Conversation 931's real shape, and the state the first version of this fix got wrong: three
+    # perfumes described and ordered, then a request for a brand+gender pair that matches nothing.
+    # `seen` is truthy and exhaustion is false, and both replay runs produced "دي كل الخيارات
+    # المتاحة حالياً اللي بتطابق طلبك بالظبط" here — about a brand never once offered.
+
+    def test_a_history_alone_no_longer_licenses_the_exhausted_wording(self):
+        """The regression, pinned at the fork. Same history as the test above, same empty search,
+        and the only difference is the one that decides the truth of the sentence: nothing was
+        excluded, so nothing was used up."""
+        prompt = self._empty_turn(self.CONV931, history=self._shown())
+
+        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
+        self.assertNotIn("تم ترشيح كل الخيارات المتاحة", prompt)
+        self.assertIn("ممنوع تقول \"دي كل الخيارات المتاحة\"", prompt)
+
+    def test_it_still_names_the_constraints_when_something_was_shown_earlier(self):
+        """Having shown perfumes under other constraints changes who is owed what, not the
+        reason. The customer still gets حريمي + Versace, and still not the budget."""
+        prompt = self._empty_turn(self.CONV931, history=self._shown())
+
+        self.assertIn("حريمي + من Versace", prompt)
+        self.assertIn("مجموع", prompt)
+        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
+
+    def test_it_does_not_claim_a_first_attempt_either(self):
+        """The other way to be false. Perfumes *were* shown in this conversation, so "دي أول مرة
+        تحاول ترشحله" would be its own fabrication — which is why `seen` survives the rewrite
+        instead of being deleted along with the fork it used to serve."""
+        prompt = self._empty_turn(self.CONV931, history=self._shown())
+
+        self.assertNotIn("دي أول مرة تحاول ترشحله", prompt)
+        self.assertNotIn("محصلش أي ترشيح قبل كده", prompt)
+        self.assertIn("مش بيطابق الشروط اللي بيطلبها دلوقتي", prompt)
+
+    def test_the_first_request_wording_survives_for_a_real_first_request(self):
+        """The unshown case is unchanged, and says the stronger true thing."""
+        prompt = self._empty_turn(self.CONV931)
+
+        self.assertIn("دي أول مرة تحاول ترشحله", prompt)
+        self.assertIn("محصلش أي ترشيح قبل كده", prompt)
+
+    def test_a_caller_that_reports_no_search_does_not_get_the_claim(self):
+        """`recommend`'s `search` is optional and three call sites pass it, but the default has to
+        be the harmless one: absent evidence of exhaustion is not evidence of it."""
+        for search in (None, {}, {"exhausted": False}, {"keeping": []}):
+            with self.subTest(search=search):
+                prompt = self._empty_turn(self.CONV931, history=self._shown(), search=search)
+                self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
+
+    # ── nothing stated, nothing shown ─────────────────────────────────────
+    def test_with_no_stated_constraints_it_asks_instead_of_inventing_a_reason(self):
+        """`base` can also be emptied by `exclude_names` or by stock, and then there is no
+        constraint to name. Asking is honest; naming a constraint the customer never gave is not,
+        and neither is falling back on the budget."""
+        prompt = self._empty_turn({})
+
+        self.assertIn("محتاج تفاصيل أكتر", prompt)
+        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
+        self.assertNotIn("مجموع", prompt)
+        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
+
+    # ── the renderer, and what it deliberately leaves out ─────────────────
+    def test_only_the_hard_filters_are_offered_as_reasons(self):
+        """`describe` renders everything the customer said, budget and notes included, which is
+        right for "what I already know" and wrong for "what ruled everything out". Notes narrow
+        `exact`; a request with notes that matched nothing still leaves `base` populated and never
+        reaches this branch at all."""
+        phrases = sales_constraints.describe_filters({
+            "gender": "female", "brand": "Versace", "perfume_type": "niche",
+            "season": "summer", "notes": ["vanilla"], "max_price": 1200,
+            "occasion": "evening", "longevity": "long-lasting",
+        })
+
+        self.assertEqual(phrases, ["حريمي", "نيش", "للصيف", "من Versace"])
+
+    def test_the_store_own_blend_marker_is_rendered_as_words(self):
+        self.assertEqual(
+            sales_constraints.describe_filters({"brand": "STORE_BRAND_EXCLUSIVE"}), ["من تركيباتنا الخاصة"]
+        )
+
+    def test_a_routing_gender_is_not_a_constraint_to_relax(self):
+        """"multiple" is the router asking which to start with, and `search_products` filters on
+        it as a literal value that matches no row — so it is neither a preference to echo back
+        nor a constraint the customer can drop."""
+        self.assertEqual(sales_constraints.describe_filters({"gender": "multiple"}), [])
+        self.assertEqual(sales_constraints.describe_filters({}), [])
+        self.assertEqual(sales_constraints.describe_filters(None), [])
+
+    def test_every_hard_filter_key_is_rendered(self):
+        """Pinned against the key list itself, so a filter added to `search_products` and to
+        `HARD_FILTER_KEYS` cannot silently go unnamed in the one reply that owes the reason."""
+        HARD_FILTER_KEYS = sales_constraints.HARD_FILTER_KEYS
+        values = {"gender": "male", "perfume_type": "niche",
+                  "season": "winter", "brand": "Dior"}
+        self.assertEqual(set(values), set(HARD_FILTER_KEYS))
+        for key in HARD_FILTER_KEYS:
+            with self.subTest(key=key):
+                self.assertTrue(sales_constraints.describe_filters({key: values[key]}))
+
+    # ── the premise the whole fix rests on ────────────────────────────────
+    def test_a_completely_empty_search_is_never_the_budgets_fault(self):
+        """Why the prohibition can be absolute. A hard filter that matches nothing empties `base`
+        and reaches `recommend`'s nothing-found branch; a budget nothing satisfies leaves `base`
+        alone and comes back as *alternatives*, which is a different branch with a different
+        instruction that does discuss the price. So this branch can state flatly that the budget
+        is not the reason."""
+        ruled_out = search_products(self.CONV931, store=self.store)
+        self.assertFalse(ruled_out["products"].exists())
+        self.assertFalse(ruled_out["alternatives"] and ruled_out["alternatives"].exists())
+
+        # Same catalogue, same code path, a budget no size can meet: alternatives, not silence.
+        unaffordable = search_products(
+            {"brand": "Versace", "gender": "male", "max_price": 100}, store=self.store
+        )
+        self.assertFalse(unaffordable["products"].exists())
+        self.assertTrue(unaffordable["alternatives"].exists())
+
+    # ── the fork, computed where the facts are ────────────────────────────
+    def test_constraints_that_match_nothing_are_never_reported_as_exhaustion(self):
+        """Versace + حريمي, which is the conv931 turn. No exclusion could have caused this: with
+        the exclusions dropped the search is just as empty, and that is what `exhausted` asks."""
+        self.assertFalse(search_products(self.CONV931, store=self.store)["exhausted"])
+
+    def test_an_exclusion_list_that_could_not_have_emptied_it_is_not_exhaustion(self):
+        """Replay run 1's turn 9 exactly: the customer had ordered three perfumes, so the
+        extractor put them in `exclude_names` — and not one of them is a Versace. A non-empty
+        exclusion list is not evidence, which is why this is a query and not a `bool()`."""
+        intent = dict(self.CONV931,
+                      exclude_names=["Good Girl", "La Vie Est Belle", "Stronger With You"])
+
+        self.assertFalse(search_products(intent, store=self.store)["exhausted"])
+
+    def test_exclusions_that_did_empty_it_are_reported_as_exhaustion(self):
+        """The state the "دي كل الخيارات" wording was written for, and the only one it is true in:
+        Eros matches رجالي + Versace, and Eros is what the customer has asked us to move past."""
+        intent = {"brand": "Versace", "gender": "male", "exclude_names": ["Eros"]}
+        result = search_products(intent, store=self.store)
+
+        self.assertFalse(result["products"].exists())
+        self.assertFalse(result["alternatives"] and result["alternatives"].exists())
+        self.assertTrue(result["exhausted"])
+
+    def test_a_search_that_found_something_is_not_exhausted(self):
+        """`exhausted` is only ever read on the empty branch, but it rides on every return path,
+        so it must be false wherever there is something to show rather than merely unread."""
+        found = search_products({"brand": "Versace", "gender": "male"}, store=self.store)
+
+        self.assertTrue(found["products"].exists())
+        self.assertFalse(found["exhausted"])
+
+    def test_moving_the_exclusions_below_the_constraints_changed_no_result(self):
+        """The exclusions used to run first, and were moved so the pre-exclusion queryset could be
+        kept. Every clause in that chain is a conjunction over single-valued fields, so the move is
+        supposed to be a no-op on the results themselves — pinned rather than asserted in a
+        comment, because "it should be the same SQL" is the kind of claim that stops being true."""
+        excluded = search_products(
+            {"brand": "Versace", "gender": "male", "exclude_names": ["Eros"]}, store=self.store
+        )
+        self.assertFalse(excluded["products"].exists())
+        self.assertFalse(excluded["alternatives"] and excluded["alternatives"].exists())
+
+        # And an exclusion naming something the constraints had already ruled out removes
+        # nothing, rather than interacting with them.
+        untouched = search_products(
+            {"brand": "Versace", "gender": "male", "exclude_names": ["Good Girl"]},
+            store=self.store,
+        )
+        self.assertEqual(
+            list(untouched["products"].values_list("name", flat=True)), ["Eros"]
+        )
 
 
 class ObjectionDetectionTests(TestCase):
@@ -9539,6 +10330,120 @@ class OverBudgetLineTests(TestCase):
         }]
 
         self.assertEqual(_over_budget_warning(self.conversation, items), "")
+
+    # ── the arithmetic used to be this function's own ─────────────────────
+    def test_a_price_just_over_the_budget_is_not_an_alarm(self):
+        """Conversation 931's first correction here. `BUDGET_TOLERANCE` exists because "a size just
+        over the number the customer named is a real option", and `budget_label` says so to the model
+        in as many words — while this function, the fourth place with its own budget arithmetic, was
+        calling the same price a breach with a ⚠️. 990 against 900 is inside the band."""
+        from products.services.order_service import _over_budget_warning
+
+        self.assertEqual(_over_budget_warning(self.conversation, self._items(990)), "")
+
+    def test_the_tolerance_is_the_shared_one_and_not_a_second_copy(self):
+        """Pinned against `budget_tier` itself rather than against 1080, so the two cannot drift:
+        the whole point of the change is that this function stopped owning the number."""
+        from products.services.order_service import _over_budget_warning
+
+        ceiling = sales_value.budget_ceiling(900)
+        self.assertEqual(_over_budget_warning(self.conversation, self._items(ceiling)), "")
+        self.assertIn(
+            "أعلى من الميزانية",
+            _over_budget_warning(self.conversation, self._items(ceiling + 1)),
+        )
+
+    # ── a per-bottle budget against a basket of different perfumes ────────
+    def test_a_multi_perfume_total_is_reported_without_calling_it_one_perfumes_price(self):
+        """Conversation 931 msgs 26/30: a 1200 stated while shopping for one Versace was compared to
+        a four-perfume 3138 basket, and the reply called the basket "أعلى من الميزانية اللي قلتها".
+        `max_price` is a per-bottle ceiling in every other reader, so no perfume in that cart cost
+        3138 and the verdict was one the arithmetic could not support.
+
+        The disclosure stays — 1753 against a stated 900 is worth hearing, and it is why the total is
+        checked at all. What goes is the verdict framing, which is what the model lifted and restated
+        as a per-item breach on the turns after."""
+        from products.services.order_service import _over_budget_warning
+
+        second = ProductVariant.objects.create(
+            product=Product.objects.create(
+                store=self.store, brand=self.brand, name="Elysian", gender="male",
+            ),
+            volume=90, price=897, bottle_type="normal",
+        )
+        items = [
+            {"variant": self.variant, "quantity": 1,
+             "price": Decimal("856"), "bottle_type": "normal"},
+            {"variant": second, "quantity": 1,
+             "price": Decimal("897"), "bottle_type": "normal"},
+        ]
+
+        warning = _over_budget_warning(self.conversation, items)
+
+        self.assertIn("1753", warning)
+        self.assertIn("900", warning)
+        # The scope of the stated number, said out loud, and the misreading named and denied.
+        self.assertIn("كان لعطر واحد", warning)
+        self.assertIn("مش عشان عطر فيهم غالي", warning)
+        # And still immune to the guard, for the reason every legitimate warning here is: the
+        # figure it quotes is over the budget by construction.
+        self.assertEqual(strip_false_over_budget(warning, 900)[0], warning)
+
+    def test_one_perfume_across_two_sizes_is_still_one_perfumes_spend(self):
+        """The distinction is distinct perfumes, not lines. 50ml + 90ml of the same perfume is a
+        figure the stated per-bottle number can be compared to, so this keeps the plain wording."""
+        from products.services.order_service import _over_budget_warning
+
+        smaller = ProductVariant.objects.create(
+            product=self.variant.product, volume=50, price=500, bottle_type="normal"
+        )
+        items = [
+            {"variant": self.variant, "quantity": 1,
+             "price": Decimal("650"), "bottle_type": "normal"},
+            {"variant": smaller, "quantity": 1,
+             "price": Decimal("500"), "bottle_type": "normal"},
+        ]
+
+        warning = _over_budget_warning(self.conversation, items)
+
+        self.assertIn("1150", warning)
+        self.assertIn("أعلى من الميزانية اللي قلتها", warning)
+        self.assertNotIn("كان لعطر واحد", warning)
+
+    def test_the_multi_perfume_wording_still_names_an_overage_for_the_grader(self):
+        """`checks.check_stated_total` excuses a stated total only when the reply names the overage
+        (`_acknowledged_a_real_overage`). Softening the framing must not quietly turn a disclosed
+        total into an undisclosed one, so the reworded line is asserted against the harness's own
+        patterns rather than against a phrase I chose."""
+        from eval_harness import checks
+        from products.services.order_service import _over_budget_warning
+
+        second = ProductVariant.objects.create(
+            product=Product.objects.create(
+                store=self.store, brand=self.brand, name="Elysian", gender="male",
+            ),
+            volume=90, price=897, bottle_type="normal",
+        )
+        items = [
+            {"variant": self.variant, "quantity": 1,
+             "price": Decimal("856"), "bottle_type": "normal"},
+            {"variant": second, "quantity": 1,
+             "price": Decimal("897"), "bottle_type": "normal"},
+        ]
+        warning = _over_budget_warning(self.conversation, items)
+        truth = {"names": ["Noirvel", "Elysian"], "prices": ["856", "897"]}
+
+        self.assertTrue(checks._acknowledged_a_real_overage(warning, 900, truth))
+        self.assertEqual(checks.check_stated_total(warning, 900, truth), [])
+
+    def test_the_warning_the_code_emits_survives_the_false_claim_guard(self):
+        """The one legitimate over-budget sentence in the codebase, run through the guard that
+        deletes false ones. Built by calling the function so the two cannot drift apart."""
+        from products.services.order_service import _over_budget_warning
+
+        warning = _over_budget_warning(self.conversation, self._items(1085))
+
+        self.assertEqual(strip_false_over_budget(warning, 900)[0], warning)
 
     def test_an_over_budget_line_is_not_also_reported_as_an_over_budget_total(self):
         """One problem, one warning — the customer should not read the same thing twice."""
@@ -14091,6 +14996,697 @@ class HarnessCatchesConv795Tests(TestCase):
 
         self.assertTrue(severities)
         self.assertTrue(severities <= {"critical", "high", "medium", "low"}, severities)
+
+
+class HarnessCatchesConv931Tests(TestCase):
+    """The false over-budget claim, and the check that had no patterns for it.
+
+    Conversation 931's budget was 1200 and Versace Eros' 90ml is 1019. The reply said
+    "الـ90 ملي بـ1019 جنيه ⚠️ يعني أغلى من ميزانيتك بـ353 جنيه" — where 353 is 1019 − 666, the gap
+    between the two *sizes*, lifted from the value note printed one line below the `✅ (داخل
+    الميزانية)` labels. The customer objected twice and the claim was repeated, not retracted.
+
+    The harness scored all of it clean, and not because the grade was wrong: `_BUDGET_ACKNOWLEDGED`
+    carried `أعلى` with ع and not `أغلى` with غ, so the sentence matched nothing in this file at
+    all. The turn was never examined. Worse, the patterns existed only to *excuse* a turn that
+    named an overage — there was no reading in which naming one could be false — so even the right
+    spelling would have bought the reply silence rather than a finding.
+
+    Both halves are fixed together and on one tuple, because two parallel lists is how the
+    spelling went missing on one side in the first place. `_acknowledged_a_real_overage` makes the
+    excusal conditional on the overage being real, and `check_false_over_budget` reads the same
+    sentence as a falsifiable claim. The production guard is `reply_sanitizer.strip_false_over_budget`
+    (see `FalseOverBudgetClaimTests`); these patterns are deliberately NOT imported from it, per
+    this file's standing rule that the harness measures what leaks past the sanitizer.
+    """
+
+    # Lifted verbatim from Message.content. The first is turn 10, the second turn 11 — the repeat
+    # after being challenged, which ran with an EMPTY injected context, so its only possible source
+    # is the first reply read back through build_llm_history.
+    MSG_20 = (
+        "Eros من Versace رجالي، الـ90 ملي بـ1019 جنيه ⚠️ يعني أغلى من ميزانيتك بـ353 جنيه، "
+        "والـ50 ملي بـ666 جنيه داخل الميزانية."
+    )
+    MSG_22 = (
+        "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه أغلى من ميزانيتك شوية "
+        "بـ353 جنيه."
+    )
+
+    def setUp(self):
+        from eval_harness import checks
+
+        self.checks = checks
+        self.store = Store.objects.create(name="Perfamix Test")
+        versace = Brand.objects.create(store=self.store, name="Versace")
+        eros = Product.objects.create(
+            store=self.store, brand=versace, name="Eros", gender="male",
+        )
+        ProductVariant.objects.create(product=eros, volume=50, price=666, bottle_type="normal")
+        ProductVariant.objects.create(product=eros, volume=90, price=1019, bottle_type="normal")
+        # A catalogue name with a price-like number inside it, so the `_strip_product_names` step
+        # is exercised on real ground truth rather than asserted about in the abstract.
+        mfk = Brand.objects.create(store=self.store, name="Maison Francis Kurkdjian")
+        baccarat = Product.objects.create(
+            store=self.store, brand=mfk, name="Baccarat Rouge 540", gender="unisex",
+        )
+        ProductVariant.objects.create(product=baccarat, volume=70, price=1400, bottle_type="normal")
+        self.truth = self.checks.build_ground_truth(self.store)
+
+    def _flag(self, reply, budget=1200):
+        return self.checks.check_false_over_budget(reply, budget, self.truth)
+
+    # ── the four real incidents ───────────────────────────────────────────
+    def test_turn_tens_exact_reply_is_flagged(self):
+        found = self._flag(self.MSG_20)
+
+        self.assertEqual(len(found), 1, found)
+        claim, highest = found[0]
+        self.assertEqual(claim, "أغلى من ميزانيتك")
+        self.assertEqual(highest, 1019.0)
+
+    def test_the_repeat_after_the_objection_is_flagged(self):
+        """Turn 11 puts the intensifier AFTER the budget word: "أغلى من ميزانيتك شوية بـ353"."""
+        found = self._flag(self.MSG_22)
+
+        self.assertEqual(len(found), 1, found)
+        self.assertEqual(found[0][1], 1019.0)
+
+    def test_conversation_912s_interleaved_glyph_is_flagged(self):
+        """"أعلى شوية ⚠️ عن ميزانيتك" — the earlier report of the same bug. The old patterns
+        allowed nothing between the comparative and the budget word, so it matched neither as an
+        acknowledgement nor as a claim."""
+        found = self._flag("سعره 1046 جنيه، أعلى شوية ⚠️ عن ميزانيتك.")
+
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("⚠️", found[0][0])
+
+    def test_the_cart_total_turns_are_left_alone(self):
+        """Turns 14 and 17 stated a 3138 order total against the same 1200 budget. That is TRUE —
+        the budget is per bottle and the basket held four — so it must not be flagged here."""
+        reply = "🛍️ الطلب لحد دلوقتي: الإجمالي 3138 جنيه، أعلى من الميزانية اللي قولتيها."
+
+        self.assertEqual(self._flag(reply), [])
+
+    # ── the spelling gap that hid it ──────────────────────────────────────
+    def test_the_ghayn_spelling_is_recognised_at_all(self):
+        """The whole bug in one assertion. أغلى (غ) is what the reply used; the old tuple had only
+        أعلى (ع). Both spellings, and both final letters, now read as the same claim."""
+        for word in ("أغلى", "أعلى", "اغلى", "اعلى", "أغلي", "أعلي"):
+            with self.subTest(word=word):
+                self.assertEqual(
+                    len(self.checks._budget_claims(f"سعره 1019 جنيه، {word} من ميزانيتك.")), 1
+                )
+
+    def test_every_phrasing_of_the_claim_is_read(self):
+        for claim in (
+            "أغلى من ميزانيتك",
+            "أعلى شوية من ميزانيتك",
+            "أكتر من ميزانيتك",
+            "فوق ميزانيتك",
+            "فوق الميزانية",
+            "خارج ميزانيتك",
+            "برة الميزانية",
+            "زيادة عن ميزانيتك",
+            "بيزيد عن الميزانية",
+            "زايد على ميزانيتك",
+            "الفرق 353 جنيه عن ميزانيتك",
+            "مش داخل ميزانيتك",
+            "مش في ميزانيتك",
+        ):
+            with self.subTest(claim=claim):
+                self.assertTrue(self._flag(f"الـ90 ملي بـ1019 جنيه، {claim}."), claim)
+
+    # ── the preconditions, each of which is load-bearing ──────────────────
+    def test_a_true_overage_is_not_a_finding(self):
+        """The skill requires naming an overage out loud. 1015 against 900 really is over."""
+        reply = "الـ90 ملي بـ1015 جنيه، أغلى من ميزانيتك بـ115 جنيه."
+
+        self.assertEqual(self.checks.check_false_over_budget(reply, 900, self.truth), [])
+
+    def test_a_claim_with_no_price_quoted_is_not_a_finding(self):
+        """"الـ90 ملي أعلى شوية من ميزانيتك" with the figure left out is a shape the code
+        deliberately produces and it can be true. Without a price there is no evidence about the
+        referent, so this check has to stay silent — the precondition is the fix, not a guard."""
+        self.assertEqual(self._flag("الـ90 ملي أعلى شوية من ميزانيتك."), [])
+
+    def test_a_denial_of_the_claim_is_not_a_finding(self):
+        """The reply the fix exists to produce. Every pattern matches inside "مش أغلى من ميزانيتك",
+        so without the negation check the retraction would be scored as the defect it retracts."""
+        for reply in (
+            "معاك حق، هو مش أغلى من ميزانيتك — 1019 جنيه داخل الـ1200.",
+            "لا، ده مش فوق ميزانيتك، سعره 1019 بس.",
+            "ولا واحد منهم أعلى من ميزانيتك، 666 و1019.",
+            "مفيش حاجة فيهم فوق الميزانية، 666 و1019.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(self._flag(reply), [])
+
+    def test_a_negator_in_the_previous_clause_does_not_protect_the_claim(self):
+        """The bound that keeps the widened window honest: مش belongs to the clause before, so the
+        claim after the break is still a claim. This is the direction where a wrong answer means a
+        missed finding — and in the production guard, a falsehood left in the reply."""
+        self.assertTrue(self._flag("الـ90 ملي بـ1019 جنيه مش بطال، بس أغلى من ميزانيتك."))
+
+    def test_a_mish_daakhil_claim_is_not_read_as_a_denial(self):
+        """"مش داخل ميزانيتك" opens with مش, but there the مش belongs to the claim. Treating it as
+        a negation would make one of the two most direct phrasings invisible."""
+        self.assertTrue(self._flag("الـ90 ملي بـ1019 جنيه ⚠️ مش داخل ميزانيتك."))
+
+    def test_arabic_indic_digits_are_read_as_prices(self):
+        self.assertTrue(self._flag("الـ50 بـ٦٦٦ جنيه، والـ90 بـ١٠١٩ فوق الميزانية."))
+
+    def test_a_number_inside_a_product_name_is_not_a_price(self):
+        """`_strip_product_names` runs first, so Baccarat Rouge 540 leaves no 540 behind. With no
+        price-like number left the check goes quiet — a miss, which is the safe direction."""
+        self.assertEqual(self._flag("Baccarat Rouge 540 فوق ميزانيتك."), [])
+
+    def test_an_unusable_budget_is_not_graded(self):
+        """`merged_intent` is written by the extractor model, so anything can arrive here. A bad
+        extraction must cost one ungraded turn, not a crashed run."""
+        for budget in (None, 0, "", "مش محدد", float("nan") and None):
+            with self.subTest(budget=budget):
+                self.assertEqual(self._flag(self.MSG_20, budget=budget), [])
+
+    def test_a_string_budget_is_still_graded(self):
+        self.assertTrue(self._flag(self.MSG_20, budget="1200"))
+
+    # ── the marker with no sentence behind it ─────────────────────────────
+    # Found by the first live replay of the production guard, which is the argument for having
+    # run one: the sentence was stripped and the glyph went out on its own.
+
+    def test_a_price_adjacent_marker_is_flagged_with_no_claim_at_all(self):
+        """Replay run 1, turn 10, verbatim. No pattern in the tuple matches this — there is no
+        claim to match — and the customer's next words were "ازاي اعلي من ميزانيتي", which is the
+        original complaint arriving with nothing but a glyph behind it."""
+        found = self._flag(
+            "أنسب اختيار لجوزك من Versace هو Eros الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي "
+            "بـ666 جنيه داخل الميزانية."
+        )
+
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("⚠️", found[0][0])
+        self.assertEqual(found[0][1], 1019.0)
+
+    def test_the_marker_is_not_reported_twice_when_a_sentence_does_follow(self):
+        """One sentence is one finding. MSG_20 carries both the glyph and the claim it introduces,
+        and reporting each separately would double-count a single falsehood."""
+        self.assertEqual(len(self._flag(self.MSG_20)), 1)
+
+    def test_a_leading_marker_is_not_a_budget_claim(self):
+        """Why the pattern requires a number *before* the glyph. Every other ⚠️ this system emits
+        leads its line — the order warning, the "not the perfume you asked about" header — and
+        flagging those would spend a reader's attention on a warning the reply was right to relay."""
+        for reply in (
+            "⚠️ للعلم: إجمالي الطلب 1019 جنيه. لو مش مقصود قوليلي.",
+            "⚠️ العطر اللي تحت مش اللي سألتي عنه: Eros الـ90 ملي بـ1019 جنيه.",
+            "⚠️ النوتات مش متسجلة عندنا للعطر ده، بس سعره 1019 جنيه.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(self._flag(reply), [])
+
+    def test_a_marker_beside_a_price_that_really_is_over_is_not_a_finding(self):
+        """The glyph reading sits behind the same preconditions as the claim reading, so the turn
+        where ⚠️ is the truth — a genuinely near-budget size — is left alone."""
+        self.assertEqual(
+            self.checks.check_false_over_budget(
+                "الـ90 ملي بـ1015 جنيه ⚠️ (أعلى شوية من الميزانية).", 900, self.truth
+            ),
+            [],
+        )
+
+    def test_a_bare_marker_does_not_excuse_the_budget_checks(self):
+        """The asymmetry between the two readings of this file, stated as a test. The skill allows
+        going over budget when it is NAMED, with both figures said out loud — so a glyph that names
+        nothing must not buy the silence a real acknowledgement buys, even though it is enough to
+        falsify the turn."""
+        reply = "الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي بـ666 جنيه."
+
+        self.assertTrue(self._flag(reply))
+        self.assertFalse(self.checks._acknowledged_a_real_overage(reply, 1200, self.truth))
+
+    # ── the claim has to be near a price to be falsified by one ───────────
+    # Both of these were graded clean for months, then reported as critical the moment the check
+    # went in, then cleared again by the scope bound. Re-grading the archived runs is what found
+    # them — the argument for keeping a runs_*.json per milestone.
+
+    def test_a_claim_about_a_size_the_reply_never_priced_is_not_a_finding(self):
+        """Scenario M1 turn 3, verbatim, budget 700. TRUE: Sauvage's 90ml really is over, its
+        figure is absent because the prompt forbids quoting an ❌ price, and 601/680 belong to two
+        other perfumes in the next sentence. Reporting this as critical teaches a reader to skip
+        the check, which costs more than the finding is worth."""
+        reply = (
+            "Dior Sauvage خرج من طلبك لأنه سعر الـ90 ملي أعلى من ميزانيتك بكتير. عندنا بدائل "
+            "مختلفة داخل الميزانية زي Ambero والـ50 ملي بـ601 جنيه، وDark Aura والـ50 ملي "
+            "بـ680 جنيه."
+        )
+
+        self.assertEqual(
+            self.checks.check_false_over_budget(reply, 700, self.truth), []
+        )
+
+    def test_a_claim_on_its_own_line_is_out_of_reach_of_the_prices_above_it(self):
+        """Scenario G2 turn 1: bullet-priced 50ml sizes, then a closing line about the 90ml with no
+        figure on it. A line break ends a referent's scope."""
+        reply = (
+            "🔹 Stronger With You 50 ملي بـ 400 جنيه\n"
+            "🔹 Dior Homme Sport 50 ملي بـ 450 جنيه\n"
+            "🔹 Stronger With You Absolutely 50 ملي بـ 480 جنيه\n\n"
+            "لو حابب حجم أكبر، الـ90 ملي أغلى بكتير عن ميزانيتك، فالأفضل تبدأ بالـ50 ملي."
+        )
+
+        self.assertEqual(
+            self.checks.check_false_over_budget(reply, 500, self.truth), []
+        )
+
+    def test_a_price_one_comma_away_is_still_in_scope(self):
+        """Why the bound is the sentence and not the clause: conversation 912 put the price exactly
+        one comma from the claim, and losing that would lose the earlier report of this same bug."""
+        self.assertTrue(self._flag("سعره 1046 جنيه، أعلى شوية ⚠️ عن ميزانيتك."))
+
+    def test_a_number_inside_a_product_name_is_not_a_referent_either(self):
+        """The scope text goes through `_strip_product_names` too. Without it the 540 in the claim's
+        own sentence would stand in for a price and re-open the false positive from the inside."""
+        self.assertEqual(
+            self._flag("Baccarat Rouge 540 فوق ميزانيتك. وفيه Eros بـ666 جنيه."), []
+        )
+
+    def test_the_acknowledgement_reading_ignores_scope(self):
+        """The scope bound belongs to the falsification reading only. M1's reply HAS named an
+        overage — that is what the excusal is for — so narrowing `_budget_claims` instead would
+        have made a correct disclosure look like silence and flagged the turn some other way."""
+        reply = (
+            "Dior Sauvage خرج من طلبك لأنه سعر الـ90 ملي أعلى من ميزانيتك بكتير. "
+            "بدائل داخل الميزانية: Ambero الـ50 ملي بـ601 جنيه."
+        )
+
+        self.assertTrue(self.checks._budget_claims(reply))
+        self.assertEqual(
+            self.checks.check_false_over_budget(reply, 700, self.truth), []
+        )
+
+    # ── the narrowed acknowledgement gate ─────────────────────────────────
+    def test_a_true_acknowledgement_still_excuses_the_budget_checks(self):
+        """Scenario X3's correct answer names the nearest options and says they cost more. The
+        excusal exists for that reply and has to keep working."""
+        reply = "الـ90 ملي بـ1019 جنيه، أغلى من ميزانيتك."
+
+        self.assertTrue(self.checks._acknowledged_a_real_overage(reply, 900, self.truth))
+        self.assertEqual(self.checks.check_budget_respected(reply, 900, self.truth), [])
+
+    def test_a_false_acknowledgement_no_longer_excuses_them(self):
+        """The suppression hazard the narrowing removes: claiming an overage bought a turn silence
+        on every sibling budget finding, whether or not anything in it was actually over."""
+        self.assertFalse(
+            self.checks._acknowledged_a_real_overage(self.MSG_20, 1200, self.truth)
+        )
+
+    def test_a_reply_that_makes_no_claim_is_not_excused_either(self):
+        self.assertFalse(
+            self.checks._acknowledged_a_real_overage(
+                "الـ90 ملي بـ1019 جنيه داخل ميزانيتك تماماً.", 1200, self.truth
+            )
+        )
+
+    def test_the_stated_total_check_is_unchanged_by_the_narrowing(self):
+        """Both pinned cases from `HarnessFalseDenialCheckTests` still hold: a product's own total
+        is not an order total, and a real order total is still caught."""
+        self.assertEqual(
+            self.checks.check_stated_total(
+                "أنصحك بحجم الـ 90 ملي، بس سعره الإجمالي 944 جنيه.", 700, self.truth
+            ),
+            [],
+        )
+        self.assertEqual(
+            self.checks.check_stated_total("💰 الإجمالي: 1560 جنيه.", 900, self.truth), [1560.0]
+        )
+
+    # ── wiring ────────────────────────────────────────────────────────────
+    def test_check_reply_reports_it_as_critical(self):
+        findings = self.checks.check_reply(
+            self.MSG_20,
+            truth=self.truth,
+            context="",
+            customer_text="بص انا عايزاه لجوزي مش ليا",
+            turn_state={"merged_intent": {"max_price": 1200, "brand": "Versace"}},
+        )
+
+        matching = [f for f in findings if f[0] == "false_over_budget"]
+        self.assertEqual(len(matching), 1, findings)
+        self.assertEqual(matching[0][1], "critical")
+        self.assertIn("أغلى من ميزانيتك", matching[0][2])
+        self.assertIn("1019", matching[0][2])
+
+    def test_check_reply_stays_quiet_when_no_budget_was_stated(self):
+        """Keyed on `merged_intent`, so a conversation where the customer never named a budget
+        cannot produce this finding — there is nothing for the claim to be false about."""
+        findings = self.checks.check_reply(
+            self.MSG_20,
+            truth=self.truth,
+            context="",
+            customer_text="عندكو حاجه من فيرزاتشي ؟",
+            turn_state={"merged_intent": {"brand": "Versace"}},
+        )
+
+        self.assertEqual([f for f in findings if f[0] == "false_over_budget"], [])
+
+    def test_the_replay_is_registered_and_states_the_real_figures(self):
+        """A frozen transcript nobody can run is not a regression test. Conversation 931 joins the
+        other replays so `EVAL_SCENARIOS=conv931` reaches it."""
+        from eval_harness import scenarios_conv931
+        from eval_harness.runner import _REPLAYS
+
+        self.assertEqual(_REPLAYS["conv931"], "scenarios_conv931")
+
+        scenario = scenarios_conv931.SCENARIOS[0]
+        self.assertEqual(scenario["id"], "CONV931")
+        self.assertEqual(scenario["assert_budget"], 1200)
+        # The two turns the whole scenario exists for, and in the right order.
+        self.assertIn("بص انا عايزاه لجوزي مش ليا", scenario["turns"])
+        self.assertIn("ازاي اعلي من ميزانيتي", scenario["turns"])
+        self.assertLess(
+            scenario["turns"].index("بص انا عايزاه لجوزي مش ليا"),
+            scenario["turns"].index("ازاي اعلي من ميزانيتي"),
+        )
+        # Every price the probe asserts has to be a real one, or the probe teaches the grader a
+        # wrong catalogue. These are Eros' two sizes, the three cart perfumes, and the real total.
+        for figure in ("666", "1019", "650", "669", "400", "2119", "1200", "353"):
+            self.assertIn(figure, scenario["probe"], figure)
+
+
+class BudgetLabelsReachEveryPricePathTests(TestCase):
+    """Conversation 931's other half: three branches rendered prices with no budget marker at all.
+
+    `grep max_price products/services/product_info.py` returned nothing, so a customer who had said
+    1200 saw a 3800 size with no ✅/⚠️/❌ beside it, and `value_pick_note` — which filters to
+    *in-budget* variants — was picking the best value out of the whole size ladder and calling it
+    that. Persona rule prompts.py:103 asserts the opposite ("الـ Value Pick بيتحسب داخل ميزانية
+    العميل"), which was true of the recommendation branch and false here. `objection_service` and
+    `identification_service` had the same gap.
+
+    Two hazards come in with the labels, and both are pinned below because both are ways this fix
+    could have made things worse rather than better:
+
+    - The ❌ label's own text is "ممنوع تعرضه", and persona rule prompts.py:104 repeats it. That is a
+      rule about *choosing* which size to recommend. On a turn where the customer typed the perfume's
+      name and asked what it costs, the label would arrive carrying a prohibition written for a
+      different question, and the answer to "بكام" would become a refusal to say.
+    - The retraction the objection branch owes a customer disputing a false over-budget claim has to
+      be stated even on a turn that resolved no products, which is exactly the shape conversation
+      931's turn 11 had (`ctx_len=0`, because "ازاي اعلي من ميزانيتي" names no perfume).
+
+    Every assertion about a *rule* goes against the prompt and every assertion about a *price row*
+    goes against the context, because those are two different surfaces — see `_named_turn`.
+    """
+
+    IN = "✅ (داخل الميزانية)"
+    NEAR = "⚠️ (أعلى شوية من الميزانية"
+    FAR = "❌ (أعلى من الميزانية بكتير"
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        versace = Brand.objects.create(store=self.store, name="Versace")
+        kurkdjian = Brand.objects.create(store=self.store, name="Maison Francis Kurkdjian")
+
+        # Conversation 931's perfume at its real prices. Both sizes fit 1200; the 90ml is the one the
+        # customer was told was 353 over it.
+        self.eros = Product.objects.create(
+            store=self.store, brand=versace, name="Eros", gender="male",
+            top_notes="Mint, Green Apple, Lemon",
+            middle_notes="Tonka Bean, Geranium, Ambroxan",
+            base_notes="Vanilla, Vetiver, Oakmoss, Cedar",
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=50, price=666, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.eros, volume=90, price=1019, bottle_type="normal"
+        )
+
+        # The other two tiers against the same 1200: 1400 is inside BUDGET_TOLERANCE (ceiling 1440),
+        # 3800 is far outside it. One fixture, all three labels.
+        self.baccarat = Product.objects.create(
+            store=self.store, brand=kurkdjian, name="Baccarat Rouge 540", gender="unisex",
+            top_notes="Saffron, Jasmine",
+            middle_notes="Amberwood, Ambergris",
+            base_notes="Fir Resin, Cedar",
+        )
+        ProductVariant.objects.create(
+            product=self.baccarat, volume=70, price=1400, bottle_type="normal"
+        )
+        ProductVariant.objects.create(
+            product=self.baccarat, volume=200, price=3800, bottle_type="normal"
+        )
+
+    def _conversation(self, budget=None):
+        return Conversation.objects.create(
+            store=self.store,
+            preferences={} if budget is None else {"max_price": budget},
+        )
+
+    # ── the branch that answers about a perfume the customer named ─────────
+    def _named_turn(self, budget=None, message="فيرزاتشي إيروس بكام؟", products=None):
+        """The rows this branch injects, and the prompt it actually delivers.
+
+        Two different surfaces, and the difference decides what an assertion is worth:
+        `get_product_info` returns only `context` — the rows — because that is what the router
+        persists into `Message.internal_context`. The instructions are appended to the user message
+        and never appear in the return value, so a rule asserted against `context` is a rule nothing
+        checked.
+        """
+        conversation = self._conversation(budget)
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=[self.eros] if products is None else products,
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info(message, [], self.store, conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    def test_the_named_perfume_rows_carry_the_budget_verdict(self):
+        """Conversation 931's own turn shape: both Eros sizes fit 1200, and now say so."""
+        context, _ = self._named_turn(budget=1200)
+
+        self.assertIn("666", context)
+        self.assertIn("1019", context)
+        self.assertEqual(context.count(self.IN), 2)
+        self.assertNotIn(self.NEAR, context)
+        self.assertNotIn(self.FAR, context)
+
+    def test_without_a_stated_budget_no_row_is_labelled(self):
+        """Nothing to be over, so no marker — and no `int(None)` on the way there either."""
+        context, prompt = self._named_turn(budget=None)
+
+        self.assertIn("1019", context)
+        self.assertNotIn("الميزانية", context)
+        self.assertNotIn("العميل قال إن ميزانيته", prompt)
+
+    def test_a_size_over_the_budget_is_labelled_over_it(self):
+        context, _ = self._named_turn(budget=1200, products=[self.baccarat])
+
+        self.assertIn(self.NEAR, context)
+        self.assertIn(self.FAR, context)
+        self.assertNotIn(self.IN, context)
+
+    def test_the_value_pick_is_computed_inside_the_budget(self):
+        """`prompts.py:103` promises this ("الـ Value Pick بيتحسب داخل ميزانية العميل") and until now
+        this branch made it false: the 90ml is the better value per ml, and it was recommended as
+        such to a customer who could not afford it."""
+        affordable, _ = self._named_turn(budget=1200)
+        self.assertIn("90 ملي", affordable)
+        self.assertIn("💡", affordable)
+
+        # 1019 is far past a 700 budget, so only the 50ml is eligible and one bottle is not a
+        # comparison. The verdict disappears rather than recommending an unaffordable size.
+        pinched, _ = self._named_turn(budget=700)
+        self.assertNotIn("💡", pinched)
+        self.assertIn("1019", pinched)  # still quoted — the price was asked for
+
+    def test_the_marker_is_the_only_budget_verdict_the_model_may_give(self):
+        """353 was `1019 − 666`, lifted from the value note one line below the labels and
+        re-attributed to the budget. The rule names that move and forbids it."""
+        _, prompt = self._named_turn(budget=1200)
+
+        self.assertIn("1200", prompt)
+        self.assertIn("ممنوع تحسب الفرق بنفسك", prompt)
+        self.assertIn("مش مكتوب جوه علامة ⚠️", prompt)
+        self.assertIn("ممنوع تقول عنه", prompt)
+
+    def test_the_price_of_a_named_perfume_is_never_withheld(self):
+        """The hazard the labels bring with them. `_BUDGET_LABELS["far"]` says "ممنوع تعرضه", which
+        is a rule about *recommending*; the customer here typed the name and asked the price. Without
+        this the labels turn "بكام" into a refusal to answer — the one outcome the whole block exists
+        to prevent."""
+        context, prompt = self._named_turn(budget=1200, products=[self.baccarat])
+
+        self.assertIn(self.FAR, context)
+        self.assertIn("ممنوع **ترشحه**، مش ممنوع تقول سعره", prompt)
+        self.assertIn("ممنوع تخفي سعر عطر العميل سأل عنه بالاسم", prompt)
+        self.assertIn("ممنوع تقول إنه مش متوفر عشان سعره", prompt)
+
+    # ── the branch that offers alternatives because nothing resolved ───────
+    def _alternatives_turn(self, budget=None, alternatives=None):
+        conversation = self._conversation(budget)
+        returns = [self.eros, self.baccarat] if alternatives is None else alternatives
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.suggest_alternatives", return_value=returns
+        ) as suggest, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info("عندكو حاجة حلوة؟", [], self.store, conversation)
+        return context, chat_call.call_args[0][0][-1]["content"], suggest
+
+    def test_the_alternatives_are_ranked_against_the_budget(self):
+        """An ordering tier, not a filter — `suggest_alternatives` sorts in-budget first and keeps
+        the rest, which is the shape this branch needs. Passing the budget is what makes that
+        ordering happen at all."""
+        _, _, suggest = self._alternatives_turn(budget=1200)
+
+        self.assertEqual(suggest.call_args.kwargs["max_price"], Decimal("1200"))
+
+    def test_the_alternatives_rows_carry_the_budget_verdict(self):
+        context, _, _ = self._alternatives_turn(budget=1200)
+
+        self.assertIn(self.IN, context)
+        self.assertIn(self.FAR, context)
+
+    def test_an_all_over_budget_list_is_named_as_such_rather_than_pitched_silently(self):
+        """`suggest_alternatives` does not filter, so a budget under the cheapest thing in the
+        catalogue yields a list of ⚠️ and ❌ rows plus an instruction to pitch from it. Saying the
+        number out loud beats both silence and an unmarked over-budget pitch."""
+        _, prompt, _ = self._alternatives_turn(budget=1200)
+
+        self.assertIn("اللي داخل الميزانية (✅) الأول", prompt)
+        self.assertIn("لو كل البدائل عليها ⚠️ أو ❌", prompt)
+        self.assertIn("ممنوع تسكت وتسيبه من غير أي اقتراح", prompt)
+
+    def test_no_budget_line_when_there_is_no_list_to_order(self):
+        """A budget rule about an empty list is a number with no referent."""
+        context, prompt, _ = self._alternatives_turn(budget=1200, alternatives=[])
+
+        self.assertNotIn("بدائل مقترحة", context)
+        self.assertNotIn("والبدائل فوق مرتبة", prompt)
+
+    # ── the objection branch ──────────────────────────────────────────────
+    def _objection_turn(self, budget=None, products=None, message="غالي شوية"):
+        from products.services.objection_service import handle_objection
+
+        objection = sales_objection.detect(message)
+        self.assertIsNotNone(objection, "the fixture message stopped being an objection")
+        conversation = self._conversation(budget)
+        with mock.patch(
+            "products.services.objection_service.resolve_products",
+            return_value=[] if products is None else products,
+        ), mock.patch(
+            "products.services.objection_service.chat", return_value="ok"
+        ) as chat_call:
+            _, context = handle_objection(
+                message, objection, [], self.store, conversation
+            )
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    def test_the_objection_rows_carry_the_budget_verdict(self):
+        context, prompt = self._objection_turn(budget=1200, products=[self.eros])
+
+        self.assertEqual(context.count(self.IN), 2)
+        self.assertIn("ممنوع تحسب الفرق بنفسك", prompt)
+
+    def test_the_retraction_survives_a_turn_with_no_products(self):
+        """Conversation 931 turn 11 exactly: "ازاي اعلي من ميزانيتي" resolves no perfume, so the
+        model's only source was its own previous reply read back through `build_llm_history`. It
+        repeated the false claim, was challenged again, and changed the subject. The instruction is
+        about the retraction rather than about the prices, because there are no prices."""
+        context, prompt = self._objection_turn(budget=1200)
+
+        self.assertEqual(context, "")
+        self.assertIn("معاك حق، ده داخل ميزانيتك", prompt)
+        self.assertIn("ممنوع تكرر الكلام الغلط", prompt)
+        self.assertIn("ممنوع تغيّر الموضوع", prompt)
+        # No rows, so no rule about markers the model cannot see — that would be pure noise.
+        self.assertNotIn("ممنوع تحسب الفرق بنفسك", prompt)
+
+    def test_the_retraction_may_not_be_paid_for_with_an_invented_price(self):
+        """The empty-context turn is also the turn most able to invent a figure to argue with."""
+        _, prompt = self._objection_turn(budget=1200)
+
+        self.assertIn("ممنوع تخترع سعر جديد", prompt)
+
+    def test_the_objection_branch_stays_quiet_without_a_budget(self):
+        _, prompt = self._objection_turn(budget=None, products=[self.eros])
+
+        self.assertNotIn("ميزانية العميل", prompt)
+
+    # ── the identification branch, through the real router ────────────────
+    def _identification_turn(self, budget, clues):
+        """Routed rather than called, because threading `conversation` through the router is half of
+        what this fix is: `identify_perfume` grew the parameter and `router.py:443` has to pass it."""
+        conversation = self._conversation(budget)
+        with mock.patch(
+            "products.services.router.classify", return_value="identification"
+        ), mock.patch(
+            "products.services.identification_service.chat",
+            side_effect=[json.dumps(clues), "ok"],
+        ) as chat_call:
+            route("مش فاكر اسمه", [], self.store, conversation)
+        return chat_call.call_args[0][0][-1]["content"]
+
+    def test_the_identification_shortlist_carries_the_budget_verdict(self):
+        prompt = self._identification_turn(
+            1200, {"notes": ["vanilla"], "name_fragment": "eros"}
+        )
+
+        self.assertIn("Eros", prompt)
+        self.assertIn(self.IN, prompt)
+
+    def test_the_unstocked_guess_alternatives_carry_it_too(self):
+        """The carve-out branch: we name a perfume we do not stock, then offer what we do. Those
+        offers are priced, so they are labelled."""
+        prompt = self._identification_turn(1200, {"likely_known_perfume": "Creed Aventus"})
+
+        self.assertIn("Creed Aventus", prompt)
+        self.assertIn(self.FAR, prompt)
+
+    # ── the shared reader ─────────────────────────────────────────────────
+    def test_the_budget_reader_handles_every_shape_a_caller_passes(self):
+        """One reader for a value four prompt branches need, each of which had its own copy of this
+        three-line read. The number arrives from the extractor as a float, a string, or something
+        unusable, so the coercion is the part that had to be shared — two branches disagreeing about
+        what "1200" means is the drift `BUDGET_TOLERANCE`'s comment records the cost of."""
+        cases = (
+            ({}, None),
+            ({"max_price": 1200}, Decimal("1200")),
+            ({"max_price": 1200.0}, Decimal("1200")),
+            ({"max_price": "1200"}, Decimal("1200")),
+            ({"max_price": None}, None),
+            ({"max_price": 0}, None),
+            ({"max_price": -50}, None),
+            ({"max_price": "شويه"}, None),
+        )
+        for preferences, expected in cases:
+            with self.subTest(preferences=preferences):
+                conversation = Conversation.objects.create(
+                    store=self.store, preferences=preferences
+                )
+                self.assertEqual(sales_value.stated_budget(conversation), expected)
+
+        # Two shapes no stored row can hold, both of which still reach this function: every caller
+        # defaults `conversation` to None, and the read is written defensively because a missing
+        # budget is the ordinary case rather than an error.
+        self.assertIsNone(sales_value.stated_budget(None))
+        self.assertIsNone(sales_value.stated_budget(mock.Mock(preferences=None)))
+
+    def test_the_float_a_model_returns_does_not_go_through_binary(self):
+        """`Decimal(999.99)` is 999.98999…, which falls the wrong side of a boundary comparison. The
+        reader goes through `str`, so a price of exactly the budget is still "in"."""
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"max_price": 999.99}
+        )
+        budget = sales_value.stated_budget(conversation)
+
+        self.assertEqual(budget, Decimal("999.99"))
+        self.assertEqual(sales_value.budget_tier(Decimal("999.99"), budget), "in")
 
 
 class PluralPointerTests(TestCase):

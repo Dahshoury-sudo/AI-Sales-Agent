@@ -57,6 +57,8 @@ _REPLAYS = {
     "conv842": "scenarios_conv841",
     # 772 is the deny-on-the-first-ask case: an absent perfume, then a stocked one written with ڤ.
     "conv772": "scenarios_conv772",
+    # 931 is the false over-budget claim: 1019 against a 1200 budget, called over it twice.
+    "conv931": "scenarios_conv931",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

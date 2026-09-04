@@ -75,6 +75,30 @@ def as_budget(value):
     return budget if budget > 0 else None
 
 
+def stated_budget(conversation):
+    """The budget this conversation's customer stated, as a Decimal, or None.
+
+    One reader for a value several prompt branches need — `product_info` on both of its rendering
+    paths, `objection_service`, and `order_service`'s checkout warning — each of which had, or was
+    about to have, its own copy of this three-line read. "Each caller reads it for itself" is how
+    this module came to exist at all; see BUDGET_TOLERANCE's comment for what the last round of
+    that cost.
+
+    `getattr` and `or {}` because callers pass `conversation=None` freely and `preferences` is
+    nullable; `as_budget` because the value was written by the extractor and arrives as a float, a
+    string, or something unusable. Never raises — a customer who never named a number is the
+    ordinary case, not an error.
+
+    `reply_sanitizer` deliberately keeps its own inline read instead of calling this: that module's
+    guard takes a plain number so the rule can be tested without a Conversation, and its docstring
+    commits it to staying import-free. The duplication there is one dict lookup, and it is the
+    coercion — this function's `as_budget` — that the two would otherwise be at risk of disagreeing
+    about, which is why the coercion is the part that is shared.
+    """
+    preferences = getattr(conversation, "preferences", None) or {}
+    return as_budget(preferences.get("max_price"))
+
+
 def budget_ceiling(max_price):
     """The highest price still worth offering against this budget, or None if unusable.
 
@@ -203,18 +227,43 @@ def size_value(variants):
     )
 
 
-def _money_and_warning(value):
+def _money_and_warning(value, max_price=None):
     """The price facts, and the ban that stops them being read backwards.
 
     Shared by both tiers of `size_value_note`. The direction of the price difference has to
     be stated in words whether or not the gap is worth selling on, because the regression
     this module exists to prevent — a dearer bottle described as saving the customer money —
     does not get less likely when the saving is small.
+
+    Conversation 931 is why every figure here names what it is a figure *of*. The clause read
+    "أغلى بـ 353 جنيه في الإجمالي (1019 مقابل 666)" — a real number whose referent arrived only
+    in a parenthetical two clauses later, introduced by the same word the over-budget label uses,
+    one line under that label. The reply lifted the 353, re-pointed it from "the 50ml" to "your
+    budget", and told a customer an in-budget 1019 was 353 over their 1200. So the comparison is
+    named before the number rather than after it, and each price is stated as the price *of a
+    named size*.
+
+    Hygiene, not the fix, and held to the same standard as the ⚠️ removal documented in `scope`
+    below: prompt wording cannot be verified, so it is not what this incident is closed on.
+    `reply_sanitizer.strip_false_over_budget` is — it deletes the sentence whatever produced it.
+
+    The delta is deliberately not introduced by a bare "بـ" after a size noun
+    ("أغلى من الـ 50 ملي بـ 353 جنيه"). That is the construction `product_formatting.budget_label`
+    records as having produced "الـ90 ملي أعلى شوية بـ90 جنيه" — read as *the 90ml costs 90* —
+    because "بـ" is the price particle in every sibling clause of the same reply.
+
+    `max_price` gates the one clause that names the budget, and gating it is not a nicety.
+    `BudgetLabelsReachEveryPricePathTests` pins the whole injected context as budget-word-free
+    when the customer has stated no budget — because a prompt that mentions a budget nobody named
+    is how a reply comes to discuss one. So the prohibition fires exactly on the turns where the
+    re-attribution is possible at all: there has to be a budget to re-point the delta at.
     """
     if value.costs_more:
         money = (
-            f"أغلى بـ {value.extra_price:.0f} جنيه في الإجمالي "
-            f"({value.best.price:.0f} مقابل {value.baseline.price:.0f})، "
+            f"أغلى من الـ {value.baseline.volume} ملي في الإجمالي: "
+            f"سعر الـ {value.best.volume} ملي {value.best.price:.0f} جنيه، "
+            f"وسعر الـ {value.baseline.volume} ملي {value.baseline.price:.0f} جنيه، "
+            f"والفرق بين الحجمين {value.extra_price:.0f} جنيه، "
             f"بس سعر الملي أرخص: {value.best_per_ml:.1f} بدل "
             f"{value.baseline_per_ml:.1f} جنيه للملي"
         )
@@ -222,6 +271,12 @@ def _money_and_warning(value):
             "❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، "
             "الأوفر في سعر الملي بس."
         )
+        if max_price is not None:
+            warning += (
+                f" ❌ والـ {value.extra_price:.0f} جنيه دي فرق بين حجمين من نفس العطر وبس — "
+                "مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع "
+                "تستخدم أي رقم منه في أي كلام عن ميزانية العميل."
+            )
     else:
         money = (
             f"نفس السعر تقريباً ({value.best.price:.0f} جنيه) وكمية أكتر بـ "
@@ -232,7 +287,7 @@ def _money_and_warning(value):
     return money, warning
 
 
-def size_value_note(value):
+def size_value_note(value, max_price=None):
     """Render a SizeValue for a prompt, at whatever strength the arithmetic earns.
 
     The explicit ban at the end is not decoration. The persona already says not to invent
@@ -254,18 +309,21 @@ def size_value_note(value):
     one of the top four carrying this line. Invictus carries none, because its 90ml is dearer
     per ml than its 50ml, so a perfume was passed over for a reason that has nothing to do with
     whether it suits the gym.
+
+    `max_price` is passed through to `_money_and_warning` and used for nothing else here — see
+    there for why one clause of the prohibition is gated on a budget existing at all.
     """
     if value is None:
         return ""
 
-    money, warning = _money_and_warning(value)
+    money, warning = _money_and_warning(value, max_price)
     # Said on both tiers: this line orders *sizes inside this perfume*, and nothing else.
     #
     # The scope clause carried a ⚠️ and no longer does. That glyph is the over-budget marker
     # (product_formatting._BUDGET_LABELS["near"]), and four prompt rules bind it to that meaning
     # by name — prompts.py:103-104 and recommendation's budget_note. Here it sat one clause after
-    # "أغلى بـ N جنيه في الإجمالي", inside the only other block in the context that talks about
-    # this perfume's prices, meaning something with no budget content at all.
+    # the money line's "أغلى … في الإجمالي", inside the only other block in the context that talks
+    # about this perfume's prices, meaning something with no budget content at all.
     #
     # Dropped as hygiene rather than as the fix for conversation 912 — the measured fix for that
     # is the ✅ prohibition in recommendation.budget_note, and this collision was never shown to

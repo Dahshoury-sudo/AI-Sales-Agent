@@ -198,6 +198,49 @@ def describe(intent):
     return phrases
 
 
+# The constraints `search_service.search_products` applies to `base` as hard ANDs. Notes and
+# budget are deliberately absent: those narrow `exact`, so they cannot be why a search returned
+# nothing *at all* — which is the one question `describe_filters` exists to answer. occasion,
+# longevity and projection are absent because they stopped being filters (see that function's
+# comment on why they were demoted to ranking signals).
+HARD_FILTER_KEYS = ("gender", "perfume_type", "season", "brand")
+
+
+def describe_filters(intent):
+    """Arabic phrases for only the constraints that can empty a search on their own.
+
+    `describe` renders everything the customer said, budget and notes included, which is what
+    "here is what I already know" wants and the opposite of what "here is what ruled everything
+    out" wants. Conversation 931 is the difference: Versace + حريمي matched nothing, because Eros
+    is a men's perfume, and the reply blamed the 1200 budget — a number that had not participated
+    in the filtering at all and that both Eros sizes fit.
+
+    Shares `describe`'s tables and `_lookup` so one translation cannot drift from the other, and
+    keeps its ordering so the two blocks name the same constraint the same way in one reply.
+    """
+    if not intent:
+        return []
+
+    phrases = []
+    for table, key in ((_GENDER, "gender"), (_PERFUME_TYPE, "perfume_type"), (_SEASON, "season")):
+        # Same carve-out as `describe`: "multiple" is the router asking which to start with,
+        # not a stated preference, and search_products filters on it as a literal `gender`
+        # value that matches no row — so it is not a constraint to offer relaxing either.
+        if key == "gender" and intent.get(key) == "multiple":
+            continue
+        phrase = _lookup(table, intent.get(key))
+        if phrase:
+            phrases.append(phrase)
+
+    brand = intent.get("brand")
+    if _is_set(brand) and brand != "STORE_BRAND_EXCLUSIVE":
+        phrases.append(f"من {brand}")
+    elif brand == "STORE_BRAND_EXCLUSIVE":
+        phrases.append("من تركيباتنا الخاصة")
+
+    return phrases
+
+
 def acknowledgement_hint(intent):
     """Tell the model what it already knows, and to nod to it once — briefly.
 

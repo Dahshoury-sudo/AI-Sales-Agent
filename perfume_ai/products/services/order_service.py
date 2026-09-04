@@ -8,6 +8,7 @@ from .ai.client import chat
 from .fallback import suggest_alternatives
 from .product_resolver import resolve_product
 from .notification_service import notify_new_order
+from .sales.value import budget_tier, stated_budget
 
 logger = logging.getLogger(__name__)
 
@@ -200,19 +201,28 @@ def _over_budget_warning(conversation, items_to_create):
     The per-line warning is kept alongside the total: they are different problems and a
     customer who is over on both should hear about both. One line that is itself over budget
     reports only once, since the total warning would be telling them the same thing twice.
-    """
-    try:
-        budget = conversation.preferences.get("max_price") if conversation else None
-    except Exception:
-        budget = None
-    if not budget:
-        return ""
 
-    try:
-        budget = Decimal(str(budget))
-    except (InvalidOperation, TypeError, ValueError):
-        return ""
-    if budget <= 0:
+    Two later corrections, both from conversation 931, where a 1200 stated for a single Versace
+    was compared against a four-perfume 3138 basket:
+
+      * The comparisons were bare `>`, so this was the fourth place in the codebase with its own
+        budget arithmetic and the only one that did not know about BUDGET_TOLERANCE. A 1250 line
+        against a stated 1200 was reported here as a breach while `budget_label` was
+        simultaneously telling the model the same price was "تقدر تعرضه مع التوضيح" — the exact
+        drift `budget_tier`'s docstring was written to end. Both comparisons go through it now,
+        so only a "far" price raises an alarm.
+      * The *wording* of the total warning, when the cart holds more than one perfume. `max_price`
+        is a per-bottle ceiling in every other reader — `budget_label`, `budget_tier`,
+        `search_service`'s eligibility filter, `ranking`'s budget credit, `value_pick_note`'s
+        filter, and all three prompt branches that render prices — so no perfume in a 3138 basket
+        costs 3138 and "أعلى من الميزانية اللي قلتها" is a verdict the arithmetic does not
+        support. The disclosure is kept, because a customer with 900 in mind who reaches 1753
+        wants to hear it and scenario F1 is why the total is checked at all; what goes is the
+        verdict framing, which is what the model lifted and restated as a per-item breach on
+        later turns. Multi-perfume carts now get the observation with its scope attached.
+    """
+    budget = stated_budget(conversation)
+    if budget is None:
         return ""
 
     def _line_total(item):
@@ -224,9 +234,16 @@ def _over_budget_warning(conversation, items_to_create):
     over = [
         f"{item['variant'].product.name} ({item['variant'].volume} ملي) بـ {_line_total(item):.0f}"
         for item in items_to_create
-        if _line_total(item) > budget
+        if budget_tier(_line_total(item), budget) == "far"
     ]
     total = sum((_line_total(item) for item in items_to_create), Decimal("0"))
+
+    # Distinct perfumes, not lines: 50ml + 90ml of one perfume is still one perfume's spend, and
+    # its total is a figure the stated per-bottle number can be compared to. Two different
+    # perfumes cannot be.
+    perfumes = {
+        getattr(item.get("variant"), "product_id", None) for item in items_to_create
+    }
 
     parts = []
     if over:
@@ -236,13 +253,21 @@ def _over_budget_warning(conversation, items_to_create):
             + f" — أعلى من الميزانية اللي قلتها ({int(budget)} جنيه). "
             "لو مش مقصود، قولي وأشيله.\n"
         )
-    elif total > budget:
+    elif budget_tier(total, budget) == "far":
         # Only when no single line was already flagged: otherwise the customer is told the
         # same thing twice in one summary.
-        parts.append(
-            f"\n⚠️ للعلم: إجمالي الطلب {total:.0f} جنيه، أعلى من الميزانية اللي قلتها "
-            f"({int(budget)} جنيه). لو مش مقصود، أقدر أشيل حاجة أو أنزل حجم أصغر.\n"
-        )
+        if len(perfumes) > 1:
+            parts.append(
+                f"\n⚠️ للعلم: إجمالي الطلب {total:.0f} جنيه. الرقم اللي قلته "
+                f"({int(budget)} جنيه) كان لعطر واحد، والطلب فيه أكتر من عطر — فالإجمالي أعلى "
+                f"من الميزانية دي، مش عشان عطر فيهم غالي. لو مش مقصود، أقدر أشيل حاجة أو أنزل "
+                f"حجم أصغر.\n"
+            )
+        else:
+            parts.append(
+                f"\n⚠️ للعلم: إجمالي الطلب {total:.0f} جنيه، أعلى من الميزانية اللي قلتها "
+                f"({int(budget)} جنيه). لو مش مقصود، أقدر أشيل حاجة أو أنزل حجم أصغر.\n"
+            )
 
     return "".join(parts)
 

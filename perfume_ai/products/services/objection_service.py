@@ -31,7 +31,7 @@ from .product_formatting import format_products, is_variant_available
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
-from .sales.value import value_comparison_note
+from .sales.value import stated_budget, value_comparison_note
 
 # The sequence every objection reply follows. Stated once here rather than repeated per
 # objection type, because the ordering is the fix — the per-type guidance in PLAYBOOK only
@@ -139,6 +139,45 @@ def _price_gap_context(message, history, store):
     return "\n" + value_comparison_note(priced[0][1], priced[1][1]) + "\n"
 
 
+def _budget_verdict_note(budget, context):
+    """The budget markers, and what a challenged over-budget claim obliges.
+
+    Returns "" with no budget, so the caller interpolates it unconditionally.
+
+    The first half is the same fact every other price-rendering branch now states: the ✅/⚠️/❌
+    marker is the verdict and there is no difference figure to quote unless one is written inside a
+    ⚠️. It is emitted only alongside real product data, because a rule about markers the model
+    cannot see is noise.
+
+    The second half is this branch's own, and it is the turn conversation 931 actually failed on.
+    "ازاي اعلي من ميزانيتي" is a price objection, so it arrives here — and `resolve_products` found
+    no perfume name in it, so `context` was empty and the model's only source was its own previous
+    reply read back through `build_llm_history`. It repeated the false claim, was challenged a
+    second time, and changed the subject instead of withdrawing it. So the instruction is about the
+    retraction rather than about the prices: a customer disputing an over-budget claim is usually
+    right, being told so plainly is the whole reply, and none of it needs a figure the model does
+    not have. `strip_false_over_budget` is what stops the claim reaching this turn at all; this is
+    what to do on the turn where it already did.
+    """
+    if budget is None:
+        return ""
+    note = f"\n🔴 ميزانية العميل {int(budget)} جنيه."
+    if context:
+        note += (
+            " وكل سعر في بيانات العطور فوق جانبه علامة محسوبة (✅ داخل الميزانية / ⚠️ أعلى شوية / "
+            "❌ أعلى بكتير). العلامة دي هي الحكم الوحيد على الميزانية: ❌ ممنوع تحسب الفرق بنفسك، "
+            "وممنوع تقول رقم فرق مش مكتوب جوه علامة ⚠️."
+        )
+    note += (
+        "\n🔴 ولو العميل بيعترض على إنك قلتله إن سعر أعلى من ميزانيته: راجع الرقم الأول. لو السعر "
+        "فعلاً داخل ميزانيته، قوله كده بصراحة في أول جملة — \"معاك حق، ده داخل ميزانيتك\" — "
+        "والاعتراف بالغلط هنا هو الرد الصح والوحيد. ❌ ممنوع تكرر الكلام الغلط، ❌ ممنوع تغيّر "
+        "الموضوع، و❌ ممنوع تدوّر على تبرير للرقم. ❌ وممنوع تخترع سعر جديد: لو مفيش أسعار في "
+        "البيانات المبعوتة لك، اتكلم عن السعر اللي اتقاله قبل كده زي ما هو.\n"
+    )
+    return note
+
+
 def handle_objection(message, objection, history=None, store=None, conversation=None):
     """Reply to a customer objection or complaint, addressing it before selling."""
     guidance = PLAYBOOK.get(objection.kind, "")
@@ -147,7 +186,8 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     # Only the perfumes actually under discussion, so the reply stays on the customer's
     # concern instead of pivoting to a fresh recommendation.
     products = resolve_products(message, history, store)
-    context = format_products(products[:2]) if products else ""
+    budget = stated_budget(conversation)
+    context = format_products(products[:2], max_price=budget) if products else ""
 
     extra = ""
     if objection.kind == "price_gap":
@@ -169,7 +209,7 @@ def handle_objection(message, objection, history=None, store=None, conversation=
 {sequence}
 {_NO_GUARANTEE}
 {("═══ بيانات العطور اللي بيتكلم عنها ═══" + chr(10) + context) if context else "⚠️ مفيش بيانات منتجات مبعوتة لك — ❌ ممنوع تذكر أي سعر أو اسم عطر من دمك."}
-{extra}
+{extra}{_budget_verdict_note(budget, context)}
 """
 
     messages = [{"role": "system", "content": get_system_prompt(store)}]

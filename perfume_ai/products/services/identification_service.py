@@ -23,6 +23,7 @@ from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .product_formatting import format_products
 from .sales.notes import NOTE_FAMILIES, parse_notes
+from .sales.value import stated_budget
 from products.models import Product
 
 _CLUE_PROMPT = """
@@ -250,16 +251,24 @@ def _unverifiable_note(clues):
     )
 
 
-def identify_perfume(message, history=None, store=None):
-    """Answer "what was that perfume called?" at a confidence the evidence supports."""
+def identify_perfume(message, history=None, store=None, conversation=None):
+    """Answer "what was that perfume called?" at a confidence the evidence supports.
+
+    `conversation` is read for one thing only: the budget, so the prices in these blocks carry the
+    same ✅/⚠️/❌ markers as every other branch that renders them. Lowest-stakes of the three read
+    paths that were missing them — somebody naming a half-remembered perfume is not shopping to a
+    number — but the markers are what stop a shortlist price being pitched as affordable when the
+    customer has already said it is not, and the parameter costs one keyword at the call site.
+    """
     clues = extract_clues(message, history, store)
     candidates = score_candidates(clues, _candidate_pool(clues, store))
     tier = confidence_tier(candidates)
     unverifiable = _unverifiable_note(clues)
+    budget = stated_budget(conversation)
 
     if candidates:
         shortlist = [entry.product for entry in candidates[:2]]
-        context = format_products(shortlist)
+        context = format_products(shortlist, max_price=budget)
         wording = TIER_WORDING[tier].format(name=shortlist[0].name)
         instructions = f"""
 ═══ تعليمات التعرف على العطر ═══
@@ -281,7 +290,7 @@ def identify_perfume(message, history=None, store=None):
         alternatives = Product.objects.filter(
             store=store, is_active=True
         ).filter(SELLABLE).distinct()[:3]
-        context = format_products(alternatives, brief=True) if alternatives else ""
+        context = format_products(alternatives, max_price=budget, brief=True) if alternatives else ""
         instructions = f"""
 ═══ تعليمات التعرف على العطر ═══
 1. 🔴 الوصف بيشاور على "{clues['likely_known_perfume']}" بس العطر ده مش موجود عندنا.

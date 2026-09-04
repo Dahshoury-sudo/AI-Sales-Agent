@@ -4,7 +4,7 @@ from .client import chat
 from .prompts import get_system_prompt
 from ..product_formatting import format_products, is_variant_available
 from ..sales import described
-from ..sales.constraints import acknowledgement_hint
+from ..sales.constraints import acknowledgement_hint, describe_filters
 from ..sales.ranking import reasons_note
 from ..sales.value import budget_tier
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
@@ -371,6 +371,122 @@ def _in_budget_note(products, max_price):
     )
 
 
+def _no_match_note(seen, exhausted):
+    """The state-of-the-world line above the instructions, on the same fork as instruction 1.
+
+    It read "لم يتم العثور على أي منتجات … **أو** تم ترشيح كل الخيارات المتاحة بالفعل" — an
+    either/or covering both halves of the branch at once, which is exactly how the reply came to
+    pick the wrong half. A disjunction is not a fact the model can rely on, and it was the note
+    that licensed "دي كل الخيارات" on a first request. `exhausted` decides which disjunct is
+    true, so it decides which one gets stated.
+
+    Three states, not two, because "we showed you things" and "we showed you things that match
+    what you are asking for now" are different facts and conversation 931 turns on the gap
+    between them. See `_no_match_instruction` for why `seen` alone cannot separate them.
+    """
+    if exhausted:
+        return (
+            "تم ترشيح كل الخيارات المتاحة اللي بتطابق طلب العميل بالفعل، ومفيش جديد يتعرض "
+            "عليه بنفس الشروط."
+        )
+    if seen:
+        return (
+            "مفيش أي منتج في المتجر بيطابق الشروط اللي العميل طالبها دلوقتي. العطور اللي "
+            "اتعرضت عليه قبل كده في المحادثة دي مش بتطابق الشروط دي، فهي مش \"كل الخيارات\" "
+            "بالنسبة للطلب الحالي."
+        )
+    return (
+        "لم يتم العثور على أي منتجات تطابق طلب العميل في المتجر حالياً، ومحصلش أي ترشيح قبل "
+        "كده في المحادثة دي."
+    )
+
+
+def _no_match_instruction(intent, seen, exhausted):
+    """What to say when the search came back completely empty, forked on what is actually true.
+
+    One instruction used to serve both halves of this branch, and it was written for the half
+    where the customer asks for *more*: "اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي
+    بتطابق طلبه". On a first request that matched nothing it claimed a list that had never
+    existed. Conversation 931: Versace + حريمي, and the reply apologised for having shown
+    everything available and pinned it on the 1200 budget.
+
+    The budget cannot be the cause here, and that is structural rather than a judgement call.
+    `search_products` puts gender / perfume_type / season / brand on `base` and notes / price on
+    `exact`; this branch is reached only when `products` and `alternatives` are both empty, and
+    every empty-`alternatives` return path in that function requires `base` itself to be empty.
+    So the price filter had nothing left to narrow by the time it ran. Naming the budget is
+    therefore forbidden outright rather than discouraged — and it is worth being blunt about,
+    because "مفيش حاجة في الميزانية دي" is the single most available sentence for a model that
+    has been handed a budget and no products.
+
+    `exhausted` is the fork, and it is the second attempt at one. The first was `seen` —
+    `already_described`'s output, catalogue names this conversation has put in front of the
+    customer — on the reasoning that having shown something is what makes "دي كل الخيارات" a
+    true sentence. It is not. Conversation 931 had shown three perfumes and sold them, and then
+    the customer asked for Versace حريمي: `seen` was truthy, the branch congratulated itself on
+    having presented every option, and no Versace had ever been named. Both conv931 replay runs
+    reproduced that reply verbatim on this exact turn, with `exclude_names` populated in one run
+    and empty in the other — so it was not the exclusion list either. `seen` is a fact about the
+    conversation, and the question is a fact about the *search*.
+
+    `search_service` answers it directly now: `exhausted` is true only when dropping the name
+    exclusions would have found something, i.e. matches exist and have been used up. Versace +
+    حريمي matches nothing with or without exclusions, so it is false there however much has been
+    shown before. That is the same kind of argument as the budget paragraph above — a property of
+    the queryset, not an inference from the transcript.
+
+    `seen` is still read, for the middle case: matches never existed, but we have shown this
+    customer perfumes under *earlier* constraints. Claiming a first attempt would be false there
+    too, so the wording says the true thing instead — what was shown does not match this request.
+    """
+    filters = describe_filters(intent or {})
+
+    if exhausted:
+        return (
+            "⭐ إذا كان العميل يطلب المزيد من الخيارات (مثل \"إيه تاني؟\"، \"غيره\"، \"في حاجة "
+            "تانية\")، اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي بتطابق طلبه "
+            "بالظبط، واعرض عليه يغير المواصفات بشكل عام عشان يظهرله عطور تانية. ❌ ممنوع تقترح "
+            "عليه روائح محددة (زي \"تحب حاجة خشبية؟\" أو \"فريش\") لأنك لا تعرف ما هو متوفر في "
+            "المخزون حالياً. ❌ وممنوع تقول إن السبب ميزانيته."
+        )
+
+    # The one clause that differs between "never showed anything" and "showed things, but not
+    # these things". Both make "دي كل الخيارات" false; they make it false for different reasons,
+    # and a prompt that states the wrong one hands the model a falsehood of its own.
+    if seen:
+        no_list = (
+            "🔴 اللي عرضته عليه قبل كده مش بيطابق الشروط اللي بيطلبها دلوقتي، فمعندكش قائمة "
+            "تقوله عليها إنها كل المتاح لطلبه الحالي: "
+        )
+    else:
+        no_list = (
+            "🔴 دي أول مرة تحاول ترشحله وملقيتش حاجة، فمعندكش قائمة عرضتها عليه قبل كده: "
+        )
+
+    if filters:
+        return (
+            no_list
+            + "❌ ممنوع تقول \"دي كل الخيارات المتاحة\" ولا \"عرضتلك كل اللي عندنا\" — مفيش "
+            "قائمة بتطابق الطلب ده أصلاً.\n"
+            "   🔴 اللي مفيش حاجة بتطابقه هو **مجموع** الشروط دي مع بعض: "
+            + " + ".join(filters)
+            + ". قوله كده بصراحة في جملة واحدة قصيرة، واعرض عليه يتنازل عن واحد منهم بالاسم "
+            "(مثال: نفس البراند بس من غير تحديد رجالي/حريمي، أو نفس النوع من براند تاني).\n"
+            "   ❌ ممنوع تقول إن السبب ميزانيته — الميزانية مش هي اللي منعت النتيجة دي، "
+            "وممنوع تقول \"مفيش حاجة في الميزانية دي\" ولا \"كل حاجة أغلى من كده\".\n"
+            "   ❌ وممنوع تقترح عليه روائح محددة (زي \"تحب حاجة خشبية؟\") لأنك مش شايف المخزون."
+        )
+
+    return (
+        no_list
+        + "❌ ممنوع تقول \"دي كل الخيارات المتاحة\" ولا \"عرضتلك كل اللي عندنا\".\n"
+        "   🔴 قوله بصراحة إنك محتاج تفاصيل أكتر عشان تعرف ترشحله (رجالي ولا حريمي، ولا نوع "
+        "الريحة اللي بيحبها)، واسأله سؤال واحد بس.\n"
+        "   ❌ ممنوع تقول إن السبب ميزانيته ولا تقول \"مفيش حاجة في الميزانية دي\".\n"
+        "   ❌ وممنوع تقترح عليه روائح محددة لأنك مش شايف المخزون."
+    )
+
+
 def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None, gender_unknown=False):
     # Not repeating a recommendation is handled upstream, not here: ai/intent.py fills
     # intent["exclude_names"] when the customer asks for something else, and
@@ -438,6 +554,12 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     seen = described.already_described(history, store)
     follow_up = described.is_follow_up(message, history, seen)
     repeat_note = described.repeat_ban_hint(seen, follow_up)
+    # Whether an empty search means "used up" or "never matched" — a fact `search_products`
+    # computes from the queryset, because `seen` answered a different question and the
+    # no-match branch was reading it as though it answered this one. See
+    # `_no_match_instruction`. Defaults false: a caller that hands us no `search` dict has
+    # given us no evidence of exhaustion, and claiming a list is the harmful direction.
+    exhausted = bool((search or {}).get("exhausted"))
     # What the conversation is on, and what a new constraint has just ruled out. The ranking
     # boost alone is not enough: it puts the right perfume in front of the model, but nothing
     # stops the model presenting a fresh pair alongside it. `converge` is the same follow_up
@@ -581,10 +703,10 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 {message}
 
 ═══ ملحوظة مهمة ═══
-لم يتم العثور على أي منتجات تطابق طلب العميل في المتجر حالياً، أو تم ترشيح كل الخيارات المتاحة بالفعل.
+{_no_match_note(seen, exhausted)}
 
 ═══ تعليمات الرد ═══
-1. ⭐ إذا كان العميل يطلب المزيد من الخيارات (مثل "إيه تاني؟"، "غيره"، "في حاجة تانية")، اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي بتطابق طلبه بالظبط، واعرض عليه يغير المواصفات بشكل عام عشان يظهرله عطور تانية. ❌ ممنوع تقترح عليه روائح محددة (زي "تحب حاجة خشبية؟" أو "فريش") لأنك لا تعرف ما هو متوفر في المخزون حالياً.
+1. {_no_match_instruction(intent, seen, exhausted)}
 2. ⭐ إذا كانت رسالة العميل غامضة أو غير مفهومة، لا تعتذر عن عدم توفر العطر، بل قل له بوضوح: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر عشان أقدر أساعدك؟".
 3. أما إذا كان يطلب عطراً بالاسم وهو مش في البيانات اللي معاك: ❌ ممنوع تقول إنه "مش متوفر" أو "مش موجود عندنا" — إنت شايف جزء من الكتالوج بس. ✅ اسأله يتأكد من اسم العطر ويكتبه تاني، واسأله لو يحب ترشحله بديل في نفس الجو. ❌ ومتوعدهوش إنك هتراجع الاسم وترد عليه بعدين — مفيش حد بيراجع بعد الرد ده. ممنوع تجزم بعدم التوفر إلا لو البيانات نفسها بتقول كده.
 4. ❌ ممنوع ترشيح أو ذكر أي منتج غير موجود أو اختراع أسماء منتجات.

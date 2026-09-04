@@ -56,7 +56,7 @@
       {
         "n": 2,
         "user": "حريمي",
-        "reply": "قولي ذوقك يعني بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية ولا العود؟ أو بتحبي الريحات المسكرة؟ وكمان ميزانيتك في حدود كام؟",
+        "reply": "قولي ذوقك يعني بتحبي الريحة فريش وخفيفة ولا تقيلة وخشبية؟ بتحبي العود ولا المسكرات؟ وكمان ميزانيتك في حدود كام؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -104,7 +104,7 @@
       {
         "n": 3,
         "user": "المسكره",
-        "reply": "🔹 Good Girl من Carolina Herrera، ريحته فيها حلاوة واضحة مع لمسة قهوة ولوز، ثابت وقوي، مناسب للسهرات في الخريف والشتا.\n\n🔹 La Vie Est Belle من Lancome، عطر فيه حلاوة ناعمة مع نوتات فواكه وزهور، ريحته مناسبة لكل المواسم والاستخدام اليومي.\n\nأنا أرشحلك La Vie Est Belle أكتر لطلبك لأنها مناسبة لكل الأوقات وفيها حلاوة متوازنة مش تقيلة.",
+        "reply": "🔹 Good Girl ريحته فيها مزيج من اللوز والقهوة والفانيليا، sweet وفواح وقوي، مناسب للسهرات في الخريف والشتا.\n\n🔹 La Vie Est Belle عطر sweet برضه، فيه نوتات الفواكه والزهور مع الفانيليا والباتشولي، ريحته مناسبة لكل المواسم وكاجوال.\n\nأنا أرشحلك Good Girl أكتر لو بتحبي الريحة الدافئة والقوية، أما La Vie Est Belle فهي أنسب للجو اليومي والأوقات الكاجوال.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -235,7 +235,7 @@
       {
         "n": 4,
         "user": "بكام الاتنين",
-        "reply": "Good Girl الـ 90 ملي بـ1083 جنيه، وفيه كمان الـ 50 ملي بـ650 جنيه.\n\nLa Vie Est Belle الـ 90 ملي بـ1046 جنيه، وفيه كمان الـ 50 ملي بـ669 جنيه.",
+        "reply": "Good Girl الـ 90 ملي بـ 1083 جنيه، وفيه كمان الـ 50 ملي بـ 650 جنيه.\n\nLa Vie Est Belle الـ 90 ملي بـ 1046 جنيه، وفيه كمان الـ 50 ملي بـ 669 جنيه.\n\nتحب أجهزلك أي حجم منهم؟",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -267,7 +267,7 @@
       {
         "n": 6,
         "user": "عندكو سترينجر ويذ يو ؟",
-        "reply": "Stronger With You متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟",
+        "reply": "Stronger With You متوفر عندنا يا فندم، تحب تعرف عن حجم معين؟",
         "classification": "product_info",
         "objection": null,
         "raw_intent": null,
@@ -299,7 +299,7 @@
       {
         "n": 8,
         "user": "عندكو حاجه من فيرزاتشي ؟",
-        "reply": "أكيد عرفت إنك بتدور على حاجة حريمي من Versace وفيها لمسة سويت، ميزانيتك في حدود كام؟",
+        "reply": "أكيد ريحة Sweet حريمي من Versace ليها جمهور كبير. ميزانيتك في حدود كام؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -344,12 +344,18 @@
         "dropped": null,
         "context_chars": 0,
         "context": "",
-        "findings": []
+        "findings": [
+          [
+            "unknown_latin_token",
+            "high",
+            "'Sweet' is not part of any catalogue product or brand name"
+          ]
+        ]
       },
       {
         "n": 9,
         "user": "1200",
-        "reply": "دي كل الخيارات المتاحة حالياً اللي بتطابق طلبك بالظبط، لو حابب تغير المواصفات بشكل عام ممكن أساعدك تلاقي عطور تانية.",
+        "reply": "دي كل الخيارات المتاحة حالياً اللي بتطابق طلبك بالظبط، لو حابب تغير المواصفات بشكل عام ممكن أساعدك بعطور تانية.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -361,7 +367,11 @@
           "max_price": 1200.0,
           "longevity": null,
           "projection": null,
-          "exclude_names": [],
+          "exclude_names": [
+            "Good Girl",
+            "La Vie Est Belle",
+            "Stronger With You"
+          ],
           "notes": [],
           "similar_to": null,
           "similar_to_notes": [],
@@ -378,7 +388,11 @@
           "max_price": 1200.0,
           "longevity": null,
           "projection": null,
-          "exclude_names": [],
+          "exclude_names": [
+            "Good Girl",
+            "La Vie Est Belle",
+            "Stronger With You"
+          ],
           "notes": [
             "sweet"
           ],
@@ -408,7 +422,7 @@
       {
         "n": 10,
         "user": "بص انا عايزاه لجوزي مش ليا",
-        "reply": "Eros من Versace رجالي وفيه لمسة sweet مناسبة، الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه ✅ داخل الميزانية. أنا أرشحلك الـ90 ملي أكتر لأنه كمية أكتر وفواحته قوية، لكن لو حابب توفر ممكن تختار الـ50 ملي.",
+        "reply": "أنسب اختيار لجوزك من Versace هو Eros الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي بـ666 جنيه داخل الميزانية. Eros مناسب لأنه فيه ريحة sweet وقوي وثابت، فلو حابب كمية أكتر والاختيار الأكبر، الـ90 ملي هيكون مناسب، ولو عايز حاجة أقتصد فيها الـ50 ملي خيار جيد برضه.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -417,7 +431,7 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1200,
+          "max_price": 1200.0,
           "longevity": null,
           "projection": null,
           "exclude_names": [],
@@ -434,7 +448,7 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1200,
+          "max_price": 1200.0,
           "longevity": null,
           "projection": null,
           "exclude_names": [],
@@ -473,7 +487,7 @@
       {
         "n": 11,
         "user": "ازاي اعلي من ميزانيتي",
-        "reply": "الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه داخلين تمام في حدود ميزانيتك 1200 جنيه.",
+        "reply": "الـ50 ملي بـ666 جنيه داخل ميزانيتك، والـ90 ملي بـ1019 جنيه، يعني الـ90.",
         "classification": "faq",
         "objection": null,
         "raw_intent": null,
@@ -489,42 +503,36 @@
       {
         "n": 12,
         "user": "انا ميزانيتي 1200",
-        "reply": "تمام، الـ90 ملي من Versace Eros بـ1019 جنيه داخل في ميزانيتك، وفيه كمان الـ50 ملي بـ666 جنيه لو حابب حجم أصغر.",
-        "classification": "faq",
+        "reply": "Eros من Versace متوفر عندنا، والـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه داخل ميزانيتك. للأسف مش متوفر منه زجاجة أوريجينال حالياً.",
+        "classification": "product_info",
         "objection": null,
         "raw_intent": null,
         "merged_intent": null,
-        "stage": "discovery",
+        "stage": "recommendation",
         "search": null,
         "keeping": null,
         "dropped": null,
-        "context_chars": 0,
-        "context": "",
-        "findings": [
-          [
-            "named_product_without_data",
-            "high",
-            "named 'Eros' on a turn where no product data was injected"
-          ]
-        ]
+        "context_chars": 1653,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1019.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 353 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n",
+        "findings": []
       }
     ],
     "findings": [
       [
-        "named_product_without_data",
+        "unknown_latin_token",
         "high",
-        "named 'Eros' on a turn where no product data was injected"
+        "'Sweet' is not part of any catalogue product or brand name"
       ]
     ],
     "error": null,
     "final_preferences": {
       "gender": "male",
-      "max_price": 1200,
+      "max_price": 1200.0,
       "brand": "Versace",
       "notes": [
         "sweet"
       ]
     },
-    "seconds": 52.6
+    "seconds": 55.3
   }
 ]

@@ -74,8 +74,9 @@ def budget_label(price, max_price):
 
     So the label states the *pair*, and asks for both numbers rather than for "the difference".
     That is the same move as naming the figure, applied one level up: an instruction a single
-    number cannot satisfy. `sales.value._money_and_warning` writes "(990 مقابل 631)" for
-    exactly this reason — the comparison, not just the delta, is what fixes the direction.
+    number cannot satisfy. `sales.value._money_and_warning` names each price beside the size it
+    belongs to for exactly this reason — the comparison, not just the delta, is what fixes the
+    direction, and a delta whose referent is left to inference gets re-pointed (conversation 931).
 
     "far" deliberately gets no figure. It is the one tier the model may not offer at all, so
     a number there would only be a number to leak.
@@ -175,6 +176,15 @@ def value_pick_note(product, variants, max_price=None):
 
     Only compares in-budget brand bottles: recommending a size the customer already said
     they cannot afford is not an upsell.
+
+    A hard `<= max_price` and not `budget_tier`, which is the deliberate exception among the
+    budget readers. Everywhere else "near" means offerable-with-the-overage-said-out-loud, and
+    `order_service._over_budget_warning` was moved onto `budget_tier` for exactly that reason.
+    Here the tier would change which size the model is told to *lead with* for every customer
+    whose next size up happens to sit inside the tolerance band — a catalogue-wide change to the
+    recommendation, with no incident asking for it. The line above is the stance, not an
+    oversight: this note carries "ابدأ بالحجم ده", and a size the customer has already priced
+    themselves out of is not the one to open with.
     """
     eligible = [
         variant for variant in variants
@@ -182,7 +192,7 @@ def value_pick_note(product, variants, max_price=None):
         and (max_price is None or variant.price <= max_price)
         and variant.volume > 0
     ]
-    return size_value_note(size_value(eligible))
+    return size_value_note(size_value(eligible), max_price=max_price)
 
 
 def _exclusive_selling_note(product):

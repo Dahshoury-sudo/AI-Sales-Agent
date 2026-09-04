@@ -440,7 +440,7 @@ def route(message, history=None, store=None, conversation=None):
         return _finalize(reply, stage), context
 
     if request_type == "identification":
-        reply, context = identify_perfume(message, history, store)
+        reply, context = identify_perfume(message, history, store, conversation)
         return _finalize(reply, sales_stage.IDENTIFICATION), context
 
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---

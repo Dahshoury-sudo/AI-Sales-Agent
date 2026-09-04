@@ -6,6 +6,7 @@ from .ai.prompts import get_system_prompt
 from .fallback import suggest_alternatives
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
+from .sales import value as sales_value
 
 
 def _named_in_message(message, store):
@@ -461,6 +462,57 @@ def _carried_price_intent_hint(message, history):
     )
 
 
+def _named_budget_hint(budget):
+    """What the ✅/⚠️/❌ markers oblige on a turn about a perfume the customer named by name.
+
+    Returns "" with no budget, so the caller concatenates it unconditionally and the ordinary turn
+    pays nothing for it.
+
+    The ❌ label reads "ممنوع تعرضه" and persona rule `prompts.py:104` repeats it. That is a rule
+    about *choosing* which size to recommend, and this branch is not choosing: the customer typed
+    the perfume's name and asked what it costs. Without this line the labels arrive carrying a
+    prohibition written for a different question, and the answer to "بكام" becomes a refusal to
+    say — the one outcome every instruction in this block exists to prevent.
+
+    The ✅ half is conversation 931's half, and it is deliberately `prompts.py:106` restated as a
+    fact about the data in front of the model rather than a new rule: the marker is the verdict, and
+    there is no difference figure to quote unless one is written inside a ⚠️.
+    """
+    if budget is None:
+        return ""
+    return (
+        f"\n🔴 العميل قال إن ميزانيته {int(budget)} جنيه، وكل سعر في البيانات فوق جانبه علامة "
+        "(✅ داخل الميزانية / ⚠️ أعلى شوية / ❌ أعلى بكتير). العلامة دي محسوبة وهي الحكم الوحيد "
+        "على الميزانية: ❌ ممنوع تحسب الفرق بنفسك، وممنوع تقول رقم فرق مش مكتوب جوه علامة ⚠️، "
+        "وحجم عليه ✅ يبقى داخل الميزانية خلاص — ممنوع تقول عنه \"أعلى من ميزانيتك\" ولا \"أعلى "
+        "شوية\".\n"
+        "🔴 و\"ممنوع تعرضه\" اللي جوه علامة ❌ معناها ممنوع **ترشحه**، مش ممنوع تقول سعره: العميل "
+        "هنا سأل عن العطر ده بالاسم، فقوله سعر الحجم اللي سأل عنه زي ما هو مكتوب، وقوله إنه أعلى "
+        "من الرقم اللي قاله، واعرض معاه حجم داخل ميزانيته لو فيه. ❌ ممنوع تخفي سعر عطر العميل "
+        "سأل عنه بالاسم، وممنوع تقول إنه مش متوفر عشان سعره.\n"
+    )
+
+
+def _alternatives_budget_hint(budget):
+    """The same markers on the fallback list, where the model *is* the one choosing.
+
+    Separate from `_named_budget_hint` because the ❌ prohibition is correct here and wrong there —
+    nobody named these perfumes, so declining to pitch an over-budget one is the right call. What
+    needs saying instead is what to do when the whole list is over budget: `suggest_alternatives`
+    only sorts in-budget first, it does not filter, so a stated budget under the cheapest thing in
+    the catalogue yields a list of ⚠️ and ❌ rows and an instruction (rule 4) to pitch from it.
+    Silence and an unmarked over-budget pitch are both worse than saying the number out loud.
+    """
+    if budget is None:
+        return ""
+    return (
+        f"\n🔴 ميزانية العميل {int(budget)} جنيه، والبدائل فوق مرتبة بحيث اللي داخل الميزانية (✅) "
+        "الأول — فابدأ بيه. ولو كل البدائل عليها ⚠️ أو ❌، قول للعميل بصراحة إن اللي عندنا أعلى من "
+        "الرقم اللي قاله واذكر أرخص حاجة عندنا بسعرها. ❌ ممنوع تعرض سعر أعلى من ميزانيته من غير "
+        "ما تقول إنه أعلى، وممنوع تسكت وتسيبه من غير أي اقتراح.\n"
+    )
+
+
 def get_product_info(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer a question about a named perfume.
 
@@ -747,6 +799,21 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # "ها لقيت اي" one turn after a message containing "اسعار", so without the guard the carry would
     # push a price list onto the turn that has to deliver the denial.
     carried_intent_hint = "" if deferring else _carried_price_intent_hint(message, history)
+    # Both branches below render prices, so both want the budget markers beside them. Until this,
+    # `grep max_price` over this module returned nothing: a customer who had said 1200 saw a 3800
+    # size with no marker at all, and `value_pick_note` — which filters to *in-budget* variants —
+    # was picking the best value out of the whole size ladder and calling it that. Persona rule
+    # prompts.py:103 asserts the opposite ("الـ Value Pick بيتحسب داخل ميزانية العميل"), which was
+    # true of the recommendation branch and false here.
+    #
+    # One asymmetry is worth recording, because it points the other way. Conversation 931's false
+    # over-budget claim came out of a *labelled* recommendation block, and the turn of that same
+    # conversation which rendered through here — unlabelled, because of this very gap — made no
+    # such claim. That is not an argument for leaving prices bare: an unmarked over-budget size is
+    # conversation 757 from the other side. It is an argument for the labels landing only once the
+    # falsehood is caught wherever it comes from, which `reply_sanitizer.strip_false_over_budget`
+    # now does deterministically. That guard is why this can land at all.
+    budget = sales_value.stated_budget(conversation)
 
     # Does this turn owe the customer an answer about every row it is being given? Computed here,
     # after the widening above, so `products` is final.
@@ -779,7 +846,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
         # window — the limit only guards the pathological case.
-        context += format_products(products, limit=6)
+        context += format_products(products, max_price=budget, limit=6)
         instructions = """
 ═══ تعليمات صارمة ═══
 1. 🔴 لما العطر اللي في البيانات يكون هو نفس العطر اللي العميل سأل عنه، اكتب اسمه بالإملاء الموجود في البيانات — حتى لو العميل غلط في الكتابة أو كتبه بالعربي.
@@ -814,6 +881,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             instructions += _ANSWER_EVERY_ROW
         instructions += availability_hint
         instructions += carried_intent_hint
+        instructions += _named_budget_hint(budget)
     else:
         # Product not found, let's get some alternatives. Chosen deterministically and
         # with the customer's gender in mind: `order_by('?')` here offered a women's
@@ -830,6 +898,11 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
             # Chanel (incense) sat in it unoffered.
             notes=sales_notes.terms_in(message),
+            # An ordering tier, not a filter — the function sorts in-budget first and keeps the
+            # rest. That is the shape this branch needs: pitching a perfume above the stated
+            # number is a worse answer than pitching one below it, and pitching nothing is worse
+            # than both.
+            max_price=budget,
         )
 
         context = pending_block
@@ -846,7 +919,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             #
             # The value pick still goes, for recommendation's reason: a turn about *which perfume*
             # must not open with a verdict about *which size*.
-            context += format_products(alternatives, show_value_pick=False)
+            context += format_products(alternatives, max_price=budget, show_value_pick=False)
 
         instructions = """
 ═══ تعليمات ═══
@@ -872,6 +945,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             instructions += _ABSENT_RULES if denied else _UNREADABLE_NAME_RULES
         instructions += availability_hint
         instructions += carried_intent_hint
+        # Only when a list was actually rendered — with no alternatives there is nothing to
+        # order, and a budget line about an empty list is a number with no referent.
+        if alternatives:
+            instructions += _alternatives_budget_hint(budget)
 
     messages = [
         {

@@ -679,6 +679,18 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
                 ))
                 break
 
+    # ── An over-budget claim the reply's own numbers contradict ────────────
+    # Keyed on `merged_intent`, not the scenario's `assert_budget`: no replay file sets that
+    # key, so reading it here would leave every replayed conversation — the ones lifted from
+    # real failures, this check included — ungraded. `runner.py` grades the scenario budget
+    # separately; wiring this there too would double-report the same turn.
+    for claim, highest in check_false_over_budget(reply, intent.get("max_price"), truth):
+        findings.append((
+            "false_over_budget", "critical",
+            f"told the customer \"{claim}\" although the highest price the reply quotes is "
+            f"{highest:.0f}, inside the stated budget of {intent['max_price']}",
+        ))
+
     # ── Verbosity ─────────────────────────────────────────────────────────
     if len(reply) > 700:
         findings.append((
@@ -722,8 +734,9 @@ def check_budget_respected(reply, budget, truth):
     A price named *as* being over budget is not a finding. Scenario X3 asks for something
     impossible at 300 EGP and the correct answer names the nearest options and says plainly
     that they cost more — the skill requires exactly that, so flagging it inverted the grade.
+    Named *falsely*, though, buys no excusal: see `_acknowledged_a_real_overage`.
     """
-    if any(pattern.search(reply or "") for pattern in _BUDGET_ACKNOWLEDGED):
+    if _acknowledged_a_real_overage(reply, budget, truth):
         return []
 
     over = []
@@ -753,17 +766,218 @@ _STATED_TOTAL = re.compile(
 )
 
 
-# The reply telling the customer, in its own words, that it is over their budget. A total
-# stated *with* this is correct salesmanship — the skill explicitly allows going over budget
-# as long as it is named — so only a SILENT overage is a finding.
-_BUDGET_ACKNOWLEDGED = (
-    re.compile(r"[أا]على\s+من\s+(?:ال)?ميزاني"),
-    re.compile(r"[أا]كتر\s+من\s+(?:ال)?ميزاني"),
-    re.compile(r"فوق\s+(?:ال)?ميزاني"),
-    re.compile(r"خارج\s+(?:ال)?ميزاني"),
-    re.compile(r"زياد[هة]\s+عن\s+(?:ال)?ميزاني"),
-    re.compile(r"مش\s+داخل\s+(?:ال)?ميزاني"),
+# The reply saying, in its own words, that something is over the customer's budget.
+#
+# One tuple, two readings, and that is the point. A stated overage is correct salesmanship when
+# it is true — the skill explicitly allows going over budget as long as it is named, so only a
+# SILENT overage is a finding — and it is a `false_over_budget` critical when it is not. Both
+# questions are asked of the same sentence, so both are asked of the same patterns.
+#
+# They used to be one tuple serving one reading, `_BUDGET_ACKNOWLEDGED`, and the false reading
+# had no patterns at all. Conversation 931 is what that cost: the reply said `أغلى من ميزانيتك`
+# about a 1019 bottle against a 1200 budget, and `[أا]على` covers أعلى with ع but not أغلى with
+# غ, so the sentence matched nothing here. The turn was not mis-scored — it was never examined.
+# Keeping the readings on one tuple is what stops that spelling gap re-opening on one side only.
+_HIGHER = r"[أاإ][عغ]ل[ىي]"
+
+# What real replies put between the comparative and the budget word: an intensifier, the
+# over-budget glyph, or both. The old patterns allowed nothing between, which is also why
+# conversation 912's `أعلى شوية ⚠️ عن ميزانيتك` read as neither an acknowledgement nor a claim.
+_INTERLEAVED = r"(?:\s*(?:شوي[هة]|بشوي[هة]|كتير|بكتير|جدا[ًا]?|⚠️))*"
+
+# The suffix is consumed so the span this reports is a whole word: a finding detail quotes the
+# matched text back for a human to read, and `ميزاني` truncated mid-word is a worse bug report
+# than the one it describes. Not `\S*` — that reaches past the noun and takes the full stop with
+# it, which cost the sanitizer's own version of this pattern a reply with no terminator.
+_BUDGET_WORD = r"(?:ال)?ميزاني[^\s،,.؟!?]*"
+
+# (pattern, negatable). `negatable` is False for the two cores that open with مش — there the مش
+# belongs to the claim, so treating it as a denial would make the claim invisible.
+_OVER_BUDGET_CLAIMS = (
+    (re.compile(_HIGHER + _INTERLEAVED + r"\s*(?:من|عن)\s+" + _BUDGET_WORD), True),
+    (re.compile(r"[أا]كتر" + _INTERLEAVED + r"\s*(?:من|عن)\s+" + _BUDGET_WORD), True),
+    (re.compile(r"فوق" + _INTERLEAVED + r"\s*" + _BUDGET_WORD), True),
+    (re.compile(r"(?:خارج|بر[هة])" + _INTERLEAVED + r"\s*" + _BUDGET_WORD), True),
+    (re.compile(
+        r"(?:زياد[هة]|بيزيد|زايد)" + _INTERLEAVED + r"\s*(?:عن|على)\s+" + _BUDGET_WORD
+    ), True),
+    (re.compile(r"الفرق\s+\d[\d.,]*\s*(?:جنيه)?\s*(?:عن|من)\s+" + _BUDGET_WORD), True),
+    (re.compile(r"مش\s+داخل" + _INTERLEAVED + r"\s*" + _BUDGET_WORD), False),
+    (re.compile(r"مش\s+في" + _INTERLEAVED + r"\s*" + _BUDGET_WORD), False),
 )
+
+# The marker with no sentence around it: "الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي بـ666 جنيه داخل
+# الميزانية." — the first live replay of the sanitizer fix, turn 10, budget 1200, both sizes inside
+# it. No claim pattern above matches that, because the model lifted the glyph and left the sentence
+# out; the customer's next turn was "ازاي اعلي من ميزانيتي", which is the original complaint of
+# conversation 931 arriving with nothing but a glyph behind it.
+#
+# ⚠️ has one meaning here — `product_formatting._BUDGET_LABELS["near"]`, "أعلى شوية من الميزانية" —
+# and four prompt rules bind it to that meaning by name, so beside an in-budget price it tells the
+# customer the same falsehood the sentence did.
+#
+# Positional, and that is the whole design. Every other ⚠️ this system emits either lives only in
+# the injected context or *leads* its line — "⚠️ للعلم: إجمالي الطلب 3138 جنيه", "⚠️ العطور اللي تحت
+# دي" — while the budget label alone is a suffix to a price. Requiring a number before the glyph is
+# what separates the falsehood from a warning the reply was right to relay. The production guard
+# strips the glyph unconditionally instead, once its own preconditions hold; the difference is
+# deliberate and is what this file is for. Losing a glyph there costs nothing, whereas a critical
+# finding on a true warning here would spend a human's attention and teach them to distrust the
+# check.
+_STRANDED_BUDGET_GLYPH = re.compile(r"\d[\d.,]*\s*(?:جنيه|جني[هة]|ج\.?م)?\s*⚠")
+
+_NEGATORS = frozenset((
+    "مش", "مِش", "ولا", "لا", "ماهو", "ماهوش", "مكانش", "مبقاش",
+    # Quantified denials, which is how a retraction about *both* sizes is actually phrased:
+    # "ولا واحد منهم أعلى من ميزانيتك", "مفيش حاجة فيهم فوق الميزانية".
+    "مفيش", "مافيش", "ماحدش", "محدش",
+))
+_WHITESPACE = re.compile(r"\s+")
+_CLAUSE_BREAK = re.compile(r"[،,.؟!?]")
+# Where a claim's referent stops being findable — see `_price_in_scope`. A comma does not end it;
+# a full stop or a line break does.
+_SENTENCE_BREAK = re.compile(r"[.؟!?\n\r]")
+_ARABIC_INDIC = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
+
+
+def _budget_limit(budget):
+    """The budget as a float, or None when it is not a usable number.
+
+    `merged_intent` is written by the extractor model, so this arrives as whatever it produced —
+    a float, "1200", or something that is not a number at all. A bare `float(budget)` in the two
+    callers would turn one bad extraction into a crashed eval run, which is a worse outcome than
+    an ungraded turn. Mirrors `value.as_budget`, which exists for this in production code.
+    """
+    if budget is None:
+        return None
+    try:
+        limit = float(budget)
+    except (TypeError, ValueError):
+        return None
+    return limit if limit > 0 else None
+
+
+def _negated_at(text, start):
+    """Whether the claim starting at `start` is being denied rather than made.
+
+    On the objection turn the *correct* reply is "هو مش أعلى من ميزانيتك", and every pattern
+    above matches inside it — so without this, the one reply the fix exists to produce would be
+    scored as the defect it retracts. Tokens rather than a lookbehind, because لا is a substring
+    of ولا and of خلاص. Mirrors `rescore._NEGATED_GUARANTEE`, which exists for the same reason.
+
+    Two bounds on how far back to look, and both are load-bearing in opposite directions:
+
+    - Stop at the previous clause break. A negator in the clause before does not deny this one —
+      "الـ90 بـ1019 جنيه مش بطال، بس أغلى من ميزانيتك" asserts the claim.
+    - Within the clause, only the last three tokens. Scanning a whole clause would let any مش
+      anywhere in a long sentence suppress the claim, and here a suppressed claim is a missed
+      falsehood — in the production guard, a falsehood left in the reply.
+
+    Three rather than two because that is what the quantified denial needs: "ولا واحد منهم أعلى
+    من ميزانيتك" puts the negator three tokens out, and a two-token window read it as an
+    assertion — which in the sanitizer meant deleting a retraction and mangling a correct reply.
+    """
+    before = text[:start]
+    breaks = [match.end() for match in _CLAUSE_BREAK.finditer(before)]
+    clause = before[breaks[-1]:] if breaks else before
+    tokens = _WHITESPACE.split(clause.strip())[-3:]
+    return any(token.strip("،,.!؟?ـ()") in _NEGATORS for token in tokens)
+
+
+def _price_like(reply, truth):
+    """Every number in the reply big enough to be a price, product names removed first.
+
+    The ≥100 floor drops volumes, percentages and list markers. `_strip_product_names` runs
+    first for the reason its own docstring gives: the 540 in "Baccarat Rouge 540" is not a price,
+    and reading it as one already cost a false finding once.
+    """
+    text = _strip_product_names(reply or "", truth).translate(_ARABIC_INDIC)
+    values = []
+    for raw in _NUM.findall(text):
+        try:
+            value = float(raw.replace(",", ""))
+        except ValueError:
+            continue
+        if value >= 100:
+            values.append(value)
+    return values
+
+
+def _budget_claim_spans(reply):
+    """Every over-budget assertion in the reply as `(text, start)`, denials skipped."""
+    spans = []
+    for pattern, negatable in _OVER_BUDGET_CLAIMS:
+        for match in pattern.finditer(reply or ""):
+            if negatable and _negated_at(reply, match.start()):
+                continue
+            spans.append((match.group().strip(), match.start()))
+    return spans
+
+
+def _budget_claims(reply):
+    """Every place the reply asserts something is over the budget, denials skipped.
+
+    Positions deliberately dropped: this is the *acknowledgement* reading, and a reply that names
+    an overage has named it wherever the sentence sits. Only the falsification reading needs to
+    know where the claim is — see `_price_in_scope`.
+    """
+    return [text for text, _ in _budget_claim_spans(reply)]
+
+
+def _price_in_scope(reply, start, truth):
+    """Whether a price the claim at `start` could be about is actually in the reply.
+
+    This check used to ask the reply-wide question — does anything here quote an in-budget price —
+    and that is true of almost every priced reply, including one whose claim is about something it
+    deliberately did not price. Two turns show it, and both had been graded clean for months:
+
+        M1 turn 3, budget 700: "Dior Sauvage خرج من طلبك لأنه سعر الـ90 ملي أعلى من ميزانيتك بكتير.
+        عندنا بدائل داخل الميزانية زي Ambero والـ50 ملي بـ601 جنيه، وDark Aura والـ50 ملي بـ680 جنيه."
+
+        G2 turn 1, budget 500: four bullet lines pricing 50ml sizes at 400-480, then "لو حابب حجم
+        أكبر، الـ90 ملي أغلى بكتير عن ميزانيتك، فالأفضل تبدأ بالـ50 ملي."
+
+    Both claims are TRUE, and in both the claim's own subject has no figure beside it because the
+    prompt forbids pricing an ❌ size. The prices belong to other perfumes, or other sizes, named
+    elsewhere in the reply. Reporting these as critical would have been worse than the silence it
+    replaced: a check that cries wolf on correct salesmanship is a check people learn to skip.
+
+    Found by re-grading four archived run files after this check went in, which is the argument for
+    keeping them. The production guard was stripping those sentences — turning M1's into
+    "خرج من طلبك لأنه سعر الـ90 ملي." — so the same bound is now in `reply_sanitizer` too, arrived
+    at from the same two turns and written separately, per this file's independence rule.
+
+    Sentence scope, not clause: conversation 912's "سعره 1046 جنيه، أعلى شوية ⚠️ عن ميزانيتك" puts
+    the price one comma from the claim and is the earlier report of the very bug this check exists
+    for. Forward as well as back, because "أعلى من ميزانيتك بـ353 جنيه" states its figure after the
+    claim, which is conversation 931's own wording.
+
+    `_price_like` is applied to the scope text rather than to the reply, so the ≥100 floor and the
+    product-name strip both hold here without the offsets having to survive the strip: "Baccarat
+    Rouge 540 فوق ميزانيتك. وفيه Eros بـ666 جنيه." must not read 540 as the claim's referent.
+    """
+    text = reply or ""
+    breaks = [match.end() for match in _SENTENCE_BREAK.finditer(text[:start])]
+    scope_start = breaks[-1] if breaks else 0
+    ahead = _SENTENCE_BREAK.search(text, start)
+    scope_end = ahead.start() if ahead else len(text)
+    return bool(_price_like(text[scope_start:scope_end], truth))
+
+
+def _acknowledged_a_real_overage(reply, budget, truth):
+    """Whether the reply names an overage that its own numbers bear out.
+
+    Replaces a bare `any(pattern.search(...))` in the two budget checks. That excused a turn
+    from them on the *wording* alone, never asking whether anything in the reply was in fact
+    over — so a reply that claimed an overage falsely also bought itself silence on every
+    sibling budget finding. The claim now has to be true to earn the excusal.
+    """
+    if not _budget_claims(reply):
+        return False
+    limit = _budget_limit(budget)
+    if limit is None:
+        return True
+    return any(value > limit for value in _price_like(reply, truth))
 
 
 def check_stated_total(reply, budget, truth):
@@ -780,7 +994,7 @@ def check_stated_total(reply, budget, truth):
     """
     if not budget:
         return []
-    if any(pattern.search(reply or "") for pattern in _BUDGET_ACKNOWLEDGED):
+    if _acknowledged_a_real_overage(reply, budget, truth):
         return []
 
     over = []
@@ -793,3 +1007,63 @@ def check_stated_total(reply, budget, truth):
         if value > float(budget):
             over.append(value)
     return over
+
+
+def check_false_over_budget(reply, budget, truth):
+    """The reply telling the customer a price is over their budget when it is not.
+
+    Conversation 931: budget 1200, Versace Eros' 50ml at 666 and 90ml at 1019, both of them
+    labelled `✅ (داخل الميزانية)` in the injected context — and the reply said "الـ90 ملي بـ1019
+    جنيه ⚠️ يعني أغلى من ميزانيتك بـ353 جنيه". 353 is 1019 − 666, the gap between the two *sizes*,
+    printed by the value note one line below those labels and re-attributed to the budget. The
+    customer objected twice. The claim was repeated, not retracted.
+
+    Nothing in this file detected it, because "claimed over budget while actually in budget" had
+    no check at all — the patterns existed only to *excuse* a turn, never to falsify it. This is
+    the other reading of the same patterns.
+
+    Returns one `(claim, highest_price_quoted)` per false claim. The rule, and why each step:
+
+    - No usable budget: nothing to be wrong about.
+    - No price-like number in the reply: the claim can be TRUE with the figure left out —
+      "الـ90 ملي أعلى شوية من ميزانيتك" is a shape the code deliberately produces — so silence.
+      This precondition is load-bearing, not defensive.
+    - Some quoted price really is above the budget: the claim has a true referent, leave it.
+    - Per claim, no price inside its own sentence: the same reasoning as the step above, asked
+      where it belongs. A reply can price four alternatives and be telling the truth about a fifth
+      thing it deliberately left unpriced — `_price_in_scope` has the two turns that proved it.
+    - What is left is a claim standing beside a price that is inside the budget, and it is false
+      about it.
+
+    One-directional by construction: a true statement about a price the customer can see must
+    name a number above the budget, and that number stops this check before it reports.
+
+    A price-adjacent ⚠️ counts as one of these, sentence or no sentence — see
+    `_STRANDED_BUDGET_GLYPH` for the replay turn that shows why, and for why the position matters.
+    It is reported here but deliberately *not* added to `_budget_claims`: the two readings of that
+    tuple are "is this false" and "does this excuse the turn from the silent-overage checks", and a
+    bare glyph answers only the first. The skill permits going over budget when it is *named*, with
+    both figures said out loud; a marker with no sentence has named nothing, so it must not buy the
+    silence a real acknowledgement buys.
+
+    Built on this module's own patterns rather than importing `reply_sanitizer`'s deliberately —
+    the point is to measure what leaks PAST the sanitizer, and a shared regex would score the
+    sanitizer's blind spots as clean. Their overlap is its coverage; their difference is its
+    misses, which is the number worth watching.
+    """
+    limit = _budget_limit(budget)
+    if limit is None:
+        return []
+    prices = _price_like(reply, truth)
+    if not prices or max(prices) > limit:
+        return []
+    highest = max(prices)
+    claims = [
+        text for text, start in _budget_claim_spans(reply)
+        if _price_in_scope(reply, start, truth)
+    ]
+    # After the claims, so the glyph inside "بـ1019 جنيه ⚠️ يعني أعلى من ميزانيتك" is not reported
+    # twice as two separate findings about one sentence.
+    if not claims and _STRANDED_BUDGET_GLYPH.search(_strip_product_names(reply or "", truth)):
+        claims = ["⚠️ (بدون جملة)"]
+    return [(claim, highest) for claim in claims]

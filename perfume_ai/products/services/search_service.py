@@ -235,12 +235,12 @@ def search_products(intent, store=None, keep=()):
 
     # Hard filters: the criteria a customer means literally. gender/brand/type/season
     # stay filters because a men's perfume is not a near-miss for a woman.
+    #
+    # The name exclusions used to be applied here, first. They now run below, after the
+    # constraints, so that the queryset *without* them survives as `constrained` — see
+    # `exhausted` for what that separation answers. The move is only a move: every clause
+    # in this chain is a conjunction over single-valued fields, so the SQL is the same set.
     base = queryset
-    # Exclusions are resolved to catalogue spellings first. An extractor that returns
-    # "9pm by Afnan" for the row "Afnan 9PM" excluded nothing at all, so the perfume the
-    # customer had just asked for an *alternative* to stayed in the running.
-    for name in naming.resolve_names(exclude_names, store):
-        base = base.exclude(name__icontains=name)
     if gender:
         base = base.filter(Q(gender=gender.lower()) | Q(gender="unisex"))
     if perfume_type:
@@ -281,6 +281,36 @@ def search_products(intent, store=None, keep=()):
     # (recommendation._reference_block). Conversation 630 stays fixed without M1 breaking.
     if reference is not None and reference.product is not None:
         base = base.exclude(pk=reference.product.pk)
+
+    # Everything the customer actually asked for, before anything is withheld because it has
+    # already been offered. Kept so the empty-result branch can answer one question it could
+    # not answer before: was this empty because we have run out of matches, or because
+    # nothing ever matched?
+    constrained = base
+
+    # Exclusions are resolved to catalogue spellings first. An extractor that returns
+    # "9pm by Afnan" for the row "Afnan 9PM" excluded nothing at all, so the perfume the
+    # customer had just asked for an *alternative* to stayed in the running.
+    for name in naming.resolve_names(exclude_names, store):
+        base = base.exclude(name__icontains=name)
+
+    # `exhausted` is the difference between "دي كل الخيارات المتاحة" being true and being a
+    # fabrication, and it is a fact about the queryset rather than about the conversation.
+    #
+    # `recommend`'s no-match branch used to fork on `already_described` — had we shown this
+    # customer anything at all, ever. Conversation 931 is why that is the wrong question:
+    # three perfumes had been described and ordered, then the customer asked for Versace
+    # حريمي, which matches nothing (Eros is male). Products had been shown, so the fork said
+    # "these are all the options matching your request" — about a brand that had never been
+    # offered once. Both replay runs reproduced it, on the turn the branch was rewritten for.
+    #
+    # The honest test is whether dropping the exclusions would have found anything. If it
+    # would, the matches exist and have been used up, and exhaustion is the true story. If it
+    # would not — Versace + حريمي — then the constraints emptied the search and no exclusion
+    # had anything to do with it, whatever we happen to have shown earlier under different
+    # constraints. `bool(exclude_names)` short-circuits the common case to zero extra queries,
+    # and the remaining two run only on a search that has already come back empty.
+    exhausted = bool(exclude_names) and not base.exists() and constrained.exists()
 
     exact = base
     if notes:
@@ -348,7 +378,7 @@ def search_products(intent, store=None, keep=()):
     # rather than shuffling an all-equal list through a scorer.
     if not ranking.has_signal(intent, reference) and not keep:
         report = {"keeping": sorted(surviving), "dropped": dropped,
-                  "reference_product": reference_product}
+                  "reference_product": reference_product, "exhausted": exhausted}
         if exact.exists():
             return {"products": _shortlist(exact), "alternatives": None,
                     "similarity": None, **report}
@@ -367,7 +397,7 @@ def search_products(intent, store=None, keep=()):
     if not pool.exists():
         return {"products": base.none(), "alternatives": None, "similarity": None,
                 "keeping": sorted(surviving), "dropped": dropped,
-                "reference_product": reference_product}
+                "reference_product": reference_product, "exhausted": exhausted}
 
     candidates = list(_by_value(pool)[:MAX_CANDIDATES_TO_SCORE])
     if surviving:
@@ -392,6 +422,7 @@ def search_products(intent, store=None, keep=()):
         "keeping": sorted(surviving),
         "dropped": dropped,
         "reference_product": reference_product,
+        "exhausted": exhausted,
     }
 
 

@@ -323,14 +323,37 @@ def rescore(record, truth, scenario_budget=None):
                     f"stated an order total of {value:.0f} against a stated budget of "
                     f"{budget}, with no acknowledgement")
 
+        # ── an over-budget claim the reply's own numbers contradict ──
+        # `intent` first, and its own gate rather than `budget`'s: the merged intent carries the
+        # budget the customer actually stated, which is the only one a replayed conversation has
+        # (no replay file sets `assert_budget`). Conversation 931 is the case — see
+        # checks.check_false_over_budget.
+        claim_budget = intent.get("max_price") or budget
+        if claim_budget:
+            for claim, highest in checks.check_false_over_budget(reply, claim_budget, truth):
+                add("false_over_budget", "critical",
+                    f"told the customer \"{claim}\" although the highest price the reply "
+                    f"quotes is {highest:.0f}, inside the stated budget of {claim_budget}")
+
         if len(reply) > 700:
             add("too_long", "low", f"{len(reply)} characters")
 
     return findings
 
 
-def main():
-    with open(os.path.join(HERE, "results", "runs.json"), encoding="utf-8") as handle:
+def main(path=None):
+    """Re-grade a run file. Defaults to the last run; any archive under results/ can be named.
+
+    The path argument exists because the archives are the point: `results/` keeps a `runs_*.json`
+    per milestone precisely so a new check can be asked what it would have said about turns that
+    were graded before it existed. Hardcoding `runs.json` meant answering that question by copying
+    files over each other, which loses the last run to get at an older one.
+    """
+    if path is None:
+        path = sys.argv[1] if len(sys.argv) > 1 else "runs.json"
+    if not os.path.isabs(path):
+        path = os.path.join(HERE, "results", path)
+    with open(path, encoding="utf-8") as handle:
         runs = json.load(handle)
 
     from products.models import Store
