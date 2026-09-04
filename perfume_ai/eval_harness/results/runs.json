@@ -1,19 +1,19 @@
 [
   {
-    "id": "CONV931",
+    "id": "CONV932",
     "category": "regression",
     "persona": "hard_budget",
-    "probe": "Replay of conversation 931. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. Both sizes are UNDER 1200. There is no women's Versace at any price. The cart built over turns 5 and 7 holds 1 × Good Girl 50ml at 650, 1 × La Vie Est Belle 50ml at 669, and 2 × Stronger With You 50ml at 400 each — a real order total of 2119. Good Girl is 90ml 1083, La Vie Est Belle is 90ml 1046. ❌ CRITICAL on turns 10, 11 and 12: saying or implying that Eros' 90ml at 1019, or its 50ml at 666, is above / outside / more than the customer's budget. 1019 < 1200. Both sizes are in budget and the injected context labels them so. ❌ CRITICAL: quoting 353 as a gap between a price and the budget. 353 is 1019 − 666, the difference between the two SIZES of Eros. Any sentence that puts that number next to the word ميزانية is false however the arithmetic got there. The same goes for any other difference figure lifted from the value note: the value comparison is between two bottles of the same perfume and has no budget content in it. ✅ Required on turn 10: both Eros sizes named with their real prices and stated to be within the budget — and Eros named as a MEN'S perfume, which is what the customer asked for once they said لجوزي. ✅ Required on turn 11 ('ازاي اعلي من ميزانيتي'): a plain retraction. The customer is correct and the previous reply was wrong. Say so — 'معاك حق، الاتنين داخل ميزانيتك' — and give the two prices again. ❌ CRITICAL: repeating the over-budget claim on turn 11 or 12 after being challenged. Repeating a false statement the customer has just disproved is worse than making it the first time, and it is what turned this conversation into a loop. ❌ CRITICAL: answering turn 11 or 12 by changing the subject. An objection to a factual error is answered by correcting the error, not by moving on from it. ✅ Allowed, and true: a statement about the ORDER TOTAL being more than 1200 — 2119 really is more than 1200. The budget is per bottle and the basket has four bottles in it, so this is a different claim from the one banned above and it is not a finding. It must be about the total, by name, and never about a single size. ✅ Required on turn 9 (Versace, women's, 1200): name the actual reason nothing matched — Versace's only perfume here is a men's — and offer either Eros for the husband or a women's perfume from another brand. Twelve women's perfumes sit under 1200. ❌ CRITICAL on turn 9: blaming the budget, or implying a list of matching options exists ('دي كل الخيارات المتاحة اللي بتناسب ميزانيتك') when the search returned nothing. The customer was never shown options to be at the end of. ❌ Never quote a price for any perfume that is not one of the figures above.",
+    "probe": "Replay of conversation 932. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. There is no women's Versace at any price, so the search on turn 2 correctly matches nothing. Twelve products match women's under 1200 once the brand is dropped, and EVERY size of all twelve is under 1200 — nine women's (Coco Mademoiselle 534/1006, Bloom 549/1067, Libre 561/927, Flowerbomb 577/928, Good Girl 650/1083, La Vie Est Belle 669/1046, Black Opium 677/883, Light Blue 691/852, Chloe Eau de Parfum 692/1058) and three unisex (Oud Wood 540/1160, Ombre Leather 592 or 700 for 50ml / 873 for 90ml / 1000 for 100ml, Baccarat Rouge 540 at 686/1136). ✅ Required on turn 2: name the actual reason nothing matched — Versace's only perfume here is a men's — and offer a way forward. Either half of the real offer is correct: Eros as a men's Versace, or a women's perfume from another brand. ❌ CRITICAL on turn 2: blaming the budget. 1200 covers both Eros sizes and every one of the twelve alternatives; the brand-and-gender pair is what emptied the search. Turns 3, 4 and 5 are the customer ACCEPTING the second option. 'شوفلي طيب اي حاجه حريمي تانيه', 'من براند تاني حريمي' and 'يعم منا قولت من براند تاني حريمي' all mean the same thing: drop Versace, keep women's. Turn 5 says so with visible irritation at having to repeat it. There is no ambiguity to resolve on any of these turns. ✅ Required on turns 3, 4 and 5: actual women's perfumes named, with their real prices, from the list above. A recommendation, not another question. ❌ CRITICAL: re-offering the same either/or after the customer has chosen one of its options — 'تحب من نفس البراند بس رجالي، ولا من براند تاني حريمي؟' or any rewording of it. Asking a question the customer has just answered is the whole bug, and it is a finding on turn 3 as much as on turn 5. ❌ CRITICAL: saying nothing matches, nothing is available, or that these are all the options, on any of turns 3, 4 and 5. Twelve products match once the brand is dropped. ❌ CRITICAL: still treating Versace as a requirement after turn 3 — offering Eros as though it were a women's perfume, or explaining again that Versace has no women's line. The customer stopped asking for Versace on turn 3 and never asked again. ❌ CRITICAL: re-asking the budget on any turn after turn 2. It is 1200 and it was given in one word. ✅ Allowed: asking about notes or an occasion INSTEAD of recommending, but only once and only if it does not repeat the brand/gender question — with twelve matches in hand, naming two or three of them is the better reply and the one being graded for. ❌ Never quote a price for any perfume that is not one of the figures above.",
     "turns": [
       {
         "n": 1,
-        "user": "عندكو اي ؟",
-        "reply": "بتدور على عطر رجالي ولا حريمي؟",
+        "user": "عايز حاجه حريمي من فيرزاتشي",
+        "reply": "عندك طلب عطر حريمي من فيرزاتشي، تمام. ميزانيتك في حدود كام؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
-          "brand": null,
-          "gender": null,
+          "brand": "Versace",
+          "gender": "female",
           "perfume_type": null,
           "season": null,
           "occasion": null,
@@ -29,8 +29,8 @@
           "wants_uncommon": false
         },
         "merged_intent": {
-          "brand": null,
-          "gender": null,
+          "brand": "Versace",
+          "gender": "female",
           "perfume_type": null,
           "season": null,
           "occasion": null,
@@ -45,6 +45,7 @@
           "avoid_traits": [],
           "wants_uncommon": false
         },
+        "pending_relax": {},
         "stage": "discovery",
         "search": null,
         "keeping": null,
@@ -55,301 +56,8 @@
       },
       {
         "n": 2,
-        "user": "حريمي",
-        "reply": "قولي ذوقك يعني بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية ولا العود؟ أو بتحبي الريحات المسكرة؟ وكمان ميزانيتك في حدود كام؟",
-        "classification": "recommendation",
-        "objection": null,
-        "raw_intent": {
-          "brand": null,
-          "gender": "female",
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "merged_intent": {
-          "brand": null,
-          "gender": "female",
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "stage": "discovery",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 0,
-        "context": "",
-        "findings": []
-      },
-      {
-        "n": 3,
-        "user": "المسكره",
-        "reply": "🔹 Good Girl من Carolina Herrera، ريحته فيها حلاوة واضحة مع لمسة قهوة ولوز، ثابت وقوي، مناسب للسهرات في الخريف والشتا.\n\n🔹 La Vie Est Belle من Lancome، عطر فيه حلاوة ناعمة مع نوتات فواكه وزهور، ريحته مناسبة لكل المواسم والاستخدام اليومي.\n\nأنا أرشحلك La Vie Est Belle أكتر لطلبك لأنها مناسبة لكل الأوقات وفيها حلاوة متوازنة مش تقيلة.",
-        "classification": "recommendation",
-        "objection": null,
-        "raw_intent": {
-          "brand": null,
-          "gender": "female",
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [
-            "sweet"
-          ],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "merged_intent": {
-          "brand": null,
-          "gender": "female",
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [
-            "sweet"
-          ],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "stage": "recommendation",
-        "search": {
-          "matched": [
-            "Good Girl",
-            "La Vie Est Belle",
-            "Black Opium",
-            "Libre",
-            "Flowerbomb",
-            "Coco Mademoiselle",
-            "XJ 1861 Naxos",
-            "Oud Wood",
-            "Erba Pura"
-          ],
-          "alternatives": [],
-          "similarity": null,
-          "reasons": {
-            "Good Girl": {
-              "score": 3.626,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "La Vie Est Belle": {
-              "score": 3.4,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Black Opium": {
-              "score": 3.226,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Libre": {
-              "score": 3.209,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Flowerbomb": {
-              "score": 3.2,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Coco Mademoiselle": {
-              "score": 3.186,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "XJ 1861 Naxos": {
-              "score": 0.453,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Oud Wood": {
-              "score": 0.386,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            },
-            "Erba Pura": {
-              "score": 0.238,
-              "reasons": [
-                "فيه sweet"
-              ],
-              "mismatches": []
-            }
-          }
-        },
-        "keeping": [],
-        "dropped": {},
-        "context_chars": 6972,
-        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP\n- الـ 90 ملي: 927.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP\n- الـ 90 ملي: 928.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP\n- الـ 90 ملي: 1006.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2700.00 EGP\n- الـ 90 ملي: 4900.00 EGP\n- زجاجة أوريجينال 50 ملي: 20000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 36000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: A juicy citrus-fruit oriental with a creamy vanilla-musk base.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n",
-        "findings": []
-      },
-      {
-        "n": 4,
-        "user": "بكام الاتنين",
-        "reply": "Good Girl الـ 90 ملي بـ1083 جنيه، وفيه كمان الـ 50 ملي بـ650 جنيه.\n\nLa Vie Est Belle الـ 90 ملي بـ1046 جنيه، وفيه كمان الـ 50 ملي بـ669 جنيه.",
-        "classification": "product_info",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "purchase_intent",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 2850,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1083 جنيه، وسعر الـ 50 ملي 650 جنيه، والفرق بين الحجمين 433 جنيه، بس سعر الملي أرخص: 12.0 بدل 13.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1046 جنيه، وسعر الـ 50 ملي 669 جنيه، والفرق بين الحجمين 377 جنيه، بس سعر الملي أرخص: 11.6 بدل 13.4 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n",
-        "findings": []
-      },
-      {
-        "n": 5,
-        "user": "ماشي عايزه 50 ملي من كل واحد اجربهم",
-        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Good Girl (50ml) بـ 650 جنيه\n- 1 × La Vie Est Belle (50ml) بـ 669 جنيه\nالمجموع: 1319 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
-        "classification": "order",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": null,
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 111,
-        "context": "Good Girl (50 ملي) (زجاجة البراند) x 1 (650.00 EGP), La Vie Est Belle (50 ملي) (زجاجة البراند) x 1 (669.00 EGP)",
-        "findings": []
-      },
-      {
-        "n": 6,
-        "user": "عندكو سترينجر ويذ يو ؟",
-        "reply": "Stronger With You متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟",
-        "classification": "product_info",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "recommendation",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 1982,
-        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 700 جنيه، وسعر الـ 50 ملي 400 جنيه، والفرق بين الحجمين 300 جنيه، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n",
-        "findings": []
-      },
-      {
-        "n": 7,
-        "user": "زودلي اتنين 50 ملي",
-        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Good Girl (50ml) بـ 650 جنيه\n- 1 × La Vie Est Belle (50ml) بـ 669 جنيه\n- 2 × Stronger With You (50ml) بـ 800 جنيه\nالمجموع: 2119 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
-        "classification": "order",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": null,
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 172,
-        "context": "Good Girl (50 ملي) (زجاجة البراند) x 1 (650.00 EGP), La Vie Est Belle (50 ملي) (زجاجة البراند) x 1 (669.00 EGP), Stronger With You (50 ملي) (زجاجة البراند) x 2 (800.00 EGP)",
-        "findings": []
-      },
-      {
-        "n": 8,
-        "user": "عندكو حاجه من فيرزاتشي ؟",
-        "reply": "أكيد عرفت إنك بتدور على حاجة حريمي من Versace وفيها لمسة سويت، ميزانيتك في حدود كام؟",
-        "classification": "recommendation",
-        "objection": null,
-        "raw_intent": {
-          "brand": "Versace",
-          "gender": null,
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "merged_intent": {
-          "brand": "Versace",
-          "gender": "female",
-          "perfume_type": null,
-          "season": null,
-          "occasion": null,
-          "max_price": null,
-          "longevity": null,
-          "projection": null,
-          "exclude_names": [],
-          "notes": [
-            "sweet"
-          ],
-          "similar_to": null,
-          "similar_to_notes": [],
-          "avoid_notes": [],
-          "avoid_traits": [],
-          "wants_uncommon": false
-        },
-        "stage": "discovery",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 0,
-        "context": "",
-        "findings": []
-      },
-      {
-        "n": 9,
         "user": "1200",
-        "reply": "دي كل الخيارات المتاحة حالياً اللي بتطابق طلبك بالظبط، لو حابب تغير المواصفات بشكل عام ممكن أساعدك تلاقي عطور تانية.",
+        "reply": "معندناش عطور حريمي من Versace حالياً، تحب أساعدك في نفس البراند لكن بدون تحديد نوع، ولا تفضل براند تاني؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -358,7 +66,7 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1200.0,
+          "max_price": 1200,
           "longevity": null,
           "projection": null,
           "exclude_names": [],
@@ -375,19 +83,18 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1200.0,
+          "max_price": 1200,
           "longevity": null,
           "projection": null,
           "exclude_names": [],
-          "notes": [
-            "sweet"
-          ],
+          "notes": [],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
           "avoid_traits": [],
           "wants_uncommon": false
         },
+        "pending_relax": {},
         "stage": "recommendation",
         "search": {
           "matched": [],
@@ -396,24 +103,89 @@
           "reasons": {}
         },
         "keeping": [],
-        "dropped": {
-          "Good Girl": "مش من البراند اللي طلبه",
-          "La Vie Est Belle": "مش من البراند اللي طلبه",
-          "Stronger With You": "مش من نفس النوع اللي طلبه"
-        },
-        "context_chars": 0,
-        "context": "",
+        "dropped": {},
+        "context_chars": 43,
+        "context": "PENDING_RELAX: gender=female|brand=Versace\n",
         "findings": []
       },
       {
-        "n": 10,
-        "user": "بص انا عايزاه لجوزي مش ليا",
-        "reply": "Eros من Versace رجالي وفيه لمسة sweet مناسبة، الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه ✅ داخل الميزانية. أنا أرشحلك الـ90 ملي أكتر لأنه كمية أكتر وفواحته قوية، لكن لو حابب توفر ممكن تختار الـ50 ملي.",
+        "n": 3,
+        "user": "شوفلي طيب اي حاجه حريمي تانيه",
+        "reply": "عندي لك Coco Mademoiselle 50 ملي بـ 534 جنيه والـ90 ملي بـ 1006 جنيه، ريحته شيك وأنيقة تناسب كل المواسم والمناسبات الرسمية. كمان عندك Oud Wood 50 ملي بـ 540 جنيه والـ90 ملي بـ 1160 جنيه، ريحته دافي وفيها لمسة نيش مميزة للشتا. أنصحك بـ Coco Mademoiselle أكتر لطلبك لأنها حريمي وأنيقة.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
-          "brand": "Versace",
-          "gender": "male",
+          "brand": null,
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200.0,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200.0,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "pending_relax": {
+          "gender": "female",
+          "brand": "Versace"
+        },
+        "stage": "discovery",
+        "search": {
+          "matched": [
+            "Coco Mademoiselle",
+            "Oud Wood",
+            "Bloom",
+            "Libre",
+            "Flowerbomb",
+            "Tom Ford Ombre Leather",
+            "Good Girl",
+            "La Vie Est Belle",
+            "Black Opium",
+            "Baccarat Rouge 540",
+            "Light Blue",
+            "Chloe Eau de Parfum"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {}
+        },
+        "keeping": [],
+        "dropped": {},
+        "context_chars": 16460,
+        "context": "\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 927.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 927 جنيه، وسعر الـ 50 ملي 561 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.2 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 928.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 928 جنيه، وسعر الـ 50 ملي 577 جنيه، والفرق بين الحجمين 351 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 351 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 873.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 50 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 873 جنيه، وسعر الـ 50 ملي 592 جنيه، والفرق بين الحجمين 281 جنيه، بس سعر الملي أرخص: 9.7 بدل 11.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 281 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1083 جنيه، وسعر الـ 50 ملي 650 جنيه، والفرق بين الحجمين 433 جنيه، بس سعر الملي أرخص: 12.0 بدل 13.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 433 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1046.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1046 جنيه، وسعر الـ 50 ملي 669 جنيه، والفرق بين الحجمين 377 جنيه، بس سعر الملي أرخص: 11.6 بدل 13.4 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 377 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 883.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 883 جنيه، وسعر الـ 50 ملي 677 جنيه، والفرق بين الحجمين 206 جنيه، بس سعر الملي أرخص: 9.8 بدل 13.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 206 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1136.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1136 جنيه، وسعر الـ 50 ملي 686 جنيه، والفرق بين الحجمين 450 جنيه، بس سعر الملي أرخص: 12.6 بدل 13.7 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 450 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1058 جنيه، وسعر الـ 50 ملي 692 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 11.8 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 4,
+        "user": "من براند تاني حريمي",
+        "reply": "عندك Coco Mademoiselle 90 ملي بـ1006 جنيه و50 ملي بـ534 جنيه، وكمان Bloom 90 ملي بـ1067 جنيه و50 ملي بـ549 جنيه، كلها داخل ميزانيتك. أنا أرشحلك Coco Mademoiselle أكتر لأنها أنسب للمناسبات الرسمية وشيك.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "female",
           "perfume_type": null,
           "season": null,
           "occasion": null,
@@ -429,8 +201,7 @@
           "wants_uncommon": false
         },
         "merged_intent": {
-          "brand": "Versace",
-          "gender": "male",
+          "gender": "female",
           "perfume_type": null,
           "season": null,
           "occasion": null,
@@ -438,93 +209,236 @@
           "longevity": null,
           "projection": null,
           "exclude_names": [],
-          "notes": [
-            "sweet"
-          ],
+          "notes": [],
           "similar_to": null,
           "similar_to_notes": [],
           "avoid_notes": [],
           "avoid_traits": [],
           "wants_uncommon": false
         },
-        "stage": "recommendation",
+        "pending_relax": {},
+        "stage": "discovery",
         "search": {
           "matched": [
-            "Eros"
+            "Coco Mademoiselle",
+            "Bloom",
+            "Libre",
+            "Flowerbomb",
+            "Good Girl",
+            "La Vie Est Belle",
+            "Black Opium",
+            "Light Blue",
+            "Chloe Eau de Parfum",
+            "Oud Wood",
+            "Tom Ford Ombre Leather",
+            "Baccarat Rouge 540"
           ],
           "alternatives": [],
           "similarity": null,
           "reasons": {
-            "Eros": {
-              "score": 4.816,
+            "Coco Mademoiselle": {
+              "score": 7.0,
               "reasons": [
-                "فيه sweet"
+                "العميل بيتكلم عنه بالفعل"
               ],
+              "mismatches": []
+            },
+            "Bloom": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Libre": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Flowerbomb": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Good Girl": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "La Vie Est Belle": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Black Opium": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Light Blue": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Chloe Eau de Parfum": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Oud Wood": {
+              "score": 4.0,
+              "reasons": [
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
+            },
+            "Tom Ford Ombre Leather": {
+              "score": 1.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Baccarat Rouge 540": {
+              "score": 1.5,
+              "reasons": [],
+              "mismatches": []
+            }
+          }
+        },
+        "keeping": [
+          "Coco Mademoiselle",
+          "Oud Wood"
+        ],
+        "dropped": {},
+        "context_chars": 16536,
+        "context": "\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 927.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 927 جنيه، وسعر الـ 50 ملي 561 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.2 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 928.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 928 جنيه، وسعر الـ 50 ملي 577 جنيه، والفرق بين الحجمين 351 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 351 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1083 جنيه، وسعر الـ 50 ملي 650 جنيه، والفرق بين الحجمين 433 جنيه، بس سعر الملي أرخص: 12.0 بدل 13.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 433 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1046.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1046 جنيه، وسعر الـ 50 ملي 669 جنيه، والفرق بين الحجمين 377 جنيه، بس سعر الملي أرخص: 11.6 بدل 13.4 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 377 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 883.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 883 جنيه، وسعر الـ 50 ملي 677 جنيه، والفرق بين الحجمين 206 جنيه، بس سعر الملي أرخص: 9.8 بدل 13.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 206 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1058 جنيه، وسعر الـ 50 ملي 692 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 11.8 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 873.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 50 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 873 جنيه، وسعر الـ 50 ملي 592 جنيه، والفرق بين الحجمين 281 جنيه، بس سعر الملي أرخص: 9.7 بدل 11.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 281 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1136.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1136 جنيه، وسعر الـ 50 ملي 686 جنيه، والفرق بين الحجمين 450 جنيه، بس سعر الملي أرخص: 12.6 بدل 13.7 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 450 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 5,
+        "user": "يعم منا قولت من براند تاني حريمي",
+        "reply": "عندي لك Libre 90 ملي بـ 927 جنيه والـ50 ملي بـ 561 جنيه، وعطر Flowerbomb 90 ملي بـ 928 جنيه والـ50 ملي بـ 577 جنيه، كلهم داخل ميزانيتك ومناسبين للمناسبات الرسمية واليومية. لو تحب حاجة دافي ومميزة أكتر، Good Girl 90 ملي بـ 1083 جنيه والـ50 ملي بـ 650 جنيه برضه خيار كويس.",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Coco Mademoiselle",
+            "Oud Wood",
+            "Bloom"
+          ],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": 1200,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [
+            "Coco Mademoiselle",
+            "Oud Wood",
+            "Bloom"
+          ],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "pending_relax": {},
+        "stage": "discovery",
+        "search": {
+          "matched": [
+            "Libre",
+            "Flowerbomb",
+            "Good Girl",
+            "La Vie Est Belle",
+            "Black Opium",
+            "Light Blue",
+            "Chloe Eau de Parfum",
+            "Tom Ford Ombre Leather",
+            "Baccarat Rouge 540"
+          ],
+          "alternatives": [],
+          "similarity": null,
+          "reasons": {
+            "Libre": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Flowerbomb": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Good Girl": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "La Vie Est Belle": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Black Opium": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Light Blue": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Chloe Eau de Parfum": {
+              "score": 4.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Tom Ford Ombre Leather": {
+              "score": 1.5,
+              "reasons": [],
+              "mismatches": []
+            },
+            "Baccarat Rouge 540": {
+              "score": 1.5,
+              "reasons": [],
               "mismatches": []
             }
           }
         },
         "keeping": [],
-        "dropped": {},
-        "context_chars": 1625,
-        "context": "\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1019.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 353 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n",
+        "dropped": {
+          "Coco Mademoiselle": null,
+          "Oud Wood": null,
+          "Bloom": null
+        },
+        "context_chars": 14146,
+        "context": "\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 927.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 927 جنيه، وسعر الـ 50 ملي 561 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.2 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 928.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 928 جنيه، وسعر الـ 50 ملي 577 جنيه، والفرق بين الحجمين 351 جنيه، بس سعر الملي أرخص: 10.3 بدل 11.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 351 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1083 جنيه، وسعر الـ 50 ملي 650 جنيه، والفرق بين الحجمين 433 جنيه، بس سعر الملي أرخص: 12.0 بدل 13.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 433 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1046.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1046 جنيه، وسعر الـ 50 ملي 669 جنيه، والفرق بين الحجمين 377 جنيه، بس سعر الملي أرخص: 11.6 بدل 13.4 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 377 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 883.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 883 جنيه، وسعر الـ 50 ملي 677 جنيه، والفرق بين الحجمين 206 جنيه، بس سعر الملي أرخص: 9.8 بدل 13.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 206 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1058 جنيه، وسعر الـ 50 ملي 692 جنيه، والفرق بين الحجمين 366 جنيه، بس سعر الملي أرخص: 11.8 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 366 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 873.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 50 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 873 جنيه، وسعر الـ 50 ملي 592 جنيه، والفرق بين الحجمين 281 جنيه، بس سعر الملي أرخص: 9.7 بدل 11.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 281 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1136.00 EGP ✅ (داخل الميزانية)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1136 جنيه، وسعر الـ 50 ملي 686 جنيه، والفرق بين الحجمين 450 جنيه، بس سعر الملي أرخص: 12.6 بدل 13.7 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 450 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n",
         "findings": []
-      },
-      {
-        "n": 11,
-        "user": "ازاي اعلي من ميزانيتي",
-        "reply": "الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه داخلين تمام في حدود ميزانيتك 1200 جنيه.",
-        "classification": "faq",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "discovery",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 0,
-        "context": "",
-        "findings": []
-      },
-      {
-        "n": 12,
-        "user": "انا ميزانيتي 1200",
-        "reply": "تمام، الـ90 ملي من Versace Eros بـ1019 جنيه داخل في ميزانيتك، وفيه كمان الـ50 ملي بـ666 جنيه لو حابب حجم أصغر.",
-        "classification": "faq",
-        "objection": null,
-        "raw_intent": null,
-        "merged_intent": null,
-        "stage": "discovery",
-        "search": null,
-        "keeping": null,
-        "dropped": null,
-        "context_chars": 0,
-        "context": "",
-        "findings": [
-          [
-            "named_product_without_data",
-            "high",
-            "named 'Eros' on a turn where no product data was injected"
-          ]
-        ]
       }
     ],
-    "findings": [
-      [
-        "named_product_without_data",
-        "high",
-        "named 'Eros' on a turn where no product data was injected"
-      ]
-    ],
+    "findings": [],
     "error": null,
     "final_preferences": {
-      "gender": "male",
-      "max_price": 1200,
-      "brand": "Versace",
-      "notes": [
-        "sweet"
-      ]
+      "gender": "female",
+      "max_price": 1200.0
     },
-    "seconds": 52.6
+    "seconds": 24.1
   }
 ]

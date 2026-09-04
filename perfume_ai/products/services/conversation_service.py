@@ -145,6 +145,68 @@ def _is_reversal(message):
     return any(normalize_arabic(marker) in normalized for marker in _REVERSAL_MARKERS)
 
 
+# How a customer accepts an offer to drop a constraint, as opposed to retracting a preference
+# unprompted. `_REVERSAL_MARKERS` above is about the customer changing their own mind; this is
+# about them answering a question we asked. Conversation 932 is the failure: the reply offered
+# "نفس البراند بس رجالي، ولا براند تاني حريمي", and "من براند تاني حريمي" matched no reversal
+# marker, named no replacement brand, and so left `brand: "Versace"` to be gap-filled back in
+# three turns running.
+#
+# Written in the form `normalize_arabic` produces (ة→ه, أ/إ→ا, ى→ي), since both sides are
+# normalized before comparison — so one spelling per phrase is enough.
+_BRAND_RELAX_MARKERS = (
+    "براند تاني", "ماركه تانيه", "براند غير", "براند مختلف", "ماركه مختلفه",
+    "اي براند", "اي ماركه", "براند تانيه", "من غير براند",
+)
+
+# The same acceptance, said in words that only mean it because of what was just offered. These
+# fire only when `pending` says a brand relaxation was on the table — "حاجه تانيه" on any other
+# turn is a request for a different *perfume*, which `ai/intent.py` already routes to
+# `exclude_names`, and treating it as a brand withdrawal there would throw away a filter the
+# customer still wants.
+_RELAX_ACCEPT_PHRASES = (
+    "حاجه تانيه", "اي حاجه", "التانيه", "التاني", "الثانيه", "الخيار التاني",
+)
+
+# Bare agreement. Matched against the whole message rather than as a substring: "اه" is two
+# letters that sit inside ordinary words — مياه, معاه, and anything ending ـاة once
+# `normalize_arabic` has folded ة to ه — so a substring test here would read agreement into
+# sentences that contain none. A customer who agrees in one word writes only that word.
+_RELAX_ACCEPT_EXACT = (
+    "اه", "اها", "ايوه", "ايوا", "تمام", "ماشي", "اوك", "ok", "okay", "yes", "yep",
+    "اه صح", "تمام كده", "ماشي كده", "اه تمام", "حاضر", "طيب",
+)
+
+_ACCEPT_STRIP = " \t\n.،,!؟?:؛;\"'()"
+
+
+def _relaxed_keys(message, pending=None):
+    """Constraints the customer has just agreed to drop, from their words alone.
+
+    Returns candidates, not conclusions: `merge_preferences` still refuses to relax a key the
+    customer overrode with a real value in the same breath. Brand only, for now — the other
+    half of 932's offer ("نفس البراند بس رجالي") already works, because `sales/gender.py`
+    reads رجالي out of the message and flips the gender itself. The marker tables are keyed by
+    constraint so `perfume_type` and `season` can join without reshaping anything.
+    """
+    if not message:
+        return frozenset()
+    from .static_faq_service import normalize_arabic
+
+    normalized = normalize_arabic(message)
+    if any(normalize_arabic(marker) in normalized for marker in _BRAND_RELAX_MARKERS):
+        return frozenset({"brand"})
+
+    if "brand" in (pending or {}):
+        if any(normalize_arabic(phrase) in normalized for phrase in _RELAX_ACCEPT_PHRASES):
+            return frozenset({"brand"})
+        bare = normalized.strip(_ACCEPT_STRIP)
+        if any(bare == normalize_arabic(word) for word in _RELAX_ACCEPT_EXACT):
+            return frozenset({"brand"})
+
+    return frozenset()
+
+
 def _contradicted_keys(intent, message):
     """Saved keys that must NOT be restored on this turn.
 
@@ -183,7 +245,7 @@ def _is_set(value):
     return value not in (None, "", [], {})
 
 
-def merge_preferences(conversation, intent, message=None):
+def merge_preferences(conversation, intent, message=None, pending=None):
     """Fill gaps in a freshly extracted intent from what the customer said earlier.
 
     extract_intent re-derives every criterion from the last 8 messages alone, so a
@@ -197,6 +259,10 @@ def merge_preferences(conversation, intent, message=None):
     extractor prompt already states — a customer who changes their mind must not be
     contradicted by their own history. `message` is used to detect an explicit reversal,
     where gap-filling itself is the wrong behaviour rather than merely a stale one.
+
+    `pending` is what the previous reply offered to relax, from
+    `sales.described.pending_relaxations`. It is what lets a terse "التانية" be read as an
+    answer; the unambiguous phrasings need no such help.
     """
     merged = dict(intent or {})
     if conversation is None:
@@ -205,8 +271,27 @@ def merge_preferences(conversation, intent, message=None):
     saved = conversation.preferences or {}
     contradicted = _contradicted_keys(intent, message)
 
+    # Deleted, not merely left un-gap-filled. `ai/intent.py` tells the extractor to accumulate
+    # preferences out of the history, and it does: on conversation 931's turn 9 `raw_intent` came
+    # back carrying brand "Versace" for a message whose entire text was "1200". So the stale
+    # value arrives on the fresh intent too, and a fix that only declined to restore it from
+    # `saved` would have left 932's loop running exactly as it was.
+    relaxed = set(_relaxed_keys(message, pending))
+    for key in tuple(relaxed):
+        # An override is not a withdrawal. "براند تاني زي ديور" both accepts the offer and names
+        # the replacement, and the named brand has to survive — so relax only when the extractor
+        # brought back nothing, or brought back the very value being dropped.
+        fresh, previous = merged.get(key), saved.get(key)
+        if _is_set(fresh) and _is_set(previous) and str(fresh).strip().lower() != str(previous).strip().lower():
+            relaxed.discard(key)
+            continue
+        if _is_set(fresh) and not _is_set(previous):
+            relaxed.discard(key)
+            continue
+        merged.pop(key, None)
+
     for key in PERSISTED_PREFERENCE_KEYS:
-        if key in contradicted:
+        if key in contradicted or key in relaxed:
             continue
         if not _is_set(merged.get(key)) and _is_set(saved.get(key)):
             merged[key] = saved[key]

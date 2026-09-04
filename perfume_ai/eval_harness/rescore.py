@@ -18,7 +18,6 @@ import json
 import os
 import re
 import sys
-from difflib import SequenceMatcher
 
 import django
 
@@ -296,12 +295,29 @@ def rescore(record, truth, scenario_budget=None):
                 f"customer could buy instead")
 
         # ── verbatim-ish repetition across turns ──
-        if previous_reply and reply:
-            ratio = SequenceMatcher(None, reply.strip(), previous_reply.strip()).ratio()
-            if ratio > 0.7:
-                add("repeated_reply", "high",
-                    f"{ratio:.0%} similar to the previous reply — the customer asked for "
-                    f"something new and got the same answer")
+        # Its own numbers, deliberately: 0.7 against the immediately previous reply and no length
+        # floor is what this path has graded on since before `check_repeated_reply` existed. The
+        # implementation is shared so one finding code cannot mean two things — the runner passes a
+        # stricter ratio over a wider window, which is what conversation 932's non-adjacent repeats
+        # needed. Two things did move when the implementation was shared, both checked on the way in:
+        #   · the inline code this replaced tested `> 0.7` and the shared function tests `>=`, which
+        #     reclassifies a reply sitting exactly on 0.7. No archive has one.
+        #   · the shared function exempts replies whose figures differ, which drops P3 turn 2 (95%)
+        #     from five archived findings files. That finding was wrong: the customer amended the
+        #     quantity and the reply came back "2 × Oudora — تحب 50 ملي ولا 90 ملي؟", acknowledging
+        #     the amendment and re-asking the size question they had not answered yet. Removing it
+        #     is the point of the exemption, not a side effect of it.
+        # The other five pairs re-grade identically. (`runs_PRE_EVAL` and `findings_PRE_ITEM123` do
+        # not pair with their same-tag sibling — each was overwritten by a run of a different
+        # scenario set, so re-grading them compares two unrelated runs and proves nothing.)
+        repeat = checks.check_repeated_reply(
+            reply, [previous_reply], threshold=0.7, window=1, min_length=0
+        )
+        if repeat:
+            ratio, _ = repeat
+            add("repeated_reply", "high",
+                f"{ratio:.0%} similar to the previous reply — the customer asked for "
+                f"something new and got the same answer")
         previous_reply = reply or previous_reply
 
         # ── a stated order total, checked against the scenario's budget ──

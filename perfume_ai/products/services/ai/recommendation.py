@@ -697,7 +697,15 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
             # it to treat a whole recommendation request as a perfume name, and the token-subset
             # test that makes it reliable on a name is unreliable on a sentence. So this branch
             # abstains: rule 3 below neither denies nor promises to check.
-            context = ""
+            #
+            # What it does record is which constraints instruction 1 is about to offer to relax,
+            # because that offer is a question and a question needs an answer. This branch used to
+            # set `context = ""`, and conversation 932 is what that cost: the reply offered "براند
+            # تاني حريمي", the customer accepted three times, and each turn re-derived the same
+            # dead intent because nothing knew an offer was open. The marker is persisted but not
+            # injected — `user_content` below does not embed it — so it changes what the next turn
+            # can *read*, never what this one says.
+            context = described.relax_offer_block(intent)
             user_content = f"""
 ═══ طلب العميل ═══
 {message}

@@ -490,7 +490,15 @@ def route(message, history=None, store=None, conversation=None):
         # Restore anything the customer said before the 8-message window cut it off.
         # Merged here, before every check below, so the gender and budget prompts and
         # search_products all see the full picture rather than a truncated one.
-        intent = merge_preferences(conversation, intent, message)
+        #
+        # `pending` is what the previous reply offered to relax when a search came back empty.
+        # Without it a customer accepting the offer in terse words ("التانية", "اه") is answering
+        # a question nothing recorded, and the constraint that emptied the search is restored
+        # from `preferences` on top of their answer — conversation 932, four times over.
+        intent = merge_preferences(
+            conversation, intent, message,
+            pending=sales_described.pending_relaxations(conversation),
+        )
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":

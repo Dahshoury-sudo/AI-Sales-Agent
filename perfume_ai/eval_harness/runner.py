@@ -59,6 +59,9 @@ _REPLAYS = {
     "conv772": "scenarios_conv772",
     # 931 is the false over-budget claim: 1019 against a 1200 budget, called over it twice.
     "conv931": "scenarios_conv931",
+    # 932 is the other half of 931's Versace dead end: the offer to drop the brand was accepted
+    # three times and re-made three times, because nothing could represent the acceptance.
+    "conv932": "scenarios_conv932",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:
@@ -105,9 +108,13 @@ def install_probes():
         _rec()["raw_intent"] = result
         return result
 
-    def merge_preferences(conversation, intent, message=None):
-        result = original_merge(conversation, intent, message)
+    def merge_preferences(conversation, intent, message=None, pending=None):
+        result = original_merge(conversation, intent, message, pending=pending)
         _rec()["merged_intent"] = dict(result or {})
+        # What the previous reply offered to relax, per `sales.described.pending_relaxations`.
+        # Recorded because a relaxation that silently fails to fire and one the customer never
+        # accepted produce the same merged intent, and only this tells them apart.
+        _rec()["pending_relax"] = dict(pending or {})
         return result
 
     def search_products(intent, store=None, keep=()):
@@ -230,6 +237,21 @@ def run_scenario(scenario, truth):
                     ),
                 )
 
+                # Not folded into `check_reply`: the defect is a relation between two replies, so
+                # it needs the earlier ones as replies, and `history_text` has already flattened
+                # them into one blob with the customer's turns and the injected context.
+                repeat = checks.check_repeated_reply(
+                    reply, [turn["reply"] for turn in record["turns"]]
+                )
+                if repeat:
+                    ratio, earlier = repeat
+                    turn_findings.append((
+                        "repeated_reply", "critical",
+                        f"this reply is {ratio:.0%} identical to an earlier one in the same "
+                        f"conversation — the customer answered and got the same message back: "
+                        f"'{earlier[:120]}'",
+                    ))
+
                 budget = scenario.get("assert_budget")
                 # Only from the turn the customer actually states it. Applying it to every
                 # turn flagged Dior Sauvage's real 944 price quoted on turn 1 of M1 against a
@@ -270,6 +292,7 @@ def run_scenario(scenario, truth):
                     "objection": state.get("objection"),
                     "raw_intent": state.get("raw_intent"),
                     "merged_intent": state.get("merged_intent"),
+                    "pending_relax": state.get("pending_relax"),
                     "stage": state.get("stage") or state.get("derived_stage"),
                     "search": state.get("search"),
                     "keeping": state.get("keeping"),

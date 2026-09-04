@@ -71,6 +71,7 @@ from products.services.reply_sanitizer import (
 )
 from products.services.sales import (
     constraints as sales_constraints,
+    described as sales_described,
     gender as sales_gender,
     naming as sales_naming,
     notes as sales_notes,
@@ -6118,6 +6119,238 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
         self.assertEqual(
             list(untouched["products"].values_list("name", flat=True)), ["Eros"]
         )
+
+
+class AcceptedRelaxationClearsTheConstraintTests(TestCase):
+    """Conversation 932: the offer to drop the brand was accepted three times and re-made three
+    times, because nothing in the pipeline could hold the word "yes".
+
+    The customer wanted a women's Versace. There is one Versace here and it is a men's, so the
+    reply correctly said so and offered "نفس البراند بس رجالي، ولا من براند تاني حريمي" — the
+    wording of `_no_match_instruction`'s own example. They answered "من براند تاني حريمي", then
+    said it again, then said it a third time with "يعم منا قولت". Every reply was the same offer;
+    the last two are byte-identical.
+
+    Nothing downstream was broken. The acceptance simply had no representation. The intent schema
+    gives `brand` one slot — a name or null — and null means *unspecified*, never *withdrawn*, so
+    a customer who names no replacement leaves the extractor nothing to override with. `brand` is
+    in `PERSISTED_PREFERENCE_KEYS`, so `merge_preferences` restored Versace from
+    `conversation.preferences` every turn, and because `to_save` is built from the *post*-gap-fill
+    dict it was rewritten to the database each time and could never age out. Twelve women's
+    perfumes sat under the customer's 1200 the whole time.
+
+    `_contradicted_keys` could not help, and the three reasons are why this is a separate
+    mechanism rather than a new entry in `_AXES`: its gate is `_is_reversal`, which is about a
+    customer changing their own mind and not about them answering our question; `brand` is on no
+    axis; and it clears an axis only where the *new* intent has a value on it, which a withdrawal
+    by definition does not.
+
+    The tests below pin the two halves that were easy to get wrong. `merge_preferences` must
+    `pop` the key rather than merely decline to restore it — `ai/intent.py` tells the extractor to
+    accumulate from history and it does, so the stale brand arrives on the fresh intent too — and
+    it must NOT relax when the same sentence names a replacement, or "براند تاني زي ديور" would
+    throw away the brand the customer just asked for.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Relax")
+        self.conversation = Conversation.objects.create(store=self.store, platform="web")
+
+    CONV932 = {"brand": "Versace", "gender": "female", "max_price": 1200.0}
+    # What the extractor actually returns on these turns. Not `{}`: conversation 931's turn 9 came
+    # back carrying brand "Versace" for a message whose entire text was "1200", so the echo is the
+    # realistic input and the one a skip-only fix would have missed.
+    ECHO = {"brand": "Versace", "gender": "female", "max_price": 1200.0, "notes": ["sweet"]}
+    OFFERED = {"gender": "female", "brand": "Versace"}
+
+    def _saved(self, **preferences):
+        self.conversation.preferences = dict(preferences)
+        self.conversation.save(update_fields=["preferences"])
+
+    def _merge(self, intent, message, pending=None):
+        merged = merge_preferences(
+            self.conversation, dict(intent), message, pending=pending
+        )
+        self.conversation.refresh_from_db()
+        return merged
+
+    # ── the acceptance, in the words the customer used ────────────────────
+    def test_accepting_another_brand_drops_the_one_that_matched_nothing(self):
+        """Turn 4, verbatim. The brand has to leave the merged intent AND the saved preferences:
+        while it is in the column, the next turn gap-fills it back and the loop restarts."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "من براند تاني حريمي")
+
+        self.assertIsNone(merged.get("brand"))
+        self.assertNotIn("brand", self.conversation.preferences)
+
+    def test_the_extractors_echo_of_the_stale_brand_is_dropped_too(self):
+        """Why the fix pops instead of skipping. The intent arriving here already says
+        `brand: "Versace"` — nothing was gap-filled, so declining to gap-fill changes nothing."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "من براند تاني حريمي")
+
+        self.assertNotIn("Versace", str(merged.get("brand") or ""))
+
+    def test_the_first_acceptance_counts_as_much_as_the_third(self):
+        """Turn 3 — "شوفلي طيب اي حاجه حريمي تانيه" — is the turn the customer should have been
+        served on, and the one whose failure cost the two turns after it."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "شوفلي طيب اي حاجه حريمي تانيه",
+                             pending=self.OFFERED)
+
+        self.assertIsNone(merged.get("brand"))
+
+    def test_the_exasperated_third_ask_is_read_the_same_way(self):
+        """"يعم منا قولت من براند تاني حريمي" — the turn that made this a reported bug. The
+        prefix must not stop the phrase inside it from matching."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "يعم منا قولت من براند تاني حريمي")
+
+        self.assertIsNone(merged.get("brand"))
+
+    def test_everything_the_customer_still_wants_survives(self):
+        """A withdrawn brand is one constraint, not a reset. Dropping the budget here would put
+        the reply back to "ممنوع تذكر الأسعار" and start offering perfumes over 1200."""
+        self._saved(notes=["sweet"], **self.CONV932)
+
+        merged = self._merge(self.ECHO, "من براند تاني حريمي")
+
+        self.assertEqual(merged.get("gender"), "female")
+        self.assertEqual(merged.get("max_price"), 1200.0)
+        self.assertEqual(merged.get("notes"), ["sweet"])
+        self.assertEqual(self.conversation.preferences.get("gender"), "female")
+        self.assertEqual(self.conversation.preferences.get("max_price"), 1200.0)
+
+    # ── terse answers, which only mean this because of what was offered ────
+    def test_a_bare_word_needs_the_offer_to_be_read_as_an_answer(self):
+        """"التانية" is "the second one" — an answer to a question, and meaningless without it.
+        The pending marker is what supplies the question."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "التانية", pending=self.OFFERED)
+
+        self.assertIsNone(merged.get("brand"))
+
+    def test_the_same_bare_word_changes_nothing_when_nothing_was_offered(self):
+        """The false positive this is scoped against. With no offer open, "التانية" is a request
+        for a different *perfume*, which `exclude_names` already handles — and reading it as a
+        brand withdrawal would discard a filter the customer still wants."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(self.ECHO, "التانية")
+
+        self.assertEqual(merged.get("brand"), "Versace")
+        self.assertEqual(self.conversation.preferences.get("brand"), "Versace")
+
+    def test_agreement_is_matched_as_a_whole_message_not_as_a_substring(self):
+        """"اه" is two letters that live inside ordinary words, and `normalize_arabic` folds ة to
+        ه, which puts it at the end of anything spelled ـاة. A substring test here would read
+        agreement into sentences containing none — "المياه بتخلص" among them."""
+        self._saved(**self.CONV932)
+
+        for sentence in ("المياه بتخلص امتى؟", "معاه فلوس كفاية؟"):
+            with self.subTest(sentence=sentence):
+                merged = self._merge(self.ECHO, sentence, pending=self.OFFERED)
+                self.assertEqual(merged.get("brand"), "Versace")
+
+        # And the bare word itself still works, so the test above is about the boundary and not
+        # about the phrase having been dropped.
+        self.assertIsNone(self._merge(self.ECHO, "اه", pending=self.OFFERED).get("brand"))
+
+    # ── an override is not a withdrawal ───────────────────────────────────
+    def test_naming_a_replacement_brand_overrides_instead_of_clearing(self):
+        """"براند تاني زي ديور" matches a relax marker AND names the brand to use. Relaxing here
+        would delete the answer to the very question that was asked."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(dict(self.ECHO, brand="Dior"), "براند تاني زي ديور",
+                             pending=self.OFFERED)
+
+        self.assertEqual(merged.get("brand"), "Dior")
+        self.assertEqual(self.conversation.preferences.get("brand"), "Dior")
+
+    def test_taking_the_other_half_of_the_offer_keeps_the_brand(self):
+        """The offer's first option — "نفس البراند بس رجالي". This half already worked, because
+        `sales/gender.py` reads رجالي and flips the gender itself; what matters here is that the
+        brand is NOT dropped as a side effect, or Eros stops being findable."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge(dict(self.ECHO, gender="male"), "رجالي", pending=self.OFFERED)
+
+        self.assertEqual(merged.get("brand"), "Versace")
+        self.assertEqual(merged.get("gender"), "male")
+
+    def test_an_ordinary_turn_is_untouched(self):
+        """The gap-filler's normal job, pinned beside the exception so a widened marker set that
+        starts matching everything fails here."""
+        self._saved(**self.CONV932)
+
+        merged = self._merge({"gender": "female"}, "بكام دي", pending=self.OFFERED)
+
+        self.assertEqual(merged.get("brand"), "Versace")
+        self.assertEqual(merged.get("max_price"), 1200.0)
+
+    # ── the offer records itself, so the next turn can read it ────────────
+    def test_the_no_match_reply_records_what_it_offered_to_relax(self):
+        """This branch used to persist `context = ""`, which is why every `internal_context` in
+        conversation 932's transcript is empty and the stale brand was invisible in the dump."""
+        from products.services.ai import recommendation
+
+        with mock.patch.object(recommendation, "chat", return_value="ok"):
+            _, context = recommendation.recommend(
+                "عايز حاجه حريمي من فيرزاتشي",
+                Product.objects.none(),
+                alternatives=Product.objects.none(),
+                store=self.store,
+                intent=dict(self.CONV932),
+            )
+
+        self.assertIn(sales_described.PENDING_RELAX_MARKER, context)
+        self.assertIn("brand=Versace", context)
+        self.assertIn("gender=female", context)
+
+    def test_the_marker_survives_the_round_trip_through_a_message_row(self):
+        """Writer and reader pinned together against a real `Message`. A brand with a space in it
+        is the case the pipe separator exists for: on spaces, "Tom Ford" parses as "Tom"."""
+        from products.services.ai import recommendation
+
+        with mock.patch.object(recommendation, "chat", return_value="ok"):
+            _, context = recommendation.recommend(
+                "عايز حاجه حريمي من توم فورد",
+                Product.objects.none(),
+                alternatives=Product.objects.none(),
+                store=self.store,
+                intent={"brand": "Tom Ford", "gender": "female"},
+            )
+        save_message(self.conversation, "assistant", "ok", internal_context=context)
+
+        self.assertEqual(
+            sales_described.pending_relaxations(self.conversation),
+            {"brand": "Tom Ford", "gender": "female"},
+        )
+
+    def test_a_turn_that_offered_nothing_leaves_no_marker(self):
+        """`relax_offer_block` returns "" with no hard filter set, so the branch can write it
+        unconditionally — and a reader must not find an empty offer where none was made."""
+        from products.services.ai import recommendation
+
+        with mock.patch.object(recommendation, "chat", return_value="ok"):
+            _, context = recommendation.recommend(
+                "عايز حاجه حلوه",
+                Product.objects.none(),
+                alternatives=Product.objects.none(),
+                store=self.store,
+                intent={"notes": ["sweet"]},
+            )
+        save_message(self.conversation, "assistant", "ok", internal_context=context)
+
+        self.assertNotIn(sales_described.PENDING_RELAX_MARKER, context)
+        self.assertEqual(sales_described.pending_relaxations(self.conversation), {})
 
 
 class ObjectionDetectionTests(TestCase):
@@ -15371,6 +15604,180 @@ class HarnessCatchesConv931Tests(TestCase):
         # wrong catalogue. These are Eros' two sizes, the three cart perfumes, and the real total.
         for figure in ("666", "1019", "650", "669", "400", "2119", "1200", "353"):
             self.assertIn(figure, scenario["probe"], figure)
+
+
+class HarnessCatchesConv932Tests(TestCase):
+    """The repeated reply, and why every other check in the file scored it clean.
+
+    Conversation 932's replies 4 and 5 are byte-identical, and 2, 3 and 4 are near-duplicates of
+    them. Not one of them is a defect on its own: each states a true fact about the catalogue,
+    quotes no price, invents no name, denies nothing we stock. `check_reply` examines one reply at
+    a time and there was nothing in any one of them to find. The defect is the relation between
+    two replies, so it needed a check that can see two.
+
+    `check_repeated_reply` is deliberately not `router._count_recent_repetitions`, which is the
+    production guard that missed this. That function walks back from the last reply and `break`s at
+    the first message under 0.7 similarity, and its caller needs a count of 3 — unreachable inside
+    an 8-message window, because the oldest of the four bot messages there is the budget question
+    and it breaks the chain. Same rule as `check_false_over_budget` versus `reply_sanitizer`: a
+    check sharing an implementation with the guard it audits scores that guard's blind spots as
+    clean, so the two are written separately and their difference is the number worth watching.
+
+    It is a general check rather than a 932-specific assertion because the failure mode is
+    general: an answer the pipeline cannot represent leaves the intent unchanged, an unchanged
+    intent rebuilds the same prompt from the same data, and the tell is a duplicated reply
+    whatever slot the unrepresentable answer landed on.
+    """
+
+    # Verbatim from Message.content — replies 3, 4 and 5 of the transcript. 4 and 5 are the same
+    # bytes; 3 differs in "أجرب لك" vs "أجرب أجيب لك" and a full stop, which is the LLM
+    # regenerating from an identical prompt rather than anything being replayed.
+    REPLY_3 = (
+        "يا فندم، مفيش عندنا عطور حريمي من فيرزاتشي دلوقتي، تحب أجرب لك من فيرزاتشي رجالي، "
+        "ولا من براند تاني حريمي؟"
+    )
+    REPLY_4 = (
+        "يا فندم، مفيش عندنا عطور حريمي من فيرزاتشي دلوقتي. تحب أجرب لك من نفس البراند بس رجالي، "
+        "ولا من براند تاني حريمي؟"
+    )
+
+    # The boilerplate that makes a grown cart recap collide with the one before it. Verbatim, and
+    # shared by both recap tests, because its length is the whole reason the ratio reaches 0.93 —
+    # an abridged version scores 0.886 and the exemption tests would pass without exercising it.
+    CHECKOUT_REQUEST = (
+        "تمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك "
+        "بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل."
+    )
+
+    def setUp(self):
+        from eval_harness import checks
+
+        self.checks = checks
+
+    def test_the_identical_reply_is_caught(self):
+        """Replies 4 and 5 — the same bytes, sent after the customer had said "يعم منا قولت"."""
+        flagged = self.checks.check_repeated_reply(self.REPLY_4, [self.REPLY_3, self.REPLY_4])
+
+        self.assertIsNotNone(flagged)
+        ratio, earlier = flagged
+        self.assertEqual(ratio, 1.0)
+        self.assertEqual(earlier, self.REPLY_4)
+
+    def test_a_reworded_repeat_is_caught_too(self):
+        """The reason the threshold is a ratio and not equality. Turn 4's reply is turn 3's with
+        four words moved, which is what the router's own repetition *retry* produces — it re-calls
+        `recommend` with the same empty results and the same intent, so rewording is the only
+        thing it can change."""
+        flagged = self.checks.check_repeated_reply(self.REPLY_4, [self.REPLY_3])
+
+        self.assertIsNotNone(flagged)
+        self.assertGreaterEqual(flagged[0], 0.9)
+
+    def test_it_looks_past_the_immediately_preceding_reply(self):
+        """Where `_count_recent_repetitions` stops. One dissimilar reply in between ends that
+        function's walk; here it must not, because a loop with an interruption is still a loop."""
+        flagged = self.checks.check_repeated_reply(
+            self.REPLY_4,
+            [self.REPLY_4, "تمام يا فندم، ميزانيتك في حدود كام عشان أرشحلك الأحسن؟"],
+        )
+
+        self.assertIsNotNone(flagged)
+        self.assertEqual(flagged[0], 1.0)
+
+    def test_two_different_replies_are_not_a_finding(self):
+        """The whole suite runs through this check, so a false positive here would land on every
+        scenario at once."""
+        self.assertIsNone(
+            self.checks.check_repeated_reply(
+                self.REPLY_4,
+                [
+                    "تمام، حضرتك بتدور على عطر حريمي من فيرزاتشي، ممكن أعرف ميزانيتك تقريباً كام؟",
+                    "أرشحلك Coco Mademoiselle، الـ50 ملي بـ534 جنيه وريحته راقية جداً.",
+                ],
+            )
+        )
+
+    def test_a_short_reply_is_exempt(self):
+        """Politeness collides. "تمام يا فندم 👌" twice is two acknowledgements, not a loop, and
+        at that length two unrelated replies can pass 0.9 on their punctuation alone."""
+        self.assertIsNone(
+            self.checks.check_repeated_reply("تمام يا فندم 👌", ["تمام يا فندم 👌"])
+        )
+
+    def test_a_recap_that_grew_by_an_item_is_not_a_repeat(self):
+        """Conversation 931 turn 7, which this check flagged at 93% before the figures exemption
+        existed. The customer said "زودلي اتنين 50 ملي" and the running order recap came back with
+        the added line and a new total — the header, the existing lines and the whole checkout
+        request are identical because a recap is a template. The changed figure is the answer."""
+        from difflib import SequenceMatcher
+
+        before = (
+            "🛍️ الطلب لحد دلوقتي:\n"
+            "- 1 × Good Girl (50ml) بـ 650 جنيه\n"
+            "- 1 × La Vie Est Belle (50ml) بـ 669 جنيه\n"
+            "المجموع: 1319 جنيه.\n\n" + self.CHECKOUT_REQUEST
+        )
+        after = (
+            "🛍️ الطلب لحد دلوقتي:\n"
+            "- 1 × Good Girl (50ml) بـ 650 جنيه\n"
+            "- 1 × La Vie Est Belle (50ml) بـ 669 جنيه\n"
+            "- 2 × Stronger With You (50ml) بـ 800 جنيه\n"
+            "المجموع: 2119 جنيه.\n\n" + self.CHECKOUT_REQUEST
+        )
+
+        self.assertGreaterEqual(
+            SequenceMatcher(None, after, before).ratio(), 0.9,
+            "the texts have to actually collide, or this test proves nothing",
+        )
+        self.assertIsNone(self.checks.check_repeated_reply(after, [before]))
+
+    def test_the_same_recap_twice_is_still_a_repeat(self):
+        """The exemption keys on the figures, not on the recap shape — an unchanged cart sent back
+        unchanged is the bug this check is for, whatever it looks like."""
+        recap = (
+            "🛍️ الطلب لحد دلوقتي:\n"
+            "- 1 × Good Girl (50ml) بـ 650 جنيه\n"
+            "المجموع: 650 جنيه.\n\n" + self.CHECKOUT_REQUEST
+        )
+
+        self.assertIsNotNone(self.checks.check_repeated_reply(recap, [recap]))
+
+    def test_the_first_reply_of_a_conversation_cannot_repeat_anything(self):
+        self.assertIsNone(self.checks.check_repeated_reply(self.REPLY_4, []))
+        self.assertIsNone(self.checks.check_repeated_reply(self.REPLY_4, None))
+
+    def test_the_replay_is_registered_and_states_the_real_figures(self):
+        """A frozen transcript nobody can run is not a regression test."""
+        from eval_harness import scenarios_conv932
+        from eval_harness.runner import _REPLAYS
+
+        self.assertEqual(_REPLAYS["conv932"], "scenarios_conv932")
+
+        scenario = scenarios_conv932.SCENARIOS[0]
+        self.assertEqual(scenario["id"], "CONV932")
+        self.assertEqual(scenario["assert_budget"], 1200)
+        # All three acceptances, in the order the customer lost patience in.
+        for turn in ("شوفلي طيب اي حاجه حريمي تانيه", "من براند تاني حريمي",
+                     "يعم منا قولت من براند تاني حريمي"):
+            self.assertIn(turn, scenario["turns"], turn)
+        self.assertEqual(scenario["turns"].index("1200"), 1)
+        # Every price the probe states has to be a real one, or the probe teaches the grader a
+        # wrong catalogue: Eros' two sizes, and the cheapest of the twelve alternatives.
+        for figure in ("666", "1019", "534", "1200"):
+            self.assertIn(figure, scenario["probe"], figure)
+
+    def test_the_probe_forbids_re_offering_what_was_accepted(self):
+        """The one rule this scenario exists to grade. A probe that lost this line would pass a
+        transcript identical to the reported one, since every individual reply in it is true."""
+        from eval_harness import scenarios_conv932
+
+        probe = scenarios_conv932.SCENARIOS[0]["probe"]
+
+        self.assertIn("re-offering the same either/or", probe)
+        self.assertIn("Asking a question the customer has just answered", probe)
+        # And the twelve alternatives, so "nothing matches" is gradeable as false rather than
+        # left to the grader's own reading of the catalogue.
+        self.assertIn("Twelve products match once the brand is dropped", probe)
 
 
 class BudgetLabelsReachEveryPricePathTests(TestCase):

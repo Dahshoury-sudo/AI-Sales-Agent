@@ -10,6 +10,7 @@ Everything here is read-only against the database.
 
 import re
 from collections import namedtuple
+from difflib import SequenceMatcher
 
 # Latin tokens that appear in replies without naming a product.
 _LATIN_ALLOWLIST = {
@@ -711,6 +712,64 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             ))
 
     return findings
+
+
+def check_repeated_reply(reply, previous_replies, threshold=0.9, window=4, min_length=40):
+    """The bot saying what it already said, whatever it was about.
+
+    Conversation 932: the customer was offered "نفس البراند بس رجالي، ولا من براند تاني حريمي",
+    accepted the second option, and got the same offer back — three times. Replies 4 and 5 are
+    byte-identical (md5 `16927f0d`). Every other check in this file scored those turns clean and
+    correctly so: each reply is true, prices nothing, invents nothing, denies nothing we stock.
+    The defect is not inside any one reply, it is the relation between two of them.
+
+    `rescore.py` has asked this question since long before 932, at 0.7 against the immediately
+    previous reply — and it never saw a single one of those turns, because rescore re-grades
+    `runs.json` and 932 was a production conversation that no scenario replayed. The check was
+    fine; nothing was feeding it. So this is one implementation with two calibrations rather than
+    a second check: rescore keeps its own numbers by passing them (see its call site), and the
+    runner gets a stricter ratio over a wider window. Two functions emitting one finding code with
+    two verdicts is how the `_BUDGET_ACKNOWLEDGED` spelling went missing on one side only.
+
+    Written to catch the *class*, not conversation 932. Any answer the pipeline cannot represent
+    leaves the intent unchanged, and an unchanged intent rebuilds the same prompt from the same
+    data — so the tell is always a duplicated reply, whatever slot the unrepresentable answer
+    happened to land on.
+
+    Deliberately independent of `router._count_recent_repetitions`, which is the production guard
+    that failed here, for the reason `check_false_over_budget` is independent of `reply_sanitizer`:
+    a shared implementation would score that guard's blind spots as clean. The two differ in
+    exactly the place 932 escaped through — that function walks back from the last reply and
+    `break`s at the first message under 0.7, so one intervening reply ends the count and its
+    caller's threshold of 3 is unreachable inside an 8-message window. This scans every reply in
+    `window` and stops at none.
+
+    `min_length` exempts short replies, where politeness alone collides: "تمام يا فندم 👌" twice
+    is two acknowledgements, not a loop. Passed as 0 by rescore, which has graded without it for
+    long enough that raising the floor there would silently change what the archives say.
+
+    Replies whose figures differ are exempt on both paths, because a changed figure is an answer.
+    Conversation 931 turn 7 is the case: the running order recap repeats its header, its existing
+    lines and the entire checkout request, and differs only by an added item and a new total — 93%
+    similar, and the customer got exactly what they asked for. A template rendering new numbers is
+    progress. The 932 loop is the opposite by construction: the figures cannot move because the
+    intent behind them never moved, so an unrepresentable answer still lands here.
+
+    Returns `(similarity, earlier_reply)` for the closest match, or None.
+    """
+    reply = (reply or "").strip()
+    if len(reply) < min_length:
+        return None
+
+    best = None
+    for earlier in [text for text in (previous_replies or []) if text][-window:]:
+        earlier = earlier.strip()
+        if _numbers(reply) != _numbers(earlier):
+            continue
+        ratio = SequenceMatcher(None, reply, earlier).ratio()
+        if ratio >= threshold and (best is None or ratio > best[0]):
+            best = (round(ratio, 3), earlier)
+    return best
 
 
 def _strip_product_names(text, truth):

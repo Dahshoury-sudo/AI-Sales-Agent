@@ -369,6 +369,50 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
 # failure rather than a loud one.
 PENDING_LOOKUP_MARKER = "PENDING_LOOKUP:"
 
+# The marker `ai/recommendation.py` writes when a search matched nothing and the reply offered
+# to relax one of the constraints that emptied it. Same reasoning as PENDING_LOOKUP_MARKER: the
+# writer and both readers live in one module so the spelling and the payload format cannot drift.
+#
+# The failure it exists for is conversation 932. The reply offered "نفس البراند بس رجالي، ولا
+# براند تاني حريمي"; the customer said "من براند تاني حريمي" three times and got the same offer
+# back each time, because nothing recorded that an offer had been made and `brand` is gap-filled
+# out of `conversation.preferences` on every turn. An offer nobody can answer is not an offer.
+PENDING_RELAX_MARKER = "PENDING_RELAX:"
+
+# `=` separates a key from its value and `|` separates the pairs. Not spaces: brand values have
+# them ("Tom Ford"), and so do seasons ("all seasons"), so a space-separated payload would parse
+# "brand=Tom Ford" as a brand of "Tom" plus an unreadable second pair.
+_RELAX_PAIR_SEPARATOR = "|"
+
+
+def relax_offer_block(intent):
+    """The marker line recording which hard filters a no-match reply offered to relax.
+
+    Records every hard filter that was set, not just the one the detector currently acts on.
+    Two reasons: this line is also the only record of what the turn actually offered — the
+    branch that writes it used to persist an empty context, which is why conversation 932's
+    transcript could not show what went wrong — and a reader that only ever saw `brand` would
+    have to be widened in step with the writer.
+
+    Returns "" when no hard filter is set, so the caller can write it unconditionally.
+    """
+    from .constraints import HARD_FILTER_KEYS
+
+    pairs = []
+    for key in HARD_FILTER_KEYS:
+        value = (intent or {}).get(key)
+        if value in (None, "", [], {}, ()) or value is False:
+            continue
+        # A value carrying either separator would corrupt the line it is written on. Neither
+        # appears in a brand, gender or season we hold, so this is belt-and-braces.
+        text = str(value).replace(_RELAX_PAIR_SEPARATOR, " ").replace("=", " ").strip()
+        if text:
+            pairs.append(f"{key}={text}")
+
+    if not pairs:
+        return ""
+    return f"{PENDING_RELAX_MARKER} {_RELAX_PAIR_SEPARATOR.join(pairs)}\n"
+
 
 def _recent_contexts(conversation, turns):
     """The injected context of the last `turns` assistant replies, newest first."""
@@ -458,6 +502,38 @@ def pending_lookup(conversation, turns=4):
     questions = [payload for payload in payloads if payload]
     # Newest first, so the last entry is the oldest — the one still owed.
     return (questions[-1] if questions else ""), len(payloads)
+
+
+def pending_relaxations(conversation, turns=1):
+    """The hard filters the previous reply offered to relax, as {key: value}.
+
+    `turns=1` — the immediately preceding reply only — and that default is the whole point of
+    the function. An unambiguous phrase like "براند تاني" needs no memory to interpret and
+    `conversation_service` acts on it with or without this; what needs a memory is a *terse*
+    answer, because "التانية" or a bare "اه" only means "drop the brand" when dropping the brand
+    is what was just offered. Widening the window would let an "اه" agreeing with something else
+    entirely discard a preference the customer still holds — the same class of false positive
+    `_REVERSAL_MARKERS` is kept narrow to avoid.
+
+    Read out of `internal_context` for the reasons `pending_lookup` sets out above: it is
+    already this codebase's record of what a turn was given, it needs no migration, and
+    `Conversation.preferences` is not available for parking anything because
+    `merge_preferences` rewrites it wholesale to PERSISTED_PREFERENCE_KEYS every turn.
+    """
+    for context in _recent_contexts(conversation, turns):
+        for line in (context or "").splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(PENDING_RELAX_MARKER):
+                continue
+            offered = {}
+            payload = stripped[len(PENDING_RELAX_MARKER):].strip()
+            for pair in payload.split(_RELAX_PAIR_SEPARATOR):
+                key, _, value = pair.partition("=")
+                key = key.strip()
+                if key:
+                    offered[key] = value.strip()
+            return offered
+    return {}
 
 
 def offered_context_block(conversation, store):
