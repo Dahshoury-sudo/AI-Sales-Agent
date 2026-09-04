@@ -363,22 +363,23 @@ def re_asks(message, earlier):
     return _overlap(wanted, got) >= min(len(wanted), len(got))
 
 
-def match_product(name, store, products=None):
-    """The catalogue product a name refers to, or None if it is ambiguous.
+def candidates(name, store, products=None):
+    """Every catalogue product a name could refer to, split into `(exact, partial)`.
 
-    A candidate qualifies when one name's identifying tokens are contained in the
-    other's, so "sauvage" matches "Dior Sauvage" and "9pm afnan" matches "Afnan 9PM".
+    Split out of `match_product`, which collapses two very different outcomes into the same
+    `None`: "no product in the catalogue looks like this name" and "several do, so picking one
+    would be a guess". A caller deciding whether to *deny* a perfume needs those apart —
+    denying on an ambiguous tie would tell a customer we do not carry something we do, which
+    is the worst outcome in this system. See `products.services.absence`.
 
-    Ambiguity returns None rather than a guess. A bare brand word like "Dior" is a subset
-    of three different perfume names here, and silently picking one of them would be
-    worse than not matching: `exclude_names=["Dior"]` has to keep excluding every Dior,
-    which is exactly what the plain substring filter does when this returns None. An
-    exact token match always wins, so "Stronger With You" still resolves to itself rather
-    than to "Stronger With You Intensely".
+    Returns two lists of products, either or both possibly empty. A bare brand word
+    contributes nothing to `partial` — the reason is at the skip below — so "Dior" comes back
+    `([], [])`, indistinguishable here from a name we have never heard of. A caller that must
+    tell those apart has to check for a bare brand itself.
     """
     wanted = tokens(name)
     if not wanted or store is None:
-        return None
+        return [], []
 
     if products is None:
         from products.models import Product
@@ -398,12 +399,15 @@ def match_product(name, store, products=None):
         if len(candidate) == len(wanted) and hits == len(wanted):
             exact.append(product)
             continue
-        # A bare brand word ("شانيل", "Tom Ford") names a house, not a perfume. It may
+        # A bare brand word ("Dior", "Tom Ford") names a house, not a perfume. It may
         # happen to be a subset of exactly one product name, and returning that product
         # would present an arbitrary pick as though the customer had named it — the
         # similarity engine would then cite its real notes as evidence for a request that
         # never mentioned it. Falling through to None keeps the reference on
         # general-knowledge notes, which the prompt labels as the weaker evidence it is.
+        #
+        # Latin spellings only; "شانيل" tokenises to nothing this can compare. See
+        # `names_a_bare_brand`, which shares the test and carries the consequence.
         try:
             brand_tokens = tokens(product.brand.name)
         except Exception:
@@ -411,6 +415,60 @@ def match_product(name, store, products=None):
         if brand_tokens and wanted <= brand_tokens:
             continue
         partial.append(product)
+
+    return exact, partial
+
+
+def names_a_bare_brand(name, store, products=None):
+    """Does this name say a house and nothing more — "Dior", "Tom Ford", "Rasasi"?
+
+    The companion `candidates` needs: it drops bare-brand partials for the reason given at that
+    skip, so a bare brand comes back from it looking exactly like a name we have never heard of.
+    A caller that would otherwise deny the name has to be able to tell the two apart, because
+    "we don't carry Dior" is false in a store with three Diors on the shelf.
+
+    True when the name's identifying tokens are a subset of some brand's, so "Tom" alone counts
+    as naming Tom Ford — deliberately, since the cost of a false True here is a request to
+    clarify and the cost of a false False is a denial.
+
+    🔴 Latin spellings only, and not by choice: the comparison is against `Brand.name`, which holds
+    "Chanel" and never "شانيل", and nothing in this codebase bridges the two. So "شانيل" returns
+    False here — a false False, the expensive direction. `absence.catalogue_verdict` documents what
+    covers that case instead at the rung that calls this.
+    """
+    wanted = tokens(name)
+    if not wanted or store is None:
+        return False
+
+    if products is None:
+        from products.models import Product
+
+        products = Product.objects.filter(store=store, is_active=True).select_related("brand")
+
+    for product in products:
+        try:
+            brand_tokens = tokens(product.brand.name)
+        except Exception:
+            continue
+        if brand_tokens and wanted <= brand_tokens:
+            return True
+    return False
+
+
+def match_product(name, store, products=None):
+    """The catalogue product a name refers to, or None if it is ambiguous.
+
+    A candidate qualifies when one name's identifying tokens are contained in the
+    other's, so "sauvage" matches "Dior Sauvage" and "9pm afnan" matches "Afnan 9PM".
+
+    Ambiguity returns None rather than a guess. A bare brand word like "Dior" is a subset
+    of three different perfume names here, and silently picking one of them would be
+    worse than not matching: `exclude_names=["Dior"]` has to keep excluding every Dior,
+    which is exactly what the plain substring filter does when this returns None. An
+    exact token match always wins, so "Stronger With You" still resolves to itself rather
+    than to "Stronger With You Intensely".
+    """
+    exact, partial = candidates(name, store, products)
 
     if len(exact) == 1:
         return exact[0]

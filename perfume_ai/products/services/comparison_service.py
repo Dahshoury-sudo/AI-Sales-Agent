@@ -3,10 +3,11 @@ import json
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .product_formatting import format_products
+from .product_info import get_product_info
 from .product_resolver import resolve_products
 
 
-def compare_products(message, history=None, store=None):
+def compare_products(message, history=None, store=None, conversation=None):
     """Compare two named perfumes.
 
     Rendered with show_prices=False: this prompt forbids mentioning any price or size,
@@ -21,11 +22,26 @@ def compare_products(message, history=None, store=None):
     row, and before the resolver was hardened it matched *Dark Aura*, a different real
     perfume the customer had never mentioned. resolve_products injects the actual product
     list into its prompt, which is the whole reason it gets these right.
+
+    `conversation` is passed through to the resolver, which needs it to anchor a pronoun on
+    the perfumes we most recently offered ("قارنلي بينهم" names neither one). Omitting it
+    was its own small bug: the one branch in this file that resolves names was the only
+    caller of `resolve_products` not giving it that anchor.
+
+    Fewer than two matches hands the whole turn to `get_product_info`. What used to be here
+    was a hardcoded "واحد او اكثر من العطور دي مش متوفر عندنا" — a denial with three problems
+    that delegation solves at once: nothing had verified it (`products.services.absence` now
+    does, and only it may deny); it denied **both** names in order to deny one, so a customer
+    comparing a perfume we stock against one we do not was told we carry neither; and it
+    returned `context=""`, so `checks._unbacked_denial` — which is scoped to the injected
+    context — structurally could not see it. `get_product_info` denies exactly the name that
+    is missing, answers about the one that is not, and writes the markers the harness and the
+    owner notification both read.
     """
-    matches = resolve_products(message, history, store)[:2]
+    matches = resolve_products(message, history, store, conversation)[:2]
 
     if len(matches) < 2:
-        return "واحد او اكثر من العطور دي مش متوفر عندنا للاسف ممكن تقولي اسماء عطور تانية؟", ""
+        return get_product_info(message, history, store, conversation)
 
     context = format_products(matches, show_prices=False)
 

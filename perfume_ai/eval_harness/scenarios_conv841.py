@@ -8,7 +8,10 @@ two failures are indistinguishable; underneath they share nothing.
        "طب بلو دي شانيل ؟"     → "Bleu de Chanel متوفر عندنا، تحب تعرف سعر حجم معين؟" ✅
        "بكام الاتنين"          → Bleu de Chanel's prices only ❌
 
-  841  "عندك لادور بخور ؟"     → "لحظة أتأكدلك منه" + Dior Homme Sport and Bleu de Chanel ✅
+  841  "عندك لادور بخور ؟"     → "لحظة أتأكدلك منه" + Dior Homme Sport and Bleu de Chanel
+                                 (correct under the policy of the time; the promise is now the
+                                 defect — the reply owed here is a plain denial plus those same
+                                 two alternatives)
        "بكام لااتنين ؟"        → Dior Homme Sport's prices only ❌ (and the promise vanished ❌)
 
 842 is a **retrieval** failure. The two perfumes were introduced one per reply, and the referent
@@ -91,12 +94,15 @@ SCENARIOS = [
             "Replay of conversation 841. "
             + _SPORT
             + _BLEU
-            + "لادور بخور is not in this catalogue, and failing to find a name is not the same fact "
-            "as not stocking it. "
-            "Turn 1 was right and must stay right: 'لحظة أتأكدلك منه' for لادور بخور, then one or "
-            "two stocked perfumes offered by FULL name and clearly labelled as DIFFERENT perfumes. "
-            "❌ CRITICAL: saying لادور بخور is not available on this turn. ❌ CRITICAL: a price list "
-            "for a turn that only asked about availability. ❌ CRITICAL: attributing a بخور, incense "
+            + "لادور بخور is not in this catalogue, and it is searched for against the whole active "
+            "catalogue before turn 1's reply is written, so its absence is a verified fact by then. "
+            "Turn 1 ✅ must say plainly that لادور بخور is not ours, with a short apology and the "
+            "name in the customer's own Arabic letters, and in the SAME reply offer one or two "
+            "stocked perfumes by FULL name, clearly labelled as DIFFERENT perfumes. "
+            "❌ CRITICAL: promising to check on it ('لحظة أتأكدلك منه' / 'هسأل وأرد عليك') — nothing "
+            "looks it up after this reply. ❌ CRITICAL: a bare denial with no perfume on offer beside "
+            "it. ❌ CRITICAL: a price list for a turn that only asked about availability. "
+            "❌ CRITICAL: attributing a بخور, incense "
             "or frankincense note to a perfume whose recorded notes do not contain one — Dior Homme "
             "Sport has olibanum and Bleu de Chanel has incense, cite those and no others. "
             "Turn 2 ('بكام لااتنين ؟' — 'how much are the two?', with the definite article of "

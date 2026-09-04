@@ -115,8 +115,9 @@ _DENIAL = (
 )
 
 # Telling the customer about "البيانات" at all is a leak, whatever it denies. The catalogue,
-# the injected shortlist and the system's own plumbing are internal; a salesperson says
-# "لحظة أتأكدلك", not "it is not in the data I have". prompts.py rule 3 forbids it explicitly.
+# the injected shortlist and the system's own plumbing are internal; a salesperson names the
+# perfume or asks which one you meant, not "it is not in the data I have". prompts.py rule 3
+# forbids it explicitly.
 _DATA_LEAK = re.compile(r"في\s+البيانات|البيانات\s+اللي\s+معاي")
 
 # Denials that are correct, and which the patterns above match anyway. `مش\s+متوفر` has no
@@ -270,23 +271,28 @@ def _unbacked_denial(reply, context):
     real data behind them. Those turns carry product rows, not one of these markers.
 
     One no-data turn is exempt, and it is the turn where a denial is not merely allowed but
-    required: the customer has chased a deferral and there is still no answer.
-    `product_info` marks it `LOOKUP_EXHAUSTED`, and the reply is required to deny plainly and offer
-    alternatives, because repeating "لحظة أتأكدلك" is a promise already made and not kept.
-    Flagging the denial there would score the fix as the defect — and
-    `_contradictory_availability` still holds that reply to not promising another check.
+    required: `products.services.absence` swept the whole active catalogue for the name the customer
+    typed and found nothing. `product_info` marks that turn `ABSENCE_DENIED`, and the reply is
+    required to deny plainly and offer alternatives. Flagging the denial there would score the fix
+    as the defect — and `_contradictory_availability` still holds that reply to not promising
+    another check.
+
+    The exemption is narrow on purpose. `_NO_DATA_CONTEXT[1]` appears on every not-found turn,
+    including the store-policy, browsing and unintelligible cases, and on every `NAME_UNREADABLE`
+    turn — where nobody verified anything and a denial is exactly the Versace Eros failure. None of
+    those carry the marker, so this still fires on all of them.
 
     Returns the offending clause, or None.
     """
     # Imported here, not at module scope, like every other Django import in this file: it is not
     # safe to touch `products.services` before the harness has configured settings. Imported at
     # all rather than copied, so the marker cannot drift from the one `product_info` writes.
-    from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    from products.services.product_info import ABSENCE_DENIED_MARKER
 
     context = context or ""
     if not any(marker in context for marker in _NO_DATA_CONTEXT):
         return None
-    if LOOKUP_EXHAUSTED_MARKER in context:
+    if ABSENCE_DENIED_MARKER in context:
         return None
 
     for clause in _CLAUSE.split(reply or ""):
@@ -298,6 +304,102 @@ def _unbacked_denial(reply, context):
             continue
         return clause.strip()
     return None
+
+
+def _stalled_when_denial_required(reply, context):
+    """A promise to go and check, on the one turn where there is nothing left to check.
+
+    `ABSENCE_DENIED` means `products.services.absence` already swept the whole active catalogue for
+    the name the customer typed and found nothing. The reply is then required to say so and to pitch
+    stocked perfumes instead. "لحظة أتأكدلك منه" on that turn is not a hedge, it is a promise nobody
+    in this pipeline keeps: no job looks the name up between two messages and no owner reply comes
+    back, so the customer waits on an answer that never arrives. Conversation 816 turn 3 is the whole
+    failure in one message — its entire text was `لحظة أتأكدلك منه يا فندم.`
+
+    Critical rather than high because `router` already retries the turn when it sees exactly this,
+    so anything reaching here got a second attempt and stalled anyway. That is what makes the retry
+    observable: without this check a surviving stall is indistinguishable from a clean reply.
+
+    The predicate is `described.promises_a_lookup`, the same one the router retries on, so the check
+    and the guard cannot drift apart and score opposite verdicts on one reply. Deliberately keyed on
+    the marker and not on the phrase alone: red line 2 and the store-policy case at
+    `product_info`'s not-found branch (ب) still script the promise legitimately, and those turns
+    carry no marker.
+
+    Returns the offending phrase, or None.
+    """
+    from products.services.product_info import ABSENCE_DENIED_MARKER
+    from products.services.sales import described
+    from products.services.static_faq_service import normalize_arabic
+
+    if ABSENCE_DENIED_MARKER not in (context or ""):
+        return None
+    if not described.promises_a_lookup(reply):
+        return None
+
+    # `promises_a_lookup` is this same membership test over the same tuple, so one of these matches
+    # by construction; the loop only exists to name *which* promise in the finding.
+    normalized = normalize_arabic(reply or "")
+    return next(
+        (
+            marker
+            for marker in described._DEFERRAL
+            if normalize_arabic(marker) in normalized
+        ),
+        "وعد بالمراجعة",
+    )
+
+
+def _denial_without_alternatives(reply, context, truth):
+    """A bare denial on a turn that was told to offer something in the same breath.
+
+    The deterministic half of `scenarios_conv772.py`'s turn-1 probe: a customer who asked about a
+    perfume we do not carry came here to buy a perfume, and "مش عندنا" on its own ends the
+    conversation as surely as the stall it replaced. `product_info` widens the alternatives pool on
+    every fully-absent turn precisely so the reply has stocked perfumes to name.
+
+    High, not critical: the fact stated is true and the customer is not misled, only unserved.
+
+    Scoped to `ABSENCE_DENIED` turns, which is what keeps it quiet everywhere a denial legitimately
+    stands alone — a sold-out size, a perfume with no original bottle, a `NAME_UNREADABLE` abstain.
+    The partial case needs no exemption of its own: it carries rows for the perfumes we *did* place,
+    the reply names them, and those names are in `available_names`, so this passes without ever
+    requiring the fresh alternatives that turn deliberately withholds.
+
+    Detects the offer by naming, not by wording — any active, sellable catalogue perfume named
+    anywhere in the reply counts. A reply that gestures at alternatives without naming one ("عندنا
+    عطور تانية حلوة") is a real defect and is caught, which is the intent: an unnamed perfume cannot
+    be bought.
+
+    Bounded by `_DENIAL`, so a denial phrased outside those patterns is a conservative miss rather
+    than a false alarm. Returns the lone denial clause, or None.
+    """
+    from products.services.product_info import ABSENCE_DENIED_MARKER
+    from products.services.sales import naming
+
+    if ABSENCE_DENIED_MARKER not in (context or ""):
+        return None
+
+    available = truth.get("available_names") or ()
+    if not available:
+        return None
+
+    offending = None
+    for clause in _CLAUSE.split(reply or ""):
+        if not any(pattern.search(clause) for pattern in _DENIAL):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SCOPED):
+            continue
+        if any(pattern.search(clause) for pattern in _DENIAL_SIMILARITY):
+            continue
+        offending = clause.strip()
+        break
+
+    if not offending:
+        return None
+    if naming.mentioned_in(reply or "", [_NameOnly(name) for name in available if name]):
+        return None
+    return offending
 
 
 def _numbers(text):
@@ -475,6 +577,26 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             f"nothing about it: '{unbacked}'",
         ))
 
+    # ── Stalling on a turn where the catalogue was already swept ──────────
+    # Only fires past the router's own retry, so a finding here is a stall that survived being
+    # told not to. 816 turn 3's entire reply was the promise.
+    stall = _stalled_when_denial_required(reply, context)
+    if stall:
+        findings.append((
+            "stalled_when_denial_required", "critical",
+            f"promised to check ('{stall}') on a turn where the whole catalogue had already been "
+            f"searched and the name was not in it — nothing looks it up after this reply",
+        ))
+
+    # ── Denying without offering anything instead ─────────────────────────
+    bare = _denial_without_alternatives(reply, context, truth)
+    if bare:
+        findings.append((
+            "denial_without_alternatives", "high",
+            f"denied the perfume ('{bare}') without naming a single stocked perfume the customer "
+            f"could buy instead",
+        ))
+
     # ── Talking to the customer about the injected data ───────────────────
     # No ground truth needed: the customer should never learn that "البيانات" exists. This is
     # how conversation 726's false denial was phrased, which is also why it slipped past
@@ -483,8 +605,8 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
     if leak:
         findings.append((
             "internal_data_leak", "high",
-            f"told the customer about the injected data ('{leak.group()}') instead of "
-            f"saying لحظة أتأكدلك",
+            f"told the customer about the injected data ('{leak.group()}') instead of naming "
+            f"the perfume or asking which one they meant",
         ))
 
     # ── Unsupported certainty ─────────────────────────────────────────────

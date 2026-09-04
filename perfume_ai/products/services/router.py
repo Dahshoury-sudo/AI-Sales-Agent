@@ -2,7 +2,11 @@ from .ai.classifier import classify
 from .ai.intent import extract_intent
 from .ai.recommendation import recommend
 from .search_service import search_products
-from .product_info import get_product_info, LOOKUP_EXHAUSTED_MARKER
+from .product_info import (
+    get_product_info,
+    ABSENCE_DENIED_MARKER,
+    NAME_UNREADABLE_MARKER,
+)
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
@@ -215,14 +219,19 @@ def _deferred_question(context, message):
 
     Two turns get it wrong. A partially-resolved question — 836 turn 1, "عايز اعرف اسعار بلو دي
     شانيل وسوفاج والكساندريا 2" — names two perfumes we stock and one we do not, and the raw message
-    told the owner we carry none of the three. And on an exhausted turn the message is a chase, so
-    the owner was sent to look up "ها لقيت اي"; `described.pending_lookup` makes the same point about
-    the customer-facing side ("an owner told to go and look up 'طب اتأكدلي' has been told nothing").
+    told the owner we carry none of the three. And when the customer is chasing an earlier question
+    the message is "ها لقيت اي"; the owner was sent to look that up. `described.pending_lookup` makes
+    the same point about the customer-facing side ("an owner told to go and look up 'طب اتأكدلي' has
+    been told nothing").
 
     The payload is the right text in both cases and is unchanged in the ordinary one: for a total
     miss `product_info` records the raw message, so this returns exactly what it returned before.
     Falls back to `message` when the context carries no payload, which keeps a marker written without
-    a question — still a deferral that happened — reporting something.
+    a question — still a turn that happened — reporting something.
+
+    It is also what `_escalate_absent_name` compares against the conversation's earlier open
+    questions, so a name that arrives here wrong hands the conversation to a human for the wrong
+    reason as well as mis-briefing the owner.
     """
     for line in (context or "").splitlines():
         stripped = line.strip()
@@ -235,36 +244,46 @@ def _deferred_question(context, message):
     return (message or "").strip()
 
 
-def _escalate_pending_lookup(conversation, store, context, pending_before, message, history):
-    """Pull the owner in when the bot has promised to check and cannot deliver.
+def _escalate_absent_name(conversation, store, context, message, history):
+    """Pull the owner in when the bot could not answer about a perfume the customer named.
 
-    `context` is this turn's own prompt context, so `PENDING_LOOKUP_MARKER` in it means *this*
-    reply is a deferral. `pending_before` is how many of the previous turns already were —
-    read before this turn's context is persisted, so it never counts the current one.
+    `context` is this turn's own prompt context, so a marker in it describes *this* reply.
 
-    The policy is notify on the first deferral, hand off on the second. The first is not a
-    failure: a customer naming a perfume this catalogue does not carry is ordinary, and the
-    honest "لحظة أتأكدلك" is the right reply — but somebody has to actually go and look, and
-    until now nothing told them to. The second means the customer has now asked twice and the
-    bot has said "hold on" twice, which it cannot resolve by itself.
-
-    A `LOOKUP_EXHAUSTED` turn is the exception, and it is not a failure to hand over either: the
-    reply going out has just told the customer plainly that we do not carry the perfume and offered
-    alternatives by full name, which is a complete answer they can act on. Muzzling the bot on that
-    turn is what made conversations 816 and 817 dead ends — `needs_human` was set alongside the
-    reply, `views.py` then answered every later message with silence, and the alternative the bot
-    had just pitched could not be sold. "ماشي" and "اتأكد" each got nothing back. So notify the
-    owner, who still wants to know a customer asked for something absent from the catalogue, and
+    **The bot is never muzzled on the turn it answers.** Both replies this function sees are
+    complete answers the customer can act on: a plain denial with alternatives named, or a request
+    to retype the name. Setting `needs_human` alongside either is what made conversations 816 and
+    817 dead ends — `views.py` then answered every later message with silence, and the alternative
+    the bot had just pitched could not be sold. "ماشي" and "اتأكد" each got nothing back. So notify
+    the owner, who still wants to know a customer asked for something absent from the catalogue, and
     leave the bot able to keep serving.
 
-    A customer who comes back to the same missing perfume *after* that denial has exhausted the
-    bot's answer too — there is nothing further it can truthfully say — and that is the turn a
-    person has to take.
+    What earns a handoff is the customer coming back to the **same** perfume after being answered
+    about it *twice*. There is nothing further the bot can truthfully say at that point: it has
+    already swept the catalogue, or already asked for the name and been given the same one back.
 
-    A repeated customer question hands off on its own account. It catches the case the deferral
-    count cannot: the customer asked, the bot answered about something else entirely, and no
-    marker was ever written. It is not consulted on an exhausted turn, where the repetition is the
-    customer insisting and the denial is the thing that answers it.
+    Twice, not once, and the second answer is not a wasted turn. A customer who chases immediately
+    after the denial usually has not taken it in — 835 turn 2 and 836 turn 2 are both that — and the
+    reply they are owed is the same answer said again, plainly, with the alternatives pushed harder.
+    Handing over on the first chase would put the silence one turn later than 816 and 817 had it
+    instead of removing it. Two complete answers about one absent perfume is where the bot runs out
+    of true things to say.
+
+    That comparison is the safety property, and it is why counting markers is not enough. Three
+    different absent perfumes in one conversation are three ordinary questions with three complete
+    answers — under a count they would trip the handoff on the third, and 795 is the conversation
+    where that matters (لادور بخور then الكساندريا 2, two different names). `naming.re_asks`
+    compares the customer's own words, so only pressing on the same one hands over.
+
+    A repeated customer question still hands off on its own account, independently of any marker.
+    It catches what a marker cannot: the customer asked, the bot answered about something else
+    entirely, and nothing was recorded.
+
+    There is no third fork for a bare `PENDING_LOOKUP`. Every pending block carries a verdict
+    (`product_info._pending_lookup_block` is the only writer of the marker and always appends one),
+    so a context that recorded an open question without saying which way it went cannot be produced.
+    The fork that used to exist here counted how many earlier turns had deferred and handed over on
+    the second — the muzzle the paragraph above is about — so leaving it in as a fallback would have
+    meant keeping the retired policy alive on an unreachable path.
 
     Returns nothing and raises nothing that matters to the reply — the customer's answer has
     already been generated, and an owner notification is not worth losing it over.
@@ -274,48 +293,59 @@ def _escalate_pending_lookup(conversation, store, context, pending_before, messa
     if getattr(conversation, "needs_human", False):
         return
 
-    deferring = sales_described.PENDING_LOOKUP_MARKER in (context or "")
-    exhausted = LOOKUP_EXHAUSTED_MARKER in (context or "")
-    repeats = _count_repeated_customer_questions(message, history)
+    denied = ABSENCE_DENIED_MARKER in (context or "")
+    unreadable = NAME_UNREADABLE_MARKER in (context or "")
     question = _deferred_question(context, message)
 
-    if exhausted:
-        # Counts previous replies only: this turn's context reaches the database after the router
-        # returns (`views.py:126`, `tasks.py:165`), so a first denial never counts itself.
-        hand_off = (
-            sales_described.replies_carrying(conversation, LOOKUP_EXHAUSTED_MARKER) >= 1
+    out_of_answers = False
+    if denied or unreadable:
+        marker = ABSENCE_DENIED_MARKER if denied else NAME_UNREADABLE_MARKER
+        # Both halves are required. `pressed_again` alone would hand over the first time a customer
+        # rephrases a name we have never answered about; the marker count alone would hand over on
+        # the third *different* absent perfume. Together they say: we answered this one, and they
+        # are back on it.
+        #
+        # `replies_carrying` counts previous replies only — this turn's context reaches the database
+        # after the router returns (`views.py:126`, `tasks.py:165`), so a first answer never counts
+        # itself. Two of them means this turn is the third reply about the one perfume: the denial,
+        # the denial restated for the chase, and now nothing left.
+        pressed_again = any(
+            sales_naming.re_asks(question, earlier)
+            for earlier in sales_described.pending_questions(conversation)
         )
-    else:
-        hand_off = (deferring and pending_before >= 1) or repeats >= _REPEATED_QUESTION_LIMIT
+        out_of_answers = (
+            pressed_again and sales_described.replies_carrying(conversation, marker) >= 2
+        )
 
-    if hand_off:
+    repeats = _count_repeated_customer_questions(message, history)
+    if out_of_answers or repeats >= _REPEATED_QUESTION_LIMIT:
         conversation.needs_human = True
         conversation.save()
         notify_handoff(conversation)
         return
 
-    if exhausted:
+    if denied:
         create_notification(
             store=store,
             notif_type="handoff",
-            title="عميل كرر السؤال عن عطر مش في الكتالوج ❌",
+            title="عميل سأل عن عطر مش في الكتالوج ❌",
             message=(
-                f"محادثة #{conversation.id}: العميل رجع يسأل تاني عن «{question}» "
-                f"والعطر ده مش في بيانات المتجر، فالبوت قاله إنه مش موجود عندنا وعرض عليه بدائل. "
+                f"محادثة #{conversation.id}: العميل سأل عن «{question}» — والعطر ده مش في بيانات "
+                f"المتجر، فالبوت قاله إنه مش موجود عندنا وعرض عليه بدائل. "
                 f"لو العطر ده عندنا فعلاً أو تحب تجيبه، راجع المحادثة ورد على العميل."
             ),
         )
         return
 
-    if deferring:
+    if unreadable:
         create_notification(
             store=store,
             notif_type="handoff",
-            title="عميل سأل عن عطر مش في الكتالوج 🔍",
+            title="عميل كتب اسم عطر مش واضح 🔍",
             message=(
-                f"محادثة #{conversation.id}: البوت قال للعميل \"لحظة أتأكدلك\" على سؤاله "
-                f"«{question}» — والعطر ده مش في بيانات المتجر. "
-                f"راجع المحادثة ورد على العميل."
+                f"محادثة #{conversation.id}: العميل كتب «{question}» ومقدرناش نتأكد هو قاصد أنهي "
+                f"عطر، فالبوت طلب منه يكتب الاسم تاني. "
+                f"لو إنت فاهم هو بيقصد إيه، راجع المحادثة ورد على العميل."
             ),
         )
 
@@ -622,11 +652,6 @@ def route(message, history=None, store=None, conversation=None):
         return _finalize(response, stage), context
 
     elif request_type == "product_info":
-        # Read before the turn runs. `pending_lookup` scans persisted assistant rows, and this
-        # turn's reply is not one yet, so the count is strictly "how many earlier turns already
-        # deferred" — which is what the escalation policy is written against.
-        _, pending_before = sales_described.pending_lookup(conversation)
-
         response, context = get_product_info(message, history, store, conversation)
 
         if _is_repetitive(response, history):
@@ -647,9 +672,40 @@ def route(message, history=None, store=None, conversation=None):
                 ),
             )
 
+        # The one deterministic guard on the phrase this whole change exists to remove. Rules alone
+        # are not enough here: "لحظة أتأكدلك منه" was the scripted reply on this branch for a long
+        # time and is still correct two rules away (red line 2, and the store-policy case), so a
+        # model that reaches for it on a verified-absence turn is doing something the prompt used to
+        # ask for.
+        #
+        # A second generation rather than a strip. `reply_sanitizer` cannot do this: its
+        # bail-rather-than-empty rule means a reply that is *only* the promise — 816 turn 3 —
+        # strips to nothing and gets handed back unchanged. And the phrase cannot be stripped
+        # globally anyway, because the turns where it is right share this code path.
+        #
+        # Scoped to ABSENCE_DENIED, so it never fires on a `NAME_UNREADABLE` turn (whose rules also
+        # ban the promise, but where the reply is a question and the stakes are lower) or on the
+        # store-policy question that legitimately scripts it. Costs one extra LLM call on a
+        # violating turn and nothing at all otherwise.
+        if ABSENCE_DENIED_MARKER in (context or "") and sales_described.promises_a_lookup(response):
+            response, context = get_product_info(
+                message,
+                history,
+                store,
+                conversation,
+                retry_hint=(
+                    "\n🔴🔴 ردك السابق كان فيه وعد إنك هتتأكد وترد على العميل ("
+                    "\"لحظة أتأكدلك\" أو \"هسأل وأرد عليك\" أو \"هشوفه لك\") — وده ممنوع في الرد ده. "
+                    "إحنا **اتأكدنا خلاص** من العطر ده في الكتالوج كله ومش عندنا، ومفيش حد هيراجع "
+                    "حاجة بعد كده، فالوعد ده بيسيب العميل مستني رد عمره ما هييجي. اكتب الرد تاني: "
+                    "قوله بوضوح وباعتذار قصير إن العطر مش موجود عندنا، وفي نفس الرد اعرض عليه بديل "
+                    "أو اتنين من العطور اللي في البيانات بالاسم الكامل.\n"
+                ),
+            )
+
         # After the retry, so a deferral the retry introduced or removed is judged on the context
         # actually being sent.
-        _escalate_pending_lookup(conversation, store, context, pending_before, message, history)
+        _escalate_absent_name(conversation, store, context, message, history)
 
         # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
         # is a factual question and may not.
@@ -657,7 +713,16 @@ def route(message, history=None, store=None, conversation=None):
         return _finalize(response, stage), context
 
     elif request_type == "comparison":
-        response, context = compare_products(message, history, store)
+        response, context = compare_products(message, history, store, conversation)
+
+        # `compare_products` hands a turn it cannot place two perfumes on straight to
+        # `get_product_info`, so this branch now produces the same markers the one above does —
+        # and a customer comparing a perfume we stock against one we do not is exactly the case
+        # the owner needs told about. Escalating in both places rather than once after the chain
+        # keeps the other dozen branches' `return`s untouched; these two are the only callers of
+        # `get_product_info`.
+        _escalate_absent_name(conversation, store, context, message, history)
+
         # Still weighing two options — differentiate, do not close.
         return _finalize(response, sales_stage.COMPARISON), context
 

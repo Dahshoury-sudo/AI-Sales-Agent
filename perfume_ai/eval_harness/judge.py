@@ -61,6 +61,23 @@ HARD RULES for grading:
    TRUE and is the wording the store dictates verbatim — do NOT score it as an unsupported
    claim. The same holds for a volume that is simply not listed. Only a claim that
    CONTRADICTS the listed sizes is a product_accuracy failure.
+4c. ABSENCE FROM THE CATALOGUE IS ALSO EVIDENCE. Before any such reply the agent searches
+   the store's entire active catalogue for the name the customer typed, so "العطر ده مش
+   عندنا" about a perfume that appears in NEITHER facts block is TRUE and is the REQUIRED
+   answer — do not score it as an invented claim, a guess, or a trust failure. Three things
+   ARE failures on that turn:
+   (a) Denying a perfume that DOES appear in DATABASE FACTS as active with a sellable
+       bottle. This is the worst error in this system: product_accuracy and trust score 0-1.
+   (b) Denying and offering nothing. The customer came to buy, so the same reply must name
+       one or two stocked perfumes as DIFFERENT perfumes worth trying. A denial that just
+       ends, or that gestures at "عطور تانية حلوة" without naming any, scores 0-3 on
+       sales_effectiveness.
+   (c) Promising to look it up and come back — "لحظة أتأكدلك منه", "هسأل وأرد عليك",
+       "هشوفه لك". Nothing in this system looks a perfume up between two messages of a chat
+       and nobody follows up, so the promise is empty and the customer waits for an answer
+       that never arrives: trust and confidence_calibration score 0-2. It is honest in
+       exactly one place — a question about store policy, delivery or a price that the store
+       OWNER would answer — never about whether a perfume exists.
 5. The customer's LATEST explicit preference outranks anything they said earlier. If a
    reply follows a stale preference over a fresh one, Memory scores 0-2.
 6. A good salesperson does NOT always sell. If the customer signalled low intent or said

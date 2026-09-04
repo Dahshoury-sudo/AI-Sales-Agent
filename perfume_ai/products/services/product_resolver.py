@@ -1,9 +1,13 @@
 import json
+import logging
+
 from django.db.models import Q
 from products.models import Product
 from .ai.client import chat
 from .sales import naming
 from .static_faq_service import normalize_arabic
+
+logger = logging.getLogger(__name__)
 
 
 class Resolution(list):
@@ -22,11 +26,21 @@ class Resolution(list):
     silence: no pending record, no owner notification, and the customer asked three times for a
     price nobody had been told to look up. The resolver knew which name it could not place; there
     was simply nowhere for it to say so.
+
+    `failed` is the third channel, and it exists because the two above cannot distinguish "the
+    model read this message and placed nothing" from "we never got an answer". `resolve_products`
+    swallows every exception into empty lists, so an API timeout or a malformed JSON payload looks
+    identical to a message that names no perfume. That was harmless while an unplaceable name only
+    produced a promise to check — but `products.services.absence` turns an unplaceable name into a
+    *denial*, and a denial issued because the extractor blipped is the Versace Eros incident with
+    an infrastructure cause. Read it as `getattr(result, "failed", False)` so a plain list, and
+    every patched `return_value=[]`, means "no failure to report" rather than crashing.
     """
 
-    def __init__(self, products=(), unplaced=()):
+    def __init__(self, products=(), unplaced=(), failed=False):
         super().__init__(products)
         self.unplaced = tuple(unplaced)
+        self.failed = bool(failed)
 
 
 def _unplaced_names(candidates, message, store, products):
@@ -81,7 +95,27 @@ def resolve_products(message: str, history=None, store=None, conversation=None):
     products = Product.objects.filter(is_active=True)
     if store:
         products = products.filter(store=store)
-    product_names = list(products.values_list('name', flat=True))
+
+    # The brand goes in beside the name, and it is load-bearing rather than decorative. This
+    # catalogue lists Versace Eros under the bare name "Eros", so a customer writing
+    # "ڤيرزاتشي ايروس" — the brand and the perfume, the way people actually name a perfume — left
+    # the model matching two words against one, with nothing in the prompt saying the two belong
+    # together. Conversation 772 turn 2 is that turn: Eros is active at 666 and 1019 and the
+    # extractor placed nothing.
+    #
+    # 🔴 This is a false-*miss* fix, and under the current policy a false miss on a stocked perfume
+    # is no longer a harmless stall. `absence.catalogue_verdict` reads the resolver's unplaced report
+    # as its witness, so an Arabic name the extractor fails to place is denied by name on that same
+    # turn — which for 772 turn 2 would mean telling a customer we do not sell a perfume sitting in
+    # stock. Anything that improves placement is a safety fix now, not a quality one.
+    #
+    # The name is printed first and alone-able: rules 1 and 4 ask for the exact name from this list,
+    # and the bracket is labelled so it reads as an annotation. An echo that includes the brand
+    # anyway still lands — `naming.match_product` places "Eros Versace" on "Eros" by token subset.
+    catalogue = list(products.values_list("name", "brand__name"))
+    product_names = "\n".join(
+        f"- {name}" + (f"  [brand: {brand}]" if brand else "") for name, brand in catalogue
+    )
 
     from .sales import described as sales_described
 
@@ -91,11 +125,11 @@ def resolve_products(message: str, history=None, store=None, conversation=None):
 Extract the exact perfume names the user is inquiring about.
 Look at the conversation history if the user is using pronouns or referring to something previously mentioned (like "بكام ده" or "عامل كام" or "الاتنين").
 
-Available Perfumes in Database:
+Available Perfumes in Database (the name is what you return; "[brand: …]" is an annotation, never part of the name):
 {product_names}
 {offered_block}
 Rules:
-1. Translate Arabic names to English and fix spelling mistakes to match the exact names in the database.
+1. Translate Arabic names to English and fix spelling mistakes to match the exact names in the database. A customer usually names the house and the perfume together ("ڤيرزاتشي ايروس", "ديور سوفاج") while this list may hold the perfume alone ("Eros", "Sauvage") — match the brand against the "[brand: …]" annotation and return the name.
 2. Be HIGHLY tolerant of phonetic Arabic transliterations and typos (e.g., 'فريساتشي يورس' or 'ايروس' -> 'Versace Eros', 'ديور سيفاج' -> 'Dior Sauvage', 'امبيرو' -> 'Ambero').
 3. Check if the requested perfumes exist in the Available Perfumes list.
 4. If the perfumes exist in the list, return their exact names from the list.
@@ -108,6 +142,7 @@ Rules:
    • Quote it in the **customer's own words and the customer's own script** — if they wrote it in Arabic, return the Arabic exactly as they typed it. ❌ Never translate it, never transliterate it into Latin letters, never correct its spelling: we are saying we do not know this perfume, so a spelling we invented for it is a fabrication.
    • Strip a leading conjunction ("والكساندريا 2" -> "الكساندريا 2") and nothing else.
    • ❌ Never put a perfume that IS in the list here. ❌ Never put pronouns, question words or verbs here ("لقيتو", "ده", "بكام") — if the message names no perfume, "unplaced" is empty too, exactly like "perfumes".
+   • 🔴 ❌ Never put **اسم بيت العطور لوحده** here — a house is not a perfume. "ديور", "شانيل", "فيرزاتشي", "Tom Ford", "عندكو حاجة من رصاصي" name a brand, and the store very probably carries it, so reporting one as unplaced is how a customer asking "عندكو ديور ؟" gets told we do not sell Dior with three Diors on the shelf. If the customer named only a house, both lists are empty and the reply asks which perfume they meant. (Python catches this for a Latin spelling and **cannot** catch it for an Arabic one — the catalogue holds Latin names only — so on "ديور" this rule is the only guard there is.)
    • A customer asked "عايز اعرف اسعار بلو دي شانيل وسوفاج والكساندريا 2": two of those are in the list and one is not, so perfumes gets the two and unplaced gets ["الكساندريا 2"]. Leaving it out of both is how that customer got asked to wait three times for an answer nobody was looking up.
 """
     prompt += """
@@ -115,6 +150,7 @@ Output format MUST be valid JSON:
 {"perfumes": ["Exact Name 1", "Exact Name 2"], "unplaced": ["اسم العطر بكلام العميل"]}
 (Both lists may be empty. "perfumes" holds names FROM the list above; "unplaced" holds names that are NOT in it.)
 """
+    failed = False
     try:
         messages = [{"role": "system", "content": prompt}]
         if history:
@@ -124,18 +160,25 @@ Output format MUST be valid JSON:
         response = chat(messages, profile="extract", response_format={"type": "json_object"})
 
         data = json.loads(response)
+        if not isinstance(data, dict):
+            raise ValueError(f"extractor returned {type(data).__name__}, expected an object")
         p_names = data.get("perfumes", [])
         raw_unplaced = data.get("unplaced", [])
+        if not isinstance(p_names, list) or not isinstance(raw_unplaced, list):
+            raise ValueError("extractor returned a non-list for perfumes or unplaced")
     except Exception:
+        # Report the failure rather than presenting it as an empty answer. A caller that is
+        # about to tell the customer we do not carry a perfume needs to know the difference:
+        # see `Resolution.failed`.
+        logger.exception("Perfume extraction failed for message: %r", (message or "")[:200])
         p_names = []
         raw_unplaced = []
+        failed = True
 
-    if not isinstance(raw_unplaced, list):
-        raw_unplaced = []
     unplaced = _unplaced_names(raw_unplaced, message, store, products)
 
-    if not isinstance(p_names, list) or not p_names:
-        return Resolution([], unplaced)
+    if not p_names:
+        return Resolution([], unplaced, failed=failed)
 
     resolved = []
     for p_name in p_names:
@@ -159,7 +202,7 @@ Output format MUST be valid JSON:
         if match and match not in resolved:
             resolved.append(match)
 
-    return Resolution(resolved, unplaced)
+    return Resolution(resolved, unplaced, failed=failed)
 
 
 def resolve_product(message: str, history=None, store=None, conversation=None):

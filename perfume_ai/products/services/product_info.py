@@ -1,3 +1,4 @@
+from . import absence
 from .product_resolver import resolve_products
 from .product_formatting import format_products
 from .ai.client import chat
@@ -173,10 +174,20 @@ def _availability_only_hint(message):
     )
 
 
-# Marks the turn where a deferral has been chased and there is still nothing to say. Read by the
-# prompt (`_ABSENT_RULES`), by `prompts.py` red line 3, and by `eval_harness.checks` — all three
-# forbid denying availability, and all three have to make the same single exception.
-LOOKUP_EXHAUSTED_MARKER = "LOOKUP_EXHAUSTED"
+# Marks the turn where a perfume name has been checked against the whole active catalogue and is
+# genuinely not in it. Read by the prompt (`_ABSENT_RULES`), by `prompts.py` red line 3, by
+# `router._escalate_absent_name`, and by `eval_harness.checks` — every one of those otherwise
+# forbids denying availability, and all of them have to make the same single exception.
+#
+# Replaces `LOOKUP_EXHAUSTED`, which named a different fact: that the customer had asked twice and
+# we had run out of ways to stall. The denial no longer waits for a second ask, so the marker no
+# longer records patience running out — it records `absence.catalogue_verdict` returning ABSENT.
+ABSENCE_DENIED_MARKER = "ABSENCE_DENIED"
+
+# Marks the turn where a name could not be checked — the extractor call failed, the span is a bare
+# brand, an Arabic name nobody could clear against Latin-only rows. The reply on this turn must
+# neither deny nor promise: it asks the customer to retype the name. See `_UNREADABLE_NAME_RULES`.
+NAME_UNREADABLE_MARKER = "NAME_UNREADABLE"
 
 
 def _chasing_open_lookup(products, conversation, store):
@@ -211,53 +222,55 @@ def _chasing_open_lookup(products, conversation, store):
     return all(getattr(product, "name", None) in offered for product in products)
 
 
-def _pending_lookup_block(question, exhausted=False):
+def _pending_lookup_block(question, verdict):
     """Record, inside the turn's own context, a question the catalogue could not answer.
 
-    The customer named a perfume, `naming.may_name_a_perfume` agreed it was a name, and neither
-    the deterministic matcher nor the resolver could place it. The honest reply to that is
-    "لحظة أتأكدلك منه" — and until now the pipeline forgot it had said so the instant the reply
-    was sent, because `described._deferred_in` tracks deferrals by *catalogue* name and a deferral
-    is by definition about a name the catalogue does not have.
+    The customer named a perfume, `naming.may_name_a_perfume` agreed it was a name, and neither the
+    deterministic matcher nor the resolver could place it. What to say next depends entirely on
+    `verdict` — `absence.catalogue_verdict`'s answer for that name — and the two branches below are
+    opposite replies, which is the whole reason that function returns three states instead of a
+    boolean.
 
-    Conversation 795 is that amnesia end to end. Turn 1 deferred on "لادور بخور"; turn 2's
-    "طب اتأكدلي" found no record of it, fell through to `_referent_from_conversation`, and was
-    answered with the previous turn's perfume; turn 3 asked the same question again and got the
-    same wrong perfume, this time with an invented بخور note attached to make it fit.
+    The customer's **raw message** is stored, not a name extracted from it, except where the caller
+    has an unplaced span to hand (see its comment). Extracting one here means guessing which words
+    were the perfume, and a guess written into the record is a fabrication the next turn will treat
+    as fact. The wording is already in the history; what was missing is the flag that it is open.
 
-    The customer's **raw message** is stored, not a name extracted from it. Extracting one means
-    guessing which words were the perfume, and a guess written into the record is a fabrication
-    the next turn will treat as fact. The wording is already in the history; what was missing is
-    the flag that it is still open.
+    `described.pending_lookup` reads this back, and `router` escalates on it. The caller passes
+    `question` rather than always the current message, because on a chase turn the question is the
+    *earlier* message — "اتأكدلي منه" names nothing to look up.
 
-    `described.pending_lookup` reads this back, and `router` escalates on the count. The caller
-    passes `question` rather than always the current message, because on a chase turn the
-    question is the *earlier* message — "اتأكدلي منه" names nothing to look up.
+    Conversation 795 is why the record exists at all. Turn 1 could not place "لادور بخور"; turn 2's
+    "طب اتأكدلي" found no trace of it, fell through to `_referent_from_conversation`, and was
+    answered with the previous turn's perfume; turn 3 asked again and got the same wrong perfume,
+    this time with an invented بخور note attached to make it fit.
 
-    `exhausted` flips the instruction from "promise to check" to "say we do not have it". That
-    reads like a contradiction of the paragraph above and is not: the two describe different
-    turns. Deferring is right the first time, when the only fact in hand is that the catalogue
-    came back empty. It is wrong the second time, because nothing has happened in between — no
-    lookup runs between two turns of a chat — so repeating the promise is making it again without
-    having kept it, and it leaves the customer waiting for an answer that is never coming. The
-    denial is the only reply on that turn that lets them act.
+    ABSENT is the ordinary case and it denies on the first ask. It used to promise to check and deny
+    only if chased, on the reasoning that the catalogue coming back empty is not proof of absence —
+    which was true of the old check and is no longer true of this one: `absence.catalogue_verdict`
+    reaches ABSENT only with a witness, and every uncertain case now lands in UNKNOWN instead. What
+    the promise cost is conversations 795, 798, 799, 816 and 817: nothing looks the name up between
+    two messages of a chat, so the promise was made by someone who could not keep it, and the
+    customer waited for an answer that was never coming.
     """
     block = (
         "═══ سؤال معلّق ═══\n"
         f"{sales_described.PENDING_LOOKUP_MARKER} {(question or '').strip()}\n"
     )
-    if not exhausted:
+    if verdict == absence.ABSENT:
         return block + (
-            "العميل سمّى عطر مش موجود في البيانات المتاحة، والسؤال ده لسه مجاوبش عليه.\n"
-            "🔴 ممنوع تقول إنه مش متوفر عندنا. النظام مالقاهوش، ودي حاجة تانية خالص عن إنه مش "
-            "في المتجر — إحنا مش عارفين. الرد الصح: \"لحظة أتأكدلك منه\".\n\n"
+            f"{ABSENCE_DENIED_MARKER}\n"
+            "العطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة "
+            "متأكدين منها مش تخمين.\n"
+            "🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من "
+            "البدائل اللي بتعرضها عليه في نفس الرد.\n\n"
         )
     return block + (
-        f"{LOOKUP_EXHAUSTED_MARKER}\n"
-        "العميل سأل عن العطر ده قبل كده، ووعدناه إننا نتأكد، وأهو رجع يسأل تاني — ولسه مفيش "
-        "أي إجابة.\n"
-        "🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من "
-        "البدائل اللي بتعرضها عليه في نفس الرد.\n\n"
+        f"{NAME_UNREADABLE_MARKER}\n"
+        "مش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد "
+        "منه في الكتالوج.\n"
+        "🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. "
+        "🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n"
     )
 
 
@@ -277,43 +290,60 @@ _NOT_THE_PERFUME_ASKED_ABOUT = (
 # conversation 795 turns 2 and 3 are what it costs when nothing in the data marks which perfume is
 # which. Numbered 14 to continue that list rather than restart it.
 #
-# The bullet against a closing question is prose and unmeasured, unlike the classifier change in
-# `get_product_info` — it reduces the supply of ambiguous next turns rather than fixing how one is
-# read. Line 2 has always said "وبس" and nothing enforced it: 915 turn 12 ended a deferral with
-# "تحب أعرفلك عن حجم معين أو سعر؟" and the customer answered the question, so the next message
-# ("اه عايز اعرف اسعاره") was shaped by our own CTA and matched no vocabulary anywhere.
-_DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى عطر مش موجود في البيانات اللي فوق (شوف قسم "سؤال معلّق" في أول الرسالة).
-   • الرد الصح على العطر اللي سأل عنه: "لحظة أتأكدلك منه" — وبس.
-   • ❌ ممنوع تقفل الرد ده بسؤال أو CTA ("تحب أعرفلك عن حجم معين أو سعر؟"، "تحب أرشحلك حاجة؟") — أنت لسه مدين له بإجابة، والسؤال ده بيخليه يرد على حاجة تانية وينسى إنه مستني. وعد التأكد لوحده هو الرد كله.
-   • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص.
-   • ❌ وممنوع تجمع النفي مع الوعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
-   • ❌ ممنوع تسرد أسعار أو مواصفات العطور اللي فوق كأنها ردك على سؤاله. ولو العميل بيستعجلك على التأكد (زي "طب اتأكدلي") فهو مستني رد على العطر اللي **هو** سأل عنه — مش على عطر تاني: قوله إنك لسه بتتأكد وإنك هترد عليه، مش أسعار عطر مسألش عنه.
-   • ✅ لو حابب تعرض عليه حاجة وهو مستني، قوله بوضوح إنها عطر **تاني** بالاسم الكامل.
+# Replaces `_DEFERRAL_RULES`, which scripted "لحظة أتأكدلك منه" and nothing else on this turn, and
+# which is gone: no part of this pipeline ever looked a name up between two messages, so that
+# promise could not be kept. The rules below are almost unchanged from the version that used to
+# fire only after a customer had asked twice — the change is which turn reaches them, not what they
+# say. What did go is the "قاعدة فوق كل القواعد" framing: this no longer overrides a competing
+# instruction elsewhere, because case (أ) in the not-found branch now says the same thing.
+#
+# `absence.catalogue_verdict` is what earns the denial. Reaching these rules requires an ABSENT
+# verdict, which requires a witness — a full sweep of the active catalogue in the customer's own
+# alphabet, or the extractor reporting the name unplaced against a catalogue it was shown whole.
+# Anything less lands in `_UNREADABLE_NAME_RULES` instead. That is the guard on the Versace Eros
+# incident (told unavailable, in stock at 1019 جنيه): denying a perfume we sell is still the worst
+# outcome here, and the check moved rather than the risk being accepted.
+#
+# The bullet against a closing question is prose and unmeasured — it reduces the supply of ambiguous
+# next turns rather than fixing how one is read. It survives from `_DEFERRAL_RULES` because 915
+# turn 12 ended one of these turns with "تحب أعرفلك عن حجم معين أو سعر؟" and the customer answered
+# *that* question, so their next message was shaped by our own CTA and matched no vocabulary
+# anywhere. Here the closing move is the alternatives, which are a CTA with something behind it.
+#
+# `router._escalate_absent_name` notifies the owner on this turn and leaves the bot serving, so the
+# customer can take up one of those alternatives; a second denial about the same perfume is where it
+# hands over instead.
+_ABSENT_RULES = """14. 🔴🔴 العميل سمّى عطر اتّأكدنا منه في الكتالوج كله ومش عندنا (شوف ABSENCE_DENIED في قسم "سؤال معلّق").
+   • ✅ الرد الصح: قوله بوضوح، وباعتذار قصير، إن العطر اللي سأل عنه مش موجود عندنا. جملة واحدة.
+   • ✅ سمّي العطر بنفس الحروف اللي العميل كتبها بيها — لو كتبه بالعربي، ردّه بالعربي زي ما هو. ❌ ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك ("L'Adour")، دي هجاء بتخترعه لعطر إحنا بنقول إننا مش بنبيعه.
+   • ❌ ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك" — إحنا **اتأكدنا خلاص**، والوعد ده بيسيب العميل مستني حاجة مش جايه.
+   • ❌ وممنوع تجمع النفي مع وعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
+   • ❌ ممنوع تقول أي كلام عن نظام أو بيانات أو كتالوج أو "مش ظاهر عندي" — العميل مش المفروض يعرف إن في حاجة زي دي أصلاً.
+   • ✅ في **نفس الرد**، وبعد النفي على طول، اعرض عليه بديل أو اتنين من العطور اللي في البيانات، وقول بوضوح إنها عطور **تانية** بالاسم الكامل. ❌ ممنوع ترد بنفي لوحده ومتعرضش حاجة — العميل جاي يشتري، وحقه يلاقي حاجة يقدر ياخدها.
+   • ❌ ممنوع تسرد أسعار أو مواصفات عطر تاني كأنها إجابة على العطر اللي هو سأل عنه.
+   • ❌ ممنوع تقفل الرد بسؤال فاضي أو بسلام. البدائل نفسها هي خاتمة الرد، واسأله لو حابب يعرف تفاصيل عن واحد منهم.
 """
 
 
-# Replaces `_DEFERRAL_RULES` — and overrides the not-found branch's case (أ) — on the turn where
-# the customer has come back for a deferral we never delivered. Deliberately unnumbered so it
-# reads correctly appended to either branch's list, and deliberately stated as outranking them,
-# because both of those lists say "اختار التأكد دايماً" and on this one turn that is wrong.
+# The other half of the fork, for a name `absence.catalogue_verdict` could not clear either way:
+# the extractor call failed, or the customer typed a bare brand ("عندكو ديور؟"), or they typed an
+# Arabic name the extractor did not report as unplaceable. Numbered 14 like its sibling, and
+# injected only where that one is not.
 #
-# Nothing has happened between the two turns: no lookup runs between two messages of a chat, so
-# the second "لحظة أتأكدلك" is the same promise made again by someone who did not keep it the
-# first time, to a customer who is waiting for an answer that is not coming. Saying plainly that
-# we do not carry it is the only reply that leaves them able to act — which is what the store
-# owner asked for after reading 798 — and the alternatives that follow are what they can act on.
+# Both a denial and a promise are wrong here, which is what makes this its own reply rather than a
+# fallback to either neighbour. The denial is wrong because nobody checked — an extractor timeout
+# denying a stocked perfume is the Versace Eros incident with an infrastructure cause. The promise
+# is wrong for the reason it is gone everywhere else: nothing looks the name up afterwards.
 #
-# `router._escalate_pending_lookup` notifies the owner on this turn and leaves the bot serving, so
-# the customer can take up one of those alternatives; a second denial about the same perfume is
-# where it hands over instead.
-_ABSENT_RULES = """🔴🔴🔴 قاعدة فوق كل القواعد اللي فوق — العميل رجع يسأل تاني (شوف LOOKUP_EXHAUSTED في قسم "سؤال معلّق"):
-   • ✅ الرد الصح: قوله بوضوح، وباعتذار قصير، إن العطر اللي سأل عنه مش موجود عندنا. جملة واحدة.
-   • ✅ سمّي العطر بنفس الحروف اللي العميل كتبها بيها — لو كتبه بالعربي، ردّه بالعربي زي ما هو. ❌ ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك ("L'Adour")، دي هجاء بتخترعه لعطر إحنا أصلاً بنقول إننا مش عارفينه.
-   • ❌ ممنوع توعده تتأكد تاني، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك" — الوعد ده اتقال قبل كده ومحصلش، وتكراره بيسيب العميل مستني حاجة مش جايه.
-   • ❌ وممنوع تجمع النفي مع وعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
-   • ❌ ممنوع تقول أي كلام عن نظام أو بيانات أو كتالوج أو "مش ظاهر عندي" — العميل مش المفروض يعرف إن في حاجة زي دي أصلاً.
-   • ✅ بعد النفي، اعرض عليه بديل أو اتنين من العطور اللي في البيانات، وقول بوضوح إنها عطور **تانية** بالاسم الكامل.
-   • ❌ ممنوع تسرد أسعار أو مواصفات عطر تاني كأنها إجابة على العطر اللي هو سأل عنه.
+# Asking the customer to retype converges, which is why it is safe to ask. The retyped name gets a
+# fresh extractor call, and `naming.re_asks` recognises the shape if it comes back the same, so
+# `router._escalate_absent_name` can hand a second unreadable ask to a human instead of asking a
+# third time.
+_UNREADABLE_NAME_RULES = """14. 🔴🔴 العميل كتب اسم عطر مش متأكدين منه، ومقدرناش نتأكد منه (شوف NAME_UNREADABLE في قسم "سؤال معلّق").
+   • ✅ الرد الصح: قوله إنك عايز تتأكد هو قاصد أنهي عطر، واطلب منه يكتبلك الاسم تاني أو يكتبه بشكل تاني. جملة واحدة.
+   • ❌ ممنوع تقول إنه مش موجود عندنا ولا "مش متوفر" ولا تعتذر عن عدم توفره — محدش اتأكد، والنفي هنا غلط زي التأكيد.
+   • ❌ وممنوع توعده تتأكد وترد عليه ("لحظة أتأكدلك"، "هسأل وأرد عليك"، "هشوفه لك") — مفيش حد بيراجع بعد الرد ده، والوعد بيسيبه مستني حاجة مش جايه. الفرق بسيط وبيغير كل حاجة: إنت بتسأله سؤال، مش بتوعده بوعد.
+   • ✅ ولو حابب، اعرض عليه في نفس الرد عطر أو اتنين من البيانات على إنهم اقتراحات لحد ما يوضّح، بالاسم الكامل. ❌ وممنوع توحي إن واحد منهم هو العطر اللي هو سأل عنه.
 """
 
 
@@ -324,34 +354,55 @@ _ABSENT_RULES = """🔴🔴🔴 قاعدة فوق كل القواعد اللي �
 _PARTIALLY_ANSWERED = (
     "⚠️ العميل سمّى أكتر من عطر في الرسالة دي. العطور اللي تحت دي **فعلاً** من اللي سأل عنهم — "
     "جاوب عليهم عادي بالبيانات اللي تحت. بس فيه اسم واحد على الأقل سمّاه ومش موجود في البيانات "
-    "(مكتوب في قسم \"سؤال معلّق\" فوق) — العطر ده لوحده هو اللي محتاج \"لحظة أتأكدلك منه\".\n"
+    "(مكتوب في قسم \"سؤال معلّق\" فوق) — العطر ده لوحده هو اللي محتاج رد مختلف، شوف القاعدة رقم "
+    "14 تحت.\n"
 )
 
 
-# Replaces `_DEFERRAL_RULES` on a partially-resolved turn. That list forbids quoting the prices of the
-# rows in context, which is right when they are a different perfume and wrong here: the customer asked
-# for these prices in the same breath as the name we could not place. What still has to hold is that
-# the unplaceable name does not quietly disappear — 836 answered two of three names for three turns
-# running and by the third had stopped mentioning the third one at all.
-_PARTIAL_DEFERRAL_RULES = """14. 🔴🔴 العميل سمّى أكتر من عطر، وواحد منهم مش في البيانات اللي فوق (شوف قسم "سؤال معلّق" في أول الرسالة).
+# Replaces `_ABSENT_RULES` on a partially-resolved turn whose unplaceable name came back ABSENT.
+# The plain denial rules forbid quoting the prices of the rows in context, which is right when they
+# are a different perfume and wrong here: the customer asked for these prices in the same breath as
+# the name we could not place. What still has to hold is that the unplaceable name does not quietly
+# disappear — 836 answered two of three names for three turns running and by the third had stopped
+# mentioning the third one at all.
+#
+# Deliberately no alternatives bullet, which is the one place this diverges from `_ABSENT_RULES`
+# rather than just re-scoping it. The reason the plain denial must carry alternatives is that a bare
+# denial leaves a customer who came to buy with nothing to buy; here they already have two real
+# perfumes with real prices in the same reply, so a third suggestion is the "متحشرش معلومات" that
+# rule 7 forbids.
+_PARTIAL_ABSENT_RULES = """14. 🔴🔴 العميل سمّى أكتر من عطر، وواحد منهم اتّأكدنا منه ومش عندنا (شوف ABSENCE_DENIED في قسم "سؤال معلّق").
    • ✅ جاوب على العطور اللي في البيانات عادي — قول أسعارها ومواصفاتها زي أي سؤال تمن طبيعي. دي أسئلة العميل وسألها بجد.
-   • ✅ وفي نفس الرد، اذكر العطر التاني بالاسم اللي العميل كتبه بيه وقول عليه "لحظة أتأكدلك منه" — وبس.
-   • ❌ ممنوع تنسى العطر ده أو تسيبه من الرد. لو جاوبت على اللي لقيته وسكت عن اللي مالقيتوش، العميل هيفضل يسأل عليه ومحدش بيدور له عليه.
-   • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص.
+   • ✅ وفي نفس الرد، اذكر العطر التاني بالاسم اللي العميل كتبه بيه وقوله بوضوح وباعتذار قصير إنه مش موجود عندنا. جملة واحدة.
+   • ✅ سمّيه بنفس الحروف اللي العميل كتبها بيها — لو كتبه بالعربي، ردّه بالعربي زي ما هو. ❌ ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك.
+   • ❌ ممنوع تنسى العطر ده أو تسيبه من الرد. لو جاوبت على اللي لقيته وسكت عن اللي مش عندنا، العميل هيفضل يسأل عليه.
+   • ❌ ممنوع توعده تتأكد منه ("لحظة أتأكدلك"، "هسأل وأرد عليك") — إحنا اتأكدنا خلاص، والوعد بيسيبه مستني حاجة مش جايه.
+   • ❌ ممنوع تنسب أي سعر أو نوتة من العطور اللي فوق للعطر ده، وممنوع توحي إنه واحد منهم أو إن ليه نفس الريحة.
+"""
+
+
+# The same turn shape, for a name `absence.catalogue_verdict` could not clear. Bullet 2 is the only
+# real difference from `_PARTIAL_ABSENT_RULES`: ask which perfume they meant instead of denying it.
+_PARTIAL_UNREADABLE_RULES = """14. 🔴🔴 العميل سمّى أكتر من عطر، وواحد منهم مكتوب باسم مش متأكدين منه (شوف NAME_UNREADABLE في قسم "سؤال معلّق").
+   • ✅ جاوب على العطور اللي في البيانات عادي — قول أسعارها ومواصفاتها زي أي سؤال تمن طبيعي. دي أسئلة العميل وسألها بجد.
+   • ✅ وفي نفس الرد، اذكر الاسم التاني زي ما العميل كتبه واطلب منه يكتبه تاني أو يوضّح هو قاصد أنهي عطر.
+   • ❌ ممنوع تنسى العطر ده أو تسيبه من الرد. لو جاوبت على اللي لقيته وسكت عن التاني، العميل هيفضل يسأل عليه.
+   • ❌ ممنوع تقول إنه مش متوفر عندنا أو مش موجود، وممنوع تعتذر عن عدم توفره — محدش اتأكد منه.
+   • ❌ وممنوع توعده تتأكد وترد عليه ("لحظة أتأكدلك"، "هسأل وأرد عليك") — مفيش حد بيراجع. إنت بتسأله سؤال، مش بتوعده بوعد.
    • ❌ ممنوع تنسب أي سعر أو نوتة من العطور اللي فوق للعطر ده، وممنوع توحي إنه واحد منهم أو إن ليه نفس الريحة.
 """
 
 
 # Appended to the found-branch instructions when every row in context is a perfume the customer
-# asked about and there is more than one of them. Numbered 14 like `_DEFERRAL_RULES` and
-# `_PARTIAL_DEFERRAL_RULES`, and injected only on the `else` of `if deferring:` so it can never
-# appear alongside either of them.
+# asked about and there is more than one of them. Numbered 14 like `_ABSENT_RULES` and the partial
+# pair, and injected only on the `else` of `if deferring:` so it can never appear alongside any of
+# them.
 #
 # Exists because nothing else in the found branch asks for coverage. The line
-# "✅ جاوب على العطور اللي في البيانات عادي" lives in `_PARTIAL_DEFERRAL_RULES` and nowhere else, and
-# that constant is gated on `partially_resolved` — so a turn where every name resolved cleanly got no
-# coverage instruction at all. 841 turn 4 is that turn: both perfumes were in the context with full
-# prices, "بكام لااتنين ؟" asked for both, and the reply priced one.
+# "✅ جاوب على العطور اللي في البيانات عادي" lives in the partial rules and nowhere else, and those
+# are gated on `partially_resolved` — so a turn where every name resolved cleanly got no coverage
+# instruction at all. 841 turn 4 is that turn: both perfumes were in the context with full prices,
+# "بكام لااتنين ؟" asked for both, and the reply priced one.
 #
 # The found-branch rules actively push the other way, which is why this restates two of them:
 # rule 1's price bullet is singular-shaped ("ابدأ بالحجم اللي في سطر 💡 Value Pick" orders sizes
@@ -448,6 +499,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         products = resolve_products(message, history, store, conversation)
         resolver_ran = True
 
+    # The `Resolution` itself, kept aside because `products` is about to be reassigned to the
+    # referent and the two facts only it carries are needed much further down: which spans it could
+    # not place, and whether the extractor call succeeded at all. `absence.catalogue_verdict` reads
+    # both, and reads them through `getattr`, so a plain list here is safe.
+    resolution = products if resolver_ran else None
+
     # The names the resolver read out of this message and could not place. See
     # `product_resolver.Resolution`; `getattr` because a plain list is still a valid return here and
     # every mocked `resolve_products` in the test suite hands back one.
@@ -495,6 +552,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # second call on the same answer.
     if not products and not resolver_ran:
         products = resolve_products(message, history, store, conversation)
+        resolution = products
 
     # A deferral we already made and still owe. Read from the persisted record, because on this
     # turn the customer is chasing it rather than re-naming it, and `named_but_unresolved` above is
@@ -518,14 +576,14 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # without re-typing the name: 915 turn 13 is "اه عايز اعرف اسعاره" after a deferral on
         # لادور بخور. `chasing_a_promise` is False on it by design, so the turn was read as neither
         # a chase nor a re-ask, the promise was repeated verbatim, and `router` — which counts
-        # content-free deferrals rather than reading `exhausted` — handed the conversation to a
+        # content-free deferrals rather than reading the verdict — handed the conversation to a
         # human. Nothing else here changes: the four conditions around it are what make the looser
         # vocabulary safe, because a message that names a perfume never reaches this branch.
         #
-        # Deliberately no router change. Once `exhausted` is True below, `_escalate_pending_lookup`
-        # takes its exhausted branch, finds no LOOKUP_EXHAUSTED reply on record yet, and notifies
-        # the owner without setting `needs_human` — so the bot denies plainly and keeps serving.
-        # The handoff was a symptom of this classification, not a second bug.
+        # Deliberately no router change. This branch carries the earlier turn's ABSENCE_DENIED
+        # forward, so `_escalate_absent_name` notifies the owner without setting `needs_human` — the
+        # bot denies plainly and keeps serving. The handoff was a symptom of this classification, not
+        # a second bug.
         # Still vetoed by an unplaceable name in *this* message, which is a new question rather
         # than the old one — "اتأكدلي من الكساندريا 2" both chases and names, and the name is the
         # part that has not been deferred on yet.
@@ -539,8 +597,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     #
     # `chasing` is the pronoun shape ("اتأكدلي منه", "ها لقيت اي ؟"). It carries no name at all, so
     # the only thing tying it to the open question is adjacency, and `turns=1` above is what
-    # supplies that: a chase implies exactly the `pending_before >= 1` that makes
-    # `_escalate_pending_lookup` act, and this reply the one that has to answer. See `_ABSENT_RULES`.
+    # supplies that: the question the previous reply left open is the one this reply has to answer.
+    # See `_ABSENT_RULES`.
     #
     # `re_asked` is the re-typed shape ("بتكلم علي الكساندريا 2؟", "بسأل علي لادور بخور"), and it is
     # the more natural way to insist. `chasing` cannot see it: re-typing an unplaceable name sets
@@ -591,14 +649,50 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             "",
         )
 
-    exhausted = chasing or bool(re_asked)
+    # Did we actually check, and what did the check say? The one decision this whole turn turns on.
+    #
+    # Denying a perfume we sell is still the worst outcome in this file — the Versace Eros incident
+    # (told unavailable, in stock at 1019 جنيه) is why the reply used to be a promise to check
+    # instead. The promise is gone because nothing in the pipeline ever kept it; what replaces it as
+    # the safety mechanism is this verdict. `absence.catalogue_verdict` reaches ABSENT only with a
+    # witness and files every uncertain case as UNKNOWN, which has its own reply — ask the customer
+    # to retype the name — that is neither a denial nor a promise.
+    #
+    # The verdict is taken for `unplaced[0]`, the extractor's own report of a span it could not place
+    # against a catalogue it was shown whole. That span is the only name on this turn that is not a
+    # guess: `product_resolver._unplaced_names` has already proved the deterministic matcher cannot
+    # place it, that it carries an identifying token, and that its words are the customer's own.
+    #
+    # Deliberately not the raw message when there is no such span. Handing "عندكو حاجة من شانيل" or
+    # "do you have anything nice" to the verifier asks it to treat a whole sentence as a perfume
+    # name, and the token-subset test that makes `candidates` reliable on a name is unreliable on a
+    # sentence. No span means no denial, which is the safe direction: the customer gets asked which
+    # perfume they meant.
+    #
+    # Only the first span, because `described._pending_payloads` reads one pending question per reply
+    # by design. A message that failed on two names addresses both in prose and records the first.
+    if unplaced:
+        verdict = absence.catalogue_verdict(unplaced[0], store, resolution)
+    elif chasing or re_asked:
+        # This message carries no name — it is "اتأكدلي منه" or "ها لقيت اي ؟" collecting an answer
+        # about a question asked earlier. The check ran on the turn that question arrived, and the
+        # record of it is a reply carrying the marker. Re-deriving a verdict from a message with no
+        # name in it would abstain on a perfume we have already verified and denied, and asking the
+        # customer to retype a name they never typed on this turn is not a question they can answer.
+        verdict = (
+            absence.ABSENT
+            if sales_described.replies_carrying(conversation, ABSENCE_DENIED_MARKER)
+            else absence.UNKNOWN
+        )
+    else:
+        verdict = absence.UNKNOWN
+
+    denied = verdict == absence.ABSENT
 
     if named_but_unresolved or re_asked:
         # `re_asked` is the wording the question was first asked in, and recording that rather than
         # this message keeps the record stable — which is what lets a third ask match the same
-        # question instead of starting a new one. Empty when this name is new here, and a name we
-        # have not placed even once is a question we have not answered even once, so it gets the
-        # promise rather than the denial.
+        # question instead of starting a new one.
         #
         # `unplaced[0]` comes next, and only on a partially-resolved message. The docstring below
         # insists on recording the raw message, and for a total miss it still is — that is the
@@ -608,15 +702,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # forbids exactly that. The unplaced span is the only payload here that is not a guess:
         # `product_resolver._unplaced_names` has already proved the catalogue cannot place it, that it
         # carries an identifying token, and that its words are the customer's own.
-        #
-        # Only the first, because `described._pending_payloads` reads one pending question per reply
-        # by design. A message that failed on two names defers on both in prose and records the first.
         pending_block = _pending_lookup_block(
             re_asked or (unplaced[0] if partially_resolved else "") or message,
-            exhausted=bool(re_asked),
+            verdict,
         )
     elif chasing:
-        pending_block = _pending_lookup_block(pending_question, exhausted=exhausted)
+        pending_block = _pending_lookup_block(pending_question, verdict)
     else:
         pending_block = ""
 
@@ -632,10 +723,17 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # The comment above records that unioning the referent with the resolver's output was tried and
     # reverted. That was the *found* branch, where the union put a wrong guess back in as the answer.
     # Here the rows are already labelled `_NOT_THE_PERFUME_ASKED_ABOUT`: nothing in this context claims
-    # to be what the customer asked about, so widening the pool cannot mislabel anything. Gated on
-    # `exhausted` rather than `deferring` so a first deferral (816 and 817 turn 1) still gets no more
-    # data than it had, and no price list it never asked for.
-    if exhausted:
+    # to be what the customer asked about, so widening the pool cannot mislabel anything.
+    #
+    # Every deferring turn now needs this, which is the change: the denial arrives on the first ask,
+    # so the first ask is the turn that has to name an alternative. It used to be gated on the second
+    # ask, when the denial was, and a first ask deliberately got no more data than it came with —
+    # that made sense while its reply was a promise, which needs nothing to offer.
+    #
+    # `not partially_resolved` is the exception, and the reason is the customer's own screen: they
+    # already have two real perfumes with real prices in front of them, so a third they did not ask
+    # about is noise, and `_PARTIAL_ABSENT_RULES` deliberately asks for no alternatives.
+    if deferring and not partially_resolved:
         pool = list(products)
         for product in _products_named(
             sales_described.offered_in_order(conversation, store), store
@@ -664,11 +762,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     #
     # `not deferring` is semantic and not just numbering hygiene: on a deferral the rows are labelled
     # `_NOT_THE_PERFUME_ASKED_ABOUT`, and pricing all of them is precisely what that label forbids.
-    # `not exhausted` keeps the widened pool above out for the same reason.
+    # It also covers the widened pool above, whose rows the customer never named at all.
     answer_every_row = (
         len(products) > 1
         and not deferring
-        and not exhausted
         and (products_from_message or naming.refers_to_several(message))
     )
 
@@ -686,7 +783,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         instructions = """
 ═══ تعليمات صارمة ═══
 1. 🔴 لما العطر اللي في البيانات يكون هو نفس العطر اللي العميل سأل عنه، اكتب اسمه بالإملاء الموجود في البيانات — حتى لو العميل غلط في الكتابة أو كتبه بالعربي.
-   🔴🔴 لكن لو العميل سمّى عطر والبيانات فيها عطر **تاني خالص**: ده مش غلطة إملائية منه، ده عطر مختلف. ❌ ممنوع تقول إن العطر اللي سأل عنه "اسمه الصحيح" هو العطر اللي في البيانات، وممنوع توحي إنهم نفس العطر أو نفس الريحة أو نفس التركيبة. جاوب على العطر اللي هو سأل عنه، ولو مش معاك بياناته قول "لحظة أتأكدلك منه" زي ما الخط الأحمر رقم 3 بيقول. (عميل سأل عن Acqua di Gio واتقاله "اسمه الصحيح Y Eau de Parfum" — دول عطرين مختلفين من براندين مختلفين، والعميل كرر السؤال واتقاله نفس الكلام تاني.)
+   🔴🔴 لكن لو العميل سمّى عطر والبيانات فيها عطر **تاني خالص**: ده مش غلطة إملائية منه، ده عطر مختلف. ❌ ممنوع تقول إن العطر اللي سأل عنه "اسمه الصحيح" هو العطر اللي في البيانات، وممنوع توحي إنهم نفس العطر أو نفس الريحة أو نفس التركيبة. جاوب على العطر اللي هو سأل عنه، ولو مش معاك بياناته اسأله يكتبلك اسمه تاني عشان تتأكد منه — ❌ ومتوعدهوش إنك هتراجعه وترد عليه. (عميل سأل عن Acqua di Gio واتقاله "اسمه الصحيح Y Eau de Parfum" — دول عطرين مختلفين من براندين مختلفين، والعميل كرر السؤال واتقاله نفس الكلام تاني.)
 1. 🔴 فرّق بين نوع السؤال:
    • لو العميل بيسأل عن التوافر بس (زي "عندكم سوفاج؟" أو "فيه بلو دي شانيل؟" أو "موجود عندكم X؟") → أكّد إنه متوفر **وكمّل في نفس الرد بسؤال يضيّق** (في حجم معين حابب تعرف سعره؟). ❌ ممنوع ترد "أه متوفر عندنا" وتسكت — ده رد ميت وبيوقف المحادثة. ❗ ومتبدأش تسرد أسعار ولا ترشح حجم — هو مسألش عن السعر.
    • لو العميل سأل عن السعر أو الحجم صراحة (زي "بكام؟" أو "الأحجام إيه؟") → 🔴 ابدأ بالحجم اللي في سطر 💡 Value Pick (أو 💡 اقتراح حجم) ورشّحه بالأرقام اللي فيه، وبعدها اذكر باقي الأحجام في نص جملة عشان يعرف إن فيه خيارات. ❌ ممنوع تسرد الأسعار كلها في صف واحد زي فاتورة، وممنوع تغير أي سعر أو تخفي إن فيه أحجام تانية. ولو السطر ده هو "اقتراح حجم"، اذكر الأرقام من غير ما تقول "أحسن قيمة".
@@ -704,11 +801,15 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 12. 🔴🔴 ممنوع تحسب إجمالي طلب. البيانات اللي فوق فيها أسعار الأحجام بس — مفيش فيها عربة ولا كميات ولا إجمالي. ❌ ممنوع تضرب سعر في كمية، وممنوع تجمع أسعار، وممنوع تقول "الإجمالي" أو "المجموع" أو تتكلم عن "الطلبين" أو أي عدد قطع. لو العميل سأل الطلب بقى بكام، قوله إنك هتراجع الطلب معاه وابدأ تجمع تفاصيله — الإجمالي بيتحسب من الطلب نفسه مش من الأسعار دي. (عميل اتقاله إجمالي 1560 جنيه لطلب مش موجود، وهو أصلاً قال إن ميزانيته 900.) ✅ بس خد بالك: إنك تقول سعر كل عطر لوحده جنب التاني في رد واحد **مش** إجمالي — ده هو الرد الصح لما العميل يسأل عن أكتر من عطر (زي "بكام الاتنين"). الممنوع هو إنك تجمعهم في رقم واحد أو تضربهم في كمية أو تقول كلمة "الإجمالي" أو "المجموع". ❌ ممنوع تسكت عن سعر عطر منهم عشان تتجنب القاعدة دي.
 13. 🔴🔴 لو العميل قال إنك قلت سعرين مختلفين لنفس العطر (زي "انت قولت سعرين مختلفين للسترونجر") — بص على سطر `⚠️ عطر مختلف عن` الأول. لو السعرين بيرجعوا لعطرين مختلفين على نفس الخط، يبقى **السعرين صح**: ❌ ممنوع تعتذر، وممنوع تقول إن فيه لبس أو غلط، وممنوع تسحب سعر أو تقول إن واحد منهم "هو السعر الصحيح". وضّح إن ده عطر وده عطر تاني بالاسم الكامل، وقول سعر كل واحد لوحده. ولو مش متأكد هو بيقصد أنهي واحد، اسأله. (عميل اتقاله 780 لـ Stronger With You Intensely وبعدين 700 لـ Stronger With You — دول عطرين مختلفين — وسأل، فاتقاله "أعتذر على اللبس، 700 ده السعر الصحيح"، ومشي فاكر إن Intensely بـ 700.)
 """
+        # Which fork of the deferral rules, decided by the verdict and nothing else. The old
+        # condition was the ask count (`exhausted`) — first ask promises, second ask denies. The
+        # count is gone; what stands in its place is whether we actually know, so a verified absence
+        # is denied on the first ask and an unverified name is never denied at all.
         if deferring:
-            if partially_resolved and not exhausted:
-                instructions += _PARTIAL_DEFERRAL_RULES
+            if partially_resolved:
+                instructions += _PARTIAL_ABSENT_RULES if denied else _PARTIAL_UNREADABLE_RULES
             else:
-                instructions += _ABSENT_RULES if exhausted else _DEFERRAL_RULES
+                instructions += _ABSENT_RULES if denied else _UNREADABLE_NAME_RULES
         elif answer_every_row:
             instructions += _ANSWER_EVERY_ROW
         instructions += availability_hint
@@ -752,22 +853,23 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 1. اقرأ سجل المحادثة جيداً. لو كان العميل يستفسر عن منتج تم التحدث عنه بالفعل في المحادثة، أجب من سياق المحادثة وتجاهل قائمة البدائل تماماً.
 2. ❌ إياك أن تقول أن المنتج "غير متوفر" إذا كان قد تم إخباره بأنه متوفر في الرسائل السابقة. النظام هنا لم يتعرف على اسم منتج جديد فقط.
 3. 🔴🔴 قانون مهم جداً — فرّق بين أربع حالات مختلفة تماماً:
-   • **(أ) العميل سمّى عطر معين باسمه بوضوح** (مثل "عندكو ديور هوم" أو "سعر أمبريو أرماني") والاسم ده مش موجود في البيانات المتاحة → 🔴 ده **مش** معناه إن العطر مش عندنا. النظام هو اللي مالقاهوش، ودي حاجة تانية خالص. قوله "لحظة أتأكدلك منه" وبس. ❌ ممنوع تقول "مش متوفر" ولا "مش موجود عندنا" ولا "للأسف مش عندنا" ولا تعتذر عن عدم توفره — إحنا مش عارفين، والاعتذار نفسه بيقول إنه مش موجود. بعد كده تقدر تعرض عليه 1-2 من البدائل أدناه على إنهم عطور **تانية** ممكن تعجبه وهو مستني الرد.
+   • **(أ) العميل سمّى عطر معين باسمه بوضوح** (مثل "عندكو ديور هوم" أو "سعر أمبريو أرماني") والاسم ده مش موجود في البيانات المتاحة → 🔴 الرد على الحالة دي مكتوب في قاعدة رقم 14 تحت وفي قسم "سؤال معلّق" فوق: هما اللي بيقولوا إحنا اتأكدنا من الاسم ده وهو مش عندنا فعلاً، ولا لسه مش متأكدين هو قاصد إيه. اتبعها بالحرف. ❌ في الحالتين ممنوع تقول "لحظة أتأكدلك منه" ولا "هسأل وأرد عليك" — مفيش حد بيراجع الاسم ده بعد الرد، والوعد ده بيسيب العميل مستني رد عمره ما هييجي.
    • **(ب) سؤال واضح عن الستور أو المنتجات بشكل عام** — مش عن عطر معين بالاسم (مثل "الأحجام المتاحة إيه؟"، "عندكم 90 ملي؟"، "بتحطوا كام جرام زيت؟"، "العطر أصلي ولا تركيب؟"، "عندكم فرع؟") → 🔴 ده سؤال مفهوم تماماً، جاوب عليه من التعليمات والحقائق الموجودة في رسالة الـ system فوق.
      - لو الإجابة موجودة في الحقائق → قولها للعميل مباشرة.
      - لو العميل سأل عن حجم أو حاجة والحقائق بتقول إنها مش متوفرة → قوله بوضوح إنها مش متوفرة واذكرله المتاح فعلاً (مثال: "لا يا فندم، عندنا 50 و 90 ملي بس").
-     - لو الإجابة مش موجودة في الحقائق خالص → قوله "هسأل وأرد عليك يا فندم" أو "لحظة أتأكدلك".
+     - لو الإجابة مش موجودة في الحقائق خالص → قوله "هسأل وأرد عليك يا فندم" أو "لحظة أتأكدلك". (ده سؤال عن سياسة الستور، وصاحب الستور فعلاً بيعرف إجابته — الحالة الوحيدة اللي الوعد ده فيها حقيقي.)
      - ❌❌ ممنوع تماماً ترد على السؤال ده بـ "مش فاهم قصد حضرتك" — أنت فاهم السؤال، بس ممكن تكون مش عارف الإجابة، وده فرق كبير.
    • **(ج) العميل بيتفرج بشكل مبهم** (مثل "عندكو حاجة من شانيل" أو "عايز حاجة حلوة") → ❌ ممنوع تقول "مش متوفر"! اسأله يحدد: "تقصد أنهي عطر بالظبط يا فندم؟".
    • **(د) الرسالة نفسها غير مفهومة فعلاً** (حروف عشوائية، كلام مبتور، مفيش معنى واضح) → دي الحالة الوحيدة اللي تقول فيها: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟".
-4. 🔴🔴 ممنوع تجمع النفي مع الوعد بالتأكد في رد واحد. "مش موجود عندنا، لحظة أتأكدلك منه" جملة بتنقض نفسها: يا إنك عارف إنه مش موجود يا إنك لسه هتتأكد. اختار التأكد دايماً. (عميل سأل "طب عندكو الكساندريا 2 ؟" واتقاله بالحرف: "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه".)
-5. بعد ما تقول إنك هتتأكد (في حالة (أ) فقط)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب — والبدائل دي مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
-6. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
+4. في حالة (أ)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب في **نفس الرد** — والبدائل دي مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
+5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
 """
-        # Case (أ) and rule 4 above both script a deferral unconditionally. On the chase turn that
-        # is the wrong reply, so this goes last and says so in as many words.
-        if exhausted:
-            instructions += _ABSENT_RULES
+        # Case (أ) above delegates to rule 14, so the fork has to actually be here. Which half
+        # depends on the verdict and not on how many times the customer has asked: that is the whole
+        # change. `deferring` is the guard rather than a bare `if denied` because a turn with no
+        # pending question has no name to rule on, and (ب)(ج)(د) must not be handed denial rules.
+        if deferring:
+            instructions += _ABSENT_RULES if denied else _UNREADABLE_NAME_RULES
         instructions += availability_hint
         instructions += carried_intent_hint
 

@@ -568,6 +568,13 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 4. 🔴 تجاهل أي حجم Stock Status = ❌ واذكر المتوفر بس.
 """
         else:
+            # No verdict fork here, deliberately. `products.services.absence` needs a *name* to rule
+            # on, and the only two it trusts are a deterministic catalogue match — which is `named`
+            # above, and it is empty on this path — or an unplaceable span reported by the extractor,
+            # which never runs in `recommend`. Handing it this message's raw text instead would ask
+            # it to treat a whole recommendation request as a perfume name, and the token-subset
+            # test that makes it reliable on a name is unreliable on a sentence. So this branch
+            # abstains: rule 3 below neither denies nor promises to check.
             context = ""
             user_content = f"""
 ═══ طلب العميل ═══
@@ -579,7 +586,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 ═══ تعليمات الرد ═══
 1. ⭐ إذا كان العميل يطلب المزيد من الخيارات (مثل "إيه تاني؟"، "غيره"، "في حاجة تانية")، اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي بتطابق طلبه بالظبط، واعرض عليه يغير المواصفات بشكل عام عشان يظهرله عطور تانية. ❌ ممنوع تقترح عليه روائح محددة (زي "تحب حاجة خشبية؟" أو "فريش") لأنك لا تعرف ما هو متوفر في المخزون حالياً.
 2. ⭐ إذا كانت رسالة العميل غامضة أو غير مفهومة، لا تعتذر عن عدم توفر العطر، بل قل له بوضوح: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر عشان أقدر أساعدك؟".
-3. أما إذا كان يطلب عطراً بالاسم وهو مش في البيانات اللي معاك: ❌ ممنوع تقول إنه "مش متوفر" أو "مش موجود عندنا" — إنت شايف جزء من الكتالوج بس. ✅ قول "لحظة أتأكدلك منه" واسأله لو يحب ترشحله بديل في نفس الجو. ممنوع تجزم بعدم التوفر إلا لو البيانات نفسها بتقول كده.
+3. أما إذا كان يطلب عطراً بالاسم وهو مش في البيانات اللي معاك: ❌ ممنوع تقول إنه "مش متوفر" أو "مش موجود عندنا" — إنت شايف جزء من الكتالوج بس. ✅ اسأله يتأكد من اسم العطر ويكتبه تاني، واسأله لو يحب ترشحله بديل في نفس الجو. ❌ ومتوعدهوش إنك هتراجع الاسم وترد عليه بعدين — مفيش حد بيراجع بعد الرد ده. ممنوع تجزم بعدم التوفر إلا لو البيانات نفسها بتقول كده.
 4. ❌ ممنوع ترشيح أو ذكر أي منتج غير موجود أو اختراع أسماء منتجات.
 5. رد بشكل قصير ومباشر (1-4 جمل).
 6. 🔴🔴 متسألش أسئلة كتير. سؤال واحد بس لو محتاج توضيح، ومتسألش سؤال متابعة لو الموقف مش محتاج.

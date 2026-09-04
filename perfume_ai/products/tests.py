@@ -114,6 +114,39 @@ from products.tasks import (
 )
 
 
+def _absent(*names):
+    """What `resolve_products` returns for a name the catalogue genuinely does not have.
+
+    `return_value=[]` is not that, and the difference decides which reply the customer gets. An
+    empty list says only "no product came back", which is equally what an extractor timeout, a
+    vague browse ("عندكو حاجة من شانيل") and a bare brand look like — so
+    `absence.catalogue_verdict` files it as UNKNOWN and the turn asks the customer to retype the
+    name. Denying a perfume needs a witness, and for an Arabic name the extractor is the only one
+    there is: it was shown the whole catalogue and reported this span as one it could not place.
+    That report is `Resolution.unplaced`, and this is how a test supplies it.
+
+    So a test that wants the denial path patches with `_absent("لادور بخور")`, and a test that
+    wants the abstain path keeps `return_value=[]`. Both are real turns; neither is the default.
+    """
+    from products.services.product_resolver import Resolution
+
+    return Resolution([], names)
+
+
+def _resolver_failed():
+    """What `resolve_products` returns when the extractor call itself did not happen.
+
+    An API error, a timeout, a payload that would not parse. `product_resolver` swallows all three
+    into an empty product list, which is why the flag has to be carried separately: without it a
+    provider blip is indistinguishable from a verified miss, and the reply on a verified miss is a
+    denial. This is the Versace Eros incident with an infrastructure cause — told unavailable while
+    it sat in stock at 1019 جنيه — and the verdict on it must be UNKNOWN.
+    """
+    from products.services.product_resolver import Resolution
+
+    return Resolution([], (), failed=True)
+
+
 class ProductContextCapTests(TestCase):
     """The prompt-size cap on how many products reach the AI.
 
@@ -1561,8 +1594,23 @@ class UnknownVersusUnclearTests(TestCase):
 
         self.assertIn("ممنوع تماماً ترد على السؤال ده بـ \"مش فاهم قصد حضرتك\"", instructions)
 
-    def test_unknown_answers_defer_instead_of_claiming_confusion(self):
-        self.assertIn("هسأل وأرد عليك", self._not_found_instructions())
+    def test_only_the_store_policy_case_may_promise_to_come_back(self):
+        """The one surviving use of "هسأل وأرد عليك", and the reason it survives.
+
+        A question about store policy — a branch, a gram count, whether the oil is original — is
+        one the owner genuinely can answer, so promising to ask is a promise someone keeps. A
+        perfume name is not: nothing looks it up between two messages, which is why case (أ) bans
+        the same phrase outright three lines above. Both halves are asserted together, because a
+        blanket ban and a blanket allowance are each a way of getting this wrong.
+        """
+        instructions = self._not_found_instructions()
+
+        policy_case = instructions.split("**(ب)")[1].split("**(ج)")[0]
+        self.assertIn("هسأل وأرد عليك", policy_case)
+        self.assertIn("الحالة الوحيدة اللي الوعد ده فيها حقيقي", policy_case)
+
+        named_perfume_case = instructions.split("**(أ)")[1].split("**(ب)")[0]
+        self.assertIn('ممنوع تقول "لحظة أتأكدلك منه" ولا "هسأل وأرد عليك"', named_perfume_case)
 
     def test_unavailable_size_should_be_answered_with_what_is_available(self):
         self.assertIn("مش متوفرة واذكرله المتاح فعلاً", self._not_found_instructions())
@@ -2398,8 +2446,10 @@ class CallSiteProfileTests(TestCase):
 
         # Nothing here may reach the network. Patching one module's chat is not
         # enough: several entry points fan out to services that call chat()
-        # through their own module (get_product_info -> resolve_products,
-        # compare_products -> resolve_product), so the transport is stubbed too.
+        # through their own module (get_product_info -> resolve_products, and
+        # compare_products -> resolve_products, which may then hand the whole turn
+        # to get_product_info when it places fewer than two names), so the
+        # transport is stubbed too.
         response = mock.Mock()
         response.choices = [mock.Mock(message=mock.Mock(content="{}"))]
         guard = mock.patch(
@@ -10068,20 +10118,367 @@ class ArabicNameIsNotTheReferentTests(TestCase):
 
     # ── the instruction that fabricated the identity ──────────────────────
     def test_the_prompt_forbids_renaming_the_customers_perfume(self):
+        """The mismatch clause used to end in "لحظة أتأكدلك منه". It cannot any more, and the
+        reason is not the policy change alone: this is the *found* branch, so nothing verified the
+        name the customer typed — the resolver simply handed back a different perfume — and a turn
+        with no verdict has no right to deny and nothing true to promise. What is left is the
+        clarification request, with the ban on the promise stated here rather than left to the
+        persona to imply.
+        """
         source = inspect.getsource(get_product_info)
 
         self.assertIn("عطر **تاني خالص**", source)
         self.assertIn("ممنوع توحي إنهم نفس العطر", source)
-        self.assertIn("لحظة أتأكدلك منه", source)
+        self.assertIn("اسأله يكتبلك اسمه تاني عشان تتأكد منه", source)
+        self.assertIn("ومتوعدهوش إنك هتراجعه وترد عليه", source)
         self.assertNotIn(
             "استخدم دائماً الاسم الصحيح للعطر الموجود في البيانات حتى لو أخطأ العميل",
             source,
         )
 
-    def test_the_persona_still_carries_the_deferral_the_rule_defers_to(self):
-        """Instruction 1 now routes a mismatch to red line 3. If that line ever moves, the
-        instruction is pointing at nothing."""
-        self.assertIn("لحظة أتأكدلك منه", get_system_prompt(self.store))
+    def test_the_persona_still_carries_the_clarification_the_rule_defers_to(self):
+        """Instruction 1 above ends by asking the customer to retype the name. Red line 3 is where
+        that reply is actually specified, so if the line moves the instruction points at nothing.
+
+        The `ABSENCE_DENIED` half is asserted beside it because the two are one rule: red line 3
+        bans "مش موجود عندنا" *except* under that marker, and a mismatch turn does not carry it.
+        Drop the carve-out and the denial becomes unconditional again; drop the retype clause and a
+        turn that cannot deny has no reply left.
+        """
+        from products.services import product_info
+
+        prompt = get_system_prompt(self.store)
+        self.assertIn("اسأله يكتبلك الاسم تاني", prompt)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, prompt)
+
+
+class CatalogueAbsenceVerifierTests(TestCase):
+    """`absence.catalogue_verdict`: the proof a denial now needs, one rung at a time.
+
+    The whole deny-on-the-first-ask change rests on this function. The bot used to answer an
+    unrecognised name with "لحظة أتأكدلك منه" and only deny it if the customer asked twice, and that
+    caution was bought with a real incident — a customer told Versace Eros was unavailable while it
+    sat in stock at 1019 جنيه. Moving the denial to the first ask does not make that risk go away; it
+    moves the guard here. So every test below is an assertion about which side of the line a rung
+    falls on, and the interesting ones are the rungs that decline to deny.
+
+    Three states, and UNKNOWN is the one that earns its keep: a boolean would file every uncertain
+    name as either a denial nobody verified or an answer about a perfume nobody identified. The
+    tests are ordered as the ladder is, so a failure names its own rung.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Perfamix Test")
+        cls.dior = Brand.objects.create(store=cls.store, name="Dior")
+        cls.sauvage = Product.objects.create(
+            store=cls.store, brand=cls.dior, name="Dior Sauvage", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=cls.sauvage, volume=90, price=944, bottle_type="normal"
+        )
+        # No variant at all: in the catalogue, nothing to sell. The active set is deliberately
+        # wider than `fallback.SELLABLE`, and `test_an_unsellable_product_is_present_not_absent`
+        # is why.
+        cls.homme = Product.objects.create(
+            store=cls.store, brand=cls.dior, name="Dior Homme Intense", gender="male",
+        )
+        cls.other_store = Store.objects.create(name="Somebody Else")
+
+    def _verdict(self, name, resolution=None, store=-1):
+        from products.services import absence
+
+        return absence.catalogue_verdict(
+            name, self.store if store == -1 else store, resolution
+        )
+
+    # ── the rungs that refuse to answer ───────────────────────────────────
+    def test_an_empty_name_is_unknown(self):
+        from products.services import absence
+
+        for name in ["", "   ", None]:
+            with self.subTest(name=name):
+                self.assertEqual(self._verdict(name), absence.UNKNOWN)
+
+    def test_no_store_is_unknown(self):
+        """A store-less call is a misrouted request or a half-built test, and neither is grounds
+        for telling a customer anything about our stock."""
+        from products.services import absence
+
+        self.assertEqual(
+            self._verdict("Versace Eros", store=None), absence.UNKNOWN
+        )
+
+    def test_a_chase_verb_is_not_a_name_to_deny(self):
+        """835 turn 2 is "ها لقيتو ؟" — no perfume in it at all, and it was answered with Dior Homme
+        Sport's price list. Whatever else that turn owes, it cannot owe a denial: there is nothing
+        here to deny."""
+        from products.services import absence
+
+        for message in ["ها لقيتو ؟", "اتأكدلي منه", "ماشي اعرفلي", "90 ملي"]:
+            with self.subTest(message=message):
+                self.assertEqual(self._verdict(message), absence.UNKNOWN)
+
+    def test_a_resolver_failure_is_unknown(self):
+        """🔴 The Versace Eros incident with an infrastructure cause.
+
+        `resolve_products` swallows an API error, a timeout and a malformed payload into empty
+        lists, which is indistinguishable from "the customer named nothing" — harmless while the
+        outcome was a promise, and a denial of a stocked perfume now. The name here is Latin and
+        genuinely not in the catalogue, so every other rung would deny it; the flag alone is what
+        holds the verdict back, because a call that did not happen is not evidence of anything.
+        """
+        from products.services import absence
+
+        self.assertEqual(self._verdict("Versace Eros"), absence.ABSENT)
+        self.assertEqual(
+            self._verdict("Versace Eros", _resolver_failed()), absence.UNKNOWN
+        )
+
+    def test_two_exact_ties_are_present_not_absent(self):
+        """🔴 `match_product` returns None for an ambiguous tie, and None is also what it returns
+        for a name nothing matches. Those are opposite verdicts here: a tie means we have *two* of
+        the thing, and a caller that read the None as "no match" would deny both of them.
+
+        This is why `naming.candidates` was split out of `match_product` at all.
+        """
+        from products.services import absence
+        from products.services.sales import naming
+
+        ajmal = Brand.objects.create(store=self.store, name="Ajmal")
+        tom_ford = Brand.objects.create(store=self.store, name="Tom Ford")
+        for brand in (ajmal, tom_ford):
+            Product.objects.create(store=self.store, brand=brand, name="Oud Wood")
+
+        exact, _ = naming.candidates("Oud Wood", self.store)
+        self.assertEqual(len(exact), 2)
+        self.assertIsNone(naming.match_product("Oud Wood", self.store))
+        self.assertEqual(self._verdict("Oud Wood"), absence.PRESENT)
+
+    def test_a_bare_brand_is_unknown(self):
+        """"do you have Dior" with three Diors on the shelf. `candidates` drops bare-brand partials on
+        purpose — picking one would present an arbitrary guess as the customer's own choice — so a
+        brand arrives here shaped exactly like a name we have never heard of, and the extra
+        `names_a_bare_brand` rung is what keeps it from being denied.
+
+        Latin only. The subtest below proves it, because it has to be known: the rung compares against
+        `Brand.name`, which holds "Dior" and never "ديور".
+        """
+        from products.services import absence
+
+        for name in ["Dior", "dior", "Dior "]:
+            with self.subTest(name=name):
+                self.assertEqual(self._verdict(name), absence.UNKNOWN)
+
+    def test_an_arabic_brand_reaches_the_witness_rung_instead(self):
+        """🔴 The hole in the rung above, asserted rather than left to be discovered.
+
+        "ديور" is a house we carry, and `names_a_bare_brand` cannot see that: `Brand.name` is Latin,
+        there is no alias column, and no transliteration exists anywhere in this codebase. So the
+        Arabic spelling falls through to the witness rung — UNKNOWN while nobody reports it, and
+        **ABSENT the moment somebody does**, which is a denial about a brand sitting on the shelf.
+
+        Both halves are here so the second one cannot change silently. What keeps the witness from
+        existing is `product_resolver`'s rule 9, asserted in
+        `AbsentNameStillNotDeniedOnAbstainTests.test_the_extractor_is_told_not_to_report_a_house_as_a_perfume`;
+        what catches it when the rule is disobeyed is the owner notification on every denial. If a
+        transliteration bridge ever lands, this is the test that should start failing.
+        """
+        from products.services import absence
+
+        self.assertEqual(self._verdict("ديور"), absence.UNKNOWN)
+        self.assertEqual(self._verdict("ديور", _absent("ديور")), absence.ABSENT)
+
+    def test_a_brand_the_store_does_not_carry_is_still_absent(self):
+        """The rung above is about *our* brands. "Creed" is a house too, and nothing in this
+        catalogue is one of theirs, so there is no perfume the denial could be wrong about."""
+        from products.services import absence
+
+        self.assertEqual(self._verdict("Creed"), absence.ABSENT)
+
+    # ── the rungs that answer ─────────────────────────────────────────────
+    def test_a_stocked_name_is_present_however_it_is_spelled(self):
+        from products.services import absence
+
+        for name in ["Dior Sauvage", "sauvage", "SAUVAGE", "dior sauvage؟"]:
+            with self.subTest(name=name):
+                self.assertEqual(self._verdict(name), absence.PRESENT)
+
+    def test_an_unsellable_product_is_present_not_absent(self):
+        """Dior Homme Intense has no variant, so there is nothing to sell — and it is still in the
+        catalogue. The honest reply is a size-scoped answer built from its real rows ("متاح كذا
+        بس"), which the found branch already writes; "we don't carry it" would be false. Denials
+        here are about the catalogue, stock is somebody else's business, and that is why the query
+        filters on `is_active` rather than on `fallback.SELLABLE`.
+        """
+        from products.services import absence
+
+        self.assertFalse(self.homme.variants.exists())
+        self.assertEqual(self._verdict("Dior Homme Intense"), absence.PRESENT)
+
+    def test_a_deactivated_product_is_absent(self):
+        """The other side of the same filter: `is_active=False` is the row being withdrawn, not out
+        of stock, so it is not ours to answer about any more."""
+        from products.services import absence
+
+        product = Product.objects.create(
+            store=self.store, brand=self.dior, name="Dior Fahrenheit", is_active=False,
+        )
+        self.assertEqual(self._verdict(product.name), absence.ABSENT)
+
+    def test_another_stores_catalogue_does_not_answer_for_this_one(self):
+        from products.services import absence
+
+        self.assertEqual(
+            self._verdict("Dior Sauvage", store=self.other_store), absence.ABSENT
+        )
+
+    def test_a_latin_name_with_no_candidate_is_absent(self):
+        """The only rung that denies without asking anyone: same alphabet as the rows we searched,
+        so the search was capable of finding it and did not."""
+        from products.services import absence
+
+        self.assertEqual(self._verdict("Versace Eros"), absence.ABSENT)
+
+    # ── the Arabic fork: Python cannot clear these, so it does not try ────
+    def test_an_arabic_name_needs_the_extractor_as_a_witness(self):
+        """`Product.name` is Latin-only with no alias column, so "لادور بخور" shares no character
+        with any row and token matching cannot rule it out — "جنتل مان" and "Gentleman" are the
+        same perfume and zero tokens apart. The extractor is handed the whole catalogue and reports
+        the spans it could not place, and that report is the only witness there is."""
+        from products.services import absence
+
+        self.assertEqual(
+            self._verdict("لادور بخور", _absent("لادور بخور")), absence.ABSENT
+        )
+
+    def test_an_arabic_name_nobody_reported_is_unknown(self):
+        """🔴 The `return_value=[]` shape, and the reason `_absent` exists. An empty resolver
+        result says only that nothing came back — equally true of a timeout, a vague browse and a
+        bare brand — so it cannot carry a denial."""
+        from products.services import absence
+
+        self.assertEqual(self._verdict("لادور بخور"), absence.UNKNOWN)
+        self.assertEqual(self._verdict("لادور بخور", []), absence.UNKNOWN)
+
+    def test_a_report_about_a_different_perfume_does_not_deny_this_one(self):
+        """795 has both names open at once: لادور بخور from turn 1 and الكساندريا 2 from turn 4. A
+        report is evidence about the span it names and nothing else."""
+        from products.services import absence
+
+        self.assertEqual(
+            self._verdict("لادور بخور", _absent("الكساندريا 2")), absence.UNKNOWN
+        )
+
+    def test_the_report_survives_a_round_trip_through_the_record(self):
+        """Compared as token sets, not strings. The span is written into `internal_context` and read
+        back a turn later, and it may arrive with a conjunction, punctuation or an alef variant
+        attached — while two genuinely different names still do not compare equal."""
+        from products.services import absence
+
+        self.assertEqual(
+            self._verdict("و لادور بخور؟", _absent("لادور بخور")), absence.ABSENT
+        )
+        self.assertEqual(
+            self._verdict("لادور بخور", _absent("لأدور بخور")), absence.ABSENT
+        )
+
+    def test_an_arabic_spelling_of_something_we_stock_is_present(self):
+        """The Arabic fork is only reached when Python has already failed to match, so a witness
+        cannot overrule a catalogue hit. "ڤيرزاتشي" opens with U+06A4, outside the base Arabic
+        block, which is why `_has_arabic` reads the supplement too — an Arabic name misread as
+        Latin would be denied outright with no witness at all."""
+        from products.services import absence
+
+        versace = Brand.objects.create(store=self.store, name="Versace")
+        Product.objects.create(store=self.store, brand=versace, name="ڤيرزاتشي إيروس")
+
+        self.assertEqual(
+            self._verdict("ڤيرزاتشي إيروس", _absent("ڤيرزاتشي إيروس")), absence.PRESENT
+        )
+
+    def test_a_plain_list_and_a_bare_resolution_both_degrade_safely(self):
+        """Read through `getattr`, so the dozens of `mock.patch(..., return_value=[])` sites in
+        this file mean "no extra information" rather than raising."""
+        from products.services import absence
+        from products.services.product_resolver import Resolution
+
+        for resolution in [None, [], [self.sauvage], Resolution(), Resolution([self.sauvage])]:
+            with self.subTest(resolution=type(resolution).__name__):
+                self.assertEqual(
+                    self._verdict("لادور بخور", resolution), absence.UNKNOWN
+                )
+                self.assertEqual(self._verdict("Versace Eros", resolution), absence.ABSENT)
+
+
+class ResolverFailureIsDistinguishableTests(TestCase):
+    """`Resolution.failed`: an extractor that never answered must not look like one that found
+    nothing.
+
+    `resolve_products` swallows every exception into empty lists — an API error, a timeout, a
+    payload that will not parse. That was deliberate and harmless while an unplaceable name only
+    produced "لحظة أتأكدلك منه": the worst a provider blip could do was make the bot stall. It is
+    not harmless now. An unplaceable name produces a *denial*, so a blip on a message naming a
+    perfume we stock would tell the customer we do not sell it — the Versace Eros incident again,
+    this time caused by infrastructure.
+
+    `CatalogueAbsenceVerifierTests.test_a_resolver_failure_is_unknown` covers the verdict. These
+    cover the flag reaching it: that the resolver really sets it, and that nothing else does.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Dior Sauvage", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.product, volume=90, price=944, bottle_type="normal"
+        )
+
+    def _resolve(self, message, **patch):
+        with mock.patch("products.services.product_resolver.chat", **patch):
+            return resolve_products(message, [], self.store)
+
+    def test_an_extractor_exception_is_reported_not_swallowed(self):
+        result = self._resolve("عندكو لادور بخور صح ؟", side_effect=RuntimeError("boom"))
+
+        self.assertEqual(list(result), [])
+        self.assertTrue(result.failed)
+
+    def test_an_unparseable_payload_is_a_failure_too(self):
+        """A 200 that is not JSON is the same event as a 500 for our purposes: nobody read the
+        catalogue on our behalf."""
+        result = self._resolve("عندكو لادور بخور صح ؟", return_value="I'm sorry, I can't help")
+
+        self.assertEqual(list(result), [])
+        self.assertTrue(result.failed)
+
+    def test_a_message_naming_nothing_is_not_a_failure(self):
+        """The distinction the flag exists to draw. "تمام شكرا" names no perfume and the extractor
+        says so correctly — an empty result that is an *answer*, and the turn that follows it must
+        not be treated as one we could not check."""
+        result = self._resolve("تمام شكرا", return_value='{"perfumes": [], "unplaced": []}')
+
+        self.assertEqual(list(result), [])
+        self.assertFalse(result.failed)
+
+    def test_a_successful_placement_is_not_a_failure(self):
+        result = self._resolve(
+            "بكام سوفاج ؟", return_value='{"perfumes": ["Dior Sauvage"], "unplaced": []}'
+        )
+
+        self.assertEqual([p.name for p in result], ["Dior Sauvage"])
+        self.assertFalse(result.failed)
+
+    def test_the_flag_defaults_to_false_on_a_bare_resolution(self):
+        """Every existing construction site passes two arguments or fewer, and `getattr` readers
+        need the attribute to exist rather than to be absent."""
+        from products.services.product_resolver import Resolution
+
+        self.assertFalse(Resolution().failed)
+        self.assertFalse(Resolution([], ("لادور بخور",)).failed)
+        self.assertTrue(Resolution([], (), failed=True).failed)
 
 
 class PendingLookupSurvivesTheTurnTests(TestCase):
@@ -10340,9 +10737,9 @@ class PartiallyResolvedQuestionTests(TestCase):
     def test_the_record_carries_the_unplaced_name_not_the_whole_message(self):
         """The raw message names two perfumes we DO stock.
 
-        Recording it whole means the next turn's `LOOKUP_EXHAUSTED` denial denies Bleu de Chanel
-        and Dior Sauvage along with the one we could not place — red line 3, from the one place
-        that is supposed to enforce it.
+        Recording it whole means the denial this turn writes denies Bleu de Chanel and Dior
+        Sauvage along with the one we could not place — red line 3, from the one place that is
+        supposed to enforce it.
         """
         from products.services.sales import described
 
@@ -10359,7 +10756,7 @@ class PartiallyResolvedQuestionTests(TestCase):
         self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} الكساندريا 2")
 
     def test_the_perfumes_we_found_are_still_presented_as_the_answer(self):
-        """`_NOT_THE_PERFUME_ASKED_ABOUT` and `_DEFERRAL_RULES` both forbid pricing the rows in
+        """`_NOT_THE_PERFUME_ASKED_ABOUT` and `_ABSENT_RULES` both forbid pricing the rows in
         context. Correct on a total miss, wrong here: the customer asked for these two prices in
         the same breath as the name we could not place, and this turn owes them."""
         from products.services import product_info
@@ -10456,35 +10853,34 @@ class PartiallyResolvedQuestionTests(TestCase):
     # ── the chase that follows now finds the record ───────────────────────
     def test_the_next_turn_chase_reaches_the_denial(self):
         """836 turn 2 is "ها لقيت اي". With turn 1 recorded, this is a chase against an open
-        question, so the turn owes the plain denial rather than a third copy of two price lists."""
+        question, so the turn owes the plain denial rather than a third copy of two price lists.
+
+        Turn 1's *own* context is what gets saved, rather than the historical one the transcript
+        recorded. The chase carries no name, so nothing on this turn can be verified and the verdict
+        is read off the previous reply's marker — which means a fixture hand-writing 836's original
+        "لحظة أتأكدلك منه" reply would abstain here and ask the customer to retype a name they never
+        typed. The turn before now denies, and that is the record this turn inherits.
+        """
         from products.services import product_info
 
-        self._ask(
+        reply, first = self._ask(
             "عايز اعرف اسعار بلو دي شانيل وسوفاج والكساندريا 2",
             [self.bleu, self.sauvage],
             ["الكساندريا 2"],
         )
-        save_message(
-            self.conversation, "assistant",
-            "بالنسبة لـ Bleu de Chanel، الـ 90 ملي بـ 1015 جنيه. Dior Sauvage بـ 944 جنيه. "
-            "بالنسبة لـ الكساندريا 2، لحظة أتأكدلك منه.",
-            internal_context=(
-                "PENDING_LOOKUP: الكساندريا 2\n"
-                "Name (الاسم الصحيح): Bleu de Chanel\n"
-                "Name (الاسم الصحيح): Dior Sauvage"
-            ),
-        )
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, first)
+        save_message(self.conversation, "assistant", reply, internal_context=first)
 
         _, context = self._ask("ها لقيت اي", [], [])
 
-        self.assertIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn("الكساندريا 2", context)
 
 
 class PartialMissReachesAHumanTests(TestCase):
     """Conversation 836 end to end: three turns, zero owner notifications, no handoff.
 
-    The escalation policy was never wrong — it was never reached. `_escalate_pending_lookup` acts on
+    The escalation policy was never wrong — it was never reached. `_escalate_absent_name` acts on
     the marker in the turn's context, and a partially-resolved message wrote none, so
     `pending_questions` stayed empty for all three turns and the one perfume nobody could answer was
     never put in front of a human.
@@ -10630,7 +11026,7 @@ class PartialMissReachesAHumanTests(TestCase):
         self._turn("ها لقيت اي")
         context, _ = self._turn("ماشي اعرفلي")
 
-        self.assertIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn("الكساندريا 2", context)
 
     def test_the_owner_is_not_re_notified_after_the_handoff(self):
@@ -10747,6 +11143,13 @@ class DenialKeepsItsAlternativesTests(TestCase):
     "بديل أو اتنين" had one to work with. Turn 4's "طب عاملين كام دو" ("how much are *those*") then
     had one perfume to price, and "دو" and "عاملين" were both missing from `_REFERENTIAL`, so the
     message read as naming a perfume instead of asking about what we had just offered.
+
+    The pool that fixes it now widens on *every* turn that owes an answer, not only the re-ask. 835
+    turn 3 is the third message of that transcript; under the current policy the same reply is owed
+    on turn 1, so a widening gated on the second ask would leave the denial with nothing to pitch on
+    the one turn that matters most. `test_the_first_denial_is_widened_too` is that inversion, and it
+    is asserted together with the availability-only hint, which is what actually keeps a wide pool
+    from becoming a price dump.
     """
 
     def setUp(self):
@@ -10767,7 +11170,8 @@ class DenialKeepsItsAlternativesTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def test_the_exhausted_turn_offers_every_perfume_already_on_the_table(self):
+    def test_the_re_asked_turn_offers_every_perfume_already_on_the_table(self):
+        from products.services import product_info
         from products.services.sales import described
 
         # Two replies inside `offered_in_order`'s window, one perfume each. Split deliberately: the
@@ -10780,15 +11184,18 @@ class DenialKeepsItsAlternativesTests(TestCase):
         )
         save_message(
             self.conversation, "assistant",
-            "لحظة أتأكدلك من لادور بخور. وممكن كمان Dior Homme Sport.",
+            "بعتذر، لادور بخور مش موجود عندنا. بس عندنا Dior Homme Sport.",
             internal_context=(
                 f"{described.PENDING_LOOKUP_MARKER} عندك لادور بخور ؟\n"
+                f"{product_info.ABSENCE_DENIED_MARKER}\n"
                 "Name (الاسم الصحيح): Dior Homme Sport"
             ),
         )
 
         # The re-ask, with the resolver placing the unplaceable name onto the one perfume it had
-        # just seen — which is exactly what 835 turn 3 did.
+        # just seen — which is exactly what 835 turn 3 did. The verdict comes off the previous
+        # reply's marker, not off this turn: the name is re-typed but the resolver answered with a
+        # perfume, so there is no `unplaced` span to re-verify.
         with mock.patch(
             "products.services.product_info.resolve_products", return_value=[self.sport]
         ), mock.patch(
@@ -10798,16 +11205,58 @@ class DenialKeepsItsAlternativesTests(TestCase):
                 "بقول لقيت لادور بخور؟", [], self.store, self.conversation
             )
 
-        from products.services import product_info
-
-        self.assertIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn("Dior Homme Sport", context)
         self.assertIn("Bleu de Chanel", context)
 
-    def test_a_first_deferral_is_not_widened(self):
-        """Gated on `exhausted`, not `deferring`: 816 and 817 turn 1 ask about availability only and
-        must not be handed a pool of price lists they never asked for. Same two replies, no pending
-        record, so this turn is the first deferral and sees the newest reply only."""
+    def test_the_first_denial_is_widened_too(self):
+        """This is the inversion the policy change forces, and it is the whole point of the change.
+
+        The pool used to be widened only on the turn the denial landed, which was the *second* ask;
+        a first ask got no more data than it came with, and that was right while its reply was a
+        promise — a promise needs nothing to offer. Now the first ask is the turn that denies, so it
+        is the turn that has to name an alternative, and 816 and 817 turn 1 are exactly the shape
+        that used to leave with one perfume or none.
+
+        What kept that turn honest was never the narrow pool. "عندك لادور بخور ؟" asks about
+        availability and nothing else, and `_availability_only_hint` is what forbids turning these
+        rows into a price list — asserted here alongside the widening, because widening the pool
+        without it is how a customer who asked one question gets four size ladders.
+        """
+        from products.services import product_info
+
+        save_message(
+            self.conversation, "assistant",
+            "ممكن أنصحك بـ Bleu de Chanel.",
+            internal_context="Name (الاسم الصحيح): Bleu de Chanel",
+        )
+        save_message(
+            self.conversation, "assistant",
+            "وفيه كمان Dior Homme Sport.",
+            internal_context="Name (الاسم الصحيح): Dior Homme Sport",
+        )
+
+        with mock.patch(
+            "products.services.product_info.resolve_products",
+            return_value=_absent("لادور بخور"),
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat:
+            _, context = get_product_info(
+                "عندك لادور بخور ؟", [], self.store, self.conversation
+            )
+
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn("Dior Homme Sport", context)
+        self.assertIn("Bleu de Chanel", context)
+        self.assertIn("العميل سأل عن التوفر بس", chat.call_args[0][0][-1]["content"])
+
+    def test_an_unverified_first_ask_is_widened_as_well(self):
+        """The other fork gets the same pool, for a different reason. Nobody cleared the name, so the
+        reply asks the customer to retype it — and `_UNREADABLE_NAME_RULES` bullet 2 still offers
+        something to look at while they do, which needs rows to name."""
+        from products.services import product_info
+
         save_message(
             self.conversation, "assistant",
             "ممكن أنصحك بـ Bleu de Chanel.",
@@ -10828,13 +11277,10 @@ class DenialKeepsItsAlternativesTests(TestCase):
                 "عندك لادور بخور ؟", [], self.store, self.conversation
             )
 
-        from products.services import product_info
-        from products.services.sales import described
-
-        self.assertIn(described.PENDING_LOOKUP_MARKER, context)
-        self.assertNotIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
         self.assertIn("Dior Homme Sport", context)
-        self.assertNotIn("Bleu de Chanel", context)
+        self.assertIn("Bleu de Chanel", context)
 
     def test_a_plural_referent_names_no_perfume(self):
         from products.services.sales import naming
@@ -10945,12 +11391,348 @@ class CarriedPriceIntentTests(TestCase):
         self.assertNotIn("سؤال السعر", context)
 
 
+class FirstAskDeniesAndOffersTests(TestCase):
+    """The turn this whole change is about: the very first time a customer names a perfume we do
+    not carry.
+
+    Conversations 795, 798, 799, 816, 817 and 841 all open with this turn, and all six got the same
+    reply — "لحظة أتأكدلك منه" — because the denial was gated on a second ask. Nothing in the
+    pipeline ever looked the name up afterwards, so the promise could not be kept: 816 turn 3's
+    entire reply was "لحظة أتأكدلك منه يا فندم", and someone who came to buy left with nothing to
+    buy. `scenarios_conv772` and `scenarios_conv841` both now score this turn's reply directly.
+
+    What is owed here is one message doing two things: a plain, apologetic statement that the
+    perfume is not ours, in the customer's own alphabet, and one or two stocked perfumes named as
+    *different* perfumes — because a bare denial ends the conversation as surely as a stall does.
+
+    Everything below runs on a conversation with no history at all, which is the point. The
+    fixtures in `ChasedDeferralTests` and `ReAskedDeferralTests` seed an earlier denial and cover
+    the customer coming back to the same question; nothing seeds anything here, so a rule that
+    quietly still needs a second ask fails these and passes those.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        chanel = Brand.objects.create(store=self.store, name="Chanel")
+        # The two perfumes that genuinely answer a بخور request, with the real note fields that
+        # make them rank ahead of a cheaper one. See `AlternativesAnswerTheRequestTests`.
+        self.sport = self._perfume(
+            dior, "Dior Homme Sport", 450, base="Woody Notes, Amber, Olibanum"
+        )
+        self.bleu = self._perfume(
+            chanel, "Bleu de Chanel", 645, base="Incense, Cedar, Sandalwood, Patchouli"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _perfume(self, brand, name, price, base=""):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="male", base_notes=base,
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _first_ask(self, message="عندك لادور بخور ؟", absent="لادور بخور"):
+        """One message, an empty conversation, and a resolver that reports the span it could not
+        place. Returns `(context, prompt)`.
+
+        The witness is the whole reason this turn may deny at all: `_absent` is what
+        `resolve_products` really returns for an Arabic name against a Latin-only catalogue it was
+        shown in full. Asserted here rather than assumed, so a fixture that stopped supplying it
+        could not quietly turn every test below into a test of the abstain reply.
+        """
+        from products.services.sales import described
+
+        self.assertEqual(list(described.pending_questions(self.conversation)), [])
+
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=_absent(absent)
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info(message, [], self.store, self.conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    # ── the denial arrives on this turn ───────────────────────────────────
+    def test_the_first_ask_is_denied_not_deferred(self):
+        from products.services import product_info
+        from products.services.sales import described
+
+        context, prompt = self._first_ask()
+
+        self.assertIn(described.PENDING_LOOKUP_MARKER, context)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info._ABSENT_RULES, prompt)
+
+    def test_the_denial_rules_are_the_only_rules_on_an_absent_turn(self):
+        """"قوله مش موجود عندنا" and "اسأله يكتب الاسم تاني" are contradictory instructions about the
+        same turn, and shipping both lets the model choose which policy it is following. The
+        numbering enforces it from the other side: both constants are rule 14, so two of them in one
+        prompt is also two rule 14s."""
+        from products.services import product_info
+
+        _, prompt = self._first_ask()
+
+        self.assertNotIn(product_info._UNREADABLE_NAME_RULES, prompt)
+        self.assertNotIn(product_info._PARTIAL_ABSENT_RULES, prompt)
+        self.assertEqual(prompt.count("\n14."), 1)
+
+    def test_the_stall_is_permitted_in_exactly_one_place(self):
+        """🔴 The phrase the customer asked us to stop sending, hunted line by line.
+
+        It has not been deleted from the prompt, and must not be: every remaining occurrence is a
+        prohibition naming it so the model recognises what it is forbidden to say. The one line that
+        still scripts it positively is case (ب) — a question about store policy, whose answer the
+        owner genuinely does know and will genuinely send. That single survivor is why the sanitizer
+        must not strip the phrase globally, and asserting its identity here is what keeps a second
+        one from creeping back in.
+        """
+        _, prompt = self._first_ask()
+        self.assertIn("لحظة أتأكدلك", prompt)
+
+        permitted = [
+            line for line in prompt.splitlines()
+            if "لحظة أتأكدلك" in line and "ممنوع" not in line
+        ]
+
+        self.assertEqual(len(permitted), 1, permitted)
+        self.assertIn("سؤال عن سياسة الستور", permitted[0])
+
+    def test_the_open_question_is_recorded_as_the_customer_asked_it(self):
+        """The record is what the *next* turn matches a re-ask against, so it holds the customer's
+        own wording rather than the extracted name."""
+        from products.services.sales import described
+
+        context, _ = self._first_ask()
+        line = next(
+            row for row in context.splitlines()
+            if row.startswith(described.PENDING_LOOKUP_MARKER)
+        )
+
+        self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندك لادور بخور ؟")
+
+    # ── and it does not arrive alone ──────────────────────────────────────
+    def test_the_alternatives_are_in_the_same_reply(self):
+        """Both halves of the instruction, and the data behind them. `_ABSENT_RULES` asks for
+        "بديل أو اتنين" in **نفس الرد**, which is only answerable if the rows are actually there —
+        conversation 795 turn 1 had them and pitched the cheapest perfume in the shop instead,
+        which is why they arrive note-ranked."""
+        context, prompt = self._first_ask()
+
+        self.assertIn("بدائل مقترحة متوفرة في المتجر", context)
+        self.assertIn("Dior Homme Sport", context)
+        self.assertIn("Bleu de Chanel", context)
+        self.assertIn("في **نفس الرد**، وبعد النفي على طول، اعرض عليه بديل أو اتنين", prompt)
+        self.assertIn("ممنوع ترد بنفي لوحده ومتعرضش حاجة", prompt)
+
+    def test_the_alternatives_answer_the_accord_that_was_asked_for(self):
+        """The pitch has to be true, and the only way it can be is if the perfume really carries the
+        note. Both of these do — olibanum and incense — and that is what the ranking is for; the
+        rows arrive with their note fields precisely so the model does not have to invent one.
+        795's reply gave Stronger With You "لمسة بخور خفيفة" over notes that contain no incense at
+        all."""
+        context, prompt = self._first_ask()
+
+        self.assertLess(context.index("Dior Homme Sport"), context.index("Bleu de Chanel"))
+        self.assertIn("Olibanum", context)
+        self.assertIn("Incense", context)
+        self.assertIn("اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها", prompt)
+
+    def test_an_availability_question_does_not_become_a_price_list(self):
+        """The counterweight to handing this turn a pool of perfumes. "عندك لادور بخور ؟" asks
+        whether we have it and nothing else, so two alternatives must not arrive as two size
+        ladders."""
+        _, prompt = self._first_ask()
+
+        self.assertIn("العميل سأل عن التوفر بس", prompt)
+
+    def test_the_name_goes_back_in_the_customers_own_letters(self):
+        """We are saying we do not sell this perfume, so a Latin spelling we invented for it is a
+        fabrication on top of a denial. 795 and 835 both answered "لادور بخور" with "L'Adour"."""
+        _, prompt = self._first_ask()
+
+        self.assertIn("سمّي العطر بنفس الحروف اللي العميل كتبها بيها", prompt)
+        self.assertIn('ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك ("L\'Adour")', prompt)
+
+    def test_a_latin_name_is_denied_on_the_extractors_report_like_any_other(self):
+        """The other alphabet, same route in.
+
+        `absence.catalogue_verdict` can clear a Latin name against Latin rows with no witness at
+        all — `CatalogueAbsenceVerifierTests.test_a_latin_name_with_no_candidate_is_absent` is that
+        — but `get_product_info` never asks it to: it verifies `unplaced[0]` and nothing else, so a
+        turn with no reported span abstains whatever alphabet it was typed in. That is deliberate
+        and it is asserted from the other side in
+        `AbsentNameStillNotDeniedOnAbstainTests.test_a_name_the_extractor_never_reported_is_not_denied`.
+        Here the span is reported, so the denial lands.
+        """
+        from products.services import product_info
+
+        context, prompt = self._first_ask(
+            message="do you have Versace Eros", absent="Versace Eros"
+        )
+
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info._ABSENT_RULES, prompt)
+
+
+class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
+    """The half of the change that had to be built before the other half was safe: the turns that
+    look like an absent perfume and are not allowed to deny one.
+
+    Moving the denial to the first ask does not retire the Versace Eros incident — a customer told
+    a perfume was unavailable while it sat in stock at 1019 جنيه. It relocates the guard. A denial
+    now requires a verdict of ABSENT from `absence.catalogue_verdict`, and every case that verdict
+    cannot prove lands here instead, with a reply that is neither a denial nor a promise: a request
+    to retype the name.
+
+    Why that request is safe to make, and why it is not just the stall wearing a different hat —
+    the customer can actually answer it, the answer arrives in the next message, and the retyped
+    name gets a fresh extractor call. `router._escalate_absent_name` hands a second unreadable ask
+    on the same question to a person rather than asking a third time.
+
+    `CatalogueAbsenceVerifierTests` covers the verdict itself. These cover the reply it produces.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.dior = Brand.objects.create(store=self.store, name="Dior")
+        for name in ("Dior Sauvage", "Dior Homme Sport", "Dior Homme Intense"):
+            product = Product.objects.create(
+                store=self.store, brand=self.dior, name=name, gender="male",
+            )
+            ProductVariant.objects.create(
+                product=product, volume=50, price=450, bottle_type="normal"
+            )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _turn(self, message, resolved):
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=resolved
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            _, context = get_product_info(message, [], self.store, self.conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    def _assert_abstains(self, context, prompt):
+        from products.services import product_info
+
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info._UNREADABLE_NAME_RULES, prompt)
+        self.assertNotIn(product_info._ABSENT_RULES, prompt)
+        # Both wrong answers, named. The denial because nobody checked; the promise because nobody
+        # will — and the second is the failure the abstain path is most likely to relapse into,
+        # since "I'll check and get back to you" is what a human would say here.
+        self.assertIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+        self.assertIn("إنت بتسأله سؤال، مش بتوعده بوعد", prompt)
+
+    def test_an_extractor_failure_does_not_deny_a_perfume(self):
+        """🔴 The Versace Eros incident with an infrastructure cause. The name is Latin and really is
+        missing, so `absence.catalogue_verdict` would clear it and deny it on its own.
+
+        Two things hold the denial back here and only one of them is the flag: a failed extraction
+        reports no unplaced span either (`raw_unplaced` is `[]` in that `except`), and
+        `get_product_info` verifies nothing when there is no span. So this asserts the outcome, and
+        `CatalogueAbsenceVerifierTests.test_a_resolver_failure_is_unknown` is what asserts the flag
+        carries it by itself — which is what matters the day a caller reads a verdict from something
+        other than `unplaced[0]`.
+        """
+        context, prompt = self._turn("do you have Versace Eros", _resolver_failed())
+
+        self._assert_abstains(context, prompt)
+
+    def test_a_name_the_extractor_never_reported_is_not_denied(self):
+        """The `unplaced` gate, asserted on the name most likely to slip past it.
+
+        "Versace Eros" is Latin, carries identifying tokens and is not in this catalogue, so the
+        verifier reaches ABSENT on it unaided. `get_product_info` still does not deny it, because it
+        rules on the extractor's reported span and this turn has none. The gate is there for
+        sentences — "عندكو حاجة من شانيل", "do you have anything nice" — where treating the whole
+        message as a perfume name would be a denial about a phrase nobody named; the cost is that a
+        quiet extractor abstains on a name Python could have cleared, and that is the safe direction.
+        """
+        context, prompt = self._turn("do you have Versace Eros", [])
+
+        self._assert_abstains(context, prompt)
+
+    def test_a_bare_brand_is_not_a_perfume_we_do_not_carry(self):
+        """"do you have Dior" with three Diors on the shelf. `naming.candidates` drops bare-brand
+        partials on purpose, so the brand reaches the verifier looking exactly like a name we have
+        never heard of — and `names_a_bare_brand` is the row of the ladder that stops the plainest
+        possible false denial.
+
+        🔴 Latin only, and the limit is structural: `Brand.name` holds "Dior", the customer types
+        "ديور", and there is no alias column and no transliteration anywhere in this codebase, so
+        `tokens("ديور") <= tokens("Dior")` is False and the Arabic spelling of a house we stock
+        reaches the Arabic path with a witness behind it. Two things cover that half of the alphabet
+        instead, and neither is Python: `product_resolver`'s rule 9 forbids reporting a bare house
+        name as an unplaced perfume at all, and `router._escalate_absent_name` tells the owner about
+        every denied name on the turn it happens. Worth knowing before adding a fourth reader of
+        this verdict.
+        """
+        context, prompt = self._turn("do you have Dior", _absent("Dior"))
+
+        self._assert_abstains(context, prompt)
+
+    def test_the_extractor_is_told_not_to_report_a_house_as_a_perfume(self):
+        """The other half of the rule above, pinned where it actually lives.
+
+        This is the only guard on an Arabic bare brand, so it is the only thing standing between
+        "عندكو ديور؟" and "للأسف ديور مش متوفر عندنا" in a store with three of them. A prompt
+        instruction is weaker than a Python check and this is not a free choice: the extractor is the
+        sole bridge between the customer's alphabet and a Latin catalogue.
+        """
+        from products.services import product_resolver
+
+        with mock.patch(
+            "products.services.product_resolver.chat", return_value='{"perfumes": [], "unplaced": []}'
+        ) as chat_call:
+            resolve_products("عندكو ديور ؟", [], self.store)
+        prompt = chat_call.call_args[0][0][0]["content"]
+
+        self.assertIn("اسم بيت العطور لوحده", prompt)
+        self.assertIn('"ديور"', prompt)
+
+    def test_a_quiet_extractor_does_not_deny_an_arabic_name(self):
+        """An Arabic name with no report behind it. Python cannot clear "لادور بخور" against
+        Latin-only rows — "جنتل مان" and "Gentleman" are the same perfume and share no character —
+        so with no witness there is no denial to be had."""
+        context, prompt = self._turn("عندك لادور بخور ؟", [])
+
+        self._assert_abstains(context, prompt)
+
+    def test_the_abstain_turn_still_has_something_to_offer(self):
+        """Not a denial does not mean not selling. The rows are in the context and the rules pitch
+        them as suggestions until the customer clarifies — the difference from `_ABSENT_RULES` is
+        the sentence around them, not whether they are there."""
+        context, prompt = self._turn("عندك لادور بخور ؟", [])
+
+        self.assertIn("بدائل مقترحة متوفرة في المتجر", context)
+        self.assertIn("اعرض عليه في نفس الرد عطر أو اتنين من البيانات على إنهم اقتراحات", prompt)
+        self.assertIn("ممنوع توحي إن واحد منهم هو العطر اللي هو سأل عنه", prompt)
+
+    def test_the_question_it_asks_is_one_the_customer_can_answer(self):
+        """What separates this from the stall. "اكتبلي الاسم تاني" resolves on the next message;
+        "هسأل وأرد عليك" resolves never."""
+        _, prompt = self._turn("عندك لادور بخور ؟", [])
+
+        self.assertIn("واطلب منه يكتبلك الاسم تاني أو يكتبه بشكل تاني", prompt)
+
+    def test_only_one_rule_fourteen_ships_here_too(self):
+        _, prompt = self._turn("عندك لادور بخور ؟", [])
+
+        self.assertEqual(prompt.count("\n14."), 1)
+
+
 class ChasedDeferralTests(TestCase):
-    """Conversations 798 and 799: the promise lost its subject on the very next turn.
+    """Conversations 798 and 799: the answer lost its subject on the very next turn.
 
     Both open the same way and break the same way. A customer names a perfume this store does not
-    carry — لادور بخور in 798, الكساندريا 2 in 799 — the bot correctly says "لحظة أتأكدلك منه", and
-    volunteers an unrelated perfume in the same breath. Then the customer comes back to collect:
+    carry — لادور بخور in 798, الكساندريا 2 in 799 — and the bot volunteers an unrelated perfume in
+    the same breath as its reply. Then the customer comes back to collect:
 
         798 turn 5  "ها لقيت اي ؟"   → "لقيت Dior Homme Sport متوفر عندنا" + two prices
         799 turn 3  "اتأكدلي منه"     → "Stronger With You متوفر عندنا، والـ90 ملي بـ700..."
@@ -10960,13 +11742,18 @@ class ChasedDeferralTests(TestCase):
     `PendingLookupSurvivesTheTurnTests` above covers the turn the customer *names* the perfume,
     and the machinery it tests all hangs off `named_but_unresolved` — a fact about the current
     message. A chase names nothing, so `resolve_products` answers the pronoun with the volunteered
-    perfume, `products` comes back full, and the pending block, the ⚠️ header and the deferral
+    perfume, `products` comes back full, and the pending block, the ⚠️ header and the absent-name
     rules all switch off at once on the one turn that needed them most. 798 turn 7 is the control:
     the customer re-typed "بقول لادور بخور", the ordinary path fired, and the reply was correct.
 
-    The second half is the store owner's own call after reading 798: the second ask must be
-    answered, not deferred again. Nothing happens between two turns of a chat — no lookup runs — so
-    a second "لحظة أتأكدلك" is the same promise made again by someone who did not keep it.
+    Both transcripts recorded turn 1 as "لحظة أتأكدلك منه", which is no longer the reply that turn
+    produces: the name is swept against the whole active catalogue before it is written, so turn 1
+    denies and pitches alternatives, and `_denied_on` below models it that way. These chase turns
+    therefore cover something narrower than they used to, and something the change makes newly
+    reachable — a customer collecting an answer they have already been given. The reply owed is the
+    same answer carried forward, never re-read back as news and never re-promised: nothing looks the
+    name up between two messages of a chat, so a "لحظة أتأكدلك" here is a promise made by someone
+    who cannot keep it.
 
     `ReAskedDeferralTests` below covers the other way a customer comes back to the same question:
     re-typing the name instead of pointing at it with a pronoun.
@@ -10993,16 +11780,31 @@ class ChasedDeferralTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def _deferred_on(self, question="عندك الكساندريا 2؟"):
-        """The deferral turn, in the shape both conversations actually have it: the promise and a
-        volunteered perfume in one reply, which is what makes the next turn's "منه" ambiguous."""
+    def _denied_on(self, question="عندك الكساندريا 2؟"):
+        """Turn 1, in the shape the new policy gives it: the denial and a volunteered perfume in one
+        reply, which is what makes the next turn's "منه" ambiguous.
+
+        Both markers, because both are load-bearing and each is read by a different consumer.
+        `PENDING_LOOKUP` is what `pending_questions` matches a re-ask against and what the escalation
+        counts; `ABSENCE_DENIED` is what `product_info` reads on the chase turn — with `unplaced`
+        empty (the chase names nothing) the verdict comes from
+        `replies_carrying(conversation, ABSENCE_DENIED_MARKER)` alone, so a fixture carrying only the
+        first marker would send every test below down the *abstain* path and assert nothing about the
+        denial. Written in `_pending_lookup_block`'s own shape, marker on its own line, so the
+        parsing this exercises is the parsing production does.
+
+        The reply text is conversation 815's, the one transcript where this turn came out right.
+        """
+        from products.services.product_info import ABSENCE_DENIED_MARKER
         from products.services.sales import described
 
         save_message(
             self.conversation, "assistant",
-            "لحظة أتأكدلك منه يا فندم. وفي الوقت ده ممكن أقولك إن Stronger With You متوفر عندنا.",
+            "بعتذر يا فندم، العطر ده مش موجود عندنا. بس عندنا Stronger With You وهو عطر تاني "
+            "خالص وممكن يعجبك.",
             internal_context=(
                 f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n"
+                f"{ABSENCE_DENIED_MARKER}\n"
                 "Name (الاسم الصحيح): Stronger With You"
             ),
         )
@@ -11027,13 +11829,13 @@ class ChasedDeferralTests(TestCase):
         presented Stronger With You as real data about what was asked."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
 
         self.assertIn(described.PENDING_LOOKUP_MARKER, context)
 
     def test_the_volunteered_perfume_is_labelled_as_not_the_answer(self):
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
 
         self.assertIn("Stronger With You", context)
@@ -11044,7 +11846,7 @@ class ChasedDeferralTests(TestCase):
         model handed it has no subject to answer about."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
         line = next(
             row for row in context.splitlines()
@@ -11058,65 +11860,104 @@ class ChasedDeferralTests(TestCase):
         "لقيت Dior Homme Sport متوفر عندنا" — a lookup that never happened."""
         from products.services.sales import described
 
-        self._deferred_on(question="عندك لادور بخور ؟")
+        self._denied_on(question="عندك لادور بخور ؟")
         context, _ = self._turn("ها لقيت اي ؟")
 
         self.assertIn(described.PENDING_LOOKUP_MARKER, context)
         self.assertIn("لادور بخور", context)
 
-    # ── the second ask is answered, not deferred again ────────────────────
-    def test_the_second_ask_stops_promising(self):
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    # ── the chase carries the answer forward, it does not re-promise ──────
+    def test_the_chase_carries_the_denial_forward(self):
+        """The answer is already known by the time this turn arrives, so the turn's job is to hold
+        it, not to look it up. `unplaced` is empty here — the chase names nothing — so the verdict
+        can only come from what turn 1 recorded, which is why `_denied_on` writes the marker."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on()
+        self._denied_on()
         context, prompt = self._turn("اتأكدلي منه")
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("مش موجود عندنا", prompt)
-        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
+        self.assertIn(
+            'ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك"',
+            prompt,
+        )
 
-    def test_the_second_ask_does_not_also_carry_the_defer_rules(self):
-        """The two are contradictory instructions about the same turn, and shipping both is how a
-        model ends up writing "مش موجود عندنا، لحظة أتأكدلك منه" — the 795 sentence."""
-        self._deferred_on()
+    def test_the_chase_is_not_handed_the_abstain_rules(self):
+        """The two are opposite instructions about the same turn, and shipping both is how a model
+        ends up writing "مش موجود عندنا، لحظة أتأكدلك منه" — the 795 sentence. Asserted on
+        `_UNREADABLE_NAME_RULES`'s own text rather than on the deleted `_DEFERRAL_RULES`: the
+        contradiction that survived the policy change is denial-versus-clarification, and only one of
+        the two rule sets is ever appended (`product_info.py`'s `_ABSENT_RULES if denied else …`).
+        """
+        self._denied_on()
         _, prompt = self._turn("اتأكدلي منه")
 
-        self.assertNotIn("الرد الصح على العطر اللي سأل عنه", prompt)
+        self.assertNotIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+        self.assertNotIn("واطلب منه يكتبلك الاسم تاني", prompt)
 
-    def test_the_first_ask_still_defers(self):
-        """Deferring is right the first time: the only fact in hand is that the catalogue came
-        back empty, and missing from the catalogue is not missing from the shop."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_the_first_ask_denies(self):
+        """The policy change, at its narrowest. The catalogue is swept before this reply is written
+        and the extractor reported the span as one it could not place, so absence is a verified fact
+        by the time the turn is composed — and a customer who came to buy gets an answer plus
+        something to buy, on the first ask, instead of a promise nobody in the pipeline can keep."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        context, prompt = self._turn("عندك الكساندريا 2؟", resolved=[])
+        context, prompt = self._turn(
+            "عندك الكساندريا 2؟", resolved=_absent("الكساندريا 2")
+        )
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
-        self.assertIn("لحظة أتأكدلك منه", prompt)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn("إن العطر اللي سأل عنه مش موجود عندنا", prompt)
+        self.assertIn("اعرض عليه بديل أو اتنين", prompt)
 
-    def test_a_different_unknown_name_earns_its_own_first_deferral(self):
+    def test_a_different_unknown_name_gets_its_own_verdict(self):
         """Conversation 795 turn 4: الكساندريا 2 asked while لادور بخور is still open. The record
-        stores raw messages, so a marker count cannot tell one unplaceable name from another — and
-        counting them alone would have this turn deny a perfume it has never once deferred on."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        stores raw messages, so a marker count cannot tell one unplaceable name from another. Under
+        the old policy that mattered because a count would deny a perfume never deferred on; it still
+        matters, for the opposite reason — this name is verified absent in its own right, and it must
+        reach that verdict through `unplaced`, not by inheriting the earlier name's marker."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        self._denied_on(question="عندكو لادور بخور صح ؟")
+        context, prompt = self._turn(
+            "طب عندكو الكساندريا 2 ؟", resolved=_absent("الكساندريا 2")
+        )
+
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn("الكساندريا 2", context)
+        self.assertIn("إن العطر اللي سأل عنه مش موجود عندنا", prompt)
+
+    def test_an_unverified_new_name_abstains_rather_than_inheriting_a_denial(self):
+        """The same turn with no witness for the new name. `_denied_on` has already written one
+        `ABSENCE_DENIED` into the record, and reading the marker instead of this message's own
+        `unplaced` would let الكساندريا 2 collect a denial it never earned — the Versace Eros
+        failure, reached by bookkeeping. The `named_but_unresolved` veto has to outrank the carry."""
+        from products.services.product_info import (
+            ABSENCE_DENIED_MARKER,
+            NAME_UNREADABLE_MARKER,
+        )
+
+        self._denied_on(question="عندكو لادور بخور صح ؟")
         context, prompt = self._turn("طب عندكو الكساندريا 2 ؟", resolved=[])
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn(NAME_UNREADABLE_MARKER, context)
         self.assertIn("الكساندريا 2", context)
-        self.assertIn("لحظة أتأكدلك منه", prompt)
+        self.assertIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+        self.assertNotIn("لحظة أتأكدلك منه يا فندم", prompt)
 
-    def test_a_price_question_after_a_deferral_is_not_a_chase(self):
-        """The near-miss this predicate exists for. "بكام؟" right after a deferral is referential,
-        resolves to the perfume volunteered alongside the promise, and satisfies every other
-        condition in the gate — so without `chasing_a_promise` it collected a denial about a
-        perfume the customer never named, instead of the price they actually asked for."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_a_price_question_after_a_denial_is_not_a_chase(self):
+        """The near-miss this predicate exists for. "بكام؟" right after the denial is referential,
+        resolves to the perfume volunteered alongside it, and satisfies every other condition in the
+        gate — so without `chasing_a_promise` it collected a second denial about a perfume the
+        customer never named, instead of the price they actually asked for."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("بكام؟")
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
         self.assertNotIn("═══ سؤال معلّق ═══", context)
         self.assertIn("Stronger With You", context)
         self.assertIn("700", context)
@@ -11127,51 +11968,58 @@ class ChasedDeferralTests(TestCase):
 
         "عندك لادور بخور ؟" → "لحظة أتأكدلك منه". Then "اه عايز اعرف اسعاره" — and the customer got
         the *same promise again*, plus a CTA, and the conversation was handed to a human, so the
-        next message ("تمام") was answered with silence.
+        next message ("تمام") was answered with silence. Turn 1 no longer promises anything, so the
+        first half of that is gone by construction; this test keeps the second shape it exposed,
+        which is a customer pressing on an answer they were already given.
 
         `chasing_a_promise` is False on it by design: only the benefactive "اعرفلي" is a chase, and
         bare "اعرف" has to stay a request verb so that "عايز اعرف اسعار بلو دي شانيل" reads as an
         opening question. `re_asks` is empty-handed too, because nothing on either side is a name.
         So the one shape left — insisting with neither verb nor name — matched nothing at all.
         """
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        self._denied_on(question="عندكو لادور بخور صح ؟")
         context, prompt = self._turn("اه عايز اعرف اسعاره")
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         # And about the perfume actually owed, not the message that insisted on it. 915 recorded
         # "اه عايز اعرف اسعاره" as an open question in its own right, which is neither a name the
         # owner can act on nor a subject the model can deny.
         self.assertIn("لادور بخور", context)
-        # Denying instead of promising again. Asserted the way the sibling tests do: the phrase
-        # "لحظة أتأكدلك منه" is quoted inside `_ABSENT_RULES`'s own prohibition, so its absence is
-        # not what marks this turn — the deferral rules being *replaced* is.
+        # Holding the denial rather than reverting to a promise. Asserted on the rules the turn is
+        # handed, not on the absence of the phrase: "لحظة أتأكدلك" is quoted inside `_ABSENT_RULES`'s
+        # own prohibition, so `assertNotIn` on it would pass for the wrong reason.
         self.assertIn("مش موجود عندنا", prompt)
-        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
-        self.assertNotIn("الرد الصح على العطر اللي سأل عنه", prompt)
+        self.assertIn(
+            'ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك"',
+            prompt,
+        )
+        self.assertNotIn("واطلب منه يكتبلك الاسم تاني", prompt)
 
     def test_insisting_does_not_hand_the_conversation_over(self):
         """The other half of what 915 reported: `needs_human` went True and turn 15 ("تمام") got
         silence.
 
-        No router change was needed for this. `_escalate_pending_lookup` reads `exhausted` from the
-        context and hands over only on a *second* denial about the same perfume — but when the turn
-        is misclassified it never sees `exhausted` at all and falls through to
-        `deferring and pending_before >= 1`, which fires on the first insistence. The handoff was a
-        symptom of the classification, so fixing the classifier fixes both halves at once. Pinned
-        apart from the chase-shape test because this is the shape the customer complained about.
+        No router change was needed for this. `_escalate_absent_name` reads the denial off the
+        context and hands over only after two complete answers about the same perfume — but when the
+        turn is misclassified it never sees the marker at all, and back then it fell through to a
+        deferral count that fired on the first insistence. The handoff was a symptom of the
+        classification, so fixing the classifier fixes both halves at once. (That count is gone now;
+        what is left on the marker-free path is the repeated-question counter, which needs the same
+        question twice and gets one message here.) Pinned apart from the chase-shape test because
+        this is the shape the customer complained about.
         """
-        from products.services.router import _escalate_pending_lookup
+        from products.services.router import _escalate_absent_name
 
-        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        self._denied_on(question="عندكو لادور بخور صح ؟")
         context, _ = self._turn("اه عايز اعرف اسعاره")
 
         with mock.patch("products.services.router.notify_handoff") as handoff, mock.patch(
             "products.services.router.create_notification"
         ) as notify:
-            _escalate_pending_lookup(
-                self.conversation, self.store, context, 1, "اه عايز اعرف اسعاره", []
+            _escalate_absent_name(
+                self.conversation, self.store, context, "اه عايز اعرف اسعاره", []
             )
         self.conversation.refresh_from_db()
 
@@ -11196,21 +12044,21 @@ class ChasedDeferralTests(TestCase):
         # Still liberal about anything that could be a name — the conversation-738 regression.
         self.assertTrue(may_name_a_perfume("عايز اعرف اسعار بلو دي شانيل"))
 
-    def test_insisting_needs_an_open_deferral(self):
-        """The gate that makes the loose vocabulary safe. Nothing was promised here, so "عايز اعرف"
-        is an ordinary question about what is on the table and must be answered as one."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_insisting_needs_an_open_question(self):
+        """The gate that makes the loose vocabulary safe. Nothing is owed here, so "عايز اعرف" is an
+        ordinary question about what is on the table and must be answered as one."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
         context, prompt = self._turn("اه عايز اعرف اسعاره")
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
         self.assertNotIn("═══ سؤال معلّق ═══", context)
         self.assertIn("Stronger With You", context)
 
-    def test_insisting_on_a_promise_is_not_a_price_question(self):
-        """The predicate carries no price vocabulary, on purpose. "بكام؟" after a deferral asks
-        about the perfume volunteered *alongside* the promise, not about the promise — the
-        distinction `test_a_price_question_after_a_deferral_is_not_a_chase` pins one level up."""
+    def test_insisting_on_an_answer_is_not_a_price_question(self):
+        """The predicate carries no price vocabulary, on purpose. "بكام؟" after the denial asks
+        about the perfume volunteered *alongside* it, not about the denied one — the distinction
+        `test_a_price_question_after_a_denial_is_not_a_chase` pins one level up."""
         from products.services.sales.naming import insisting_on_a_promise
 
         for insisting in ["اه عايز اعرف اسعاره", "ممكن اعرف سعره", "عايز اعرف"]:
@@ -11288,23 +12136,43 @@ class ChasedDeferralTests(TestCase):
         # A chase carrying a name is still a name: the veto has to keep working.
         self.assertTrue(may_name_a_perfume("اتأكدلي من الكساندريا 2"))
 
-    def test_a_chase_that_also_names_a_new_perfume_defers_afresh(self):
-        """"اتأكدلي من الكساندريا 2" both chases and names. The name is the part that has not been
-        deferred on yet, so the unplaceable-name veto has to outrank the chase."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_a_chase_that_also_names_a_new_perfume_is_judged_afresh(self):
+        """"اتأكدلي من الكساندريا 2" both chases and names. The name is the part no verdict has been
+        reached on yet, so the unplaceable-name veto has to outrank the chase — otherwise the turn
+        inherits لادور بخور's `ABSENCE_DENIED` and denies a perfume that was never checked."""
+        from products.services.product_info import (
+            ABSENCE_DENIED_MARKER,
+            NAME_UNREADABLE_MARKER,
+        )
 
-        self._deferred_on(question="عندكو لادور بخور صح ؟")
+        self._denied_on(question="عندكو لادور بخور صح ؟")
         context, prompt = self._turn("اتأكدلي من الكساندريا 2", resolved=[])
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
-        self.assertIn("لحظة أتأكدلك منه", prompt)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn(NAME_UNREADABLE_MARKER, context)
+        self.assertIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+
+    def test_the_same_chase_with_a_witness_denies_the_new_name(self):
+        """The other fork of the turn above, and the reason the veto is safe to leave in place: the
+        veto decides *which name this turn is about*, not what verdict it gets. Hand the extractor's
+        own report over and الكساندريا 2 is denied on its first ask like any other absent name."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
+
+        self._denied_on(question="عندكو لادور بخور صح ؟")
+        context, prompt = self._turn(
+            "اتأكدلي من الكساندريا 2", resolved=_absent("الكساندريا 2")
+        )
+
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn("الكساندريا 2", context)
+        self.assertIn("إن العطر اللي سأل عنه مش موجود عندنا", prompt)
 
     def test_the_escalation_still_sees_the_chase_turn(self):
-        """The carry writes a real marker, not a private flag, so `_escalate_pending_lookup` reads
-        this turn as a deferral rather than as an ordinary reply."""
+        """The carry writes a real marker, not a private flag, so `_escalate_absent_name` reads this
+        turn as one still carrying an open question rather than as an ordinary reply."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
         save_message(self.conversation, "assistant", "ok", internal_context=context)
 
@@ -11313,24 +12181,25 @@ class ChasedDeferralTests(TestCase):
         self.assertEqual(count, 2)
 
     def test_the_denial_turn_notifies_the_owner_and_keeps_serving(self):
-        """The chase turn used to set `needs_human`, and that was the defect behind 816 and 817.
+        """The denial turn used to set `needs_human`, and that was the defect behind 816 and 817.
 
         `_ABSENT_RULES` has just denied availability and offered alternatives by full name. Handing
         the conversation over on that same turn made `views.py` and `tasks.py` answer every later
         message with silence, so the customer could not take up the alternative they had just been
-        pitched — 816's "اتأكد" and 817's "ماشي" each got nothing back. The owner still has to hear
-        about it, so the notification stays; the muzzle goes.
+        pitched — 816's "اتأكد" and 817's "ماشي" each got nothing back. It matters more now than it
+        did: the denial arrives on turn 1, so muzzling the bot on it would end the conversation at
+        the first sentence. The owner still has to hear about it, so the notification stays.
         """
-        from products.services.router import _escalate_pending_lookup
+        from products.services.router import _escalate_absent_name
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
 
         with mock.patch("products.services.router.notify_handoff") as handoff, mock.patch(
             "products.services.router.create_notification"
         ) as notify:
-            _escalate_pending_lookup(
-                self.conversation, self.store, context, 1, "اتأكدلي منه", []
+            _escalate_absent_name(
+                self.conversation, self.store, context, "اتأكدلي منه", []
             )
         self.conversation.refresh_from_db()
 
@@ -11339,19 +12208,25 @@ class ChasedDeferralTests(TestCase):
         self.assertTrue(notify.called)
 
     def test_a_second_denial_about_the_same_perfume_does_hand_over(self):
-        """Once the denial has been delivered and the customer comes back to the same perfume
-        anyway, the bot has said everything it truthfully can. That is the turn a person takes."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
-        from products.services.router import _escalate_pending_lookup
+        """Once the denial has been delivered twice and the customer is still on the same perfume,
+        the bot has said everything it truthfully can. That is the turn a person takes.
 
-        self._deferred_on()
+        Two saved replies, not one: `_denied_on` is the first denial and the `save_message` below is
+        the chase turn's restatement of it. The turn being escalated here is the third, and
+        `test_the_denial_turn_notifies_the_owner_and_keeps_serving` is the same shape one reply
+        earlier, where the answer still had somewhere to go.
+        """
+        from products.services.product_info import ABSENCE_DENIED_MARKER
+        from products.services.router import _escalate_absent_name
+
+        self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
         save_message(self.conversation, "assistant", "مش موجود عندنا.", internal_context=context)
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
 
         with mock.patch("products.services.router.notify_handoff"):
-            _escalate_pending_lookup(
-                self.conversation, self.store, context, 2, "اتأكدلي منه", []
+            _escalate_absent_name(
+                self.conversation, self.store, context, "اتأكدلي منه", []
             )
         self.conversation.refresh_from_db()
 
@@ -11362,7 +12237,7 @@ class ChasedDeferralTests(TestCase):
         """A deterministic match is never a resolved pronoun. He asked about Sauvage; answer it."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("Dior Sauvage بكام؟")
 
         self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
@@ -11373,17 +12248,17 @@ class ChasedDeferralTests(TestCase):
         offered, and that is the signature of a new subject rather than a pronoun."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         context, _ = self._turn("طب سوفاج بكام؟", resolved=[self.sauvage])
 
         self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
 
-    def test_a_deferral_two_turns_back_is_not_still_chased(self):
+    def test_a_denial_two_turns_back_is_not_still_chased(self):
         """The carry is scoped to the previous reply. Once an ordinary turn has happened in
         between, a denial about the old question would arrive out of nowhere."""
         from products.services.sales import described
 
-        self._deferred_on()
+        self._denied_on()
         save_message(
             self.conversation, "assistant", "Dior Sauvage بـ950 جنيه.",
             internal_context="Name (الاسم الصحيح): Dior Sauvage",
@@ -11396,7 +12271,7 @@ class ChasedDeferralTests(TestCase):
     def test_everything_offered_is_a_resolved_pronoun(self):
         from products.services.product_info import _chasing_open_lookup
 
-        self._deferred_on()
+        self._denied_on()
 
         self.assertTrue(
             _chasing_open_lookup([self.stronger], self.conversation, self.store)
@@ -11405,7 +12280,7 @@ class ChasedDeferralTests(TestCase):
     def test_one_perfume_we_never_offered_is_a_new_subject(self):
         from products.services.product_info import _chasing_open_lookup
 
-        self._deferred_on()
+        self._denied_on()
 
         self.assertFalse(
             _chasing_open_lookup(
@@ -11416,7 +12291,7 @@ class ChasedDeferralTests(TestCase):
     def test_no_products_at_all_is_still_a_chase(self):
         from products.services.product_info import _chasing_open_lookup
 
-        self._deferred_on()
+        self._denied_on()
 
         self.assertTrue(_chasing_open_lookup([], self.conversation, self.store))
 
@@ -11429,13 +12304,14 @@ class ChasedDeferralTests(TestCase):
         )
 
     # ── the persona has to allow the one denial it otherwise forbids ──────
-    def test_red_line_three_carves_out_the_exhausted_turn(self):
+    def test_red_line_three_carves_out_a_confirmed_absence(self):
         """Rule 3 is unconditional about never saying "مش متوفر". `_ABSENT_RULES` tells the model
         to say exactly that, and contradictory instructions are decided by whichever the model
-        happens to weight — so the carve-out has to be in the red line itself."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        happens to weight — so the carve-out has to be in the red line itself, keyed on the marker
+        that is only written once the whole catalogue has been swept."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, get_system_prompt(self.store))
+        self.assertIn(ABSENCE_DENIED_MARKER, get_system_prompt(self.store))
 
     def test_the_replay_scenarios_are_registered(self):
         """A scenario file nothing imports is a file nobody runs. Both keys point at the one
@@ -11468,7 +12344,9 @@ class ReAskedDeferralTests(TestCase):
 
     815 is the control that already worked: there the customer chased with a pronoun
     ("اتأكدلي منو"), `ChasedDeferralTests` covers that path, and the reply was the right one —
-    "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا" with an alternative and its prices.
+    "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا" with an alternative and its prices. Its reply is
+    what turn 1 of both transcripts above now produces, so `_denied_on` below is 815's turn, and
+    these tests are about the turn *after* it.
 
     Re-typing the name is the more natural way to insist and it took the veto instead. An
     unplaceable name in the current message sets `named_but_unresolved`, which vetoes `chasing` on
@@ -11479,6 +12357,13 @@ class ReAskedDeferralTests(TestCase):
     816 is also why the re-ask window is wider than the chase's single turn: turn 2 was answered
     about Stronger With You and its reply carried no `PENDING_LOOKUP` marker, so a one-turn window
     loses the open question entirely and turn 3 reads as a first ask.
+
+    What the re-ask is *for* changed with the policy, and it is worth being explicit about, because
+    it is no longer the turn that produces the denial. The name is verified on the first ask now, so
+    every turn here already has its answer and `re_asked` earns two narrower things: the record keeps
+    the question's original wording, so a third ask matches the same one rather than opening another;
+    and the escalation can tell "pressed again on the same perfume" — the one shape that reaches a
+    human — from three different absent names in a row, which keep the bot serving.
     """
 
     def setUp(self):
@@ -11494,63 +12379,59 @@ class ReAskedDeferralTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def _deferred_on(self, question, marker=True, volunteered=False):
-        """One past reply. `marker=False` is 816 turn 2 — an ordinary answer about the volunteered
-        perfume, which records no open question and is what a one-turn window would stop at.
+    def _denied_on(self, question, marker=True, volunteered=False):
+        """One past reply that denied a perfume and kept its question open.
 
-        `volunteered=True` names the alternative in the reply prose, the way every real deferral
-        does ("لحظة أتأكدلك منه... زي Stronger With You"). That is what puts the perfume in
-        `described.offered_in_order`, and provenance is unreadable without it."""
+        Both fixtures this class used to have are this one. Turn 1 of 816 and 817 promised to check;
+        under the current policy it denies instead, so the "first ask" reply and the "the customer
+        pushed past the denial" reply have the same shape and the same two markers, and a separate
+        `_deferred_on` would only be modelling a turn the pipeline can no longer produce.
+
+        `marker=False` is 816 turn 2 — an ordinary answer about the volunteered perfume, which
+        records no open question and is what a one-turn window would stop at.
+
+        `volunteered=True` names the alternative in the reply prose, the way every denial does
+        ("مش موجود عندنا... بس عندنا Stronger With You"). That is what puts the perfume in
+        `described.offered_in_order`, and provenance is unreadable without it.
+        """
+        from products.services import product_info
         from products.services.sales import described
 
         context = "Name (الاسم الصحيح): Stronger With You"
         if marker:
             context = (
-                f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n" + context
+                f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n"
+                f"{product_info.ABSENCE_DENIED_MARKER}\n" + context
             )
-        reply = "لحظة أتأكدلك منه يا فندم."
+        reply = "بعتذر يا فندم، العطر ده مش موجود عندنا."
         if volunteered:
-            reply += " ممكن أشوف لك عطر تاني زي Stronger With You؟"
+            reply += " بس عندنا Stronger With You وهو عطر تاني خالص وممكن يعجبك."
         save_message(
             self.conversation, "assistant", reply, internal_context=context
         )
 
-    def _denied_on(self, question):
-        """The exhausted reply — the one that says the perfume is not stocked and offers an
-        alternative. It keeps the open question in its record, because a customer who pushes past a
-        denial is still asking about the same perfume."""
-        from products.services import product_info
-        from products.services.sales import described
+    def _turn(self, message, absent=None):
+        """The re-ask turn. `resolve_products` places no product because the name is real and absent
+        from the catalogue — which is what makes the re-typed name `named_but_unresolved` and vetoes
+        the chase path.
 
-        save_message(
-            self.conversation,
-            "assistant",
-            f"بعتذر يا فندم، مش موجود عندنا. ممكن أشيرلك على Stronger With You؟",
-            internal_context=(
-                f"═══ سؤال معلّق ═══\n{described.PENDING_LOOKUP_MARKER} {question}\n"
-                f"{product_info.LOOKUP_EXHAUSTED_MARKER}\n"
-                "Name (الاسم الصحيح): Stronger With You"
-            ),
+        `absent` is the span the extractor reported it could not place, and it is what separates a
+        verified miss from an extractor that simply came back quiet: without it `unplaced` is empty,
+        `absence.catalogue_verdict` files the turn UNKNOWN, and every assertion below would be
+        testing the abstain reply instead. It defaults to the whole message because on these turns
+        the message *is* the name plus filler, and `naming.tokens` drops the filler.
+        """
+        return self._turn_resolved_to(
+            message, _absent(message if absent is None else absent)
         )
-
-    def _turn(self, message):
-        """`resolve_products` returns [] because the name is real but absent from the catalogue —
-        which is what makes the re-typed name `named_but_unresolved` and vetoes the chase path."""
-        with mock.patch(
-            "products.services.product_info.resolve_products", return_value=[]
-        ), mock.patch(
-            "products.services.product_info.chat", return_value="ok"
-        ) as chat_call:
-            _, context = get_product_info(message, [], self.store, self.conversation)
-        return context, chat_call.call_args[0][0][-1]["content"]
 
     def _turn_resolved_to(self, message, products):
         """The same turn, except the resolver comes back with something.
 
         816 turn 3 in the harness: the resolver answered "بتكلم علي الكساندريا 2؟" with Stronger
-        With You — the perfume the deferral had volunteered — so `named_but_unresolved` was False and
-        `_turn`'s `[]` could never reproduce it. Provenance is what separates that from a name this
-        message really placed."""
+        With You — the perfume the denial had volunteered — so `named_but_unresolved` was False and
+        `_turn`'s empty result could never reproduce it. Provenance is what separates that from a
+        name this message really placed."""
         with mock.patch(
             "products.services.product_info.resolve_products", return_value=products
         ), mock.patch(
@@ -11561,32 +12442,35 @@ class ReAskedDeferralTests(TestCase):
 
     # ── the re-typed name is answered, not stalled again ──────────────────
     def test_817s_second_ask_is_answered(self):
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on("عندك لادور بخور ؟")
-        context, prompt = self._turn("بسأل علي لادور بخور")
+        self._denied_on("عندك لادور بخور ؟")
+        context, prompt = self._turn("بسأل علي لادور بخور", absent="لادور بخور")
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("مش موجود عندنا", prompt)
-        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
+        self.assertIn(
+            'ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك"',
+            prompt,
+        )
 
     def test_816s_second_ask_is_answered_across_an_intervening_turn(self):
         """The turn the narrow window could not see: turn 2 answered about a different perfume and
         wrote no marker, so the open question has to survive one reply that never mentions it."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on("عندك الكساندريا 2؟")
-        self._deferred_on("", marker=False)
-        context, prompt = self._turn("بتكلم علي الكساندريا 2؟")
+        self._denied_on("عندك الكساندريا 2؟")
+        self._denied_on("", marker=False)
+        context, prompt = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("مش موجود عندنا", prompt)
 
     def test_the_denial_comes_with_alternatives(self):
         """The half the customer can act on. A denial on its own ends the conversation; 815 got
         this right and named Stronger With You with its prices."""
-        self._deferred_on("عندك الكساندريا 2؟")
-        context, prompt = self._turn("بتكلم علي الكساندريا 2؟")
+        self._denied_on("عندك الكساندريا 2؟")
+        context, prompt = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
 
         self.assertIn("Stronger With You", context)
         self.assertIn("اعرض عليه بديل", prompt)
@@ -11595,8 +12479,8 @@ class ReAskedDeferralTests(TestCase):
         """So a third ask matches the same open question instead of opening a new one."""
         from products.services.sales import described
 
-        self._deferred_on("عندك الكساندريا 2؟")
-        context, _ = self._turn("بتكلم علي الكساندريا 2؟")
+        self._denied_on("عندك الكساندريا 2؟")
+        context, _ = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
         line = next(
             row for row in context.splitlines()
             if row.startswith(described.PENDING_LOOKUP_MARKER)
@@ -11604,82 +12488,127 @@ class ReAskedDeferralTests(TestCase):
 
         self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندك الكساندريا 2؟")
 
-    def test_the_deferral_rules_are_not_shipped_alongside_the_denial(self):
-        """"قوله لحظة أتأكدلك" and "قوله مش موجود" in one prompt are contradictory instructions
+    def test_the_abstain_rules_are_not_shipped_alongside_the_denial(self):
+        """"اسأله يكتب الاسم تاني" and "قوله مش موجود" in one prompt are contradictory instructions
         about the same turn, and shipping both is how the model gets to pick."""
-        self._deferred_on("عندك لادور بخور ؟")
-        _, prompt = self._turn("بسأل علي لادور بخور")
+        self._denied_on("عندك لادور بخور ؟")
+        _, prompt = self._turn("بسأل علي لادور بخور", absent="لادور بخور")
 
-        self.assertNotIn("الرد الصح على العطر اللي سأل عنه: \"لحظة أتأكدلك منه\"", prompt)
+        self.assertNotIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+        self.assertNotIn("واطلب منه يكتبلك الاسم تاني", prompt)
 
-    # ── and a genuinely new name still gets its first deferral ────────────
-    def test_a_different_unplaceable_name_is_not_exhausted(self):
-        """795 turn 4, and the reason the `chasing` veto stays. لادور بخور is open; الكساندريا 2 is
-        a question we have not answered even once, so it earns the promise, not a denial."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    # ── and a genuinely new name gets its own verdict ─────────────────────
+    def test_a_different_unplaceable_name_gets_its_own_verdict(self):
+        """795 turn 4, and the reason the `chasing` veto stays. لادور بخور is open; الكساندريا 2 is a
+        different question, and it has to be judged on this turn's own witness rather than inherit
+        the earlier name's marker. With a witness it is denied — but as itself, and the record has to
+        say so, because that is what the *next* turn matches a re-ask against."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
         from products.services.sales import described
 
-        self._deferred_on("عندكو لادور بخور صح ؟")
-        context, prompt = self._turn("طب عندكو الكساندريا 2 ؟")
+        self._denied_on("عندكو لادور بخور صح ؟")
+        context, prompt = self._turn("طب عندكو الكساندريا 2 ؟", absent="الكساندريا 2")
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn(described.PENDING_LOOKUP_MARKER, context)
-        self.assertIn("لحظة أتأكدلك منه", prompt)
+        self.assertIn("الكساندريا 2", context)
+        self.assertIn("إن العطر اللي سأل عنه مش موجود عندنا", prompt)
+
+    def test_a_different_name_with_no_witness_abstains(self):
+        """The safety half of the turn above, and the whole reason the verdict is not read off the
+        record. One `ABSENCE_DENIED` is already in the window; if the marker decided this turn, a
+        name the extractor never reported on would be denied on the strength of a *different*
+        perfume's verification. That is the Versace Eros failure reached by bookkeeping."""
+        from products.services.product_info import (
+            ABSENCE_DENIED_MARKER,
+            NAME_UNREADABLE_MARKER,
+        )
+
+        self._denied_on("عندكو لادور بخور صح ؟")
+        context, prompt = self._turn_resolved_to("طب عندكو الكساندريا 2 ؟", [])
+
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
+        self.assertIn(NAME_UNREADABLE_MARKER, context)
+        self.assertIn("ممنوع تقول إنه مش موجود عندنا", prompt)
 
     def test_the_right_open_question_is_matched_when_two_are_pending(self):
         """Both names are open at once. A re-ask of the newer one must match the newer one, which
         is why `pending_questions` hands over the whole list rather than the oldest entry."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.sales import described
 
-        self._deferred_on("عندكو لادور بخور صح ؟")
-        self._deferred_on("طب عندكو الكساندريا 2 ؟")
-        context, _ = self._turn("بتكلم علي الكساندريا 2؟")
+        self._denied_on("عندكو لادور بخور صح ؟")
+        self._denied_on("طب عندكو الكساندريا 2 ؟")
+        context, _ = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
+        line = next(
+            row for row in context.splitlines()
+            if row.startswith(described.PENDING_LOOKUP_MARKER)
+        )
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} طب عندكو الكساندريا 2 ؟")
 
-    def test_a_terser_re_ask_still_counts(self):
+    def test_a_terser_re_ask_still_matches(self):
         """The first ask carried filler ("صح"), the second is two words. Requiring the earlier
-        message to be fully covered would call this a new question."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        message to be fully covered would call this a new question, and the record would then hold
+        two entries for one perfume — so the press that should reach a human never matches."""
+        from products.services.sales import described
 
-        self._deferred_on("عندكو لادور بخور صح ؟")
-        context, _ = self._turn("لادور بخور؟")
+        self._denied_on("عندكو لادور بخور صح ؟")
+        context, _ = self._turn("لادور بخور؟", absent="لادور بخور")
+        line = next(
+            row for row in context.splitlines()
+            if row.startswith(described.PENDING_LOOKUP_MARKER)
+        )
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندكو لادور بخور صح ؟")
 
-    def test_a_stale_deferral_is_not_re_asked_forever(self):
-        """The window bounds it. A name asked about once, five replies ago, is not still being
-        denied when it comes up again."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_a_stale_question_is_not_re_asked_forever(self):
+        """The window bounds it. A name asked about once, five replies ago, opens a fresh question
+        rather than matching the old one — the denial still stands (this turn has its own witness),
+        but nothing about it counts as pressing.
 
-        self._deferred_on("عندك لادور بخور ؟")
+        What proves the fresh question is *whose message* got recorded. A match would have carried
+        the first ask forward verbatim, the way `test_a_terser_re_ask_still_matches` asserts; out of
+        the window there is nothing to carry, so the record is this turn's own message — filler and
+        all, because the open question is the question as the customer put it, not the bare name.
+        """
+        from products.services.sales import described
+
+        self._denied_on("عندك لادور بخور ؟")
         for _ in range(4):
-            self._deferred_on("", marker=False)
-        context, _ = self._turn("بسأل علي لادور بخور")
+            self._denied_on("", marker=False)
+        context, _ = self._turn("بسأل علي لادور بخور", absent="لادور بخور")
+        line = next(
+            row for row in context.splitlines()
+            if row.startswith(described.PENDING_LOOKUP_MARKER)
+        )
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertEqual(
+            line, f"{described.PENDING_LOOKUP_MARKER} بسأل علي لادور بخور"
+        )
+        self.assertNotIn("عندك لادور بخور ؟", line)
 
     # ── the resolver placing the unplaceable name does not hide the re-ask ──
     def test_a_resolver_that_answers_with_the_offered_perfume_is_still_a_re_ask(self):
-        """The harness replay of 816 turn 3, which the `[]` mock could not reach. Everything the
+        """The harness replay of 816 turn 3, which the empty mock could not reach. Everything the
         resolver returned is perfume we had already offered, which is a resolved reference rather
-        than a name this message placed — so the open question is still open."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        than a name this message placed — so the open question is still open, and the answer it
+        already has is the one this turn carries."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
-        self._deferred_on("", marker=False, volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("", marker=False, volunteered=True)
         context, prompt = self._turn_resolved_to(
             "بتكلم علي الكساندريا 2؟", [self.stronger]
         )
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("مش موجود عندنا", prompt)
 
     def test_a_perfume_we_never_offered_is_answered_not_denied(self):
         """Red line 3 the other way round. A name the resolver places on something outside the
         offered set is a perfume we demonstrably stock, and provenance has to let it through — 815's
         own alternative would otherwise be deniable the moment its name overlapped the question."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
         sauvage = Product.objects.create(
             store=self.store,
@@ -11687,46 +12616,51 @@ class ReAskedDeferralTests(TestCase):
             name="Dior Sauvage",
             gender="male",
         )
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
         context, _ = self._turn_resolved_to("الكساندريا 2؟", [sauvage])
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
 
     def test_a_price_question_about_the_offered_perfume_is_not_a_re_ask(self):
         """Provenance on its own is too loose: this resolves entirely to offered perfume too, and
         it is a question we should answer rather than an insistence we should deny. `re_asks` is the
         half that keeps it tight."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
         context, _ = self._turn_resolved_to("سترونجر ويذ يو بكام؟", [self.stronger])
 
-        self.assertNotIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertNotIn(ABSENCE_DENIED_MARKER, context)
 
     def test_a_bare_chase_after_the_denial_does_not_promise_again(self):
         """816 turn 4. "اتأكد" — go on, check — arriving *after* the denial, and it came back
         "لحظة أتأكدلك منه يا فندم، وهرد عليك أول ما أعرف": a promise to look up a perfume we had
-        just told the customer we do not stock. Nothing may take a settled question back to the
-        deferral rules."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+        just told the customer we do not stock. Nothing may take a settled question back to a
+        promise, and "اتأكد" carries no name of its own, so the answer can only come from the
+        record — which is exactly what `replies_carrying` reads."""
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
         self._denied_on("عندك الكساندريا 2؟")
-        context, prompt = self._turn("اتأكد")
+        context, prompt = self._turn_resolved_to("اتأكد", [])
 
-        self.assertIn(LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(ABSENCE_DENIED_MARKER, context)
         # The phrase itself appears in the prompt as a *prohibition*, so the discriminator has to be
-        # which rule set shipped: `_ABSENT_RULES` forbids re-promising, `_DEFERRAL_RULES` mandates it.
-        self.assertIn("ممنوع توعده تتأكد تاني", prompt)
-        self.assertNotIn("الرد الصح: \"لحظة أتأكدلك منه\"", prompt)
+        # which rule set shipped: `_ABSENT_RULES` forbids re-promising, `_UNREADABLE_NAME_RULES`
+        # asks the customer to retype a name they never typed on this turn.
+        self.assertIn(
+            'ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك"',
+            prompt,
+        )
+        self.assertNotIn("واطلب منه يكتبلك الاسم تاني", prompt)
 
     def test_the_denial_does_not_read_as_a_sign_off(self):
         """The block used to tell the model this was the last reply before a human took over, which
         was true of the old hand-off-on-denial policy and is not true now. A model told it is signing
         off writes a closing line, and the alternatives in the same reply are then unusable — the
         whole point of keeping the bot in the conversation."""
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
-        context, prompt = self._turn("بتكلم علي الكساندريا 2؟")
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
+        context, prompt = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
 
         self.assertNotIn("زميل بشري", prompt)
         self.assertIn("المحادثة مكمّلة", context)
@@ -11742,7 +12676,7 @@ class ReAskedDeferralTests(TestCase):
         from products.services.sales import described
 
         hint = "\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده.\n"
-        self._deferred_on("عندك الكساندريا 2؟", volunteered=True)
+        self._denied_on("عندك الكساندريا 2؟", volunteered=True)
         self._denied_on("عندك الكساندريا 2؟")
         with mock.patch(
             "products.services.product_info.resolve_products", return_value=[]
@@ -11758,7 +12692,7 @@ class ReAskedDeferralTests(TestCase):
         self.assertIn("ردك السابق كان مكرر", prompt)
         # ...without becoming the open question or taking the turn off the denial.
         self.assertNotIn(f"{described.PENDING_LOOKUP_MARKER} اتأكد", context)
-        self.assertIn(product_info.LOOKUP_EXHAUSTED_MARKER, context)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
 
     def test_the_router_keeps_the_hint_out_of_the_message(self):
         """The parameter only helps if the caller uses it, and appending to `message` is the shape
@@ -11812,16 +12746,30 @@ class NeverDeniesAndDefersTests(TestCase):
     It happened because two instruction layers disagreed. `ai/prompts.py` forbids saying
     "مش موجود عندنا" about a perfume missing from the injected data; `product_info`'s not-found
     rule 3(أ) mandated exactly that phrase. The reply obeyed both.
+
+    The contradiction is still the subject here, but the resolution went the other way from the one
+    that was shipped at the time. Then, rule 3(أ) was made to abstain so it agreed with the persona.
+    Now the two halves of that sentence are separated by a *verdict* instead: an ABSENT name gets
+    the denial and the persona's red line 3 carves an exemption for it, an unverified name gets the
+    clarification request, and neither reply is allowed to contain the other half. The one thing
+    that never became permissible is the sentence 795 actually wrote — both at once.
     """
 
     def setUp(self):
         self.store = Store.objects.create(name="Perfamix Test")
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def _prompt(self, message="طب عندكو الكساندريا 2 ؟"):
-        """The prompt the model actually receives, not the source that produces it."""
+    def _prompt(self, message="طب عندكو الكساندريا 2 ؟", resolved=None):
+        """The prompt the model actually receives, not the source that produces it.
+
+        `resolved` defaults to an unplaced-name witness, so the turn reaches the denial rules — the
+        half of the fork this class is about. Pass `[]` for the other half: a resolver that came back
+        with nothing at all and no report of what it could not place, which is UNKNOWN and gets the
+        clarification rules instead."""
+        if resolved is None:
+            resolved = _absent("الكساندريا 2")
         with mock.patch(
-            "products.services.product_info.resolve_products", return_value=[]
+            "products.services.product_info.resolve_products", return_value=resolved
         ), mock.patch(
             "products.services.product_info.chat", return_value="ok"
         ) as chat:
@@ -11830,35 +12778,63 @@ class NeverDeniesAndDefersTests(TestCase):
         return chat.call_args[0][0][-1]["content"]
 
     def test_the_mandated_denial_is_gone(self):
+        """Not because the denial is forbidden now — it is required — but because it may not be
+        *scripted*. That literal was rule 3(أ)'s own wording, handed to the model on every not-found
+        turn including the ones no verifier had cleared."""
         self.assertNotIn("العطر ده مش متوفر عندنا حالياً", self._prompt())
 
     def test_the_instructions_ban_pairing_a_denial_with_a_deferral(self):
         prompt = self._prompt()
 
-        self.assertIn("ممنوع تجمع النفي مع الوعد بالتأكد في رد واحد", prompt)
+        self.assertIn("ممنوع تجمع النفي مع وعد بالتأكد في رد واحد", prompt)
         self.assertIn("مش موجود عندنا، لحظة أتأكدلك منه", prompt)
 
-    def test_the_not_found_branch_still_forbids_asserting_absence(self):
+    def test_the_denial_turn_bans_the_promise_outright(self):
+        """The 795 sentence has two halves and only one of them is now wrong on this turn. Banning
+        the *pair* is not enough on its own — a reply can promise without denying, which is what 816
+        turn 3 did — so the promise has to be forbidden by itself as well."""
         prompt = self._prompt()
 
-        self.assertIn("لحظة أتأكدلك منه", prompt)
-        self.assertIn("النظام هو اللي مالقاهوش", prompt)
+        self.assertIn(
+            'ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك"',
+            prompt,
+        )
+
+    def test_the_unverified_name_gets_neither_half(self):
+        """The old shape of this test asserted that the not-found branch *mandated* the promise,
+        which is the policy that changed. What survives is the narrower claim it was standing in for:
+        on a name nothing verified, asserting absence is still forbidden — and so is the promise,
+        which is the addition. A turn that knows nothing owes a question, not either answer."""
+        prompt = self._prompt(resolved=[])
+
+        self.assertIn("ممنوع تقول إنه مش موجود عندنا", prompt)
+        self.assertIn('وممنوع توعده تتأكد وترد عليه ("لحظة أتأكدلك"', prompt)
+        self.assertIn("واطلب منه يكتبلك الاسم تاني", prompt)
 
     def test_the_apology_is_named_as_a_denial_too(self):
         """"للأسف مش عندنا" says the perfume is absent in a softer voice. The rule has to say so,
-        because a model told not to deny will still apologise."""
-        self.assertIn("الاعتذار نفسه بيقول إنه مش موجود", self._prompt())
+        because a model told not to deny will still apologise. Only on the unverified turn now — the
+        denial turn asks for that apology in as many words."""
+        self.assertIn("ولا تعتذر عن عدم توفره", self._prompt(resolved=[]))
 
     def test_the_rule_numbers_are_sequential_and_unique(self):
         """Two rules were numbered 1 and two were numbered 3, and rule 3's "في حالة (أ) فقط"
         pointed at cases defined under the *other* rule 3 — which is why the live-reply
-        requirement was buried."""
+        requirement was buried.
+
+        The list is 1-5 with a single 14 after it, and the gap is deliberate rather than sloppy: the
+        same rule constant is appended to the found branch, whose own list runs to 13, and rule 3(أ)
+        sends the model to it by number ("قاعدة رقم 14 تحت"). So what has to hold is that the
+        sequence up to the jump is unbroken and unique, and that exactly one number sits past it —
+        a second out-of-sequence rule would mean two rule sets shipped on one turn."""
         import re
 
         block = self._prompt().split("═══ تعليمات ═══")[-1]
         numbers = [int(match) for match in re.findall(r"^(\d+)\.", block, re.M)]
 
-        self.assertEqual(numbers, list(range(1, len(numbers) + 1)))
+        self.assertEqual(numbers[-1], 14)
+        self.assertEqual(numbers[:-1], list(range(1, len(numbers))))
+        self.assertIn("قاعدة رقم 14 تحت", block)
 
 
 class AlternativesAnswerTheRequestTests(TestCase):
@@ -12122,39 +13098,78 @@ class BriefBlockCannotInviteInventionTests(TestCase):
         self.assertNotIn("مش معروضين للعطر ده هنا", format_products(self.queryset))
 
 
-class DeferralReachesAHumanTests(TestCase):
+class AbsentNameEscalationTests(TestCase):
     """Conversation 795: the bot promised to check three times and no human was ever told.
 
     "لحظة أتأكدلك" is a promise only the store owner can keep — the perfume is not in the data, so
-    no amount of retrieval will resolve it. Made twice with nothing behind it, the promise becomes
-    a way of ending the conversation rather than answering it, which is what happened here across
-    four turns and one lost customer.
+    no amount of retrieval will resolve it. That promise is gone now; the turn denies, or asks for
+    the name again. But the owner still wants to be told, and the question the promise raised — *when
+    does a person take over* — outlived it. This is the unit-test class for
+    `router._escalate_absent_name`, which answers both.
 
-    Policy: the first deferral notifies the owner and leaves the conversation with the bot; a
-    second one, or a question the customer has now asked twice, hands over.
+    Policy: a denied or unreadable name notifies the owner and leaves the bot serving, because the
+    reply it just wrote is one the customer can act on. A person takes over in two cases only — the
+    same customer back on the same perfume after two complete answers about it, or a question asked
+    `_REPEATED_QUESTION_LIMIT` times with nothing recorded against it at all, which is 795's own
+    shape and the one no marker can see.
     """
 
     def setUp(self):
+        from products.services.product_info import NAME_UNREADABLE_MARKER
+
         self.store = Store.objects.create(name="Perfamix Test")
         self.conversation = Conversation.objects.create(store=self.store, platform="whatsapp")
-        self.pending_context = (
-            "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندكو لادور بخور صح ؟\n"
+        self.denied_context = self._denial_about("عندكو لادور بخور صح ؟")
+        self.unreadable_context = (
+            "═══ سؤال معلّق ═══\n"
+            "PENDING_LOOKUP: عندكو لادور بخور صح ؟\n"
+            f"{NAME_UNREADABLE_MARKER}\n"
         )
 
-    def _escalate(self, context, pending_before=0, message="عندكو لادور بخور صح ؟", history=None):
-        from products.services.router import _escalate_pending_lookup
+    def _denial_about(self, question):
+        """A context of the shape `_pending_lookup_block` writes for a verified absence.
+
+        The verdict marker is not decoration. That function is the only writer of `PENDING_LOOKUP`
+        and always appends one of the two verdicts, so a bare pending block is not a context the
+        router can be handed — and the two verdicts notify differently, which is why both spellings
+        are needed in this class.
+        """
+        from products.services.product_info import ABSENCE_DENIED_MARKER
+
+        return (
+            "═══ سؤال معلّق ═══\n"
+            f"PENDING_LOOKUP: {question}\n"
+            f"{ABSENCE_DENIED_MARKER}\n"
+        )
+
+    def _escalate(self, context, message="عندكو لادور بخور صح ؟", history=None):
+        from products.services.router import _escalate_absent_name
 
         with mock.patch("products.services.router.notify_handoff") as notify:
-            _escalate_pending_lookup(
-                self.conversation, self.store, context, pending_before, message, history or []
+            _escalate_absent_name(
+                self.conversation, self.store, context, message, history or []
             )
         self.conversation.refresh_from_db()
         return notify
 
+    def _already_answered(self, times):
+        """`times` earlier replies that each denied this same perfume."""
+        for _ in range(times):
+            save_message(
+                self.conversation,
+                "assistant",
+                "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You.",
+                internal_context=self.denied_context,
+            )
+
     # ── counting a question the customer has already asked ────────────────
     def test_the_same_question_asked_twice_is_counted(self):
         """Turns 1 and 3 are the same question. Nothing counted them, because
-        `_count_recent_repetitions` watches the bot's replies, not the customer's messages."""
+        `_count_recent_repetitions` watches the bot's replies, not the customer's messages.
+
+        The promise quoted below is what 795 actually replied, kept as its record — it is not a reply
+        the bot can produce any more, and the counter does not read the assistant rows anyway.
+        """
         history = [
             {"role": "user", "content": "عندكو لادور بخور صح ؟"},
             {"role": "assistant", "content": "لحظة أتأكدلك"},
@@ -12195,14 +13210,33 @@ class DeferralReachesAHumanTests(TestCase):
         self.assertEqual(_count_repeated_customer_questions("عندكو لادور", []), 0)
         self.assertEqual(_count_repeated_customer_questions("عندكو لادور", None), 0)
 
-    # ── first deferral: tell the owner, keep the conversation ────────────
-    def test_the_first_deferral_notifies_the_owner(self):
-        notify = self._escalate(self.pending_context, pending_before=0)
+    # ── a denied name: tell the owner, keep the conversation ─────────────
+    def test_a_denied_name_notifies_the_owner_and_leaves_the_bot_serving(self):
+        """The whole point of the notification surviving the policy change. The customer has been
+        told plainly that we do not carry it and has two stocked perfumes in front of them, so there
+        is nothing for a person to rescue — but the owner still wants to know a customer walked in
+        asking for something the catalogue does not have, and may well want to stock it.
+        """
+        notify = self._escalate(self.denied_context)
 
         notification = Notification.objects.get(store=self.store)
         self.assertEqual(notification.type, "handoff")
         self.assertIn("لادور بخور", notification.message)
         self.assertIn(str(self.conversation.id), notification.message)
+        self.assertIn("مش موجود عندنا وعرض عليه بدائل", notification.message)
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+
+    def test_an_unreadable_name_notifies_with_its_own_wording(self):
+        """The second verdict gets its own alert, because it asks the owner for something different.
+        A denial tells them a perfume is missing from the catalogue; this one tells them the bot
+        could not work out what the customer meant, which the owner reading the words often can.
+        """
+        notify = self._escalate(self.unreadable_context)
+
+        notification = Notification.objects.get(store=self.store)
+        self.assertIn("مقدرناش نتأكد", notification.message)
+        self.assertNotIn("مش موجود عندنا", notification.message)
         self.assertFalse(self.conversation.needs_human)
         self.assertFalse(notify.called)
 
@@ -12213,15 +13247,47 @@ class DeferralReachesAHumanTests(TestCase):
         self.assertFalse(self.conversation.needs_human)
         self.assertFalse(notify.called)
 
-    # ── second deferral: hand over ───────────────────────────────────────
-    def test_a_second_deferral_hands_the_conversation_over(self):
-        notify = self._escalate(self.pending_context, pending_before=1, message="طب اتأكدلي")
+    # ── pressed on the same perfume until there is nothing left to say ────
+    def test_the_same_perfume_after_two_answers_reaches_a_person(self):
+        """Two complete answers about one absent perfume, and the customer is asking a third time.
+        The bot has run out of true things to say, so this is the turn a person takes."""
+        self._already_answered(2)
+
+        notify = self._escalate(self.denied_context, message="عندكو لادور بخور ؟")
 
         self.assertTrue(self.conversation.needs_human)
         self.assertTrue(notify.called)
 
+    def test_one_previous_answer_is_not_enough(self):
+        """The boundary, and the half of it that matters. A customer who chases straight after the
+        denial usually has not read it, and the reply they are owed is that same answer said again
+        with the alternatives pushed harder — handing over here would put 816's silence one turn
+        later instead of removing it.
+        """
+        self._already_answered(1)
+
+        notify = self._escalate(self.denied_context, message="عندكو لادور بخور ؟")
+
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+        self.assertEqual(Notification.objects.count(), 1)
+
+    def test_pressing_on_a_different_perfume_does_not_hand_over(self):
+        """The safety property behind comparing the questions instead of counting the markers. 795
+        names لادور بخور and then الكساندريا 2 — two ordinary questions with two complete answers —
+        and a count alone would have handed the conversation over on the second one.
+        """
+        self._already_answered(2)
+
+        notify = self._escalate(
+            self._denial_about("عندكو الكساندريا 2 ؟"), message="عندكو الكساندريا 2 ؟"
+        )
+
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+
     def test_asking_the_same_thing_twice_hands_over_on_its_own(self):
-        """Even on a turn that produced no deferral: a question asked twice and still unanswered
+        """Even on a turn that produced no marker: a question asked twice and still unanswered
         is the signal, whatever this turn's context happens to look like."""
         history = [
             {"role": "user", "content": "عندكو لادور بخور صح ؟"},
@@ -12232,13 +13298,30 @@ class DeferralReachesAHumanTests(TestCase):
         self.assertTrue(self.conversation.needs_human)
         self.assertTrue(notify.called)
 
+    def test_the_repeat_counter_still_applies_on_a_denied_turn(self):
+        """The counter is not the marker fork's alternative, it is independent of it. A customer
+        typing the same words a third time has told us the answer is not landing, and that is worth
+        a person whether or not the turn carries a verdict — the marker fork can miss it, because
+        `pending_questions` only reaches back four replies and this one need not be in the window.
+        """
+        history = [
+            {"role": "user", "content": "عندكو لادور بخور صح ؟"},
+            {"role": "user", "content": "عندكو لادور بخور ؟"},
+        ]
+        notify = self._escalate(
+            self.denied_context, message="عندكو لادور بخور", history=history
+        )
+
+        self.assertTrue(self.conversation.needs_human)
+        self.assertTrue(notify.called)
+
     def test_an_already_handed_off_conversation_is_left_alone(self):
         """The owner is already in it. A second notification is noise, and re-notifying on every
         subsequent turn is how a handoff alert stops being read."""
         self.conversation.needs_human = True
         self.conversation.save()
 
-        notify = self._escalate(self.pending_context, pending_before=1)
+        notify = self._escalate(self.denied_context)
 
         self.assertEqual(Notification.objects.count(), 0)
         self.assertFalse(notify.called)
@@ -12248,7 +13331,7 @@ class DeferralReachesAHumanTests(TestCase):
         from products.services.router import _deferred_question
 
         self.assertEqual(
-            _deferred_question(self.pending_context, "طب اتأكدلي"),
+            _deferred_question(self.denied_context, "طب اتأكدلي"),
             "عندكو لادور بخور صح ؟",
         )
 
@@ -12267,10 +13350,10 @@ class DeferralReachesAHumanTests(TestCase):
     def test_a_missing_conversation_or_store_is_not_an_error(self):
         """`route` always has both, but a crash on this path would cost the customer the reply for
         the sake of a notification."""
-        from products.services.router import _escalate_pending_lookup
+        from products.services.router import _escalate_absent_name
 
-        _escalate_pending_lookup(None, self.store, self.pending_context, 1, "x", [])
-        _escalate_pending_lookup(self.conversation, None, self.pending_context, 1, "x", [])
+        _escalate_absent_name(None, self.store, self.denied_context, "x", [])
+        _escalate_absent_name(self.conversation, None, self.denied_context, "x", [])
 
         self.assertEqual(Notification.objects.count(), 0)
 
@@ -12280,7 +13363,10 @@ class DeferralReachesAHumanTests(TestCase):
             "products.services.router.classify", return_value="product_info"
         ), mock.patch(
             "products.services.router.get_product_info",
-            return_value=("لحظة أتأكدلك منه.", self.pending_context),
+            return_value=(
+                "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You.",
+                self.denied_context,
+            ),
         ):
             route("عندكو لادور بخور صح ؟", [], self.store, self.conversation)
 
@@ -12288,25 +13374,341 @@ class DeferralReachesAHumanTests(TestCase):
         # `usage_service`, which raises its own notification when a store crosses its cap.
         self.assertEqual(Notification.objects.filter(type="handoff").count(), 1)
 
-    def test_the_pending_count_is_read_before_this_turn_is_saved(self):
-        """`pending_lookup` scans persisted assistant rows. Reading it after the reply is saved
-        would count this turn's own marker and hand off on the very first deferral."""
+    def test_this_turns_own_reply_is_not_counted_against_it(self):
+        """`replies_carrying` scans persisted assistant rows, and this turn's is not one yet — the
+        reply and its context are saved by the caller (`views.py`, `tasks.py`) after `route` returns.
+
+        Counting it would make the first denial its own second answer, and every absent perfume
+        would go straight to a person on the turn it was asked about. That is the muzzle 816 and 817
+        died of, reintroduced as an ordering bug: one prior answer is on record here, which is one
+        short of the handoff, and the notification is what this turn is owed.
+        """
         save_message(
-            self.conversation, "assistant", "لحظة أتأكدلك.",
-            internal_context=self.pending_context,
+            self.conversation, "assistant", "بعتذر، لادور بخور مش موجود عندنا.",
+            internal_context=self.denied_context,
         )
 
         with mock.patch(
             "products.services.router.classify", return_value="product_info"
         ), mock.patch(
             "products.services.router.get_product_info",
-            return_value=("لحظة أتأكدلك منه.", self.pending_context),
+            return_value=(
+                "زي ما قلتلك يا فندم، مش موجود عندنا. بس Stronger With You قريب منه.",
+                self.denied_context,
+            ),
         ), mock.patch("products.services.router.notify_handoff") as notify:
-            route("طب اتأكدلي", [], self.store, self.conversation)
+            route("عندكو لادور بخور ؟", [], self.store, self.conversation)
 
         self.conversation.refresh_from_db()
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+        self.assertEqual(Notification.objects.filter(type="handoff").count(), 1)
+
+
+class TwoAbsentPerfumesKeepTheBotServingTests(TestCase):
+    """Conversations 816, 817 and 772: the bot went silent, and the customer was still buying.
+
+    `AbsentNameEscalationTests` above tests `_escalate_absent_name` on hand-built contexts. This
+    class tests the same policy the way production meets it — through `route`, on contexts
+    `product_info` really wrote, with each reply persisted between turns the way `views.py:126` and
+    `tasks.py:165` persist it. That round trip is the part that can break without any of the unit
+    tests noticing: the handoff decision is made by reading `Message.internal_context` back out of
+    the database, so a marker that is written but not saved, or saved but not found, changes the
+    answer while every direct call still passes.
+
+    What it is defending. `needs_human` is not a flag about this turn — `views.py:100` answers
+    *every* later message on the conversation with `reply: ""`, and `tasks.py:155` returns without
+    replying at all. So setting it on an absent perfume does not just end that turn; it ends the
+    conversation, including the alternatives the bot pitched in the very same breath. 816 said
+    "لحظة أتأكدلك منه يا فندم" and then answered "ماشي" and "اتأكد" with nothing. 772 got silence on
+    "ها ؟".
+
+    Two different absent perfumes is the case that decides it, and it is the shape of 795 (لادور
+    بخور, then الكساندريا 2). Those are two ordinary questions, each with a complete answer. Under a
+    marker *count* the second one hands the conversation to a person; under a question *comparison*
+    it does not. The owner hears about both either way.
+
+    The eval harness cannot see any of this: it calls `route` directly, so it observes the reply
+    `route` returned and never the gate `views` would have applied. `eval_harness/scenarios_conv772`
+    says so and points here.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        self.stronger = Product.objects.create(
+            store=self.store, brand=self.armani, name="Stronger With You",
+            gender="male", base_notes="Vanilla, Chestnut, Amber",
+        )
+        ProductVariant.objects.create(
+            product=self.stronger, volume=50, price=400, bottle_type="normal"
+        )
+        self.chanel = Brand.objects.create(store=self.store, name="Chanel")
+        self.bleu = Product.objects.create(
+            store=self.store, brand=self.chanel, name="Bleu de Chanel",
+            gender="male", base_notes="Incense, Cedar, Sandalwood",
+        )
+        ProductVariant.objects.create(
+            product=self.bleu, volume=50, price=645, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store, platform="whatsapp")
+
+    def _ask(self, message, absent, reply="بعتذر يا فندم، مش موجود عندنا. بس عندنا Stronger With You."):
+        """One customer turn, all the way through `route`, saved the way the callers save it.
+
+        Only two things are faked: the classifier, so the turn does not depend on an LLM to be read
+        as a product question, and the two model calls inside `product_info` — the extractor, whose
+        verdict *is* the fixture, and the reply generator, whose prose is not what this class is
+        about. Everything between them is the real code: the verdict ladder, the marker, the prompt
+        branch, the escalation, and the read-back of every earlier row.
+        """
+        history = build_llm_history(self.conversation)
+        save_message(self.conversation, "user", message)
+
+        with mock.patch(
+            "products.services.router.classify", return_value="product_info"
+        ), mock.patch(
+            "products.services.product_info.resolve_products", return_value=_absent(absent)
+        ), mock.patch(
+            "products.services.product_info.chat", return_value=reply
+        ), mock.patch("products.services.router.notify_handoff") as notify:
+            response, context = route(message, history, self.store, self.conversation)
+
+        save_message(self.conversation, "assistant", response, internal_context=context)
+        self.conversation.refresh_from_db()
+        return response, context, notify
+
+    def _handoffs(self):
+        # Filtered on the type: `route` also bills the turn through `usage_service`, which raises a
+        # notification of its own when a store crosses its cap.
+        return Notification.objects.filter(store=self.store, type="handoff")
+
+    # ── two different perfumes: two answers, two alerts, no silence ────────
+    def test_two_different_absent_perfumes_do_not_hand_the_conversation_over(self):
+        """795's shape. Each name is asked about once, answered once, and reported once."""
+        _, first, notify_one = self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        _, second, notify_two = self._ask("طب عندكو الكساندريا 2 ؟", "الكساندريا 2")
+
+        from products.services import product_info
+
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, first)
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, second)
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify_one.called)
+        self.assertFalse(notify_two.called)
+
+        alerts = list(self._handoffs().order_by("id"))
+        self.assertEqual(len(alerts), 2)
+        self.assertIn("لادور بخور", alerts[0].message)
+        self.assertIn("الكساندريا 2", alerts[1].message)
+
+    def test_a_third_absent_perfume_is_still_answered(self):
+        """The count that used to hand over. Three names, three complete answers, bot still serving —
+        and the third alert names the third perfume rather than repeating the first."""
+        self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        self._ask("طب عندكو الكساندريا 2 ؟", "الكساندريا 2")
+        _, third, notify = self._ask("و عندكو نسيم الليل ؟", "نسيم الليل")
+
+        from products.services import product_info
+
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, third)
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+        self.assertEqual(self._handoffs().count(), 3)
+        self.assertIn("نسيم الليل", self._handoffs().order_by("id").last().message)
+
+    def test_the_reply_the_customer_gets_is_not_empty(self):
+        """The failure this class is named for, asserted as the customer experiences it rather than
+        as a flag. `views.py:100` reads `needs_human` before it ever calls `route`, so the question
+        is not whether the bot *could* answer a fourth message — it is whether it will be asked."""
+        self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        self._ask("طب عندكو الكساندريا 2 ؟", "الكساندريا 2")
+
+        would_be_silenced = self.conversation.needs_human
+        reply, _, _ = self._ask("ماشي، طب ايه اللي عندكو ؟", "حاجة تانية")
+
+        self.assertFalse(would_be_silenced)
+        self.assertTrue(reply.strip())
+
+    # ── the same perfume, pressed: this is what a person is for ────────────
+    def test_the_same_perfume_asked_a_third_time_reaches_a_person(self):
+        """The other half of the policy, through the same round trip. Two complete answers about one
+        perfume, and the customer is back on it — there is nothing further the bot can truthfully
+        say, so the handoff here is the correct outcome and not the 816 failure.
+
+        The wording changes each time on purpose: `_count_repeated_customer_questions` hands off on
+        its own for a message typed three times, and this test is about the marker fork.
+        """
+        self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        self._ask("طب اتأكدلي من لادور بخور", "لادور بخور")
+        _, _, notify = self._ask("يعني لادور بخور مش موجود ؟", "لادور بخور")
+
         self.assertTrue(self.conversation.needs_human)
         self.assertTrue(notify.called)
+
+    def test_the_second_ask_about_one_perfume_is_answered_not_handed_over(self):
+        """The boundary, from the end-to-end side. A customer who chases immediately usually has not
+        taken the denial in, and the reply they are owed is the same answer again with the
+        alternatives pushed harder. Handing over here would move 816's silence one turn later."""
+        self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        reply, _, notify = self._ask("طب اتأكدلي من لادور بخور", "لادور بخور")
+
+        self.assertFalse(self.conversation.needs_human)
+        self.assertFalse(notify.called)
+        self.assertTrue(reply.strip())
+
+    def test_an_earlier_denial_is_read_back_out_of_the_database(self):
+        """Why this class exists alongside the unit tests. The handoff compares this turn's question
+        against `described.pending_questions`, which reads `Message.internal_context` off the saved
+        rows — so a context that never reaches the database cannot be compared, and the conversation
+        would keep answering the same perfume forever. Asserting the rows carry the marker pins the
+        half of the mechanism that lives in the caller rather than in the router.
+        """
+        from products.services import product_info
+        from products.services.sales import described
+
+        self._ask("عندكو لادور بخور صح ؟", "لادور بخور")
+        self._ask("طب اتأكدلي من لادور بخور", "لادور بخور")
+
+        self.assertEqual(
+            described.replies_carrying(self.conversation, product_info.ABSENCE_DENIED_MARKER), 2
+        )
+        self.assertTrue(
+            any("لادور بخور" in q for q in described.pending_questions(self.conversation))
+        )
+
+
+class TheStallCannotSurviveADeniedTurnTests(TestCase):
+    """"لحظه اتأكدلك منه" — the phrase this whole change was asked for, kept out deterministically.
+
+    Rules are not enough on this branch. That promise was the *scripted* reply here for a long
+    time, and two rules away it is still correct: `prompts.py` red line 2 covers prices and
+    policies, and case (ب) of the not-found branch is a store-policy question the owner genuinely
+    can answer. So a model that reaches for it on a verified-absence turn is doing something the
+    prompt used to ask for, and the guard has to be code.
+
+    It is a second generation, not a strip. `reply_sanitizer` cannot do this: its
+    bail-rather-than-empty rule means 816 turn 3 — whose entire reply *was* the promise — strips to
+    nothing and is handed back unchanged. See `router`'s comment at the retry.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        self.brand = Brand.objects.create(store=self.store, name="Emporio Armani")
+        self.product = Product.objects.create(
+            store=self.store, brand=self.brand, name="Stronger With You", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=self.product, volume=50, price=400, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store, platform="whatsapp")
+
+    # ── the predicate ─────────────────────────────────────────────────────
+    def test_the_customers_own_spelling_is_recognised(self):
+        """"اتأكدلك" without the hamza on the alef is how people type it, and it is the spelling in
+        the request this change came from. `normalize_arabic` folds the hamza, so both reach the
+        same string — worth pinning, because the tuple in `described` holds only the hamzated form
+        and a matcher that compared raw text would miss every real one."""
+        from products.services.sales import described
+
+        for reply in [
+            "لحظة أتأكدلك منه يا فندم",
+            "لحظه اتأكدلك منه",
+            "هسأل وأرد عليك",
+            "هشوفه لك وأقولك",
+        ]:
+            with self.subTest(reply=reply):
+                self.assertTrue(described.promises_a_lookup(reply))
+
+    def test_a_denial_with_alternatives_is_not_a_promise(self):
+        from products.services.sales import described
+
+        self.assertFalse(
+            described.promises_a_lookup(
+                "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You بـ400."
+            )
+        )
+        self.assertFalse(described.promises_a_lookup(""))
+        self.assertFalse(described.promises_a_lookup(None))
+
+    # ── the retry ─────────────────────────────────────────────────────────
+    def _route_with_replies(self, *replies, absent="لادور بخور"):
+        """Drive one turn, handing the model each reply in `replies` in order.
+
+        Two calls mean the retry fired; one means it did not. The count is the assertion.
+        """
+        with mock.patch(
+            "products.services.router.classify", return_value="product_info"
+        ), mock.patch(
+            "products.services.product_info.resolve_products", return_value=_absent(absent)
+        ), mock.patch(
+            "products.services.product_info.chat", side_effect=list(replies)
+        ) as chat_call:
+            response, context = route(
+                "عندكو لادور بخور صح ؟", [], self.store, self.conversation
+            )
+        return response, context, chat_call
+
+    def test_a_promise_on_a_denied_turn_is_generated_again(self):
+        response, context, chat_call = self._route_with_replies(
+            "لحظة أتأكدلك منه يا فندم",
+            "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You بـ400.",
+        )
+
+        self.assertEqual(chat_call.call_count, 2)
+        self.assertIn("مش موجود عندنا", response)
+        from products.services.sales import described
+        self.assertFalse(described.promises_a_lookup(response))
+
+    def test_the_retry_is_told_what_was_wrong_with_the_first_reply(self):
+        """The hint has to say *why*, not just "try again". A model told only to rephrase produces
+        the same promise in different words, and it must not read the instruction as licence to
+        change the fact — the perfume is still absent."""
+        _, _, chat_call = self._route_with_replies(
+            "لحظة أتأكدلك منه يا فندم",
+            "بعتذر، مش موجود عندنا. بس عندنا Stronger With You.",
+        )
+
+        retry_prompt = chat_call.call_args_list[1][0][0][-1]["content"]
+        self.assertIn("لحظة أتأكدلك", retry_prompt)
+        self.assertIn("اتأكدنا خلاص", retry_prompt)
+        self.assertIn("اعرض عليه بديل", retry_prompt)
+
+    def test_a_clean_denial_costs_no_second_call(self):
+        _, _, chat_call = self._route_with_replies(
+            "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You بـ400."
+        )
+
+        self.assertEqual(chat_call.call_count, 1)
+
+    def test_the_retry_does_not_fire_on_an_abstain_turn(self):
+        """Scoped to `ABSENCE_DENIED` on purpose. A `NAME_UNREADABLE` turn's rules also ban the
+        promise, but its reply is a question and nothing has been swept — regenerating there would
+        spend a call on a turn whose worst outcome is mild, and the rules cover it."""
+        with mock.patch(
+            "products.services.router.classify", return_value="product_info"
+        ), mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="لحظة أتأكدلك منه يا فندم"
+        ) as chat_call:
+            _, context = route("عندكو لادور بخور صح ؟", [], self.store, self.conversation)
+
+        from products.services import product_info
+
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertEqual(chat_call.call_count, 1)
+
+    def test_the_phrase_is_never_stripped_from_a_reply(self):
+        """The design decision behind the retry, asserted so nobody adds the strip later. 816 turn
+        3's entire reply was the promise; a stripping pass yields an empty string, and
+        `reply_sanitizer` hands an emptied reply back unchanged rather than sending nothing — so the
+        strip would have delivered the exact text it was added to remove."""
+        from products.services import reply_sanitizer
+
+        stall = "لحظة أتأكدلك منه يا فندم"
+        self.assertEqual(sanitize_reply(stall, self.conversation), stall)
+        self.assertNotIn("أتأكدلك", inspect.getsource(reply_sanitizer))
 
 
 class HarnessCatchesConv795Tests(TestCase):
@@ -12316,6 +13718,13 @@ class HarnessCatchesConv795Tests(TestCase):
     Turn 4 denied الكساندريا 2, which is in no catalogue — so the one reply that both invented a
     stock fact and contradicted itself passed every deterministic check in the suite. A fix nobody
     can measure is a fix that regresses silently.
+
+    The same argument is why the deny-on-the-first-ask policy brought two checks of its own, covered
+    in the last section here: `_stalled_when_denial_required` and `_denial_without_alternatives`.
+    Both halves of that policy are prompt instructions, and an instruction the harness cannot score
+    is an instruction that decays. The stall check is the one that makes `router`'s retry visible —
+    without it, a promise that survived being told twice not to make it reads exactly like a clean
+    denial.
     """
 
     def setUp(self):
@@ -12323,6 +13732,27 @@ class HarnessCatchesConv795Tests(TestCase):
 
         self.checks = checks
         self.store = Store.objects.create(name="Perfamix Test")
+        # Two stocked perfumes, because `_denial_without_alternatives` compares the reply against
+        # `truth["available_names"]` and returns None on an empty catalogue — a store with nothing
+        # in it cannot fail to offer an alternative, so the check would be vacuous here. Neither is
+        # a spelling of الكساندريا 2, so `_false_denial` stays out of every test in this class.
+        armani = Brand.objects.create(store=self.store, name="Emporio Armani")
+        stronger = Product.objects.create(
+            store=self.store, brand=armani, name="Stronger With You", gender="male",
+        )
+        ProductVariant.objects.create(
+            product=stronger, volume=50, price=400, bottle_type="normal"
+        )
+        chanel = Brand.objects.create(store=self.store, name="Chanel")
+        bleu = Product.objects.create(
+            store=self.store, brand=chanel, name="Bleu de Chanel", gender="male",
+        )
+        ProductVariant.objects.create(product=bleu, volume=50, price=645, bottle_type="normal")
+        # A pending block with no verdict on it. `_pending_lookup_block` cannot write one any more —
+        # it is the only writer of the marker and always appends ABSENCE_DENIED or NAME_UNREADABLE —
+        # so this is a synthetic shape, kept because it is the cheapest way to say "a turn with no
+        # product data and no confirmed absence", which is the class of turn `_unbacked_denial`
+        # exists for and which (ب), (ج), (د) and every abstain still produce.
         self.pending_context = "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب عندكو الكساندريا 2 ؟\n"
 
     # ── denying and deferring in one breath ──────────────────────────────
@@ -12381,19 +13811,21 @@ class HarnessCatchesConv795Tests(TestCase):
             self.checks._unbacked_denial("للأسف العطر ده مش متوفر عندنا.", context)
         )
 
-    def test_a_denial_on_the_exhausted_turn_is_the_required_reply(self):
-        """Conversations 798 and 799. Once the customer has chased the promise and there is still
-        no answer, `router` hands off and the bot never speaks again — so the denial is the fix,
-        and flagging it here would score the fix as the defect."""
-        from products.services.product_info import LOOKUP_EXHAUSTED_MARKER
+    def test_a_denial_on_a_confirmed_absence_is_the_required_reply(self):
+        """The exemption the whole policy rests on. `ABSENCE_DENIED` means the active catalogue has
+        been swept for the name the customer typed and does not have it, so the denial is not an
+        unbacked guess — it is the answer the turn was instructed to give, on the first ask. Flagging
+        it here would score the fix as the defect.
+        """
+        from products.services.product_info import ABSENCE_DENIED_MARKER
 
-        context = f"{self.pending_context}{LOOKUP_EXHAUSTED_MARKER}\n"
+        context = f"{self.pending_context}{ABSENCE_DENIED_MARKER}\n"
 
         self.assertIsNone(
             self.checks._unbacked_denial("للأسف الكساندريا 2 مش موجود عندنا.", context)
         )
 
-    def test_the_exhausted_turn_still_may_not_deny_and_defer(self):
+    def test_a_confirmed_absence_still_may_not_deny_and_defer(self):
         """The exemption is scoped to `_unbacked_denial`. Contradicting itself inside one sentence
         is wrong on every turn, and `_ABSENT_RULES` forbids it too."""
         self.assertIsNotNone(
@@ -12402,10 +13834,20 @@ class HarnessCatchesConv795Tests(TestCase):
             )
         )
 
-    def test_a_deferral_against_the_same_context_is_clean(self):
-        """The behaviour M2 asks for has to score clean, or the check punishes the fix."""
+    def test_a_promise_is_not_this_checks_business(self):
+        """`_unbacked_denial` judges denials, so it stays silent on a promise however wrong the
+        promise is — and on a turn with no confirmed absence the promise is not wrong here at all.
+        What flags it on the turn where it *is* wrong is `_stalled_when_denial_required`, keyed on
+        the marker this context does not carry. Two checks, one each, rather than one check trying
+        to hold both policies.
+        """
         self.assertIsNone(
             self.checks._unbacked_denial("لحظة أتأكدلك منه وأرد عليك.", self.pending_context)
+        )
+        self.assertIsNone(
+            self.checks._stalled_when_denial_required(
+                "لحظة أتأكدلك منه وأرد عليك.", self.pending_context
+            )
         )
 
     def test_a_denial_on_a_turn_that_had_real_data_is_untouched(self):
@@ -12440,6 +13882,163 @@ class HarnessCatchesConv795Tests(TestCase):
         from eval_harness import runner
 
         self.assertEqual(runner._REPLAYS.get("conv795"), "scenarios_conv795")
+
+    # ── the two checks the deny-on-the-first-ask policy needed ────────────
+    def _denied_context(self):
+        from products.services.product_info import ABSENCE_DENIED_MARKER
+
+        return f"{self.pending_context}{ABSENCE_DENIED_MARKER}\n"
+
+    def _record(self, reply, context):
+        """One turn in the shape `rescore` reads out of runs.json."""
+        return {
+            "id": "T1",
+            "turns": [{
+                "n": 1, "user": "طب عندكو الكساندريا 2 ؟", "reply": reply,
+                "context": context, "search": {"matched": []},
+                "merged_intent": {}, "stage": None,
+            }],
+        }
+
+    def test_a_stall_on_a_confirmed_absence_is_flagged(self):
+        """816 turn 3, scored. Its entire reply was the promise, and every check in the suite
+        passed it."""
+        flagged = self.checks._stalled_when_denial_required(
+            "لحظة أتأكدلك منه يا فندم", self._denied_context()
+        )
+
+        self.assertIsNotNone(flagged)
+        self.assertIn("أتأكدلك", flagged)
+
+    def test_the_stall_check_reads_the_same_predicate_the_router_retries_on(self):
+        """If the check and the guard disagreed, one of them would be scoring the other's output
+        wrong — a reply the router accepted would be flagged, or one it rejected would pass."""
+        from products.services.sales import described
+
+        context = self._denied_context()
+        for reply in ["لحظه اتأكدلك منه", "هسأل وأرد عليك", "هشوفه لك"]:
+            with self.subTest(reply=reply):
+                self.assertEqual(
+                    described.promises_a_lookup(reply),
+                    self.checks._stalled_when_denial_required(reply, context) is not None,
+                )
+
+    def test_a_denial_with_alternatives_passes_both_new_checks(self):
+        """The reply the policy asks for. It has to score clean in both passes or the harness
+        pushes the bot back towards the stall."""
+        reply = (
+            "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. "
+            "بس عندنا Stronger With You و Bleu de Chanel لو تحب."
+        )
+        context = self._denied_context()
+        truth = self.checks.build_ground_truth(self.store)
+
+        self.assertIsNone(self.checks._stalled_when_denial_required(reply, context))
+        self.assertIsNone(self.checks._denial_without_alternatives(reply, context, truth))
+
+    def test_a_bare_denial_is_flagged_for_offering_nothing(self):
+        flagged = self.checks._denial_without_alternatives(
+            "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا.",
+            self._denied_context(),
+            self.checks.build_ground_truth(self.store),
+        )
+
+        self.assertIsNotNone(flagged)
+        self.assertIn("مش موجود عندنا", flagged)
+
+    def test_gesturing_at_alternatives_without_naming_one_is_still_bare(self):
+        """"عندنا عطور تانية حلوة" is not an offer. A perfume the customer cannot name is a perfume
+        they cannot ask for, which is the whole reason the check counts names and not wording."""
+        self.assertIsNotNone(
+            self.checks._denial_without_alternatives(
+                "بعتذر، مش موجود عندنا. بس عندنا عطور تانية حلوة ممكن تعجبك.",
+                self._denied_context(),
+                self.checks.build_ground_truth(self.store),
+            )
+        )
+
+    def test_neither_new_check_fires_without_the_marker(self):
+        """Both are scoped to a confirmed absence, and that scoping is what keeps them quiet on the
+        turns where a promise is honest (red line 2, the store-policy question) and where a denial
+        legitimately stands alone (a sold-out size, a perfume with no original bottle)."""
+        truth = self.checks.build_ground_truth(self.store)
+        context = "Name (الاسم الصحيح): Versace Eros\nOriginal Bottle: ❌ مش متوفر"
+
+        self.assertIsNone(
+            self.checks._stalled_when_denial_required("لحظة أتأكدلك من الأوريجينال.", context)
+        )
+        self.assertIsNone(
+            self.checks._denial_without_alternatives(
+                "للاسف مش متوفر منه زجاجة أوريجينال حالياً.", context, truth
+            )
+        )
+
+    def test_check_reply_reports_the_new_codes(self):
+        codes = {
+            code
+            for code, _, _ in self.checks.check_reply(
+                "لحظة أتأكدلك منه يا فندم",
+                truth=self.checks.build_ground_truth(self.store),
+                context=self._denied_context(),
+                customer_text="طب عندكو الكساندريا 2 ؟",
+                turn_state={},
+            )
+        }
+
+        self.assertIn("stalled_when_denial_required", codes)
+
+    def test_rescore_reports_the_new_codes_too(self):
+        """The mirroring that is easy to forget: `checks.py` findings reach runs.json and nothing
+        else. findings.json — the file anyone actually reads, and what `analyze` counts — comes from
+        `rescore`, so a check added in one pass and not the other is a check with no audience."""
+        from eval_harness import rescore
+
+        context = self._denied_context()
+        truth = self.checks.build_ground_truth(self.store)
+
+        stalled = rescore.rescore(
+            self._record("لحظة أتأكدلك منه يا فندم", context), truth
+        )
+        bare = rescore.rescore(
+            self._record("بعتذر يا فندم، الكساندريا 2 مش موجود عندنا.", context), truth
+        )
+
+        self.assertIn("stalled_when_denial_required", [f["code"] for f in stalled])
+        self.assertIn("denial_without_alternatives", [f["code"] for f in bare])
+
+    def test_rescore_leaves_the_required_reply_alone(self):
+        from eval_harness import rescore
+
+        findings = rescore.rescore(
+            self._record(
+                "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. بس عندنا Stronger With You بـ400.",
+                self._denied_context(),
+            ),
+            self.checks.build_ground_truth(self.store),
+        )
+        codes = [f["code"] for f in findings]
+
+        self.assertNotIn("stalled_when_denial_required", codes)
+        self.assertNotIn("denial_without_alternatives", codes)
+        self.assertNotIn("unbacked_denial", codes)
+
+    def test_the_new_severities_are_ones_rescore_can_sort(self):
+        """`rescore.main()` sorts findings through a fixed severity table and raises KeyError on
+        anything else, so a new code with a novel severity string crashes the pass that writes
+        findings.json."""
+        severities = {
+            severity
+            for _, severity, _ in self.checks.check_reply(
+                "لحظة أتأكدلك منه يا فندم بعتذر مش موجود عندنا.",
+                truth=self.checks.build_ground_truth(self.store),
+                context=self._denied_context(),
+                customer_text="طب عندكو الكساندريا 2 ؟",
+                turn_state={},
+            )
+        }
+
+        self.assertTrue(severities)
+        self.assertTrue(severities <= {"critical", "high", "medium", "low"}, severities)
 
 
 class PluralPointerTests(TestCase):
@@ -12546,7 +14145,8 @@ class AnswerEveryRowTests(TestCase):
     full prices. The reply quoted Dior Homme Sport's sizes and said nothing about Bleu de Chanel.
 
     Nothing in the found branch asked for coverage. The one line that does —
-    "✅ جاوب على العطور اللي في البيانات عادي" — lives in `_PARTIAL_DEFERRAL_RULES`, which is gated
+    "✅ جاوب على العطور اللي في البيانات عادي" — lives in `_PARTIAL_ABSENT_RULES` (and its
+    `_PARTIAL_UNREADABLE_RULES` sibling), which is gated
     on `partially_resolved`; both names resolved cleanly here, so it never fired. 836 did better
     only because its third name was unplaceable, which is to say it was carried by a rule it
     received by accident of failing at something else.
@@ -12673,10 +14273,25 @@ class AnswerEveryRowTests(TestCase):
 
         self.assertNotIn(product_info._ANSWER_EVERY_ROW, self._prompt("بكام"))
 
-    def test_a_deferral_is_never_asked_to_price_every_row(self):
-        """On a deferral the rows are labelled `_NOT_THE_PERFUME_ASKED_ABOUT` — pricing all of them
-        is precisely what that label forbids. Also the numbering check: both constants are rule 14,
-        and exactly one of them may ever reach the model."""
+    def test_an_absent_name_is_never_asked_to_price_every_row(self):
+        """On a turn about a perfume we do not have, the rows are labelled
+        `_NOT_THE_PERFUME_ASKED_ABOUT` — pricing all of them is precisely what that label forbids.
+        Also the numbering check: three constants claim rule 14 (`_ANSWER_EVERY_ROW` and the two
+        halves of the absent-name fork), and exactly one of them may ever reach the model."""
+        from products.services import product_info
+
+        self._offered_both()
+
+        prompt = self._prompt("عندك لادور بخور ؟", resolved=_absent("لادور بخور"))
+
+        self.assertNotIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn(product_info._ABSENT_RULES, prompt)
+        self.assertEqual(prompt.count("\n14."), 1)
+
+    def test_an_unverified_name_is_not_asked_to_price_every_row_either(self):
+        """The other half of the fork, which the empty-resolver mock reaches: nobody cleared the
+        name, so the clarification rules ship instead — and they are numbered 14 too, so the
+        one-rule-14 invariant has to hold on this turn as well."""
         from products.services import product_info
 
         self._offered_both()
@@ -12684,7 +14299,7 @@ class AnswerEveryRowTests(TestCase):
         prompt = self._prompt("عندك لادور بخور ؟", resolved=[])
 
         self.assertNotIn(product_info._ANSWER_EVERY_ROW, prompt)
-        self.assertIn(product_info._DEFERRAL_RULES, prompt)
+        self.assertIn(product_info._UNREADABLE_NAME_RULES, prompt)
         self.assertEqual(prompt.count("\n14."), 1)
 
     def test_the_coverage_rule_is_numbered_once(self):
@@ -12726,7 +14341,7 @@ class AnswerEveryRowTests(TestCase):
             self.conversation, "assistant",
             "بعتذر، لادور بخور مش متوفر عندنا. ممكن أشيرلك على Dior Homme Sport أو Bleu de Chanel.",
             internal_context=(
-                f"{product_info.LOOKUP_EXHAUSTED_MARKER} عندك لادور بخور ؟\n"
+                f"{product_info.ABSENCE_DENIED_MARKER} عندك لادور بخور ؟\n"
                 "Name (الاسم الصحيح): Dior Homme Sport\n"
                 "Name (الاسم الصحيح): Bleu de Chanel"
             ),

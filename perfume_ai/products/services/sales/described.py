@@ -186,6 +186,28 @@ def _deferred_in(content, names):
     return deferred
 
 
+def promises_a_lookup(reply):
+    """Does this reply tell the customer we will go and check and come back to them?
+
+    The same phrase tuple `_deferred_in` reads, asked as a question about the whole reply rather
+    than about which perfume a clause was attached to. `router` needs that question on a turn where
+    the promise is the defect and there may be no catalogue name in the reply at all: the entire
+    text of conversation 816 turn 3 was "لحظة أتأكدلك منه يا فندم."
+
+    A promise is not a lie about our stock, which is why it is not in `checks._DENIAL` and why
+    `_deferred_in` treats it as the opposite of a withdrawal. It is a promise nothing in this
+    pipeline keeps — no job looks the name up between two messages, no owner reply comes back — so
+    on a turn where `absence.catalogue_verdict` has already swept the catalogue there is nothing
+    left to check, and saying otherwise leaves the customer waiting for a reply that never arrives.
+
+    Still correct elsewhere, and deliberately not stripped anywhere: `prompts.py` red line 2 and the
+    store-policy case of the not-found branch both script it, and those are questions the store
+    owner genuinely can answer. The caller scopes this to the turns where it is wrong.
+    """
+    normalized = normalize_arabic(reply or "")
+    return any(normalize_arabic(marker) in normalized for marker in _DEFERRAL)
+
+
 def under_discussion(conversation, store, turns=2):
     """Perfumes we actually put in front of the customer in our last `turns` replies.
 
@@ -362,9 +384,10 @@ def _recent_contexts(conversation, turns):
 def replies_carrying(conversation, marker, turns=4):
     """How many of the last `turns` assistant replies were handed `marker`.
 
-    Takes the marker as an argument rather than naming one, because the caller that needs this
-    asks about `product_info.LOOKUP_EXHAUSTED_MARKER` — and `product_info` imports this module,
-    so spelling that marker here would be a circular import bought for nothing.
+    Takes the marker as an argument rather than naming one, because the callers that need this
+    ask about `product_info.ABSENCE_DENIED_MARKER` and `NAME_UNREADABLE_MARKER` — and `product_info`
+    imports this module, so spelling either marker here would be a circular import bought for
+    nothing.
     """
     return sum(
         1 for context in _recent_contexts(conversation, turns) if marker in (context or "")

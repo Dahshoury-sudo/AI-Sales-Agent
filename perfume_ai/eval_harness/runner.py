@@ -55,6 +55,8 @@ _REPLAYS = {
     # the second perfume in its prompt, 841 had both and dropped one.
     "conv841": "scenarios_conv841",
     "conv842": "scenarios_conv841",
+    # 772 is the deny-on-the-first-ask case: an absent perfume, then a stocked one written with ڤ.
+    "conv772": "scenarios_conv772",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

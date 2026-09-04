@@ -11,12 +11,19 @@ from .ai.prompts import get_system_prompt
 # It bans inventing a price, not stating one: the promotion branch (router.py) routes
 # through here and asks the model to relay the store's configured offers, which carry
 # real prices in the Store Custom Instructions. A blanket ban would gag that reply.
+#
+# The last bullet asks the customer to confirm the name rather than promising to check.
+# This branch runs with no product rows and no extractor call, so it is structurally the
+# UNKNOWN case of `products.services.absence`: it can neither deny — nothing was verified —
+# nor promise, because nothing in this pipeline looks a name up between two messages, and
+# conversations 795, 798, 799, 816 and 817 are all customers who waited for a reply to a
+# promise made here and elsewhere that never came.
 NO_PRODUCT_DATA_GUARD = """
 
 🔴🔴 مفيش أي بيانات منتجات مبعوتة لك في الرسالة دي:
 - ❌ ممنوع تذكر سعر أو اسم عطر من ذاكرتك أو من دمك. ولا رقم واحد.
 - ✅ مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً فوق في تعليمات الستور أو حقائق الستور — بالنص وبدون تغيير.
-- أي سعر أو اسم عطر مش مكتوب فوق = ممنوع تقوله. لو العميل سأل عن سعر عطر معين، قوله "لحظة أتأكدلك يا فندم".
+- أي سعر أو اسم عطر مش مكتوب فوق = ممنوع تقوله. لو العميل سأل عن سعر عطر معين، اسأله يتأكد من اسم العطر ويكتبه تاني. ❌ ومتقولوش إنه مش متوفر (إحنا مش شايفين الكتالوج هنا)، ❌ ومتوعدهوش إنك هتراجع وترد عليه (مفيش حد بيراجع بعد الرد ده).
 """
 
 

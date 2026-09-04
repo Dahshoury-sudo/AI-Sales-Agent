@@ -21,12 +21,14 @@ A chase names no perfume, so `resolve_products` answers the pronoun in "منه" 
 on offer, `products` comes back full, and all three guards switch off together on the turn that
 needed them most. `described.pending_lookup` was built for exactly this and only `router` read it.
 
-Both conversations are also why the second ask no longer defers. Nothing happens between two turns
-of a chat — no lookup runs — so a second "لحظة أتأكدلك" is the same promise made again by someone
-who did not keep it, to a customer left waiting for an answer that is not coming. The first
-deferral is honest; the second is a way of ending the conversation instead of answering it. See
-`scenarios_conv816` for the shape that reaches this turn by re-typing the name rather than chasing
-it with a pronoun.
+Both conversations are also why no ask defers any more. Nothing happens between two turns of a chat
+— no lookup runs, no owner reply comes back — so "لحظة أتأكدلك" was never a hedge, it was a promise
+made by someone who could not keep it. It bought a turn and spent the customer's patience; these two
+transcripts are the customer coming back to collect and getting a perfume they never asked about.
+`products.services.absence` now searches the whole active catalogue before the first reply is
+written, so the answer these customers waited for exists on turn 1 and is given there. See
+`scenarios_conv816` for the shape that reaches the chase turn by re-typing the name rather than
+chasing it with a pronoun.
 """
 
 _BAKHOOR_TRUTH = (
@@ -41,16 +43,19 @@ _CHASE_RULES = (
     "or note list for anything else is not an answer to being asked to check. "
     "❌ CRITICAL: claiming to have looked, searched or found anything ('لقيت...', 'بصيت ولقيت'). "
     "No lookup happened between the two turns. Reporting one is inventing a fact about the shop. "
-    "❌ CRITICAL: promising to check again on the chase turn ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / "
-    "'هشوفه لك'). That promise was already made and not kept; repeating it is what left these two "
-    "customers waiting. The required reply is a plain 'مش موجود عندنا' about the perfume they "
-    "named, and then alternatives offered by full name as DIFFERENT perfumes. "
+    "❌ CRITICAL: promising to check ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / 'هشوفه لك') on EITHER "
+    "turn. Nothing looks a perfume up between two messages of a chat and no owner reply comes back, "
+    "so that promise is what left these two customers waiting — the chase turn is them collecting "
+    "on it. "
     "❌ CRITICAL: denying and promising to check in one reply ('مش موجود عندنا، لحظة أتأكدلك منه') "
     "— the two halves contradict each other. "
     "❌ CRITICAL: any mention of a system, data, catalogue, 'مش ظاهر عندي' or 'البيانات اللي معايا'. "
     "The customer must never learn such a thing exists. "
-    "❌ On the FIRST turn, denying it instead of deferring: the first reply is 'لحظة أتأكدلك منه' "
-    "and nothing more, because not finding a name is not the same fact as not stocking it. "
+    "✅ Required on the FIRST turn: say plainly that we do not carry the perfume they named, with a "
+    "short apology, echoing the name in their own Arabic letters — AND in the SAME reply offer one "
+    "or two stocked perfumes by full name as DIFFERENT perfumes. The name was searched against the "
+    "whole active catalogue before the reply was written, so the answer is already known. "
+    "❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. "
 )
 
 SCENARIOS = [
@@ -71,10 +76,10 @@ SCENARIOS = [
             + _CHASE_RULES
             + "❌ CRITICAL: attributing a بخور, incense or frankincense note to a perfume whose "
             "recorded notes do not contain one. Wanting the note is not evidence of it. "
-            "✅ Expected: turn 1 defers on لادور بخور and may offer Dior Homme Sport or Bleu de "
-            "Chanel by full name as different perfumes, citing the olibanum/incense note each one "
-            "really has. Turn 2 says plainly that لادور بخور is not available rather than "
-            "reporting a search. Turn 1 asked about availability only, so a size and price list is "
+            "✅ Expected: turn 1 says plainly that لادور بخور is not ours and offers Dior Homme "
+            "Sport or Bleu de Chanel by full name as different perfumes, citing the olibanum/incense "
+            "note each one really has. Turn 2 carries that same answer forward rather than reporting "
+            "a search. Turn 1 asked about availability only, so a size and price list is "
             "unrequested there. ❌ Never quote a price that is not one of the four figures above."
         ),
     },
@@ -97,8 +102,8 @@ SCENARIOS = [
             + _CHASE_RULES
             + "❌ CRITICAL: implying الكساندريا 2 and Stronger With You are the same perfume, or "
             "that one is the other's 'correct name'. "
-            "✅ Expected: turn 1 defers on الكساندريا 2 and may offer a stocked perfume by full "
-            "name as a different perfume. Turn 2 says plainly that الكساندريا 2 is not available "
+            "✅ Expected: turn 1 says plainly that الكساندريا 2 is not ours and offers a stocked "
+            "perfume by full name as a different perfume. Turn 2 carries that same answer forward "
             "instead of pricing something else. Turn 1 asked about availability only, so a size "
             "and price list is unrequested there. ❌ Never quote a price for any perfume that is "
             "not one of the six figures above."

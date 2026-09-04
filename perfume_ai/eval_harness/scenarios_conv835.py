@@ -4,7 +4,9 @@
 Both customers named a perfume this catalogue does not carry, and in both the retrieval miss was
 correct. Everything that went wrong went wrong afterwards.
 
-  835  "عندك لادور بخور ؟"        → "لحظة أتأكدلك منه" + Dior Homme Sport and Bleu de Chanel ✅
+  835  "عندك لادور بخور ؟"        → "لحظة أتأكدلك منه" + Dior Homme Sport and Bleu de Chanel
+                                    (correct under the policy of the time; the promise is now the
+                                    defect and turn 1 owes the denial itself)
        "ها لقيتو ؟"                → Dior Homme Sport's price list ❌
        "بقول لقيت لادور بخور؟"     → the denial, with ONE alternative ✅ / ❌
        "طب عاملين كام دو"          → one perfume priced, for a plural question ❌
@@ -63,10 +65,11 @@ _CHASE_RULES = (
     "that was volunteered alongside the promise. 'ها لقيتو ؟' and 'ها لقيت اي' ask about the "
     "customer's OWN perfume; detail about a different one is not an answer to it, and reading it as "
     "one is the exact defect in 835 turn 2 and 836 turns 2 and 3. "
-    "❌ CRITICAL: promising to check again ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / 'لو حابب أعرفلك... "
-    "هسأل وأرد عليك' / 'هشوفه لك'). That promise was already made and nothing has happened since — "
-    "no lookup runs between two messages of a chat — so making it a second time leaves the customer "
-    "waiting for an answer that is not coming. 836 turn 2 is that reply verbatim. "
+    "❌ CRITICAL: promising to check ('لحظة أتأكدلك' / 'هسأل وأرد عليك' / 'لو حابب أعرفلك... "
+    "هسأل وأرد عليك' / 'هشوفه لك') on ANY turn, the first one included. No lookup runs between two "
+    "messages of a chat and no owner reply comes back, so the promise leaves the customer waiting "
+    "for an answer that is not coming — and these chase turns are them waiting. 836 turn 2 is that "
+    "reply verbatim. "
     "❌ CRITICAL: claiming to have looked, searched, checked or found anything ('لقيت', 'بصيت "
     "ولقيت', 'راجعت', 'دورت'). No lookup happened between the turns; reporting one invents a fact. "
     "❌ CRITICAL: dropping the perfume from the reply. Answering only the perfumes that were found "
@@ -77,11 +80,12 @@ _CHASE_RULES = (
     "❌ CRITICAL: any mention of a system, data, catalogue, 'مش ظاهر عندي' or 'البيانات اللي معايا'. "
     "The customer must never learn such a thing exists. "
     "❌ CRITICAL: writing the perfume's name in Latin letters when the customer wrote it in Arabic "
-    "('L'Adour', 'Alexandria II'). Inventing a spelling for a perfume we are saying we do not know "
-    "is incoherent — echo the customer's own letters. "
-    "✅ Required on the turn the customer comes back: a short apology and a plain statement that the "
-    "perfume they named is not available, then one or two stocked perfumes offered by FULL name and "
-    "clearly labelled as DIFFERENT perfumes. "
+    "('L'Adour', 'Alexandria II'). Inventing a spelling for a perfume we do not carry is incoherent "
+    "— echo the customer's own letters. "
+    "✅ The absent perfume is searched against the whole active catalogue before the FIRST reply is "
+    "written, so the required answer — a short apology and a plain statement that it is not "
+    "available — belongs on that first turn, and every turn after it carries the same answer "
+    "forward without re-reading it back as news. "
 )
 
 SCENARIOS = [
@@ -100,17 +104,21 @@ SCENARIOS = [
         "probe": (
             "Replay of conversation 835. "
             + _BAKHOOR_TRUTH
-            + "Turn 1 was right: 'لحظة أتأكدلك منه' with two alternatives, and no price list for a "
-            "question that only asked about availability. "
-            "Turn 2 is the first failure: 'ها لقيتو ؟' means 'so, did you find it?' — the customer "
-            "collecting the promise, naming no perfume of their own — and the entire reply was Dior "
-            "Homme Sport's availability and price list. "
+            + "Turn 1 ✅ must say plainly that لادور بخور is not ours, with a short apology and the "
+            "name echoed in the customer's own Arabic letters, and in the SAME reply offer Dior "
+            "Homme Sport and/or Bleu de Chanel by full name as DIFFERENT perfumes — no price list, "
+            "because the question only asked about availability. ❌ CRITICAL: a bare denial with "
+            "nothing on offer beside it; the customer came to buy. "
+            "Turn 2 is the first failure of the transcript: 'ها لقيتو ؟' means 'so, did you find "
+            "it?' — the customer collecting a promise that should never have been made, naming no "
+            "perfume of their own — and the entire reply was Dior Homme Sport's availability and "
+            "price list. "
             + _CHASE_RULES
-            + "Turn 3 ('بقول لقيت لادور بخور؟' — 'I said, did you find Ladore Bakhour?') is the same "
-            "question a third time. By then the customer has already been told once; the reply must "
-            "hold the same answer without reading the whole denial back as though they had not heard "
-            "it, and must move to what is actually on offer. ❌ It must never revert to 'لحظة "
-            "أتأكدلك' after a denial, and ❌ never say the perfume is available. "
+            + "Turns 2 and 3 ('بقول لقيت لادور بخور؟' — 'I said, did you find Ladore Bakhour?') both "
+            "ask the same question turn 1 already answered. Each reply must hold that same answer "
+            "without reading the whole denial back as though the customer had not heard it, and must "
+            "move to what is actually on offer. ❌ It must never revert to 'لحظة أتأكدلك' after the "
+            "denial, and ❌ never say the perfume is available. "
             "Turn 4 ('طب عاملين كام دو' — 'ok, how much are THOSE') is plural and refers to the "
             "perfumes just offered. ✅ It must price EVERY perfume that was actually offered by "
             "name, not one of them. ❌ Pricing a single perfume when two were offered leaves the "
@@ -144,16 +152,19 @@ SCENARIOS = [
             + _ALEXANDRIA_TRUTH
             + "Turn 1 names three perfumes and asks for their prices. ✅ Both stocked perfumes must "
             "be priced in full — the customer asked for those prices and is owed them — AND "
-            "الكساندريا 2 must be named in the same reply with 'لحظة أتأكدلك منه' and nothing more. "
+            "الكساندريا 2 must be named in the same reply and plainly stated to be one we do not "
+            "carry. It was searched against the whole active catalogue before this reply was "
+            "written, so that is a verified fact and the customer gets all three answers at once. "
             "❌ CRITICAL: answering two of the three and leaving the third out of the reply "
             "entirely. ❌ CRITICAL: withholding the two prices because of the third name — the rows "
             "for Bleu de Chanel and Dior Sauvage ARE the answer to two thirds of this question. "
-            "❌ CRITICAL: saying الكساندريا 2 is not available on this turn: failing to find a name "
-            "is not the same fact as not stocking it, so turn 1 defers and does not deny. "
+            "❌ CRITICAL: promising to check on الكساندريا 2 instead of answering about it. "
             "❌ CRITICAL: implying الكساندريا 2 is one of the two priced perfumes, or that one of "
             "them is its 'correct name', or attributing any price or note to it. "
-            "Turn 2 ('ها لقيت اي' — 'so what did you find?') collects that promise. Turn 3 ('ماشي "
-            "اعرفلي' — 'fine, go find out for me') collects it again. "
+            "Note that this turn owes NO extra alternatives: the customer already has two real "
+            "perfumes with real prices in front of them, and pitching more would bury them. "
+            "Turn 2 ('ها لقيت اي' — 'so what did you find?') and turn 3 ('ماشي اعرفلي' — 'fine, go "
+            "find out for me') both ask again for an answer turn 1 should already have given. "
             + _CHASE_RULES
             + "What actually happened on both turns: the same two price lists re-sent verbatim, "
             "with 'لو حابب أعرفلك أسعار الكساندريا 2، هسأل وأرد عليك' on turn 2 and no mention of "

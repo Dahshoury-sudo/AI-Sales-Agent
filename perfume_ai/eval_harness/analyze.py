@@ -3,6 +3,19 @@ import json
 data = json.load(open('eval_harness/results/verdicts.json', 'r', encoding='utf-8'))
 findings = json.load(open('eval_harness/results/findings.json', 'r', encoding='utf-8'))
 
+
+def failures(verdict):
+    """The judge's failures for one scenario, minus anything that is not a finding object.
+
+    The judge is an LLM writing JSON, and it sometimes emits a bare string where a
+    `{severity, category, what}` object belongs — `verdicts.json` has one such entry on S1
+    (`'expected_text_fixing_note_placeholder'`). Reading `f['severity']` off it raises
+    `TypeError: string indices must be integers` and takes down the whole report, including the
+    deterministic-findings section that has nothing to do with the judge. Drop the malformed
+    entries and print the rest.
+    """
+    return [f for f in verdict.get('failures', []) if isinstance(f, dict)]
+
 # Score averages by dimension
 dims = {}
 for v in data:
@@ -21,7 +34,7 @@ print('=== WORST SCENARIOS ===')
 for v in sorted(data, key=lambda x: sum(s for s in x['scores'].values() if s is not None)/max(1,sum(1 for s in x['scores'].values() if s is not None)))[:10]:
     scores = [s for s in v['scores'].values() if s is not None]
     avg = sum(scores)/len(scores)
-    high_fails = len([f for f in v.get('failures', []) if f['severity'] == 'high'])
+    high_fails = len([f for f in failures(v) if f['severity'] == 'high'])
     print(f"  {v['id']:5s} ({v['category']:15s}) avg={avg:.1f}  high_fails={high_fails}")
 
 # Best scenarios
@@ -37,7 +50,7 @@ print()
 print('=== HIGH SEVERITY FAILURES BY CATEGORY ===')
 cats = {}
 for v in data:
-    for f in v.get('failures', []):
+    for f in failures(v):
         if f['severity'] == 'high':
             cats[f['category']] = cats.get(f['category'], 0) + 1
 for c in sorted(cats, key=cats.get, reverse=True):
@@ -70,6 +83,6 @@ for v in data:
         for w in v.get('what_worked', []):
             print(f"    + {w[:120]}...")
         print(f"  Failures:")
-        for f in v.get('failures', []):
+        for f in failures(v):
             print(f"    [{f['severity']}] {f['category']}: {f['what'][:120]}")
         print(f"  Verdict: {v.get('salesperson_verdict', '')[:200]}")

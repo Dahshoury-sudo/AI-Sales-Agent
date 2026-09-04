@@ -255,7 +255,7 @@ def rescore(record, truth, scenario_budget=None):
         if leak:
             add("internal_data_leak", "high",
                 f"told the customer about the injected data ('{leak.group()}') instead of "
-                f"saying لحظة أتأكدلك")
+                f"naming the perfume or asking which one they meant")
 
         # ── denying and deferring in one breath ──
         # Mirrored here for the reason `false_denial` and the leak are: checks.py findings only
@@ -278,6 +278,22 @@ def rescore(record, truth, scenario_budget=None):
             add("unbacked_denial", "critical",
                 f"told the customer a perfume is not available on a turn whose injected data "
                 f"said nothing about it: '{unbacked}'")
+
+        # ── stalling where the catalogue was already swept, and denying with nothing on offer ──
+        # The two halves of the deny-on-the-first-ask policy, mirrored for the same reason as the
+        # three above. Both are scoped to the `ABSENCE_DENIED` marker, so neither can fire on a turn
+        # where the promise is honest or the denial legitimately stands alone.
+        stall = checks._stalled_when_denial_required(reply, context)
+        if stall:
+            add("stalled_when_denial_required", "critical",
+                f"promised to check ('{stall}') on a turn where the whole catalogue had already "
+                f"been searched and the name was not in it — nothing looks it up after this reply")
+
+        bare = checks._denial_without_alternatives(reply, context, truth)
+        if bare:
+            add("denial_without_alternatives", "high",
+                f"denied the perfume ('{bare}') without naming a single stocked perfume the "
+                f"customer could buy instead")
 
         # ── verbatim-ish repetition across turns ──
         if previous_reply and reply:
