@@ -7,7 +7,7 @@ from .product_info import get_product_info
 from .product_resolver import resolve_products
 
 
-def compare_products(message, history=None, store=None, conversation=None):
+def compare_products(message, history=None, store=None, conversation=None, retry_hint=""):
     """Compare two named perfumes.
 
     Rendered with show_prices=False: this prompt forbids mentioning any price or size,
@@ -37,11 +37,21 @@ def compare_products(message, history=None, store=None, conversation=None):
     context — structurally could not see it. `get_product_info` denies exactly the name that
     is missing, answers about the one that is not, and writes the markers the harness and the
     owner notification both read.
+
+    `retry_hint` is instruction text from `router._rephrased`, appended to the instruction block and
+    kept out of `message` — this function resolves perfume names out of the message, so a warning
+    glued onto it would go to `resolve_products` as a name to place (the shape of conversation 816,
+    recorded in `get_product_info`'s docstring). It is forwarded to `get_product_info` on the
+    fewer-than-two-matches path so a delegated turn keeps the guard the direct one has.
+
+    Until this parameter existed, this was the only model-generated branch in `router` with no
+    repetition check of any kind — and instruction 5 below *requires* the closing frame
+    "أنا أرشحلك X أكتر لأن…", the same frame conversation 973 repeated across four replies.
     """
     matches = resolve_products(message, history, store, conversation)[:2]
 
     if len(matches) < 2:
-        return get_product_info(message, history, store, conversation)
+        return get_product_info(message, history, store, conversation, retry_hint=retry_hint)
 
     context = format_products(matches, show_prices=False)
 
@@ -72,7 +82,7 @@ def compare_products(message, history=None, store=None, conversation=None):
 6. 🔴 العميل لسه بيوازن بين اختيارين ومختارش — ❌ ممنوع تقفل البيعة في الرد ده. ممنوع "تحب أساعدك في الطلب؟" ولا "تحب تطلب واحد فيهم؟". لو حابب تختم بسؤال، اسأله سؤال تضييق بيساعده يقرر (زي "بتستخدمه بالنهار ولا بالليل؟").
 7. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
 8. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
-"""
+{retry_hint}"""
     })
 
     response = chat(messages, profile="converse")

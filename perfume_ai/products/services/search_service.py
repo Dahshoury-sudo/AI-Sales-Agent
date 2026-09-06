@@ -289,7 +289,16 @@ def _text_season_hit(recorded, wanted):
     return "all season" in lowered or str(wanted).strip().lower() in lowered
 
 
-def search_products(intent, store=None, keep=()):
+def search_products(intent, store=None, keep=(), offered=()):
+    """The shortlist for one recommendation turn.
+
+    `keep` and `offered` are both name sets supplied by the caller rather than read here, matching
+    each other and keeping the DB walk in `sales/described.py` where the rest of the
+    conversation-history reading lives. `keep` is what the conversation is on now
+    (`described.under_discussion`); `offered` is everything the customer has ever been shown
+    (`described.offered_ever`). They reach `ranking.rank` as opposite-signed weights, never as
+    filters.
+    """
     queryset = Product.objects.filter(is_active=True).prefetch_related('variants')
     if store:
         queryset = queryset.filter(store=store)
@@ -476,7 +485,14 @@ def search_products(intent, store=None, keep=()):
     # No ranking signal means nothing can discriminate between candidates, so the legacy
     # ordering is used untouched. This is what keeps the existing shortlist tests honest
     # rather than shuffling an all-equal list through a scorer.
-    if not ranking.has_signal(intent, reference) and not keep:
+    #
+    # `keep` and `offered` are each a discriminator in their own right, and neither appears in
+    # `has_signal` — that function asks what the *intent* can tell apart, and these come from the
+    # conversation. Without the `offered` clause the repeat penalty would be unreachable on exactly
+    # the turn it exists for: conversation 973's "اي تاني" carried notes, so it had signal, but a
+    # bare "1010" or "ايه احسن حاجة عندك" does not, and those are turns where the customer has
+    # already seen half the shortlist.
+    if not ranking.has_signal(intent, reference) and not keep and not offered:
         report = {"keeping": sorted(surviving), "dropped": dropped,
                   "reference_product": reference_product, "exhausted": exhausted}
         if exact.exists():
@@ -509,7 +525,14 @@ def search_products(intent, store=None, keep=()):
             product for product in pool.filter(name__in=surviving)
             if product.pk not in seen
         ]
-    ranked = ranking.rank(candidates, intent, reference=reference, keep=surviving)
+    # No symmetric top-up for `offered`, deliberately. The `surviving` append above exists because
+    # the continuity BONUS cannot lift a candidate the scorer never saw; a penalised candidate that
+    # fell outside the cheapest-first cap is already absent from the shortlist, which is the outcome
+    # the penalty is asking for. Appending it here just to score it down again would be work spent
+    # arriving where we already are.
+    ranked = ranking.rank(
+        candidates, intent, reference=reference, keep=surviving, offered=offered
+    )
     top = ranked[:MAX_PRODUCTS_IN_CONTEXT]
     ordered = _ordered_by_ids(pool, [entry.product.id for entry in top])
 

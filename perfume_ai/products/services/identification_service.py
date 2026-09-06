@@ -251,7 +251,7 @@ def _unverifiable_note(clues):
     )
 
 
-def identify_perfume(message, history=None, store=None, conversation=None):
+def identify_perfume(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer "what was that perfume called?" at a confidence the evidence supports.
 
     `conversation` is read for one thing only: the budget, so the prices in these blocks carry the
@@ -259,6 +259,16 @@ def identify_perfume(message, history=None, store=None, conversation=None):
     paths that were missing them — somebody naming a half-remembered perfume is not shopping to a
     number — but the markers are what stop a shortlist price being pitched as affordable when the
     customer has already said it is not, and the parameter costs one keyword at the call site.
+
+    `retry_hint` is instruction text from `router._rephrased` naming sentences this draft already
+    said, appended after the instruction block rather than to `message` — `extract_clues` reads the
+    message as the customer's description of a half-remembered perfume, and "⚠️ الجمل دي أنت قلتها"
+    would become clues to score candidates against.
+
+    A branch that repeats itself readily: a customer who cannot place a perfume goes round again,
+    each turn is asked for exactly one clarifying question, and `TIER_WORDING` supplies the same
+    sentence at the same confidence tier — so the third "فاكر جزء من الاسم؟" is a different draft of
+    the same reply.
     """
     clues = extract_clues(message, history, store)
     candidates = score_candidates(clues, _candidate_pool(clues, store))
@@ -320,7 +330,7 @@ def identify_perfume(message, history=None, store=None, conversation=None):
 {message}
 
 {("═══ أقرب العطور من بياناتنا ═══" + chr(10) + context) if context else ""}
-{instructions}
+{instructions}{retry_hint}
 """,
     })
 

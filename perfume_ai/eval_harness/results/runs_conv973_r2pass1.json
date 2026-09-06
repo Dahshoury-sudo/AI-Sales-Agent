@@ -8,7 +8,7 @@
       {
         "n": 1,
         "user": "عايز برفان حريمي فيه ريحه ورد",
-        "reply": "ريحته فيها ورد واضح، تمام. ميزانيتك في حدود كام؟",
+        "reply": "ريحته فيها ورد واضح، تحت أمرك يا فندم. ميزانيتك في حدود كام؟",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -64,7 +64,7 @@
       {
         "n": 2,
         "user": "1010",
-        "reply": "عندي ليك Bloom من Gucci، الـ50 ملي بـ549 جنيه داخل ميزانيتك، وريحتها فيها ورد وتناسب الربيع والصيف. وكمان Coco Mademoiselle من Chanel، الـ90 ملي بـ1006 جنيه داخل الميزانية، وفيه ورد مع نوتات أنيقة تناسب كل المواسم.\n\nأنا أرشحلك Coco Mademoiselle أكتر لطلبك، لأنه ريحته فيها ورد واضح وأنيقة وفيها توازن بين الكلاسيكي والحديث.",
+        "reply": "أنصحك بـ Coco Mademoiselle، فيه ورد واضح ومناسب لكل المواسم، والـ90 ملي بـ1006 جنيه داخل ميزانيتك، وفيه كمان الـ50 ملي بـ534 جنيه. \nوكمان Bloom ريحته فيها ورد وأزهار بيضاء، والـ50 ملي بـ549 جنيه داخل الميزانية، والـ90 ملي بـ1067 جنيه أعلى حاجة بسيطة من ميزانيتك. \nأنا أرشحلك Coco Mademoiselle أكتر لطلبك لأنه أنسب للمناسبات الرسمية وكلاسيكي شيك.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -183,7 +183,7 @@
       {
         "n": 3,
         "user": "اي تاني",
-        "reply": "لو حابب حاجة فيها ورد وبسعر مناسب، عندنا Jasmino الـ50 ملي بـ578 جنيه داخل ميزانيتك، وهو عطر تركيب حصري من تصميمنا. وكمان Good Girl الـ90 ملي بـ1083 جنيه، أعلى حاجة بسيطة من ميزانيتك.\n\nأنا أرشحلك Jasmino أكتر لأنه مناسب للاستخدام اليومي وفيه ورد واضح، ولو حابب حجم أكبر ممكن تفكر في Good Girl.",
+        "reply": "لو حابب حاجة فيها ورد وبسعر مناسب، عندنا Good Girl 50 ملي بـ650 جنيه، وكمان حجم الـ90 ملي متاح بسعر 1083 جنيه، أعلى حاجة بسيطة من ميزانيتك. \nوفي نفس الوقت، Jasmino 50 ملي بـ578 جنيه داخل الميزانية، والـ90 ملي بـ1106 جنيه، برضه أعلى حاجة بسيطة من ميزانيتك. \nأنا أرشحلك Good Girl أكتر لأنه مناسب للسهرات والشتا، أما Jasmino فأنسب للاستخدام اليومي والريحة شرقية ناعمة.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -197,8 +197,8 @@
           "longevity": null,
           "projection": null,
           "exclude_names": [
-            "Gucci Bloom",
-            "Coco Mademoiselle"
+            "Coco Mademoiselle",
+            "Bloom"
           ],
           "notes": [
             "rose"
@@ -220,8 +220,8 @@
           "longevity": null,
           "projection": null,
           "exclude_names": [
-            "Gucci Bloom",
-            "Coco Mademoiselle"
+            "Coco Mademoiselle",
+            "Bloom"
           ],
           "notes": [
             "rose"
@@ -292,13 +292,13 @@
           "Coco Mademoiselle"
         ],
         "context_chars": 5487,
-        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1106.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Bloom,Coco Mademoiselle\n",
+        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1106.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Coco Mademoiselle,Bloom\n",
         "findings": []
       },
       {
         "n": 4,
         "user": "مش عايز حاجه من البراند بتاعكو",
-        "reply": "لو بتدور على عطر فيه ورد ومناسب للسهرات، Good Girl من Carolina Herrera متوفر عندنا بـ50 ملي بسعر 650 جنيه داخل ميزانيتك، وكمان حجم الـ90 ملي بـ1083 جنيه، أعلى حاجة بسيطة من ميزانيتك. \n\nلو حابب حجم أكبر مع ريحة مميزة، الـ90 ملي خيار كويس، لكن لو عايز حاجة في حدود الميزانية، الـ50 ملي ممتاز.",
+        "reply": "لو بتدور على عطر براند عالمي وفيه ورد، Good Girl متاح عندنا بـ50 ملي بسعر 650 جنيه داخل ميزانيتك، والـ90 ملي سعره 1083 جنيه، أعلى حاجة بسيطة من ميزانيتك. أنسب اختيار ليك هو Good Girl لأنه ريحته مناسبة للسهرات والشتا.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -310,12 +310,10 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1010,
+          "max_price": 1010.0,
           "longevity": null,
           "projection": null,
-          "exclude_names": [
-            "Jasmino"
-          ],
+          "exclude_names": [],
           "notes": [
             "rose"
           ],
@@ -334,12 +332,10 @@
           "perfume_type": null,
           "season": null,
           "occasion": null,
-          "max_price": 1010,
+          "max_price": 1010.0,
           "longevity": null,
           "projection": null,
-          "exclude_names": [
-            "Jasmino"
-          ],
+          "exclude_names": [],
           "notes": [
             "rose"
           ],
@@ -420,14 +416,14 @@
           "Good Girl",
           "Jasmino"
         ],
-        "context_chars": 6003,
-        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Jasmino\n",
+        "context_chars": 5983,
+        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\n",
         "findings": []
       },
       {
         "n": 5,
         "user": "اي تاني",
-        "reply": "لو بتدور على عطر فيه ورد ويكون مناسب للنهار، Chloe Eau de Parfum متوفر عندنا بـ50 ملي بسعر 692 جنيه داخل ميزانيتك، وريحته ناعمة وشيك. \n\nكمان Light Blue من Dolce & Gabbana متاح بحجم 90 ملي بـ852 جنيه داخل الميزانية، وده حجم أكبر مع لمسة ورد منعشة تناسب الصيف. \n\nأنا أفضل Light Blue لأنه بيجمع بين الحجم الكبير والريحة المنعشة، لكن Chloe خيار ممتاز لو حابب حاجة أخف وأنيق أكتر.",
+        "reply": "لو بتدور على عطر فيه ورد ومناسب للسهرات في الشتاء، Good Girl متوفر عندنا بـ50 ملي بسعر 650 جنيه داخل ميزانيتك، والـ90 ملي سعره 1083 جنيه، أعلى حاجة بسيطة من ميزانيتك. \nأما Chloe فهي خيار ممتاز للاستخدام اليومي في الربيع والصيف، والـ50 ملي بـ692 جنيه داخل الميزانية، والـ90 ملي بـ1058 جنيه، أعلى حاجة بسيطة من ميزانيتك. \nأنا أرشحلك Good Girl أكتر لأنه أنسب للسهرات والجو الدافي.",
         "classification": "recommendation",
         "objection": null,
         "raw_intent": {
@@ -443,7 +439,9 @@
           "longevity": null,
           "projection": null,
           "exclude_names": [
-            "Good Girl"
+            "Coco Mademoiselle",
+            "Bloom",
+            "Jasmino"
           ],
           "notes": [
             "rose"
@@ -467,7 +465,9 @@
           "longevity": null,
           "projection": null,
           "exclude_names": [
-            "Good Girl"
+            "Coco Mademoiselle",
+            "Bloom",
+            "Jasmino"
           ],
           "notes": [
             "rose"
@@ -482,15 +482,22 @@
         "stage": "recommendation",
         "search": {
           "matched": [
+            "Good Girl",
             "Chloe Eau de Parfum",
             "Light Blue",
-            "Bloom",
-            "Coco Mademoiselle",
             "Oud Wood"
           ],
           "alternatives": [],
           "similarity": null,
           "reasons": {
+            "Good Girl": {
+              "score": 5.413,
+              "reasons": [
+                "فيه rose",
+                "العميل بيتكلم عنه بالفعل"
+              ],
+              "mismatches": []
+            },
             "Chloe Eau de Parfum": {
               "score": 4.79,
               "reasons": [
@@ -505,20 +512,6 @@
               ],
               "mismatches": []
             },
-            "Bloom": {
-              "score": 2.917,
-              "reasons": [
-                "فيه rose"
-              ],
-              "mismatches": []
-            },
-            "Coco Mademoiselle": {
-              "score": 2.83,
-              "reasons": [
-                "فيه rose"
-              ],
-              "mismatches": []
-            },
             "Oud Wood": {
               "score": 1.762,
               "reasons": [
@@ -528,9 +521,11 @@
             }
           }
         },
-        "keeping": [],
+        "keeping": [
+          "Good Girl"
+        ],
         "dropped": {
-          "Good Girl": null
+          "Jasmino": "ده تركيب بتاعنا، وهو قال إنه عايز براندات أصلية"
         },
         "offered": [
           "Bloom",
@@ -538,8 +533,8 @@
           "Good Girl",
           "Jasmino"
         ],
-        "context_chars": 5045,
-        "context": "\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Good Girl\n",
+        "context_chars": 4320,
+        "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Coco Mademoiselle,Bloom,Jasmino\n",
         "findings": []
       }
     ],
@@ -547,7 +542,7 @@
     "error": null,
     "final_preferences": {
       "gender": "female",
-      "max_price": 1010,
+      "max_price": 1010.0,
       "notes": [
         "rose"
       ],
@@ -555,6 +550,6 @@
         "STORE_BRAND_EXCLUSIVE"
       ]
     },
-    "seconds": 28.3
+    "seconds": 28.4
   }
 ]

@@ -67,15 +67,29 @@ def _anti_repetition_context(history):
     return context
 
 
-def handle_general(message, history=None, store=None):
+def handle_general(message, history=None, store=None, retry_hint=""):
     """
     Handle general messages (greetings, FAQ, redirected handoffs, out-of-domain, etc.)
     Runs with no product data, so it carries an explicit no-prices guard.
+
+    `retry_hint` is instruction text from `router._rephrased`, quoting sentences this branch just
+    repeated. It joins the system prompt rather than the customer's message for the reason
+    `get_product_info`'s docstring records at length: a warning glued onto `message` is read back as
+    the customer's own words. Nothing here parses the message for perfume names, so the failure mode
+    is milder than 816's — but the model still sees whatever is in that slot as something the
+    customer said, and "⚠️ تنبيه: الجمل دي أنت قلتها" is not.
+
+    It sits beside `_anti_repetition_context`, not in place of it. That function is prevention: it
+    shows the model its last four replies before it writes anything. This is detection: it names the
+    sentence a finished draft actually repeated. Either one alone leaves the other's failure
+    uncovered — conversation 973 had prevention in force on every turn and repeated itself anyway —
+    so a later reader should not delete one as redundant with the other.
     """
     system_prompt = (
         get_system_prompt(store)
         + NO_PRODUCT_DATA_GUARD
         + _anti_repetition_context(history)
+        + (retry_hint or "")
     )
 
     messages = [

@@ -180,8 +180,19 @@ def _budget_verdict_note(budget, context):
     return note
 
 
-def handle_objection(message, objection, history=None, store=None, conversation=None):
-    """Reply to a customer objection or complaint, addressing it before selling."""
+def handle_objection(message, objection, history=None, store=None, conversation=None, retry_hint=""):
+    """Reply to a customer objection or complaint, addressing it before selling.
+
+    `retry_hint` is instruction text from `router._rephrased` naming sentences this draft already
+    said, appended to the instruction block and kept out of `message` — `resolve_products` below
+    reads the message for perfume names, which is the conversation 816 shape recorded in
+    `product_info.get_product_info`.
+
+    This branch repeats itself structurally: `_SEQUENCE` prescribes the same three-move answer every
+    time, and `PLAYBOOK` hands the same guidance for the same objection kind — so a customer who says
+    "غالي" twice gets two replies built to the same plan, and the reply-level guard at 0.7 does not
+    see it.
+    """
     guidance = PLAYBOOK.get(objection.kind, "")
     stage = sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
 
@@ -211,7 +222,7 @@ def handle_objection(message, objection, history=None, store=None, conversation=
 {sequence}
 {_NO_GUARANTEE}
 {("═══ بيانات العطور اللي بيتكلم عنها ═══" + chr(10) + context) if context else "⚠️ مفيش بيانات منتجات مبعوتة لك — ❌ ممنوع تذكر أي سعر أو اسم عطر من دمك."}
-{extra}{_budget_verdict_note(budget, context)}
+{extra}{_budget_verdict_note(budget, context)}{retry_hint}
 """
 
     messages = [{"role": "system", "content": get_system_prompt(store)}]

@@ -308,6 +308,74 @@ def under_discussion(conversation, store, turns=2):
     return frozenset(found - withdrawn_in(latest_content, latest_context))
 
 
+def offered_ever(conversation, store):
+    """Every perfume we have put in front of this customer, for the whole conversation.
+
+    Three functions already answer neighbouring questions and not one of them answers this.
+    `already_described` is capped at the 8-message LLM window (`build_llm_history`), so a perfume
+    offered five turns ago is invisible to it. `under_discussion` is capped at two replies *by
+    design* — it asks "what are we talking about right now", and widening it would pin the
+    conversation to perfumes the customer has moved past. `offered_in_order` is a sequence for
+    resolving a reference, not a set.
+
+    Conversation 973 needed the unbounded set. Bloom and Coco Mademoiselle were offered on turn 2,
+    the customer said "اي تاني" and got two others, then said "مش عايز حاجه من البراند بتاعكو" — a
+    refusal, which `ai/intent.py` does not read as a request for alternatives, so `exclude_names`
+    came back empty and the unchanged intent re-derived the same shortlist. Bloom and Coco came
+    back. `repeat_ban_hint` was injected and could not help: it forbids re-*describing* a scent,
+    not re-*offering* a perfume, and nothing in the system could say those two had been seen.
+
+    The evidence rule is `under_discussion`'s, unchanged: a name counts only if it appears in the
+    reply prose AND in that reply's `internal_context`, so a perfume named only while being
+    *withdrawn* was never offered — the distinction conversation 1012 was fixed for. The order-turn
+    carve-out comes with it (`_is_cart_context`), where the cart is not injected product data and
+    the prose alone decides.
+
+    A marker line of its own was considered and rejected, and the reason is worth recording because
+    the rest of this module writes markers for exactly this kind of record (`PENDING_LOOKUP:`,
+    `PENDING_RELAX:`). Those record what a turn was *given*; this needs what the reply actually
+    *said*. The shortlist injected into a recommendation turn holds up to twelve products
+    (`MAX_PRODUCTS_IN_CONTEXT`) and the reply names one or two of them, so a marker written from the
+    shortlist would report ten perfumes the customer never saw — and one written from the prose is
+    this rule computed at write time instead of read time, buying nothing but a way for the two
+    sides to drift.
+
+    Withdrawals are NOT subtracted, and that is the one place this deliberately diverges from
+    `under_discussion`. That function drops a perfume the latest reply announced as gone, because it
+    must not be offered as a referent. Here the question is what the customer has already seen, and
+    a perfume we showed and then dropped is still one they have seen — re-offering it is the defect
+    either way.
+    """
+    if conversation is None or store is None:
+        return frozenset()
+
+    from products.models import Product
+
+    from .naming import names_in
+
+    rows = list(
+        conversation.messages.filter(role="assistant")
+        .order_by("created_at")
+        .values_list("content", "internal_context")
+    )
+    if not rows:
+        return frozenset()
+
+    names = list(Product.objects.filter(store=store).values_list("name", flat=True))
+
+    found = set()
+    for content, context in rows:
+        said = set(names_in(content, names))
+        if not said:
+            continue
+        if _is_cart_context(context):
+            found |= said
+        else:
+            found |= said & set(names_in(context, names))
+
+    return frozenset(found)
+
+
 def offered_in_order(conversation, store, turns=2, latest_only=False):
     """The perfumes under discussion, in the order we named them in our latest reply.
 
@@ -387,6 +455,25 @@ _RELAX_PAIR_SEPARATOR = "|"
 # Entries within one list-valued filter. Distinct from `_RELAX_PAIR_SEPARATOR` so a reader can tell
 # "which filters were offered" from "which houses were inside one of them".
 _RELAX_LIST_SEPARATOR = ","
+
+
+# The perfumes the customer told us to move past, written on the turn they said so.
+#
+# Unlike PENDING_LOOKUP / PENDING_RELAX this marker records something the CUSTOMER said rather
+# than something the reply offered, and it exists because the customer's own words for it live
+# for exactly one turn. `ai/intent.py` fills `exclude_names` only when the message asks for an
+# alternative, so conversation 973's turn 3 ("اي تاني") had both names and turn 4 ("مش عايز حاجه
+# من البراند بتاعكو") had none — and `under_discussion`'s two-reply window put them straight back
+# into `keep`, where `WEIGHTS["continuity"]` (+2.5) outranked `WEIGHTS["repeat"]` (-2.0) and a
+# fresh candidate that matched just as well came third.
+#
+# Not `Conversation.preferences`: `merge_preferences` rewrites that column wholesale to
+# PERSISTED_PREFERENCE_KEYS every turn, and `conversation_service.py` records why `exclude_names`
+# must not join that tuple — the extractor accretes it out of history, so a persisted copy would
+# become a permanent blacklist with no retraction path. This is not that. It is narrower (a
+# moved-past marker, not a filter) and it is written from ONE turn's extraction rather than
+# accumulated, so it cannot grow by being helpful.
+MOVED_PAST_MARKER = "MOVED_PAST:"
 
 
 def relax_offer_block(intent):
@@ -548,6 +635,77 @@ def pending_relaxations(conversation, turns=1):
                     offered[key] = value.strip()
             return offered
     return {}
+
+
+def moved_past_block(intent, store):
+    """The marker line recording which perfumes this turn's message asked us to move past.
+
+    Resolved to catalogue spellings before it is written, via `naming.resolve_names`. The
+    extractor returns what the customer typed — "Gucci Bloom" for the row "Bloom", "Chanel Coco
+    Mademoiselle" for "Coco Mademoiselle", both observed in conversation 973's own replays — and a
+    reader matching those raw strings against product names would subtract nothing. Resolving at
+    write time rather than read time means the payload is catalogue rows from then on, which is the
+    same choice `search_service` makes at its own `exclude_names` loop.
+
+    Returns "" when nothing was excluded, so the caller can write it unconditionally.
+    """
+    names = (intent or {}).get("exclude_names") or []
+    if not names or store is None:
+        return ""
+
+    from .naming import resolve_names
+
+    resolved = [
+        str(name).strip()
+        for name in resolve_names(names, store)
+        if str(name or "").strip()
+    ]
+    # A name carrying the separator would corrupt the line it is written on. No catalogue name
+    # does; an unresolvable name the customer typed could, and `resolve_names` passes those
+    # through unchanged.
+    resolved = [name.replace(_RELAX_LIST_SEPARATOR, " ").strip() for name in resolved]
+    resolved = [name for name in resolved if name]
+    if not resolved:
+        return ""
+    return f"{MOVED_PAST_MARKER} {_RELAX_LIST_SEPARATOR.join(resolved)}\n"
+
+
+def moved_past(conversation, store):
+    """Every perfume the customer has told us to move past, for the whole conversation.
+
+    Read from `MOVED_PAST_MARKER` lines across all assistant rows, so a "اي تاني" from five turns
+    back still counts — unlike `pending_lookup` and `pending_relaxations`, which are windowed
+    because they ask whether something is still *open*. This asks whether the customer has ever
+    said "not that one", and they do not un-say it by talking about something else.
+
+    NOT a filter and never handed to `search_products` as one: `ranking.WEIGHTS["repeat"]` already
+    demotes an offered perfume without deleting it, and the reason it is a demotion rather than an
+    exclusion is that a customer who moved past Bloom must still get an answer to "بكام Bloom؟".
+    Subtracting this from `keep` makes that demotion reachable by removing the `continuity` bonus
+    that was cancelling it out; it does not add a second, harsher signal.
+
+    Names are catalogue spellings already — `moved_past_block` resolves them at write time — so the
+    caller can subtract this straight from `under_discussion`'s set with no further matching.
+    """
+    if conversation is None or store is None:
+        return frozenset()
+
+    contexts = conversation.messages.filter(role="assistant").values_list(
+        "internal_context", flat=True
+    )
+
+    found = set()
+    for context in contexts:
+        for line in (context or "").splitlines():
+            stripped = line.strip()
+            if not stripped.startswith(MOVED_PAST_MARKER):
+                continue
+            payload = stripped[len(MOVED_PAST_MARKER):].strip()
+            for name in payload.split(_RELAX_LIST_SEPARATOR):
+                name = name.strip()
+                if name:
+                    found.add(name)
+    return frozenset(found)
 
 
 def offered_context_block(conversation, store):

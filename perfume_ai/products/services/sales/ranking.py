@@ -117,6 +117,25 @@ WEIGHTS = {
     # "معايا 800". It survived every hard filter and sat at rank 3, and the prompt asks for the
     # best 1-2 — so "stay on the perfume he showed interest in" was unfollowable.
     "continuity": 2.5,
+    # Already offered and moved past. The mirror of `continuity`, and deliberately smaller in
+    # absolute value:
+    #
+    #   * larger than any single refinement slot (budget 1.5, occasion 1.0, longevity 1.0), so a
+    #     perfume the customer has already seen and passed over does not hold its rank against a
+    #     fresh candidate matching just as well;
+    #   * smaller than `continuity` (2.5), because a perfume can be in BOTH sets — offered three
+    #     turns ago and under discussion now — and there the customer's current attention has to
+    #     win: 2.5 - 2.0 = +0.5, still promoted. A customer asking "بكام Bloom؟" about a perfume
+    #     from turn 2 must get Bloom;
+    #   * smaller than `avoid` (-3.0), so a real exclusion stays the harsher signal and nothing
+    #     here can be mistaken for one.
+    #
+    # Not a filter, and that distinction is the whole design. Conversation 973's turn 4 re-offered
+    # Bloom and Coco Mademoiselle because nothing in the system could say they had been seen — but
+    # deleting their rows would make a question *about* them unanswerable, which is exactly why the
+    # prompt-level name-exclusion this replaces was deleted rather than narrowed (see the opening
+    # comment of `ai/recommendation.recommend`). A penalty reorders; it never withholds.
+    "repeat": -2.0,
     "budget": 1.5,
     "longevity": 1.0,
     "occasion": 1.0,
@@ -393,7 +412,7 @@ def note_fit(term, profile, accords):
     return NOTE_MASS_SHARE * mass_share + ACCORD_SHARE * max(balance, 0.0)
 
 
-def rank(products, intent, reference=None, keep=()):
+def rank(products, intent, reference=None, keep=(), offered=()):
     """Score and order candidates, best first.
 
     `keep` names perfumes already under discussion, which earn WEIGHTS["continuity"]. That is
@@ -401,9 +420,14 @@ def rank(products, intent, reference=None, keep=()):
     all: ranking re-runs from scratch every turn, and a perfume the customer was converging on
     could fall below the top 1-2 the prompt asks the model to choose from — at which point the
     competing rule "a product not in the data does not exist" made staying impossible.
+
+    `offered` names perfumes we have already put in front of this customer at any point in the
+    conversation (`described.offered_ever`), which pay WEIGHTS["repeat"]. The two sets overlap by
+    design and the sizing is what resolves the overlap — see that weight's comment.
     """
     intent = intent or {}
     keep = frozenset(keep or ())
+    offered = frozenset(offered or ())
     max_price = _as_decimal(intent.get("max_price"))
     wanted_notes = [note for note in (intent.get("notes") or ()) if note]
     avoid_notes = [note for note in (intent.get("avoid_notes") or ()) if note]
@@ -574,6 +598,13 @@ def rank(products, intent, reference=None, keep=()):
         if product.name in keep:
             entry.score += WEIGHTS["continuity"]
             entry.reasons.append("العميل بيتكلم عنه بالفعل")
+
+        # No `reasons` entry and no `mismatches` entry, unlike every other signal in this loop.
+        # `reasons` renders into the customer-visible "✅ ليه مناسب" line and "you have seen this
+        # already" is not a reason to buy it; `mismatches` renders as a defect and having been
+        # offered before is not one. This weight is for the ordering only.
+        if product.name in offered:
+            entry.score += WEIGHTS["repeat"]
 
         if intent.get("wants_uncommon"):
             from .value import is_store_exclusive

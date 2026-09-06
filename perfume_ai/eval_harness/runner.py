@@ -62,6 +62,9 @@ _REPLAYS = {
     # 932 is the other half of 931's Versace dead end: the offer to drop the brand was accepted
     # three times and re-made three times, because nothing could represent the acceptance.
     "conv932": "scenarios_conv932",
+    # 973 is two defects in five turns: the same two perfumes re-offered after the customer had
+    # moved past them, and four replies opening and closing on the same two sentence frames.
+    "conv973": "scenarios_conv973",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:
@@ -117,8 +120,12 @@ def install_probes():
         _rec()["pending_relax"] = dict(pending or {})
         return result
 
-    def search_products(intent, store=None, keep=()):
-        result = original_search(intent, store, keep=keep)
+    # The probe mirrors the real signature exactly, keywords included: it *replaces*
+    # `router.search_products`, so a parameter missing here is a TypeError on every
+    # recommendation turn, not a missing field in the transcript. `offered=` was added for
+    # conversation 973 and this wrapper is where it first went unnoticed.
+    def search_products(intent, store=None, keep=(), offered=()):
+        result = original_search(intent, store, keep=keep, offered=offered)
         products = list(result.get("products") or [])
         alternatives = list(result.get("alternatives") or [])
         _rec()["search"] = {
@@ -137,6 +144,10 @@ def install_probes():
         _rec()["similarity"] = result.get("similarity")
         _rec()["keeping"] = result.get("keeping")
         _rec()["dropped"] = result.get("dropped")
+        # Everything the customer has already been shown, per `described.offered_ever`. Recorded
+        # because a re-offer and a demotion that fired but lost to a strong match look identical
+        # in `matched` alone; this says whether the penalty had anything to bite on.
+        _rec()["offered"] = sorted(offered or ())
         return result
 
     def recommend_probe(*args, **kwargs):
@@ -297,6 +308,7 @@ def run_scenario(scenario, truth):
                     "search": state.get("search"),
                     "keeping": state.get("keeping"),
                     "dropped": state.get("dropped"),
+                    "offered": state.get("offered"),
                     "context_chars": len(context or ""),
                     "context": context,
                     "findings": [list(f) for f in turn_findings],

@@ -487,7 +487,25 @@ def _no_match_instruction(intent, seen, exhausted):
     )
 
 
-def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None, gender_unknown=False):
+def recommend(
+    message, products, history=None, alternatives=None, store=None, intent=None, search=None,
+    gender_unknown=False, repeat_hint="",
+):
+    """Write the recommendation turn.
+
+    `repeat_hint` is instruction text from `router._rephrased` quoting sentences this draft already
+    said, and it is a parameter rather than something appended to `message` for the reason
+    `product_info.get_product_info`'s docstring sets out: the no-match branch below calls
+    `_named_in_message(message, store)`, so a warning glued onto the message is offered to the
+    catalogue matcher as a perfume name. `router` used to do exactly that on this branch — see the
+    comment at its `_is_repetitive` retry — and the reason it never produced 816's failure here is
+    that `_named_in_message` is a deterministic Latin-name match, which the Arabic warning misses.
+    It is one prompt edit away from mattering, so the hint now arrives on its own channel.
+
+    Appended to `user_content` after the four-way fork rather than inside any one branch: all four
+    are model-generated replies that can repeat a sentence, and the no-match branch repeats the most
+    (it has the least new information to carry). One injection point cannot be forgotten by a fifth.
+    """
     # Not repeating a recommendation is handled upstream, not here: ai/intent.py fills
     # intent["exclude_names"] when the customer asks for something else, and
     # search_service drops those from the queryset before this function ever sees it.
@@ -739,8 +757,21 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
 
     messages.append({
         "role": "user",
-        "content": user_content,
+        "content": user_content + (repeat_hint or ""),
     })
 
     response = chat(messages, profile="converse")
+
+    # Record which perfumes this turn's message asked us to move past, on whichever of the four
+    # branches above answered it. `intent["exclude_names"]` is per-request and `ai/intent.py` only
+    # fills it when the message asks for an alternative, so the signal is gone by the next turn —
+    # conversation 973's turn 3 ("اي تاني") had Bloom and Coco Mademoiselle, turn 4 had nothing, and
+    # `under_discussion`'s two-reply window handed both straight back to `ranking` as still under
+    # discussion. `router` subtracts this from `keep`.
+    #
+    # After `chat`, and appended rather than assigned, so it cannot change what this turn was given:
+    # `user_content` was built above and does not embed `context`'s marker lines. Same reasoning as
+    # `relax_offer_block` on the no-match branch — the marker is persisted, not injected, so it
+    # changes what the NEXT turn can read and never what this one says.
+    context = (context or "") + described.moved_past_block(intent, store)
     return response, context

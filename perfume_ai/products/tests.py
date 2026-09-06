@@ -4,6 +4,7 @@ import hmac
 import inspect
 import json
 from decimal import Decimal
+from difflib import SequenceMatcher
 from unittest import mock
 
 from django.contrib.admin.sites import site
@@ -41,6 +42,7 @@ from products.services.ai.prompts import get_system_prompt
 from products.services.ai.recommendation import (
     _coerce_budget,
     _format_products,
+    recommend,
 )
 from products.services.comparison_service import compare_products
 from products.services.conversation_service import (
@@ -78,6 +80,7 @@ from products.services.sales import (
     notes as sales_notes,
     objection as sales_objection,
     ranking as sales_ranking,
+    repetition as sales_repetition,
     similarity as sales_similarity,
     stage as sales_stage,
     value as sales_value,
@@ -250,14 +253,20 @@ class ProductContextCapTests(TestCase):
 class ExcludeNamesTests(TestCase):
     """Asking for alternatives must not return the same perfumes again.
 
-    This is the only "don't repeat that recommendation" mechanism in the system, and
-    it is the right one: ai/intent.py tells the model to fill exclude_names *only*
-    when the customer asks for something else, and search_products drops those from
-    the queryset — so the model cannot mention them rather than being asked not to.
-    recommend() previously carried a second, prompt-level version of this that
-    excluded any perfume merely *mentioned* earlier, including one the customer had
-    just shown interest in. That one is gone; this is what replaced it, so it needs
-    to actually work.
+    The hard half of the mechanism: ai/intent.py tells the model to fill exclude_names *only*
+    when the customer asks for something else, and search_products drops those from the
+    queryset — so the model cannot mention them rather than being asked not to. recommend()
+    previously carried a second, prompt-level version of this that excluded any perfume merely
+    *mentioned* earlier, including one the customer had just shown interest in. That one is
+    gone; this is what replaced it, so it needs to actually work.
+
+    It was the *only* such mechanism until conversation 973, and being conditional on the
+    customer asking is exactly how that transcript got past it: "مش عايز حاجه من البراند
+    بتاعكو" is a refusal rather than a request for alternatives, exclude_names came back empty,
+    and the unchanged intent re-derived the same shortlist. `ranking.WEIGHTS["repeat"]` is the
+    soft half added for it — every perfume already offered is demoted whether or not anyone
+    asked, and never deleted (Conv973SaidItTwiceTests). The two are complementary: an exclusion
+    is what the customer asked for, so it still deletes.
     """
 
     def setUp(self):
@@ -17063,3 +17072,1180 @@ class RefusedBrandsLeaveTheCatalogueTests(TestCase):
 
         self.assertIn("مش عايز تركيباتكم وعايز براندات أصلية", prompt)
         self.assertIn("زي الأصلي", prompt)
+
+
+
+
+class Conv973SaidItTwiceTests(TestCase):
+    """Conversation 973: five replies, the same two perfumes twice and the same two frames four
+    times over.
+
+    Turn 2 offered Bloom and Coco Mademoiselle; turn 4 — "مش عايز حاجه من البراند بتاعكو" — offered
+    both again. That turn is a *refusal*, not a request for alternatives, so `ai/intent.py` left
+    `exclude_names` empty, the intent was otherwise unchanged (rose / female / ≤1010), and `rank`
+    re-derived turn 2's shortlist verbatim. Nothing in the pipeline knew the customer had seen them.
+
+    The phrasing was a second, independent defect. Whole-reply similarity peaked at **0.451**, so
+    `_is_repetitive` (> 0.7), `_count_recent_repetitions` (> 0.7) and `checks.check_repeated_reply`
+    (>= 0.9) were all correctly silent — while four of five replies opened on the same price frame
+    and closed on the same "أنا أرشحلك X أكتر لأنه…". Nothing compared anything smaller than a reply.
+
+    The five replies below are the transcript. `repetition.SENTENCE_THRESHOLD` is calibrated on them,
+    so paraphrasing them would turn the threshold tests into assertions about invented text.
+    """
+
+    REPLY_2 = (
+        "عندنا Bloom من Gucci، الـ50 ملي بـ549 جنيه داخل ميزانيتك، وفيه ريحة ورد واضحة. "
+        "وكمان Coco Mademoiselle من Chanel، الـ90 ملي بـ1006 جنيه داخل الميزانية، وفيه ورد مع "
+        "نوتات أنيقة تناسب كل المواسم.\n\n"
+        "أنا أرشحلك Coco Mademoiselle أكتر لطلبك، لأنه ريحته فيها ورد بتركيبة شيك وكلاسيكية تناسب "
+        "المناسبات الرسمية."
+    )
+    REPLY_3 = (
+        "عندك Jasmino الـ50 ملي بـ578 جنيه داخل الميزانية، وGood Girl الـ50 ملي بـ650 جنيه كمان "
+        "داخل الميزانية. ولو حابب حجم أكبر، Good Girl الـ90 ملي بـ1083 جنيه، أعلى حاجة بسيطة من "
+        "ميزانيتك.\n\n"
+        "أنا أرشحلك Jasmino أكتر لأنه عطر تركيب حصري من تصميمنا وفيه ورد، مناسب للاستخدام اليومي."
+    )
+    REPLY_4 = (
+        "Bloom من Gucci متوفر بـ50 ملي بسعر 549 جنيه داخل ميزانيتك، و90 ملي سعره 1067 جنيه، أعلى "
+        "حاجة بسيطة من ميزانيتك.\n\n"
+        "كمان Coco Mademoiselle من Chanel متوفر بـ50 ملي بـ534 جنيه والـ90 ملي بـ1006 جنيه، "
+        "الاتنين داخلين الميزانية.\n\n"
+        "أنا أرشحلك Coco Mademoiselle أكتر لأنه يناسب كل المواسم والمناسبات الرسمية، أما Bloom فهو "
+        "مناسب أكتر للاستخدام اليومي والجو الربيعي."
+    )
+    REPLY_5 = (
+        "عندك Chloe Eau de Parfum الـ50 ملي بـ692 جنيه داخل الميزانية، والـ90 ملي بـ1058 جنيه، "
+        "أعلى حاجة بسيطة من ميزانيتك. \n"
+        "وكمان Light Blue من Dolce & Gabbana، الـ90 ملي بـ852 جنيه والـ50 ملي بـ691 جنيه، الاتنين "
+        "داخلين الميزانية. \n"
+        "أنا أرشحلك Light Blue أكتر لأنه فيه ورد وكمان مناسب للاستخدام اليومي والجو الصيفي."
+    )
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        gucci = Brand.objects.create(store=self.store, name="Gucci")
+        chanel = Brand.objects.create(store=self.store, name="Chanel")
+        own = Brand.objects.create(store=self.store, name="Perfamix Test")
+        self.bloom = self._make("Bloom", gucci, 549)
+        self.coco = self._make("Coco Mademoiselle", chanel, 534)
+        self.chloe = self._make("Chloe Eau de Parfum", chanel, 692)
+        self.light_blue = self._make("Light Blue", chanel, 691)
+        self.jasmino = self._make("Jasmino", own, 578)
+        self.good_girl = self._make("Good Girl", chanel, 650)
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _make(self, name, brand, price):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="female",
+            top_notes="Rose", middle_notes="Jasmine", base_notes="Musk",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=50, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _reply(self, text, shown=(), context=None):
+        """One exchange, saved the way `router` saves a recommendation turn.
+
+        `shown` names the perfumes whose rows were injected that turn, in the shape
+        `format_products` writes them, because `offered_ever` inherits `under_discussion`'s
+        prose∩context evidence rule and puts both halves through `naming.names_in`.
+        """
+        Message.objects.create(
+            conversation=self.conversation, role="user", content="تمام"
+        )
+        rendered = context if context is not None else "".join(
+            f"Name (الاسم الصحيح): {name}\n" for name in shown
+        )
+        Message.objects.create(
+            conversation=self.conversation, role="assistant",
+            content=text, internal_context=rendered,
+        )
+
+    def _history(self, *replies):
+        return [{"role": "assistant", "content": reply} for reply in replies]
+
+    # ── what the customer has already been shown (described.offered_ever) ────────────
+
+    def test_a_perfume_said_and_injected_was_offered(self):
+        self._reply(
+            "عندنا Bloom وكمان Coco Mademoiselle.",
+            shown=("Bloom", "Coco Mademoiselle"),
+        )
+
+        self.assertEqual(
+            sales_described.offered_ever(self.conversation, self.store),
+            {"Bloom", "Coco Mademoiselle"},
+        )
+
+    def test_a_perfume_only_in_the_injected_data_was_not_offered(self):
+        """The shortlist carries up to `MAX_PRODUCTS_IN_CONTEXT` rows and a reply names one or two of
+        them. Counting the data would penalise ten perfumes the customer never saw."""
+        self._reply("أرشحلك Bloom.", shown=("Bloom", "Coco Mademoiselle", "Jasmino"))
+
+        self.assertEqual(
+            sales_described.offered_ever(self.conversation, self.store), {"Bloom"}
+        )
+
+    def test_a_perfume_named_only_while_being_withdrawn_was_not_offered(self):
+        """Conversation 1012's rule, inherited: a perfume absent from that turn's injected data was
+        being talked *about*, not put in front of the customer."""
+        self._reply(
+            "أرشحلك Bloom. أما Coco Mademoiselle خرج من الاختيارات.", shown=("Bloom",)
+        )
+
+        offered = sales_described.offered_ever(self.conversation, self.store)
+
+        self.assertIn("Bloom", offered)
+        self.assertNotIn("Coco Mademoiselle", offered)
+
+    def test_a_perfume_only_the_customer_named_was_not_offered(self):
+        Message.objects.create(
+            conversation=self.conversation, role="user", content="عندكم Bloom؟"
+        )
+
+        self.assertEqual(
+            sales_described.offered_ever(self.conversation, self.store), frozenset()
+        )
+
+    def test_the_record_is_unbounded_where_already_described_is_not(self):
+        """The whole reason the function exists. `already_described` reads the 8-message LLM window
+        (`build_llm_history`), so turn 2's perfumes are invisible to it by turn 4 — the state
+        conversation 973 re-offered Bloom and Coco Mademoiselle from."""
+        self._reply(self.REPLY_2, shown=("Bloom", "Coco Mademoiselle"))
+        for _ in range(4):
+            self._reply("وكمان Jasmino.", shown=("Jasmino",))
+
+        history = build_llm_history(self.conversation, limit=8)
+
+        self.assertNotIn("Bloom", sales_described.already_described(history, self.store))
+        self.assertIn("Bloom", sales_described.offered_ever(self.conversation, self.store))
+
+    def test_a_perfume_moved_past_is_still_offered_though_not_under_discussion(self):
+        """The two sets answer different questions, and this is the gap between them.
+        `under_discussion` holds two replies and forgets on purpose — it asks what we are talking
+        about *now*. Being seen is permanent."""
+        self._reply("أرشحلك Bloom.", shown=("Bloom",))
+        self._reply("وكمان Jasmino.", shown=("Jasmino",))
+        self._reply("وGood Girl كمان.", shown=("Good Girl",))
+
+        self.assertNotIn(
+            "Bloom", sales_described.under_discussion(self.conversation, self.store)
+        )
+        self.assertIn(
+            "Bloom", sales_described.offered_ever(self.conversation, self.store)
+        )
+
+    def test_a_withdrawn_perfume_stays_offered_though_it_leaves_under_discussion(self):
+        """The one rule the two functions genuinely disagree on. `under_discussion` subtracts a
+        withdrawal so a dropped perfume is not re-announced; here the question is what the customer
+        has seen, and one we showed and then dropped is still one they read about."""
+        self._reply("أرشحلك Bloom وCoco Mademoiselle.", shown=("Bloom", "Coco Mademoiselle"))
+        self._reply("Coco Mademoiselle خرج من الاختيارات، خد Bloom.", shown=("Bloom",))
+
+        self.assertNotIn(
+            "Coco Mademoiselle",
+            sales_described.under_discussion(self.conversation, self.store),
+        )
+        self.assertIn(
+            "Coco Mademoiselle",
+            sales_described.offered_ever(self.conversation, self.store),
+        )
+
+    def test_an_order_turn_counts_the_prose_alone(self):
+        """`_is_cart_context`: the order flow writes a cart into `internal_context`, not product
+        rows, so intersecting with it would drop every name said on those turns."""
+        self._reply(
+            "تمام، Bloom الـ50 ملي.",
+            context="Bloom (50 ملي) (زجاجة البراند) x 1 (549.00 EGP)",
+        )
+
+        self.assertIn(
+            "Bloom", sales_described.offered_ever(self.conversation, self.store)
+        )
+
+    def test_an_empty_conversation_has_offered_nothing(self):
+        self.assertEqual(
+            sales_described.offered_ever(self.conversation, self.store), frozenset()
+        )
+        self.assertEqual(sales_described.offered_ever(None, self.store), frozenset())
+        self.assertEqual(
+            sales_described.offered_ever(self.conversation, None), frozenset()
+        )
+
+    # ── the penalty (sales.ranking) ─────────────────────────────────────────────────
+
+    def test_the_repeat_weight_is_sized_against_its_neighbours(self):
+        """The arithmetic in `WEIGHTS["repeat"]`'s own comment, pinned. A perfume can be in both
+        sets — offered three turns ago AND under discussion now — and there the customer's current
+        attention must win, so `continuity + repeat` has to stay positive."""
+        weights = sales_ranking.WEIGHTS
+
+        self.assertLess(weights["repeat"], 0)
+        self.assertGreater(weights["continuity"] + weights["repeat"], 0)
+        self.assertGreater(abs(weights["repeat"]), weights["budget"])
+        self.assertGreater(abs(weights["repeat"]), weights["occasion"])
+        self.assertGreater(abs(weights["repeat"]), weights["longevity"])
+        self.assertLess(abs(weights["repeat"]), abs(weights["avoid"]))
+
+    def test_an_already_offered_perfume_sorts_below_an_equal_fresh_one(self):
+        intent = {"gender": "female", "notes": ["rose"]}
+
+        ranked = sales_ranking.rank([self.bloom, self.chloe], intent, offered=("Bloom",))
+
+        self.assertEqual(ranked[0].product.name, "Chloe Eau de Parfum")
+        self.assertEqual(ranked[-1].product.name, "Bloom")
+
+    def test_a_penalised_perfume_is_still_in_the_list(self):
+        """Not a filter, and that is the design: a customer asking "بكام Bloom؟" must still get
+        Bloom. Deleting the row would make the answer unwriteable, which is why the prompt-level name
+        exclusion this replaces was itself deleted."""
+        ranked = sales_ranking.rank(
+            [self.bloom], {"gender": "female", "notes": ["rose"]}, offered=("Bloom",)
+        )
+
+        self.assertEqual([entry.product.name for entry in ranked], ["Bloom"])
+
+    def test_a_perfume_under_discussion_survives_having_been_offered(self):
+        """2.5 - 2.0 = +0.5, still promoted. The case a customer converging on one perfume across
+        several turns depends on."""
+        ranked = sales_ranking.rank(
+            [self.bloom, self.chloe],
+            {"gender": "female", "notes": ["rose"]},
+            keep=("Bloom",),
+            offered=("Bloom",),
+        )
+
+        self.assertEqual(ranked[0].product.name, "Bloom")
+
+    def test_the_penalty_is_invisible_to_the_customer(self):
+        """`reasons` renders into the "✅ ليه مناسب" line and "you have seen this already" is not a
+        reason to buy; `mismatches` renders as a defect and having been offered is not one."""
+        intent = {"gender": "female", "notes": ["rose"]}
+
+        penalised = sales_ranking.rank([self.bloom], intent, offered=("Bloom",))[0]
+        fresh = sales_ranking.rank([self.bloom], intent)[0]
+
+        self.assertEqual(penalised.reasons, fresh.reasons)
+        self.assertEqual(penalised.mismatches, fresh.mismatches)
+        self.assertEqual(penalised.score, fresh.score + sales_ranking.WEIGHTS["repeat"])
+
+    def test_nothing_offered_ranks_exactly_as_before(self):
+        """Default-empty, so every existing caller is unaffected — including the first recommendation
+        of a conversation, which must not be reordered by an empty set."""
+        intent = {"gender": "female", "notes": ["rose"]}
+        products = [self.bloom, self.chloe, self.jasmino]
+
+        self.assertEqual(
+            [entry.product.id for entry in sales_ranking.rank(products, intent)],
+            [entry.product.id for entry in sales_ranking.rank(products, intent, offered=())],
+        )
+
+    # ── the has_signal bypass (search_service) ──────────────────────────────────────
+
+    def test_a_turn_with_no_taste_signal_still_applies_the_penalty(self):
+        """The highest-value test here. `search_products` returns the legacy ordering without calling
+        `rank` at all when `has_signal` is false, so on a bare budget turn — no notes, no occasion,
+        nothing in the *intent* to discriminate on — the penalty would be unreachable on exactly the
+        kind of turn it exists for. Having offered something is a discriminator too; it comes from
+        the conversation rather than the intent, so `has_signal` cannot see it."""
+        intent = {"gender": "female", "max_price": 1010}
+        self.assertFalse(sales_ranking.has_signal(intent))
+
+        results = search_products(
+            intent, store=self.store, offered=("Bloom", "Coco Mademoiselle")
+        )
+        names = [product.name for product in results["products"]]
+
+        self.assertNotIn("Bloom", names[:2])
+        self.assertNotIn("Coco Mademoiselle", names[:2])
+        self.assertIn("Bloom", names)
+
+    def test_the_penalty_reaches_the_shortlist_when_there_is_signal_too(self):
+        results = search_products(
+            {"gender": "female", "notes": ["rose"]}, store=self.store, offered=("Bloom",)
+        )
+        names = [product.name for product in results["products"]]
+
+        self.assertIn("Bloom", names)
+        self.assertNotEqual(names[0], "Bloom")
+
+    def test_nothing_offered_leaves_the_search_as_it_was(self):
+        intent = {"gender": "female", "notes": ["rose"]}
+
+        self.assertEqual(
+            [p.id for p in search_products(intent, store=self.store)["products"]],
+            [p.id for p in search_products(intent, store=self.store, offered=())["products"]],
+        )
+
+    # ── the moved-past record (described.moved_past_block / moved_past) ─────────────
+
+    def test_the_marker_is_written_in_catalogue_spellings(self):
+        """The resolution is the point. The extractor returns what the customer typed — "Gucci
+        Bloom" for the row "Bloom" — and a reader matching that raw string against product names
+        would subtract nothing, so it is resolved at write time."""
+        block = sales_described.moved_past_block(
+            {"exclude_names": ["Gucci Bloom", "Chanel Coco Mademoiselle"]}, self.store
+        )
+
+        self.assertIn(sales_described.MOVED_PAST_MARKER, block)
+        self.assertIn("Bloom", block)
+        self.assertNotIn("Gucci Bloom", block)
+        self.assertNotIn("Chanel Coco Mademoiselle", block)
+
+    def test_the_marker_reads_back_as_the_names_it_recorded(self):
+        self._reply(
+            "أرشحلك Jasmino.",
+            context="Name (الاسم الصحيح): Jasmino\n"
+            + sales_described.moved_past_block(
+                {"exclude_names": ["Gucci Bloom", "Coco Mademoiselle"]}, self.store
+            ),
+        )
+
+        self.assertEqual(
+            sales_described.moved_past(self.conversation, self.store),
+            {"Bloom", "Coco Mademoiselle"},
+        )
+
+    def test_the_record_outlives_the_window_the_pending_markers_use(self):
+        """Unwindowed, unlike `pending_lookup` and `pending_relaxations`, which are windowed because
+        they ask whether something is still *open*. This asks whether the customer ever said "not
+        that one", and they do not un-say it by talking about something else."""
+        self._reply(
+            "أرشحلك Jasmino.",
+            context=sales_described.moved_past_block({"exclude_names": ["Bloom"]}, self.store),
+        )
+        for _ in range(5):
+            self._reply("وكمان Good Girl.", shown=("Good Girl",))
+
+        self.assertEqual(
+            sales_described.moved_past(self.conversation, self.store), {"Bloom"}
+        )
+
+    def test_the_marker_shares_a_context_with_a_pending_relaxation(self):
+        """Both markers on one turn: the no-match branch writes `relax_offer_block` and this one
+        appends, so a turn that offers to drop a filter and records a move-past writes both."""
+        context = sales_described.relax_offer_block(
+            {"brand": "Gucci"}
+        ) + sales_described.moved_past_block({"exclude_names": ["Bloom"]}, self.store)
+        self._reply("مفيش حاجة تانية، تحب أشيل شرط البراند؟", context=context)
+
+        self.assertEqual(
+            sales_described.moved_past(self.conversation, self.store), {"Bloom"}
+        )
+        self.assertEqual(
+            sales_described.pending_relaxations(self.conversation), {"brand": "Gucci"}
+        )
+
+    def test_nothing_excluded_writes_nothing(self):
+        """Returned unconditionally by `recommend`, so the empty case must be an empty string rather
+        than a bare marker no reader can interpret."""
+        self.assertEqual(sales_described.moved_past_block({}, self.store), "")
+        self.assertEqual(sales_described.moved_past_block(None, self.store), "")
+        self.assertEqual(
+            sales_described.moved_past_block({"exclude_names": ["Bloom"]}, None), ""
+        )
+
+    def test_a_conversation_with_no_marker_has_moved_past_nothing(self):
+        self._reply("عندنا Bloom.", shown=("Bloom",))
+
+        self.assertEqual(
+            sales_described.moved_past(self.conversation, self.store), frozenset()
+        )
+        self.assertEqual(sales_described.moved_past(None, self.store), frozenset())
+        self.assertEqual(
+            sales_described.moved_past(self.conversation, None), frozenset()
+        )
+
+    # ── the subtraction (router: keep - moved_past) ─────────────────────────────────
+
+    def test_under_discussion_still_holds_what_the_customer_moved_past(self):
+        """Unchanged by design, and asserted so the subtraction cannot migrate into it later.
+        `offered_in_order` reads the same function to resolve a reference: "بكام Bloom؟" after moving
+        past Bloom must still place Bloom."""
+        self._reply(
+            "عندنا Bloom وكمان Coco Mademoiselle.",
+            shown=("Bloom", "Coco Mademoiselle"),
+        )
+        self._reply(
+            "أرشحلك Jasmino.",
+            context="Name (الاسم الصحيح): Jasmino\n"
+            + sales_described.moved_past_block(
+                {"exclude_names": ["Bloom", "Coco Mademoiselle"]}, self.store
+            ),
+        )
+
+        keep = sales_described.under_discussion(self.conversation, self.store)
+        moved = sales_described.moved_past(self.conversation, self.store)
+
+        self.assertIn("Bloom", keep)
+        self.assertIn("Coco Mademoiselle", keep)
+        self.assertEqual(keep - moved, {"Jasmino"})
+        self.assertIn("Bloom", sales_described.offered_in_order(self.conversation, self.store))
+
+    def test_a_fresh_candidate_outranks_a_perfume_the_customer_moved_past(self):
+        """The reported defect, at the ranking. With Bloom in `keep` it scores 2.5 - 2.0 = +0.5 and
+        led turn 4 of both replays; with the subtraction the fresh candidate wins — and Bloom is
+        still in the list, because the penalty was never a filter."""
+        intent = {"gender": "female", "notes": ["rose"]}
+        products = [self.bloom, self.good_girl]
+
+        before = sales_ranking.rank(
+            products, intent, keep=("Bloom",), offered=("Bloom",)
+        )
+        after = sales_ranking.rank(products, intent, keep=(), offered=("Bloom",))
+
+        self.assertEqual(before[0].product.name, "Bloom")
+        self.assertEqual(after[0].product.name, "Good Girl")
+        self.assertIn("Bloom", [entry.product.name for entry in after])
+
+    def test_the_router_subtracts_the_moved_past_names_from_keep(self):
+        """End to end at the call site, which is where the subtraction lives: `under_discussion` is
+        read by `offered_in_order` too, so burying it inside that function would change what "under
+        discussion" means for reference resolution."""
+        from products.services import router
+
+        self._reply(
+            "عندنا Bloom وكمان Coco Mademoiselle.",
+            shown=("Bloom", "Coco Mademoiselle"),
+        )
+        self._reply(
+            "أرشحلك Jasmino.",
+            context="Name (الاسم الصحيح): Jasmino\n"
+            + sales_described.moved_past_block(
+                {"exclude_names": ["Bloom", "Coco Mademoiselle"]}, self.store
+            ),
+        )
+
+        seen = {}
+
+        def fake_search(intent, store=None, keep=(), offered=()):
+            seen["keep"] = set(keep)
+            seen["offered"] = set(offered)
+            return {"products": Product.objects.none(), "alternatives": Product.objects.none()}
+
+        with mock.patch.object(router, "record_llm_message"), \
+                mock.patch.object(router, "classify", return_value="recommendation"), \
+                mock.patch.object(router, "extract_intent", return_value={}), \
+                mock.patch.object(
+                    router, "merge_preferences",
+                    # A budget too, or the turn stops at the budget gate before it searches.
+                    return_value={"gender": "female", "notes": ["rose"], "max_price": 700},
+                ), \
+                mock.patch.object(router, "search_products", side_effect=fake_search), \
+                mock.patch.object(router, "recommend", return_value=("رد", "ctx")), \
+                mock.patch.object(router, "_escalate_absent_name"):
+            router.route("اي تاني", [], self.store, self.conversation)
+
+        self.assertNotIn("Bloom", seen["keep"])
+        self.assertNotIn("Coco Mademoiselle", seen["keep"])
+        self.assertIn("Jasmino", seen["keep"])
+        # Still in `offered`, so `WEIGHTS["repeat"]` demotes them rather than the search dropping
+        # them: a customer who moved past Bloom must still get an answer to "بكام Bloom؟".
+        self.assertIn("Bloom", seen["offered"])
+
+    def test_recommend_writes_the_marker_into_the_persisted_context(self):
+        """Persisted, not injected: `user_content` is built before this and does not embed the
+        marker, so it changes what the NEXT turn can read and never what this one says."""
+        with mock.patch(
+            "products.services.ai.recommendation.chat", return_value="رد"
+        ), mock.patch(
+            "products.services.ai.recommendation.get_system_prompt", return_value="sys"
+        ):
+            _, context = recommend(
+                "اي تاني",
+                Product.objects.filter(pk=self.good_girl.pk),
+                store=self.store,
+                intent={"gender": "female", "exclude_names": ["Gucci Bloom"]},
+            )
+
+        self.assertIn(f"{sales_described.MOVED_PAST_MARKER} Bloom", context)
+
+    # ── the detector (sales.repetition) ─────────────────────────────────────────────
+
+    def test_the_price_frame_is_caught_on_its_third_outing(self):
+        """"عندك X الـ50 ملي بـN جنيه داخل الميزانية، و…" opens four of the five replies. Reply 5's
+        two price lines measure 0.821 and 0.694 masked against replies 3 and 4."""
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_5, self._history(self.REPLY_3, self.REPLY_4), store=self.store
+        )
+
+        self.assertIn(
+            "عندك Chloe Eau de Parfum الـ50 ملي بـ692 جنيه داخل الميزانية، والـ90 ملي بـ1058 "
+            "جنيه، أعلى حاجة بسيطة من ميزانيتك",
+            repeats,
+        )
+
+    def test_the_closing_frame_is_caught_on_its_fourth_outing(self):
+        """"أنا أرشحلك X أكتر لأنه…" ends four of the five replies. 0.699 masked against reply 4 —
+        and 0.631 raw, under the threshold and undetectable, which is what the masking is for: a
+        different noun in a frame the customer has read four times is the repetition they notice."""
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_5, self._history(self.REPLY_3, self.REPLY_4), store=self.store
+        )
+
+        self.assertIn(
+            "أنا أرشحلك Light Blue أكتر لأنه فيه ورد وكمان مناسب للاستخدام اليومي والجو الصيفي",
+            repeats,
+        )
+
+    def test_reply_four_repeats_the_price_frame_it_used_a_reply_ago(self):
+        """The 0.636 pairing, which names-only masking left at 0.560 — the one `_MANDATED` masking
+        gained. Reply 4's second price line against reply 3's first, and nothing else in that reply:
+        its closing frame is the 0.604 near-miss below."""
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_4, self._history(self.REPLY_2, self.REPLY_3), store=self.store
+        )
+
+        self.assertEqual(
+            repeats,
+            [
+                "كمان Coco Mademoiselle من Chanel متوفر بـ50 ملي بـ534 جنيه والـ90 ملي بـ1006 "
+                "جنيه، الاتنين داخلين الميزانية"
+            ],
+        )
+
+    def test_the_repeats_are_quoted_from_the_draft_unmasked(self):
+        """The return shape is the whole difference from `_is_repetitive`: a model told "your reply
+        was repetitive" cannot see which part to change, so the sentences come back exactly as the
+        draft wrote them, ready to be put in front of it."""
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_5, self._history(self.REPLY_3, self.REPLY_4), store=self.store
+        )
+
+        self.assertTrue(repeats)
+        for sentence in repeats:
+            self.assertIn(sentence, self.REPLY_5)
+            self.assertNotIn(sales_repetition._MASK, sentence)
+            self.assertNotIn(sales_repetition._MANDATED_MASK, sentence)
+
+    def test_the_widest_apart_closing_frame_is_left_alone(self):
+        """Pins `SENTENCE_THRESHOLD` from below. Replies 3 and 4 close at 0.604 — the one pairing
+        where the two sentences read as genuinely different ("لأنه يناسب كل المواسم والمناسبات
+        الرسمية" against "لأنه عطر تركيب حصري من تصميمنا وفيه ورد"). A guard that fires here fires on
+        something a reader would defend, and the cost is not the extra call: it is a model told it
+        repeated a sentence it did not, which `retry_hint`'s last line exists to contain."""
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_4, self._history(self.REPLY_3), store=self.store
+        )
+
+        self.assertFalse(
+            [sentence for sentence in repeats if sentence.startswith("أنا أرشحلك")],
+            "0.604 is not the same sentence",
+        )
+
+    def test_the_early_replies_are_not_repeats(self):
+        """Replies 2 and 3 are the two the pipeline was right about."""
+        self.assertEqual(
+            sales_repetition.repeated_sentences(
+                self.REPLY_2, self._history(), store=self.store
+            ),
+            [],
+        )
+        self.assertEqual(
+            sales_repetition.repeated_sentences(
+                self.REPLY_3, self._history(self.REPLY_2), store=self.store
+            ),
+            [],
+        )
+
+    def test_the_whole_reply_guard_was_right_to_stay_silent(self):
+        """What makes this a sentence-level problem rather than a threshold set too high.
+        `_is_repetitive` compares whole replies at 0.7 and these peaked at 0.451, so lowering it far
+        enough to catch conversation 973 would fire on any two replies about perfume.
+
+        Each draft is checked against the replies that actually preceded it, not against all five:
+        a reply compared to a history containing itself scores 1.0, which is an artefact of the
+        fixture rather than anything the transcript did."""
+        earlier = [self.REPLY_2, self.REPLY_3, self.REPLY_4, self.REPLY_5]
+
+        for index, reply in enumerate(earlier[1:], start=1):
+            with self.subTest(reply=reply[:24]):
+                self.assertFalse(_is_repetitive(reply, self._history(*earlier[:index])))
+
+    def test_a_repeated_courtesy_line_is_not_a_repeat(self):
+        """`MIN_SENTENCE_WORDS`: Arabic courtesy formulae are near-identical by construction, and
+        saying "تحت أمرك يا فندم" twice is politeness, not a loop. The same judgement
+        `checks.check_repeated_reply` makes with `min_length` at reply level."""
+        polite = "تحت أمرك يا فندم"
+
+        self.assertEqual(
+            sales_repetition.repeated_sentences(
+                polite, self._history(polite), store=self.store
+            ),
+            [],
+        )
+
+    def test_different_figures_do_not_exempt_a_repeated_sentence(self):
+        """The one place this deliberately parts company with `checks.check_repeated_reply`, which
+        skips any pair whose figures differ. That exemption is right at reply level, where a changed
+        number means a recap template rendered new data (conversation 931 turn 7). It is wrong at
+        sentence level: a price frame about a different perfume carries different figures *by
+        construction*, so inheriting it would blind this to one of the two frames it exists for."""
+        from eval_harness.checks import check_repeated_reply
+
+        repeats = sales_repetition.repeated_sentences(
+            self.REPLY_5, self._history(self.REPLY_3), store=self.store
+        )
+
+        self.assertTrue(
+            [sentence for sentence in repeats if "جنيه" in sentence],
+            "the price frames differ in every figure and are still the same sentence",
+        )
+        self.assertIsNone(
+            check_repeated_reply(self.REPLY_5, [self.REPLY_3]),
+            "the reply-level check exempts the same pair, and is right to",
+        )
+
+    def test_mandated_wording_is_not_what_makes_two_sentences_the_same(self):
+        """`prompts.py:104` orders "أعلى حاجة بسيطة من ميزانيتك" said بالحرف, and the budget markers
+        are the only sanctioned way to report a ✅ price, so a reply quoting two prices is obliged to
+        contain them. Masked, or this guard would ask the model to rephrase what five other rules
+        require it to phrase that way — and a model resolving that conflict by rewording a budget
+        verdict is `strip_false_over_budget`'s failure arriving from a new direction."""
+        one = "عندك Bloom الـ50 ملي بـ549 جنيه داخل الميزانية، وده أنسب حاجة لطلبك"
+        two = "وكمان Jasmino الـ90 ملي بـ1083 جنيه، أعلى حاجة بسيطة من ميزانيتك، وفيه ورد"
+
+        self.assertEqual(
+            sales_repetition.repeated_sentences(two, self._history(one), store=self.store),
+            [],
+            "shared boilerplate must not join two genuinely different sentences",
+        )
+
+    def test_a_nested_catalogue_name_is_masked_whole(self):
+        """Longest first, the reason `naming.names_in` consumes the longest match at each position.
+        Masking "Light Blue" inside "Light Blue Intense" would leave a stray " Intense" on one side
+        and the two sentences would stop looking alike for a reason unrelated to how they read."""
+        masked = sales_repetition._mask(
+            "Light Blue Intense وLight Blue", ["Light Blue", "Light Blue Intense"]
+        )
+
+        self.assertNotIn("Intense", masked)
+        self.assertEqual(masked.count(sales_repetition._MASK), 2)
+
+    def test_the_detector_runs_without_a_store(self):
+        """`store=None` skips the catalogue query, so the module is callable and testable with no
+        DB — the same discipline `reply_sanitizer` keeps."""
+        line = "العطر ده ريحته فيها ورد وبتفضل معاك طول اليوم كله"
+
+        self.assertEqual(
+            sales_repetition.repeated_sentences(line, self._history(line), store=None),
+            [line],
+        )
+
+    def test_an_empty_draft_or_history_reports_nothing(self):
+        for reply in ("", None, "   "):
+            with self.subTest(reply=reply):
+                self.assertEqual(
+                    sales_repetition.repeated_sentences(
+                        reply, self._history(self.REPLY_2), store=self.store
+                    ),
+                    [],
+                )
+        self.assertEqual(
+            sales_repetition.repeated_sentences(self.REPLY_5, [], store=self.store), []
+        )
+        self.assertEqual(
+            sales_repetition.repeated_sentences(self.REPLY_5, None, store=self.store), []
+        )
+
+    def test_only_our_own_replies_are_compared_against(self):
+        """A customer quoting us back at ourselves is not us repeating ourselves."""
+        history = [{"role": "user", "content": self.REPLY_5}]
+
+        self.assertEqual(
+            sales_repetition.repeated_sentences(self.REPLY_5, history, store=self.store),
+            [],
+        )
+
+    # ── the frame check (repetition.repeated_frames) ────────────────────────────────
+
+    def test_the_closing_frame_is_caught_on_its_third_outing(self):
+        """"أنا أرشحلك ◆ أكتر" opens the last sentence of all four recommendation replies. Reply 4 is
+        its third outing, and this is where `FRAME_MIN_USES` is pinned from below."""
+        repeats = sales_repetition.repeated_frames(
+            self.REPLY_4, self._history(self.REPLY_2, self.REPLY_3), store=self.store
+        )
+
+        self.assertEqual(len(repeats), 1)
+        self.assertTrue(repeats[0].startswith("أنا أرشحلك Coco Mademoiselle أكتر"))
+
+    def test_the_second_outing_of_a_frame_is_a_habit_not_a_template(self):
+        """`FRAME_MIN_USES` from below. A frame reused once is a habit of speech; at the second
+        occurrence the corpus rate is 17.1% against 3.2% at the third, and every one of those extra
+        turns costs a model call for a repetition nobody complained about."""
+        self.assertEqual(
+            sales_repetition.repeated_frames(
+                self.REPLY_3, self._history(self.REPLY_2), store=self.store
+            ),
+            [],
+        )
+
+    def test_the_frame_survives_where_the_whole_sentence_comparison_cannot(self):
+        """The reason this function exists, and the assertion that must stop it being "simplified"
+        into a lower `SENTENCE_THRESHOLD` later. Reply 4's closing sentence measures 0.594 against
+        reply 3's and 0.458 against reply 2's — both correctly under 0.62, because the model varies
+        the reason clause enough that they really are different sentences. Only the opening repeats.
+        """
+        history = self._history(self.REPLY_2, self.REPLY_3)
+        closing = [
+            "أنا أرشحلك Coco Mademoiselle أكتر لطلبك، لأنه ريحته فيها ورد بتركيبة شيك "
+            "وكلاسيكية تناسب المناسبات الرسمية",
+            "أنا أرشحلك Jasmino أكتر لأنه عطر تركيب حصري من تصميمنا وفيه ورد، مناسب "
+            "للاستخدام اليومي",
+        ]
+        names = [self.bloom.name, self.coco.name, self.jasmino.name]
+        draft = (
+            "أنا أرشحلك Coco Mademoiselle أكتر لأنه يناسب كل المواسم والمناسبات الرسمية، "
+            "أما Bloom فهو مناسب أكتر للاستخدام اليومي والجو الربيعي"
+        )
+
+        for earlier in closing:
+            ratio = SequenceMatcher(
+                None,
+                sales_repetition._mask(draft, names),
+                sales_repetition._mask(earlier, names),
+            ).ratio()
+            with self.subTest(earlier=earlier[:30]):
+                self.assertLess(ratio, sales_repetition.SENTENCE_THRESHOLD)
+
+        self.assertNotIn(
+            draft,
+            sales_repetition.repeated_sentences(self.REPLY_4, history, store=self.store),
+        )
+        self.assertTrue(
+            sales_repetition.repeated_frames(self.REPLY_4, history, store=self.store)
+        )
+
+    def test_figures_do_not_make_two_price_lines_two_frames(self):
+        """Digits are masked here and NOT in `repeated_sentences`, which is the one place the two
+        comparisons differ. A frame is a template and its numbers are the data poured into it."""
+        frame = "عندك {} الـ{} ملي بـ{} جنيه داخل الميزانية وده اختيار ممتاز"
+        history = self._history(
+            frame.format("Bloom", 50, 549), frame.format("Jasmino", 90, 1006)
+        )
+
+        repeats = sales_repetition.repeated_frames(
+            frame.format("Good Girl", 50, 650), history, store=self.store
+        )
+
+        self.assertEqual(len(repeats), 1)
+
+    def test_a_five_word_prefix_would_reach_into_the_part_the_model_varies(self):
+        """`FRAME_WORDS` pinned from above. The fifth word is the reason conjunction — "لطلبك،" in
+        reply 2, "لأنه" in the other three — so a five-word prefix splits one frame into as many
+        frames as there are reasons and stops matching the transcript's own repeat."""
+        names = [self.coco.name, self.jasmino.name]
+        sentences = [
+            "أنا أرشحلك Coco Mademoiselle أكتر لطلبك، لأنه ريحته فيها ورد",
+            "أنا أرشحلك Jasmino أكتر لأنه عطر تركيب حصري من تصميمنا",
+        ]
+
+        frames = {sales_repetition._frame(sentence, names) for sentence in sentences}
+        five = {
+            " ".join(
+                sales_repetition._DIGITS.sub(
+                    sales_repetition._DIGIT_MASK,
+                    sales_repetition._mask(sentence, names),
+                ).split()[:5]
+            )
+            for sentence in sentences
+        }
+
+        self.assertEqual(len(frames), 1, "four words is the frame the two share")
+        self.assertEqual(len(five), 2, "the fifth word is the part that varies")
+
+    def test_three_prices_in_one_reply_are_one_use_of_the_frame(self):
+        """Counted per earlier reply, not per sentence. Three sentences in one breath is a list; the
+        same opening in three separate replies is a template."""
+        frame = "عندك {} الـ50 ملي بـ549 جنيه داخل الميزانية وده اختيار ممتاز"
+        crowded = ". ".join(
+            frame.format(name) for name in ("Bloom", "Jasmino", "Good Girl")
+        )
+
+        self.assertEqual(
+            sales_repetition.repeated_frames(
+                frame.format("Light Blue"), self._history(crowded), store=self.store
+            ),
+            [],
+        )
+
+    def test_a_sentence_too_short_to_have_a_frame_is_ignored(self):
+        """None rather than a short frame: a two-word opening is shared by half the replies in any
+        conversation, and matching on it would fire on politeness."""
+        self.assertIsNone(sales_repetition._frame("تحت أمرك", []))
+        self.assertEqual(
+            sales_repetition.repeated_frames(
+                "تحت أمرك", self._history("تحت أمرك", "تحت أمرك", "تحت أمرك"),
+                store=self.store,
+            ),
+            [],
+        )
+
+    def test_the_frame_check_runs_without_a_store_or_a_history(self):
+        history = self._history(self.REPLY_2, self.REPLY_3)
+
+        self.assertEqual(sales_repetition.repeated_frames("", history, store=self.store), [])
+        self.assertEqual(sales_repetition.repeated_frames(self.REPLY_4, [], store=self.store), [])
+        self.assertEqual(
+            sales_repetition.repeated_frames(
+                self.REPLY_4, [{"role": "user", "content": self.REPLY_2}], store=self.store
+            ),
+            [],
+        )
+        # Without a store nothing is masked, so the frame carries the perfume's own name and the
+        # three replies no longer share one. It must return a list rather than raise.
+        self.assertIsInstance(
+            sales_repetition.repeated_frames(self.REPLY_4, history, store=None), list
+        )
+
+    def test_the_hint_names_the_opening_as_well_as_the_sentence(self):
+        """`repeated_frames` can flag a sentence whose whole text is new — only its opening repeats —
+        and "قول نفس المعنى بصيغة تانية" reads as being about the sentence as a whole."""
+        hint = sales_repetition.retry_hint(["أنا أرشحلك Bloom أكتر لأنه فيه ورد"])
+
+        self.assertIn("الافتتاحية", hint)
+
+    def test_the_hint_quotes_the_sentences_and_forbids_changing_the_facts(self):
+        """Quoted rather than described, because the described version is already in the system
+        prompt twice (`prompts.py:94`, `:143`) and this transcript violated both. The last line is
+        `get_product_info`'s retry lesson: told only "you repeated yourself", a model changed the
+        *fact* to escape the warning — conversation 816 turned a correct "we don't stock it" into
+        "لحظة أتأكدلك منه", a promise nothing in this pipeline keeps."""
+        sentence = "أنا أرشحلك Bloom أكتر لأنه فيه ورد"
+
+        hint = sales_repetition.retry_hint([sentence])
+
+        self.assertIn(sentence, hint)
+        self.assertIn("السعر هو السعر", hint)
+        self.assertEqual(sales_repetition.retry_hint([]), "")
+
+    # ── the retry (router._rephrased) ───────────────────────────────────────────────
+
+    def test_a_clean_draft_is_not_regenerated(self):
+        from products.services.router import _rephrased
+
+        calls = []
+
+        reply, context, repeats = _rephrased(
+            self.REPLY_2, "ctx", self._history(), self.store,
+            lambda hint: (calls.append(hint), ("لأ", ""))[1],
+        )
+
+        self.assertEqual(calls, [])
+        self.assertEqual((reply, context, repeats), (self.REPLY_2, "ctx", ()))
+
+    def test_a_repeating_draft_is_regenerated_once_with_the_sentences_quoted(self):
+        from products.services.router import _rephrased
+
+        calls = []
+
+        def regenerate(hint):
+            calls.append(hint)
+            return "رد جديد خالص", "ctx2"
+
+        reply, context, repeats = _rephrased(
+            self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4),
+            self.store, regenerate,
+        )
+
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(repeats)
+        self.assertIn(repeats[0], calls[0])
+        self.assertEqual((reply, context), ("رد جديد خالص", "ctx2"))
+
+    def test_a_second_repeating_draft_is_returned_rather_than_retried_again(self):
+        """One retry, never a loop: a reply that repeats a sentence is better than a third model
+        call, and far better than an unbounded chain. `_is_repetitive`'s own retry makes the same
+        choice."""
+        from products.services.router import _rephrased
+
+        calls = []
+
+        def regenerate(hint):
+            calls.append(hint)
+            return self.REPLY_5, "ctx2"
+
+        reply, context, _ = _rephrased(
+            self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4),
+            self.store, regenerate,
+        )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual((reply, context), (self.REPLY_5, "ctx2"))
+
+    def test_an_empty_regeneration_keeps_the_first_draft(self):
+        """`reply_sanitizer`'s bail-rather-than-empty rule, applied to a retry: a blank reply is the
+        one outcome worse than a flawed one, and `chat` can come back empty on a provider error."""
+        from products.services.router import _rephrased
+
+        reply, context, _ = _rephrased(
+            self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4),
+            self.store, lambda hint: ("   ", ""),
+        )
+
+        self.assertEqual((reply, context), (self.REPLY_5, "ctx"))
+
+    def test_a_draft_that_only_repeats_a_frame_is_regenerated(self):
+        """Reply 4 passes `repeated_sentences` — its closing sentence peaks at 0.594 against reply 3
+        — and fails `repeated_frames` on the frame's third outing. Without the merge in `_rephrased`
+        this draft ships as written, which is what both replays of conversation 973 did."""
+        from products.services.router import _rephrased
+
+        history = self._history(self.REPLY_2, self.REPLY_3)
+        # Reply 4's closing sentence alone, so nothing else in the draft can account for the retry.
+        draft = self.REPLY_4.split("\n\n")[-1]
+        self.assertEqual(
+            sales_repetition.repeated_sentences(draft, history, store=self.store), []
+        )
+
+        calls = []
+
+        reply, _, repeats = _rephrased(
+            draft, "ctx", history, self.store,
+            lambda hint: (calls.append(hint), ("رد جديد خالص", "ctx2"))[1],
+        )
+
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(repeats)
+        self.assertIn("الافتتاحية", calls[0])
+        self.assertEqual(reply, "رد جديد خالص")
+
+    def test_a_sentence_failing_both_checks_is_quoted_once(self):
+        """One retry and one quotation of each sentence. Reply 5's closing sentence is caught by both
+        comparisons — 0.693 against reply 3's and a frame on its fourth outing — and a hint listing
+        it twice reads like two separate complaints."""
+        from products.services.router import _rephrased
+
+        history = self._history(self.REPLY_2, self.REPLY_3, self.REPLY_4)
+        by_sentence = sales_repetition.repeated_sentences(self.REPLY_5, history, store=self.store)
+        by_frame = sales_repetition.repeated_frames(self.REPLY_5, history, store=self.store)
+        self.assertTrue(set(by_sentence) & set(by_frame), "the overlap this test is about")
+
+        calls = []
+
+        _, _, repeats = _rephrased(
+            self.REPLY_5, "ctx", history, self.store,
+            lambda hint: (calls.append(hint), ("رد جديد خالص", "ctx2"))[1],
+        )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(repeats), len(set(repeats)))
+        self.assertEqual(set(repeats), set(by_sentence) | set(by_frame))
+
+    def test_handle_general_regenerates_a_repeating_reply(self):
+        """One edit covering sixteen branches — greeting, FAQ, promotion, musk deferral, handoff,
+        out_of_domain, the fallback and every discovery gate — which is the reason that wrapper
+        exists."""
+        from products.services import router
+
+        drafts = [self.REPLY_5, "رد تاني مختلف"]
+        hints = []
+
+        def fake_raw(message, history, store, retry_hint=""):
+            hints.append(retry_hint)
+            return drafts[len(hints) - 1], ""
+
+        with mock.patch.object(router, "_handle_general_raw", side_effect=fake_raw):
+            reply, _ = router.handle_general(
+                "اي تاني", self._history(self.REPLY_3, self.REPLY_4), self.store
+            )
+
+        self.assertEqual(len(hints), 2)
+        self.assertEqual(hints[0], "")
+        self.assertIn("الجمل دي", hints[1])
+        self.assertEqual(reply, "رد تاني مختلف")
+
+    def test_handle_general_leaves_a_clean_reply_alone(self):
+        from products.services import router
+
+        calls = []
+
+        def fake_raw(message, history, store, retry_hint=""):
+            calls.append(retry_hint)
+            return "أهلاً بيك يا فندم، تحب أساعدك في إيه؟", ""
+
+        with mock.patch.object(router, "_handle_general_raw", side_effect=fake_raw):
+            router.handle_general("سلام", self._history(self.REPLY_3), self.store)
+
+        self.assertEqual(calls, [""])
+
+    def test_the_hint_reaches_the_model_as_a_parameter_not_as_the_message(self):
+        """The conversation 816 lesson. `router` used to append its warning to the customer's
+        message, and every name-reading step downstream then read the warning as the customer's
+        words: `may_name_a_perfume` fired on the warning's own vocabulary, resolved to nothing, and
+        put the turn on the deferral rules."""
+        from products.services import router
+
+        seen = []
+
+        def fake_raw(message, history, store, retry_hint=""):
+            seen.append(message)
+            return (self.REPLY_5 if len(seen) == 1 else "رد تاني"), ""
+
+        with mock.patch.object(router, "_handle_general_raw", side_effect=fake_raw):
+            router.handle_general(
+                "اي تاني", self._history(self.REPLY_3, self.REPLY_4), self.store
+            )
+
+        self.assertEqual(seen, ["اي تاني", "اي تاني"])
+
+    def test_the_comparison_branch_regenerates_a_repeating_reply(self):
+        """This branch had no repetition check of any kind, and needs one more than most: its
+        instruction 5 REQUIRES the closing frame conversation 973 ended four of five replies on, so a
+        customer who compares twice gets it twice by construction."""
+        from products.services import router
+
+        drafts = [self.REPLY_5, "مقارنة تانية مختلفة"]
+        seen = []
+
+        def fake_compare(message, history=None, store=None, conversation=None, retry_hint=""):
+            seen.append((message, retry_hint))
+            return drafts[len(seen) - 1], "ctx"
+
+        with mock.patch.object(router, "record_llm_message"), \
+                mock.patch.object(router, "classify", return_value="comparison"), \
+                mock.patch.object(router, "compare_products", side_effect=fake_compare), \
+                mock.patch.object(router, "_escalate_absent_name"):
+            reply, _ = router.route(
+                "قارنلي بينهم",
+                self._history(self.REPLY_3, self.REPLY_4),
+                self.store,
+                self.conversation,
+            )
+
+        self.assertEqual(len(seen), 2)
+        self.assertEqual(seen[0][1], "")
+        self.assertIn("الجمل دي", seen[1][1])
+        self.assertEqual(
+            seen[1][0], "قارنلي بينهم",
+            "the hint must not be appended to the customer's message",
+        )
+        self.assertEqual(reply, "مقارنة تانية مختلفة")
+
+    def test_the_product_info_branch_regenerates_a_repeating_reply(self):
+        from products.services import router
+
+        drafts = [self.REPLY_5, "رد تاني عن العطر"]
+        seen = []
+
+        def fake_info(message, history=None, store=None, conversation=None, retry_hint=""):
+            seen.append((message, retry_hint))
+            return drafts[len(seen) - 1], "ctx"
+
+        with mock.patch.object(router, "record_llm_message"), \
+                mock.patch.object(router, "classify", return_value="product_info"), \
+                mock.patch.object(router, "get_product_info", side_effect=fake_info), \
+                mock.patch.object(router, "_escalate_absent_name"):
+            reply, _ = router.route(
+                "Light Blue ريحته عاملة ايه؟",
+                self._history(self.REPLY_3, self.REPLY_4),
+                self.store,
+                self.conversation,
+            )
+
+        self.assertEqual(len(seen), 2)
+        self.assertIn("الجمل دي", seen[1][1])
+        self.assertEqual(seen[1][0], "Light Blue ريحته عاملة ايه؟")
+        self.assertEqual(reply, "رد تاني عن العطر")
+
+    def test_the_objection_branch_regenerates_a_repeating_reply(self):
+        """`_SEQUENCE` and `PLAYBOOK` prescribe the same three moves for the same objection kind, so
+        a customer who says "غالي" twice gets the same answer shape twice."""
+        from products.services import router
+
+        drafts = [self.REPLY_5, "رد تاني على الاعتراض"]
+        seen = []
+
+        def fake_objection(message, objection, history=None, store=None, conversation=None,
+                           retry_hint=""):
+            seen.append((message, retry_hint))
+            return drafts[len(seen) - 1], "ctx"
+
+        with mock.patch.object(router, "record_llm_message"), \
+                mock.patch.object(router, "classify", return_value="faq"), \
+                mock.patch.object(router, "handle_objection", side_effect=fake_objection):
+            reply, _ = router.route(
+                "غالي شوية",
+                self._history(self.REPLY_3, self.REPLY_4),
+                self.store,
+                self.conversation,
+            )
+
+        self.assertEqual(len(seen), 2)
+        self.assertIn("الجمل دي", seen[1][1])
+        self.assertEqual(seen[1][0], "غالي شوية")
+        self.assertEqual(reply, "رد تاني على الاعتراض")
+
+    def test_the_recommendation_branch_passes_the_hint_as_repeat_hint(self):
+        """`recommend`'s no-match branch calls `_named_in_message(message, store)`, so a warning
+        glued onto the message is handed to the catalogue matcher as a perfume name."""
+        from products.services import router
+
+        seen = []
+
+        def fake_recommend(message, products, history=None, **kwargs):
+            seen.append((message, kwargs.get("repeat_hint", "")))
+            return "ترشيح تاني", "ctx"
+
+        with mock.patch.object(router, "recommend", side_effect=fake_recommend):
+            reply, _, repeats = router._rephrased(
+                self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4), self.store,
+                lambda hint: router.recommend("اي تاني", [], None, repeat_hint=hint),
+            )
+
+        self.assertTrue(repeats)
+        self.assertEqual(len(seen), 1)
+        self.assertEqual(seen[0][0], "اي تاني")
+        self.assertIn("الجمل دي", seen[0][1])
+        self.assertEqual(reply, "ترشيح تاني")
+
+    def test_every_hint_taking_service_accepts_it_as_a_keyword(self):
+        """The threading, asserted at the signatures rather than one branch at a time: six functions
+        gained the parameter, and the conv-816 failure is what happens if any of them is fed through
+        `message` instead."""
+        from products.services.general_service import handle_general as raw_general
+        from products.services.identification_service import identify_perfume
+        from products.services.objection_service import handle_objection
+
+        for function, name in (
+            (raw_general, "retry_hint"),
+            (compare_products, "retry_hint"),
+            (get_product_info, "retry_hint"),
+            (handle_objection, "retry_hint"),
+            (identify_perfume, "retry_hint"),
+            (recommend, "repeat_hint"),
+        ):
+            with self.subTest(function=function.__name__):
+                parameter = inspect.signature(function).parameters[name]
+                self.assertEqual(parameter.default, "")
+
+    def test_scripted_replies_never_reach_the_check(self):
+        """Order, cancellation, goodbye and a store's own FAQ answer return directly from `route`,
+        bypassing `_finalize` and every retry — exactly as `ScriptedRepliesSurviveSanitizingTests`
+        pins them against sanitizing. A scripted line said twice is still byte-for-byte itself."""
+        from products.services import router
+
+        goodbye = (
+            "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك "
+            "24 ساعة. يوم سعيد!"
+        )
+        StaticFAQ.objects.create(
+            store=self.store, question="الشحن بكام؟", keywords="شحن, توصيل",
+            answer="الشحن 60 جنيه لكل محافظات مصر، والتوصيل من 2 لـ 4 أيام.",
+        )
+        said_twice = [
+            {"role": "user", "content": "سلام"},
+            {"role": "assistant", "content": goodbye},
+            {"role": "user", "content": "سلام"},
+        ]
+
+        with mock.patch.object(router, "_rephrased") as never:
+            faq_reply, _ = router.route("الشحن بكام؟", [], self.store, self.conversation)
+            bye_reply, _ = router.route("سلام", said_twice, self.store, self.conversation)
+
+        never.assert_not_called()
+        self.assertEqual(faq_reply, "الشحن 60 جنيه لكل محافظات مصر، والتوصيل من 2 لـ 4 أيام.")
+        self.assertEqual(bye_reply, goodbye)

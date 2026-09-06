@@ -21,6 +21,7 @@ from .sales import described as sales_described
 from .sales import gender as sales_gender
 from .sales import naming as sales_naming
 from .sales import objection as sales_objection
+from .sales import repetition
 from .sales import stage as sales_stage
 from products.models import Order
 from django.db import transaction
@@ -85,10 +86,65 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
     Scripted replies are deliberately NOT routed through this — they return directly from
     `route` and stay byte-for-byte identical, as ScriptedRepliesSurviveSanitizingTests
     pins them.
+
+    The sentence-repetition retry is here for the same reason the finalizer is: this is the one
+    place all sixteen paths pass through. `general_service._anti_repetition_context` already shows
+    the model its last four replies before it writes — that is prevention, and it was in force on
+    every turn of conversation 973 — while `_rephrased` reads the finished draft and names the
+    sentence it repeated. Complementary, not redundant.
+
+    Before `_finalize`, deliberately: the retry should be judged on what the model produced, not on
+    text `strip_premature_closing` has already cut a sentence out of.
     """
     reply, context = _handle_general_raw(message, history, store)
+    reply, context, _ = _rephrased(
+        reply, context, history, store,
+        lambda hint: _handle_general_raw(message, history, store, retry_hint=hint),
+    )
     return _finalize(reply, stage), context
 
+
+
+def _rephrased(reply, context, history, store, regenerate):
+    """One targeted regeneration when a draft repeats a sentence we already said.
+
+    `_is_repetitive` above compares whole replies at 0.7 and is the right guard for a branch that
+    re-sends its previous answer wholesale. It cannot see conversation 973, whose five replies peaked
+    at 0.451 against each other while opening and closing on the same two sentence frames four times
+    over — the repetition a customer actually notices sits below the reply. `sales.repetition` looks
+    there; this wires it to a retry.
+
+    `regenerate` is a zero-arg callable returning `(reply, context)`, so each branch closes over its
+    own arguments and this stays ignorant of what produced the draft — the same reason
+    `handle_general` wraps `_handle_general_raw` rather than sixteen call sites being edited.
+
+    One retry, never a loop, and the second draft is returned whether or not it is still repetitive:
+    a reply that repeats a sentence is better than a third model call, and far better than an
+    unbounded chain. `_is_repetitive`'s own retry above makes the same choice.
+
+    Returns `(reply, context, repeats)` — the sentences that triggered it, or `()` — so a caller that
+    wants to log or test the decision can, without re-running the comparison.
+    """
+    repeats = repetition.repeated_sentences(reply, history, store=store)
+    # Plus the frames, which are a different question about the same draft: that one asks whether a
+    # sentence has been SAID before, this asks whether a sentence has been STARTED the same way
+    # three times. Conversation 973's replays fail only the second — its closing frame ended four
+    # of five replies while every remaining pair measured under `SENTENCE_THRESHOLD`, because the
+    # model varies the reason clause and keeps the opening. Merged into one list so a draft failing
+    # both gets one retry, not two.
+    for sentence in repetition.repeated_frames(reply, history, store=store):
+        if sentence not in repeats:
+            repeats.append(sentence)
+    if not repeats:
+        return reply, context, ()
+
+    retried, retried_context = regenerate(repetition.retry_hint(repeats))
+    # A generator that returns nothing usable is not an improvement. `chat` can come back empty on a
+    # provider error, and `reply_sanitizer`'s bail-rather-than-empty rule exists because a blank
+    # reply is the one outcome worse than a flawed one.
+    if not (retried or "").strip():
+        return reply, context, repeats
+    return retried, retried_context, repeats
 
 
 def _is_repetitive(new_response, history):
@@ -434,6 +490,15 @@ def route(message, history=None, store=None, conversation=None):
         reply, context = handle_objection(
             message, objection, history, store, conversation
         )
+        # `_SEQUENCE` and `PLAYBOOK` prescribe the same answer shape for the same objection kind, so
+        # a customer who says "غالي" twice gets the same three moves twice — the sentence check is
+        # the only guard on this branch, and the only one that would see it.
+        reply, context, _ = _rephrased(
+            reply, context, history, store,
+            lambda hint: handle_objection(
+                message, objection, history, store, conversation, retry_hint=hint
+            ),
+        )
         stage = (
             sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
         )
@@ -441,6 +506,12 @@ def route(message, history=None, store=None, conversation=None):
 
     if request_type == "identification":
         reply, context = identify_perfume(message, history, store, conversation)
+        # A customer who cannot place a perfume goes round again, and `TIER_WORDING` hands back the
+        # same sentence at the same confidence tier each time.
+        reply, context, _ = _rephrased(
+            reply, context, history, store,
+            lambda hint: identify_perfume(message, history, store, conversation, retry_hint=hint),
+        )
         return _finalize(reply, sales_stage.IDENTIFICATION), context
 
     # --- Anti-repetition: detect semantic repetition (same idea, different words) ---
@@ -646,13 +717,55 @@ def route(message, history=None, store=None, conversation=None):
         # perfume named only while being withdrawn does not count as still under discussion —
         # that loop announced the same withdrawal on turn after turn.
         keep = sales_described.under_discussion(conversation, store)
-        results = search_products(intent, store, keep=keep)
-        response, context = recommend(message, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
+
+        # Minus anything the customer has told us to move past. That two-reply window is what
+        # re-promoted conversation 973's turn 4: Bloom and Coco Mademoiselle were excluded by name
+        # on turn 3, the refusal on turn 4 carried no `exclude_names` of its own, and they arrived
+        # in `keep` and `offered` at once — continuity +2.5 against repeat -2.0 is still +0.5, which
+        # ranked them above a fresh Good Girl that matched just as well. A perfume the customer has
+        # moved past is not what the conversation is on, whatever the window says.
+        #
+        # Subtracted here rather than inside `under_discussion`, which `offered_in_order` also reads
+        # to resolve a reference: "بكام Bloom؟" after moving past Bloom must still place Bloom.
+        keep = keep - sales_described.moved_past(conversation, store)
+
+        # And what he has already SEEN, over the whole conversation rather than the two-reply
+        # window `keep` uses. `ranking.WEIGHTS["repeat"]` sinks these below fresh candidates
+        # without removing them, so a perfume from five turns ago can still be asked about.
+        #
+        # Conversation 973 is the failure: turn 4's "مش عايز حاجه من البراند بتاعكو" is a refusal,
+        # not a request for alternatives, so `ai/intent.py` left `exclude_names` empty and the
+        # unchanged intent re-derived turn 2's shortlist verbatim. Nothing was wrong with the
+        # search; nothing in it knew the customer had seen those two already.
+        offered = sales_described.offered_ever(conversation, store)
+        results = search_products(intent, store, keep=keep, offered=offered)
+
+        # Both retries below regenerate with the same products and the same arguments; only the
+        # instruction text differs. A closure rather than three near-identical nine-argument calls,
+        # which is how the second one drifted from the first before now.
+        def _recommend_again(hint="", msg=None):
+            return recommend(
+                msg if msg is not None else message,
+                results["products"], history, alternatives=results["alternatives"], store=store,
+                intent=intent, search=results, gender_unknown=gender_unknown, repeat_hint=hint,
+            )
+
+        response, context = _recommend_again()
 
         if _is_repetitive(response, history):
             # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
             modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
-            response, context = recommend(modified_msg, results["products"], history, alternatives=results["alternatives"], store=store, intent=intent, search=results, gender_unknown=gender_unknown)
+            response, context = _recommend_again(msg=modified_msg)
+
+        # After the whole-reply guard above, and a different question from it: that one asks
+        # whether this reply IS the previous reply (0.7 on the full text) and answers it by
+        # ordering different PRODUCTS. This asks whether a sentence in it has been said before,
+        # and answers it by asking for different WORDING. Conversation 973 was invisible to the
+        # first — 0.451 at its peak — and is why the second exists; a reply can fail either
+        # test without failing the other, so both run.
+        response, context, _ = _rephrased(
+            response, context, history, store, _recommend_again,
+        )
 
         # A customer being shown options for the first time has not chosen anything yet, so
         # this turn has not earned "تحب أساعدك في الطلب؟".
@@ -711,6 +824,19 @@ def route(message, history=None, store=None, conversation=None):
                 ),
             )
 
+        # And the sentence-level check, on the same `retry_hint` channel the whole-reply retry above
+        # already uses. This branch answers "بكام؟" and "ريحته عاملة ايه؟" turn after turn, so its
+        # price and note sentences are the most re-said in the system — and any one of them is too
+        # small a fraction of its reply to move a whole-reply ratio.
+        #
+        # Below the absence retry, not above it: that one is a correctness fix (the reply promised a
+        # lookup nobody performs) and this one is a phrasing fix, so the phrasing check should see the
+        # reply we are actually going to send.
+        response, context, _ = _rephrased(
+            response, context, history, store,
+            lambda hint: get_product_info(message, history, store, conversation, retry_hint=hint),
+        )
+
         # After the retry, so a deferral the retry introduced or removed is judged on the context
         # actually being sent.
         _escalate_absent_name(conversation, store, context, message, history)
@@ -722,6 +848,15 @@ def route(message, history=None, store=None, conversation=None):
 
     elif request_type == "comparison":
         response, context = compare_products(message, history, store, conversation)
+
+        # The first repetition check of any kind on this branch. It needs one more than most: its
+        # instruction 5 REQUIRES the closing frame "أنا أرشحلك X أكتر لأن…" — the frame conversation
+        # 973 ended four of five replies on — so a customer who compares twice gets it twice by
+        # construction, and nothing here was looking.
+        response, context, _ = _rephrased(
+            response, context, history, store,
+            lambda hint: compare_products(message, history, store, conversation, retry_hint=hint),
+        )
 
         # `compare_products` hands a turn it cannot place two perfumes on straight to
         # `get_product_info`, so this branch now produces the same markers the one above does —
