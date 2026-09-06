@@ -145,9 +145,10 @@ def _budget_verdict_note(budget, context):
     Returns "" with no budget, so the caller interpolates it unconditionally.
 
     The first half is the same fact every other price-rendering branch now states: the ✅/⚠️/❌
-    marker is the verdict and there is no difference figure to quote unless one is written inside a
-    ⚠️. It is emitted only alongside real product data, because a rule about markers the model
-    cannot see is noise.
+    marker is the verdict and no marker carries a difference figure — a ⚠️ size is announced with
+    its printed price and the fixed sentence "أعلى حاجة بسيطة من ميزانيتك", never with a delta. It
+    is emitted only alongside real product data, because a rule about markers the model cannot see
+    is noise.
 
     The second half is this branch's own, and it is the turn conversation 931 actually failed on.
     "ازاي اعلي من ميزانيتي" is a price objection, so it arrives here — and `resolve_products` found
@@ -164,9 +165,10 @@ def _budget_verdict_note(budget, context):
     note = f"\n🔴 ميزانية العميل {int(budget)} جنيه."
     if context:
         note += (
-            " وكل سعر في بيانات العطور فوق جانبه علامة محسوبة (✅ داخل الميزانية / ⚠️ أعلى شوية / "
-            "❌ أعلى بكتير). العلامة دي هي الحكم الوحيد على الميزانية: ❌ ممنوع تحسب الفرق بنفسك، "
-            "وممنوع تقول رقم فرق مش مكتوب جوه علامة ⚠️."
+            " وكل سعر في بيانات العطور فوق جانبه علامة محسوبة (✅ داخل الميزانية / ⚠️ أعلى حاجة "
+            "بسيطة / ❌ أعلى بكتير). العلامة دي هي الحكم الوحيد على الميزانية: ❌ ممنوع تحسب الفرق "
+            "بنفسك، وممنوع تقول رقم فرق خالص — مفيش رقم فرق في البيانات من الأصل. لو الحجم عليه "
+            "⚠️، قول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف وبس."
         )
     note += (
         "\n🔴 ولو العميل بيعترض على إنك قلتله إن سعر أعلى من ميزانيته: راجع الرقم الأول. لو السعر "

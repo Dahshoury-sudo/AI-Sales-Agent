@@ -11,7 +11,6 @@ answered, which is the exact inconsistency the prompts spend hundreds of lines
 trying to prevent. Both drifts are resolved by including the superset.
 """
 
-from decimal import Decimal
 from itertools import islice
 
 from .sales import naming
@@ -33,9 +32,16 @@ from .sales.value import (
 # drift apart. Imported above rather than redefined, so `product_formatting.BUDGET_TOLERANCE`
 # keeps resolving for existing callers.
 
+# These three strings are the only description of a tier the model ever receives, and none of them
+# carries a number — see `budget_label`. The "near" wording is quoted by name as the sole meaning of
+# ⚠️ in `reply_sanitizer` and in `eval_harness.checks`, so it is load-bearing outside this module:
+# changing it without changing those leaves both blind to what the model was actually told.
 _BUDGET_LABELS = {
     "in": " ✅ (داخل الميزانية)",
-    "near": " ⚠️ (أعلى شوية من الميزانية — تقدر تعرضه مع التوضيح)",
+    "near": (
+        " ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب"
+        " وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)"
+    ),
     "far": " ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)",
 }
 
@@ -51,46 +57,30 @@ def budget_label(price, max_price):
     ranking bonus so that a size this function calls offerable cannot have had its product
     dropped upstream.
 
-    A "near" size carries the overage as a number, because every instruction about such a
-    size asks the model to state it — persona rule prompts.py:104, both of recommendation's
-    budget notes and its price_instruction all say some form of "قول إنه أعلى بكام". Asking
-    for a figure that is nowhere in the data is how the model learns to produce one, and it
-    then produces one on turns where there is nothing to state: conversation 912, budget
-    1200, reported an in-budget 1046 as "أعلى من ميزانيتك شوية بـ 124 جنيه" — a difference
-    invented in the wrong direction about a size labelled ✅.
+    ❗ No tier carries a figure. Not "far", which may not be offered at all, and — since the
+    overage stopped being said out loud — not "near" either. A ⚠️ size is offered with its own
+    price and the sentence "أعلى حاجة بسيطة من ميزانيتك", and by how much it exceeds the budget
+    is never stated. So every label is a constant and the arithmetic that used to live here is
+    gone; the price the customer hears is the one `_size_lines` already prints on the line.
 
-    Forbidding that in prose was tried first and did not hold (~1 in 20 turns still did it).
-    The fix that does is the one `recommendation._in_budget_note` already used for the same
-    failure in evaluation scenario X3: name the figure rather than ask for it. Now the only
-    sizes with a difference to quote are the ones that have one, so on a ✅ line the request
-    is unfillable rather than merely banned.
+    Two incidents are why the *request* for a difference had to go, not merely the permission.
+    Conversation 912, budget 1200: the model reported an in-budget 1046 as "أعلى من ميزانيتك
+    شوية بـ 124 جنيه" — a figure that existed nowhere, about a size labelled ✅, and in the wrong
+    direction (1046 is 154 *under*). It was obeying instructions; five prompt rules asked for the
+    difference, and stating one meant computing it. Conversation 915, budget 900: naming the
+    figure in this label instead was tried, and the reply became "والـ90 ملي أعلى شوية بـ90 جنيه"
+    — which says the 90 ملي costs 90, because "بـ" is the price particle in every sibling clause
+    of that same reply. Correct arithmetic, wrong sentence.
 
-    Naming the figure turned out to be necessary and not sufficient. Conversation 915, budget
-    900: this label read "أعلى شوية من الميزانية بـ 90 جنيه" beside a 990 price, and the reply
-    was "والـ90 ملي أعلى شوية بـ90 جنيه" — which says the 90 ملي costs 90. Correct arithmetic,
-    wrong sentence, because "بـ" is the price particle in every sibling clause of that same
-    reply ("الـ50 ملي بـ642"), so an overage introduced by a bare "بـ" is read as a price. The
-    size happening to equal the overage is what made it undetectable.
-
-    So the label states the *pair*, and asks for both numbers rather than for "the difference".
-    That is the same move as naming the figure, applied one level up: an instruction a single
-    number cannot satisfy. `sales.value._money_and_warning` names each price beside the size it
-    belongs to for exactly this reason — the comparison, not just the delta, is what fixes the
-    direction, and a delta whose referent is left to inference gets re-pointed (conversation 931).
-
-    "far" deliberately gets no figure. It is the one tier the model may not offer at all, so
-    a number there would only be a number to leak.
+    Both are answered by there being no difference anywhere: no instruction asks for one and no
+    label supplies one, so a ✅ line and a ⚠️ line are symmetric — neither has a figure to quote.
+    What is still *computable* from the model's own context (the stated budget, and the price on
+    the line) is banned in prose and backed by `reply_sanitizer.strip_overage_figure`, because
+    the prose ban alone left ~1 turn in 20 still stating a difference.
     """
     if max_price is None:
         return ""
-    tier = budget_tier(price, max_price)
-    if tier != "near":
-        return _BUDGET_LABELS[tier]
-    over = Decimal(str(price)) - Decimal(str(max_price))
-    return (
-        f" ⚠️ (أعلى شوية من الميزانية — السعر {price:.0f} جنيه والفرق {over:.0f} جنيه. "
-        f"تقدر تعرضه بشرط تقول الرقمين مع بعض زي ما هما)"
-    )
+    return _BUDGET_LABELS[budget_tier(price, max_price)]
 
 
 # Original bottles are counted physical units, so a low count is a real fact worth

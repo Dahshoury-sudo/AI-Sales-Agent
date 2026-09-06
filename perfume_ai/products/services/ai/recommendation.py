@@ -332,12 +332,12 @@ def _in_budget_note(products, max_price):
         # then permitting exactly one price is both untrue and the reason a well-matched
         # perfume lost to a badly-matched cheaper one in conversation 757.
         return (
-            "\n⚠️ مفيش حجم داخل الميزانية بالظبط في القائمة دي، بس دي أعلى منها شوية بس "
+            "\n⚠️ مفيش حجم داخل الميزانية بالظبط في القائمة دي، بس دي أعلى منها حاجة بسيطة "
             "ومسموح تعرضها: "
             + "، ".join(tolerable[:4])
-            + ".\n🔴 اعرض منها اللي الأنسب لطلب العميل وقول الرقمين المكتوبين جوه علامة الـ ⚠️ "
-            "بتاعته مع بعض — السعر والفرق — مش الفرق لوحده. ❌ ممنوع تقول \"مفيش حاجة في "
-            "الميزانية\" وتسكت، وممنوع ترشح عطر مش مناسب لطلبه بس لأنه أرخص.\n"
+            + ".\n🔴 اعرض منها اللي الأنسب لطلب العميل، وقول سعره المكتوب وقول \"أعلى حاجة "
+            "بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه. ❌ وممنوع تقول "
+            "\"مفيش حاجة في الميزانية\" وتسكت، وممنوع ترشح عطر مش مناسب لطلبه بس لأنه أرخص.\n"
         )
     if not affordable:
         # Naming the figure rather than asking for it, for the same reason the affordable
@@ -498,16 +498,16 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
     max_price = _coerce_budget(intent.get("max_price") if intent else None)
     budget_note = ""
     if max_price:
-        budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. اذكر الأسعار والأحجام اللي داخل الميزانية، واللي أعلى منها شوية (⚠️) كمان لو هي الأنسب لطلبه. متسألوش عن الميزانية تاني.\n"
-        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته شوية (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه وقول الرقمين المكتوبين جوه العلامة مع بعض — السعر والفرق — مش الفرق لوحده، واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
+        budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. اذكر الأسعار والأحجام اللي داخل الميزانية، واللي أعلى منها حاجة بسيطة (⚠️) كمان لو هي الأنسب لطلبه. متسألوش عن الميزانية تاني.\n"
+        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته حاجة بسيطة (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه وقول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه — واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
         # The ✅ half of this rule is the one conversation 912 was missing.
         #
-        # Everything above, plus persona rules prompts.py:103-104, describes what to say when a
-        # size is over budget: offer it anyway if it fits best, quote the real price, say by how
-        # much it exceeds the number. Five separate instructions on that case and, until this
-        # sentence, not one on what a ✅ obliges — so the label was authoritative in the
-        # arithmetic and merely suggestive in the prose, and the model occasionally applied the
-        # over-budget script to a size that was inside the budget.
+        # Everything above, plus persona rules prompts.py:104-106, describes what to say when a
+        # size is over budget: offer it anyway if it fits best, quote the real price, name it as
+        # slightly over. Five separate instructions on that case and, until this sentence, not one
+        # on what a ✅ obliges — so the label was authoritative in the arithmetic and merely
+        # suggestive in the prose, and the model occasionally applied the over-budget script to a
+        # size that was inside the budget.
         #
         # Conversation 912, budget 1200: "La Vie Est Belle 90 ملي بـ1046 جنيه أعلى شوية ⚠️ عن
         # ميزانيتك". 1046 is in budget, its price line said "✅ (داخل الميزانية)", and
@@ -522,26 +522,32 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
         # against a real difference of 154 in the other direction. The model was doing budget
         # arithmetic rather than reading a verdict sales.value.budget_tier had already computed.
         #
-        # What closed it was removing the arithmetic to do: `budget_label` now writes the overage
-        # into the ⚠️ label itself and every instruction here points at that number instead of
-        # asking for one, so a ✅ line has no figure to quote and the request is unfillable rather
-        # than forbidden. That is the same move `_in_budget_note` made for evaluation scenario X3
-        # below — name the figure rather than ask for it — and the reason both were needed is that
-        # a ban only removes the permission, while this removes the gap that invited it.
+        # What closed it was leaving the model no arithmetic to do and nothing to quote. For a
+        # while `budget_label` wrote the overage into the ⚠️ label itself and every instruction
+        # here pointed at that figure instead of asking for one, so the request was unfillable
+        # rather than forbidden — the same move `_in_budget_note` makes for evaluation scenario X3
+        # below, naming the figure rather than asking for it. The figure has since left the label
+        # too, on that logic taken one step further: a ⚠️ size is announced with the fixed
+        # sentence "أعلى حاجة بسيطة من ميزانيتك" and its own price, so neither tier carries a
+        # difference and there is nothing in the data for either to quote. What the model can
+        # still *compute* from the stated budget and the printed price is banned in prose here and
+        # stripped on the way out by `reply_sanitizer.strip_overage_figure`, because a prose ban
+        # alone left ~1 turn in 20 still stating a difference.
         #
-        # Naming the figure was necessary and not sufficient, and conversation 915 is the second
-        # half. The label read "أعلى شوية من الميزانية بـ 90 جنيه" beside a 990 price and the
-        # reply was "والـ90 ملي أعلى شوية بـ90 جنيه" — the overage quoted under the same particle
-        # the price uses, so it reads as the price. Every instruction here asked for "الفرق",
-        # which a single number satisfies. They now ask for both numbers together, and
-        # `budget_label` writes the pair rather than the delta. See its docstring.
+        # Conversation 915 is why the figure had to go rather than merely be pre-computed. The
+        # label read "أعلى شوية من الميزانية بـ 90 جنيه" beside a 990 price and the reply was
+        # "والـ90 ملي أعلى شوية بـ90 جنيه" — the overage quoted under بـ, the same particle the
+        # price uses, so it reads as *the price*. Asking for "الفرق" is satisfied by a single
+        # number, and asking for both numbers together only made the pair likelier, not the
+        # misreading impossible. One price and one fixed sentence is the shape that cannot be
+        # misread. See `product_formatting.budget_label`.
         #
         # "مهما كان سعره قريب من الرقم" names the specific trap. A tolerance band exists
         # (value.BUDGET_TOLERANCE), so "close to the budget" is a real category in the data — but
         # it is ⚠️, and the model does not get to decide a ✅ price is close enough to count.
-        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها شوية (⚠️) أو أعلى منها بكتير (❌). العلامة دي محسوبة وهي الحكم الوحيد على الميزانية — متحسبهاش بنفسك. التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول الرقمين المكتوبين جوه العلامة نفسها مع بعض — السعر والفرق — مش الفرق لوحده.\n"
-        budget_note += "🔴 وحجم عليه ✅ يبقى داخل الميزانية خلاص، مهما كان سعره قريب من الرقم اللي قاله: ❌ ممنوع تقول عنه إنه \"أعلى شوية\" ولا \"أعلى من ميزانيتك\"، وممنوع تحسبله فرق — مفيش فرق أصلاً، ومفيش رقم فرق مكتوب جانبه. ده بيخلي العميل يفتكر إنه مش قادر على حاجة هو قادر عليها فعلاً.\n"
-    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها شوية (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول الرقمين المكتوبين جوه العلامة مع بعض — السعر والفرق — مش الفرق لوحده، واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
+        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها حاجة بسيطة (⚠️) أو أعلى منها بكتير (❌). العلامة دي محسوبة وهي الحكم الوحيد على الميزانية — متحسبهاش بنفسك. التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول سعره المكتوب وتقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه.\n"
+        budget_note += "🔴 وحجم عليه ✅ يبقى داخل الميزانية خلاص، مهما كان سعره قريب من الرقم اللي قاله: ❌ ممنوع تقول عنه إنه \"أعلى حاجة بسيطة\" ولا \"أعلى شوية\" ولا \"أعلى من ميزانيتك\"، وممنوع تحسبله فرق — مفيش فرق أصلاً، ومفيش رقم فرق في البيانات خالص. ده بيخلي العميل يفتكر إنه مش قادر على حاجة هو قادر عليها فعلاً.\n"
+    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها حاجة بسيطة (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه — واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
 
     # What the customer already told us, so the reply can nod to it once instead of
     # answering five stated constraints as though none had registered.
@@ -644,7 +650,7 @@ def recommend(message, products, history=None, alternatives=None, store=None, in
             show_value_pick=bool(max_price),  # same reasoning as case 1
         )
         context += _reference_block(search, max_price)
-        price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو السعر أعلى من الميزانية، وضّح ذلك بصراحة. متسألوش عن الميزانية تاني."
+        price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو الحجم عليه ⚠️، قول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه. متسألوش عن الميزانية تاني."
         user_content = f"""
 ═══ طلب العميل ═══
 {message}

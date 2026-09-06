@@ -154,7 +154,13 @@ _CLAIM_LEAD = (
     r"|" + _CONNECTOR + r"*)"
 )
 
-_INTENSIFIER = r"(?:\s*(?:شوية|بشوية|كتير|بكتير|جدا[ًا]?))?"
+# "حاجة بسيطة" is the phrasing every prompt rule now dictates for the ⚠️ tier — it replaced the
+# looser "شوية" in `product_formatting._BUDGET_LABELS["near"]` — and it lands in exactly this slot:
+# "الـ90 أعلى حاجة بسيطة من ميزانيتك". Without it here the claim pattern stops matching the only
+# wording the model is told to use, and the conversation 912 guard goes blind the moment the new
+# sentence is aimed at an in-budget ✅ price. The old spelling stays: it is still what a customer
+# reads back, and it is still banned in prose.
+_INTENSIFIER = r"(?:\s*(?:شوية|بشوية|كتير|بكتير|جدا[ًا]?|حاج[هة]\s+بسيط[هة]))?"
 
 # The overage figure, when the model invents one: "بـ353 جنيه", "بحوالي 353". Consumed with the
 # claim so no orphaned number is left behind.
@@ -188,6 +194,12 @@ def _claim(core):
     return re.compile(_CLAIM_LEAD + "(?P<core>" + core + ")" + _OVERAGE_TAIL)
 
 
+# Stated as a difference rather than as a comparison: "والفرق 90 جنيه عن ميزانيتك". Named because
+# two passes need the same sentence for different reasons — `strip_false_over_budget` deletes it
+# when the numbers disprove it, `strip_overage_figure` deletes it whether or not they do, since
+# here the figure *is* the clause and there is no tail to trim off it.
+_DIFF_FROM_BUDGET_CORE = r"الفرق\s+\d[\d.,]*\s*(?:جنيه)?\s*(?:عن|من)\s+" + _BUDGET
+
 # (pattern, negatable). `negatable` is False for the two cores that open with مش, whose مش is
 # part of the claim rather than a negation of it.
 _OVER_BUDGET_CLAIMS = (
@@ -196,9 +208,37 @@ _OVER_BUDGET_CLAIMS = (
     (_claim(r"فوق" + _MID + _BUDGET), True),
     (_claim(r"(?:خارج|بر[هة])" + _MID + _BUDGET), True),
     (_claim(r"(?:زياد[هة]|بيزيد|زايد)" + _INTENSIFIER + _MID + r"(?:عن|على)\s+" + _BUDGET), True),
-    (_claim(r"الفرق\s+\d[\d.,]*\s*(?:جنيه)?\s*(?:عن|من)\s+" + _BUDGET), True),
+    (_claim(_DIFF_FROM_BUDGET_CORE), True),
     (_claim(r"مش\s+داخل" + _MID + _BUDGET), False),
     (_claim(r"مش\s+في" + _MID + _BUDGET), False),
+)
+
+_DIFF_FROM_BUDGET = _claim(_DIFF_FROM_BUDGET_CORE)
+
+# The figure on its own: "بـ90 جنيه", "ب 90", "بحوالي 353 جنيه". Same spelling as `_OVERAGE_TAIL`,
+# which is the same figure seen from the other pass — there it is swallowed along with a claim
+# being deleted, here it is the only thing that goes.
+_FIGURE = r"\s*ب(?:ـ)?\s*(?:حوالي\s*)?\d[\d.,]*\s*(?:جنيه)?"
+
+# The comparatives a difference can hang off. `_PREPOSITIONAL` are the ones that take the budget
+# noun directly and never a figure in front of it — "فوق بـ90 من ميزانيتك" is not a sentence anyone
+# writes — so they appear in the first pattern only.
+_COMPARATIVE = r"(?:" + _HIGHER + r"|[أاإ]كتر|زياد[هة]|بيزيد|زايد)"
+_PREPOSITIONAL = r"(?:فوق|خارج|بر[هة])"
+_OVERAGE_FIGURES = (
+    # The figure trailing the budget noun, which is where it nearly always lands:
+    # "أعلى حاجة بسيطة من ميزانيتك بـ90 جنيه". The connector is optional so a prepositional
+    # comparative reaches its noun directly ("فوق ميزانيتك بـ90 جنيه").
+    re.compile(
+        r"(?:" + _COMPARATIVE + r"|" + _PREPOSITIONAL + r")" + _INTENSIFIER + _MID
+        + r"(?:من|عن|على)?\s*" + _BUDGET + _INTENSIFIER
+        + r"(?P<figure>" + _FIGURE + r")"
+    ),
+    # The figure inside the claim, before the noun: "أعلى بـ90 جنيه من ميزانيتك".
+    re.compile(
+        _COMPARATIVE + _INTENSIFIER + r"(?P<figure>" + _FIGURE + r")"
+        + _MID + r"(?:من|عن|على)\s+" + _BUDGET
+    ),
 )
 
 # A claim preceded by one of these is a *correction*, not a claim — and the correction is the
@@ -221,10 +261,10 @@ _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 #
 # Stripping the *claim* does not reach this, because there is no claim: the model lifted the
 # marker and left the sentence out. That is not a lesser version of the bug. ⚠️ has exactly one
-# meaning in this system — `product_formatting._BUDGET_LABELS["near"]`, "أعلى شوية من الميزانية" —
-# and four prompt rules bind it to that meaning by name, so a glyph beside an in-budget price
-# tells the customer the same falsehood the sentence did. Turn 11 of that run is the customer
-# asking "ازاي اعلي من ميزانيتي" with nothing but the glyph to have prompted it.
+# meaning in this system — `product_formatting._BUDGET_LABELS["near"]`, "أعلى حاجة بسيطة من
+# الميزانية" — and four prompt rules bind it to that meaning by name, so a glyph beside an
+# in-budget price tells the customer the same falsehood the sentence did. Turn 11 of that run is the
+# customer asking "ازاي اعلي من ميزانيتي" with nothing but the glyph to have prompted it.
 #
 # Price-adjacent, because that is how the label is built: `_BUDGET_LABELS` renders it as a suffix
 # to a price and nowhere else. Every other ⚠️ this system emits either lives only in the injected
@@ -407,14 +447,81 @@ def strip_false_over_budget(reply, budget):
     return cleaned, removed
 
 
+def _cut(text, spans):
+    """Delete `spans` from `text`, right to left so earlier offsets stay valid."""
+    for start, end in reversed(spans):
+        text = text[:start] + text[end:]
+    return text
+
+
+def strip_overage_figure(reply):
+    """Remove a difference figure the reply states against the customer's budget.
+
+    Returns `(cleaned, removed)`. Needs no budget and asks nothing about arithmetic, which is the
+    whole difference from `strip_false_over_budget` above: that one deletes a claim because the
+    claim is false, this one deletes a figure that is forbidden whether or not it is right. A
+    correct one is if anything the worse case — it is the one a customer believes and acts on, and
+    it turns "أعلى حاجة بسيطة" into a number to haggle over.
+
+    Only the figure goes. The claim and the price stay, so
+    "الـ90 بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك بـ90 جنيه" comes out as the same sentence minus
+    its last two words, still naming the price and still saying the size is a little over. The one
+    exception is `_DIFF_FROM_BUDGET`, where the figure *is* the clause — nothing is left of
+    "والفرق 90 جنيه عن ميزانيتك" once the number is gone, so the clause goes whole.
+
+    Every pattern is bound to the budget noun, in every shape, and that is a constraint rather than
+    an accident of drafting. "الـ90 أعلى بـ302 جنيه من الـ50" is a size-vs-size delta the persona is
+    told to quote (prompts.py:107), and `sales.value` carries a guard built to stop exactly that
+    delta being re-read as a budget claim (conversation 931). A pattern here that fired on a bare
+    "أعلى بـ302 جنيه" would undo that guard from the other side and delete a fact the sale needs.
+
+    Why any code, when four prompt rules now forbid the figure and no label carries one: the model
+    can still compute it. The stated budget and the printed price are both legitimately in context
+    and cannot be taken away, and `product_formatting.budget_label`'s docstring records what the
+    prose ban alone achieved — ~1 turn in 20 still stated a difference.
+    """
+    if not reply:
+        return reply, []
+
+    cleaned = reply
+    removed = []
+
+    for pattern in _OVERAGE_FIGURES:
+        spans = [match.span("figure") for match in pattern.finditer(cleaned)]
+        removed.extend(cleaned[start:end].strip() for start, end in spans)
+        cleaned = _cut(cleaned, spans)
+
+    # Negation checked at the core for the same reason the claim pass checks it there: a customer
+    # who was told a wrong difference gets it withdrawn, and "مفيش فرق" must not be mistaken for
+    # one more statement of it.
+    spans = [
+        match.span() for match in _DIFF_FROM_BUDGET.finditer(cleaned)
+        if not _is_negated(cleaned, match.start("core"))
+    ]
+    removed.extend(cleaned[start:end].strip() for start, end in spans)
+    cleaned = _cut(cleaned, spans)
+
+    if not removed:
+        return reply, []
+
+    cleaned = _tidy_after_strip(cleaned)
+    if not cleaned:
+        # As above: an empty reply is worse than one carrying a figure it should not.
+        return reply, []
+
+    return cleaned, removed
+
+
 def sanitize_reply(reply, conversation=None):
     """Remove forbidden filler questions, and any provably false over-budget claim.
 
     Returns the cleaned text. If a reply is nothing but a banned question, the
     original is kept — sending an empty message is worse than sending a weak one.
 
-    The budget pass runs first: it is a factual correction rather than a matter of register,
-    and removing a mid-sentence clause can leave a connector for the closer pass to tidy.
+    The budget passes run first: they are factual corrections rather than matters of register,
+    and removing a mid-sentence clause can leave a connector for the closer pass to tidy. The
+    false-claim pass precedes the figure pass so a claim being deleted outright takes its own
+    figure with it (`_OVERAGE_TAIL`) instead of being trimmed and then removed.
     """
     if not reply:
         return reply
@@ -444,6 +551,21 @@ def sanitize_reply(reply, conversation=None):
             " | ".join(false_claims),
         )
 
+    # Unconditional, and independent of the budget being known: the figure is banned outright, so
+    # there is nothing to compare it against and no reason to skip the pass when `max_price` was
+    # never recorded — a stated difference is wrong on a turn where we cannot check it too.
+    cleaned, figures = strip_overage_figure(cleaned)
+    if figures:
+        logger.warning(
+            "OVERAGE_FIGURE: stripped %d budget difference figure(s)%s. Removed: %s. No label in "
+            "the context carries a difference and four prompt rules forbid stating one, so this "
+            "was computed from the stated budget and a printed price — a steady rate here means "
+            "the ⚠️ wording is still being read as an invitation to do the subtraction.",
+            len(figures),
+            f" (conversation #{conversation.id})" if conversation is not None else "",
+            " | ".join(figures),
+        )
+
     removed = []
     for pattern in BANNED_CLOSERS:
         cleaned, count = pattern.subn("", cleaned)
@@ -452,7 +574,7 @@ def sanitize_reply(reply, conversation=None):
 
     cleaned = cleaned.strip()
 
-    if removed or false_claims:
+    if removed or false_claims or figures:
         cleaned = _trim_dangling_connector(cleaned)
 
     if not cleaned:

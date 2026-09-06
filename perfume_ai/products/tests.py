@@ -67,6 +67,7 @@ from products.services.reply_sanitizer import (
     sanitize_reply,
     soften_marketing_language,
     strip_false_over_budget,
+    strip_overage_figure,
     strip_premature_closing,
 )
 from products.services.sales import (
@@ -521,6 +522,19 @@ class BudgetLabellingTests(TestCase):
     def _line_for(self, context, price):
         return [line for line in context.splitlines() if price in line][0]
 
+    def _label_for(self, context, price):
+        """Just the marker and its text, cut off the front of the price line.
+
+        The line is "- الـ 50 ملي: 400.00 EGP{stock}{label}", and the two things between EGP and
+        the marker both carry digits that are not the label's: the price itself and, on an original
+        bottle, "(5 زجاجة فقط)". Cutting at the glyph is what makes "no number in the label" a
+        question about the label.
+        """
+        line = self._line_for(context, price)
+        starts = [line.index(glyph) for glyph in ("✅", "⚠️", "❌") if glyph in line]
+        self.assertTrue(starts, f"no budget marker on this line: {line}")
+        return line[min(starts):]
+
     def test_in_budget_size_is_marked_affordable(self):
         self.assertIn("✅", self._line_for(self._context(500), "400"))
 
@@ -536,7 +550,7 @@ class BudgetLabellingTests(TestCase):
         """Customers who never stated a budget must see the unchanged format."""
         context = self._context(None)
 
-        for marker in ("داخل الميزانية", "أعلى شوية من الميزانية", "أعلى من الميزانية بكتير"):
+        for marker in ("داخل الميزانية", "أعلى حاجة بسيطة من الميزانية", "أعلى من الميزانية بكتير"):
             self.assertNotIn(marker, context)
 
     def test_every_size_is_still_listed(self):
@@ -546,26 +560,44 @@ class BudgetLabellingTests(TestCase):
         for price in ("400", "550", "3800"):
             self.assertIn(price, context)
 
-    def test_the_overage_is_written_into_the_near_label(self):
-        """Conversation 912: the model invented an overage because none was in the data.
+    def test_the_near_label_dictates_the_sentence_and_forbids_a_figure(self):
+        """Conversation 912: the model invented an overage because it was doing the arithmetic.
 
         Budget 1200, and it told the customer an in-budget 1046 was "أعلى من ميزانيتك شوية
         بـ 124 جنيه" — a figure that exists nowhere, about a size labelled ✅, and in the
         wrong direction (1046 is 154 *under*). It was obeying instructions: persona rule
         prompts.py:104, both of recommendation's budget notes and its price_instruction all
-        ask for the difference to be stated, and until this label carried one, stating it
-        meant computing it.
+        asked for the difference to be stated, and stating it meant computing it.
 
-        Forbidding the invention in prose was tried first and left ~1 turn in 20 still doing
-        it. Naming the figure is what closed it — the same resolution
-        `recommendation._in_budget_note` reached for evaluation scenario X3.
+        The label carried the computed figure for a while, so that the request was fillable from
+        the data rather than from arithmetic. It no longer does: the customer is told the price
+        and one fixed sentence, and the label spells out both halves of that — say the printed
+        price, say the sentence verbatim, give no difference. Conversation 915 below is why
+        carrying the figure was not the end of it.
         """
         line = self._line_for(self._context(500), "550")
 
         self.assertIn("⚠️", line)
-        self.assertIn("الفرق 50 جنيه", line)
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", line)
+        self.assertIn("سعره المكتوب", line)
+        self.assertIn("من غير أي رقم فرق", line)
+        self.assertNotIn("الفرق 50", line)
 
-    def test_the_near_label_states_the_price_beside_the_difference(self):
+    def test_no_tier_puts_a_number_in_the_label(self):
+        """The strongest form of "there is no figure to quote", and wording-independent.
+
+        Every price line ends in a label, and the price itself is what precedes it — so the test
+        asks the question of the label alone, stripped off the front of the line. A digit inside
+        any label means some tier has started carrying arithmetic again, whatever the surrounding
+        prose has been reworded to say. Both numeral sets, because the model reads either.
+        """
+        for price in ("400", "550", "3800"):
+            label = self._label_for(self._context(500), price)
+
+            self.assertRegex(label, r"[✅⚠️❌]")
+            self.assertNotRegex(label, r"[0-9٠-٩]")
+
+    def test_the_near_label_never_introduces_a_number_with_the_price_particle(self):
         """Conversation 915: naming the figure was necessary and not sufficient.
 
         Budget 900, a 990 price, and the label read "أعلى شوية من الميزانية بـ 90 جنيه". The reply
@@ -575,25 +607,29 @@ class BudgetLabellingTests(TestCase):
         overage introduced by a bare "بـ" reads as a price. The size happening to equal the overage
         is what made it invisible.
 
-        So the label names the pair and asks for both numbers — an instruction one number cannot
-        satisfy, which is the 912 move applied one level up. `sales.value._money_and_warning`
-        names each price beside its own size for the same reason: the comparison fixes the
-        direction, the delta alone does not — and conversation 931 is what happens to a delta
-        whose referent is left to inference.
+        Asking for both numbers together was the first answer to that and only made the pair
+        likelier, not the misreading impossible. Removing the difference entirely is the second:
+        one price under "بـ" and one sentence with no number in it cannot be read as two prices.
+        `sales.value._money_and_warning` names each price beside its own size for the neighbouring
+        reason — a comparison fixes its own direction, a bare delta does not, and conversation 931
+        is what happens to a delta whose referent is left to inference.
         """
-        line = self._line_for(self._context(500), "550")
+        label = self._label_for(self._context(500), "550")
 
-        self.assertIn("السعر 550 جنيه", line)
-        self.assertIn("الفرق 50 جنيه", line)
-        # The regression itself: the difference must not be the thing "بـ" introduces.
-        self.assertNotIn("بـ 50", line)
+        self.assertIn("⚠️", label)
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", label)
+        # No ب — tatweel or space or neither — followed by a number, which is the shape that reads
+        # as a price. "بشرط" and "بالحرف" in the label are the same letter and are not that shape.
+        self.assertNotRegex(label, r"ب\s*ـ?\s*[0-9٠-٩]")
 
     def test_an_in_budget_size_carries_no_figure_to_quote(self):
         """The half that fixes 912: on a ✅ line there is no difference to state.
 
-        This is the point of moving the figure into the data rather than banning the
-        invention — the request "قول الفرق" becomes unfillable here instead of merely
-        forbidden, and an unfillable request is one the model cannot half-obey.
+        The ⚠️ line has none either, now that the overage has left the label — so this is no
+        longer what distinguishes the two tiers, and it is kept because it is still the assertion
+        912 was about. What a ✅ line must not carry is any of the over-budget vocabulary: the
+        request "قول الفرق" is unfillable from a line like this, and an unfillable request is one
+        the model cannot half-obey.
         """
         line = self._line_for(self._context(500), "400")
 
@@ -608,15 +644,19 @@ class BudgetLabellingTests(TestCase):
         self.assertIn("❌", line)
         self.assertNotIn("جنيه", line)
 
-    def test_the_figure_survives_a_float_budget(self):
+    def test_a_float_budget_still_tiers(self):
         """`max_price` arrives from the intent as a float, and float − Decimal raises.
 
         The same pairing `value.budget_ceiling`'s docstring records as a production
-        TypeError, which tests passing an int would not have caught.
+        TypeError, which tests passing an int would not have caught. The subtraction the label
+        used to do is gone, but the comparison behind the tier is not — `budget_tier` still goes
+        through `as_budget`, so the float still has to survive one Decimal boundary to be labelled
+        at all, and this is the path it takes.
         """
         line = self._line_for(self._context(500.0), "550")
 
-        self.assertIn("الفرق 50 جنيه", line)
+        self.assertIn("⚠️", line)
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", line)
 
     def test_boundary_price_equal_to_budget_is_in_budget(self):
         self.assertIn("✅", self._line_for(self._context(400), "400"))
@@ -3204,16 +3244,45 @@ class FalseOverBudgetClaimTests(TestCase):
 
         self.assertEqual(cleaned, "La Vie Est Belle 90 ملي بـ1046 جنيه.")
 
+    def test_the_sentence_the_labels_now_ask_for_is_caught_when_it_is_false(self):
+        """The wording the ⚠️ label prescribes must be visible to this guard, or 912 reopens.
+
+        The claim pattern matches an intensifier between "أعلى" and the budget word, and the list
+        was `شوية|بشوية|كتير|بكتير|جدا` — written when those were the only ways the model said it.
+        "حاجة بسيطة" sits in exactly that slot, so the sentence this change now *instructs* the
+        model to say would have walked straight past the guard. Same falsehood as 912 and 931,
+        newly invisible: 1046 fits a 1200 budget and its price line said ✅.
+
+        The instruction and the guard have to be edited together, which is what this test pins.
+        """
+        reply = "الـ90 ملي بـ1046 جنيه، أعلى حاجة بسيطة من ميزانيتك."
+
+        cleaned = sanitize_reply(reply, self.conversation)
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ1046 جنيه.")
+        self.assertNotIn("أعلى حاجة بسيطة", cleaned)
+
     # ── The rule is one-directional ──────────────────────────────────────────
 
-    def test_a_true_overage_survives(self):
-        """1015 really is above 900, so the sentence is correct and must be left alone."""
+    def test_a_true_overage_survives_but_its_figure_does_not(self):
+        """1015 really is above 900, so the claim is correct — but the figure is no longer sayable.
+
+        Two guards meet on this reply and only one of them fires. `strip_false_over_budget` asks
+        whether the claim is *true*, and leaves it because it is. `strip_overage_figure` asks a
+        different question — whether the customer was told the difference — and the answer is yes,
+        so the "بـ115 جنيه" tail goes. What is left is the shape the ⚠️ label now asks for: the
+        real price, the claim, and no arithmetic.
+        """
         conversation = Conversation.objects.create(
             store=self.store, preferences={"max_price": 900},
         )
         reply = "الـ90 ملي بـ1015، يعني أعلى من ميزانيتك بـ115 جنيه."
 
-        self.assertEqual(sanitize_reply(reply, conversation), reply)
+        cleaned = sanitize_reply(reply, conversation)
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ1015، يعني أعلى من ميزانيتك.")
+        self.assertIn("أعلى من ميزانيتك", cleaned)
+        self.assertNotIn("115", cleaned)
 
     def test_a_claim_with_no_price_quoted_survives(self):
         """No price named, no evidence about the referent — so the claim stands.
@@ -3441,9 +3510,10 @@ class FalseOverBudgetClaimTests(TestCase):
 
     def test_the_marker_alone_is_stripped_even_with_no_claim_attached(self):
         """Replay run 1, turn 10, verbatim. The model lifted the ⚠️ and left the sentence out —
-        and ⚠️ has one meaning in this system, "أعلى شوية من الميزانية", which four prompt rules
-        bind it to by name. Turn 11 of that run is the customer asking "ازاي اعلي من ميزانيتي"
-        with nothing but the glyph to have prompted it, which is the whole original complaint."""
+        and ⚠️ has one meaning in this system, "أعلى حاجة بسيطة من الميزانية", which four prompt
+        rules bind it to by name. Turn 11 of that run is the customer asking "ازاي اعلي من
+        ميزانيتي" with nothing but the glyph to have prompted it, which is the whole original
+        complaint."""
         cleaned = sanitize_reply(
             "أنسب اختيار لجوزك من Versace هو Eros الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي "
             "بـ666 جنيه داخل الميزانية.",
@@ -3482,15 +3552,24 @@ class FalseOverBudgetClaimTests(TestCase):
 
         self.assertEqual(cleaned, "الـ90 ملي بـ1019 جنيه.")
 
-    def test_a_marker_beside_a_price_that_really_is_over_survives(self):
+    def test_a_marker_beside_a_price_that_really_is_over_keeps_the_glyph(self):
         """The glyph pass sits behind the same preconditions as the claim pass, so the one turn
-        where ⚠️ is the truth keeps it."""
+        where ⚠️ is the truth keeps it — the figure it was carrying is a separate question.
+
+        `strip_overage_figure` runs after, and takes the tail off this reply too. The glyph and the
+        claim around it survive because they are true; "بـ115 جنيه" goes because no reply states a
+        difference any more, true or not.
+        """
         conversation = Conversation.objects.create(
             store=self.store, preferences={"max_price": 900},
         )
         reply = "الـ90 ملي بـ1015 جنيه ⚠️ أعلى من ميزانيتك بـ115 جنيه."
 
-        self.assertEqual(sanitize_reply(reply, conversation), reply)
+        cleaned = sanitize_reply(reply, conversation)
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ1015 جنيه ⚠️ أعلى من ميزانيتك.")
+        self.assertIn("⚠️", cleaned)
+        self.assertNotIn("115", cleaned)
 
     def test_the_marker_is_left_alone_when_no_price_is_quoted(self):
         """Precondition 2 covers the glyph as well: with no price in the reply there is no
@@ -3553,6 +3632,122 @@ class FalseOverBudgetClaimTests(TestCase):
         self.assertNotIn("ميزاني", cleaned)
         self.assertNotIn("تحب تعرف", cleaned)
         self.assertIn("1019", cleaned)
+
+
+class OverageFigureTests(TestCase):
+    """How far over the budget a size is, is never told to the customer.
+
+    The ⚠️ tier is offerable, and the reply that offers it says the real price and the fixed
+    sentence "أعلى حاجة بسيطة من ميزانيتك" — nothing else. `product_formatting.budget_label` no
+    longer computes the difference and four prompt rules forbid stating one, but the customer's
+    budget and the printed price are both legitimately in context and the subtraction is one step.
+    budget_label's own docstring records what the prose ban achieved on its own: roughly one turn
+    in twenty still stated a difference. So the reply is checked on the way out.
+
+    This is a different question from the one `strip_false_over_budget` asks, and the answers do
+    not line up. That guard deletes a claim because the reply's own numbers disprove it; a true
+    claim survives it. This one deletes a figure because no figure is sayable — and a *correct*
+    figure is the worse case, since it is the one the customer believes and starts haggling from.
+    """
+
+    def test_the_figure_goes_and_the_sentence_and_price_stay(self):
+        """The shape the ⚠️ label asks for, with one word too many at the end."""
+        cleaned, removed = strip_overage_figure(
+            "الـ90 ملي بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك بـ90 جنيه."
+        )
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك.")
+        self.assertEqual(removed, ["بـ90 جنيه"])
+
+    def test_the_figure_is_found_on_either_side_of_the_budget_word(self):
+        """Arabic puts the tail wherever it likes, and both orders were seen in the transcripts.
+
+        "أعلى من ميزانيتك بـ90" trails the figure; "أعلى بـ90 من ميزانيتك" interposes it. A
+        pattern for the first only would leave the second, which is why there are two.
+        """
+        for reply in (
+            "الـ90 ملي بـ990 جنيه، أعلى من ميزانيتك بـ 90 جنيه.",
+            "الـ90 ملي بـ990 جنيه، أعلى بـ90 جنيه من ميزانيتك.",
+        ):
+            with self.subTest(reply=reply):
+                cleaned, removed = strip_overage_figure(reply)
+
+                self.assertEqual(cleaned, "الـ90 ملي بـ990 جنيه، أعلى من ميزانيتك.")
+                self.assertTrue(removed)
+
+    def test_the_comparison_does_not_have_to_be_the_word_higher(self):
+        """"فوق"/"زيادة"/"أكتر" all say it without saying أعلى, and an approximation ("بحوالي")
+        is still a figure — it names the same number and invites the same haggle."""
+        for reply, expected in (
+            ("الـ90 ملي بـ990 جنيه، فوق ميزانيتك بـ90 جنيه.", "الـ90 ملي بـ990 جنيه، فوق ميزانيتك."),
+            ("زيادة عن ميزانيتك بحوالي 90 جنيه.", "زيادة عن ميزانيتك."),
+        ):
+            with self.subTest(reply=reply):
+                cleaned, removed = strip_overage_figure(reply)
+
+                self.assertEqual(cleaned, expected)
+                self.assertTrue(removed)
+
+    def test_a_clause_that_is_nothing_but_the_figure_goes_whole(self):
+        """"والفرق 90 جنيه عن ميزانيتك" has no remainder worth keeping — take the number out and
+        what is left is a sentence fragment about a difference that is never named."""
+        cleaned, removed = strip_overage_figure(
+            "الـ90 ملي بـ990 جنيه، والفرق 90 جنيه عن ميزانيتك."
+        )
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ990 جنيه.")
+        self.assertEqual(removed, ["، والفرق 90 جنيه عن ميزانيتك"])
+
+    def test_a_size_versus_size_delta_is_left_alone(self):
+        """The one thing this pass must never touch, and the reason every pattern names the budget.
+
+        "الـ90 أعلى بـ302 جنيه من الـ50" compares two sizes to each other. The persona is told to
+        quote that (prompts.py), and `sales.value` carries a guard whose whole job is stopping that
+        delta being re-pointed at the budget — conversation 931, where 353 was 1019 − 666 read as
+        an overage. A pattern here that fired on a bare "أعلى بـ302 جنيه" would delete the fact
+        from the other side, and the sale needs it.
+        """
+        reply = "الـ90 بـ944 والـ50 بـ642، فالـ90 أعلى بـ302 جنيه من الـ50."
+
+        self.assertEqual(strip_overage_figure(reply), (reply, []))
+
+    def test_a_retraction_keeps_its_denial_and_loses_its_number(self):
+        """A customer being told the difference does not exist does not need it quoted at them.
+
+        The claim pass checks negation because deleting "مش أعلى من ميزانيتك" would leave the
+        customer reading the opposite of the retraction they were owed. Here there is no such risk:
+        the denial survives untouched and only the figure inside it goes, which is what the rule
+        says in every direction — no reply states a difference, affirming one or not.
+        """
+        cleaned, removed = strip_overage_figure("وده مش أعلى من ميزانيتك بـ90 جنيه.")
+
+        self.assertEqual(cleaned, "وده مش أعلى من ميزانيتك.")
+        self.assertIn("مش أعلى", cleaned)
+        self.assertTrue(removed)
+
+    def test_the_prescribed_sentence_passes_through_untouched(self):
+        """Byte-identical, because this is the reply the change exists to produce."""
+        reply = "الـ90 ملي بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك."
+
+        self.assertEqual(strip_overage_figure(reply), (reply, []))
+
+    def test_an_empty_reply_is_passed_through(self):
+        for reply in ("", None):
+            with self.subTest(reply=reply):
+                self.assertEqual(strip_overage_figure(reply), (reply, []))
+
+    def test_the_pass_runs_without_a_budget_in_the_conversation(self):
+        """Unlike the claim pass, this one needs no arithmetic and so no budget — which matters,
+        because the turns that state a difference are not always the turns that stated a budget.
+        Conversation 931's repeat came back through history on a turn with no product context."""
+        store = Store.objects.create(name="Perfamix Test")
+        conversation = Conversation.objects.create(store=store, preferences={})
+
+        cleaned = sanitize_reply(
+            "الـ90 ملي بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك بـ90 جنيه.", conversation
+        )
+
+        self.assertEqual(cleaned, "الـ90 ملي بـ990 جنيه، أعلى حاجة بسيطة من ميزانيتك.")
 
 
 class AvoidTraitVocabularyTests(TestCase):
@@ -10974,7 +11169,7 @@ class NothingAffordableStillQuotesARealPriceTests(TestCase):
         """
         note = self._note(1000, [(50, 1100, "normal", None)])
 
-        self.assertIn("أعلى منها شوية", note)
+        self.assertIn("أعلى منها حاجة بسيطة", note)
         self.assertIn("1100", note)
         self.assertNotIn("مفيش أي حجم في القائمة دي", note)
         self.assertNotIn("الرقم الوحيد", note)
@@ -10992,14 +11187,14 @@ class NothingAffordableStillQuotesARealPriceTests(TestCase):
         self.assertIn("الرقم الوحيد", note)
         self.assertIn("1240", note)
         self.assertNotIn("2100", note)
-        self.assertNotIn("أعلى منها شوية", note)
+        self.assertNotIn("أعلى منها حاجة بسيطة", note)
 
     def test_an_in_budget_size_still_wins_over_a_tolerance_band_one(self):
         """With something genuinely affordable present, the ⚠️ branch must not fire."""
         note = self._note(1000, [(50, 900, "normal", None), (90, 1100, "normal", None)])
 
         self.assertIn("فيه أحجام داخل ميزانية العميل", note)
-        self.assertNotIn("أعلى منها شوية", note)
+        self.assertNotIn("أعلى منها حاجة بسيطة", note)
 
 
 class GymRequestBeatsACheaperMismatchTests(TestCase):
@@ -11080,12 +11275,15 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
         self.assertIn("1032", block)
         self.assertIn("⚠️", block)
         self.assertIn("تقدر تعرضه", block)
-        # And the overage arrives as a figure, beside the price. Every instruction about a ⚠️ size
-        # asks the model to state how far over it is, and conversation 912 is what happens when
-        # that figure is nowhere in the data: the model produces one, including on sizes that are
-        # in budget. 915 is what happens when the figure arrives *alone* — see the price assertion.
-        self.assertIn("الفرق 32 جنيه", block)
-        self.assertIn("السعر 1032 جنيه", block)
+        # And it arrives with the sentence to say about it and no arithmetic. Every instruction
+        # about a ⚠️ size used to ask how far over it was; conversation 912 is what happens when
+        # that figure is nowhere in the data (the model produces one, including for sizes that are
+        # in budget) and 915 is what happens when it is (a bare "بـ90 جنيه" reads as the price). So
+        # the figure is gone from both sides of the exchange: the label dictates the price and one
+        # fixed sentence, and nothing on this line is a difference.
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", block)
+        self.assertIn("من غير أي رقم فرق", block)
+        self.assertNotIn("الفرق 32", block)
 
     def test_the_persona_states_the_perfume_before_size_ordering(self):
         """Conversation 762's fix, at the persona layer: the 💡 line decides which *size* to
@@ -15442,16 +15640,15 @@ class HarnessCatchesConv931Tests(TestCase):
         where ⚠️ is the truth — a genuinely near-budget size — is left alone."""
         self.assertEqual(
             self.checks.check_false_over_budget(
-                "الـ90 ملي بـ1015 جنيه ⚠️ (أعلى شوية من الميزانية).", 900, self.truth
+                "الـ90 ملي بـ1015 جنيه ⚠️ (أعلى حاجة بسيطة من الميزانية).", 900, self.truth
             ),
             [],
         )
 
     def test_a_bare_marker_does_not_excuse_the_budget_checks(self):
         """The asymmetry between the two readings of this file, stated as a test. The skill allows
-        going over budget when it is NAMED, with both figures said out loud — so a glyph that names
-        nothing must not buy the silence a real acknowledgement buys, even though it is enough to
-        falsify the turn."""
+        going over budget when it is NAMED, in words — so a glyph that names nothing must not buy
+        the silence a real acknowledgement buys, even though it is enough to falsify the turn."""
         reply = "الـ90 ملي بـ1019 جنيه ⚠️، والـ50 ملي بـ666 جنيه."
 
         self.assertTrue(self._flag(reply))
@@ -15806,7 +16003,7 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
     """
 
     IN = "✅ (داخل الميزانية)"
-    NEAR = "⚠️ (أعلى شوية من الميزانية"
+    NEAR = "⚠️ (أعلى حاجة بسيطة من الميزانية"
     FAR = "❌ (أعلى من الميزانية بكتير"
 
     def setUp(self):
@@ -15911,12 +16108,20 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
 
     def test_the_marker_is_the_only_budget_verdict_the_model_may_give(self):
         """353 was `1019 − 666`, lifted from the value note one line below the labels and
-        re-attributed to the budget. The rule names that move and forbids it."""
+        re-attributed to the budget. The rule names that move and forbids it.
+
+        It used to forbid it by pointing at the ⚠️ marker as the one place a difference was
+        written — a rule that only worked while a difference was written somewhere. Now that no
+        marker carries one, the ban is unconditional and says so: no difference figure at all,
+        because there is none in the data to lift.
+        """
         _, prompt = self._named_turn(budget=1200)
 
         self.assertIn("1200", prompt)
         self.assertIn("ممنوع تحسب الفرق بنفسك", prompt)
-        self.assertIn("مش مكتوب جوه علامة ⚠️", prompt)
+        self.assertIn("ممنوع تقول رقم فرق خالص", prompt)
+        self.assertIn("مفيش رقم فرق في البيانات من الأصل", prompt)
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", prompt)
         self.assertIn("ممنوع تقول عنه", prompt)
 
     def test_the_price_of_a_named_perfume_is_never_withheld(self):

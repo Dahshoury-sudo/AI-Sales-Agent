@@ -842,7 +842,12 @@ _HIGHER = r"[أاإ][عغ]ل[ىي]"
 # What real replies put between the comparative and the budget word: an intensifier, the
 # over-budget glyph, or both. The old patterns allowed nothing between, which is also why
 # conversation 912's `أعلى شوية ⚠️ عن ميزانيتك` read as neither an acknowledgement nor a claim.
-_INTERLEAVED = r"(?:\s*(?:شوي[هة]|بشوي[هة]|كتير|بكتير|جدا[ًا]?|⚠️))*"
+#
+# `حاجة بسيطة` is the wording the prompts now dictate for the ⚠️ tier, so it is the phrasing this
+# file will see most — omitting it would leave the grader unable to examine the very turns the new
+# rules produce, on either reading. Written here rather than imported for the reason above: the
+# sanitizer carries its own copy, and the two are meant to fail independently.
+_INTERLEAVED = r"(?:\s*(?:شوي[هة]|بشوي[هة]|كتير|بكتير|جدا[ًا]?|حاج[هة]\s+بسيط[هة]|⚠️))*"
 
 # The suffix is consumed so the span this reports is a whole word: a finding detail quotes the
 # matched text back for a human to read, and `ميزاني` truncated mid-word is a worse bug report
@@ -871,9 +876,9 @@ _OVER_BUDGET_CLAIMS = (
 # out; the customer's next turn was "ازاي اعلي من ميزانيتي", which is the original complaint of
 # conversation 931 arriving with nothing but a glyph behind it.
 #
-# ⚠️ has one meaning here — `product_formatting._BUDGET_LABELS["near"]`, "أعلى شوية من الميزانية" —
-# and four prompt rules bind it to that meaning by name, so beside an in-budget price it tells the
-# customer the same falsehood the sentence did.
+# ⚠️ has one meaning here — `product_formatting._BUDGET_LABELS["near"]`, "أعلى حاجة بسيطة من
+# الميزانية" — and four prompt rules bind it to that meaning by name, so beside an in-budget price
+# it tells the customer the same falsehood the sentence did.
 #
 # Positional, and that is the whole design. Every other ⚠️ this system emits either lives only in
 # the injected context or *leads* its line — "⚠️ للعلم: إجمالي الطلب 3138 جنيه", "⚠️ العطور اللي تحت

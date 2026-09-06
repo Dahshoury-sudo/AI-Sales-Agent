@@ -121,8 +121,9 @@ def budget_tier(price, max_price):
     each was locally reasonable: the label said a size 3% over was offerable while the search
     filter had already dropped its product.
 
-    "near" means over the budget but within `BUDGET_TOLERANCE` — recommendable, with the real
-    price and the overage said out loud. "far" is not offerable at all.
+    "near" means over the budget but within `BUDGET_TOLERANCE` — recommendable, with the real price
+    said out loud and the fixed sentence "أعلى حاجة بسيطة من ميزانيتك", never a difference figure.
+    "far" is not offerable at all.
 
     No budget means nothing can be over it, so everything is "in".
     """

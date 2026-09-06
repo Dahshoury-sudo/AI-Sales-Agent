@@ -588,7 +588,7 @@ def rank(products, intent, reference=None, keep=()):
                 entry.score += WEIGHTS["budget"]
             elif tier == "near":
                 entry.score += WEIGHTS["budget"] * _TOLERANCE_BUDGET_FRACTION
-                entry.reasons.append("أقرب حجم مناسب أعلى شوية من ميزانيته")
+                entry.reasons.append("أقرب حجم مناسب أعلى حاجة بسيطة من ميزانيته")
             else:
                 entry.mismatches.append("مفيش حجم متاح داخل ميزانيته")
 
