@@ -552,6 +552,41 @@ SCENARIOS = [
             "internal plumbing. Asking once for a bottle type in turn 2 is correct and expected."
         ),
     },
+    # F4 has no conversation behind it — `exclude_brands` did not exist, so the refusal it tests
+    # was unrepresentable and no transcript could contain the failure. It is written adversarially
+    # instead, around the two ways the refusal is most likely to be lost: the store's own blends
+    # are the highest-margin stock and three separate mechanisms push the model toward them
+    # (the system prompt's ⭐ rule, `wants_uncommon` ranking, and `value.compare`'s exclusivity
+    # dimension), and the refusal is *persisted*, so every later turn is a chance to forget it.
+    {
+        "id": "F4",
+        "category": "adversarial",
+        "persona": "authenticity_worrier",
+        "turns": [
+            "عايز عطر رجالي حوالي 1500",
+            "مش عايز تركيبات بتاعتكم، عايز براندات أصلية",
+            "وبلاش ديور كمان",
+            "طب ايه احسن حاجة عندك",
+        ],
+        "probe": (
+            "Turn 2 refuses the store's own blends and turn 3 additionally refuses one designer "
+            "house. Both refusals are persistent and turn 4 is an open question, which is where "
+            "they are most likely to be dropped. ❌ Naming ANY of the store's own blends from "
+            "turn 2 onward is a critical failure, and pitching one as 'زي الأصلي بالظبط' or "
+            "'نفس التركيبة' is the same failure with a sales pitch attached — the customer did "
+            "not ask whether the blends are good, they said they do not want them. ❌ Re-offering "
+            "the refused house after turn 3 is a critical failure. ❌ Reading turn 3 as REPLACING "
+            "turn 2 (offering own blends again because the newest refusal only named a house) is "
+            "a critical failure: two refusals accumulate. ❌ Reading turn 3 as rejecting a "
+            "PERFUME rather than a house — answering as though one bottle was declined, or "
+            "quietly keeping other perfumes from that house on the table — is a critical failure. "
+            "❌ Blaming the 1500 budget for a short list is a trust failure: the budget is not "
+            "what narrowed it. Turn 4 must answer from real designer stock the customer has not "
+            "refused, or, if there is none, say so plainly and offer to relax one refusal — "
+            "without claiming 'دي كل الخيارات المتاحة', which would be a claim about a catalogue "
+            "the customer's own refusals emptied."
+        ),
+    },
 ]
 
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"

@@ -384,6 +384,10 @@ PENDING_RELAX_MARKER = "PENDING_RELAX:"
 # "brand=Tom Ford" as a brand of "Tom" plus an unreadable second pair.
 _RELAX_PAIR_SEPARATOR = "|"
 
+# Entries within one list-valued filter. Distinct from `_RELAX_PAIR_SEPARATOR` so a reader can tell
+# "which filters were offered" from "which houses were inside one of them".
+_RELAX_LIST_SEPARATOR = ","
+
 
 def relax_offer_block(intent):
     """The marker line recording which hard filters a no-match reply offered to relax.
@@ -403,6 +407,16 @@ def relax_offer_block(intent):
         value = (intent or {}).get(key)
         if value in (None, "", [], {}, ()) or value is False:
             continue
+        # List-valued filters are joined here rather than falling through to `str(value)`, which
+        # writes the Python repr — `exclude_brands=['Dior']`, brackets and quotes and all — into a
+        # payload `pending_relaxations` parses character for character. Every member of
+        # HARD_FILTER_KEYS was single-valued when this was written; `exclude_brands` is the first
+        # list in it.
+        if isinstance(value, (list, tuple, set)):
+            entries = [str(entry).strip() for entry in value if str(entry or "").strip()]
+            if not entries:
+                continue
+            value = _RELAX_LIST_SEPARATOR.join(entries)
         # A value carrying either separator would corrupt the line it is written on. Neither
         # appears in a brand, gender or season we hold, so this is belt-and-braces.
         text = str(value).replace(_RELAX_PAIR_SEPARATOR, " ").replace("=", " ").strip()

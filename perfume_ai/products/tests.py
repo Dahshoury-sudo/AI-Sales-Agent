@@ -2819,7 +2819,14 @@ class PreferenceMemoryTests(TestCase):
 
     def test_exclude_names_is_never_persisted(self):
         """Per-request by design. Persisting it would blacklist a perfume the customer
-        merely mentioned — the over-broad exclusion bug, reintroduced by the back door."""
+        merely mentioned — the over-broad exclusion bug, reintroduced by the back door.
+
+        Not a blanket rule about exclusions: `exclude_brands` IS persisted, and the difference is
+        the accretion mechanism rather than the strength of the filter. The extractor is told to
+        sweep every already-offered perfume into `exclude_names` whenever the customer asks "ايه
+        تاني", so it grows by being helpful; nothing fills `exclude_brands` but an explicit
+        negative about a house. See PERSISTED_PREFERENCE_KEYS' comment and
+        RefusedBrandsLeaveTheCatalogueTests."""
         merge_preferences(self.conversation, {"exclude_names": ["Black Opium"]})
 
         self.conversation.refresh_from_db()
@@ -6237,7 +6244,8 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
         `HARD_FILTER_KEYS` cannot silently go unnamed in the one reply that owes the reason."""
         HARD_FILTER_KEYS = sales_constraints.HARD_FILTER_KEYS
         values = {"gender": "male", "perfume_type": "niche",
-                  "season": "winter", "brand": "Dior"}
+                  "season": "winter", "brand": "Dior",
+                  "exclude_brands": ["Dior"]}
         self.assertEqual(set(values), set(HARD_FILTER_KEYS))
         for key in HARD_FILTER_KEYS:
             with self.subTest(key=key):
@@ -16612,3 +16620,446 @@ class AnswerEveryRowTests(TestCase):
         self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
         self.assertIn("Dior Homme Sport", prompt)
         self.assertIn("Bleu de Chanel", prompt)
+
+
+class RefusedBrandsLeaveTheCatalogueTests(TestCase):
+    """"مش عايز تركيبات بتاعتكم، عايز براندات أصلية" — and the shop kept offering them.
+
+    Before `exclude_brands` existed the refusal was unrepresentable. A customer could reject a
+    perfume (`exclude_names`), a note (`avoid_notes`) or a character (`avoid_traits`), but not a
+    *house* — so the commercially important refusal, "not your own blends, I want the real
+    designers", was extracted as nothing at all and the next reply led with a ⭐ blend again.
+
+    The field is a hard SQL exclusion, and that is the whole reason this class is long. A positive
+    `brand__name__icontains` that over-matches returns *extra* candidates and the ranker reorders
+    them; inverted, it DELETES rows and nothing downstream can observe that it happened. So the
+    exclusion is resolved against real `Brand` rows and applied by id, which is what lets
+    `_drop_reason` name it and `describe_filters` offer it back — and what makes an entry that
+    resolved to nothing narrow nothing rather than silently take a house with it.
+
+    Two design decisions carry most of the risk and are pinned here rather than left to comments.
+    The filter runs ABOVE `constrained`, so a search the customer's own refusal emptied is not
+    reported as exhaustion — conversation 931's fabricated "دي كل الخيارات المتاحة" with a new
+    cause. And the field is persisted, which is forced by `wants_uncommon`: that IS persisted and
+    `ranking.py` spends it entirely on promoting store exclusives with the reason line "تركيب حصري
+    بتاعنا", so a customer who refused the blends and then typed a bare budget would get their own
+    refusal ranked first and advertised back at them.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix")
+        self.dior = Brand.objects.create(store=self.store, name="Dior")
+        # A second Dior row spelled the way a catalogue actually spells it. "Dior" must resolve
+        # this too, or the exclusion honours itself on one row and leaks on the other.
+        self.christian_dior = Brand.objects.create(store=self.store, name="Christian Dior")
+        self.own = Brand.objects.create(store=self.store, name="Perfamix")
+        # Carried by no product in this store: a house we never stocked narrowed nothing.
+        self.chanel = Brand.objects.create(store=self.store, name="Chanel")
+
+        self.sauvage = self._perfume(self.dior, "Sauvage", "male")
+        self.homme = self._perfume(self.christian_dior, "Dior Homme", "male")
+        self.ambero = self._perfume(self.own, "Ambero", "male")
+        self.lumiere = self._perfume(self.own, "Lumiere", "female")
+
+        # A different store's Chanel, to pin that `blocked_brand_ids` is scoped by store.
+        self.other_store = Store.objects.create(name="Other Shop")
+        self.other_chanel = Brand.objects.create(store=self.other_store, name="Chanel")
+        self._perfume(self.other_chanel, "Bleu", "male", store=self.other_store)
+
+    def _perfume(self, brand, name, gender, store=None):
+        product = Product.objects.create(
+            store=store or self.store, brand=brand, name=name, gender=gender,
+            top_notes="Bergamot", middle_notes="Lavender", base_notes="Amber",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=90, price=1000, bottle_type="normal"
+        )
+        return product
+
+    def _names(self, intent, key="products"):
+        results = search_products(intent, store=self.store)
+        queryset = results[key]
+        return sorted(queryset.values_list("name", flat=True)) if queryset is not None else []
+
+    # -- extraction: what survives _sanitize ------------------------------
+    def test_the_same_house_twice_is_recorded_once(self):
+        from products.services.ai.intent import _sanitize
+
+        cleaned = _sanitize({"exclude_brands": ["Dior", "dior", " DIOR "]})
+
+        self.assertEqual(cleaned["exclude_brands"], ["Dior"])
+
+    def test_the_list_is_capped(self):
+        """A brand is free text — unlike `avoid_traits` there is no closed vocabulary to fall
+        back on — so a cap is the only bound there is on a field that is both a hard filter and
+        remembered for the rest of the conversation."""
+        from products.services.ai.intent import MAX_EXCLUDED_BRANDS, _sanitize
+
+        cleaned = _sanitize({"exclude_brands": [f"House{index}" for index in range(12)]})
+
+        self.assertEqual(len(cleaned["exclude_brands"]), MAX_EXCLUDED_BRANDS)
+
+    def test_a_house_asked_for_and_refused_at_once_is_only_asked_for(self):
+        """The positive request wins the collision on purpose. The documented mis-extraction runs
+        the other way — the model inferring a HOUSE from a rejected PERFUME — and a spurious
+        exclusion is invisible, while a spurious `brand` announces itself by returning nothing and
+        is withdrawable in one turn."""
+        from products.services.ai.intent import _sanitize
+
+        cleaned = _sanitize({"brand": "Dior", "exclude_brands": ["dior", "Chanel"]})
+
+        self.assertEqual(cleaned["exclude_brands"], ["Chanel"])
+        self.assertEqual(cleaned["brand"], "Dior")
+
+    def test_the_own_blend_sentinel_survives(self):
+        from products.services.ai.intent import STORE_BRAND_EXCLUSIVE, _sanitize
+
+        cleaned = _sanitize({"exclude_brands": [STORE_BRAND_EXCLUSIVE]})
+
+        self.assertEqual(cleaned["exclude_brands"], [STORE_BRAND_EXCLUSIVE])
+
+    def test_an_untranslated_arabic_house_is_dropped(self):
+        """`Brand.name` holds "Chanel" and never "شانيل", so an Arabic entry filters nothing —
+        while still rendering into the reply as a constraint we claim to be honouring."""
+        from products.services.ai.intent import _sanitize
+
+        cleaned = _sanitize({"exclude_brands": ["ديور", "Chanel", "", None]})
+
+        self.assertEqual(cleaned["exclude_brands"], ["Chanel"])
+
+    def test_a_missing_or_malformed_field_does_not_raise(self):
+        from products.services.ai.intent import _sanitize
+
+        self.assertEqual(_sanitize({}), {})
+        self.assertEqual(_sanitize({"exclude_brands": None})["exclude_brands"], None)
+        self.assertEqual(_sanitize({"exclude_brands": "Dior"})["exclude_brands"], "Dior")
+        self.assertEqual(_sanitize("not a dict"), {})
+
+    # -- the SQL, and what it must not take with it -----------------------
+    def test_refusing_a_house_removes_every_spelling_of_it(self):
+        """"Dior" has to resolve the row recorded as "Christian Dior" — the same tolerance the
+        positive `brand__name__icontains` already gives — and nothing else."""
+        self.assertEqual(self._names({"exclude_brands": ["Dior"]}), ["Ambero", "Lumiere"])
+
+    def test_refusing_our_own_blends_removes_exactly_the_stars(self):
+        """Identified the one way this codebase identifies own blends. If this drifts from
+        `sales.value.is_store_exclusive`, a star product survives an exclusion that named it."""
+        from products.services.sales.value import is_store_exclusive
+        from products.services.search_service import STORE_BRAND_EXCLUSIVE
+
+        survivors = search_products(
+            {"exclude_brands": [STORE_BRAND_EXCLUSIVE]}, store=self.store
+        )["products"]
+
+        self.assertEqual(sorted(product.name for product in survivors), ["Dior Homme", "Sauvage"])
+        for product in survivors:
+            self.assertFalse(is_store_exclusive(product))
+
+    def test_a_house_we_never_stocked_narrows_nothing(self):
+        """`Chanel` exists as a row but carries no product here. It did not participate in the
+        filtering, so it must not be blamed for an absence or offered back as relaxable."""
+        from products.services.search_service import blocked_brand_ids
+
+        self.assertEqual(blocked_brand_ids(["Chanel"], self.store), frozenset())
+        self.assertEqual(len(self._names({"exclude_brands": ["Chanel"]})), 4)
+
+    def test_a_stopword_entry_resolves_to_nothing(self):
+        """`naming.tokens` drops its stopwords, so "Le" tokenises to nothing and takes no house
+        with it. Failing closed is the whole reason this resolves ids instead of running
+        `.exclude(brand__name__icontains=...)`, where "Le" would empty half a shop."""
+        from products.services.search_service import blocked_brand_ids
+
+        self.assertEqual(blocked_brand_ids(["Le"], self.store), frozenset())
+        self.assertEqual(blocked_brand_ids(["ديور"], self.store), frozenset())
+        self.assertEqual(blocked_brand_ids([], self.store), frozenset())
+        self.assertEqual(blocked_brand_ids(["Dior"], None), frozenset())
+
+    def test_another_stores_brand_of_the_same_name_is_untouched(self):
+        """The resolution query is scoped by store, so refusing Chanel here cannot reach the
+        Chanel row belonging to somebody else's shop."""
+        from products.services.search_service import blocked_brand_ids
+
+        blocked = blocked_brand_ids(["Chanel"], self.other_store)
+
+        self.assertEqual(blocked, frozenset({self.other_chanel.id}))
+        self.assertNotIn(self.chanel.id, blocked)
+
+    # -- the highest-value test: the refusal is not exhaustion ------------
+    def test_a_search_the_customers_own_refusal_emptied_is_not_exhaustion(self):
+        """Why the filter is applied ABOVE `constrained`. Below it, `exhausted` would go true and
+        `_no_match_instruction` would tell this customer "دي كل الخيارات المتاحة حالياً" about a
+        catalogue full of men's perfumes it had just removed on their own instruction —
+        conversation 931's fabricated list, reached by a new route."""
+        results = search_products(
+            {"gender": "male", "exclude_brands": ["Dior", "STORE_BRAND_EXCLUSIVE"]},
+            store=self.store,
+        )
+
+        self.assertFalse(results["products"].exists())
+        self.assertFalse(results["alternatives"] and results["alternatives"].exists())
+        self.assertFalse(results["exhausted"])
+
+    def test_name_exclusions_that_did_empty_it_are_still_exhaustion(self):
+        """The mirror, so the fix above cannot be read as switching exhaustion off. A perfume
+        withheld because the customer has already seen it is a different fact from a house they
+        disqualified, and `exclude_names` remains the only thing keyed to it."""
+        results = search_products(
+            {"gender": "male", "exclude_brands": ["Dior"], "exclude_names": ["Ambero"]},
+            store=self.store,
+        )
+
+        self.assertFalse(results["products"].exists())
+        self.assertTrue(results["exhausted"])
+
+    # -- the reply can say why a perfume left ----------------------------
+    def test_a_designer_house_that_left_is_named_as_the_reason(self):
+        results = search_products(
+            {"exclude_brands": ["Dior"]}, store=self.store, keep=("Sauvage",)
+        )
+
+        self.assertIn("مش عايز البراند ده", results["dropped"]["Sauvage"])
+        self.assertIn("Dior", results["dropped"]["Sauvage"])
+
+    def test_our_own_blend_that_left_says_so_in_its_own_words(self):
+        """The one place the reply can state the true reason: this perfume left because it is
+        ours. The designer sentence would be nonsense here — the brand name is the shop's."""
+        results = search_products(
+            {"exclude_brands": ["STORE_BRAND_EXCLUSIVE"]}, store=self.store, keep=("Ambero",)
+        )
+
+        self.assertEqual(
+            results["dropped"]["Ambero"], "ده تركيب بتاعنا، وهو قال إنه عايز براندات أصلية"
+        )
+
+    def test_a_reason_is_never_claimed_for_an_exclusion_that_did_not_apply(self):
+        """`_drop_reason` reads the resolved id set, not the raw intent, so it cannot blame a
+        house that narrowed nothing. Ambero left on gender here and must say so."""
+        results = search_products(
+            {"gender": "female", "exclude_brands": ["Chanel"]},
+            store=self.store, keep=("Ambero",),
+        )
+
+        self.assertEqual(results["dropped"]["Ambero"], "مش من نفس النوع اللي طلبه")
+
+    # -- what the customer is told, and what they can take back ----------
+    def test_all_three_forms_of_the_refusal_are_rendered(self):
+        describe_filters = sales_constraints.describe_filters
+
+        self.assertEqual(
+            describe_filters({"exclude_brands": ["Dior", "Chanel"]}), ["من غير Dior، Chanel"]
+        )
+        self.assertEqual(
+            describe_filters({"exclude_brands": ["STORE_BRAND_EXCLUSIVE"]}),
+            ["من غير تركيباتنا الخاصة"],
+        )
+        self.assertEqual(
+            describe_filters({"exclude_brands": ["STORE_BRAND_EXCLUSIVE", "Dior"]}),
+            ["من غير تركيباتنا الخاصة", "من غير Dior"],
+        )
+
+    def test_the_refusal_is_visible_on_every_recommendation_turn(self):
+        """`describe` feeds `acknowledgement_hint`'s "العميل قال بالفعل" block, which carries
+        "ممنوع تسأله عن أي حاجة من دي تاني". The refusal persists, so it has to appear there on
+        every turn or the model re-offers what was refused three turns ago."""
+        hint = sales_constraints.acknowledgement_hint(
+            {"exclude_brands": ["STORE_BRAND_EXCLUSIVE"]}
+        )
+
+        self.assertIn("براندات أصلية بس، من غير تركيباتنا", hint)
+
+    def test_the_offer_to_drop_a_refusal_survives_a_message_row(self):
+        """`exclude_brands` is the first list-valued member of HARD_FILTER_KEYS, and
+        `relax_offer_block` used to write `str(value)` — the Python repr, brackets and quotes and
+        all, into a payload `pending_relaxations` parses character for character. Because
+        `_relaxed_keys` acts on key *presence*, a malformed payload plus a bare "اه" would delete
+        a constraint silently."""
+        conversation = Conversation.objects.create(store=self.store, platform="web")
+
+        block = sales_described.relax_offer_block(
+            {"gender": "male", "exclude_brands": ["Dior", "Tom Ford"]}
+        )
+        save_message(conversation, "assistant", "ok", internal_context=block)
+
+        payload = block.split("exclude_brands=")[1]
+        self.assertNotIn("[", payload)
+        self.assertNotIn("'", payload)
+        self.assertNotIn("|", payload)
+        self.assertEqual(
+            sales_described.pending_relaxations(conversation),
+            {"gender": "male", "exclude_brands": "Dior,Tom Ford"},
+        )
+
+    def test_an_all_blank_list_offers_nothing(self):
+        self.assertEqual(sales_described.relax_offer_block({"exclude_brands": ["", None]}), "")
+
+    # -- persistence, and the ways out of it -----------------------------
+    def _conversation(self, **preferences):
+        conversation = Conversation.objects.create(store=self.store, platform="web")
+        if preferences:
+            conversation.preferences = dict(preferences)
+            conversation.save(update_fields=["preferences"])
+        return conversation
+
+    def _merge(self, conversation, intent, message=None, pending=None):
+        merged = merge_preferences(conversation, dict(intent), message, pending=pending)
+        conversation.refresh_from_db()
+        return merged
+
+    def test_the_refusal_survives_a_turn_that_never_mentions_it(self):
+        """The forcing argument for persisting at all. `wants_uncommon` IS persisted and
+        `ranking.py` spends it entirely on promoting store exclusives with the reason line "تركيب
+        حصري بتاعنا — مش منتشر عند حد تاني", so losing the refusal on a bare-budget turn hands the
+        customer their own refusal, ranked first and advertised."""
+        conversation = self._conversation(
+            exclude_brands=["STORE_BRAND_EXCLUSIVE"], wants_uncommon=True
+        )
+
+        merged = self._merge(conversation, {"max_price": 1500}, "1500")
+
+        self.assertEqual(merged["exclude_brands"], ["STORE_BRAND_EXCLUSIVE"])
+        self.assertEqual(
+            conversation.preferences["exclude_brands"], ["STORE_BRAND_EXCLUSIVE"]
+        )
+
+    def test_refusing_our_blends_beats_wanting_something_uncommon(self):
+        """The two signals point opposite ways and the refusal has to win: `wants_uncommon`
+        promotes the store's own blends, and these have already left the pool by the time it is
+        scored."""
+        from products.services.search_service import STORE_BRAND_EXCLUSIVE
+
+        intent = {"wants_uncommon": True, "exclude_brands": [STORE_BRAND_EXCLUSIVE]}
+        results = search_products(intent, store=self.store)
+        pool = results["products"] if results["products"].exists() else results["alternatives"]
+        ranked = sales_ranking.rank(list(pool), intent)
+
+        self.assertEqual(sorted(product.name for product in pool), ["Dior Homme", "Sauvage"])
+        for entry in ranked:
+            self.assertNotIn("تركيب حصري بتاعنا — مش منتشر عند حد تاني", entry.reasons)
+
+    def test_asking_for_a_house_prunes_only_that_house_from_the_refusals(self):
+        """"طب هات ديور اهو" retracts one entry, not the list. A customer who refused Dior and
+        Chanel and then asks for Dior still does not want Chanel — and the pruned list has to be
+        written explicitly, because an empty result is falsy and the gap-filler would restore the
+        saved list straight over it."""
+        conversation = self._conversation(exclude_brands=["Dior", "Chanel"])
+
+        merged = self._merge(conversation, {"brand": "Dior"}, "طب هات ديور اهو")
+
+        self.assertEqual(merged["exclude_brands"], ["Chanel"])
+        self.assertEqual(conversation.preferences["exclude_brands"], ["Chanel"])
+
+    def test_the_last_refusal_can_be_pruned_to_nothing(self):
+        conversation = self._conversation(exclude_brands=["Dior"])
+
+        merged = self._merge(conversation, {"brand": "Dior"}, "طب هات ديور")
+
+        self.assertEqual(merged["exclude_brands"], [])
+        self.assertNotIn("exclude_brands", conversation.preferences)
+
+    def test_refusing_the_house_that_was_asked_for_drops_the_request(self):
+        """"بلاش ديور" after a turn that set brand="Dior" arrives on a DIFFERENT key from the one
+        it contradicts, and no reversal marker is needed for it. Left alone the search becomes
+        `.filter(brand=Dior).exclude(brand=Dior)` — empty — and `describe_filters` then offers
+        "من Dior" back to the customer who had just dropped it."""
+        conversation = self._conversation(brand="Dior")
+
+        merged = self._merge(conversation, {"exclude_brands": ["Dior"]}, "بلاش ديور")
+
+        self.assertIsNone(merged.get("brand"))
+        self.assertNotIn("brand", conversation.preferences)
+        self.assertEqual(conversation.preferences["exclude_brands"], ["Dior"])
+
+    def test_naming_a_replacement_in_the_same_breath_is_an_override(self):
+        """"بلاش ديور، هات شانيل" is a switch, not a withdrawal, and the named house has to
+        survive — the withdrawal is offered as a candidate precisely so this rule can apply."""
+        conversation = self._conversation(brand="Dior")
+
+        merged = self._merge(
+            conversation, {"brand": "Chanel", "exclude_brands": ["Dior"]}, "بلاش ديور، هات شانيل"
+        )
+
+        self.assertEqual(merged["brand"], "Chanel")
+        self.assertEqual(merged["exclude_brands"], ["Dior"])
+
+    def test_refusing_a_second_house_does_not_wipe_the_first(self):
+        """The collision this feature was nearly broken by: "بلاش" is in `_REVERSAL_MARKERS` AND
+        is one of the ways a customer names a house they don't want. If `exclude_brands` were on
+        an `_AXES` entry, a second refusal would trip `_is_reversal`, see a value on that axis and
+        clear it — so refusing two houses one at a time would keep only the last."""
+        conversation = self._conversation(exclude_brands=["Dior"])
+
+        merged = self._merge(
+            conversation, {"exclude_brands": ["Dior", "Chanel"]}, "وبلاش شانيل كمان"
+        )
+
+        self.assertEqual(merged["exclude_brands"], ["Dior", "Chanel"])
+
+    def test_exclude_brands_is_on_no_axis(self):
+        """Pinned directly, because the failure above is invisible at the call site and a later
+        hand reading `_AXES` would see an obvious gap where this belongs."""
+        from products.services.conversation_service import _AXES
+
+        for _, keys in _AXES:
+            self.assertNotIn("exclude_brands", keys)
+
+    def test_saying_the_brand_does_not_matter_clears_both_directions(self):
+        """"أي براند" is only true if it is true of every brand, the refused ones included."""
+        conversation = self._conversation(brand="Dior", exclude_brands=["Chanel"])
+
+        merged = self._merge(conversation, {}, "أي براند مش فارقة")
+
+        self.assertIsNone(merged.get("brand"))
+        self.assertFalse(merged.get("exclude_brands"))
+        self.assertNotIn("exclude_brands", conversation.preferences)
+
+    def test_asking_for_a_different_brand_leaves_the_refusals_alone(self):
+        """"براند تاني" means "not THAT house", which says nothing about a house already ruled
+        out — dropping the refusal here would offer back the one thing they refused."""
+        conversation = self._conversation(brand="Versace", exclude_brands=["Dior"])
+
+        merged = self._merge(conversation, {}, "من براند تاني حريمي")
+
+        self.assertIsNone(merged.get("brand"))
+        self.assertEqual(merged["exclude_brands"], ["Dior"])
+
+    def test_a_bare_yes_drops_only_what_was_offered(self):
+        """`_relaxed_keys` acts on key presence in `pending`, so an "اه" can retract exactly what
+        the previous reply put on the table and nothing else."""
+        conversation = self._conversation(brand="Dior", exclude_brands=["Chanel"])
+
+        merged = self._merge(conversation, {}, "اه", pending={"exclude_brands": "Chanel"})
+
+        self.assertFalse(merged.get("exclude_brands"))
+        self.assertEqual(merged.get("brand"), "Dior")
+
+    def test_a_refusal_is_not_taste_the_router_can_recommend_from(self):
+        """`TASTE_KEYS` answers "do we know enough to recommend rather than ask?" and a refused
+        house answers nothing — it removes rows, it does not describe a smell. Counting two of
+        them would put a customer who has said nothing about their taste one slot from the
+        threshold."""
+        self.assertNotIn("exclude_brands", sales_constraints.TASTE_KEYS)
+        self.assertEqual(
+            sales_constraints.taste_constraint_count({"exclude_brands": ["Dior", "Chanel"]}), 0
+        )
+
+    # -- the prompt text the extraction depends on -----------------------
+    def test_the_extractor_is_told_a_perfume_is_not_a_house(self):
+        """The one mis-inference that deletes a house over a single bottle, and it is suppressed
+        only by this text — there is no closed vocabulary to validate a brand against."""
+        from products.services.ai import intent as intent_module
+
+        source = inspect.getsource(intent_module.extract_intent)
+
+        self.assertIn("A PERFUME IS NOT A HOUSE", source)
+        self.assertIn("SWITCHING HOUSES IS NOT AN EXCLUSION", source)
+        self.assertIn("exclude_brands", source)
+
+    def test_the_persona_stops_pitching_its_own_blends_when_they_are_refused(self):
+        """The store-exclusive rule lives in the SYSTEM prompt, which every branch receives —
+        including `product_info` and `comparison`, which pick rows by name and never see the
+        intent filter. Without the carve-out it reads as an unconditional command with a
+        prohibition attached, the shape that overrides a refusal written after it."""
+        prompt = get_system_prompt(self.store)
+
+        self.assertIn("مش عايز تركيباتكم وعايز براندات أصلية", prompt)
+        self.assertIn("زي الأصلي", prompt)

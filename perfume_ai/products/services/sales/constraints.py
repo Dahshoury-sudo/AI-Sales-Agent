@@ -138,6 +138,38 @@ def _lookup(table, value):
     return table.get(str(value).strip().lower(), str(value).strip())
 
 
+# The sentinel for the store's own blends, as `ai/intent.py` emits it. Compared here in both
+# directions — asked for in `brand`, refused in `exclude_brands`.
+STORE_BRAND_EXCLUSIVE = "STORE_BRAND_EXCLUSIVE"
+
+
+def _excluded_brand_phrases(intent, own_blends):
+    """Arabic for the houses the customer has ruled out.
+
+    Shared by `describe` and `describe_filters` so the two blocks cannot name the same refusal
+    two different ways — the reason those functions already share `_lookup` and its tables. Only
+    the own-blend wording differs between them, so it is the one thing passed in.
+
+    "من غير" for named houses rather than a new preposition: it is already how `describe` renders
+    `avoid_notes`, and one vocabulary for "without" across both blocks is the point.
+    """
+    excluded = [
+        str(entry).strip()
+        for entry in (intent.get("exclude_brands") or ())
+        if _is_set(entry) and str(entry).strip()
+    ]
+    if not excluded:
+        return []
+
+    phrases = []
+    if any(entry.upper() == STORE_BRAND_EXCLUSIVE for entry in excluded):
+        phrases.append(own_blends)
+    houses = [entry for entry in excluded if entry.upper() != STORE_BRAND_EXCLUSIVE]
+    if houses:
+        phrases.append("من غير " + "، ".join(houses[:3]))
+    return phrases
+
+
 def describe(intent):
     """Short Arabic phrases for everything the customer has told us."""
     if not intent:
@@ -161,10 +193,18 @@ def describe(intent):
         if phrase:
             phrases.append(phrase)
 
-    if _is_set(intent.get("brand")) and intent.get("brand") != "STORE_BRAND_EXCLUSIVE":
+    if _is_set(intent.get("brand")) and intent.get("brand") != STORE_BRAND_EXCLUSIVE:
         phrases.append(f"من {intent['brand']}")
-    elif intent.get("brand") == "STORE_BRAND_EXCLUSIVE":
+    elif intent.get("brand") == STORE_BRAND_EXCLUSIVE:
         phrases.append("من تركيباتنا الخاصة")
+
+    # Beside the positive brand rather than down with `avoid_notes`, so a reply reads the house
+    # constraint as one thing. This is also what lands a refusal in `acknowledgement_hint`'s
+    # "العميل قال بالفعل" block under its "ممنوع تسأله عن أي حاجة من دي تاني" — the refusal is
+    # persisted across turns, so it has to be visible on every one of them.
+    phrases.extend(
+        _excluded_brand_phrases(intent, own_blends="براندات أصلية بس، من غير تركيباتنا")
+    )
 
     if _is_set(intent.get("similar_to")):
         phrases.append(f"شبه {intent['similar_to']}")
@@ -203,7 +243,12 @@ def describe(intent):
 # nothing *at all* — which is the one question `describe_filters` exists to answer. occasion,
 # longevity and projection are absent because they stopped being filters (see that function's
 # comment on why they were demoted to ranking signals).
-HARD_FILTER_KEYS = ("gender", "perfume_type", "season", "brand")
+#
+# `exclude_brands` qualifies on exactly that test — it is applied to `base` as a hard AND and can
+# empty a search on its own, a customer ruling out our own blends in a catalogue that is mostly
+# own blends being the case. It is also the FIRST list-valued member of this tuple: see
+# `described.relax_offer_block`, which used to serialise every value with a bare `str()`.
+HARD_FILTER_KEYS = ("gender", "perfume_type", "season", "brand", "exclude_brands")
 
 
 def describe_filters(intent):
@@ -233,10 +278,12 @@ def describe_filters(intent):
             phrases.append(phrase)
 
     brand = intent.get("brand")
-    if _is_set(brand) and brand != "STORE_BRAND_EXCLUSIVE":
+    if _is_set(brand) and brand != STORE_BRAND_EXCLUSIVE:
         phrases.append(f"من {brand}")
-    elif brand == "STORE_BRAND_EXCLUSIVE":
+    elif brand == STORE_BRAND_EXCLUSIVE:
         phrases.append("من تركيباتنا الخاصة")
+
+    phrases.extend(_excluded_brand_phrases(intent, own_blends="من غير تركيباتنا الخاصة"))
 
     return phrases
 

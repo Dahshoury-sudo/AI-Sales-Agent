@@ -32,18 +32,36 @@ _PROJECTION_AXIS = frozenset({"heavy", "loud", "strong"})
 # ranking._WANTED_PROJECTION; a request for "moderate" or "intimate" contradicts nothing.
 _WANTED_STRENGTH = frozenset({"strong", "heavy", "loud", "enormous", "beast", "nuclear"})
 
+# The sentinel for the store's own blends. Emitted positively in `brand` (see the first rule in
+# the prompt below) and negatively in `exclude_brands` for a customer who wants real designer
+# houses instead. Named here rather than repeated as a literal because `_sanitize` now has to
+# compare the two slots against each other.
+STORE_BRAND_EXCLUSIVE = "STORE_BRAND_EXCLUSIVE"
+
+# How many houses one customer can plausibly rule out in one conversation. Unlike `avoid_traits`
+# there is no closed vocabulary to fall back on — a brand is free text — so a cap is the only
+# bound there is, and this field is both a hard SQL filter and persisted across turns
+# (conversation_service.PERSISTED_PREFERENCE_KEYS), which makes an extraction runaway expensive
+# twice over.
+MAX_EXCLUDED_BRANDS = 5
+
 
 def _sanitize(intent):
     """Drop extracted values that are outside a closed vocabulary or contradict each other.
 
-    Only `avoid_traits` is filtered. The other free-text fields are matched against the
-    catalogue downstream, where an unknown value simply fails to match; this one is scored
-    directly, so a bad value has to be removed before it reaches the ranker.
+    Two fields are filtered, and for the same underlying reason: both are read downstream as
+    something stronger than a preference, so a value the customer never said does not merely add
+    noise. `avoid_traits` is the only extracted field scored as a PENALTY, and `exclude_brands` is
+    a hard SQL filter — the harsher of the two, since a penalty can be outweighed and a deleted
+    row cannot come back. Every other free-text field is matched against the catalogue downstream,
+    where an unknown value simply fails to match.
 
-    Two filters:
+    `avoid_traits`, two filters:
       * outside the closed vocabulary — "mainstream" reached the Arabic prompt as the literal
         string "مش mainstream";
       * contradicting a positive request on the same axis — see `_PROJECTION_AXIS`.
+
+    `exclude_brands`: capped, deduped, Latin-only, and reconciled against `brand`.
     """
     if not isinstance(intent, dict):
         return {}
@@ -66,6 +84,45 @@ def _sanitize(intent):
 
         intent["avoid_traits"] = kept
 
+    brands = intent.get("exclude_brands")
+    if isinstance(brands, (list, tuple, set)):
+        # The positive request wins a collision, for the reason `_PROJECTION_AXIS` gives one field
+        # up: this function sees the RAW output of a single call about a single message, so `brand`
+        # and `exclude_brands` naming the same house is one polarity slip and not two constraints.
+        # Staleness is not what this is looking at — a `brand` gap-filled from five turns ago has
+        # not reached here yet, and conversation_service resolves that collision the other way
+        # round on purpose (see `_withdrawn_by_exclusion`).
+        #
+        # Positive, specifically, because of the direction the documented failure runs in. The
+        # prompt's "A PERFUME IS NOT A HOUSE" rule exists because the model infers a HOUSE from a
+        # rejected PERFUME, so a spurious value here is far likelier to be the exclusion than the
+        # request — and a spurious exclusion is invisible: nothing tells the customer that six
+        # Diors were removed, while a spurious `brand` announces itself by returning nothing and
+        # is already withdrawable in one turn (conversation_service._BRAND_RELAX_MARKERS).
+        wanted = str(intent.get("brand") or "").strip().lower()
+
+        kept, seen = [], set()
+        for entry in brands:
+            text = str(entry or "").strip()
+            if not text:
+                continue
+            key = text.lower()
+            if key == wanted or key in seen:
+                continue
+            # Latin only, by construction rather than by preference: `Brand.name` holds "Chanel"
+            # and never "شانيل" (sales/naming.py:names_a_bare_brand), so an untranslated entry can
+            # never match a brand row. Keeping it would filter nothing while still rendering into
+            # the reply as a constraint we are honouring — `describe_filters` would say "من غير
+            # شانيل" about a search that excluded nothing. The sentinel is Latin, so it survives.
+            if not any("a" <= character <= "z" for character in key):
+                continue
+            seen.add(key)
+            kept.append(text)
+            if len(kept) >= MAX_EXCLUDED_BRANDS:
+                break
+
+        intent["exclude_brands"] = kept
+
     return intent
 
 
@@ -81,6 +138,7 @@ Return ONLY valid JSON.
 Schema:
 {{
     "brand": "brand name or null",
+    "exclude_brands": ["brand1", "brand2"] or [] — HOUSES they said they do NOT want,
     "gender": "must be 'male', 'female', 'unisex', 'multiple', or null",
     "perfume_type": "must be 'oriental', 'western', 'niche', 'ultra_niche' or null",
     "season": "season like 'summer', 'winter' or null",
@@ -98,7 +156,7 @@ Schema:
 }}
 
 Rules:
-- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'.
+- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT the store's own blends and ask for real designer houses instead (e.g. "مش عايز تركيبات بتاعتكم", "عايز براندات أصلية", "بلاش تركيبكم", "عايز الأصلي مش تركيب", "مش عايز حاجة من تصميمكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), or uses terms like "bi" or "bisexual", map it exactly to 'male', 'female', or 'unisex' (map "bi" and "bisexual" to 'unisex').
@@ -129,6 +187,10 @@ Rules:
     ❌ NEVER return the same axis as both a want and an avoid — `projection: "strong"` together with `avoid_traits: ["strong"]` (or `["heavy"]`, or `["loud"]`) is a contradiction, and it will be discarded.
   • A specific ingredient they don't want (e.g. "مش بحب العود", "من غير مسك") → 'avoid_notes' (English).
   • A characteristic they don't want → 'avoid_traits'. This is a CLOSED list of exactly six values and you may return NOTHING else: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة). A value outside this list is discarded, so inventing one silently loses the customer's constraint.
+  • 🔴 A HOUSE they don't want → 'exclude_brands' (English, same translation rule as 'brand': "مش عايز حاجة من ديور" → ["Dior"], "بلاش شانيل" → ["Chanel"], "أي حاجة غير توم فورد" → ["Tom Ford"]). One entry per house actually named.
+  ❌ A PERFUME IS NOT A HOUSE. This is the rule "NAMING A PERFUME IS NOT NAMING A BRAND" above, read backwards, and it is the same error with a bigger blast radius. "مش عايز سوفاج" / "بلاش امبيرو" reject ONE perfume → 'exclude_names', and 'exclude_brands' stays EMPTY. Inferring exclude_brands ["Dior"] from "مش عايز سوفاج" deletes every Dior in the shop over one bottle the customer didn't like — and unlike a note or a trait this is a HARD database filter, so nothing later in the pipeline can put those perfumes back or even tell that they went. If they name a perfume, exclude the perfume.
+  ❌ SWITCHING HOUSES IS NOT AN EXCLUSION. "لا مش ديور، عايز شانيل" sets brand='Chanel' and NOTHING in 'exclude_brands' — the STATE MANAGEMENT rule below already drops the old brand. Recording the abandoned house as an exclusion turns a changed mind into a permanent ban, because this field is remembered for the rest of the conversation.
+  ❌ NEVER the same value in 'brand' and in 'exclude_brands' — "عايز ديور" and "مش عايز ديور" cannot both be true of one message. A house asked FOR goes in 'brand' and nowhere else; the contradiction will be discarded.
   • Example: "مش عايز حاجة تقيلة أو تخنق اللي حواليا" → avoid_traits: ["heavy", "suffocating"].
   ❌ Never put an avoided thing in 'notes' — that would search FOR the thing they rejected.
   ❌ POPULARITY IS NOT INTENSITY. "مش منتشر" / "مش مشهور" / "مش موجود عند حد" describe how MANY people own a perfume, not how strong it smells. They set 'wants_uncommon' ONLY. Putting them in 'avoid_traits' as "loud"/"strong"/"heavy" — or inventing "mainstream" — is a serious error: 'avoid_traits' is a heavy PENALTY, so it would push away the powerful, long-lasting perfumes the customer never objected to. A customer who said "مش منتشرة" has said nothing whatsoever about strength.

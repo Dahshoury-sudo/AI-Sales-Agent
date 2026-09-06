@@ -1,5 +1,5 @@
 from django.db.models import Case, DecimalField, Min, OuterRef, Q, Subquery, When
-from products.models import Product, ProductVariant
+from products.models import Brand, Product, ProductVariant
 
 from .product_formatting import is_variant_available
 from .sales import naming, ranking, similarity
@@ -24,6 +24,11 @@ MAX_CANDIDATES_TO_SCORE = 60
 SELLABLE = Q(variants__bottle_type="normal") | Q(
     variants__bottle_type="original", variants__stock__gt=0
 )
+
+# The sentinel the extractor emits for the store's own blends — positively in `brand`, negatively
+# in `exclude_brands` (ai/intent.py, where it is also named). Was a bare literal in two places
+# here and is now needed in four.
+STORE_BRAND_EXCLUSIVE = "STORE_BRAND_EXCLUSIVE"
 
 # Cheapest brand bottle, as a correlated subquery rather than
 # `annotate(Min('variants__price', ...))`. The queryset already filters on the
@@ -154,7 +159,69 @@ def _obtainable_only(queryset):
     return queryset.exclude(id__in=unobtainable) if unobtainable else queryset
 
 
-def _drop_reason(product, intent, max_price):
+def blocked_brand_ids(exclude_brands, store):
+    """Which of this store's brands the customer has ruled out, as ids.
+
+    Resolved against real `Brand` rows rather than filtered with
+    `.exclude(brand__name__icontains=...)`, for the same reason `naming.resolve_names` sits on the
+    `exclude_names` path below. `icontains` fails asymmetrically: in the positive direction a loose
+    match hands the ranker extra candidates and nothing is lost, while in the negative direction it
+    DELETES rows and nothing downstream can tell that it happened — `_drop_reason` cannot name it,
+    `describe_filters` cannot name it, and the customer sees a shorter list with no explanation. A
+    two-letter string would take a house with it; a mis-extracted "Perfume" would empty a shop.
+
+    Matched with `naming.tokens` in either direction, so "Dior" resolves a row recorded as
+    "Christian Dior" and "Tom Ford" resolves "Tom Ford Beauty" — the same tolerance the positive
+    `brand__name__icontains` already gives, expressed against a finite list of real names instead
+    of against a LIKE pattern. `tokens` drops its stopwords, so an entry like "Le" tokenises to
+    nothing and resolves to nothing rather than to Le Labo, and an Arabic entry tokenises to tokens
+    no `Brand.name` can carry: the Latin-only boundary of this codebase, failing closed.
+
+    Returning ids rather than a Q() is deliberate — it keeps the exclusion legible to the rest of
+    the turn. An entry that resolved to nothing did not narrow the search, so `describe_filters`
+    must not offer it back as a constraint to relax and `_drop_reason` must not blame it.
+    """
+    if not exclude_brands or store is None:
+        return frozenset()
+
+    rows = list(
+        # `product`, singular: the FK on Product declares no related_name, so the reverse query
+        # name is the default lowercase model name.
+        Brand.objects.filter(product__store=store, product__is_active=True)
+        .values_list("id", "name")
+        .distinct()
+    )
+    if not rows:
+        return frozenset()
+
+    store_name = (store.name or "").strip().lower()
+    blocked = set()
+
+    for raw in exclude_brands:
+        text = str(raw or "").strip()
+        if not text:
+            continue
+        if text.upper() == STORE_BRAND_EXCLUSIVE:
+            # The store's own blends, identified the one way this codebase identifies them:
+            # `sales.value.is_store_exclusive` compares brand name to store name, and this has to
+            # agree with it or a ⭐ product survives an exclusion that named it.
+            blocked.update(
+                identifier for identifier, name in rows
+                if (name or "").strip().lower() == store_name
+            )
+            continue
+        wanted = naming.tokens(text)
+        if not wanted:
+            continue
+        for identifier, name in rows:
+            recorded = naming.tokens(name)
+            if recorded and (wanted <= recorded or recorded <= wanted):
+                blocked.add(identifier)
+
+    return frozenset(blocked)
+
+
+def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
     """Why a perfume the conversation was on no longer qualifies.
 
     Computed rather than hinted. The note used to tell the model to say why "(السعر مثلاً)",
@@ -187,9 +254,20 @@ def _drop_reason(product, intent, max_price):
         return "مش لنفس الموسم اللي قاله"
 
     brand = intent.get("brand")
-    if brand and brand != "STORE_BRAND_EXCLUSIVE":
+    if brand and brand != STORE_BRAND_EXCLUSIVE:
         if brand.lower() not in (product.brand.name or "").lower():
             return "مش من البراند اللي طلبه"
+
+    # Read off the resolved id set rather than re-matched from `intent`, so this cannot claim an
+    # exclusion that `blocked_brand_ids` did not actually apply — the docstring's rule that every
+    # branch here only says what it can prove.
+    if blocked_brands and product.brand_id in blocked_brands:
+        # Two sentences because they are two different facts, and the ⭐ one is the only place the
+        # reply can say the true thing: this perfume left because it is ours.
+        store_name = (product.store.name or "").strip().lower() if product.store else ""
+        if store_name and (product.brand.name or "").strip().lower() == store_name:
+            return "ده تركيب بتاعنا، وهو قال إنه عايز براندات أصلية"
+        return f"من {product.brand.name}، والعميل قال إنه مش عايز البراند ده"
 
     # Budget last, and only when it is demonstrably the blocker.
     #
@@ -231,6 +309,10 @@ def search_products(intent, store=None, keep=()):
     if old_exclude and old_exclude not in exclude_names:
         exclude_names.append(old_exclude)
 
+    # Read plainly, with no equivalent of the `old_exclude` append above: that idiom mutates the
+    # caller's intent dict in place, which is a pre-existing bug and not one to reproduce.
+    exclude_brands = intent.get("exclude_brands") or []
+
     notes = intent.get("notes") or []
 
     # Hard filters: the criteria a customer means literally. gender/brand/type/season
@@ -248,10 +330,24 @@ def search_products(intent, store=None, keep=()):
     if season:
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
     if brand:
-        if brand == "STORE_BRAND_EXCLUSIVE" and store:
+        if brand == STORE_BRAND_EXCLUSIVE and store:
             base = base.filter(brand__name__iexact=store.name)
         else:
             base = base.filter(brand__name__icontains=brand)
+
+    # On `base`, with the other hard filters, and ABOVE `constrained` — not below it with the name
+    # exclusions. The distinction `constrained` exists to draw is between a perfume the customer
+    # *disqualified* and one we are *withholding* because they have already seen it. A refused
+    # house is the first kind: it belongs beside gender, which is also a requirement the customer
+    # means literally.
+    #
+    # Below `constrained`, `exhausted` would go true for a search the customer's own exclusion
+    # emptied, and `_no_match_instruction` would then say "دي كل الخيارات المتاحة حالياً" about a
+    # catalogue full of perfumes it had just filtered out on their instruction — conversation 931's
+    # fabricated list with a new cause. `exhausted` below therefore stays keyed on `exclude_names`.
+    blocked_brands = blocked_brand_ids(exclude_brands, store)
+    if blocked_brands:
+        base = base.exclude(brand_id__in=blocked_brands)
 
     # occasion, longevity and projection are deliberately NOT filtered any more. They were
     # `icontains` ANDs despite being called soft, and `icontains` against an empty column
@@ -361,10 +457,14 @@ def search_products(intent, store=None, keep=()):
     lost = keep - surviving
     dropped = {}
     if lost:
+        # `store` joins `brand` in the select: `_drop_reason`'s own-blend branch compares the two
+        # names, so without it every dropped product costs an extra query.
         for product in Product.objects.filter(
             store=store, name__in=lost
-        ).prefetch_related("variants").select_related("brand") if store else ():
-            dropped[product.name] = _drop_reason(product, intent, max_price)
+        ).prefetch_related("variants").select_related("brand", "store") if store else ():
+            dropped[product.name] = _drop_reason(
+                product, intent, max_price, blocked_brands=blocked_brands
+            )
         for name in lost:
             dropped.setdefault(name, None)
 
