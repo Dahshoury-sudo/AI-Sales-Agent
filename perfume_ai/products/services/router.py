@@ -681,34 +681,14 @@ def route(message, history=None, store=None, conversation=None):
 العميل ده عايز ترشيح عطر ({intent.get('gender', 'غير محدد')}) بس مقلش أي حاجة عن ذوقه أو تفضيلاته.
 
 اسأله في رسالة واحدة مختصرة وودودة فيها اختيارات واضحة تغطي ذوقه، زي كده بالظبط:
-"قولي ذوقك 😊 يعني بتحب الفريش والخفيف ولا التقيل والخشبي ولا العود؟ ولا بتحب الحاجات المسكرة مثلا؟ وميزانيتك في حدود كام؟"
+"قولي ذوقك 😊 يعني بتحب الفريش والخفيف ولا التقيل والخشبي ولا العود؟ ولا بتحب الحاجات المسكرة مثلا؟"
 
-⚠️ لازم تكون رسالة واحدة مختصرة فيها كل الاختيارات مع بعض (مش أسئلة منفصلة). الهدف تفهم ذوقه وميزانيته في رسالة واحدة.
+⚠️ لازم تكون رسالة واحدة مختصرة فيها كل الاختيارات مع بعض (مش أسئلة منفصلة). الهدف تفهم ذوقه في رسالة واحدة.
 ❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
                     history, store
                 )
                 
-            if has_taste_info and not has_budget and not already_asked_budget:
-                # The customer told us plenty and the whole turn was still blocked on a
-                # budget question that mentioned none of it: "عايز برفان رجالي ريحته فخمة
-                # وثابتة، مناسب للخروجات بالليل، بس مش عايز حاجة تقيلة" was answered with
-                # "ميزانيتك في حدود كام؟" and nothing else. Above the constraint threshold
-                # we recommend and fold the budget probe into that reply instead; below it
-                # we still ask, but with what they said attached so the question
-                # acknowledges it. The wording is a hint, not a script — the behaviour
-                # being replaced was one hardcoded sentence, and mandating a different
-                # single sentence would be the same bug in a nicer costume.
-                if not sales_constraints.can_recommend_without_budget(intent):
-                    return handle_general(
-                        f"""العميل بعتلي: "{message}"
-{sales_constraints.acknowledgement_hint(intent)}
-العميل ده قال تفضيلاته بس لسه متحددش ميزانيته.
-اعترف باللي قاله في نص جملة قصيرة بأسلوبك، وبعدها اسأله عن الميزانية في سؤال واحد مختصر.
 
-❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.
-❌ ممنوع تعيد سرد كل تفاصيل طلبه عليه.""",
-                        history, store
-                    )
         
         # What the conversation is already on, so ranking can hold those perfumes near the
         # top instead of re-deriving a fresh shortlist every turn. Without it a customer who
