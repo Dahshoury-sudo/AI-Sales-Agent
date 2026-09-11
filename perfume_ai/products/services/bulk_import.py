@@ -28,12 +28,14 @@ def parse_excel(file_bytes, store):
     P: norm_price_1
     Q: norm_vol_2 (ml)
     R: norm_price_2
-    S: orig_vol_1 (ml)
-    T: orig_price_1
-    U: orig_stock_1
-    V: orig_vol_2 (ml)
-    W: orig_price_2
-    X: orig_stock_2
+    S: norm_vol_3 (ml)
+    T: norm_price_3
+    U: orig_vol_1 (ml)
+    V: orig_price_1
+    W: orig_stock_1
+    X: orig_vol_2 (ml)
+    Y: orig_price_2
+    Z: orig_stock_2
     """
     
     results = {"created": 0, "errors": [], "skipped": 0}
@@ -52,8 +54,8 @@ def parse_excel(file_bytes, store):
         return results
     
     for row_idx, row in enumerate(rows, start=2):
-        # Pad row to at least 24 columns
-        row = list(row) + [None] * (24 - len(row)) if len(row) < 24 else list(row)
+        # Pad row to at least 26 columns
+        row = list(row) + [None] * (26 - len(row)) if len(row) < 26 else list(row)
         
         name = str(row[0]).strip() if row[0] else ""
         brand_name = str(row[1]).strip() if row[1] else ""
@@ -114,11 +116,11 @@ def parse_excel(file_bytes, store):
                 description=str(row[13]).strip() if row[13] else "",
             )
             
-            # Create normal variants (up to 2)
+            # Create normal variants (up to 3)
             variant_count = 0
-            for i in range(2):
-                vol_idx = 14 + (i * 2)   # columns O, Q (14, 16)
-                price_idx = 15 + (i * 2)  # columns P, R (15, 17)
+            for i in range(3):
+                vol_idx = 14 + (i * 2)   # columns O, Q, S (14, 16, 18)
+                price_idx = 15 + (i * 2)  # columns P, R, T (15, 17, 19)
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
@@ -137,9 +139,9 @@ def parse_excel(file_bytes, store):
             
             # Create original variants (up to 2)
             for i in range(2):
-                vol_idx = 18 + (i * 3)   # columns S, V (18, 21)
-                price_idx = 19 + (i * 3)  # columns T, W (19, 22)
-                stock_idx = 20 + (i * 3)  # columns U, X (20, 23)
+                vol_idx = 20 + (i * 3)   # columns U, X (20, 23)
+                price_idx = 21 + (i * 3)  # columns V, Y (21, 24)
+                stock_idx = 22 + (i * 3)  # columns W, Z (22, 25)
                 
                 volume = row[vol_idx] if vol_idx < len(row) else None
                 price = row[price_idx] if price_idx < len(row) else None
