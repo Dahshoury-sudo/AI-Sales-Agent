@@ -11,6 +11,7 @@ from products.models import StoreSettings
 from products.services.conversation_service import get_or_create_platform_conversation, get_conversation_messages, save_message
 from products.services.router import route
 from products.services.meta_service import send_platform_message
+from products.services.comment_filter import should_reply_to_post
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,10 @@ class MetaWebhookView(APIView):
                             if commenter_id == page_id:
                                 continue
 
+                            # Blocklist check: skip posts the store owner muted
+                            if not should_reply_to_post(store_settings.store, "facebook", post_id):
+                                continue
+
                             self.process_comment(store_settings.store.id, "facebook", comment_id, commenter_id, comment_text, post_id)
 
                         # ── Instagram comment ───────────────────────────────
@@ -143,6 +148,10 @@ class MetaWebhookView(APIView):
 
                             # Don't reply to the page's own comments
                             if commenter_id == ig_account_id:
+                                continue
+
+                            # Blocklist check: skip posts the store owner muted
+                            if not should_reply_to_post(store_settings.store, "instagram", post_id):
                                 continue
 
                             self.process_comment(store_settings.store.id, "instagram", comment_id, commenter_id, comment_text, post_id)

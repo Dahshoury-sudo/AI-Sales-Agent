@@ -700,6 +700,9 @@
             <div class="nav-item" onclick="showSection('faq')" id="nav-faq">
                 <i class="fas fa-question-circle"></i> الأسئلة الثابتة
             </div>
+            <div class="nav-item" onclick="showSection('post_rules')" id="nav-post_rules">
+                <i class="fas fa-filter"></i> فلترة البوستات
+            </div>
             <div class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
                 <i class="fas fa-file-upload"></i> رفع جماعي
             </div>
@@ -1080,6 +1083,42 @@ Check your DM, we replied! 💬
             </div>
         </div>
 
+        <!-- Post Rules Section -->
+        <div class="section" id="section-post_rules">
+            <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h1>🚫 فلترة البوستات</h1>
+                    <p>حدد البوستات اللي البوت مش هيرد على تعليقاتها</p>
+                </div>
+                <button class="btn btn-primary" onclick="openPostRuleModal()" style="padding:10px 20px; background:var(--primary); border:none; border-radius:10px; color:white; cursor:pointer; font-family:inherit; font-size:0.9rem;">
+                    <i class="fas fa-plus"></i> إضافة بوست
+                </button>
+            </div>
+
+            <div class="settings-card" style="padding:15px;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); border-radius:10px; font-size:0.85rem; color:#93c5fd;">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
+                </div>
+                <div class="table-responsive">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>المنصة</th>
+                                <th>Post ID</th>
+                                <th>الوصف</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="post-rules-tbody">
+                            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- FAQ Modal -->
@@ -1120,6 +1159,38 @@ Check your DM, we replied! 💬
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                 <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-family:inherit;">إلغاء</button>
                 <button onclick="saveFaq()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Rule Modal -->
+    <div id="post-rule-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:var(--bg-color); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:500px; max-width:90%; max-height:90vh; overflow-y:auto;">
+            <h2 id="post-rule-modal-title" style="margin-bottom:20px;">إضافة بوست للقائمة المحظورة</h2>
+            <input type="hidden" id="post-rule-edit-id">
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>المنصة</label>
+                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>رابط البوست</label>
+                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;" dir="ltr">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">💡 افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>وصف (اختياري)</label>
+                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button onclick="savePostRule()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
             </div>
         </div>
     </div>
@@ -1236,6 +1307,7 @@ Check your DM, we replied! 💬
             if (name === 'meta')       loadMetaSettings();
             if (name === 'notifications') loadNotifications();
             if (name === 'faq')        loadFaqs();
+            if (name === 'post_rules') loadPostRules();
 
             // Helper to get current API key for iframe URLs
             function getKey() {
@@ -2114,6 +2186,126 @@ Check your DM, we replied! 💬
                 if (res && res.ok) {
                     showToast('تم حذف السؤال');
                     loadFaqs();
+                } else {
+                    showToast('فشل الحذف');
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // ── Post Rules CRUD ─────────────────────────────────────────────────
+
+        async function loadPostRules() {
+            try {
+                const res = await authFetch(`${API_BASE}/post-rules/`);
+                if (!res || !res.ok) return;
+                const data = await res.json();
+                const tbody = document.getElementById('post-rules-tbody');
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:40px;">لا توجد بوستات محظورة. البوت هيرد على كل التعليقات.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(rule => {
+                    const platformBadge = rule.platform === 'facebook'
+                        ? '<span style="background:rgba(59,130,246,0.15);color:#3b82f6;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
+                        : '<span style="background:rgba(228,64,95,0.15);color:#e4405f;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
+
+                    const statusBadge = rule.is_active
+                        ? '<span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
+                        : '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
+
+                    return `<tr>
+                        <td>${platformBadge}</td>
+                        <td style="font-family:monospace;font-size:0.85rem;direction:ltr;text-align:left;">${rule.post_id}</td>
+                        <td style="color:var(--text-muted);">${rule.label || '—'}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
+                                <i class="fas fa-${rule.is_active ? 'toggle-on' : 'toggle-off'}"></i>
+                            </button>
+                            <button onclick="deletePostRule(${rule.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                console.error('Error loading post rules:', e);
+            }
+        }
+
+        function openPostRuleModal() {
+            document.getElementById('post-rule-modal-title').textContent = 'إضافة بوست للقائمة المحظورة';
+            document.getElementById('post-rule-edit-id').value = '';
+            document.getElementById('post-rule-platform').value = 'facebook';
+            document.getElementById('post-rule-post-id').value = '';
+            document.getElementById('post-rule-label').value = '';
+            document.getElementById('post-rule-modal').style.display = 'flex';
+        }
+
+        function closePostRuleModal() {
+            document.getElementById('post-rule-modal').style.display = 'none';
+        }
+
+        async function savePostRule() {
+            const postId = document.getElementById('post-rule-post-id').value.trim();
+            const platform = document.getElementById('post-rule-platform').value;
+            const label = document.getElementById('post-rule-label').value.trim();
+
+            if (!postId) {
+                showToast('لازم تدخل رابط البوست');
+                return;
+            }
+
+            try {
+                const res = await authFetch(`${API_BASE}/post-rules/`, {
+                    method: 'POST',
+                    body: JSON.stringify({ platform, post_id: postId, label })
+                });
+
+                if (res && (res.ok || res.status === 201)) {
+                    showToast('تم إضافة البوست للقائمة المحظورة');
+                    closePostRuleModal();
+                    loadPostRules();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'حدث خطأ');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('حدث خطأ');
+            }
+        }
+
+        async function togglePostRule(id, currentlyActive) {
+            try {
+                const res = await authFetch(`${API_BASE}/post-rules/${id}/`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ is_active: !currentlyActive })
+                });
+                if (res && res.ok) {
+                    showToast(currentlyActive ? 'تم إلغاء حظر البوست' : 'تم حظر البوست');
+                    loadPostRules();
+                } else {
+                    showToast('فشل التحديث');
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function deletePostRule(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا البوست من القائمة المحظورة؟')) return;
+            try {
+                const res = await authFetch(`${API_BASE}/post-rules/${id}/`, {
+                    method: 'DELETE'
+                });
+                if (res && res.ok) {
+                    showToast('تم حذف البوست من القائمة');
+                    loadPostRules();
                 } else {
                     showToast('فشل الحذف');
                 }

@@ -8,6 +8,7 @@ from .views_products import ProductListView, ProductDetailView, ProductCreateVie
 from .views_analytics import DashboardOverviewView, AnalyticsView
 from .views_notifications import NotificationListView, NotificationMarkReadView
 from .views_faq import FAQListCreateView, FAQDetailView
+from .views_post_rules import PostRuleListCreateView, PostRuleDetailView
 
 urlpatterns = [
     # --- Page views ---
@@ -45,4 +46,8 @@ urlpatterns = [
     # --- FAQ API ---
     path("api/faqs/", FAQListCreateView.as_view(), name="dashboard-api-faqs"),
     path("api/faqs/<int:faq_id>/", FAQDetailView.as_view(), name="dashboard-api-faq-detail"),
+
+    # --- Post Comment Rules API ---
+    path("api/post-rules/", PostRuleListCreateView.as_view(), name="dashboard-api-post-rules"),
+    path("api/post-rules/<int:rule_id>/", PostRuleDetailView.as_view(), name="dashboard-api-post-rule-detail"),
 ]

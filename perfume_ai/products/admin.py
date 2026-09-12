@@ -17,6 +17,7 @@ from .models import (
     Notification,
     StaticFAQ,
     StoreMonthlyUsage,
+    PostCommentRule,
 )
 
 
@@ -164,3 +165,11 @@ class StoreMonthlyUsageAdmin(admin.ModelAdmin):
     # Counters are written by the message path; editing them by hand would desync
     # billing from what actually ran.
     readonly_fields = ("store", "period", "llm_messages", "updated_at")
+
+
+@admin.register(PostCommentRule)
+class PostCommentRuleAdmin(admin.ModelAdmin):
+    list_display = ("post_id", "label", "store", "platform", "is_active", "created_at")
+    list_filter = ("store", "platform", "is_active")
+    search_fields = ("post_id", "label")
+    list_editable = ("is_active",)

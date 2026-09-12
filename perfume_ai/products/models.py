@@ -473,4 +473,48 @@ class StoreMonthlyUsage(models.Model):
         ordering = ["-period"]
 
     def __str__(self):
-        return f"{self.store.name} {self.period:%Y-%m}: {self.llm_messages}"
+        return f"{self.store.name} {self.period:%Y-%m}: {self.llm_messages}"
+
+
+class PostCommentRule(models.Model):
+    """Posts where the bot should NOT auto-reply to comments (blocklist).
+
+    The bot replies to every comment by default. Adding a post here mutes it:
+    comments on that post are still received by the webhook but silently ignored
+    instead of being dispatched to process_comment_task.
+
+    Checked inside views_meta.py before the task is enqueued, so a blocked post
+    costs nothing beyond the webhook parse and one indexed lookup.
+    """
+
+    PLATFORM_CHOICES = (
+        ("facebook", "Facebook"),
+        ("instagram", "Instagram"),
+    )
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="post_rules")
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    post_id = models.CharField(
+        max_length=255, db_index=True,
+        help_text="Facebook post ID (PageID_PostID) أو Instagram media ID",
+    )
+    label = models.CharField(
+        max_length=200, blank=True,
+        help_text="وصف اختياري للبوست (مثلاً: بوست صيف 2026)",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["store", "platform", "post_id"],
+                name="one_rule_per_post",
+            )
+        ]
+        ordering = ["-created_at"]
+        verbose_name = "قاعدة رد على البوست"
+        verbose_name_plural = "قواعد الرد على البوستات"
+
+    def __str__(self):
+        return f"{self.label or self.post_id} ({self.platform})"
