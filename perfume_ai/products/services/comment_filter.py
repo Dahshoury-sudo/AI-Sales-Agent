@@ -62,6 +62,39 @@ def _ig_shortcode_to_media_id(shortcode):
     return str(media_id)
 
 
+def _resolve_instagram_url_via_api(url, ig_account_id, token):
+    """Resolve an Instagram URL to its Graph API media ID by searching recent media."""
+    parsed = urlparse(url)
+    match = re.search(r"/(?:p|reel|tv)/([A-Za-z0-9_-]+)", parsed.path)
+    if not match:
+        return None
+    shortcode = match.group(1)
+    
+    try:
+        api_url = f"https://graph.facebook.com/v19.0/{ig_account_id}/media"
+        params = {"fields": "shortcode,id", "access_token": token, "limit": 100}
+        
+        for _ in range(5):  # Check up to 500 recent posts
+            response = http_requests.get(api_url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            for item in data.get("data", []):
+                if item.get("shortcode") == shortcode:
+                    return item.get("id")
+                    
+            if "paging" in data and "next" in data["paging"]:
+                api_url = data["paging"]["next"]
+                params = {}  # The next URL already contains all parameters
+            else:
+                break
+                
+    except Exception as e:
+        logger.warning("Graph API IG media lookup failed for shortcode %s: %s", shortcode, e)
+        
+    return None
+
+
 def _extract_instagram_id(url):
     """Extract numeric media ID from an Instagram URL.
 
@@ -189,10 +222,19 @@ def extract_post_id_from_url(input_value, platform, store_settings=None):
         return input_value, None
 
     if platform == "instagram":
-        post_id = _extract_instagram_id(input_value)
+        ig_account_id = getattr(store_settings, "instagram_account_id", None) if store_settings else None
+        token = None
+        if store_settings:
+            token = getattr(store_settings, "messenger_access_token", None) or getattr(store_settings, "meta_access_token", None)
+            
+        if not ig_account_id or not token:
+            return None, "لازم تربط حساب الانستجرام والـ Access Token في إعدادات الستور الأول عشان نقدر نستخرج الـ Media ID."
+
+        post_id = _resolve_instagram_url_via_api(input_value, ig_account_id, token)
         if post_id:
             return post_id, None
-        return None, "مقدرش أستخرج الـ Media ID من رابط انستجرام ده. تأكد إن الرابط صحيح."
+        return None, "مقدرش أستخرج الـ Media ID من الرابط ده. تأكد إن البوست موجود في حسابك (بندور في أحدث 500 بوست)."
+
 
     elif platform == "facebook":
         page_id = getattr(store_settings, "facebook_page_id", None) if store_settings else None
