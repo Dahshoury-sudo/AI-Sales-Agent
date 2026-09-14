@@ -81,7 +81,7 @@ class MetaWebhookView(APIView):
                                 logger.warning(f"No store found for WA phone number ID {receiving_id}")
                                 continue
 
-                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret, f"WA phone {receiving_id}"):
                                 return HttpResponse("Invalid signature", status=403)
 
                             for message in value.get("messages", []):
@@ -104,7 +104,7 @@ class MetaWebhookView(APIView):
                                 logger.warning(f"No store found for FB page ID {page_id}")
                                 continue
 
-                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret, f"FB page {page_id}"):
                                 return HttpResponse("Invalid signature", status=403)
 
                             comment_id = value.get("comment_id")
@@ -134,7 +134,7 @@ class MetaWebhookView(APIView):
                                 logger.warning(f"No store found for IG account ID {ig_account_id}")
                                 continue
 
-                            if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                            if not self.verify_signature(request, body, store_settings.meta_app_secret, f"IG account {ig_account_id}"):
                                 return HttpResponse("Invalid signature", status=403)
 
                             comment_id = value.get("id")
@@ -179,7 +179,7 @@ class MetaWebhookView(APIView):
                             logger.warning(f"No store found for recipient ID {recipient_id}")
                             continue
 
-                        if not self.verify_signature(request, body, store_settings.meta_app_secret):
+                        if not self.verify_signature(request, body, store_settings.meta_app_secret, f"Messenger/IG recipient {recipient_id}"):
                             return HttpResponse("Invalid signature", status=403)
                         
                         if "message" in messaging_event and "text" in messaging_event["message"]:
@@ -190,7 +190,7 @@ class MetaWebhookView(APIView):
         else:
             return HttpResponse("NOT_FOUND", status=404)
 
-    def verify_signature(self, request, body, app_secret):
+    def verify_signature(self, request, body, app_secret, identifier="Unknown"):
         """Verify the X-Hub-Signature-256 header.
 
         The signature covers the entire request body, so a failure means nothing
@@ -223,7 +223,7 @@ class MetaWebhookView(APIView):
         ).hexdigest()
 
         if not hmac.compare_digest(expected_signature, signature):
-            logger.warning("Invalid webhook signature")
+            logger.warning(f"Invalid webhook signature for {identifier}")
             return False
         return True
 
