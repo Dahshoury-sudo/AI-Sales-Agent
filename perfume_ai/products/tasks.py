@@ -235,8 +235,7 @@ def process_incoming_attachment(self, store_id, platform, sender_id, image_url, 
         else:
             # No pending order → probably a product enquiry photo
             reply = (
-                "مش بقدر أشوف الصور يا فندم 😅\n"
-                "لو عايز تسأل عن عطر ابعتلي اسمه كتابة وأساعدك!"
+                "انا مش بقدر اعالج الصور وافهمها حاليا يا فندم اسف جدا ممكن تكتبلي وانا هساعد حضرتك ✨"
             )
 
         save_message(conversation, "assistant", reply)
