@@ -534,8 +534,23 @@
                     div.className = `message ${msg.role}`;
                     // Add line breaks
                     const formattedContent = msg.content ? msg.content.replace(/\\n/g, '<br>') : '';
+                    let attachmentHTML = '';
+                    if (msg.attachment_url) {
+                        const safeUrl = msg.attachment_url.replace(/"/g, '&quot;');
+                        attachmentHTML = `
+                            <div style="margin-top: 8px;">
+                                <a href="${safeUrl}" target="_blank" rel="noopener">
+                                    <img src="${safeUrl}"
+                                         style="max-width: 250px; max-height: 300px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.15);"
+                                         alt="مرفق من العميل"
+                                         onerror="this.parentElement.innerHTML='<span style=\\'color:#94a3b8;\\'>📎 <a href=\\'' + '${safeUrl}' + '\\' target=\\'_blank\\' style=\\'color:#3b82f6;\\'>فتح المرفق</a> (الرابط ممكن يكون انتهى)</span>'" />
+                                </a>
+                            </div>
+                        `;
+                    }
                     div.innerHTML = `
                         <div>${formattedContent}</div>
+                        ${attachmentHTML}
                         <div class="message-time">${formatDate(msg.created_at)}</div>
                     `;
                     msgContainer.appendChild(div);

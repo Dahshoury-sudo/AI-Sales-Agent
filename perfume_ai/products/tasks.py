@@ -188,6 +188,75 @@ def process_message_async(store_id, platform, sender_id, text):
     process_incoming_message.delay(store_id, platform, sender_id, text)
 
 
+# ── Attachment (image) handling ─────────────────────────────────────────────
+#
+# The bot cannot analyse images, so the decision tree is context-based:
+#
+#   • Conversation has a pending Order  →  likely a payment receipt.
+#     Save the message with the image URL, flag for handoff, notify the
+#     owner, and auto-reply "received, the team will verify".
+#
+#   • No pending order  →  probably a product enquiry photo.
+#     Save the message, auto-reply "I can't see images, send the name
+#     as text", and let the bot continue normally.
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=30)
+def process_incoming_attachment(self, store_id, platform, sender_id, image_url, caption):
+    """Handle an inbound image attachment (e.g. payment receipt screenshot)."""
+    from products.models import Order
+    from products.services.notification_service import notify_attachment_received
+
+    try:
+        store = Store.objects.get(id=store_id)
+        conversation, _ = get_or_create_platform_conversation(store, platform, sender_id)
+
+        display_text = caption if caption else "📎 أرسل صورة"
+        save_message(conversation, "user", display_text, attachment_url=image_url)
+
+        # If a human agent already took over, just save — don't double-notify.
+        if conversation.needs_human:
+            return
+
+        has_pending_order = Order.objects.filter(
+            conversation=conversation, status="pending",
+        ).exists()
+
+        if has_pending_order:
+            # Likely a payment receipt → handoff + notify + auto-reply
+            conversation.needs_human = True
+            conversation.save(update_fields=["needs_human"])
+            notify_attachment_received(conversation)
+
+            reply = (
+                "تم استلام الصورة ✅\n"
+                "فريق المبيعات هيراجعها ويأكدلك قريباً 👍"
+            )
+        else:
+            # No pending order → probably a product enquiry photo
+            reply = (
+                "مش بقدر أشوف الصور يا فندم 😅\n"
+                "لو عايز تسأل عن عطر ابعتلي اسمه كتابة وأساعدك!"
+            )
+
+        save_message(conversation, "assistant", reply)
+        delivered = send_platform_message(conversation, reply)
+        if delivered is False:
+            _flag_undelivered_reply(conversation)
+
+    except Exception as exc:
+        logger.exception(
+            f"Error processing attachment — store={store_id}, platform={platform}, "
+            f"attempt={self.request.retries + 1}/{self.max_retries + 1}: {exc}"
+        )
+        raise self.retry(exc=exc)
+
+
+def process_attachment_async(store_id, platform, sender_id, image_url, caption=""):
+    """Enqueue process_incoming_attachment as a Celery task."""
+    process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption)
+
+
 # ── Comment Auto-Reply ──────────────────────────────────────────────────────
 
 # How long to wait before replying to a comment, so the reply doesn't look

@@ -63,3 +63,25 @@ def notify_delivery_failure(conversation):
             f"رفضت توصيل الرسالة. العميل لسه مستني — راجع المحادثة وتواصل معاه."
         ),
     )
+
+
+def notify_attachment_received(conversation):
+    """Notify the store owner when a customer sends an image during a pending order.
+
+    The image is very likely a payment receipt: the order exists and is pending,
+    and the customer sent a photo instead of text. The agent should open the
+    handoff dashboard and verify it manually.
+    """
+    platform_labels = {
+        "whatsapp": "واتساب",
+        "messenger": "ماسنجر",
+        "instagram": "انستجرام",
+        "web": "الموقع",
+    }
+    platform = platform_labels.get(conversation.platform, conversation.platform or "غير معروف")
+    create_notification(
+        store=conversation.store,
+        notif_type="handoff",
+        title="عميل بعت صورة (إيصال دفع؟) 💰",
+        message=f"عميل على {platform} (محادثة #{conversation.id}) بعت صورة — ممكن يكون إيصال دفع. ادخل راجع المحادثة.",
+    )

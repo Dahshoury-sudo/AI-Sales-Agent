@@ -1600,13 +1600,38 @@ class MessengerDMWebhookTests(TestCase):
             task.assert_not_called()
 
     def test_non_text_message_is_ignored(self):
-        """An image or sticker with no text must not reach the router."""
+        """A sticker or image without a payload URL must not reach the router or
+        the attachment handler — there is nothing to save."""
         response, task = self._post(
             self._dm("PAGE123", {"attachments": [{"type": "image"}]})
         )
 
         self.assertEqual(response.status_code, 200)
         task.assert_not_called()
+
+    def test_image_attachment_dispatches_to_attachment_handler(self):
+        """An image with a payload URL must be dispatched to process_attachment_async."""
+        body = json.dumps(self._dm("PAGE123", {
+            "attachments": [{"type": "image", "payload": {"url": "https://cdn.fbsbx.com/receipt.jpg"}}]
+        })).encode()
+        headers = {
+            "HTTP_X_HUB_SIGNATURE_256": "sha256=" + hmac.new(
+                self.APP_SECRET.encode(), body, hashlib.sha256
+            ).hexdigest(),
+        }
+        with mock.patch("products.tasks.process_message_async") as text_task, \
+             mock.patch("products.tasks.process_attachment_async") as attach_task:
+            response = self.client.post(
+                self.url, data=body, content_type="application/json", **headers
+            )
+
+        self.assertEqual(response.status_code, 200)
+        text_task.assert_not_called()
+        attach_task.assert_called_once()
+        store_id, platform, sender_id, image_url, caption = attach_task.call_args[0]
+        self.assertEqual(store_id, self.store.id)
+        self.assertEqual(platform, "messenger")
+        self.assertEqual(image_url, "https://cdn.fbsbx.com/receipt.jpg")
 
 
 class UnknownVersusUnclearTests(TestCase):

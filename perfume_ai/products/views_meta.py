@@ -85,10 +85,22 @@ class MetaWebhookView(APIView):
                                 return HttpResponse("Invalid signature", status=403)
 
                             for message in value.get("messages", []):
-                                if message.get("type") == "text":
-                                    sender_id = message.get("from")
+                                msg_type = message.get("type")
+                                sender_id = message.get("from")
+                                if msg_type == "text":
                                     text = message.get("text", {}).get("body")
                                     self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+                                elif msg_type == "image":
+                                    image_data = message.get("image", {})
+                                    # WhatsApp Cloud API sends a media ID, not a
+                                    # direct URL. The URL requires a Graph API call
+                                    # to resolve, so we store the ID for now.
+                                    image_url = image_data.get("id", "")
+                                    caption = image_data.get("caption", "")
+                                    self.process_attachment(
+                                        store_settings.store, platform, sender_id,
+                                        image_url, caption,
+                                    )
 
                         # ── Facebook Page comment ───────────────────────────
                         elif field == "feed":
@@ -182,9 +194,22 @@ class MetaWebhookView(APIView):
                         if not self.verify_signature(request, body, store_settings.meta_app_secret, f"Messenger/IG recipient {recipient_id}"):
                             return HttpResponse("Invalid signature", status=403)
                         
-                        if "message" in messaging_event and "text" in messaging_event["message"]:
-                            text = messaging_event["message"]["text"]
-                            self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+                        if "message" in messaging_event:
+                            msg = messaging_event["message"]
+                            if "text" in msg:
+                                text = msg["text"]
+                                self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+                            elif "attachments" in msg:
+                                # Image attachment without text (e.g. payment receipt)
+                                for att in msg.get("attachments", []):
+                                    if att.get("type") == "image":
+                                        image_url = att.get("payload", {}).get("url", "")
+                                        if image_url:
+                                            self.process_attachment(
+                                                store_settings.store, platform,
+                                                sender_id, image_url, "",
+                                            )
+                                        break
 
             return HttpResponse("EVENT_RECEIVED", status=200)
         else:
@@ -231,6 +256,11 @@ class MetaWebhookView(APIView):
         """Dispatch message processing to a background thread for fast webhook response."""
         from products.tasks import process_message_async
         process_message_async(store.id, platform, sender_id, text)
+
+    def process_attachment(self, store, platform, sender_id, image_url, caption):
+        """Dispatch image attachment processing to a background task."""
+        from products.tasks import process_attachment_async
+        process_attachment_async(store.id, platform, sender_id, image_url, caption)
 
     def process_comment(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
         """Dispatch comment processing to a background Celery task."""

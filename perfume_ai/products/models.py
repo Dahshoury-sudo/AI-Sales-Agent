@@ -246,6 +246,11 @@ class Message(models.Model):
 
     content = models.TextField()
     internal_context = models.TextField(blank=True)
+    # URL of an image or file the customer attached (e.g. a payment receipt
+    # screenshot). Saved as the platform-provided link — not downloaded — so
+    # WhatsApp URLs may expire before the agent opens them. Messenger and
+    # Instagram links are typically long-lived.
+    attachment_url = models.URLField(max_length=1000, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

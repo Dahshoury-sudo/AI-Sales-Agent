@@ -43,12 +43,13 @@ def get_conversation(conversation_id, store=None):
         return None
 
 
-def save_message(conversation, role, content, internal_context=""):
+def save_message(conversation, role, content, internal_context="", attachment_url=""):
     return Message.objects.create(
         conversation=conversation,
         role=role,
         content=content,
         internal_context=internal_context,
+        attachment_url=attachment_url,
     )
 
 

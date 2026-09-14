@@ -407,6 +407,7 @@ class HandoffMessagesAPIView(APIView):
             data.append({
                 "role": m.role,
                 "content": m.content,
+                "attachment_url": m.attachment_url or "",
                 "created_at": m.created_at.isoformat()
             })
             
