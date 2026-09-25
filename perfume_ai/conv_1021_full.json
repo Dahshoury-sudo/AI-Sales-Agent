@@ -1,0 +1,386 @@
+[
+  {
+    "role": "user",
+    "content": "عنوانك فين",
+    "internal_context": "",
+    "created_at": "2026-09-25 01:56:22.248875+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "الستور في المقطم شارع السوق الجديد متفرع من شارع 9 اتجاه الكورنيش الجديد. لو تحب أبعتهولك على الواتساب أو تروح بنفسك، تحت أمرك.",
+    "internal_context": "",
+    "created_at": "2026-09-25 01:56:24.358958+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ف أماكن تاني",
+    "internal_context": "",
+    "created_at": "2026-09-25 01:56:36.947454+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "ده العنوان الرئيسي للستور عندنا في المقطم، ومفيش فروع تانية حالياً. لو تحب أساعدك تطلب أونلاين من خلال موقعنا أو البوت الذكي؟",
+    "internal_context": "",
+    "created_at": "2026-09-25 01:56:38.462371+00:00"
+  },
+  {
+    "role": "user",
+    "content": "محتاج اعرف عنكو اكتر",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:02.270337+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "ممكن تقول لي بتدور على نوع ريحة معين؟ فريش ولا دافي؟ رجالي ولا حريمي؟ عشان أساعدك باللي يناسبك.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:04.046411+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ممكن اعرف عنوانك فيم",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:23.559335+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "عندنا كمان في التجمع الثالث: القطامية شارع محمد فريد بجوار الكنيسة، وفي المنيب: شارع جسر الكنيسة بجوار مسجد السلام، وكمان في الخانكة: شارع المحطة شارع الموبايلات بجوار حلواني الشيماء.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:25.755620+00:00"
+  },
+  {
+    "role": "user",
+    "content": "في فرع ف المقطم",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:42.541596+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "أيوة، في فرع في المقطم شارع السوق الجديد متفرع من شارع 9 اتجاه الكورنيش الجديد.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:04:45.125882+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ممكن لوكيشن",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:05:02.944495+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "لوكيشن الستور في المقطم: https://maps.app.goo.gl/vZoFbskpxgDEHgfq6?g_st=iwb",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:05:04.456156+00:00"
+  },
+  {
+    "role": "user",
+    "content": "موجود عند لايتون من دمارلي",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:05:45.362556+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "عطر Layton من Parfums de Marly متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Parfums de Marly) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 300.00 EGP\n- الـ 50 ملي: 400.00 EGP\n- الـ 100 ملي: 700.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 700 جنيه، وسعر الـ 30 ملي 300 جنيه، والفرق بين الحجمين 400 جنيه، بس سعر الملي أرخص: 7.0 بدل 10.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8+ hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Geranium, Violet, Jasmine\nBase Notes: Vanilla, Cardamom, Sandalwood\nDescription: A sweet, powdery-fruity scent that became one of the most hyped niche masculines.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:05:48.781763+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ال ٥٠",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:05:56.786526+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "الـ 50 ملي من Layton سعره 400 جنيه. وفيه كمان الـ 30 ملي بـ300 جنيه والـ 100 ملي بـ700 جنيه.",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Parfums de Marly) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 300.00 EGP\n- الـ 50 ملي: 400.00 EGP\n- الـ 100 ملي: 700.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 700 جنيه، وسعر الـ 30 ملي 300 جنيه، والفرق بين الحجمين 400 جنيه، بس سعر الملي أرخص: 7.0 بدل 10.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8+ hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Geranium, Violet, Jasmine\nBase Notes: Vanilla, Cardamom, Sandalwood\nDescription: A sweet, powdery-fruity scent that became one of the most hyped niche masculines.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:06:00.463893+00:00"
+  },
+  {
+    "role": "user",
+    "content": "حلو اوي",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:06:09.708396+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "لو مهتم بحجم 50 ملي من Layton، سعره 400 جنيه. ولو حابب، عندنا كمان حجم 30 ملي بـ300 جنيه والـ 100 ملي بـ700 جنيه، والـ 100 ملي بيعتبر اختيار كويس من ناحية سعر الملي.",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Parfums de Marly) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 300.00 EGP\n- الـ 50 ملي: 400.00 EGP\n- الـ 100 ملي: 700.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 700 جنيه، وسعر الـ 30 ملي 300 جنيه، والفرق بين الحجمين 400 جنيه، بس سعر الملي أرخص: 7.0 بدل 10.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8+ hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Geranium, Violet, Jasmine\nBase Notes: Vanilla, Cardamom, Sandalwood\nDescription: A sweet, powdery-fruity scent that became one of the most hyped niche masculines.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:06:18.058346+00:00"
+  },
+  {
+    "role": "user",
+    "content": "موجود الترامل",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:06:44.105341+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "Terre d'Hermes متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermès\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermès) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Geranium, Rose\nBase Notes: Vetiver, Cedar, Flint\nDescription: An earthy, mineral-woody scent widely regarded as a masterpiece of masculine perfumery.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:06:51.211330+00:00"
+  },
+  {
+    "role": "user",
+    "content": "التر امل",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:06:59.023101+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "Terre d'Hermes متوفر عندنا بأحجام مختلفة، والـ 100 ملي سعره 600 جنيه وده بيعتبر أفضل قيمة من ناحية سعر الملي. كمان متاح الـ 50 ملي بـ350 جنيه والـ 30 ملي بـ250 جنيه.",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermès\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermès) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Geranium, Rose\nBase Notes: Vetiver, Cedar, Flint\nDescription: An earthy, mineral-woody scent widely regarded as a masterpiece of masculine perfumery.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:07:07.182761+00:00"
+  },
+  {
+    "role": "user",
+    "content": "طب لامال لكريز",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:07:23.087963+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "عطر لامال لكريز مش عندنا يا فندم، لكن لو حابب أقدر أرشحلك Terre d'Hermes اللي ريحته نيش وشيك ومناسب للمكتب، أو Layton اللي ريحته دافية وقوية للسهرات. تحب أعرف عن واحد فيهم أكتر؟",
+    "internal_context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب لامال لكريز\nABSENCE_DENIED\nالعطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة متأكدين منها مش تخمين.\n🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من البدائل اللي بتعرضها عليه في نفس الرد.\n\n═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي نوتة أو ريحة أو سعر منهم.\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermès\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermès) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Geranium, Rose\nBase Notes: Vetiver, Cedar, Flint\nDescription: An earthy, mineral-woody scent widely regarded as a masterpiece of masculine perfumery.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:07:29.198683+00:00"
+  },
+  {
+    "role": "user",
+    "content": "طب في من جان بول",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:08:08.410608+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "عندنا Le Male وLe Male Elixir من Jean Paul Gaultier، الاتنين رجاليين ومناسبين للسهرات والشتا، أنا أرشحلك Le Male أكتر لأنه كلاسيكي ومعروف. تحب تعرف عن الأحجام والأسعار؟",
+    "internal_context": "\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male Elixir، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean, Amber\nDescription: A sweet lavender-vanilla classic in an iconic sailor-torso bottle; instantly recognizable and crowd-pleasing.\n\n-------------------------\n\nName (الاسم الصحيح): Le Male Elixir\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Lavender, Whisky, Green Mandarin\nMiddle Notes: Vanilla Absolute, Cocoa\nBase Notes: Woody Notes, Tonka Bean\nDescription: A concentrated, boozy-sweet elixir version of the original Le Male.\n\n-------------------------\n\nName (الاسم الصحيح): Scandal\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Blood Orange, Mandarin\nMiddle Notes: Honey, Gardenia\nBase Notes: Patchouli, Caramel\nDescription: A daring honey-patchouli gourmand with a scandalous, bold trail.\n\n-------------------------\n\nName (الاسم الصحيح): Classique\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Date Night\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange Blossom, Star Anise, Mint\nMiddle Notes: Rose, Ginger, Iris\nBase Notes: Vanilla, Amber, Musk\nDescription: The original torso-bottle classic, a soft vanillic floral.\n\n-------------------------\n\nName (الاسم الصحيح): Ultra Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male، Le Male Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mint\nMiddle Notes: Vanilla, Patchouli\nBase Notes: Woody Notes, Praline\nDescription: A sweeter, more intense version of Le Male with a praline edge.\n\n-------------------------\n\nName (الاسم الصحيح): Le Beau\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Beau Le Parfum، Le Beau Paradise Garden — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Coconut Water, Bergamot\nMiddle Notes: Ambrette Seeds\nBase Notes: Woody Notes\nDescription: A tropical, coconut-forward summer fragrance.\n\n-------------------------\n\nName (الاسم الصحيح): Le Beau Le Parfum\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Beau، Le Beau Paradise Garden — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Coconut, Pineapple\nMiddle Notes: Tonka Bean\nBase Notes: Cedarwood, Woody Notes\nDescription: A richer, sweeter concentrated evolution of Le Beau.\n\n-------------------------\n\nName (الاسم الصحيح): Le Beau Paradise Garden\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Beau، Le Beau Le Parfum — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Date\nLongevity: 8+ hours\nProjection: Strong\nTop Notes: Green Notes, Watery Notes, Mint, Ginger\nMiddle Notes: Coconut, Fig, Salt\nBase Notes: Tonka Bean, Sandalwood\nDescription: A tropical fresh fragrance blending creamy coconut and citrus with green notes over a soft sweet woody base.\n\n-------------------------\n\nName (الاسم الصحيح): La Belle\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: La Belle Le Parfum — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Date\nLongevity: 8-10 hours\nProjection: Strong\nTop Notes: Pear, Bergamot\nMiddle Notes: Floral Notes, Leather\nBase Notes: Vanilla, Vetiver, Amber, Musk\nDescription: A sensual vanilla fragrance opening with pear and bergamot, developing into soft floral and leather facets over a warm vanilla-amber base.\n\n-------------------------\n\nName (الاسم الصحيح): La Belle Le Parfum\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: La Belle — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8-10 hours\nProjection: Strong\nTop Notes: Pear\nMiddle Notes: Tonka Bean, Jasmine\nBase Notes: Vanilla\nDescription: A rich intense gourmand fragrance combining juicy pear with creamy tonka and jasmine over a warm vanilla-amber woody base.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:08:13.013200+00:00"
+  },
+  {
+    "role": "user",
+    "content": "طب في bmw",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:08:40.463715+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "ممكن تكتب اسم العطر تاني بطريقة مختلفة عشان أتأكد حضرتك تقصد أنهي بالظبط؟ لو تحب، عندنا Le Male وLe Male Elixir من Jean Paul Gaultier، ريحتهم مختلفة تماماً.",
+    "internal_context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب في bmw\nNAME_UNREADABLE\nمش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد منه في الكتالوج.\n🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. 🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي نوتة أو ريحة أو سعر منهم.\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male Elixir، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean, Amber\nDescription: A sweet lavender-vanilla classic in an iconic sailor-torso bottle; instantly recognizable and crowd-pleasing.\n\n-------------------------\n\nName (الاسم الصحيح): Le Male Elixir\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Lavender, Whisky, Green Mandarin\nMiddle Notes: Vanilla Absolute, Cocoa\nBase Notes: Woody Notes, Tonka Bean\nDescription: A concentrated, boozy-sweet elixir version of the original Le Male.\n\n-------------------------\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermès\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermès) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Geranium, Rose\nBase Notes: Vetiver, Cedar, Flint\nDescription: An earthy, mineral-woody scent widely regarded as a masterpiece of masculine perfumery.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:08:44.529113+00:00"
+  },
+  {
+    "role": "user",
+    "content": "B m w",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:09:02.061123+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "عطر Le Male من Jean Paul Gaultier متوفر عندنا، الـ 100 ملي سعره 600 جنيه وده أحسن قيمة من ناحية سعر الملي، وكمان متاح الـ 50 ملي بـ350 جنيه والـ 30 ملي بـ250 جنيه.",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male Elixir، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean, Amber\nDescription: A sweet lavender-vanilla classic in an iconic sailor-torso bottle; instantly recognizable and crowd-pleasing.\n\n-------------------------\n\nName (الاسم الصحيح): Le Male Elixir\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Lavender, Whisky, Green Mandarin\nMiddle Notes: Vanilla Absolute, Cocoa\nBase Notes: Woody Notes, Tonka Bean\nDescription: A concentrated, boozy-sweet elixir version of the original Le Male.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:09:06.066846+00:00"
+  },
+  {
+    "role": "user",
+    "content": "طب في زار كولد",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:09:30.688229+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "أكيد، عطر ZARA GOLD متوفر عندنا بأحجام مختلفة، الـ 100 ملي بـ600 جنيه وده بيعتبر أفضل قيمة بالنسبة لسعر الملي، وكمان متاح الـ 50 ملي بـ350 جنيه والـ 30 ملي بـ250 جنيه.",
+    "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): ZARA GOLD\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 6-8 hours\nProjection: Moderate\nTop Notes: Citrus, Bergamot, Mandarin\nMiddle Notes: Floral Notes, Jasmine, Rose\nBase Notes: Vanilla, Musk, Amber, Woods\nDescription: A warm feminine fragrance combining bright citrus with a soft floral heart and a smooth vanilla, musk and amber base.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:09:40.881798+00:00"
+  },
+  {
+    "role": "user",
+    "content": "طب ممكن اعرف في برفيوم جوب",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:10:17.640922+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "ممكن توضح لي اسم العطر أكتر أو تكتبه بطريقة تانية عشان أتأكد حضرتك تقصد أنهي بالظبط؟ لو تحب، ممكن أساعدك في عطور تانية زي ZARA GOLD أو Le Male من Jean Paul Gaultier في الوقت ده.",
+    "internal_context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: طب ممكن اعرف في برفيوم جوب\nNAME_UNREADABLE\nمش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد منه في الكتالوج.\n🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. 🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n⚠️ العطور اللي تحت دي اللي كنا بنتكلم عنها في المحادثة — **مش** العطر اللي العميل سأل عنه في الرسالة دي. ممنوع ترد كأن العطر اللي سأل عنه هو واحد منهم، وممنوع تنسبله أي نوتة أو ريحة أو سعر منهم.\n\nName (الاسم الصحيح): ZARA GOLD\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 6-8 hours\nProjection: Moderate\nTop Notes: Citrus, Bergamot, Mandarin\nMiddle Notes: Floral Notes, Jasmine, Rose\nBase Notes: Vanilla, Musk, Amber, Woods\nDescription: A warm feminine fragrance combining bright citrus with a soft floral heart and a smooth vanilla, musk and amber base.\n\n-------------------------\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 30 ملي: 250.00 EGP\n- الـ 50 ملي: 350.00 EGP\n- الـ 100 ملي: 600.00 EGP\n⚠️ عطر مختلف عن: Le Male Elixir، Ultra Male — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 100 ملي أحسن value — كمية أكتر بـ 233%، أغلى من الـ 30 ملي في الإجمالي: سعر الـ 100 ملي 600 جنيه، وسعر الـ 30 ملي 250 جنيه، والفرق بين الحجمين 350 جنيه، بس سعر الملي أرخص: 6.0 بدل 8.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean, Amber\nDescription: A sweet lavender-vanilla classic in an iconic sailor-torso bottle; instantly recognizable and crowd-pleasing.\n\n-------------------------\n",
+    "created_at": "2026-09-25 02:10:31.731158+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ممكن اعمل اوردر",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:10:47.638235+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:10:51.506840+00:00"
+  },
+  {
+    "role": "user",
+    "content": "إلا ٣",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:10:59.424462+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تقصد Le Male ولا ZARA GOLD؟ قولي أنهي واحد والحجم وأجهزلك الطلب.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:11:06.306749+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ال ٣ انواع",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:11:16.980538+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × ZARA GOLD (100ml) بـ 600 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (30ml) بـ 250 جنيه\nالمجموع: 1200 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+    "internal_context": "ZARA GOLD (100 ملي) (زجاجة البراند) x 1 (600.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (30 ملي) (زجاجة البراند) x 1 (250.00 EGP)",
+    "created_at": "2026-09-25 02:11:34.262193+00:00"
+  },
+  {
+    "role": "user",
+    "content": "لا مش ال٣ نوع واحد",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:11:50.603145+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × ZARA GOLD (100ml) بـ 600 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (30ml) بـ 250 جنيه\nالمجموع: 1200 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+    "internal_context": "ZARA GOLD (100 ملي) (زجاجة البراند) x 1 (600.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (30 ملي) (زجاجة البراند) x 1 (250.00 EGP)",
+    "created_at": "2026-09-25 02:11:56.650596+00:00"
+  },
+  {
+    "role": "user",
+    "content": "أنا عاوز ال ٣ أنواع الي انت قولت عليهم",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:12:03.565127+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × ZARA GOLD (100ml) بـ 600 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (30ml) بـ 250 جنيه\nالمجموع: 1200 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+    "internal_context": "ZARA GOLD (100 ملي) (زجاجة البراند) x 1 (600.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (30 ملي) (زجاجة البراند) x 1 (250.00 EGP)",
+    "created_at": "2026-09-25 02:12:08.581913+00:00"
+  },
+  {
+    "role": "user",
+    "content": "عاوز زار ولامال",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:12:49.310901+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تمام 👌 Le Male — تحب 30 ملي ولا 50 ملي ولا 100 ملي؟",
+    "internal_context": "ZARA GOLD (100 ملي) (زجاجة البراند) x 1 (600.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (30 ملي) (زجاجة البراند) x 1 (250.00 EGP)",
+    "created_at": "2026-09-25 02:12:56.119896+00:00"
+  },
+  {
+    "role": "user",
+    "content": "٥٠",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:13:02.063139+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × ZARA GOLD (100ml) بـ 600 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (30ml) بـ 250 جنيه\n- 1 × Le Male (50ml) بـ 350 جنيه\nالمجموع: 1550 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+    "internal_context": "ZARA GOLD (100 ملي) (زجاجة البراند) x 1 (600.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (30 ملي) (زجاجة البراند) x 1 (250.00 EGP), Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:13:08.430411+00:00"
+  },
+  {
+    "role": "user",
+    "content": "أنا عاوز واحده بس زار ٥٠ ملي برضو",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:13:30.666024+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\n- 1 × Le Male (50ml) بـ 350 جنيه\nالمجموع: 700 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+    "internal_context": "ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:13:42.542583+00:00"
+  },
+  {
+    "role": "user",
+    "content": "محمود وجيه",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:13:51.898685+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\nالمجموع: 700 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+    "internal_context": "Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:13:55.965399+00:00"
+  },
+  {
+    "role": "user",
+    "content": "٠١١٢٣٠٢٢٠٢٨",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:14:00.349283+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\nالمجموع: 700 جنيه.\n\nولسه ناقص رقم بديل والعنوان.",
+    "internal_context": "Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:14:05.968606+00:00"
+  },
+  {
+    "role": "user",
+    "content": "٠١١٤٢٥١٠٠٤٧",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:14:16.911515+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male (50ml) بـ 350 جنيه\n- 1 × ZARA GOLD (50ml) بـ 350 جنيه\nالمجموع: 700 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+    "internal_context": "Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:14:22.634403+00:00"
+  },
+  {
+    "role": "user",
+    "content": "٨ ميدان السيده عايشه الخليفه",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:14:45.396225+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمود وجيه\n📱 الموبايل: ٠١١٢٣٠٢٢٠٢٨\n📞 موبايل بديل: ٠١١٤٢٥١٠٠٤٧\n📍 العنوان: ٨ ميدان السيده عايشه الخليفه\n\n🛍️ الطلب:\n- 1 × Le Male (50ml) - زجاجة البراند (السعر: 350.00 جنيه)\n- 1 × ZARA GOLD (50ml) - زجاجة البراند (السعر: 350.00 جنيه)\n\n💰 الإجمالي: 700.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+    "internal_context": "Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:14:52.071064+00:00"
+  },
+  {
+    "role": "user",
+    "content": "لا تمام",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:15:04.058697+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #59.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n🚨 احنابنقدم لك البرفيوم بالضمان ولك حقق الاستبدال أو الاسترجاع \n\n💳 طرق التحويل:\nإنستاباي: 01123022028\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+    "internal_context": "Le Male (50 ملي) (زجاجة البراند) x 1 (350.00 EGP), ZARA GOLD (50 ملي) (زجاجة البراند) x 1 (350.00 EGP)",
+    "created_at": "2026-09-25 02:15:08.947225+00:00"
+  },
+  {
+    "role": "user",
+    "content": "ممكن الدفع عن الاستلام",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:15:23.301735+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "أكيد ممكن، حضرتك تدفع جزء عربون ٢٥٠ جنيه دلوقتي عشان نأكد الطلب، والباقي تدفعه عند الاستلام.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:15:24.806169+00:00"
+  },
+  {
+    "role": "user",
+    "content": "تمام",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:15:33.721455+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "تمام، ابعتلي سكرين شوت التحويل لما تخلص عشان نأكد الشحن ونجهزلك الطلب.",
+    "internal_context": "",
+    "created_at": "2026-09-25 02:15:36.191891+00:00"
+  }
+]
