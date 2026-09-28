@@ -1,5 +1,7 @@
+import logging
+
 from . import absence
-from .product_resolver import resolve_products
+from .product_resolver import CARRIED_HOUSE, confirm_unplaced, resolve_products
 from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
@@ -7,6 +9,8 @@ from .fallback import suggest_alternatives
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
 from .sales import value as sales_value
+
+logger = logging.getLogger(__name__)
 
 
 def _named_in_message(message, store):
@@ -286,6 +290,82 @@ _NOT_THE_PERFUME_ASKED_ABOUT = (
 )
 
 
+def _confirm_before_denying(unplaced, store, resolution):
+    """Ask a second time before a denial goes out. Returns `(rescued, unplaced, unconfirmed)`.
+
+    `absence.catalogue_verdict` has one witness for a name written in Arabic and cannot have another:
+    the catalogue holds Latin spellings only, so `naming.candidates` comes back empty whether we stock
+    the perfume or not, and the verdict rests entirely on the extractor's own `unplaced` report
+    (`absence.py:140-144`). Conversation 1021 turn 22 is one LLM call away from correct: "لامال لكريز"
+    was reported unplaced and the customer was told by name that we do not carry Le Male Elixir, which
+    was active in that store — and which the same conversation listed as available two turns later.
+    Red line 3, with a single unverified witness behind it.
+
+    So on the denial path, and only there, ask `product_resolver.confirm_unplaced` — a narrower
+    question, with the catalogue's line structure in front of it. Three outcomes, each read in the
+    direction that cannot deny a perfume we stock:
+
+      * **a product** — the span is ours. It is returned for the caller to place, and dropped from
+        `unplaced`, so the customer gets the perfume and its price instead of a denial.
+      * **`CARRIED_HOUSE`** — a house we stock, named on its own. Nothing to place, but nothing to
+        deny either, so `unconfirmed` goes True: the reply asks which perfume they meant.
+      * **`None`** — genuinely absent, twice over. The denial proceeds untouched, which is what keeps
+        the eval harness's X1 ("بلاك اوركيد") denied plainly.
+
+    A raised exception is the fourth, and it is why this is a `try` rather than a bare call: an API
+    blip is not evidence of absence. `unconfirmed` goes True and the turn produces "please retype",
+    the same reading `absence.py:106` gives `resolution.failed`.
+
+    `unconfirmed` keeps `unplaced` intact deliberately. Clearing it instead would suppress the denial
+    *and* the pending record, the acknowledgement and the retype request with it — the customer would
+    be answered about the previous perfume, which is the other half of this bug.
+
+    Runs before `named_but_unresolved` and the referent lookup so that every flag downstream is
+    derived from the corrected facts. Deriving them first and patching them here instead left
+    `chasing` and `re_asked` computed as though the name were unplaceable, which on a rescue wrote a
+    pending lookup for a perfume we had just priced.
+
+    The two `catalogue_verdict` calls are the gate, not a duplicate of the verdict below. Both are
+    pure, and between them they ask the only question worth spending a model call on: *is the
+    extractor's report the sole reason this name is about to be denied?*
+
+      * with `resolution` — is a denial on the table at all? Anything but `ABSENT` and there is
+        nothing to confirm, which keeps this off every turn that merely has an unplaced span.
+      * without it — would the name still be `ABSENT` if the extractor had never spoken? Only two
+        rungs return `ABSENT` (`absence.py:87`), and the Latin one at `:149` needs no report: same
+        alphabet as the rows, `naming.candidates` searched them and found nothing, so Python is
+        already an independent second witness and a model call would add none. The Arabic rung at
+        `:144` *is* the report — drop it and the verdict falls to `UNKNOWN`. That is the asymmetry
+        this function exists for, and asking the ladder rather than re-testing the script for Arabic
+        keeps the two in step if another report-dependent rung is ever added.
+
+    Restricting it this way is also what keeps the suite honest: `settings_test.py:50` falls back to
+    a placeholder key but uses the real one when the environment has it, so a confirm pass on every
+    Latin denial had ~80 unit tests making live billed calls, at about 0.6s each.
+    """
+    span = unplaced[0]
+    if absence.catalogue_verdict(span, store, resolution) != absence.ABSENT:
+        return None, unplaced, False
+    if absence.catalogue_verdict(span, store) == absence.ABSENT:
+        return None, unplaced, False
+
+    try:
+        answer = confirm_unplaced(span, store)
+    except Exception:
+        logger.exception("absence: confirming %r failed; abstaining rather than denying", span[:120])
+        return None, unplaced, True
+
+    if answer is CARRIED_HOUSE:
+        logger.info("absence: %r is a house we carry; abstaining instead of denying", span[:120])
+        return None, unplaced, True
+    if answer is None:
+        logger.info("absence: %r confirmed absent; denial stands", span[:120])
+        return None, unplaced, False
+
+    logger.info("absence: %r placed on %r by the confirm pass; denial withdrawn", span[:120], answer.name)
+    return answer, tuple(other for other in unplaced if other != span), False
+
+
 # Appended to the found-branch instructions when the rows in context are the *referent* and the
 # customer named something else. Rule 1 up there already says most of this in the abstract;
 # conversation 795 turns 2 and 3 are what it costs when nothing in the data marks which perfume is
@@ -551,8 +631,17 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     #
     # The gate is liberal by design: a false alarm costs this one call, which comes back empty and
     # falls through to exactly the referent it would have used anyway.
+    #
+    # `carries_unreadable_content` widens it to the one shape `may_name_a_perfume` structurally cannot
+    # see: a name so short that `naming.tokens` discards it, leaving no identifying token to gate on.
+    # "في Y" is that — Y is a perfume in this catalogue, and every other word in the message is in
+    # `_REFERENTIAL`. Letting the resolver look is the difference between answering about Y and asking
+    # the customer to retype it; if it places nothing, `named_but_unresolved` below still catches the
+    # turn and the retype request is what they get.
     resolver_ran = False
-    if not products and naming.may_name_a_perfume(message):
+    if not products and (
+        naming.may_name_a_perfume(message) or naming.carries_unreadable_content(message)
+    ):
         products = resolve_products(message, history, store, conversation)
         resolver_ran = True
 
@@ -567,6 +656,18 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # every mocked `resolve_products` in the test suite hands back one.
     unplaced = tuple(getattr(products, "unplaced", ()))
 
+    # Red line 3, before anything below is derived from `unplaced`. A span about to be denied gets a
+    # second, narrower reading first; see `_confirm_before_denying` for the four outcomes and why the
+    # check sits here rather than beside the verdict it corrects.
+    absence_unconfirmed = False
+    if unplaced:
+        rescued, unplaced, absence_unconfirmed = _confirm_before_denying(unplaced, store, resolution)
+        if rescued is not None:
+            # A plain list from here on. `unplaced` above is the corrected copy and `resolution` still
+            # holds what the extractor actually said, which is the witness `catalogue_verdict` reads
+            # for whatever spans are left — so nothing downstream wants the stale tuple on `products`.
+            products = [*products, rescued]
+
     # A name we could not place. Kept as a fact about this turn rather than inferred later from an
     # empty `products`, because the referent lookup below is about to fill that list with a
     # different perfume entirely — which is exactly the confusion conversation 795 was built on.
@@ -577,7 +678,22 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # owner notification fired, and the third perfume was dropped in silence while the customer asked
     # for its price three times. The second clause is the original condition, unchanged, so a total
     # miss still reaches every path it reached before.
-    named_but_unresolved = bool(unplaced) or (resolver_ran and not products)
+    #
+    # The third clause is for a name too short to tokenise. `naming.tokens` drops every token of one
+    # character, so "B m w" and "في Y" produce nothing at all — `may_name_a_perfume` says no, the gate
+    # above never fires, the resolver is never called, and with `resolver_ran` False the first two
+    # clauses are False too. Conversation 1021 turn 28 is "B m w": it was answered "عطر Le Male ...
+    # سعره 600 جنيه", a price for the previous turn's perfume, with nothing in the reply saying so.
+    # `carries_unreadable_content` is the narrow question that catches it — did the message contain
+    # something we could not read, as opposed to naming nothing at all — so the turn takes the
+    # existing NAME_UNREADABLE path and asks the customer to write the name again. Gated on an empty
+    # `products` because the resolver gets first refusal now (see the gate above): a one-letter name it
+    # managed to place is answered, not queried.
+    named_but_unresolved = (
+        bool(unplaced)
+        or (resolver_ran and not products)
+        or (not products and bool(naming.carries_unreadable_content(message)))
+    )
 
     # A message that named some perfumes we have and some we do not. Kept apart from
     # `named_but_unresolved` because the two need opposite instructions: on a total miss the rows in
@@ -730,6 +846,13 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # by design. A message that failed on two names addresses both in prose and records the first.
     if unplaced:
         verdict = absence.catalogue_verdict(unplaced[0], store, resolution)
+        if absence_unconfirmed:
+            # The second witness could not be had — the confirming call failed, or it answered that
+            # this is a house we stock rather than one perfume. Either way there is no confirmed
+            # absence to report, and an unconfirmed one must read as "we could not tell", never as a
+            # denial. `unplaced` is deliberately left intact, so the turn still acknowledges the name
+            # and asks for it again. See `_confirm_before_denying`.
+            verdict = absence.UNKNOWN
     elif chasing or re_asked:
         # This message carries no name — it is "اتأكدلي منه" or "ها لقيت اي ؟" collecting an answer
         # about a question asked earlier. The check ran on the turn that question arrived, and the
@@ -743,6 +866,18 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         )
     else:
         verdict = absence.UNKNOWN
+
+    # The other half of the record `_log_outcome` starts. Between them they answer, from the log
+    # alone, the question that needed a production conversation dumped to answer for 1021: which span
+    # was judged, what the judgment was, and which of the three routes produced it.
+    logger.info(
+        "absence: span=%r verdict=%s unplaced=%s unconfirmed=%s placed=%s",
+        (unplaced[0] if unplaced else "")[:120],
+        verdict,
+        list(unplaced),
+        absence_unconfirmed,
+        [getattr(product, "name", product) for product in products],
+    )
 
     denied = verdict == absence.ABSENT
 
@@ -820,6 +955,24 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # now does deterministically. That guard is why this can land at all.
     budget = sales_value.stated_budget(conversation)
 
+    # Are the rows in context something other than what the customer asked about? Two ways that
+    # happens, and both must read the same to everything below, which is why it is one flag.
+    #
+    # `deferring` is the established one: a pending question means the rows are whatever we were
+    # discussing, not the name we could not place.
+    #
+    # The second clause is conversation 1021 turn 28. `products` came from
+    # `_referent_from_conversation` rather than from this message, and this message did put a name in
+    # front of us — so the rows are the *previous* perfume and the customer never mentioned them. That
+    # turn was "B m w", and it went into the prompt under the bare header "بيانات المنتجات الحقيقية من
+    # قاعدة البيانات" with Le Male's price list attached, because the label below was reached only
+    # through `deferring`. The model answered "عطر Le Male ... الـ 100 ملي سعره 600 جنيه".
+    #
+    # `named_but_unresolved` is the second half deliberately rather than `not products_from_message`
+    # alone: a message that names nothing IS asking about the referent, and "بكام ده" must keep getting
+    # a straight answer about the perfume we just offered.
+    rows_are_not_the_subject = deferring or (not products_from_message and named_but_unresolved)
+
     # Does this turn owe the customer an answer about every row it is being given? Computed here,
     # after the widening above, so `products` is final.
     #
@@ -832,12 +985,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # protection — the second row is there so the model can answer about whichever perfume was meant,
     # not so it can volunteer both.
     #
-    # `not deferring` is semantic and not just numbering hygiene: on a deferral the rows are labelled
+    # `rows_are_not_the_subject` is semantic and not just numbering hygiene: those rows are labelled
     # `_NOT_THE_PERFUME_ASKED_ABOUT`, and pricing all of them is precisely what that label forbids.
     # It also covers the widened pool above, whose rows the customer never named at all.
     answer_every_row = (
         len(products) > 1
-        and not deferring
+        and not rows_are_not_the_subject
         and (products_from_message or naming.refers_to_several(message))
     )
 
@@ -846,7 +999,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         context += "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
         if partially_resolved:
             context += _PARTIALLY_ANSWERED
-        elif deferring:
+        elif rows_are_not_the_subject:
             context += _NOT_THE_PERFUME_ASKED_ABOUT
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply

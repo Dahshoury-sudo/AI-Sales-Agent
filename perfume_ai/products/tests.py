@@ -153,6 +153,29 @@ def _resolver_failed():
     return Resolution([], (), failed=True)
 
 
+# The confirm pass answers NONE — "genuinely absent, twice over; the denial stands."
+#
+# `product_info._confirm_before_denying` asks `product_resolver.confirm_unplaced` a second time
+# before any Arabic name is denied, because for an Arabic span the extractor's own report is the
+# only witness there is (`absence.py:140-144`) and one unverified witness is what denied a stocked
+# Le Male Elixir in conversation 1021. That second question is another model call, so a test that
+# patches `resolve_products` with `_absent(...)` has stubbed the first call and left the second one
+# live: 74 real, billed OpenAI requests across this suite, about 0.6s each, and 74 assertions whose
+# outcome depended on what a model said that morning.
+#
+# Applied to the classes that force a denial with `_absent(...)`. NONE is the answer that leaves
+# every one of them testing exactly what it was written to test — the denial path, unchanged.
+# A test *about* the confirm pass patches `confirm_unplaced` itself and overrides this.
+#
+# Written as `mock.patch(target, new)` rather than `return_value=`: passing `new` explicitly is what
+# stops mock injecting an extra argument into every decorated test method's signature, which is what
+# makes this safe to hang on a class whose tests already take `self` and nothing else.
+_confirm_pass_finds_nothing = mock.patch(
+    "products.services.product_info.confirm_unplaced",
+    lambda name, store=None: None,
+)
+
+
 class ProductContextCapTests(TestCase):
     """The prompt-size cap on how many products reach the AI.
 
@@ -12107,6 +12130,336 @@ class PendingLookupSurvivesTheTurnTests(TestCase):
         self.assertEqual(described.pending_lookup(None), ("", 0))
 
 
+class PerfumeLineFamiliesTests(TestCase):
+    """`naming.families` — the catalogue's line structure, computed once for the whole catalogue.
+
+    This grouping already existed as `naming.line_mates`, whose only caller was
+    `product_formatting._line_mates_for`: it warns the *customer* that Le Male Elixir is a different
+    perfume from Le Male, one layer after resolution has already happened. The extractor, which is
+    the thing that actually has to tell those two names apart, was never shown it — and in
+    conversation 1021 turn 22 that is what cost a sale. See `Conversation1021Tests` below.
+
+    `families` is the primitive and `line_mates` now delegates to it, so there is one definition of
+    "same line" rather than two that can drift apart. The tests below therefore stand for both.
+    """
+
+    def test_a_line_is_grouped_by_token_nesting_through_its_root(self):
+        """Le Male / Le Male Elixir / Ultra Male are one family; "le" is a stopword, so the nesting
+        runs `{male} ⊂ {male, elixir}` and `{male} ⊂ {ultra, male}`."""
+        from products.services.sales import naming
+
+        grouped = naming.families(
+            [("Le Male", 1), ("Le Male Elixir", 1), ("Ultra Male", 1)]
+        )
+
+        self.assertEqual(grouped["Le Male"], ["Le Male Elixir", "Ultra Male"])
+        self.assertEqual(grouped["Le Male Elixir"], ["Le Male", "Ultra Male"])
+        self.assertEqual(grouped["Ultra Male"], ["Le Male", "Le Male Elixir"])
+
+    def test_a_different_house_is_never_a_line_mate(self):
+        """The grouping keys on `brand_id`, not on tokens alone. Without that, every "Intense" in
+        the catalogue would read as a variant of every other one."""
+        from products.services.sales import naming
+
+        grouped = naming.families(
+            [("Le Male", 1), ("Le Male Elixir", 1), ("Ultra Male", 2)]
+        )
+
+        self.assertEqual(grouped["Le Male"], ["Le Male Elixir"])
+        self.assertNotIn("Ultra Male", grouped)
+
+    def test_a_name_with_no_mates_is_absent_rather_than_empty(self):
+        """Callers ask `grouped.get(name, [])`, so a name standing alone must not occupy a key —
+        that is what keeps the prompt block in `product_resolver` to real lines only."""
+        from products.services.sales import naming
+
+        grouped = naming.families([("Le Male", 1), ("Bleu de Chanel", 2)])
+
+        self.assertEqual(grouped, {})
+
+    def test_line_mates_still_answers_for_one_name(self):
+        """The old single-name entry point, now a lookup into `families`. Its caller in
+        `product_formatting` is unchanged, so this is the contract that must not have moved."""
+        from products.services.sales import naming
+
+        catalogue = [("Le Male", 1), ("Le Male Elixir", 1), ("Ultra Male", 1)]
+
+        self.assertEqual(
+            naming.line_mates("Le Male", catalogue), ["Le Male Elixir", "Ultra Male"]
+        )
+        self.assertEqual(naming.line_mates("Bleu de Chanel", catalogue), [])
+
+
+class SpelledOutNameTests(TestCase):
+    """`tokens` fuses a run of three or more single letters — conversation 1021 turn 28, "B m w".
+
+    Three is the threshold, not two: one stray letter beside real words is ordinary, and this
+    catalogue holds a perfume named `Y`, so "Y Eau de Parfum" has to keep tokenising to nothing.
+    Both halves are asserted in one test because the pair is the whole design — either alone can be
+    satisfied by a rule that breaks the other.
+    """
+
+    def test_a_spelled_out_name_fuses_but_a_lone_letter_does_not(self):
+        from products.services.sales import naming
+
+        self.assertEqual(naming.tokens("B m w"), {"bmw"})
+        self.assertEqual(naming.tokens("س و ف ا ج"), {"سوفاج"})
+        self.assertEqual(naming.tokens("Y Eau de Parfum"), set())
+
+    def test_a_real_name_is_untouched_by_the_fuse(self):
+        """The blast radius, asserted rather than assumed: the fuse may only ever *add* tokens to
+        inputs that previously produced fewer, and must not reshape an ordinary name."""
+        from products.services.sales import naming
+
+        self.assertEqual(naming.tokens("Le Male Elixir"), {"male", "elixir"})
+        self.assertEqual(naming.tokens("XJ 1861 Naxos"), naming.tokens("XJ 1861 Naxos"))
+        self.assertIn("naxos", naming.tokens("XJ 1861 Naxos"))
+
+    def test_a_lone_letter_the_tokenizer_dropped_is_still_reported(self):
+        """`carries_unreadable_content` is the companion the fuse cannot replace.
+
+        "في Y" survives the fuse — one letter is not a run — and every surrounding word is in
+        `_REFERENTIAL`, so the identifying residue is empty and `may_name_a_perfume` is False. That
+        is the silent path: the resolver is never called and the previous perfume becomes the answer.
+        A message that genuinely names nothing must stay empty, or every "بكام ده" turn breaks.
+        """
+        from products.services.sales import naming
+
+        self.assertEqual(naming.carries_unreadable_content("في Y"), {"y"})
+        self.assertEqual(naming.carries_unreadable_content("بكام ده"), set())
+        # Not a fragment sheared off a longer word, not an Arabic particle, not an English article.
+        self.assertEqual(naming.carries_unreadable_content("Terre d'Hermes"), set())
+        self.assertEqual(naming.carries_unreadable_content("ف أماكن تاني"), set())
+        self.assertEqual(naming.carries_unreadable_content("do u have a dior"), set())
+
+
+class Conversation1021Tests(TestCase):
+    """Conversation 1021, 2026-09-25: five perfumes named in Arabic, three failures, two of them
+    wrong answers rather than stalls.
+
+    Turn 22 — "طب لامال لكريز" — is a red line 3 violation, the Versace Eros incident repeating.
+    Le Male Elixir was active in that store, and we told the customer by name that we do not carry
+    it; two turns later the same conversation listed it as available. The denial rested on a single
+    unverified witness, because for an Arabic name it is the only witness `absence.catalogue_verdict`
+    can have: the catalogue holds Latin spellings only, so `naming.candidates` comes back empty
+    whether we stock the perfume or not (`absence.py:140-144`).
+
+    Turn 28 — "B m w" — is the other shape. `tokens` dropped every single-character token, so the
+    message named nothing as far as Python could tell, the resolver was never called, and the rows
+    from the previous turn were handed to the model with no label on them. The reply was a price for
+    Le Male: a perfume the customer had not asked about, quoted as the answer to the one they had.
+
+    Two fixes, and both are asserted from the outside here — through `get_product_info`, on the
+    context the model is actually handed — because every one of these defects was invisible at the
+    unit level and only showed up in what the customer received.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        jpg = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        ysl = Brand.objects.create(store=self.store, name="Yves Saint Laurent")
+        self.le_male = self._perfume(jpg, "Le Male", 600)
+        self.elixir = self._perfume(jpg, "Le Male Elixir", 900)
+        self.ultra = self._perfume(jpg, "Ultra Male", 750)
+        # The catalogue really does hold a one-letter name, which is why `tokens` may not simply
+        # keep every single character.
+        self.y = self._perfume(ysl, "Y", 820)
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _perfume(self, brand, name, price):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="male",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=100, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _offered(self, product, price):
+        """The previous turn's reply, with the row behind it, as the router saves it."""
+        save_message(
+            self.conversation, "assistant",
+            f"عطر {product.name} الـ 100 ملي سعره {price} جنيه.",
+            internal_context=f"Name (الاسم الصحيح): {product.name}",
+        )
+
+    def _turn(self, message, resolution, confirm=mock.DEFAULT):
+        """One customer turn. Returns `(context, prompt)`.
+
+        `resolution` is what the extractor reported and `confirm` what the second, narrower call
+        answered — the two witnesses, supplied separately, because the whole point of the change is
+        that one of them is no longer enough on its own. Left at `mock.DEFAULT`, `confirm_unplaced`
+        is not patched at all, which is correct only for the turns below that never reach it: an
+        empty `unplaced` means there is no denial to confirm. Every turn that does reach it passes
+        `confirm` explicitly, so no test here can quietly make a live model call.
+        """
+        import contextlib
+
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                mock.patch(
+                    "products.services.product_info.resolve_products",
+                    return_value=resolution,
+                )
+            )
+            chat_call = stack.enter_context(
+                mock.patch("products.services.product_info.chat", return_value="ok")
+            )
+            if confirm is not mock.DEFAULT:
+                kwargs = (
+                    {"side_effect": confirm}
+                    if isinstance(confirm, BaseException)
+                    else {"return_value": confirm}
+                )
+                stack.enter_context(
+                    mock.patch(
+                        "products.services.product_info.confirm_unplaced", **kwargs
+                    )
+                )
+            _, context = get_product_info(message, [], self.store, self.conversation)
+        return context, chat_call.call_args[0][0][-1]["content"]
+
+    # ── turn 22: the denial that must not happen ──────────────────────────
+    def test_the_confirm_pass_rescues_a_perfume_we_stock(self):
+        """"لامال لكريز" reported unplaced, placed on Le Male Elixir by the second call.
+
+        The customer gets the perfume and its price. This is the turn that was denied in
+        production, and the assertion that matters most in this file is the *absence* of the
+        denial marker.
+        """
+        from products.services import product_info
+
+        context, _ = self._turn(
+            "طب لامال لكريز", _absent("لامال لكريز"), confirm=self.elixir
+        )
+
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertNotIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertIn("Le Male Elixir", context)
+        self.assertIn("900", context)
+
+    def test_a_rescued_name_is_not_left_pending(self):
+        """A rescue has to clear the span out of `unplaced` before the flags downstream are derived
+        from it, not after. Deriving them first and patching afterwards wrote a pending lookup for
+        a perfume we had just priced — the customer would be chased on the next turn about a
+        question that was already answered."""
+        from products.services.sales import described
+
+        context, _ = self._turn(
+            "طب لامال لكريز", _absent("لامال لكريز"), confirm=self.elixir
+        )
+
+        self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
+
+    def test_a_denial_still_goes_out_when_both_witnesses_agree(self):
+        """The regression the confirm pass must not cause. `بلاك اوركيد` is genuinely not ours and
+        the eval harness's X1 grades it on being denied plainly — a change that rescued everything
+        would read as a fix here and break that."""
+        from products.services import product_info
+
+        context, prompt = self._turn(
+            "عندك بلاك اوركيد ؟", _absent("بلاك اوركيد"), confirm=None
+        )
+
+        self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info._ABSENT_RULES, prompt)
+
+    def test_a_failed_confirm_call_abstains_instead_of_denying(self):
+        """An API blip is not evidence of absence. Same reading `absence.py:106` gives
+        `resolution.failed`: the turn asks the customer to retype, which is a question we can
+        actually resolve, rather than telling them we do not stock something we may well have."""
+        from products.services import product_info
+
+        context, prompt = self._turn(
+            "طب لامال لكريز", _absent("لامال لكريز"), confirm=RuntimeError("boom")
+        )
+
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertIn(product_info._UNREADABLE_NAME_RULES, prompt)
+
+    def test_a_house_we_carry_abstains_instead_of_denying(self):
+        """`CARRIED_HOUSE` exists because the two obvious answers are both wrong here. Answering
+        NONE for a house we stock preserves the false denial; naming one of its perfumes invents a
+        new wrong answer — pricing one Dior in reply to "عندكو ديور؟". Neither, so: ask which one.
+
+        `absence.py:124-138` already refuses to deny a bare *Latin* house name and documents in red
+        that it cannot read an Arabic one. This is that rung's Arabic half.
+        """
+        from products.services import product_info
+        from products.services.product_resolver import CARRIED_HOUSE
+
+        context, _ = self._turn(
+            "طب في من جان بول", _absent("جان بول"), confirm=CARRIED_HOUSE
+        )
+
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+
+    # ── turn 28: the stale price that must not be the answer ──────────────
+    def test_a_spelled_out_name_reaches_the_resolver(self):
+        """"B m w" tokenised to nothing, so `may_name_a_perfume` was False and the gate never fired.
+        The resolver being called at all is the fix; what it then answers is a separate matter."""
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            get_product_info("B m w", [], self.store, self.conversation)
+
+        self.assertTrue(resolver.called)
+
+    def test_an_unreadable_name_never_gets_the_previous_perfumes_price(self):
+        """Turn 28's actual failure, end to end.
+
+        The previous turn priced Le Male at 600. "B m w" names something we could not read, so the
+        rows still in context are the *referent* and not the subject — and they must carry
+        `_NOT_THE_PERFUME_ASKED_ABOUT`, which is the only thing in the data that forbids pricing
+        them. In production they went in under the bare "real product data" header and the model did
+        exactly what that header invites.
+        """
+        from products.services import product_info
+
+        self._offered(self.le_male, 600)
+
+        context, prompt = self._turn("B m w", [])
+
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, prompt)
+
+    def test_a_one_letter_name_the_fuse_cannot_reach_is_still_caught(self):
+        """"في Y" is why the tokenizer fix alone was not enough. One letter is not a run of three,
+        and في/طب/عندك/ممكن/اعرف are all `_REFERENTIAL`, so the identifying residue is empty however
+        the fuse is tuned. `carries_unreadable_content` is what widens the gate here."""
+        from products.services import product_info
+
+        self._offered(self.le_male, 600)
+
+        context, prompt = self._turn("في Y", [])
+
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, prompt)
+
+    def test_a_genuine_referent_turn_is_still_answered_unlabelled(self):
+        """The other side of the same line, and the reason `carries_unreadable_content` is not
+        simply "any dropped token".
+
+        "بكام ده" names nothing *on purpose* — the previous perfume is the legitimate subject, and
+        labelling those rows as "not what the customer asked about" would break every follow-up
+        question in the product. A fix that catches "في Y" by catching this too is not a fix.
+        """
+        from products.services import product_info
+
+        self._offered(self.le_male, 600)
+
+        context, prompt = self._turn("بكام ده", [])
+
+        self.assertIn("Le Male", context)
+        self.assertNotIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertNotIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, prompt)
+
+
+@_confirm_pass_finds_nothing
 class PartiallyResolvedQuestionTests(TestCase):
     """Conversation 836: two of three perfumes answered, the third dropped in silence.
 
@@ -12307,6 +12660,7 @@ class PartiallyResolvedQuestionTests(TestCase):
         self.assertIn("الكساندريا 2", context)
 
 
+@_confirm_pass_finds_nothing
 class PartialMissReachesAHumanTests(TestCase):
     """Conversation 836 end to end: three turns, zero owner notifications, no handoff.
 
@@ -12564,6 +12918,7 @@ class ChaseVocabularyByStemTests(TestCase):
                 self.assertTrue(naming.may_name_a_perfume(message))
 
 
+@_confirm_pass_finds_nothing
 class DenialKeepsItsAlternativesTests(TestCase):
     """Conversation 835 turns 3 and 4: the denial had one alternative to offer, then a plural
     follow-up priced one perfume.
@@ -12821,6 +13176,7 @@ class CarriedPriceIntentTests(TestCase):
         self.assertNotIn("سؤال السعر", context)
 
 
+@_confirm_pass_finds_nothing
 class FirstAskDeniesAndOffersTests(TestCase):
     """The turn this whole change is about: the very first time a customer names a perfume we do
     not carry.
@@ -13114,6 +13470,11 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
         "عندكو ديور؟" and "للأسف ديور مش متوفر عندنا" in a store with three of them. A prompt
         instruction is weaker than a Python check and this is not a free choice: the extractor is the
         sole bridge between the customer's alphabet and a Latin catalogue.
+
+        Asserted on the rule's literal wording, which is the point — there is no behaviour to test
+        here, only whether the sentence is still in the prompt. Rewording the bullet means updating
+        this line with it; commit 92831b6 changed "اسم بيت العطور لوحده" to the phrase below and left
+        this test failing, which is the failure mode this docstring exists to shorten.
         """
         from products.services import product_resolver
 
@@ -13123,7 +13484,7 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
             resolve_products("عندكو ديور ؟", [], self.store)
         prompt = chat_call.call_args[0][0][0]["content"]
 
-        self.assertIn("اسم بيت العطور لوحده", prompt)
+        self.assertIn("اسم بيت عطور موجود عندنا", prompt)
         self.assertIn('"ديور"', prompt)
 
     def test_a_quiet_extractor_does_not_deny_an_arabic_name(self):
@@ -13157,6 +13518,7 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
         self.assertEqual(prompt.count("\n14."), 1)
 
 
+@_confirm_pass_finds_nothing
 class ChasedDeferralTests(TestCase):
     """Conversations 798 and 799: the answer lost its subject on the very next turn.
 
@@ -13760,6 +14122,7 @@ class ChasedDeferralTests(TestCase):
         )
 
 
+@_confirm_pass_finds_nothing
 class ReAskedDeferralTests(TestCase):
     """Conversations 816 and 817: insisting by re-typing the name, and getting the stall again.
 
@@ -14166,6 +14529,7 @@ class ReAskedDeferralTests(TestCase):
         self.assertIn("لادور", by_id["CONV817"][1])
 
 
+@_confirm_pass_finds_nothing
 class NeverDeniesAndDefersTests(TestCase):
     """Conversation 795 turn 4: "عطر الكساندريا 2 مش موجود عندنا، لحظة أتأكدلك منه".
 
@@ -14835,6 +15199,7 @@ class AbsentNameEscalationTests(TestCase):
         self.assertEqual(Notification.objects.filter(type="handoff").count(), 1)
 
 
+@_confirm_pass_finds_nothing
 class TwoAbsentPerfumesKeepTheBotServingTests(TestCase):
     """Conversations 816, 817 and 772: the bot went silent, and the customer was still buying.
 
@@ -15008,6 +15373,7 @@ class TwoAbsentPerfumesKeepTheBotServingTests(TestCase):
         )
 
 
+@_confirm_pass_finds_nothing
 class TheStallCannotSurviveADeniedTurnTests(TestCase):
     """"لحظه اتأكدلك منه" — the phrase this whole change was asked for, kept out deterministically.
 
@@ -16439,6 +16805,7 @@ class PluralPointerTests(TestCase):
             )
 
 
+@_confirm_pass_finds_nothing
 class AnswerEveryRowTests(TestCase):
     """Conversation 841 turn 4: both perfumes were in the context, one was priced.
 

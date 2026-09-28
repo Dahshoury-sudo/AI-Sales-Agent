@@ -79,6 +79,52 @@ def _unplaced_names(candidates, message, store, products):
     return kept
 
 
+_FAMILIES_HEADER = (
+    "Perfume lines (each line below is ONE family: same house, one name nested inside another. "
+    "A customer naming the base plus one extra word is naming the VARIANT, not the base):"
+)
+
+
+def _families_block(catalogue):
+    """The catalogue's lines, listed once each, for the prompt.
+
+    Conversation 1021 turn 22 is why this is here. A customer asked for "لامال لكريز" — Le Male
+    Elixir, active in that store at that moment — and the extractor reported it unplaced, which
+    `absence.catalogue_verdict` reads as its witness, so the customer was told by name that we do not
+    carry it. Two turns later the same conversation listed it as available.
+
+    Nothing was wrong with the model's reasoning given what it was shown. `Le Male`, `Le Male Elixir`
+    and `Ultra Male` were three unrelated strings in a flat list, so a name whose head is a line root
+    and whose tail is a flanker word ("لامال" + "لكريز") had no reading except "one perfume I cannot
+    find". The grouping that makes it readable already existed in `naming.line_mates` — its only
+    caller used it to warn the *customer*, one layer after resolution had already failed.
+
+    Emitted as a block of its own AFTER the catalogue listing rather than annotated onto each `- name`
+    line: rules 1 and 4 tell the model to return the exact name from that list, so the line has to
+    stay the name and nothing else.
+
+    Each family is printed once. `naming.families` is keyed per name, so a three-perfume line appears
+    under all three of its members; grouping is rooted and therefore symmetric within a brand, so
+    those three entries collapse to one set. Where two roots genuinely overlap the sets differ and
+    both are printed, which is two honest hints rather than a lost one.
+
+    Empty string when no line in the catalogue has a flanker, which keeps the prompt byte-identical
+    to before for such a store.
+    """
+    grouped = naming.families([(name, brand_id) for name, _, brand_id in catalogue])
+    if not grouped:
+        return ""
+
+    lines, seen = [], set()
+    for name, mates in sorted(grouped.items()):
+        family = tuple(sorted([name, *mates]))
+        if family in seen:
+            continue
+        seen.add(family)
+        lines.append("- " + " / ".join(family))
+    return "\n\n" + _FAMILIES_HEADER + "\n" + "\n".join(lines)
+
+
 def resolve_products(message: str, history=None, store=None, conversation=None):
     """
     Try to resolve multiple products from the user's message using AI extraction.
@@ -92,7 +138,7 @@ def resolve_products(message: str, history=None, store=None, conversation=None):
     Returns a `Resolution` — a list of products that also reports which named perfumes it could not
     place. See that class for why the second half is needed.
     """
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).select_related("brand")
     if store:
         products = products.filter(store=store)
 
@@ -112,10 +158,12 @@ def resolve_products(message: str, history=None, store=None, conversation=None):
     # The name is printed first and alone-able: rules 1 and 4 ask for the exact name from this list,
     # and the bracket is labelled so it reads as an annotation. An echo that includes the brand
     # anyway still lands — `naming.match_product` places "Eros Versace" on "Eros" by token subset.
-    catalogue = list(products.values_list("name", "brand__name"))
+    catalogue = list(products.values_list("name", "brand__name", "brand_id"))
     product_names = "\n".join(
-        f"- {name}" + (f"  [brand: {brand}]" if brand else "") for name, brand in catalogue
+        f"- {name}" + (f"  [brand: {brand}]" if brand else "")
+        for name, brand, _ in catalogue
     )
+    families_block = _families_block(catalogue)
 
     from .sales import described as sales_described
 
@@ -126,7 +174,7 @@ Extract the exact perfume names the user is inquiring about.
 Look at the conversation history if the user is using pronouns or referring to something previously mentioned (like "بكام ده" or "عامل كام" or "الاتنين").
 
 Available Perfumes in Database (the name is what you return; "[brand: …]" is an annotation, never part of the name):
-{product_names}
+{product_names}{families_block}
 {offered_block}
 Rules:
 1. Translate Arabic names to English and fix spelling mistakes to match the exact names in the database. A customer usually names the house and the perfume together ("ڤيرزاتشي ايروس", "ديور سوفاج") while this list may hold the perfume alone ("Eros", "Sauvage") — match the brand against the "[brand: …]" annotation and return the name.
@@ -146,6 +194,9 @@ Rules:
    • ⚠️ BUT if the brand does NOT appear anywhere in the "[brand: …]" annotations — i.e. we carry NOTHING from that house — then the customer is asking about a brand we genuinely do not stock. In that case, put the name in "unplaced" so the system can tell them honestly. Example: a customer asks "في BMW" or "في جوب" and no product above has [brand: BMW] or [brand: Joop!] → unplaced gets the name.
    • A customer asked "عايز اعرف اسعار بلو دي شانيل وسوفاج والكساندريا 2": two of those are in the list and one is not, so perfumes gets the two and unplaced gets ["الكساندريا 2"]. Leaving it out of both is how that customer got asked to wait three times for an answer nobody was looking up.
 10. 🔴 CRITICAL — BRAND-ONLY QUERIES. When the customer names only a brand (not a specific perfume) and that brand IS in the catalogue (appears in "[brand: …]"), return ALL perfumes from that brand in "perfumes". Example: "في من جان بول" → return all products with [brand: Jean Paul Gaultier]. "في من جوب" → if Joop! appears as a brand, return all Joop! products.
+11. 🔴 CRITICAL — LINES AND FLANKERS. Read the "Perfume lines" block above. When the customer's words are a line's base PLUS an extra word, they are naming the VARIANT on that line, not an unknown perfume — return that exact name. "لامال لكريز" is Le Male + Elixir → "Le Male Elixir". "سترونجر انتنسلي" is Stronger With You + Intensely → "Stronger With You Intensely". "دو جوي انتنس" is Joy + Intense → "Joy Intense".
+   • If the extra word does not pin down one variant, return the line's base and let the reply ask which one they meant.
+   • ❌ NEVER report such a name as "unplaced". A name built out of a line we stock is a name we stock. Reporting "لامال لكريز" as unplaced told a customer we do not sell Le Male Elixir while it was in stock, and the same conversation listed it as available two turns later.
 """
     prompt += """
 Output format MUST be valid JSON:
@@ -180,6 +231,7 @@ Output format MUST be valid JSON:
     unplaced = _unplaced_names(raw_unplaced, message, store, products)
 
     if not p_names:
+        _log_outcome(message, (), unplaced, failed)
         return Resolution([], unplaced, failed=failed)
 
     resolved = []
@@ -204,7 +256,27 @@ Output format MUST be valid JSON:
         if match and match not in resolved:
             resolved.append(match)
 
+    _log_outcome(message, resolved, unplaced, failed)
     return Resolution(resolved, unplaced, failed=failed)
+
+
+def _log_outcome(message, resolved, unplaced, failed):
+    """One line per extraction: what went in, what was placed, what was reported unplaced.
+
+    Diagnosing conversation 1021 meant dumping the conversation out of production, because nothing
+    recorded why a name had been denied — this module logged only inside its `except`, and an unplaced
+    report is the sole witness `absence.catalogue_verdict` has for an Arabic name. A denial with no
+    trace of the decision behind it is not something we should have to reconstruct twice.
+
+    At INFO, and the message is truncated: this runs on every turn.
+    """
+    logger.info(
+        "resolver: message=%r placed=%s unplaced=%s failed=%s",
+        (message or "")[:120],
+        [product.name for product in resolved],
+        list(unplaced),
+        failed,
+    )
 
 
 def resolve_product(message: str, history=None, store=None, conversation=None):
@@ -213,3 +285,114 @@ def resolve_product(message: str, history=None, store=None, conversation=None):
     """
     resolved = resolve_products(message, history, store, conversation)
     return resolved[0] if resolved else None
+
+
+class _CarriedHouse:
+    """The span names a house we stock, so it is not deniable — but it is not one perfume either."""
+
+    def __repr__(self):
+        return "CARRIED_HOUSE"
+
+
+CARRIED_HOUSE = _CarriedHouse()
+
+
+def confirm_unplaced(name, store=None):
+    """Ask a second time before we deny an Arabic name by name. The confirming witness.
+
+    `absence.catalogue_verdict` has exactly one witness for a name written in Arabic: the extractor's
+    own `unplaced` report (`absence.py:140-144`). It cannot have another. `Product.name` and
+    `Brand.name` hold Latin spellings only — there is no alias column, no Arabic-name column, no
+    transliteration table — so `naming.candidates` returns `([], [])` for every Arabic string whether
+    we stock the perfume or not, and all three guards in `_unplaced_names` above are no-ops for an
+    Arabic compound. One LLM call therefore decides, alone, whether a customer is told by name that we
+    do not sell something. Conversation 1021 turn 22 is what that costs: "لامال لكريز" was reported
+    unplaced and denied while Le Male Elixir sat active in that store.
+
+    So this is a second, narrower call on the denial path only. Two reasons it is worth the latency:
+
+      * It is a far easier question than the one that failed. `resolve_products` reads a whole
+        conversation, resolves pronouns, handles several names at once and obeys eleven rules; this
+        asks one thing about one span, and gets the line structure handed to it.
+      * The cost is asymmetric in the same direction as everything else here. A wasted call on a
+        genuinely absent perfume costs a second; a false denial costs the customer.
+
+    Called only when we are about to deny, which is rare, so this does not touch the ordinary turn.
+
+    **Three outcomes, and each one is the safe reading of its answer:**
+
+      * a `Product` — the span is ours after all. The caller places it and the customer gets the
+        perfume and its price instead of a denial.
+      * `CARRIED_HOUSE` — the span is a house we stock, named on its own. Not one perfume, so there is
+        nothing to place, but emphatically not deniable either: this is how "عندكو ديور ؟" would
+        otherwise get told we do not sell Dior with three Diors on the shelf. The caller must read it
+        as UNKNOWN and ask which perfume they meant.
+      * `None` — genuinely not ours. The caller denies, exactly as today.
+
+    **Raises** on a transport or JSON failure rather than returning `None`, because those two must not
+    be confused: `None` means "we checked and it is absent", and an API blip is not evidence of
+    absence. The caller is required to catch it and fall back to UNKNOWN — the same principle as the
+    `resolution.failed` rung at `absence.py:106`.
+    """
+    products = Product.objects.filter(is_active=True).select_related("brand")
+    if store:
+        products = products.filter(store=store)
+
+    catalogue = list(products.values_list("name", "brand__name", "brand_id"))
+    if not catalogue:
+        return None
+
+    listing = "\n".join(
+        f"- {p_name}" + (f"  [brand: {brand}]" if brand else "")
+        for p_name, brand, _ in catalogue
+    )
+    prompt = f"""A customer asked about a perfume and our extractor could not find it in our catalogue.
+We are about to tell them, by name, that we do not sell it. Check once more before we do.
+
+Our full catalogue:
+{listing}{_families_block(catalogue)}
+
+Could the customer's words be one of the names above? Look for:
+• An Arabic phonetic spelling of a Latin name — "لامال" is Le Male, "سوفاج" is Sauvage, "زار كولد" is ZARA GOLD, "امبيرو" is Ambero.
+• The house and the perfume said together, where we list the perfume alone — "ڤيرزاتشي ايروس" is "Eros", "ديور سوفاج" is "Sauvage".
+• A line's base plus a flanker word, per the "Perfume lines" block — "لامال لكريز" is Le Male + Elixir, so the answer is "Le Male Elixir".
+• Ordinary typos and letter swaps (ڤ/ف, ب/پ, ج/چ), and letters the customer spelled out one by one.
+
+Answer with ONE of:
+{{"name": "<the exact name from the list>"}}   — you recognise it
+{{"house": true}}                              — these words are a HOUSE we carry (it appears in a "[brand: …]" above), named on its own rather than one perfume
+{{"name": "NONE"}}                             — the customer really is asking about a perfume we do not carry
+
+Answer "NONE" only if you are confident, and prefer a name over "NONE" when the words plausibly fit one. Telling a customer we do not stock a perfume that is on our shelf is the worst outcome this check exists to prevent. But do NOT invent a match: an unrelated perfume returned here is just as wrong in the other direction.
+
+Output MUST be valid JSON."""
+
+    response = chat(
+        [{"role": "system", "content": prompt}, {"role": "user", "content": name or ""}],
+        profile="resolve",
+        response_format={"type": "json_object"},
+    )
+    data = json.loads(response)
+    if not isinstance(data, dict):
+        raise ValueError(f"confirmer returned {type(data).__name__}, expected an object")
+
+    if data.get("house") is True:
+        logger.info("confirm_unplaced: %r -> CARRIED_HOUSE", (name or "")[:120])
+        return CARRIED_HOUSE
+
+    answer = (data.get("name") or "").strip()
+    if not answer or answer.upper() == "NONE":
+        logger.info("confirm_unplaced: %r -> NONE (denial stands)", (name or "")[:120])
+        return None
+
+    # Resolved the same two ways `resolve_products` resolves its own output, so a name echoed with
+    # the brand attached ("Eros Versace") still lands and an invented one still comes back empty.
+    match = (
+        products.filter(name__iexact=answer).first()
+        or naming.match_product(answer, store, products=products)
+    )
+    logger.info(
+        "confirm_unplaced: %r -> %r (%s)",
+        (name or "")[:120], answer, "placed" if match else "unmatchable, denial stands",
+    )
+    return match

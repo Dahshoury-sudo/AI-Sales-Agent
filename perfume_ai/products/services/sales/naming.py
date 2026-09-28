@@ -32,6 +32,39 @@ _STOPWORDS = frozenset({
 })
 
 
+def _fuse_spelled_out(raw):
+    """Join runs of three or more single-character tokens into one word.
+
+    "B m w" and "س و ف ا ج" are a customer spelling a name out letter by letter, and every letter
+    is a token of length 1 — so the length filter in `tokens` below discarded all of them and the
+    message tokenised to nothing at all. That is not a harmless miss. `may_name_a_perfume` then
+    reads the turn as naming no perfume, `product_info` never calls the resolver, no pending record
+    is written, and the previously offered perfume is handed to the model as the answer with its
+    prices attached. Conversation 1021 turn 28 is "B m w", answered "عطر Le Male ... الـ 100 ملي
+    سعره 600 جنيه" — a price for a perfume the customer had not asked about.
+
+    Three is the threshold rather than two because one stray letter beside real words is ordinary
+    and must keep tokenising to nothing: this catalogue holds a perfume named "Y", so
+    "Y Eau de Parfum" has to stay empty. Three in a row is someone spelling. Measured against every
+    message in conversation 1021 plus every Arabic string in `eval_harness/scenarios*.py`
+    — 457 spans — the only one this fuses is the "B m w" that caused the bug.
+
+    Note what this does NOT fix: a one-character name on its own. "في Y" still tokenises to
+    nothing, because "في" is referential and "Y" is one letter with no run to join. That hole is
+    closed by `carries_unreadable_content` below, not here.
+    """
+    fused, run = [], []
+    for token in raw:
+        if len(token) == 1:
+            run.append(token)
+            continue
+        fused.extend(["".join(run)] if len(run) >= 3 else run)
+        run = []
+        fused.append(token)
+    fused.extend(["".join(run)] if len(run) >= 3 else run)
+    return fused
+
+
 def tokens(text):
     """Identifying tokens of a name, normalised and stripped of filler.
 
@@ -45,11 +78,14 @@ def tokens(text):
     `\\W` covers Arabic punctuation (؟ ، ؛) as well as Latin, and Python's `\\w` includes
     Arabic letters and digits, so names carrying numbers ("Afnan 9PM", "XJ 1861 Naxos",
     "Baccarat Rouge 540") tokenise unchanged.
+
+    A run of three or more single letters is fused first — see `_fuse_spelled_out` — so a name the
+    customer spelled out survives the length filter below instead of vanishing.
     """
     cleaned = re.sub(r"\W+", " ", normalize_arabic(text or ""), flags=re.UNICODE)
     return {
         token
-        for token in cleaned.split()
+        for token in _fuse_spelled_out(cleaned.split())
         if len(token) > 1 and token not in _STOPWORDS
     }
 
@@ -302,6 +338,91 @@ def may_name_a_perfume(text):
     wrong, which is why the list above is safe to extend but dangerous to extend carelessly.
     """
     return bool(identifying_tokens(text))
+
+
+# Arabic single letters are particles — "ف أماكن تاني", "حاجه ب 500", "ديور و شانيل". Both of those
+# first two are real customer messages, and the catalogue holds Latin names only, so no perfume here
+# can ever be spelled with one Arabic letter. Matching on the block rather than listing و ف ب ل ك
+# keeps an unlisted particle out too.
+_ARABIC_LETTER = re.compile(r"[؀-ۿ]")
+
+# The same rule on the Latin side: the only one-letter words English has. "a" was by far the most
+# common standalone single character in the corpus measured below — 50 of 56 spans, every one of them
+# the article. Almost all of those arrive in a message that also names something readable ("do u have
+# a dior"), and the guard at the top of `carries_unreadable_content` already returns on those before
+# reaching here; what is left for this set is the message whose identifying residue is *empty* and
+# whose leftover is the article alone. Cheap, and it keeps the two alphabets reasoning the same way.
+# Nothing else is excluded: "X" and "Y" stay, because "Y" is a perfume in this catalogue.
+_SINGLE_LETTER_WORDS = frozenset({"a", "i"})
+
+
+def carries_unreadable_content(text):
+    """Single characters the customer typed as words of their own, which `tokens` threw away.
+
+    The companion to `may_name_a_perfume`, for the case it cannot see. `tokens` drops every token
+    shorter than two characters, so a one-character name leaves nothing behind — and because `في`,
+    `طب`, `عندك`, `ممكن` and `اعرف` are all in `_REFERENTIAL`, the words around it are subtracted too.
+    "في Y" therefore has no identifying tokens at all, exactly like "بكام ده" does. `product_info`
+    reads that emptiness as proof the customer named nothing and answers about whatever it offered
+    last turn — with prices. This catalogue really does hold a perfume called Y.
+
+    So the distinction this draws is not "does the message name a perfume" but the narrower one the
+    caller actually needs: *did the message contain something we could not read*. Empty means the turn
+    is a genuine reference and the referent is the legitimate subject; non-empty means ask the
+    customer to retype rather than guess.
+
+      "في Y"          -> {'y'}        "بكام ده"        -> set()
+      "طب Y"          -> {'y'}        "Terre d'Hermes" -> set()
+      "B m w"         -> set()        "خليها 2 بدل واحده" -> set()
+
+    Three exclusions, each measured against every customer message in conversation 1021 and every
+    Arabic string in `eval_harness/scenarios*.py` rather than guessed at:
+
+      * **Not a fragment of a longer word.** `\\W+` shears apostrophes, so "Terre d'Hermes" splits to
+        "d" + "hermes" and "L'Eau" to "l" + "eau". Those are the most common single Latin letters in
+        the corpus and they are not unreadable at all. Hence the whitespace-word test: only a
+        character the customer typed *alone* counts.
+      * **Not Arabic**, and **not a one-letter English word** — see the two definitions above.
+      * **Not a digit**, including Arabic-Indic ٢٣٨ — "خليها 2 بدل واحده", "حاجه ب 500", "إلا ٣" are
+        quantities and sizes.
+
+    And nothing `_fuse_spelled_out` already joined: "B m w" is now readable as "bmw", so reporting it
+    unreadable would undo that fix.
+
+    Finally, and it is the load-bearing one: **only when the message has no identifying tokens at
+    all.** An unreadable character next to a name we *can* read is not this bug — "عندك Y ولا Terre
+    d Hermes" resolves Terre d'Hermes and should answer about it, and "do u have a dior" resolves
+    Dior. Both would otherwise be sent down the retype path over one stray letter, and "u" for *you*
+    is ordinary typing, not a perfume.
+
+    That also removes the need to guess at chat shorthand. The condition here is not "is this
+    character a word" — it is the exact state that caused the bug: a message whose identifying
+    residue is empty, so `may_name_a_perfume` is False, so the resolver is never called and the
+    previous turn's rows become the answer. When something else in the message did survive
+    tokenising, the resolver runs and `unplaced` reports the rest; this function has no work to do.
+    """
+    if identifying_tokens(text):
+        return set()
+
+    normalized = normalize_arabic(text or "")
+    standalone = set()
+    for word in normalized.split():
+        bare = re.sub(r"^\W+|\W+$", "", word, flags=re.UNICODE)
+        if re.fullmatch(r"\w", bare, flags=re.UNICODE):
+            standalone.add(bare)
+    if not standalone:
+        return set()
+    cleaned = re.sub(r"\W+", " ", normalized, flags=re.UNICODE)
+    unfused = {token for token in _fuse_spelled_out(cleaned.split()) if len(token) == 1}
+    return {
+        char
+        for char in standalone & unfused
+        if not char.isdigit()
+        and not _ARABIC_LETTER.match(char)
+        and char not in _SINGLE_LETTER_WORDS
+        and char not in _STOPWORDS
+        and char not in _REFERENTIAL
+    }
 
 
 def _similar_enough(left, right):
@@ -574,6 +695,58 @@ def names_in(text, names):
     return found
 
 
+def families(catalogue):
+    """Every line in the catalogue at once: `{name: [its line-mates]}`, names with mates only.
+
+    The batch form of `line_mates` below, and now the only definition of "same line" — that function
+    delegates here. Two reasons it is the primitive rather than the convenience:
+
+      * `line_mates` re-tokenises every name of a brand on each call, so calling it per product
+        tokenises the same brand k times for a k-product brand. Both callers are batch callers:
+        `product_formatting._line_mates_for` loops over an injected batch, and `product_resolver`
+        needs the whole structure to put in a prompt. One pass tokenises each name once.
+      * Conversation 1021 turn 22 is what happens when the extractor does not know lines exist. A
+        customer asked for "لامال لكريز" — Le Male Elixir, in stock — and because the prompt listed
+        `Le Male`, `Le Male Elixir` and `Ultra Male` as three unrelated strings, a name whose head is
+        a line root and whose tail is a flanker word read as one unknown perfume. It was reported
+        unplaced and denied, and two turns later the same conversation listed it as available. The
+        grouping needed to prevent that already existed here; nothing was showing it to the model.
+
+    `catalogue` is (name, brand_id) pairs — brand *id*, not brand name, so one `values_list` serves a
+    whole batch without joining. A name repeated in the catalogue is taken at its first occurrence,
+    matching `line_mates`' own first-match brand lookup.
+
+    "Same line" is deliberately narrow, and the reasoning lives in `line_mates`' docstring: same
+    brand, one name's identifying tokens contained in the other's, resolved through the line ROOT so
+    that grouping is transitive.
+    """
+    by_brand = {}
+    seen = set()
+    for name, brand_id in catalogue:
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        by_brand.setdefault(brand_id, []).append((name, tokens(name)))
+
+    grouped = {}
+    for members in by_brand.values():
+        for name, own in members:
+            if not own:
+                continue
+            # The fewest-token name this one contains — itself, when it is already the line's base.
+            root = own
+            for _, other in members:
+                if other and other < root:
+                    root = other
+            mates = sorted(
+                other_name for other_name, other in members
+                if other_name != name and other >= root
+            )
+            if mates:
+                grouped[name] = mates
+    return grouped
+
+
 def line_mates(name, catalogue):
     """The other perfumes on `name`'s line: same brand, one name nested in the other.
 
@@ -596,32 +769,8 @@ def line_mates(name, catalogue):
     Resolved through the line's ROOT rather than pairwise, which is what makes it transitive.
     Asked about Intensely, pairwise containment finds only the base: Absolutely is neither a
     subset nor a superset of it. Rooting on {stronger, with, you} finds both.
+
+    A single-name convenience over `families` above, which does the work. Prefer `families` directly
+    when you have more than one name to ask about — this rebuilds the whole grouping per call.
     """
-    own = tokens(name)
-    if not own:
-        return []
-
-    brand = None
-    for other_name, brand_id in catalogue:
-        if other_name == name:
-            brand = brand_id
-            break
-    if brand is None:
-        return []
-
-    same_brand = [
-        (other_name, tokens(other_name))
-        for other_name, brand_id in catalogue
-        if brand_id == brand and other_name
-    ]
-
-    # The fewest-token name this one contains — itself, when it is already the line's base.
-    root = own
-    for _, other in same_brand:
-        if other and other < root:
-            root = other
-
-    return sorted(
-        other_name for other_name, other in same_brand
-        if other_name != name and other >= root
-    )
+    return families(catalogue).get(name, [])

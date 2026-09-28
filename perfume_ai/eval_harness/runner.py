@@ -65,6 +65,11 @@ _REPLAYS = {
     # 973 is two defects in five turns: the same two perfumes re-offered after the customer had
     # moved past them, and four replies opening and closing on the same two sentence frames.
     "conv973": "scenarios_conv973",
+    # 1021 is the pair this module's witness rung and the tokenizer's length filter produced
+    # together: a stocked perfume denied by name on one unverified report, and a letter-spaced
+    # name answered with the previously offered perfume's price. Turn 1 is substituted — the
+    # perfume 1021 denied is not in the Perfamix catalogue; see that file's docstring.
+    "conv1021": "scenarios_conv1021",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

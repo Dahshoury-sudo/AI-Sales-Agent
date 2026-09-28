@@ -444,8 +444,11 @@ def _line_mates_for(products):
             Product.objects.filter(store_id=stores.pop(), is_active=True)
             .values_list("name", "brand_id")
         )
+        # One grouping pass for the whole catalogue, then a lookup per product. Calling
+        # `naming.line_mates` per product instead re-tokenised every name of a brand on each call.
+        grouped = naming.families(catalogue)
         return {
-            product.name: naming.line_mates(product.name, catalogue)
+            product.name: grouped.get(product.name, [])
             for product in products
         }
     except Exception:
