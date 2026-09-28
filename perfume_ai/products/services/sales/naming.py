@@ -425,6 +425,164 @@ def carries_unreadable_content(text):
     }
 
 
+# Egyptian phonetic spelling, one Arabic letter at a time. Not a transliteration standard and not
+# trying to be one — the job is to put a customer's Arabic and a catalogue's Latin into the same
+# alphabet closely enough that `difflib` can say whether they are the same word. Choices that look
+# wrong against a standard and are right against how people here actually type: ج→g (Cairene, so
+# "جنتل مان" reaches "Gentleman"), ق→k, ع→a ("سعرهم"→"sarhm"), and the emphatics folded onto their
+# plain partners because nobody hears the difference when spelling a French name.
+#
+# 🔴 Deliberately lossy, and the collisions matter when reading a score: ز/ذ/ظ all become z, س/ص
+# both s, ت/ط both t, ك/ق both k, and ج/چ both g — so "چاكي" and "جاكي" are one string here.
+# `normalize_arabic` has already folded ة→ه before this runs, and ه is h, so every feminine filler
+# word ends in h ("حاجه"→"hagh", "ريحه"→"ryhh"). That is where junk matches come from; it is the
+# reason the caller's rule is a separation gap rather than an absolute score.
+_ARABIC_TO_LATIN = {
+    "ا": "a", "ب": "b", "ت": "t", "ث": "th", "ج": "g", "ح": "h", "خ": "kh",
+    "د": "d", "ذ": "z", "ر": "r", "ز": "z", "س": "s", "ش": "sh", "ص": "s",
+    "ض": "d", "ط": "t", "ظ": "z", "ع": "a", "غ": "gh", "ف": "f", "ق": "k",
+    "ك": "k", "ل": "l", "م": "m", "ن": "n", "ه": "h", "و": "w", "ي": "y",
+    # Persian/Egyptian extras people reach for when an Arabic letter has no sound for it.
+    "پ": "p", "چ": "g", "ژ": "j", "ڤ": "v", "ک": "k", "گ": "g", "ی": "y",
+    # Hamza carries no sound of its own once the alef variants are normalised away.
+    "ء": "", "ؤ": "w", "ئ": "y",
+}
+
+
+def transliterate(span):
+    """An Arabic span rewritten in Latin letters, for comparison against catalogue spellings.
+
+    Per word, because the definite article has to come off and only the front of a word can carry
+    it: "الترامل" is "al" + "traml", and leaving the article on costs two characters of pure noise
+    against "ultramale". Stripped only when something is left worth keeping, so a short word that
+    merely begins with those two letters survives whole.
+
+    Anything with no entry in the map is dropped rather than passed through — diacritics are already
+    gone, and a stray emoji or punctuation mark would otherwise count as a mismatched character.
+    Latin letters and digits the customer typed themselves are kept, since they are already in the
+    target alphabet; in practice the caller refuses to score a span that contains any.
+    """
+    out = []
+    for word in normalize_arabic(span or "").split():
+        letters = "".join(
+            _ARABIC_TO_LATIN.get(char, char if char.isascii() and char.isalnum() else "")
+            for char in word
+        )
+        if len(letters) > 3 and letters.startswith("al"):
+            letters = letters[2:]
+        out.append(letters)
+    return "".join(out)
+
+
+def arabic_span(text):
+    """The words of a message that could be a perfume name, **in the order they were typed**.
+
+    A view of `identifying_tokens` for the one caller that cannot use its return value directly:
+    scoring a name needs the customer's letters as a sequence, and that function returns a `set`.
+
+    🔴 That is the whole reason this exists, and it is not a style preference. `"".join(
+    identifying_tokens(text))` iterates a set of strings, whose order is `PYTHONHASHSEED`-dependent
+    and therefore varies between processes. Measured on one four-token message across three runs:
+    "بلوايروسڤيرزاتشيسوفاج", "بلوسوفاجايروسڤيرزاتشي", "بلوايروسڤيرزاتشيسوفاج". A score built on that
+    join is nondeterministic in production and unreproducible in a backtest, while passing every
+    unit test that happens to use a one-token span. So the message is re-split and filtered against
+    the set rather than the set being joined.
+
+    Space-separated, so the word count survives for a caller that needs it and the string is
+    readable in a log line.
+    """
+    keep = identifying_tokens(text)
+    if not keep:
+        return ""
+    cleaned = re.sub(r"\W+", " ", normalize_arabic(text or ""), flags=re.UNICODE)
+    return " ".join(token for token in _fuse_spelled_out(cleaned.split()) if token in keep)
+
+
+def _latin_key(name):
+    """A catalogue name reduced to the same alphabet and shape `transliterate` produces."""
+    return re.sub(r"[^a-z0-9]", "", (name or "").lower())
+
+
+def phonetic_ranking(text, store, products=None):
+    """How well each catalogue name matches the customer's Arabic, best first.
+
+    Returns `[(score, matched_chars, product), …]` — `difflib.SequenceMatcher.ratio()` of the
+    transliterated span against the product's Latin spelling, plus the number of characters that
+    actually lined up. Empty when there is no Arabic worth scoring.
+
+    The gap this closes is the one `candidates` and `names_a_bare_brand` both document and neither
+    can: `Product.name` holds Latin spellings, there is no alias column and no Arabic-name column,
+    so every token-based matcher in this module returns nothing for an Arabic string whether we
+    stock the perfume or not. Conversation 1041 is what that costs on the other channel from the
+    denials — a customer wrote "في التراميل ؟" (Ultra Male, in stock) and was quoted Terre
+    d'Hermes' prices by name, because nothing compared the model's answer to the customer's letters.
+
+    🔴 This ranks; it does not decide. A #1 here is not a match and must never be substituted for
+    what the extractor said — that is the "اوداورا" → *Dark Aura* substitution `product_resolver`
+    records as actively dangerous. The only sound use is *disagreement*: when one row separates
+    clearly from the field and the model picked a different one, something is wrong and a human
+    question is cheaper than a confident wrong price. The thresholds that turn this into a decision
+    live with that caller, per this module's contract — see `absence.py:19-21`.
+
+    Both `name` and `brand + name` are scored, but the brand form **only for a span of two or more
+    words**. This catalogue lists Versace Eros as the bare "Eros", so "ڤيرزاتشي ايروس" has to be
+    able to reach it; a one-word span has no brand in it to reach with, and scoring both forms
+    unconditionally gives every row two draws at the maximum, which inflates the top score more than
+    the model's pick and widens the separation gap on noise.
+
+    ⚠️ **The score is only as good as the span, and the span is only as good as `_REFERENTIAL`.**
+    Every filler word left in dilutes the ratio, because the denominator is the whole span. Measured:
+    "سترينجر وذ يو انتنسلي" scores 0.667 against its own row, but the same name inside
+    "انااا بتكلم دلوقتي سعر سترينجر وذ يو انتنسلي عامل كام" scores 0.483 — `انااا`, `بتكلم`,
+    `دلوقتي` and `عله` are not in `_REFERENTIAL`, so they survive into the span. Both of those turns
+    were answered with the wrong perfume in production and `product_resolver`'s guard misses them
+    for exactly this reason. Adding the missing vocabulary is worth more here than moving any
+    threshold; it is deferred only because `_REFERENTIAL` also gates whether the resolver runs at
+    all (`product_info.get_product_info`) and so needs its own regression floor.
+    """
+    from difflib import SequenceMatcher
+
+    span = arabic_span(text)
+    if not span or store is None:
+        return []
+    latin = transliterate(span)
+    if len(latin) < 2:
+        return []
+
+    if products is None:
+        from products.models import Product
+
+        products = Product.objects.filter(store=store, is_active=True).select_related("brand")
+
+    with_brand = len(span.split()) >= 2
+    ranked = []
+    for product in products:
+        forms = [_latin_key(product.name)]
+        if with_brand:
+            try:
+                brand = product.brand.name
+            except Exception:
+                brand = ""
+            if brand:
+                forms.append(_latin_key(brand) + _latin_key(product.name))
+
+        best_score, best_chars = 0.0, 0
+        for form in forms:
+            if not form:
+                continue
+            matcher = SequenceMatcher(None, latin, form)
+            score = matcher.ratio()
+            if score > best_score:
+                best_score = score
+                best_chars = sum(block.size for block in matcher.get_matching_blocks())
+        if best_score:
+            ranked.append((best_score, best_chars, product))
+
+    # Name as the tiebreak so the order is total and a backtest reruns identically.
+    ranked.sort(key=lambda row: (-row[0], row[2].name))
+    return ranked
+
+
 def _similar_enough(left, right):
     """One-edit tolerance for a single-token difference.
 

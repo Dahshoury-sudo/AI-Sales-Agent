@@ -1,7 +1,7 @@
 import logging
 
 from . import absence
-from .product_resolver import CARRIED_HOUSE, confirm_unplaced, resolve_products
+from .product_resolver import CARRIED_HOUSE, UNVERIFIED, confirm_unplaced, resolve_products
 from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
@@ -302,17 +302,22 @@ def _confirm_before_denying(unplaced, store, resolution):
     Red line 3, with a single unverified witness behind it.
 
     So on the denial path, and only there, ask `product_resolver.confirm_unplaced` — a narrower
-    question, with the catalogue's line structure in front of it. Three outcomes, each read in the
+    question, with the catalogue's line structure in front of it. Four outcomes, each read in the
     direction that cannot deny a perfume we stock:
 
       * **a product** — the span is ours. It is returned for the caller to place, and dropped from
         `unplaced`, so the customer gets the perfume and its price instead of a denial.
       * **`CARRIED_HOUSE`** — a house we stock, named on its own. Nothing to place, but nothing to
         deny either, so `unconfirmed` goes True: the reply asks which perfume they meant.
+      * **`UNVERIFIED`** — it named a row and the customer's own letters point somewhere else, so the
+        rescue was rejected by `product_resolver._disagreement`. That leaves us with no perfume to
+        place *and* no second witness to absence, which is `unconfirmed` exactly: retype, do not
+        deny. 🔴 It reads as its own value rather than `None` for this branch's sake — collapsing
+        the two would route a rejected rescue into "confirmed absent; denial stands" below.
       * **`None`** — genuinely absent, twice over. The denial proceeds untouched, which is what keeps
         the eval harness's X1 ("بلاك اوركيد") denied plainly.
 
-    A raised exception is the fourth, and it is why this is a `try` rather than a bare call: an API
+    A raised exception is the fifth, and it is why this is a `try` rather than a bare call: an API
     blip is not evidence of absence. `unconfirmed` goes True and the turn produces "please retype",
     the same reading `absence.py:106` gives `resolution.failed`.
 
@@ -357,6 +362,9 @@ def _confirm_before_denying(unplaced, store, resolution):
 
     if answer is CARRIED_HOUSE:
         logger.info("absence: %r is a house we carry; abstaining instead of denying", span[:120])
+        return None, unplaced, True
+    if answer is UNVERIFIED:
+        logger.info("absence: %r rescued onto a row its letters contradict; abstaining", span[:120])
         return None, unplaced, True
     if answer is None:
         logger.info("absence: %r confirmed absent; denial stands", span[:120])
@@ -656,6 +664,18 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # every mocked `resolve_products` in the test suite hands back one.
     unplaced = tuple(getattr(products, "unplaced", ()))
 
+    # Spans the resolver *placed* and then withheld, because the customer's own letters point at a
+    # different row and the confirming call could not settle which (`product_resolver
+    # ._verify_placement`). Read here, beside `unplaced`, because `products` is reassigned below and
+    # the attribute goes with it.
+    #
+    # 🔴 Kept out of `unplaced` on purpose, and this is the line that keeps it out: `unplaced` is the
+    # witness `absence.catalogue_verdict` denies an Arabic name on (`absence.py:140-144`), so a span
+    # folded in there would turn "we are not sure which perfume you mean" into "we do not sell it" —
+    # by name, with the perfume on the shelf. That is the error this whole change exists to stop,
+    # pointed the other way.
+    ambiguous = tuple(getattr(products, "ambiguous", ()))
+
     # Red line 3, before anything below is derived from `unplaced`. A span about to be denied gets a
     # second, narrower reading first; see `_confirm_before_denying` for the four outcomes and why the
     # check sits here rather than beside the verdict it corrects.
@@ -693,13 +713,21 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         bool(unplaced)
         or (resolver_ran and not products)
         or (not products and bool(naming.carries_unreadable_content(message)))
+        or bool(ambiguous)
     )
 
     # A message that named some perfumes we have and some we do not. Kept apart from
     # `named_but_unresolved` because the two need opposite instructions: on a total miss the rows in
     # context are a different perfume and must not be priced as the answer, while here they *are*
     # part of the answer and withholding them would drop a question the customer did ask.
-    partially_resolved = bool(unplaced) and bool(products)
+    #
+    # `ambiguous` counts alongside `unplaced` in both flags above. Today it cannot change either:
+    # the guard only runs when exactly one perfume was placed, so a withheld span always empties
+    # `products` and the second clause has already fired. It is written in because that restriction
+    # is a property of the backtest population, not of the idea — relax it to two placements and a
+    # turn with one withheld name would otherwise read as fully resolved and be answered as though
+    # nothing were missing, which is conversation 836's silent drop with a new cause.
+    partially_resolved = (bool(unplaced) or bool(ambiguous)) and bool(products)
 
     # Nothing named here: the subject is whatever we just offered. Decided in Python because
     # the resolver demonstrably gets this wrong, and `internal_context` is a harder record

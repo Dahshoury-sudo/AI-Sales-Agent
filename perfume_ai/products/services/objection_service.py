@@ -99,7 +99,7 @@ def _price_gap_context(message, history, store):
     left standing. So when only one perfume resolves, the cheaper side is taken from the
     catalogue at the price the customer actually named.
     """
-    products = resolve_products(message, history, store)
+    products = resolve_products(message, history, store, verify=False)
 
     priced = []
     for product in products[:2]:
@@ -198,7 +198,13 @@ def handle_objection(message, objection, history=None, store=None, conversation=
 
     # Only the perfumes actually under discussion, so the reply stays on the customer's
     # concern instead of pivoting to a fresh recommendation.
-    products = resolve_products(message, history, store)
+    #
+    # `verify=False` on both resolver calls in this module: they only decide which rows go into
+    # `format_products(products[:2])` behind an objection reply. A row the customer's letters do not
+    # support is a soft failure here — the reply is about price or doubt, not "X is available at Y" —
+    # and it is not worth a confirming LLM call on every objection turn. The turn that quotes a price
+    # by name goes through `product_info`, which does verify.
+    products = resolve_products(message, history, store, verify=False)
     budget = stated_budget(conversation)
     context = format_products(products[:2], max_price=budget) if products else ""
 

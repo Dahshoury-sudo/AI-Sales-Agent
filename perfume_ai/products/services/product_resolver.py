@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 from django.db.models import Q
 from products.models import Product
@@ -35,12 +36,20 @@ class Resolution(list):
     *denial*, and a denial issued because the extractor blipped is the Versace Eros incident with
     an infrastructure cause. Read it as `getattr(result, "failed", False)` so a plain list, and
     every patched `return_value=[]`, means "no failure to report" rather than crashing.
+
+    `ambiguous` is the fourth, and it is the placement channel's version of `unplaced`: a span the
+    model placed on a perfume the customer's own letters do not support, which we withheld rather
+    than price. Read as `getattr(result, "ambiguous", ())`. It is deliberately NOT merged into
+    `unplaced` — that channel is the witness `absence.catalogue_verdict` denies on, so putting an
+    ambiguous span there would turn "we are not sure which perfume you mean" into "we do not sell
+    it", which is the worse error in the other direction. See `_verify_placement`.
     """
 
-    def __init__(self, products=(), unplaced=(), failed=False):
+    def __init__(self, products=(), unplaced=(), failed=False, ambiguous=()):
         super().__init__(products)
         self.unplaced = tuple(unplaced)
         self.failed = bool(failed)
+        self.ambiguous = tuple(ambiguous)
 
 
 def _unplaced_names(candidates, message, store, products):
@@ -77,6 +86,201 @@ def _unplaced_names(candidates, message, store, products):
             continue
         kept.append(name)
     return kept
+
+
+# The placement channel's guard, and the four numbers that arm it. Read `_verify_placement` for
+# what they mean; they are here, and not in `naming`, because that module is scoped to matching
+# primitives with no opinion about what to say to anyone (`absence.py:19-21`).
+#
+# 🔴 Provisional, and fitted to 265 single-product Arabic placements from THREE stores (40, 45 and
+# 188 rows). Re-measure with `eval_harness.backtest_placement`, which prints the frontier each
+# threshold is sitting on, before trusting them against a different catalogue or resolver model.
+_MIN_COVERAGE = 0.70  # share of the customer's letters the top row has to explain
+_GAP = 0.10           # how far the best row must separate from the runner-up
+_PICK_RATIO = 0.75    # the model's pick must score at most this much of the best row
+_MIN_CHARS = 5        # characters that actually lined up, via SequenceMatcher.get_matching_blocks
+
+_HAS_LATIN = re.compile(r"[A-Za-z]")
+
+
+def _disagreement(text, pick, store, products):
+    """Do the customer's own letters point somewhere other than the perfume we placed?
+
+    Returns `(span, ranking, scores)` when they clearly do, or `None`. `ranking` is
+    `naming.phonetic_ranking`'s full ordered list, handed back so the caller can build a shortlist
+    without scoring the catalogue a second time; `scores` is
+    `(best_score, second_score, pick_score, matched_chars, coverage)`, carried so the caller can log
+    why.
+
+    The rule, and each clause is doing separate work:
+
+        coverage >= _MIN_COVERAGE             the top row explains nearly all of what was typed
+        best_score >= second + _GAP           and it separates from the field
+        pick_score <= _PICK_RATIO * best       and it is not the one the model chose
+        matched_chars >= _MIN_CHARS            on enough real characters to mean anything
+
+    **Coverage is `matched_chars / len(transliteration)` — the clause that actually decides**, and it
+    is the one to keep if this ever has to be cut down to a single test. Measured over 265 real
+    placements (`eval_harness.backtest_placement`), of which 8 are the known defect:
+
+    | | coverage |
+    |---|---|
+    | the 8 true positives (`الترامل`, `الترا ميل`, `التراميل` → Terre d'Hermes) | 0.833 – 1.000 |
+    | the highest of the **257 placements this leaves alone** (46 reach the clause) | **0.588** |
+
+    0.70 sits in the middle of that gap. What it means in words: a perfume name misspelled
+    phonetically is still almost entirely *made of* that perfume's sounds, while a sentence that
+    merely happens to score well against some row explains only half its own letters. That is why it
+    rejects the whole class the ratio could not — "لا انا بسأل بس اسعارو اي" ("no, I'm just asking
+    what its prices are") scores 0.500 against *Lattafa Asad* with a **0.159** separation, above any
+    gap threshold that still catches the bug, and covers 0.462.
+
+    🔴 Two statistics were measured and rejected before this one. Do not reintroduce either.
+
+      * **An absolute floor** (`best_score >= 0.60`) was backtested clean and then disproved.
+        `SequenceMatcher.ratio()` is `2M/(len(a)+len(b))`, so "some row scores above 0.60" is a
+        lottery whose odds grow with the catalogue: bootstrapped over 345 real spans, 4.9% at 35
+        rows, 23.9% at 188, about 45% at 400. Tuned at 188 it would have been reported clean by an
+        eval harness running against 40 rows — it could not have falsified it — and would then have
+        fired on half the turns of a larger tenant. It also cannot reach short names at all: the
+        *correct* row scores `Si` 0.500, `Eros` 0.444, `Pi` 0.154, `212` 0.083.
+      * **The separation gap alone.** It survives the catalogue-size argument — more rows raise the
+        runner-up, so a bigger catalogue makes this *more* cautious — but it does not separate the
+        data. The tightest true positive sits at **0.121** and the false positive above at **0.159**,
+        i.e. the false positive is *better* separated than the bug. There is no threshold. The gap is
+        kept as a cheap structural filter at 0.10, below every true positive, and coverage is what
+        carries the decision.
+
+    `matched_chars >= 5` disqualifies junk that scores well on almost nothing: "راجل" ("a man" — a
+    gender statement) hits 0.667 against ZARA GOLD on M=4, and "سي" matches `Si` on M=1.
+
+    Three scope restrictions, because the backtest population was narrower than a bare rule would
+    be. The caller applies the first; the other two are here:
+
+      * exactly one product placed — a multi-name message concatenates into a span that matches
+        nothing in particular, so this is blind there by accident rather than by design;
+      * no Latin characters in the span — "عايز حاجه شبه Baccarat Rouge بس مش هي" asks for
+        something *like* a perfume it names outright, and scores 0.703 against it while the correct
+        answer scores low. Refusing mixed spans is what keeps that from flagging;
+      * at least two rows to compare, since a separation from nothing is not a separation.
+
+    ⚠️ **Recall is not claimed, and the misses are not hypothetical.** This is a high-precision net:
+    8 of 8 known defects, 0 of 257 other placements. Two of those 257 are the same bug getting
+    through, both in conversation 726, both answered *Afnan 9PM*:
+
+        انااا بتكلم دلوقتي سعر سترينجر وذ يو انتنسلي عامل كام   cov 0.412   ← asks its price outright
+        انااا عله سترينجر وذ يو انتنسلي                          cov 0.538
+
+    Neither is ambiguous to a reader, and the top row is *Stronger With You Intensely* in both. They
+    sit low only because the filler around the name is not stripped — `انااا`, `بتكلم`, `دلوقتي`,
+    `عله` are not in `naming._REFERENTIAL`, so they stay in the span and dilute the ratio. **That is
+    where the recall is, and it is a vocabulary fix, not a threshold fix.** Lowering `_MIN_COVERAGE`
+    to 0.40 to reach them would drag in every frontier row in the backtest; adding those words to
+    `_REFERENTIAL` would raise their coverage to roughly the 0.778 the clean spellings of the same
+    name already score (conversations 723 and 727, correctly placed). Deferred because
+    `_REFERENTIAL` also feeds `get_product_info`'s resolver gate and needs its own regression floor.
+    """
+    span = naming.arabic_span(text)
+    if not span or _HAS_LATIN.search(span):
+        return None
+
+    latin = naming.transliterate(span)
+    ranking = naming.phonetic_ranking(text, store, products=products)
+    if not latin or len(ranking) < 2:
+        return None
+
+    best_score, matched_chars, best = ranking[0]
+    second_score = ranking[1][0]
+    coverage = matched_chars / len(latin)
+    if best.pk == pick.pk:
+        return None
+    if matched_chars < _MIN_CHARS:
+        return None
+    if coverage < _MIN_COVERAGE:
+        return None
+    if best_score < second_score + _GAP:
+        return None
+
+    pick_score = next((score for score, _, row in ranking if row.pk == pick.pk), 0.0)
+    if pick_score > _PICK_RATIO * best_score:
+        return None
+
+    return span, ranking, (best_score, second_score, pick_score, matched_chars, coverage)
+
+
+def _verify_placement(message, resolved, store, products):
+    """Second-guess a placement the customer's letters do not support. `(resolved, ambiguous)`.
+
+    The symmetric half of `_unplaced_names` above, and it exists because the two channels were not
+    defended alike. A denial passes three Python guards *and* a whole second model call
+    (`confirm_unplaced`); a placement was checked against the catalogue and nothing else — the loop
+    below asks `products.filter(name__iexact=…)` whether the row is real, never whether it is what
+    the customer typed. Conversation 1041 is two messages long: "في التراميل ؟" — الترا + ميل,
+    Ultra Male, active in that store — answered "Terre d'Hermes متوفر عندنا" with its real prices
+    and no hedge. Terre d'Hermès has no L sound in it anywhere. The same pair of perfumes did this
+    on 8 turns across 5 conversations before anyone reported it.
+
+    Nothing in Python can *place* an Arabic name — that asymmetry is real and is why
+    `naming.phonetic_ranking` must not be used to pick a row. But Python can notice a disagreement,
+    and a disagreement is enough to stop and ask. On one:
+
+      * **one narrow model call**, `confirm_placement`, showing the customer's exact span and a
+        shortlist of the pick plus the phonetic runners-up. It may answer only from that shortlist
+        or NONE, which is what makes it safe by construction — the lesson from `confirm_unplaced`,
+        whose free-form answer needed a relatedness check bolted on afterwards.
+      * **names one** → place it; the customer gets the right perfume and its price.
+      * **NONE, or a failure** → withhold the placement and report the span as `ambiguous`. The
+        existing plumbing turns that into the retype request it already has wording for: with
+        nothing placed, `product_info` reads `named_but_unresolved`, the verdict falls to UNKNOWN,
+        and `_UNREADABLE_NAME_RULES` asks which perfume they meant without denying anything.
+
+    🔴 Withholding on a *failure* is the opposite reading from `confirm_unplaced`, which raises so a
+    blip cannot manufacture a denial. Both point the same way once you ask what the blip would
+    produce: there, silence must not become "we do not sell it"; here, it must not become a
+    confidently wrong price. Withholding costs the customer one extra round-trip. Keeping the
+    placement costs them the bug.
+
+    ❌ The phonetic winner is never substituted for the model's pick. That is the "اوداورا" →
+    *Dark Aura* behaviour removed from the loop below, and it is worse than either honest outcome.
+    """
+    if len(resolved) != 1:
+        return resolved, ()
+
+    pick = resolved[0]
+    disagreement = _disagreement(message, pick, store, products)
+    if not disagreement:
+        return resolved, ()
+
+    span, ranking, scores = disagreement
+    best = ranking[0][2]
+    best_score, second_score, pick_score, matched_chars, coverage = scores
+    logger.info(
+        "placement: span=%r translit=%r pick=%r (%.3f) vs best=%r (%.3f) second=%.3f "
+        "chars=%d cov=%.3f",
+        span, naming.transliterate(span), pick.name, pick_score,
+        best.name, best_score, second_score, matched_chars, coverage,
+    )
+
+    # The pick and the top row, plus the next two the letters could plausibly be, so the confirmer
+    # is not forced to choose between exactly two when the customer meant a third. Capped there
+    # because a longer list is a worse question, not a better one.
+    shortlist = [pick, best]
+    for _, _, row in ranking[1:3]:
+        if all(row.pk != other.pk for other in shortlist):
+            shortlist.append(row)
+
+    try:
+        answer = confirm_placement(span, shortlist, store)
+    except Exception:
+        logger.exception("placement: confirming %r failed; withholding rather than pricing", span)
+        return [], (span,)
+
+    if answer is None:
+        logger.info("placement: %r not confirmed; withholding and asking", span)
+        return [], (span,)
+
+    logger.info("placement: %r corrected from %r to %r", span, pick.name, answer.name)
+    return [answer], ()
 
 
 _FAMILIES_HEADER = (
@@ -125,7 +329,7 @@ def _families_block(catalogue):
     return "\n\n" + _FAMILIES_HEADER + "\n" + "\n".join(lines)
 
 
-def resolve_products(message: str, history=None, store=None, conversation=None):
+def resolve_products(message: str, history=None, store=None, conversation=None, verify=True):
     """
     Try to resolve multiple products from the user's message using AI extraction.
 
@@ -134,6 +338,12 @@ def resolve_products(message: str, history=None, store=None, conversation=None):
     only reference guidance is one sentence below plus a rule scoped to short confirmations, and
     a doubt utterance matches neither — "مش متوفر متأكد ؟" about Versace Eros resolved to two
     perfumes from two turns earlier (conversation 1099) because nothing pointed at the newest.
+
+    `verify=False` switches off `_verify_placement` — the guard that second-guesses a single
+    placement the customer's Arabic does not support. Off for callers whose `message` is not the
+    customer's own words (`resolve_product`) or where a wrong row is a soft failure not worth a
+    confirming call (`objection_service`); each such call site carries the reason. It is a keyword
+    with a safe default so a new caller is guarded without having to know this exists.
 
     Returns a `Resolution` — a list of products that also reports which named perfumes it could not
     place. See that class for why the second half is needed.
@@ -256,11 +466,20 @@ Output format MUST be valid JSON:
         if match and match not in resolved:
             resolved.append(match)
 
-    _log_outcome(message, resolved, unplaced, failed)
-    return Resolution(resolved, unplaced, failed=failed)
+    # The placement channel's only check on the customer's own message. Everything above this line
+    # validated the model's answer against the CATALOGUE — `message` is not read once between the
+    # start of the loop and here — which is why conversation 1041 priced Terre d'Hermes for a
+    # customer who typed "في التراميل ؟" (Ultra Male, stocked) and was right about every row it
+    # touched. See `_verify_placement`.
+    ambiguous = ()
+    if verify:
+        resolved, ambiguous = _verify_placement(message, resolved, store, products)
+
+    _log_outcome(message, resolved, unplaced, failed, ambiguous)
+    return Resolution(resolved, unplaced, failed=failed, ambiguous=ambiguous)
 
 
-def _log_outcome(message, resolved, unplaced, failed):
+def _log_outcome(message, resolved, unplaced, failed, ambiguous=()):
     """One line per extraction: what went in, what was placed, what was reported unplaced.
 
     Diagnosing conversation 1021 meant dumping the conversation out of production, because nothing
@@ -268,13 +487,21 @@ def _log_outcome(message, resolved, unplaced, failed):
     report is the sole witness `absence.catalogue_verdict` has for an Arabic name. A denial with no
     trace of the decision behind it is not something we should have to reconstruct twice.
 
+    `ambiguous` says whether a placement was withheld on this turn. The scores behind that decision
+    — span, transliteration, the pick and the top row with their ratios, the runner-up, and the
+    matched-character count — are logged by `_verify_placement` itself, on the same turn and through
+    the same logger, because that is where they exist and threading six floats back up through a
+    function that runs on every single turn buys nothing. Grep `placement:` for the arithmetic and
+    `resolver:` for the outcome; a withheld turn has both.
+
     At INFO, and the message is truncated: this runs on every turn.
     """
     logger.info(
-        "resolver: message=%r placed=%s unplaced=%s failed=%s",
+        "resolver: message=%r placed=%s unplaced=%s ambiguous=%s failed=%s",
         (message or "")[:120],
         [product.name for product in resolved],
         list(unplaced),
+        list(ambiguous),
         failed,
     )
 
@@ -283,7 +510,13 @@ def resolve_product(message: str, history=None, store=None, conversation=None):
     """
     Try to resolve a single product. Returns the first matched product or None.
     """
-    resolved = resolve_products(message, history, store, conversation)
+    # `verify=False`, and for two independent reasons. Its one caller (`order_service.py:605`) passes
+    # a name the *order* extractor produced, not the customer's own words, so the guard's premise —
+    # "compare what we placed against what the customer typed" — is simply false here. And a withheld
+    # placement would come back as `None` from the `resolved[0] if resolved else None` below, which
+    # `handle_order` reads as "no such perfume" and silently drops the order line. A soft wrong row
+    # is recoverable; a vanished line item is not.
+    resolved = resolve_products(message, history, store, conversation, verify=False)
     return resolved[0] if resolved else None
 
 
@@ -295,6 +528,16 @@ class _CarriedHouse:
 
 
 CARRIED_HOUSE = _CarriedHouse()
+
+
+class _Unverified:
+    """The rescue named a perfume the customer's own letters do not support. Neither outcome holds."""
+
+    def __repr__(self):
+        return "UNVERIFIED"
+
+
+UNVERIFIED = _Unverified()
 
 
 def confirm_unplaced(name, store=None):
@@ -319,7 +562,7 @@ def confirm_unplaced(name, store=None):
 
     Called only when we are about to deny, which is rare, so this does not touch the ordinary turn.
 
-    **Three outcomes, and each one is the safe reading of its answer:**
+    **Four outcomes, and each one is the safe reading of its answer:**
 
       * a `Product` — the span is ours after all. The caller places it and the customer gets the
         perfume and its price instead of a denial.
@@ -327,6 +570,11 @@ def confirm_unplaced(name, store=None):
         nothing to place, but emphatically not deniable either: this is how "عندكو ديور ؟" would
         otherwise get told we do not sell Dior with three Diors on the shelf. The caller must read it
         as UNKNOWN and ask which perfume they meant.
+      * `UNVERIFIED` — it named a row, and `_disagreement` says the customer's own letters point
+        somewhere else entirely. Neither reading survives: we have no rescue to offer and no evidence
+        of absence either. 🔴 This is why it is a third value and **not `None`** — `None` means "we
+        checked and it is absent", so `_confirm_before_denying` (`product_info.py:361-363`) logs
+        *"confirmed absent; denial stands"* and denies by name. The caller must read this as UNKNOWN.
       * `None` — genuinely not ours. The caller denies, exactly as today.
 
     **Raises** on a transport or JSON failure rather than returning `None`, because those two must not
@@ -391,8 +639,95 @@ Output MUST be valid JSON."""
         products.filter(name__iexact=answer).first()
         or naming.match_product(answer, store, products=products)
     )
+
+    # And then checked against the customer's own letters, with the same predicate that guards the
+    # placement channel. This rescue was the *other* half of conversation 1041's defect: a call whose
+    # prompt above says "prefer a name over 'NONE' when the words plausibly fit one", on the highest-
+    # stakes path in the file, accepting whatever came back because the row existed in the catalogue.
+    # That is the check the placement loop was missing, one channel over — and here it costs nothing,
+    # because the ranking is arithmetic over rows already in memory rather than another call.
+    if match is not None and _disagreement(name, match, store, products):
+        logger.info(
+            "confirm_unplaced: %r -> %r rejected, the letters point elsewhere (UNVERIFIED)",
+            (name or "")[:120], match.name,
+        )
+        return UNVERIFIED
+
     logger.info(
         "confirm_unplaced: %r -> %r (%s)",
         (name or "")[:120], answer, "placed" if match else "unmatchable, denial stands",
     )
     return match
+
+
+def confirm_placement(span, shortlist, store=None):
+    """Which of these perfumes did the customer mean? A `Product` from the shortlist, or `None`.
+
+    The other side of `confirm_unplaced`, on the other channel, and deliberately the narrower call of
+    the two. `confirm_unplaced` has to be given the whole catalogue, because its question is "is this
+    anywhere in here". This one already knows the answer is one of two or three rows — `_disagreement`
+    established that the customer's letters separate one row from the field, and the model's own pick
+    is the other — so the question is a choice between them.
+
+    🔴 **It may answer only from the shortlist, or NONE, and an answer outside it is read as NONE.**
+    That constraint is what makes this call safe by construction, and it is the lesson from
+    `confirm_unplaced` above: a confirmer allowed to answer freely returned rows that had nothing to
+    do with what the customer typed, and needed a relatedness check bolted on after the fact. A
+    confirmer choosing from a vetted shortlist cannot do that at all.
+
+    The span is passed in the customer's own script, untranslated, for the same reason rule 9 of the
+    extractor prompt demands it: we are asking what these letters say, so correcting them first would
+    be asking about our own guess.
+
+    **Raises** on a transport or JSON failure. The caller withholds on a raise — see
+    `_verify_placement`, which records why that is the opposite reading from this module's other
+    confirmer and yet the same principle.
+    """
+    if not span or not shortlist:
+        return None
+
+    listing = "\n".join(f"- {product.name}" for product in shortlist)
+    prompt = f"""A customer wrote a perfume name in Arabic letters. Our extractor read it as one of the perfumes below, but the letters the customer actually typed look closer to a different one. We need to know which they meant before we quote a price, because quoting the wrong perfume's price by name is worse than asking.
+
+The perfumes it could be:
+{listing}
+
+Read the customer's letters phonetically, as an Egyptian customer would type a French or English name in Arabic script. Sound them out:
+• "الترا ميل" / "الترامل" / "التراميل" are all Ultra Male — الترا is "ultra", ميل is "male", and Egyptians write them joined as often as spaced.
+• "لامال" is Le Male. "تير دي هيرميس" is Terre d'Hermes. "سوفاج" is Sauvage.
+• Letters get dropped and doubled in the middle of a name; the first and last sounds are the reliable ones.
+
+Answer with ONE of:
+{{"name": "<the exact name from the list above>"}}   — the letters clearly say this one
+{{"name": "NONE"}}                                   — you cannot tell which of them it is
+
+Choose a name only when the letters actually support it. ❌ Do NOT pick one because it is more popular, or because it appears first, or to avoid answering NONE. "NONE" is a good answer here: it makes us ask the customer to write the name again, which costs them one message. Naming the wrong perfume costs them the price of the wrong perfume. ❌ Do NOT answer with any name that is not in the list above.
+
+Output MUST be valid JSON."""
+
+    response = chat(
+        [{"role": "system", "content": prompt}, {"role": "user", "content": span}],
+        profile="resolve",
+        response_format={"type": "json_object"},
+    )
+    data = json.loads(response)
+    if not isinstance(data, dict):
+        raise ValueError(f"placement confirmer returned {type(data).__name__}, expected an object")
+
+    answer = (data.get("name") or "").strip()
+    if not answer or answer.upper() == "NONE":
+        return None
+
+    # Only from the shortlist. An answer off it is read as NONE rather than resolved against the
+    # catalogue: the whole safety property of this call is that its output space is the rows we
+    # vetted, and a free resolution here would hand back the loophole the constraint just closed.
+    normalized = answer.casefold().strip()
+    for product in shortlist:
+        if product.name.casefold().strip() == normalized:
+            return product
+
+    logger.info(
+        "confirm_placement: %r answered %r, which is not on the shortlist %s; reading as NONE",
+        span[:120], answer, [product.name for product in shortlist],
+    )
+    return None

@@ -176,6 +176,34 @@ _confirm_pass_finds_nothing = mock.patch(
 )
 
 
+# The placement guard's confirmer agrees with the extractor — "yes, that is the row."
+#
+# The mirror of the patch above, for the other channel and with the opposite answer, and the
+# difference is the point. `product_resolver._verify_placement` asks `confirm_placement` whenever the
+# customer's Arabic points at a different row than the one the extractor placed (conversation 1041:
+# "في التراميل ؟" answered with Terre d'Hermes' prices while Ultra Male sat in stock). Unconfirmed
+# means the placement is withheld, so a stub answering NONE would delete the product from every test
+# it touches and they would fail on the reply rather than on the guard. Returning `shortlist[0]` —
+# the extractor's own pick, always first — makes the guard a no-op and leaves a test asserting what
+# it was written to assert.
+#
+# 🔴 No existing class needs this, and that was checked rather than assumed. The guard lives *inside*
+# `resolve_products`, below the seam that ~20 classes patch at `product_info.resolve_products`, so
+# those bypass it by construction — that is why it was put there. The three classes that patch
+# `product_resolver.chat` and let the resolver run for real cannot reach it either: two return
+# `{"perfumes": []}` and the guard needs exactly one placement, and the third has a single-product
+# catalogue while `_disagreement` needs two rows to compare. This is here for the fixture that
+# eventually has two products and a placement, where the failure would be quiet — a single-
+# `return_value` `chat` mock hands the confirmer the extractor's `{"perfumes": […]}` payload, which
+# parses, contains no "name", and reads as NONE.
+#
+# A test *about* the guard patches `product_resolver.confirm_placement` itself and overrides this.
+_placement_confirm_keeps_the_pick = mock.patch(
+    "products.services.product_resolver.confirm_placement",
+    lambda span, shortlist, store=None: shortlist[0],
+)
+
+
 class ProductContextCapTests(TestCase):
     """The prompt-size cap on how many products reach the AI.
 
@@ -10029,7 +10057,13 @@ class ProductInfoReferentTests(TestCase):
         self.assertNotIn("Dior Sauvage", context)
 
     def test_the_resolver_still_runs_when_nothing_is_under_discussion(self):
-        """Arabic transliterations stay on the LLM path, so it must not be bypassed."""
+        """Arabic transliterations stay on the LLM path, so it must not be bypassed.
+
+        `naming.phonetic_ranking` (conversation 1041) does not change that. It scores a span against
+        the catalogue but cannot place one, so it is a check on the extractor's answer, never a
+        substitute for asking it. "بكام سوفاج؟" must still reach the model.
+        """
+
         with mock.patch(
             "products.services.product_info.resolve_products",
             return_value=[self.older],
@@ -11726,16 +11760,25 @@ class CatalogueAbsenceVerifierTests(TestCase):
     def test_an_arabic_brand_reaches_the_witness_rung_instead(self):
         """🔴 The hole in the rung above, asserted rather than left to be discovered.
 
-        "ديور" is a house we carry, and `names_a_bare_brand` cannot see that: `Brand.name` is Latin,
-        there is no alias column, and no transliteration exists anywhere in this codebase. So the
-        Arabic spelling falls through to the witness rung — UNKNOWN while nobody reports it, and
-        **ABSENT the moment somebody does**, which is a denial about a brand sitting on the shelf.
+        "ديور" is a house we carry, and `names_a_bare_brand` cannot see that: `Brand.name` is Latin
+        and there is no alias column. So the Arabic spelling falls through to the witness rung —
+        UNKNOWN while nobody reports it, and **ABSENT the moment somebody does**, which is a denial
+        about a brand sitting on the shelf.
 
         Both halves are here so the second one cannot change silently. What keeps the witness from
         existing is `product_resolver`'s rule 9, asserted in
         `AbsentNameStillNotDeniedOnAbstainTests.test_the_extractor_is_told_not_to_report_a_house_as_a_perfume`;
-        what catches it when the rule is disobeyed is the owner notification on every denial. If a
-        transliteration bridge ever lands, this is the test that should start failing.
+        what catches it when the rule is disobeyed is the owner notification on every denial.
+
+        ⚠️ This docstring used to end "if a transliteration bridge ever lands, this is the test that
+        should start failing." One has landed — `naming.transliterate` and `naming.phonetic_ranking`,
+        added for conversation 1041 — and **this test still passes, by design**. The bridge is a
+        similarity ranking wired into the *placement* channel, where it second-guesses a row the
+        extractor already chose and then asks the customer. It is deliberately not a witness on the
+        denial path: ranking cannot distinguish a spelling of a perfume we stock from a spelling of
+        one we do not, and `absence.py` records why that must stay true. So this assertion is still
+        the live description of the rung. What *would* justify changing it is a real alias or
+        Arabic-name column on `Brand`, which is a schema change, not a scoring one.
         """
         from products.services import absence
 
@@ -11798,7 +11841,16 @@ class CatalogueAbsenceVerifierTests(TestCase):
         """`Product.name` is Latin-only with no alias column, so "لادور بخور" shares no character
         with any row and token matching cannot rule it out — "جنتل مان" and "Gentleman" are the
         same perfume and zero tokens apart. The extractor is handed the whole catalogue and reports
-        the spans it could not place, and that report is the only witness there is."""
+        the spans it could not place, and that report is the only witness there is.
+
+        🔴 Still true after the transliteration bridge landed (`naming.phonetic_ranking`, for
+        conversation 1041), and this test is where that would show. The bridge could score "لادور
+        بخور" against every row, but a *ratio* is not a clearance: the top row would sit somewhere
+        around chance whether we stock the perfume or not, and a denial resting on that is the
+        failure mode this class exists to prevent. Its own caller only ever uses it to contradict a
+        placement and then ask. If a future change gives `Resolution.ambiguous` a path into
+        `unplaced`, this assertion is one of the two that catch it.
+        """
         from products.services import absence
 
         self.assertEqual(
@@ -12457,6 +12509,307 @@ class Conversation1021Tests(TestCase):
         self.assertIn("Le Male", context)
         self.assertNotIn(product_info.NAME_UNREADABLE_MARKER, context)
         self.assertNotIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, prompt)
+
+
+class Conversation1041Tests(TestCase):
+    """Conversation 1041, 2026-09-28: the *wrong* perfume, priced by name with no hedge.
+
+    Two messages long. "في التراميل ؟" is الترا + ميل — **Ultra Male**, active in that store — and the
+    reply was "Terre d'Hermes متوفر عندنا" with its real prices. Terre d'Hermès has no L sound in it
+    anywhere. The same pair of perfumes did this on 8 turns across 5 conversations (991, 1021 ×2,
+    1035 ×3, 1040, 1041) before anyone reported it, and conversation 991 has the customer getting
+    Terre d'Hermes and then Ultra Male seconds apart on the same spelling — so it is sampling noise,
+    not a reading of the message.
+
+    The cause is an asymmetry, not a bad prompt. `resolve_products` defends its two channels
+    differently: a *denial* passes three Python guards and a whole second model call, while a
+    *placement* was checked against the catalogue and nothing else — `products.filter(name__iexact=…)`
+    asks whether the row is real, never whether it is what the customer typed. `message` is not read
+    once between the start of the placement loop and its end.
+
+    So these tests run `resolve_products` for real, patching only the extractor's `chat`, because the
+    guard lives inside it — below the seam that most classes patch at `product_info.resolve_products`.
+    Patch above the seam and none of this executes.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        jpg = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        hermes = Brand.objects.create(store=self.store, name="Hermes")
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        self.ultra = self._perfume(jpg, "Ultra Male", 750)
+        self.terre = self._perfume(hermes, "Terre d'Hermes", 600)
+        self.le_male = self._perfume(jpg, "Le Male", 500)
+        self.sauvage = self._perfume(dior, "Dior Sauvage", 944)
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _perfume(self, brand, name, price):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="male",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=100, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _resolve(self, message, placed, confirm=mock.DEFAULT):
+        """Run the real resolver with the extractor's answer forced. Returns the `Resolution`.
+
+        `placed` is what the extractor reported — the wrong row, in the turns below. `confirm` is what
+        the narrower second call answered: a product, `None` for "cannot say", or an exception to
+        raise. Left at `mock.DEFAULT` the confirmer is not patched, which is only correct for turns
+        that never reach it — and one of these tests asserts precisely that it was not reached.
+        """
+        import contextlib
+
+        payload = json.dumps({"perfumes": placed, "unplaced": []})
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                mock.patch(
+                    "products.services.product_resolver.chat", return_value=payload
+                )
+            )
+            if confirm is not mock.DEFAULT:
+                kwargs = (
+                    {"side_effect": confirm}
+                    if isinstance(confirm, BaseException)
+                    else {"return_value": confirm}
+                )
+                confirmer = stack.enter_context(
+                    mock.patch(
+                        "products.services.product_resolver.confirm_placement", **kwargs
+                    )
+                )
+            else:
+                confirmer = stack.enter_context(
+                    mock.patch(
+                        "products.services.product_resolver.confirm_placement",
+                        side_effect=AssertionError(
+                            "the guard called the confirmer on a placement it should not "
+                            "have questioned"
+                        ),
+                    )
+                )
+            return resolve_products(message, [], self.store), confirmer
+
+    # ── the turn itself ───────────────────────────────────────────────────
+    def test_a_placement_the_letters_contradict_is_not_priced(self):
+        """🔴 The conversation-1041 turn. Confirmer cannot say, so nothing is priced.
+
+        Withholding is the safe direction and it is not free: the customer pays one extra
+        round-trip. Pricing the wrong perfume by name costs them the defect, which is worse, and
+        `_UNREADABLE_NAME_RULES` already has wording to ask which perfume they meant.
+        """
+        result, _ = self._resolve("في التراميل ؟", ["Terre d'Hermes"], confirm=None)
+
+        self.assertEqual(list(result), [])
+        self.assertEqual(result.ambiguous, ("التراميل",))
+        self.assertFalse(result.failed)
+
+    def test_the_confirmer_can_correct_the_placement(self):
+        """Named a row from the shortlist, so the customer gets the perfume they actually asked about.
+
+        The only path that turns this defect into a right answer rather than a question.
+        """
+        result, _ = self._resolve(
+            "في التراميل ؟", ["Terre d'Hermes"], confirm=self.ultra
+        )
+
+        self.assertEqual(list(result), [self.ultra])
+        self.assertEqual(result.ambiguous, ())
+
+    def test_a_failed_confirmation_withholds_rather_than_prices(self):
+        """🔴 The opposite reading from `confirm_unplaced`, and deliberately so.
+
+        There, the call raising must not manufacture a denial. Here it must not manufacture a
+        confidently wrong price. Both are the same question — what should a provider blip be allowed
+        to produce — with opposite safe answers, so the two must not be refactored into one rule.
+        """
+        result, _ = self._resolve(
+            "في التراميل ؟", ["Terre d'Hermes"], confirm=RuntimeError("boom")
+        )
+
+        self.assertEqual(list(result), [])
+        self.assertEqual(result.ambiguous, ("التراميل",))
+
+    def test_the_phonetic_winner_is_never_substituted_silently(self):
+        """Ultra Male is the top row by a wide margin and is still not placed on its own.
+
+        This is the "اوداورا" → *Dark Aura* behaviour the placement loop records as actively
+        dangerous and had removed. A ranking always has a winner, so substituting it turns every
+        unreadable name into a confident wrong answer — the bug this class is about, with Python
+        doing it instead of the model.
+        """
+        result, _ = self._resolve("في التراميل ؟", ["Terre d'Hermes"], confirm=None)
+
+        self.assertNotIn(self.ultra, list(result))
+
+    # ── the false-positive side, which matters more ───────────────────────
+    def test_a_correct_placement_is_not_questioned(self):
+        """"سوفاج" → Dior Sauvage. The confirmer must not be called at all.
+
+        The mock raises if it is, because the cost of a false positive is paid by every customer who
+        spells a name unusually, on stores we cannot inspect. What protects this turn is the
+        `best.pk == pick.pk` short-circuit rather than any threshold — the top phonetic row *is* the
+        row the extractor placed — and that is the mechanism most correct placements rely on. Worth
+        knowing before reordering the tests in `_disagreement`.
+        """
+        result, confirmer = self._resolve("بكام سوفاج ؟", ["Dior Sauvage"])
+
+        self.assertEqual(list(result), [self.sauvage])
+        self.assertFalse(confirmer.called)
+
+    def test_two_names_in_one_message_are_left_alone(self):
+        """The guard only looks at a single placement, and the restriction is honest about why.
+
+        A multi-name message concatenates into a span that matches nothing in particular, so the
+        scores mean nothing there. It is blind by accident rather than by design, which is a reason
+        to restrict it rather than to trust it.
+        """
+        result, confirmer = self._resolve(
+            "عايز الترامل و سوفاج", ["Terre d'Hermes", "Dior Sauvage"]
+        )
+
+        self.assertEqual(len(result), 2)
+        self.assertFalse(confirmer.called)
+
+    def test_a_span_naming_a_perfume_in_latin_is_left_alone(self):
+        """"عايز حاجه شبه Baccarat Rouge بس مش هي" asks for something *like* a perfume it names
+        outright, in Latin, and scored 0.703 against that very row while the correct answer scored
+        low. Refusing any span containing Latin characters is what keeps a request for an
+        alternative from being read as a misspelling of the thing it is not asking for."""
+        result, confirmer = self._resolve(
+            "عايز حاجه شبه Terre d'Hermes بس مش هي", ["Dior Sauvage"]
+        )
+
+        self.assertEqual(list(result), [self.sauvage])
+        self.assertFalse(confirmer.called)
+
+
+class PlacementDisagreementThresholdTests(TestCase):
+    """The four numbers in `product_resolver._disagreement`, tested where they can be read.
+
+    Separated from `Conversation1041Tests` on purpose: that class asserts what the customer gets,
+    this one asserts why. The thresholds were fitted to 265 real placements by
+    `eval_harness.backtest_placement` and the docstring beside them carries the measurements; these
+    pin the clauses that are load-bearing so a future re-fit cannot quietly delete one.
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Perfamix Test")
+        jpg = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        hermes = Brand.objects.create(store=self.store, name="Hermes")
+        zara = Brand.objects.create(store=self.store, name="Zara")
+        self.ultra = Product.objects.create(
+            store=self.store, brand=jpg, name="Ultra Male", gender="male",
+        )
+        self.terre = Product.objects.create(
+            store=self.store, brand=hermes, name="Terre d'Hermes", gender="male",
+        )
+        self.gold = Product.objects.create(
+            store=self.store, brand=zara, name="ZARA GOLD", gender="male",
+        )
+        self.products = [self.ultra, self.terre, self.gold]
+
+    def _disagree(self, message, pick):
+        from products.services import product_resolver
+
+        return product_resolver._disagreement(
+            message, pick, self.store, self.products
+        )
+
+    def test_the_production_turn_disagrees(self):
+        """The fixture reproduces the production numbers, so the rest of the class means something."""
+        result = self._disagree("في التراميل ؟", self.terre)
+
+        self.assertIsNotNone(result)
+        span, ranking, scores = result
+        best_score, second, pick_score, matched, coverage = scores
+        self.assertEqual(span, "التراميل")
+        self.assertEqual(ranking[0][2], self.ultra)
+        self.assertGreaterEqual(coverage, 0.8)
+        self.assertLess(pick_score, best_score)
+
+    def test_a_short_match_does_not_disagree(self):
+        """"راجل" is "a man" — a statement about who the perfume is for, not a name. It scores 0.667
+        against ZARA GOLD on four lined-up characters, which is the shape `_MIN_CHARS` exists for: a
+        high ratio over almost nothing is arithmetic, not evidence."""
+        from products.services.sales import naming
+
+        ranking = naming.phonetic_ranking("راجل", self.store, products=self.products)
+
+        self.assertLess(ranking[0][1], 5)
+        self.assertIsNone(self._disagree("راجل", self.terre))
+
+    def test_coverage_is_what_rejects_a_sentence_that_scores_well(self):
+        """🔴 The clause that actually decides, and the one to keep if this is ever cut to one test.
+
+        A perfume name misspelled phonetically is still almost entirely *made of* that perfume's
+        sounds — the eight known defects cover 0.833 to 1.000. A sentence that merely happens to
+        score well against some row explains about half its own letters; the highest of the 257
+        placements the backtest leaves alone covers 0.588. `_MIN_COVERAGE` sits between those.
+
+        "لا انا بسأل بس اسعارو اي" ("no, I'm just asking what its prices are") is the turn that
+        disproved the separation gap as a sufficient rule: it separates by 0.159, *better* than the
+        tightest true positive at 0.121, so no gap threshold can tell them apart. Coverage can —
+        0.462 against 0.833.
+        """
+        from products.services import product_resolver
+        from products.services.sales import naming
+
+        message = "لا انا بسأل بس اسعارو اي"
+        ranking = naming.phonetic_ranking(message, self.store, products=self.products)
+        span = naming.arabic_span(message)
+        coverage = ranking[0][1] / len(naming.transliterate(span))
+
+        self.assertLess(coverage, product_resolver._MIN_COVERAGE)
+        self.assertIsNone(self._disagree(message, self.terre))
+
+    def test_a_single_row_catalogue_cannot_disagree(self):
+        """A separation from nothing is not a separation."""
+        from products.services import product_resolver
+
+        self.assertIsNone(
+            product_resolver._disagreement(
+                "في التراميل ؟", self.terre, self.store, [self.terre]
+            )
+        )
+
+    def test_the_span_is_stable_across_hash_seeds(self):
+        """🔴 `arabic_span` re-splits the message instead of joining `identifying_tokens`, because
+        that function returns a **set** and `"".join(set)` is `PYTHONHASHSEED`-dependent.
+
+        Measured before the fix, three runs of one four-token message gave three different strings:
+        "بلوايروسڤيرزاتشيسوفاج", "بلوسوفاجايروسڤيرزاتشي", "بلوايروسڤيرزاتشيسوفاج". A score built on
+        that is nondeterministic in production and unreproducible in a backtest — and it passes every
+        unit test that happens to use a one-token span, which is why this one uses four and runs in
+        real subprocesses with the seed forced. The `in`-order assertion is the regression: the words
+        must come back in the order they were typed.
+        """
+        import subprocess
+        import sys
+
+        message = "عايز بلو دى شنيل و ايروس و سوفاج"
+        code = (
+            "import django, os, sys;"
+            "sys.path.insert(0, os.getcwd());"
+            "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'perfume_ai.settings_test');"
+            "django.setup();"
+            "from products.services.sales import naming;"
+            f"print(naming.arabic_span({message!r}))"
+        )
+        spans = set()
+        for seed in ("0", "1", "42", "12345"):
+            env = dict(os.environ, PYTHONHASHSEED=seed, PYTHONIOENCODING="utf-8")
+            done = subprocess.run(
+                [sys.executable, "-c", code], capture_output=True, text=True,
+                encoding="utf-8", env=env,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            spans.add(done.stdout.strip())
+
+        self.assertEqual(len(spans), 1, f"span varied with PYTHONHASHSEED: {spans}")
+        self.assertEqual(spans.pop(), "بلو دى شنيل ايروس سوفاج")
 
 
 @_confirm_pass_finds_nothing
@@ -13451,13 +13804,17 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
         possible false denial.
 
         🔴 Latin only, and the limit is structural: `Brand.name` holds "Dior", the customer types
-        "ديور", and there is no alias column and no transliteration anywhere in this codebase, so
-        `tokens("ديور") <= tokens("Dior")` is False and the Arabic spelling of a house we stock
-        reaches the Arabic path with a witness behind it. Two things cover that half of the alphabet
-        instead, and neither is Python: `product_resolver`'s rule 9 forbids reporting a bare house
-        name as an unplaced perfume at all, and `router._escalate_absent_name` tells the owner about
-        every denied name on the turn it happens. Worth knowing before adding a fourth reader of
-        this verdict.
+        "ديور", and there is no alias column, so `tokens("ديور") <= tokens("Dior")` is False and the
+        Arabic spelling of a house we stock reaches the Arabic path with a witness behind it. Two
+        things cover that half of the alphabet instead, and neither is Python:
+        `product_resolver`'s rule 9 forbids reporting a bare house name as an unplaced perfume at
+        all, and `router._escalate_absent_name` tells the owner about every denied name on the turn
+        it happens. Worth knowing before adding a fourth reader of this verdict.
+
+        `naming.transliterate` exists now (conversation 1041) and does not change this. It would let
+        "ديور" be *compared* to "Dior", but this rung has to answer whether a span is a house we
+        carry, and a ratio cannot answer that — it ranks, and a ranking always has a winner. See
+        `absence.py`'s note at the same rung.
         """
         context, prompt = self._turn("do you have Dior", _absent("Dior"))
 
