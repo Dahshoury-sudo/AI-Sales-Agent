@@ -1,3 +1,10 @@
 {
-  "CONV973": []
+  "CONV772": [
+    {
+      "turn": 3,
+      "code": "repeated_reply",
+      "severity": "high",
+      "detail": "81% similar to the previous reply — the customer asked for something new and got the same answer"
+    }
+  ]
 }

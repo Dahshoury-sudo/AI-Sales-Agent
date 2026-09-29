@@ -12448,6 +12448,31 @@ class Conversation1021Tests(TestCase):
         self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
 
+    def test_a_rescue_the_letters_contradict_is_neither_placed_nor_denied(self):
+        """🔴 `UNVERIFIED` — the rescue named a row that has nothing to do with what was typed.
+
+        The rescue call was added here to stop a false denial, and it arrived with the same
+        unverified acceptance that caused conversation 1041 one channel over: whatever name the model
+        returned was resolved against the catalogue and placed, with the customer's own letters never
+        consulted. So `confirm_unplaced` now runs its answer past `_disagreement` — free, the ranking
+        is arithmetic over rows already in memory — and reports this third state when it fails.
+
+        Reading it as `None` would be the damaging shortcut: `None` means "we checked and it is
+        absent", so a rejected rescue would come back round as *"confirmed absent; denial stands"* and
+        deny by name — a worse outcome than the false denial the rescue exists to prevent. It has to
+        land on the same branch as a failed call: we have no perfume to offer and no witness to
+        absence either, so ask them to retype.
+        """
+        from products.services import product_info
+        from products.services.product_resolver import UNVERIFIED
+
+        context, _ = self._turn(
+            "طب لامال لكريز", _absent("لامال لكريز"), confirm=UNVERIFIED
+        )
+
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+
     # ── turn 28: the stale price that must not be the answer ──────────────
     def test_a_spelled_out_name_reaches_the_resolver(self):
         """"B m w" tokenised to nothing, so `may_name_a_perfume` was False and the gate never fired.
@@ -12685,6 +12710,76 @@ class Conversation1041Tests(TestCase):
         self.assertEqual(list(result), [self.sauvage])
         self.assertFalse(confirmer.called)
 
+    # ── what the customer actually gets ───────────────────────────────────
+    def _turn(self, message, placed, confirm):
+        """The same shapes, run all the way through `get_product_info`. Returns the context block.
+
+        Worth the extra plumbing over `_resolve` above: the guard's whole claim is about the reply,
+        and "nothing was placed" only becomes "the wrong price is not in front of the customer"
+        because of what `product_info` does with an empty result. That second half is assumed by the
+        tests above and asserted by the two below.
+        """
+        import contextlib
+
+        payload = json.dumps({"perfumes": placed, "unplaced": []})
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                mock.patch(
+                    "products.services.product_resolver.chat", return_value=payload
+                )
+            )
+            stack.enter_context(
+                mock.patch(
+                    "products.services.product_resolver.confirm_placement",
+                    return_value=confirm,
+                )
+            )
+            stack.enter_context(
+                mock.patch("products.services.product_info.chat", return_value="ok")
+            )
+            _, context = get_product_info(message, [], self.store, self.conversation)
+        return context
+
+    def test_the_customer_is_asked_instead_of_being_quoted_a_price(self):
+        """🔴 The production reply, undone. Nothing is presented as the perfume they asked about.
+
+        `NAME_UNREADABLE` is the right marker and `ABSENCE_DENIED` would be the wrong one: we have
+        not established that we do not carry what they asked for — we have established that we
+        cannot read it. Those produce different replies and only one of them is honest here.
+
+        ⚠️ Terre d'Hermès is still *in* the block, and the assertion is careful about that rather
+        than pretending otherwise. Withholding the placement empties `products`, which drops the turn
+        into the long-standing not-found branch, and that branch offers alternatives — so the row can
+        come back as a suggestion. What changed is the only thing that was ever wrong: it is under
+        "بدائل مقترحة" with a pending-lookup block above it forbidding a denial and asking the
+        customer to retype, instead of under the real-product-data header as the answer to their
+        question. Asserting its absence outright would be asserting something the pipeline does not
+        do and has no reason to.
+        """
+        from products.services import product_info
+
+        context = self._turn("في التراميل ؟", ["Terre d'Hermes"], confirm=None)
+
+        self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
+        self.assertIn("PENDING_LOOKUP:", context)
+        # No row precedes the alternatives header, so none of them is the answer.
+        self.assertLess(
+            context.index("═══ بدائل مقترحة متوفرة في المتجر ═══"),
+            context.index("Name (الاسم الصحيح)"),
+        )
+
+    def test_a_corrected_placement_prices_the_perfume_that_was_asked_about(self):
+        """The best outcome available: no extra round-trip, and the right perfume."""
+        from products.services import product_info
+
+        context = self._turn("في التراميل ؟", ["Terre d'Hermes"], confirm=self.ultra)
+
+        self.assertIn("Ultra Male", context)
+        self.assertIn("750", context)
+        self.assertNotIn("Terre d'Hermes", context)
+        self.assertNotIn(product_info.NAME_UNREADABLE_MARKER, context)
+
 
 class PlacementDisagreementThresholdTests(TestCase):
     """The four numbers in `product_resolver._disagreement`, tested where they can be read.
@@ -12786,6 +12881,7 @@ class PlacementDisagreementThresholdTests(TestCase):
         real subprocesses with the seed forced. The `in`-order assertion is the regression: the words
         must come back in the order they were typed.
         """
+        import os
         import subprocess
         import sys
 
@@ -12809,7 +12905,9 @@ class PlacementDisagreementThresholdTests(TestCase):
             spans.add(done.stdout.strip())
 
         self.assertEqual(len(spans), 1, f"span varied with PYTHONHASHSEED: {spans}")
-        self.assertEqual(spans.pop(), "بلو دى شنيل ايروس سوفاج")
+        # "دى" is dropped as filler on the way through `identifying_tokens`; four words survive, and
+        # the assertion is that they come back in the order they were typed.
+        self.assertEqual(spans.pop(), "بلو شنيل ايروس سوفاج")
 
 
 @_confirm_pass_finds_nothing
