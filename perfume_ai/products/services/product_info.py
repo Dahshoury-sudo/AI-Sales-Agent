@@ -428,12 +428,60 @@ _ABSENT_RULES = """14. 🔴🔴 العميل سمّى عطر اتّأكدنا م
 # fresh extractor call, and `naming.re_asks` recognises the shape if it comes back the same, so
 # `router._escalate_absent_name` can hand a second unreadable ask to a human instead of asking a
 # third time.
+#
+# 🔴 Bullet 4 is a prohibition, and it used to be an invitation ("ولو حابب، اعرض عليه عطر أو اتنين
+# على إنهم اقتراحات"). The store owner's reading of the replies it produced: *"it feels like the
+# agent is trying to force sell and not help the client."* He is right, and the difference from
+# `_ABSENT_RULES` bullet 6 — which **requires** alternatives — is not a matter of degree. A denial
+# has established that the perfume is not here, so the customer would otherwise leave with nothing
+# and the reply owes them something buyable. An unreadable name has established nothing: the perfume
+# they asked about may be sitting in this catalogue under a spelling we failed to match, and the
+# 1041 class proves that is the common case rather than the rare one. Pitching substitutes against
+# a name we have not read is answering a question we did not understand with merchandise, and the
+# customer can tell.
+#
+# The rows are mostly gone from the context before this rule is read — `get_product_info` skips the
+# `offered_in_order` pool-widening and `suggest_alternatives` on this verdict — so the bullet is a
+# backstop for the one path that still has rows: a referent turn, where `_referent_from_conversation`
+# put the previously discussed perfume in the block under `_NOT_THE_PERFUME_ASKED_ABOUT`. Those rows
+# are in context to be *excluded from*, not offered.
 _UNREADABLE_NAME_RULES = """14. 🔴🔴 العميل كتب اسم عطر مش متأكدين منه، ومقدرناش نتأكد منه (شوف NAME_UNREADABLE في قسم "سؤال معلّق").
    • ✅ الرد الصح: قوله إنك عايز تتأكد هو قاصد أنهي عطر، واطلب منه يكتبلك الاسم تاني أو يكتبه بشكل تاني. جملة واحدة.
    • ❌ ممنوع تقول إنه مش موجود عندنا ولا "مش متوفر" ولا تعتذر عن عدم توفره — محدش اتأكد، والنفي هنا غلط زي التأكيد.
    • ❌ وممنوع توعده تتأكد وترد عليه ("لحظة أتأكدلك"، "هسأل وأرد عليك"، "هشوفه لك") — مفيش حد بيراجع بعد الرد ده، والوعد بيسيبه مستني حاجة مش جايه. الفرق بسيط وبيغير كل حاجة: إنت بتسأله سؤال، مش بتوعده بوعد.
-   • ✅ ولو حابب، اعرض عليه في نفس الرد عطر أو اتنين من البيانات على إنهم اقتراحات لحد ما يوضّح، بالاسم الكامل. ❌ وممنوع توحي إن واحد منهم هو العطر اللي هو سأل عنه.
+   • ❌🔴 وممنوع تعرض عليه أي عطر تاني في الرد ده — لا ترشيح، ولا اسم، ولا سعر، ولا "وفي عندنا كمان...". العميل سأل عن عطر واحد بعينه، وإحنا لسه مش عارفين هو أنهي واحد — ويمكن يكون عندنا فعلاً بهجاء تاني. لو عرضت عليه حاجة تانية وإنت لسه مش فاهم سؤاله، هيحس إنك بتحاول تبيعه أي حاجة بدل ما تساعده، وده أسوأ من إنك متردش. الرد كله سؤال واحد يوضّح الاسم، وبس — البدائل مكانها لما نكون اتأكدنا إن العطر مش عندنا فعلاً.
 """
+
+
+# The three shapes rule 4 can take in the not-found branch. Rule 4 owns the slot where alternatives
+# are pitched, and on a turn that could not read the name there are none to pitch — `get_product_info`
+# skips `suggest_alternatives` entirely there, so the pitch would be an instruction to name perfumes
+# that are not in the context, which rule 5 forbids inventing and which the model has invented before
+# (795's "لمسة بخور خفيفة" on a perfume with no incense in it). Leaving the slot empty is worse than
+# filling it with the prohibition: an empty slot reads as no opinion, and a sales model with no
+# opinion about whether to pitch will pitch.
+_ALTERNATIVES_PITCH_RULE = (
+    "4. في حالة (أ)، رشح له 1-2 من \"البدائل المقترحة\" أعلاه بشكل جذاب في **نفس الرد** — والبدائل دي "
+    "مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات "
+    "العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!"
+)
+
+_NO_ALTERNATIVES_RULE = (
+    "4. 🔴🔴 في الرد ده مفيش بدائل تعرضها، وده مقصود: ❌ ممنوع ترشح ولا تسمّي ولا تسعّر أي عطر تاني من "
+    "عندك. إحنا مش متأكدين العميل قصده إيه، ويمكن العطر اللي سأل عنه يكون عندنا فعلاً باسم تاني — "
+    "فلو عرضت عليه حاجة تانية، بتبدو كإنك بتلف على سؤاله وبتحاول تبيعه أي حاجة بدل ما تساعده. "
+    "الرد المطلوب هو سؤال واحد يوضّح الاسم، وبس."
+)
+
+# The third case is neither: a denial in a store with nothing left to offer — every row filtered out
+# by gender, budget or `_obtainable`. The prohibition still has to go in, because rule 4's slot is
+# not optional, but its *reason* must not, since "we are not sure what you meant" contradicts the
+# ABSENCE_DENIED block sitting above it in the same prompt. A contradiction in this file is not a
+# cosmetic problem: it is the class of defect the rest of these comments are about.
+_EMPTY_SHELF_RULE = (
+    "4. مفيش بدائل متاحة تعرضها في الرد ده. ❌ ممنوع تخترع عطر أو تسمّي حاجة مش موجودة في البيانات "
+    "فوق عشان تملا الفراغ — رد بالنفي وبس، من غير ترشيحات."
+)
 
 
 # Replaces `_NOT_THE_PERFUME_ASKED_ABOUT` when the customer named several perfumes and we could place
@@ -953,7 +1001,17 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # `not partially_resolved` is the exception, and the reason is the customer's own screen: they
     # already have two real perfumes with real prices in front of them, so a third they did not ask
     # about is noise, and `_PARTIAL_ABSENT_RULES` deliberately asks for no alternatives.
-    if deferring and not partially_resolved:
+    #
+    # 🔴 `denied` is the second exception, and it is the whole point of the fork. Every reason above
+    # is a reason about a *denial*: the customer asked for something we established we do not sell,
+    # so the reply owes them something they can actually buy. None of it holds when the verdict is
+    # UNKNOWN. There we do not know what they asked for — we may well sell it — and the only thing
+    # owed is one question. Widening the pool there hands the model a shelf to pitch from on a turn
+    # whose entire job is to ask, and the reply reads as a sales dodge: the customer typed a name,
+    # got "which perfume did you mean?", and then got two perfumes they never mentioned. That is the
+    # force-sell complaint, and it is answered here rather than in the prompt because a pool the
+    # model was never given is a pool it cannot pitch from. See `_UNREADABLE_NAME_RULES`.
+    if deferring and denied and not partially_resolved:
         pool = list(products)
         for product in _products_named(
             sales_described.offered_in_order(conversation, store), store
@@ -1076,20 +1134,33 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         from .sales import gender as sales_gender
         from .sales import notes as sales_notes
 
-        alternatives = suggest_alternatives(
-            store,
-            gender=sales_gender.resolve({}, message, history, store),
-            # The accords the customer actually asked for. Without them this ranked on price
-            # alone, so conversation 795's "عندكو لادور بخور صح ؟" was answered with the
-            # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
-            # Chanel (incense) sat in it unoffered.
-            notes=sales_notes.terms_in(message),
-            # An ordering tier, not a filter — the function sorts in-budget first and keeps the
-            # rest. That is the shape this branch needs: pitching a perfume above the stated
-            # number is a worse answer than pitching one below it, and pitching nothing is worse
-            # than both.
-            max_price=budget,
-        )
+        # 🔴 Not on a turn that could not read the name. `deferring and not denied` is exactly the
+        # NAME_UNREADABLE block, and on that turn there is no established absence to compensate for:
+        # the perfume the customer asked about may be sitting in this catalogue under a spelling we
+        # failed to match. Offering substitutes reads as a refusal to help — the customer asked a
+        # question about one perfume, was told the name was unclear, and got pitched two others in
+        # the same breath. A denial earns alternatives because something really is missing and the
+        # customer would otherwise leave with nothing; an unreadable name earns a question and
+        # nothing else. The suppression is here, not in the rules, because rows that never enter the
+        # prompt cannot be pitched out of it — this file's history is mostly instructions that were
+        # ignored. Rule 4 below flips to a prohibition to match.
+        if deferring and not denied:
+            alternatives = []
+        else:
+            alternatives = suggest_alternatives(
+                store,
+                gender=sales_gender.resolve({}, message, history, store),
+                # The accords the customer actually asked for. Without them this ranked on price
+                # alone, so conversation 795's "عندكو لادور بخور صح ؟" was answered with the
+                # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
+                # Chanel (incense) sat in it unoffered.
+                notes=sales_notes.terms_in(message),
+                # An ordering tier, not a filter — the function sorts in-budget first and keeps the
+                # rest. That is the shape this branch needs: pitching a perfume above the stated
+                # number is a worse answer than pitching one below it, and pitching nothing is worse
+                # than both.
+                max_price=budget,
+            )
 
         context = pending_block
         context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
@@ -1107,7 +1178,18 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             # must not open with a verdict about *which size*.
             context += format_products(alternatives, max_price=budget, show_value_pick=False)
 
-        instructions = """
+        # Which half of rule 4 goes in. The verdict is asked first and `alternatives` second,
+        # because the two empty cases are empty for opposite reasons and must not borrow each
+        # other's wording: one has nothing to offer because we refused to look for substitutes,
+        # the other because the shelf came back bare.
+        if deferring and not denied:
+            alternatives_rule = _NO_ALTERNATIVES_RULE
+        elif alternatives:
+            alternatives_rule = _ALTERNATIVES_PITCH_RULE
+        else:
+            alternatives_rule = _EMPTY_SHELF_RULE
+
+        instructions = f"""
 ═══ تعليمات ═══
 1. اقرأ سجل المحادثة جيداً. لو كان العميل يستفسر عن منتج تم التحدث عنه بالفعل في المحادثة، أجب من سياق المحادثة وتجاهل قائمة البدائل تماماً.
 2. ❌ إياك أن تقول أن المنتج "غير متوفر" إذا كان قد تم إخباره بأنه متوفر في الرسائل السابقة. النظام هنا لم يتعرف على اسم منتج جديد فقط.
@@ -1120,10 +1202,9 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
      - ❌❌ ممنوع تماماً ترد على السؤال ده بـ "مش فاهم قصد حضرتك" — أنت فاهم السؤال، بس ممكن تكون مش عارف الإجابة، وده فرق كبير.
    • **(ج) العميل بيتفرج بشكل مبهم** (مثل "عندكو حاجة من شانيل" أو "عايز حاجة حلوة") → ❌ ممنوع تقول "مش متوفر"! اسأله يحدد: "تقصد أنهي عطر بالظبط يا فندم؟".
    • **(د) الرسالة نفسها غير مفهومة فعلاً** (حروف عشوائية، كلام مبتور، مفيش معنى واضح) → دي الحالة الوحيدة اللي تقول فيها: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟".
-4. في حالة (أ)، رشح له 1-2 من "البدائل المقترحة" أعلاه بشكل جذاب في **نفس الرد** — والبدائل دي مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!
+{alternatives_rule}
 5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
-"""
-        # Case (أ) above delegates to rule 14, so the fork has to actually be here. Which half
+"""        # Case (أ) above delegates to rule 14, so the fork has to actually be here. Which half
         # depends on the verdict and not on how many times the customer has asked: that is the whole
         # change. `deferring` is the guard rather than a bare `if denied` because a turn with no
         # pending question has no name to rule on, and (ب)(ج)(د) must not be handed denial rules.

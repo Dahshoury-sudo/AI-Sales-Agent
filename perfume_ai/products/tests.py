@@ -12747,14 +12747,16 @@ class Conversation1041Tests(TestCase):
         not established that we do not carry what they asked for — we have established that we
         cannot read it. Those produce different replies and only one of them is honest here.
 
-        ⚠️ Terre d'Hermès is still *in* the block, and the assertion is careful about that rather
-        than pretending otherwise. Withholding the placement empties `products`, which drops the turn
-        into the long-standing not-found branch, and that branch offers alternatives — so the row can
-        come back as a suggestion. What changed is the only thing that was ever wrong: it is under
-        "بدائل مقترحة" with a pending-lookup block above it forbidding a denial and asking the
-        customer to retype, instead of under the real-product-data header as the answer to their
-        question. Asserting its absence outright would be asserting something the pipeline does not
-        do and has no reason to.
+        ⚠️ Terre d'Hermès used to survive this turn as a *suggestion*: withholding the placement
+        empties `products`, which drops the turn into the not-found branch, and that branch called
+        `suggest_alternatives`. The assertion was written to allow it, because asserting its
+        absence would have been asserting something the pipeline did not do. It does now — the
+        branch skips the alternatives entirely when the verdict is UNKNOWN — so the weaker
+        ordering assertion is replaced by the property it was standing in for. Nothing about the
+        1041 defect required that change; the store owner asked for it separately, as force-selling
+        (see `AbsentNameStillNotDeniedOnAbstainTests`), and this turn is the sharpest example of
+        why he is right: the row the customer is pitched is the *same wrong row* the guard just
+        refused to price.
         """
         from products.services import product_info
 
@@ -12763,11 +12765,10 @@ class Conversation1041Tests(TestCase):
         self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
         self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn("PENDING_LOOKUP:", context)
-        # No row precedes the alternatives header, so none of them is the answer.
-        self.assertLess(
-            context.index("═══ بدائل مقترحة متوفرة في المتجر ═══"),
-            context.index("Name (الاسم الصحيح)"),
-        )
+        # Not as the answer, and not as a suggestion either. No row is offered at all.
+        self.assertNotIn("Terre d'Hermes", context)
+        self.assertNotIn("═══ بدائل مقترحة متوفرة في المتجر ═══", context)
+        self.assertNotIn("Name (الاسم الصحيح)", context)
 
     def test_a_corrected_placement_prices_the_perfume_that_was_asked_about(self):
         """The best outcome available: no extra round-trip, and the right perfume."""
@@ -13487,10 +13488,24 @@ class DenialKeepsItsAlternativesTests(TestCase):
         self.assertIn("Bleu de Chanel", context)
         self.assertIn("العميل سأل عن التوفر بس", chat.call_args[0][0][-1]["content"])
 
-    def test_an_unverified_first_ask_is_widened_as_well(self):
-        """The other fork gets the same pool, for a different reason. Nobody cleared the name, so the
-        reply asks the customer to retype it — and `_UNREADABLE_NAME_RULES` bullet 2 still offers
-        something to look at while they do, which needs rows to name."""
+    def test_an_unverified_first_ask_is_not_widened(self):
+        """The other fork does **not** get the same pool, and that is the whole fork.
+
+        This assertion used to be its own opposite — both perfumes in the block, because
+        `_UNREADABLE_NAME_RULES` bullet 4 then invited the model to "offer one or two as suggestions
+        while they clarify". The store owner read the replies that produced as force-selling:
+        *"i don't want the agent to recommend alternatives when he can't get the name. although
+        it's fine to do this when the perfumes was not found."* The two tests above are the
+        "not found" half and still pass unchanged; this is the half that flipped.
+
+        The widening is what is gone, not the referent. Dior Homme Sport is still here because
+        `_referent_from_conversation` put the newest reply's row in the block under
+        `_NOT_THE_PERFUME_ASKED_ABOUT` — a row labelled *not the perfume you asked about*, which is
+        a different claim from a pitch. Bleu de Chanel is the one the widening used to add, and its
+        absence is the property. That the referent row survives is exactly why the prohibition also
+        had to go into bullet 4: this path still has something the model could pitch if nothing
+        told it not to.
+        """
         from products.services import product_info
 
         save_message(
@@ -13508,15 +13523,20 @@ class DenialKeepsItsAlternativesTests(TestCase):
             "products.services.product_info.resolve_products", return_value=[]
         ), mock.patch(
             "products.services.product_info.chat", return_value="ok"
-        ):
+        ) as chat:
             _, context = get_product_info(
                 "عندك لادور بخور ؟", [], self.store, self.conversation
             )
 
         self.assertNotIn(product_info.ABSENCE_DENIED_MARKER, context)
         self.assertIn(product_info.NAME_UNREADABLE_MARKER, context)
+        self.assertNotIn("Bleu de Chanel", context)
+        # The referent row, and labelled as not the subject rather than offered.
         self.assertIn("Dior Homme Sport", context)
-        self.assertIn("Bleu de Chanel", context)
+        self.assertIn("**مش** العطر اللي العميل سأل عنه", context)
+        self.assertIn(
+            "وممنوع تعرض عليه أي عطر تاني في الرد ده", chat.call_args[0][0][-1]["content"]
+        )
 
     def test_a_plural_referent_names_no_perfume(self):
         from products.services.sales import naming
@@ -13950,15 +13970,28 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
 
         self._assert_abstains(context, prompt)
 
-    def test_the_abstain_turn_still_has_something_to_offer(self):
-        """Not a denial does not mean not selling. The rows are in the context and the rules pitch
-        them as suggestions until the customer clarifies — the difference from `_ABSENT_RULES` is
-        the sentence around them, not whether they are there."""
+    def test_the_abstain_turn_offers_nothing_at_all(self):
+        """Not a denial means not selling either. This assertion used to be its own opposite —
+        the rows went into the context and the rules pitched them "as suggestions until the
+        customer clarifies" — and the store owner read the replies it produced as force-selling:
+        *"it feels like the agent is trying to force sell and not help the client, so i don't want
+        the agent to recommend alternatives when he can't get the name."*
+
+        The distinction he is drawing is the same one this whole class is about. A denial has
+        established that we do not have it, so the customer would leave with nothing and the reply
+        owes them something buyable — `FirstAskDeniesAndOffersTests` still asserts exactly that.
+        An abstain has established nothing: the perfume may be on this shelf under a spelling we
+        failed to read, which is the entire 1041 class. Answering a question we did not understand
+        with merchandise is the thing being removed.
+
+        Both halves are asserted because the suppression is in two places by design — the rows are
+        never fetched (`suggest_alternatives` is skipped) *and* the rule forbids naming any, which
+        covers the referent path where rows are in context for another reason."""
         context, prompt = self._turn("عندك لادور بخور ؟", [])
 
-        self.assertIn("بدائل مقترحة متوفرة في المتجر", context)
-        self.assertIn("اعرض عليه في نفس الرد عطر أو اتنين من البيانات على إنهم اقتراحات", prompt)
-        self.assertIn("ممنوع توحي إن واحد منهم هو العطر اللي هو سأل عنه", prompt)
+        self.assertNotIn("بدائل مقترحة متوفرة في المتجر", context)
+        self.assertIn("وممنوع تعرض عليه أي عطر تاني في الرد ده", prompt)
+        self.assertIn("البدائل مكانها لما نكون اتأكدنا إن العطر مش عندنا فعلاً", prompt)
 
     def test_the_question_it_asks_is_one_the_customer_can_answer(self):
         """What separates this from the stall. "اكتبلي الاسم تاني" resolves on the next message;
@@ -15246,10 +15279,23 @@ class AlternativesAnswerTheRequestTests(TestCase):
         `Message.internal_context`. The instructions are appended to the user message and never
         appear in the return value, so a rule asserted against `context` is a rule nothing
         checked.
+
+        🔴 `_absent("لادور بخور")` rather than `return_value=[]`, and the distinction is now
+        load-bearing rather than cosmetic. Alternatives are offered on a **denial** — we checked,
+        we do not have it, and the customer would otherwise leave with nothing — and are withheld
+        when the name could not be read at all, because there we do not yet know that we lack it.
+        The 795 ranking this class exists for still applies on the denial, which is the turn 835
+        actually produced; `return_value=[]` would now route this into the abstain branch, where
+        `suggest_alternatives` is deliberately never called and every assertion below would be
+        testing a block that no longer exists.
         """
         conversation = Conversation.objects.create(store=self.store)
         with mock.patch(
-            "products.services.product_info.resolve_products", return_value=[]
+            "products.services.product_info.resolve_products",
+            return_value=_absent("لادور بخور"),
+        ), mock.patch(
+            "products.services.product_info.confirm_unplaced",
+            lambda name, store=None: None,
         ), mock.patch(
             "products.services.product_info.chat", return_value="ok"
         ) as chat_call:
@@ -17001,16 +17047,29 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
 
     # ── the branch that offers alternatives because nothing resolved ───────
     def _alternatives_turn(self, budget=None, alternatives=None):
+        """🔴 A **denied** name, not a vague browse, and that is now what puts rows in this block.
+
+        This used to be `return_value=[]` on "عندكو حاجة حلوة؟" — an abstain, where the pipeline
+        never established that we lack anything. Alternatives are no longer offered there: the
+        store owner asked for them gone from every turn that could not read the name, because a
+        clarifying question followed by two perfumes he never mentioned reads to the customer as
+        force-selling. The budget labels this class is about belong to the denial, which is where
+        the block survives, so the fixture moves to a denial and the assertions are unchanged.
+        """
         conversation = self._conversation(budget)
         returns = [self.eros, self.baccarat] if alternatives is None else alternatives
         with mock.patch(
-            "products.services.product_info.resolve_products", return_value=[]
+            "products.services.product_info.resolve_products",
+            return_value=_absent("بلاك اوركيد"),
+        ), mock.patch(
+            "products.services.product_info.confirm_unplaced",
+            lambda name, store=None: None,
         ), mock.patch(
             "products.services.product_info.suggest_alternatives", return_value=returns
         ) as suggest, mock.patch(
             "products.services.product_info.chat", return_value="ok"
         ) as chat_call:
-            _, context = get_product_info("عندكو حاجة حلوة؟", [], self.store, conversation)
+            _, context = get_product_info("عندكو بلاك اوركيد؟", [], self.store, conversation)
         return context, chat_call.call_args[0][0][-1]["content"], suggest
 
     def test_the_alternatives_are_ranked_against_the_budget(self):

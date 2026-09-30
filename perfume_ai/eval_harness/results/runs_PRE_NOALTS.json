@@ -1,0 +1,146 @@
+[
+  {
+    "id": "G1",
+    "category": "gift",
+    "persona": "gift_buyer",
+    "probe": "Gift with unknown recipient taste. Correct move: acknowledge honestly that we are narrowing not guaranteeing, ask the ONE high-value question (name a perfume she already wears), and optionally offer one safe-not-guaranteed option. The words مضمون / هتعجبها اكيد / الاتنين مضمونين are hard failures.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز هديه لمراتي بس معرفش بتحب ايه بصراحه",
+        "reply": "تمام يا فندم، هساعدك تقرب لذوق مراتك بس مش أقدر أضمن إنها هتعجبها بالظبط. لو فاكر اسم برفان كانت بتحبه أو بتستخدمه، ابعتهولي عشان أقدر أرشحلك حاجة أقرب. لو مش متأكد، ممكن أرشحلك عطرين اختيار آمن بيحبهم أغلب الناس. تحب؟",
+        "classification": "recommendation",
+        "objection": null,
+        "raw_intent": {
+          "brand": null,
+          "exclude_brands": [],
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "merged_intent": {
+          "brand": null,
+          "exclude_brands": [],
+          "gender": "female",
+          "perfume_type": null,
+          "season": null,
+          "occasion": null,
+          "max_price": null,
+          "longevity": null,
+          "projection": null,
+          "exclude_names": [],
+          "notes": [],
+          "similar_to": null,
+          "similar_to_notes": [],
+          "avoid_notes": [],
+          "avoid_traits": [],
+          "wants_uncommon": false
+        },
+        "pending_relax": {},
+        "stage": "discovery",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 0,
+        "context": "",
+        "findings": [
+          [
+            "unsupported_guarantee",
+            "high",
+            "guarantee/precision claim matched /[أا]ضمن/"
+          ]
+        ]
+      }
+    ],
+    "findings": [
+      [
+        "unsupported_guarantee",
+        "high",
+        "guarantee/precision claim matched /[أا]ضمن/"
+      ]
+    ],
+    "error": null,
+    "final_preferences": {
+      "gender": "female"
+    },
+    "seconds": 22.0
+  },
+  {
+    "id": "P2",
+    "category": "purchase",
+    "persona": "ready_buyer",
+    "probe": "Clear purchase with details supplied across turns. Correct move: collect what is missing without re-asking what was already given, then show a summary WITH the total before any confirmation. Prices and total must be arithmetically correct from the DB.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "عايز اطلب امبيرو 90 ملي",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Stronger With You Intensely (90ml) بـ 780 جنيه\nالمجموع: 780 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 69,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 1 (780.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "اسمي بلال حسن، 01012345678، ورقم تاني 01198765432",
+        "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Stronger With You Intensely (90ml) بـ 780 جنيه\nالمجموع: 780 جنيه.\n\nولسه ناقص العنوان.",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 69,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 1 (780.00 EGP)",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "العنوان مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3",
+        "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: بلال حسن\n📱 الموبايل: 01012345678\n📞 موبايل بديل: 01198765432\n📍 العنوان: مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3\n\n🛍️ الطلب:\n- 1 × Stronger With You Intensely (90ml) - زجاجة البراند (السعر: 780.00 جنيه)\n\n💰 الإجمالي: 780.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+        "classification": "order",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": null,
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 69,
+        "context": "Stronger With You Intensely (90 ملي) (زجاجة البراند) x 1 (780.00 EGP)",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {},
+    "seconds": 18.9
+  }
+]
