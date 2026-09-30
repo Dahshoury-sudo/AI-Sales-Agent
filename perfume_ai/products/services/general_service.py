@@ -1,5 +1,6 @@
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .sales import appreciation
 
 
 # This branch is the one path that runs with no product data attached, and it still
@@ -84,11 +85,19 @@ def handle_general(message, history=None, store=None, retry_hint=""):
     sentence a finished draft actually repeated. Either one alone leaves the other's failure
     uncovered — conversation 973 had prevention in force on every turn and repeated itself anyway —
     so a later reader should not delete one as redundant with the other.
+
+    A compliment with no perfume named lands here, because it asks for no product data. Conversation
+    1105's two turns are the case: before `sales.appreciation` existed they were answered with a
+    request to spell the name again, and after the `naming` fix alone they would have been answered
+    politely but blankly. `appreciation.RULES` is what makes the reply say thank you.
     """
+    praised = appreciation.detect(message, history=history)
+
     system_prompt = (
         get_system_prompt(store)
         + NO_PRODUCT_DATA_GUARD
         + _anti_repetition_context(history)
+        + (appreciation.RULES if praised else "")
         + (retry_hint or "")
     )
 

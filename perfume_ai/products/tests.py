@@ -19155,3 +19155,245 @@ class Conv973SaidItTwiceTests(TestCase):
         never.assert_not_called()
         self.assertEqual(faq_reply, "الشحن 60 جنيه لكل محافظات مصر، والتوصيل من 2 لـ 4 أيام.")
         self.assertEqual(bye_reply, goodbye)
+
+
+class Conversation1105Tests(TestCase):
+    """Conversation 1105, 2026-09-30: a compliment answered by asking the customer to spell it again.
+
+    Two messages, both praise, both answered with a retype request:
+
+        "البرفان تحفه وثباته ممتاز"        -> "ممكن تكتب لي اسم العطر تاني بشكل أوضح يا فندم؟"
+        "البرفان الي جبته من عندكو واو بجد" -> "ممكن توضح لي اسم العطر بالظبط أو تكتبه بطريقة تانية؟"
+
+    Nobody had typed a name, so there was nothing to spell again. The cause is `naming`: membership
+    in `_STOPWORDS` and `_REFERENTIAL` was exact-string, so "برفان" was filler but "البرفان" was not,
+    "ثباته" was filler but "وثباته" was not, and there was no praise vocabulary at all. Four filler
+    words survived as identifying tokens, `may_name_a_perfume` said yes, the resolver placed nothing,
+    and `named_but_unresolved` read that empty placement as proof of an unreadable name.
+
+    That last step is why this is a wrong answer rather than a wasted call, and why two comments in
+    the tree promising a false alarm is "slower, not wrong" had to be corrected in the same change.
+    """
+
+    TURN_ONE = "البرفان تحفه وثباته ممتاز"
+    TURN_TWO = "البرفان الي جبته من عندكو واو بجد"
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Test")
+        brand = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        self.ultra = Product.objects.create(
+            store=self.store, brand=brand, name="Ultra Male", gender="male"
+        )
+        ProductVariant.objects.create(
+            product=self.ultra, volume=100, price=750, bottle_type="normal"
+        )
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    # -- the gate no longer fires, so the retype request cannot happen --------
+    def test_neither_turn_looks_like_a_perfume_name(self):
+        from products.services.sales import naming
+
+        for message in (self.TURN_ONE, self.TURN_TWO):
+            with self.subTest(message=message):
+                self.assertEqual(naming.identifying_tokens(message), set())
+                self.assertFalse(naming.may_name_a_perfume(message))
+
+    def test_the_resolver_is_never_called_on_a_compliment(self):
+        """The strongest form of the assertion: a turn that never asks cannot be told to retype.
+
+        Asserted on the call itself rather than on the reply, because every marker below is
+        downstream of this one decision.
+        """
+        with mock.patch(
+            "products.services.product_info.resolve_products"
+        ) as resolver, mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ):
+            get_product_info(self.TURN_ONE, [], self.store, self.conversation)
+
+        resolver.assert_not_called()
+
+    def test_no_unreadable_name_marker_on_either_turn(self):
+        from products.services import product_info
+        from products.services.sales import described
+
+        for message in (self.TURN_ONE, self.TURN_TWO):
+            with self.subTest(message=message):
+                with mock.patch(
+                    "products.services.product_info.resolve_products", return_value=[]
+                ), mock.patch(
+                    "products.services.product_info.chat", return_value="ok"
+                ) as chat_call:
+                    _, context = get_product_info(
+                        message, [], self.store, self.conversation
+                    )
+                prompt = chat_call.call_args[0][0][-1]["content"]
+
+                self.assertNotIn(described.PENDING_LOOKUP_MARKER, context)
+                self.assertNotIn(product_info.NAME_UNREADABLE_MARKER, context)
+                self.assertNotIn(product_info._UNREADABLE_NAME_RULES, prompt)
+
+    # -- and the reply thanks them -------------------------------------------
+    def test_the_praise_rules_reach_the_prompt(self):
+        from products.services.sales import appreciation
+
+        with mock.patch(
+            "products.services.product_info.resolve_products", return_value=[]
+        ), mock.patch(
+            "products.services.product_info.chat", return_value="ok"
+        ) as chat_call:
+            get_product_info(self.TURN_ONE, [], self.store, self.conversation)
+
+        self.assertIn(appreciation.RULES, chat_call.call_args[0][0][-1]["content"])
+
+    def test_the_rules_forbid_asking_which_perfume_it_was(self):
+        """The store owner's explicit call: thank only, ask nothing.
+
+        "شكراً! أنهي عطر بالظبط؟" was the obvious reply and was rejected — asking reads as working a
+        customer for a lead when they were only being nice. We accept never learning which perfume
+        they meant, so the prohibition is pinned rather than left to the model's judgement.
+        """
+        from products.services.sales import appreciation
+
+        self.assertIn("ممنوع تسأله أنهي عطر", appreciation.RULES)
+        self.assertIn("ممنوع تعرض عليه أي عطر تاني", appreciation.RULES)
+
+    def test_an_unnamed_compliment_reaches_the_no_product_branch_with_the_rules(self):
+        """The general branch is where a compliment naming nothing actually lands."""
+        from products.services import general_service
+        from products.services.sales import appreciation
+
+        with mock.patch(
+            "products.services.general_service.chat", return_value="ok"
+        ) as chat_call:
+            general_service.handle_general(self.TURN_TWO, [], self.store)
+
+        self.assertIn(appreciation.RULES, chat_call.call_args[0][0][0]["content"])
+
+
+class AppreciationDetectorTests(TestCase):
+    """What counts as a compliment, and — more importantly — what does not.
+
+    Every false positive here is a reply that gushes at someone who was complaining or leaving, so
+    the negative cases carry more weight than the positive ones.
+    """
+
+    def test_praise_is_detected_named_or_not(self):
+        from products.services.sales import appreciation
+
+        for message, named in (
+            ("البرفان تحفه وثباته ممتاز", False),
+            ("البرفان الي جبته من عندكو واو بجد", False),
+            ("اشتريت منكم امبيرو وعجبني", True),
+            ("تسلم ايدك", False),
+        ):
+            with self.subTest(message=message):
+                found = appreciation.detect(message)
+                self.assertIsNotNone(found)
+                self.assertEqual(found.names_a_perfume, named)
+
+    def test_negated_praise_is_not_praise(self):
+        """"مش عجبني" contains a praise word and means the opposite of one."""
+        from products.services.sales import appreciation
+
+        for message in ("مش عجبني", "العطر مش حلو", "مش حلو خالص"):
+            with self.subTest(message=message):
+                self.assertIsNone(appreciation.detect(message))
+
+    def test_thanks_alone_is_not_a_compliment(self):
+        """"شكرا" is this corpus's commonest farewell, and `router._is_goodbye_loop` owns it.
+
+        It is in `naming._PRAISE` so it stops counting as a perfume name, which is a different job.
+        Gushing at someone who is politely declining would be worse than the bug being fixed.
+        """
+        from products.services.sales import appreciation
+
+        for message in ("شكرا", "لا شكرا", "تمام شكرا مش عايز خلاص"):
+            with self.subTest(message=message):
+                self.assertIsNone(appreciation.detect(message))
+
+    def test_a_complaint_about_a_past_purchase_outranks_praise(self):
+        from products.services.sales import appreciation
+
+        self.assertIsNone(appreciation.detect("جبت من عندكم بس مش ثابت خالص"))
+
+    def test_an_ordinary_request_is_not_a_compliment(self):
+        from products.services.sales import appreciation
+
+        for message in ("عايز سوفاج", "بكام ده", "عندكم بلاك اوركيد ؟"):
+            with self.subTest(message=message):
+                self.assertIsNone(appreciation.detect(message))
+
+    def test_praise_beside_a_real_question_is_still_praise(self):
+        """And the question still has to be answered — which is why this is an added instruction
+        rather than its own branch. A branch would have swallowed the size question."""
+        from products.services.sales import appreciation
+
+        self.assertIsNotNone(appreciation.detect("العطر تحفه عندكم منه حجم اكبر"))
+
+
+class PraiseIsNotANameTests(TestCase):
+    """The tokenizer half, including the regression the corpus measurement caught.
+
+    Measured over all 3016 stored customer messages before shipping: 25 distinct messages flip from
+    "names something" to "names nothing", every one of them read by eye, and none names a perfume.
+    """
+
+    def test_the_article_and_the_conjunction_no_longer_smuggle_filler_through(self):
+        from products.services.sales import naming
+
+        for message in (
+            "قولي الاحجام والاسعار",
+            "ثباته وفوحانه عاملين اي",
+            "بكام ده وبكام ده",
+            "اي الاحجام الموجوده",
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(naming.identifying_tokens(message), set())
+
+    def test_a_real_name_survives_its_own_definite_article(self):
+        """The danger of the whole change. "الترامل" is Ultra Male and must stay visible — and it
+        must stay visible *as typed*, because `phonetic_ranking` scores the customer's own letters."""
+        from products.services.sales import naming
+
+        self.assertEqual(naming.identifying_tokens("موجود الترامل"), {"الترامل"})
+        self.assertEqual(naming.identifying_tokens("الترامل تحفه"), {"الترامل"})
+
+    def test_the_letter_y_is_not_stripped_into_a_question_word(self):
+        """The regression the corpus caught, and the reason `_MIN_STEM` is 3.
+
+        "عندك برفان واي" is a real stored message. "واي" is how this dialect spells the letter Y,
+        and this catalogue holds a perfume called Y. Stripping the "و" leaves "اي" — which IS in
+        `_REFERENTIAL` — so a floor of two would have deleted a real perfume name from the gate's
+        view. That is the conversation-738 failure exactly.
+        """
+        from products.services.sales import naming
+
+        self.assertEqual(naming.identifying_tokens("عندك برفان واي"), {"واي"})
+        self.assertEqual(naming._probe_forms("واي"), {"واي"})
+
+    def test_prefixes_compose_in_either_order(self):
+        from products.services.sales import naming
+
+        self.assertEqual(naming._probe_forms("والسعر"), {"والسعر", "السعر", "سعر"})
+        self.assertEqual(naming._probe_forms("الترامل"), {"الترامل", "ترامل"})
+
+    def test_no_praise_word_collides_with_a_catalogue_name(self):
+        """Checked against production before shipping, and pinned here against future seeds.
+
+        Every store's product names are Latin, so an Arabic praise word structurally cannot be one —
+        but the assertion is about the *sets*, so a Latin word added to `_PRAISE` by mistake would
+        fail here rather than blind the gate in production.
+        """
+        from products.services.sales import naming
+
+        store = Store.objects.create(name="Collision Test")
+        brand = Brand.objects.create(store=store, name="Jean Paul Gaultier")
+        for name in ("Ultra Male", "Le Male Elixir", "Y Eau de Parfum", "Terre d'Hermes"):
+            Product.objects.create(store=store, brand=brand, name=name, gender="male")
+
+        catalogue = set()
+        for name in Product.objects.filter(store=store).values_list("name", flat=True):
+            catalogue |= naming.tokens(name)
+
+        self.assertEqual(catalogue & (naming._PRAISE | naming._PAST_PURCHASE), set())

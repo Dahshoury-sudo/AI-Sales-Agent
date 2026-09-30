@@ -112,6 +112,11 @@ _PAST_PURCHASE = (
     "جبت من عندكم", "جربت قبل كده", "اشتريت قبل كده", "اشتريت من عندكم",
     "المره اللي فاتت", "طلبت قبل كده", "العطر اللي اشتريته", "العطر اللي جبته",
     "اللي جبته منكم", "اللي طلبته",
+    # Conversation 1105 turn 2 is "البرفان الي جبته من عندكو واو بجد" — the same past purchase in
+    # three spellings this tuple did not hold: "الي" for "اللي", "عندكو" for "عندكم", and
+    # "اشتريت منكم" without the "من عندكم". Each one on its own was enough to miss the turn.
+    "الي جبته", "جبته من عندكو", "جبته من عندكم", "اشتريت منكم", "اشتريته منكم",
+    "الي اشتريته", "الي خدته",
     # A recommendation the customer acted on is a past interaction too: "العطر اللي
     # رشحتوه ليا" has to resolve before anything is sold into it.
     "اللي رشحتوه", "اللي رشحتهولي", "العطر اللي رشحته", "اللي نصحتوني",

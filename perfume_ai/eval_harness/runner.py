@@ -70,6 +70,11 @@ _REPLAYS = {
     # name answered with the previously offered perfume's price. Turn 1 is substituted — the
     # perfume 1021 denied is not in the Perfamix catalogue; see that file's docstring.
     "conv1021": "scenarios_conv1021",
+    # 1105 is the gate firing on a message that names nothing: praise read as an unreadable perfume
+    # name, so a happy customer was asked twice to spell out a name they never typed. The only
+    # replay here that needs no substitution — its turns name no perfume, so the catalogue the
+    # harness runs against cannot make its ground truth false.
+    "conv1105": "scenarios_conv1105",
 }
 _replay = _REPLAYS.get(os.environ.get("EVAL_SCENARIOS", ""))
 if _replay:

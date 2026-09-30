@@ -230,7 +230,10 @@ _REFERENTIAL = frozenset({
     # Pointers and pronouns. The plurals matter as much as the singulars: 835 turn 4 is
     # "طب عاملين كام دو" — how much are *those* — and with "دو" and "عاملين" both unlisted the message
     # read as naming a perfume, so the price question about what we had just offered went unanswered.
-    "ده", "دي", "دا", "دول", "دو", "هو", "هي", "هما", "اللي", "منه", "منها", "منهم",
+    # "الي" is "اللي" with one ل, and is the spelling conversation 1105 turn 2 used
+    # ("البرفان الي جبته من عندكو"). The prefix stripping in `_probe_forms` cannot reach it —
+    # dropping "ال" would leave a single letter, below the stem floor — so it is listed outright.
+    "ده", "دي", "دا", "دول", "دو", "هو", "هي", "هما", "اللي", "الي", "منه", "منها", "منهم",
     "بتاعه", "بتاعها",
     # Question words. "اي" is the short spelling of "ايه" beside it, and "ها" is the particle
     # that opens "ها لقيت اي ؟" — without both, that message still tripped the gate on its
@@ -286,6 +289,109 @@ def refers_to_several(text):
     return any(token in _PLURAL_POINTERS for token in tokens(text))
 
 
+# Praise. A customer telling us the perfume is wonderful is not naming one, but until this set
+# existed every one of these words survived `identifying_tokens` and `may_name_a_perfume` said yes.
+# Conversation 1105 is the cost: "البرفان تحفه وثباته ممتاز" and "البرفان الي جبته من عندكو واو بجد"
+# were both answered "ممكن تكتب لي اسم العطر تاني بشكل أوضح؟" — a happy customer asked to spell out
+# a name they had never typed, twice, with the compliment never acknowledged.
+#
+# 🔴 The warning on `_REFERENTIAL` applies unchanged: never add a word that could be part of a
+# perfume name. Checked against all 213 distinct product names in every store — no praise word here
+# equals a name token, and no product name in this catalogue is written in Arabic script at all, so
+# an Arabic praise word structurally cannot *be* a name. "نار" is deliberately absent even though
+# "العطر نار" is ordinary Egyptian praise: it is short, and short spans are exactly the ones a future
+# catalogue could collide with. A miss costs one turn; a collision blinds the gate for good.
+#
+# Written in `normalize_arabic` form, like `_REFERENTIAL` — "تحفه" not "تحفة".
+_PRAISE = frozenset({
+    "تحفه", "تحف", "ممتاز", "ممتازه", "جميل", "جميله", "حلو", "حلوه", "رهيب", "جامد",
+    "واو", "عجبني", "عجبتني", "عجبتنى", "تسلم", "ايدك", "روعه", "فظيع", "خطير", "قمه",
+    "محترم", "برافو", "هايل", "جننت", "يجنن", "جنان", "مبسوط", "فخم", "اسطوره",
+    # Thanks. In this corpus "شكرا" is overwhelmingly a farewell ("لا شكرا", "تمام شكرا مش عايز"),
+    # which `router._is_goodbye_loop` already owns — it is here only so it stops counting as a name,
+    # and `appreciation.detect` deliberately refuses to treat it alone as a compliment.
+    "شكرا", "شكرن", "متشكر", "متشكره",
+})
+
+# Having bought or tried it already. The other half of conversation 1105 turn 2, where "جبته" is the
+# last token standing once the praise and the article are gone — without it that message still reads
+# as naming something unreadable. These are also what `objection._PAST_PURCHASE` matches on, but as
+# phrases rather than tokens; the two are kept separate because that one decides whether a complaint
+# is about something already owned, and this one only decides whether a word could be a name.
+_PAST_PURCHASE = frozenset({
+    "جبت", "جبته", "جبتها", "اشتريت", "اشتريته", "اشتريتها",
+    "خدت", "خدته", "خدتها", "جربت", "جربته", "جربتها", "استخدمت",
+})
+
+
+# Shortest stem a prefix may be stripped down to. Three, and the reason is a real customer message:
+# "عندك برفان واي" — "واي" is how this dialect spells the letter **Y**, and this catalogue holds a
+# perfume called Y. Stripping the "و" leaves "اي", which *is* in `_REFERENTIAL`, so a floor of two
+# would delete a real perfume name from the gate's view. That is the conversation-738 failure exactly.
+# At three, "واي" is left alone while "وثباته" -> "ثباته" still resolves.
+_MIN_STEM = 3
+
+_PREFIXES = ("ال", "و")
+
+
+def _probe_forms(token):
+    """The token, plus what it looks like with the article and the conjunction peeled off.
+
+    Membership in `_REFERENTIAL`, `_STOPWORDS` and the sets above is exact-string, so every one of
+    them was blind to the two commonest prefixes in the dialect. "برفان" is a stopword but "البرفان"
+    was not; "ثباته" is referential but "وثباته" was not; "سعر" is listed but "السعر" and "والسعر"
+    were not. Filler therefore walked straight through the gate wearing an article, which is how a
+    message made entirely of praise came to look like an unreadable perfume name.
+
+    🔴 These forms are for *testing* only — the caller keeps the original token. "الترامل" is probed
+    as "ترامل", matches nothing, and survives as "الترامل", which is the spelling `phonetic_ranking`
+    and the resolver need to see. Rewriting the emitted token instead would quietly change the span
+    every downstream matcher scores.
+
+    Both prefixes, in either order, so "والسعر" reaches "سعر" through "السعر". Each strip is guarded
+    by `_MIN_STEM`.
+    """
+    forms, pending = {token}, [token]
+    while pending:
+        current = pending.pop()
+        for prefix in _PREFIXES:
+            if not current.startswith(prefix):
+                continue
+            stem = current[len(prefix):]
+            if len(stem) >= _MIN_STEM and stem not in forms:
+                forms.add(stem)
+                pending.append(stem)
+    return forms
+
+
+def _is_filler(token):
+    """True when a token is a way of talking about a perfume rather than a way of naming one.
+
+    The single place every "this is not a name" vocabulary is read, so the prefix handling applies to
+    all of them at once and they cannot drift apart.
+    """
+    return any(
+        probe in _REFERENTIAL
+        or probe in _STOPWORDS
+        or probe in _PRAISE
+        or probe in _PAST_PURCHASE
+        or _is_chase_token(probe)
+        # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
+        # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
+        or probe.isdigit()
+        for probe in _probe_forms(token)
+    )
+
+
+def praise_tokens(text):
+    """The praise words in a message, if any. The vocabulary lives here, beside the other wordlists.
+
+    `sales.appreciation` reads this rather than keeping a second copy, so a word added for the gate's
+    benefit also teaches the detector, and the two can never disagree about what counts as praise.
+    """
+    return {token for token in tokens(text) if _probe_forms(token) & _PRAISE}
+
+
 def identifying_tokens(text):
     """The tokens of a message that could belong to a perfume name.
 
@@ -306,14 +412,12 @@ def identifying_tokens(text):
     excluded too. That is the other half of 835 turn 2: "لقيتو" was not in `_CHASING`, so it survived
     as an identifying token, `may_name_a_perfume` read "ها لقيتو ؟" as naming something, and the
     resolver was asked to place a verb.
+
+    Every wordlist is consulted through `_is_filler`, which tests the token with the article and the
+    conjunction peeled off as well as bare — see `_probe_forms` for why that is a test and not a
+    rewrite. The token that survives is always the one the customer typed.
     """
-    return {
-        token
-        for token in tokens(text)
-        # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
-        # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
-        if token not in _REFERENTIAL and not _is_chase_token(token) and not token.isdigit()
-    }
+    return {token for token in tokens(text) if not _is_filler(token)}
 
 
 def may_name_a_perfume(text):
@@ -329,13 +433,22 @@ def may_name_a_perfume(text):
 
     Deliberately liberal, and the asymmetry is the whole point:
 
-      * True on a message that names nothing costs one resolver call, which comes back empty,
-        and the caller falls back to the referent it would have used anyway — latency, never a
-        wrong answer.
-      * False on a message that DOES name a perfume is the conversation-738 bug.
+      * False on a message that DOES name a perfume is the conversation-738 bug — the gate goes
+        blind and the previous perfume is answered about instead.
+      * True on a message that names nothing is the cheaper failure, but it is no longer free.
 
-    So `_REFERENTIAL` never has to be exhaustive. A word missing from it makes this slower, not
-    wrong, which is why the list above is safe to extend but dangerous to extend carelessly.
+    🔴 It used to be free, and this docstring used to say so: a false alarm cost one resolver call
+    that came back empty, and the caller fell back to the referent it would have used anyway. That
+    stopped being true when `product_info`'s `named_but_unresolved` grew its `(resolver_ran and not
+    products)` clause. A resolver call that places nothing now *is* the evidence that the customer
+    named something unreadable, so a false alarm produces "please write the name again" — a question
+    the customer cannot answer, because they never typed a name. Conversation 1105 is that failure:
+    praise read as a name, twice in a row.
+
+    So the wordlists do have to be reasonably complete, and a word missing from them is a wrong
+    answer rather than a slow one. They are still far more dangerous to extend carelessly than to
+    leave short — see the 🔴 on `_REFERENTIAL` — but "it is only latency" is no longer the reason to
+    relax about a gap.
     """
     return bool(identifying_tokens(text))
 

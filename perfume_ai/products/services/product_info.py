@@ -9,6 +9,7 @@ from .fallback import suggest_alternatives
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
 from .sales import value as sales_value
+from .sales import appreciation
 
 logger = logging.getLogger(__name__)
 
@@ -685,8 +686,14 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # one resolver that can read Arabic was skipped entirely. So ask whether the message could be
     # naming a perfume at all, and if it could, resolve it before reaching for the referent.
     #
-    # The gate is liberal by design: a false alarm costs this one call, which comes back empty and
-    # falls through to exactly the referent it would have used anyway.
+    # 🔴 The gate is liberal, but a false alarm is no longer free, and this comment used to say it
+    # was — "costs this one call, which comes back empty and falls through to exactly the referent it
+    # would have used anyway". `named_but_unresolved` below now counts `(resolver_ran and not
+    # products)` as evidence that the customer named something we could not read, so an empty
+    # resolver call produces a retype request rather than a quiet fallback. Conversation 1105 is the
+    # bill: "البرفان تحفه وثباته ممتاز" is praise, it tripped this gate on its praise words alone, and
+    # the customer was asked twice to spell out a name they had never typed. The vocabulary in
+    # `naming` is what keeps that gate honest, so a gap in it is a wrong answer, not latency.
     #
     # `carries_unreadable_content` widens it to the one shape `may_name_a_perfume` structurally cannot
     # see: a name so short that `naming.tokens` discards it, leaving no identifying token to gate on.
@@ -799,7 +806,16 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # `resolver_ran` keeps this to at most one resolver call per turn: a message that tripped the
     # gate and came back empty has already had its chance, and asking twice would only spend a
     # second call on the same answer.
-    if not products and not resolver_ran:
+    #
+    # The compliment guard is the other half. This call is a safety net for the gate being too
+    # conservative — a name it could not see, with no referent to fall back on — and that net is
+    # worth keeping. But praise is positive evidence of the opposite: conversation 1105's turns name
+    # nothing because there is nothing in them to name, so the net would spend a model call on every
+    # "البرفان تحفه" to be told what `appreciation` already knows. Harmless to the reply either way
+    # — `named_but_unresolved` is fixed above this line and an empty answer cannot change it — but
+    # there is no reason to pay for it.
+    praised = appreciation.detect(message, history=history)
+    if not products and not resolver_ran and not praised:
         products = resolve_products(message, history, store, conversation)
         resolution = products
 
@@ -1216,6 +1232,14 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # order, and a budget line about an empty list is a number with no referent.
         if alternatives:
             instructions += _alternatives_budget_hint(budget)
+
+    # Both branches above converge here, and a compliment can arrive on either: "اشتريت منكم امبيرو
+    # وعجبني" resolves a real row, while praise for something we cannot place lands in the not-found
+    # branch. `ai.classifier` routes a named past purchase here on purpose, so that the perfume's
+    # real data is loaded rather than described from memory — which is why this is an added
+    # instruction and not a separate branch. Without it the reply to a compliment is a price list.
+    if praised:
+        instructions += appreciation.RULES
 
     messages = [
         {
