@@ -264,6 +264,15 @@ _REFERENTIAL = frozenset({
     "عايز", "عايزه", "عاوز", "عاوزه", "محتاج", "محتاجه", "ممكن",
     "اعرف", "اعرفه", "اعرفها", "تعرف", "نعرف",
     "اسعاره", "اسعارها",
+    # Past-tense framing of the same wanting, plus the second-person-plural "about you".
+    # "كنت محتاج اعرف عنكو اكتر" — "I wanted to know more about you" — was the single false
+    # positive in the whole name-routing sweep (2961 stored messages): with "كنت", "اكتر" and
+    # "عنكو" all unlisted they survived into `arabic_span`, padded it to "كنت عنكو اكتر", and
+    # scored 0.727 coverage against *Silver Mountain Water*. Adding them removes that fire and
+    # *recovers* a real one — "كنت عاوز سترونجر ويذ يو انتنسلي" had its own name diluted by the
+    # same "كنت" and scored below the floor. Same direction as the conv726 caveat in
+    # `product_resolver._disagreement`: the recall is in the vocabulary, not in the thresholds.
+    "كنت", "كنا", "اكتر", "عنكو", "عنكم", "اكبر", "اصغر",
     # Discourse particles and confirmations.
     "طب", "طيب", "بقول", "بقولك", "قول", "قولي", "ماشي", "تمام", "ايوه", "اه",
     "لا", "كمان", "برضه", "بس", "خلاص", "يعني", "امال",
@@ -453,6 +462,50 @@ def may_name_a_perfume(text):
     return bool(identifying_tokens(text))
 
 
+# Asking for something *like* a perfume rather than *for* it. "عايز عطر ريحته خمره" — a perfume that
+# smells boozy — names Khamrah and does not ask about it, and the difference is the whole turn: one
+# wants a shortlist, the other wants one bottle's price.
+#
+# 🔴 Not a tokenisation rule, and that is why it is a separate collection rather than more entries in
+# `_REFERENTIAL`. Every word here is *also* legitimate filler around a real name — "عندكو عطر ريحته
+# حلوه؟" names nothing, so these already count as filler for the gate's purposes. What they add is a
+# positive signal in the other direction, and that signal has exactly one consumer:
+# `router`'s catalogue correction, which must not drag a scent request onto `product_info`.
+# Putting them in `_REFERENTIAL` would do nothing for this job, because by the time a span exists the
+# words are already gone.
+#
+# Substring-matched rather than token-matched, because two entries are multi-word ("قريب من") and
+# because the one-letter pointers "زي" and "شبه" have to be whitespace-bounded or they fire inside
+# ordinary words. The caller pads the message with spaces first.
+_DESCRIBING = (
+    "ريحته", "ريحتها", "ريحه",
+    # Every inflection, because this dialect suffixes freely and a form nobody listed is a browse
+    # request answered with one bottle's price. "نوتاته" is already in `_REFERENTIAL`; the possessive
+    # singulars were the gap, and "عايز عطر نوتته خمره" is the shape that found it.
+    "نوته", "نوتة", "نوتات", "نوتته", "نوتتها", "نوتاته",
+    " زي ", " شبه ", "قريب من", "قريبه من", "يشبه", "تشبه", "شبيه", "شبيهه",
+)
+
+
+def describes_rather_than_names(text):
+    """True when the message wants something *like* a perfume, not that perfume.
+
+    Measured against the five phrasings a customer actually used for this in production plus the
+    synthetic forms: "عايز عطر ريحته خمره", "عايز حاجه زي خمره", "في حاجه قريبه من خمره" are all
+    True, and "عندكو خمره" / bare "خمره" are both False.
+
+    Deliberately crude, and the failure direction is chosen. A false positive costs the catalogue
+    correction one turn — the classifier's own answer stands, which is what happens today anyway. A
+    false negative answers a browse request with one perfume's price list. So when in doubt this
+    says True, and that is also why it is consulted *before* the catalogue is scored rather than
+    after: a scent request should not even reach the ranking.
+    """
+    if not text:
+        return False
+    padded = f" {normalize_arabic(text)} "
+    return any(marker in padded for marker in _DESCRIBING)
+
+
 # Arabic single letters are particles — "ف أماكن تاني", "حاجه ب 500", "ديور و شانيل". Both of those
 # first two are real customer messages, and the catalogue holds Latin names only, so no perfume here
 # can ever be spelled with one Arabic letter. Matching on the block rather than listing و ف ب ل ك
@@ -632,10 +685,27 @@ def phonetic_ranking(text, store, products=None):
 
     🔴 This ranks; it does not decide. A #1 here is not a match and must never be substituted for
     what the extractor said — that is the "اوداورا" → *Dark Aura* substitution `product_resolver`
-    records as actively dangerous. The only sound use is *disagreement*: when one row separates
-    clearly from the field and the model picked a different one, something is wrong and a human
-    question is cheaper than a confident wrong price. The thresholds that turn this into a decision
-    live with that caller, per this module's contract — see `absence.py:19-21`.
+    records as actively dangerous. The thresholds that turn this into a decision live with the
+    callers, per this module's contract — see `absence.py:19-21`.
+
+    There are two sound uses, and the second was added after this docstring first claimed there was
+    only one (*disagreement*). Both ask a question that does not require picking a row:
+
+      * **disagreement** — `product_resolver._verify_placement`: one row separates clearly from the
+        field and the model placed a different one, so something is wrong and a question is cheaper
+        than a confident wrong price. A fire *withholds*.
+      * **routing** — `product_resolver.confident_catalogue_match`, read by `router`: one row
+        separates clearly and the classifier sent the turn somewhere that will never look a name up
+        at all. A fire *reroutes*, to the branch that then does its own resolution from scratch.
+        Conversation 1106: "عندكو خمره" answered with two boozy niche perfumes while four Lattafa
+        Khamrahs sat in stock, because `خمره` is also the ordinary word for liquor and the
+        classifier cannot see the catalogue. Still not a placement — the reroute changes which
+        branch runs, and `resolve_products` inside it remains the only thing that picks the perfume.
+
+    ⚠️ The two run on different populations, which is why each carries its own backtest
+    (`eval_harness.backtest_placement`, `eval_harness.backtest_name_routing`). The same thresholds
+    are a veto in one and a proposal in the other, and a false-positive rate measured for the first
+    says nothing about the second.
 
     Both `name` and `brand + name` are scored, but the brand form **only for a span of two or more
     words**. This catalogue lists Versace Eros as the bare "Eros", so "ڤيرزاتشي ايروس" has to be

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "CONV772",
+    "category": "regression",
+    "persona": "browser",
+    "probe": "Replay of conversation 772. جنتل مان (Givenchy Gentleman) is NOT in this 35-product catalogue under any spelling. Versace Eros (brand Versace, listed in the catalogue under the bare name 'Eros') IS stocked and active: 50ml 666 and 90ml 1019. It is an EDT, male, longevity 7 hours, projection Strong. Top notes Mint, Green Apple, Lemon / middle Tonka Bean, Ambroxan, Geranium / base Vanilla, Vetiver, Oakmoss. It has no original-bottle variant, so the fixed sentence 'للأسف مش متوفر منه زجاجة أوريجينال حالياً' is CORRECT if it appears and is not a denial of the perfume. Stronger With You (Emporio Armani) is 50ml 400 and 90ml 700, plus original bottles 100ml 3800 and 200ml 6800. Turn 1 asks whether we have جنتل مان, and we do not. ✅ Required: say so plainly, in one sentence, with a short apology, echoing the name in the customer's own Arabic letters — AND in the SAME reply offer one or two stocked perfumes by FULL name, clearly labelled as DIFFERENT perfumes. ❌ CRITICAL: promising to check ('لحظة أتأكدلك منه' / 'هسأل وأرد عليك' / 'هشوفه لك'). Nothing looks a perfume up between two messages of a chat, so the promise leaves the customer waiting for an answer that never comes. That promise is what this transcript opens with. ❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. ❌ CRITICAL: writing جنتل مان in Latin letters, or claiming a stocked perfume is its 'correct name' or the same perfume. ❌ Any mention of a system, data, catalogue or 'مش ظاهر عندي'. Turn 2 ('طب ڤيرزاتشي ايروس' — 'ok then, Versace Eros') is the turn this conversation exists for. It switches to a DIFFERENT perfume, one we stock, written with ڤ instead of ف. ✅ Required: the reply is about Versace Eros and treats it as a perfume we carry — confirming it and asking which size, or quoting its prices. ❌ CRITICAL: saying Eros is unavailable, not found, or not in stock. It is active at 666 and 1019, and telling a customer otherwise is the worst reply on this turn. ❌ CRITICAL: promising to check on Eros. ❌ CRITICAL: answering about Stronger With You, or any perfume offered on turn 1, instead of Eros. The customer changed the subject and 'طب' is how they said so. ❌ CRITICAL: still answering about جنتل مان, or re-denying it, as though turn 2 had not named anything. ❌ Reading ڤيرزاتشي as a perfume in its own right, or as a perfume we do not carry. Turn 3 ('ها ؟' — 'well?') is the customer waiting on turn 2. ✅ Required: a real reply that carries the Eros answer forward — its prices, or its sizes, or a question that moves the sale on. ❌ CRITICAL: an empty reply, or a reply that says nothing about Eros. This turn got absolute silence in production and the whole conversation ended there. ❌ CRITICAL: claiming to have looked, searched or found anything ('لقيت', 'راجعت'). ❌ CRITICAL: reverting to جنتل مان, or announcing that a human will follow up. ❌ Never quote a price for Eros that is not 666 or 1019, and never quote a price for any perfume that is not among the figures above.",
+    "turns": [
+      {
+        "n": 1,
+        "user": "موجود عطر جنتل مان ؟",
+        "reply": "عطر جنتل مان مش موجود عندنا يا فندم، لكن ممكن أشيرلك على بدائل تانية زي Stronger With You من Emporio Armani، ريحته دافية بتوابل وفانيليا وكستناء، أو Dior Homme Sport برائحة حمضية وخشبية منعشة.",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 3643,
+        "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: موجود عطر جنتل مان ؟\nABSENCE_DENIED\nالعطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة متأكدين منها مش تخمين.\n🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من البدائل اللي بتعرضها عليه في نفس الرد.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Absolutely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 2,
+        "user": "طب ڤيرزاتشي ايروس",
+        "reply": "عطر Versace Eros متوفر عندنا، والـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه. لو حابب تعرف تفاصيل أكتر عن الريحة أو الثبات؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 1442,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n",
+        "findings": []
+      },
+      {
+        "n": 3,
+        "user": "ها ؟",
+        "reply": "عطر Eros من Versace متوفر عندنا، وزجاجة الـ90 ملي سعرها 1019 جنيه، وفيه كمان حجم 50 ملي بـ666 جنيه. تحب تعرف عنه حاجة معينة؟",
+        "classification": "product_info",
+        "objection": null,
+        "raw_intent": null,
+        "merged_intent": null,
+        "pending_relax": null,
+        "stage": "recommendation",
+        "search": null,
+        "keeping": null,
+        "dropped": null,
+        "offered": null,
+        "context_chars": 1442,
+        "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n",
+        "findings": []
+      }
+    ],
+    "findings": [],
+    "error": null,
+    "final_preferences": {},
+    "seconds": 15.3
+  }
+]

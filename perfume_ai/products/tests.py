@@ -19397,3 +19397,317 @@ class PraiseIsNotANameTests(TestCase):
             catalogue |= naming.tokens(name)
 
         self.assertEqual(catalogue & (naming._PRAISE | naming._PAST_PURCHASE), set())
+
+
+class Conversation1106Tests(TestCase):
+    """Conversation 1106, 2026-09-30: a stocked perfume lost to a classifier coin flip.
+
+    The customer asked for Khamrah — Lattafa Khamrah — twice, and was never told we have it:
+
+        "عندكو خمره"  -> Side Effect and Straight to Heaven, "rum, honey, tobacco"
+        "برفان خمره"  -> the same two again
+
+    That store stocks four active Khamrahs. `خمره` is both a perfume name and the ordinary word for
+    liquor, and booze is a real scent family, so the recommendation branch read it as a note: every
+    product in the injected context carried `✅ ليه مناسب: فيه rum`, the ranker's match-reason line.
+
+    Nothing downstream was broken. `resolve_products("عندكو خمره")` places `Khamrah` every time, and
+    `naming.phonetic_ranking` ranks it #1 at 0.833 with coverage 5/5. The turn simply never reached
+    `product_info`: `classify` returned `recommendation` 6 times in 10, and `router` assigns
+    `request_type` once.
+
+    🔴 **The misroute is probabilistic, so these tests patch `classify` rather than sampling it.**
+    Sampling would make the suite flaky in both directions — a green run would prove nothing and a
+    red run would not reproduce. What is under test is the correction, given the wrong answer.
+    """
+
+    KHAMRAHS = ("Khamrah", "Khamrah Qahwa", "Khamrah Dukhan", "Khamrah Waha")
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Misk Routing Test")
+        lattafa = Brand.objects.create(store=self.store, name="Lattafa")
+        initio = Brand.objects.create(store=self.store, name="Initio")
+        for name in self.KHAMRAHS:
+            self._perfume(lattafa, name, 950)
+        # The two perfumes production actually answered with, so a reply that still pitches them is
+        # reachable in this fixture rather than silently impossible.
+        self._perfume(initio, "Side Effect", 700)
+        self._perfume(initio, "Straight to Heaven", 700)
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def _perfume(self, brand, name, price):
+        product = Product.objects.create(
+            store=self.store, brand=brand, name=name, gender="unisex",
+        )
+        ProductVariant.objects.create(
+            product=product, volume=100, price=price, bottle_type="normal"
+        )
+        return product
+
+    def _route(self, message, classification, history=None):
+        """Route one message with the classifier forced wrong. Returns the two branch mocks.
+
+        `get_product_info` and `recommend` are both stubbed, so which one was called is the whole
+        assertion — that is the routing decision, and it is what broke.
+        """
+        from products.services import router
+
+        with mock.patch(
+            "products.services.router.classify", return_value=classification
+        ), mock.patch(
+            "products.services.router.get_product_info", return_value=("ok", "")
+        ) as product_info, mock.patch(
+            "products.services.router.recommend", return_value=("ok", "")
+        ) as recommend, mock.patch(
+            "products.services.router.extract_intent",
+            return_value={"gender": "unisex", "notes": ["rum"]},
+        ), mock.patch(
+            "products.services.router.search_products",
+            # The real shape, not a bare list: `_recommend_again` reads `results["products"]` and
+            # `results["alternatives"]`, so a list here fails with a TypeError before the branch
+            # under test is reached — and a TypeError is not the assertion this class is making.
+            return_value={"products": [], "alternatives": []},
+        ), mock.patch(
+            "products.services.router.handle_general", return_value=("ok", "")
+        ):
+            router.route(message, history or [], self.store, self.conversation)
+        return product_info, recommend
+
+    # ── the correction ────────────────────────────────────────────────────────
+    def test_the_recommendation_misroute_is_corrected(self):
+        product_info, recommend = self._route("عندكو خمره", "recommendation")
+
+        self.assertTrue(product_info.called)
+        self.assertFalse(recommend.called)
+
+    def test_the_faq_and_out_of_domain_misroutes_are_corrected(self):
+        """The ta-marbuta spelling "عندكو خمرة" lands on these two, not on recommendation."""
+        for classification in ("faq", "out_of_domain"):
+            with self.subTest(classification=classification):
+                product_info, _ = self._route("عندكو خمرة", classification)
+                self.assertTrue(product_info.called)
+
+    def test_a_bare_name_is_corrected(self):
+        product_info, recommend = self._route("خمره", "recommendation")
+
+        self.assertTrue(product_info.called)
+        self.assertFalse(recommend.called)
+
+    def test_the_rephrased_second_turn_is_corrected_too(self):
+        """The stickiness regression, and the reason the check ignores history.
+
+        The customer did the reasonable thing and restated it as "Khamrah *perfume*". Measured: that
+        message classifies `product_info` 6/6 with no history and `recommendation` 10/10 once turn
+        1's wrong answer is in the history — rephrasing took it from always right to always wrong,
+        because the bot's own bad answer had become the context.
+        """
+        history = [
+            {"role": "user", "content": "عندكو خمره"},
+            {"role": "assistant", "content": "Side Effect عطر نيش فيه ريحة روم مع عسل وتوباكو"},
+        ]
+        product_info, recommend = self._route("برفان خمره", "recommendation", history=history)
+
+        self.assertTrue(product_info.called)
+        self.assertFalse(recommend.called)
+
+    # ── and the limits on it ──────────────────────────────────────────────────
+    def test_a_scent_request_is_left_on_the_recommendation_branch(self):
+        """"عايز عطر ريحته خمره" wants a boozy shortlist, not Khamrah's price.
+
+        The check reads the customer's letters, so it cannot tell a name from a note — both reduce to
+        the span "خمره" at coverage 1.0. `describes_rather_than_names` is what keeps them apart, and
+        it is consulted before the catalogue is scored.
+        """
+        product_info, recommend = self._route("عايز عطر ريحته خمره", "recommendation")
+
+        self.assertFalse(product_info.called)
+        self.assertTrue(recommend.called)
+
+    def test_the_order_and_comparison_branches_are_never_rerouted(self):
+        """They hold state this correction would discard — a cart, two perfumes being compared.
+
+        Asserted on `get_product_info` not being called, because a reroute is the only way these
+        classifications could reach it.
+        """
+        from products.services import router
+
+        for classification in ("order", "order_cancel", "comparison", "identification"):
+            with self.subTest(classification=classification):
+                self.assertNotIn(classification, router._CATALOGUE_CORRECTABLE)
+
+    def test_identification_is_excluded_on_purpose(self):
+        """The one intent whose premise is that the letters should NOT be trusted.
+
+        A customer saying "مش فاكر اسمه" is describing a perfume they cannot spell; scoring their
+        guess and rerouting on it would answer about whatever it happened to resemble.
+        """
+        from products.services import router
+
+        self.assertNotIn("identification", router._CATALOGUE_CORRECTABLE)
+        product_info, _ = self._route("عندكو خمره", "identification")
+        self.assertFalse(product_info.called)
+
+    def test_a_browse_request_is_not_corrected(self):
+        product_info, recommend = self._route("عايز عطر شرقي ثابت", "recommendation")
+
+        self.assertFalse(product_info.called)
+        self.assertTrue(recommend.called)
+
+    def test_a_correct_product_info_classification_is_untouched(self):
+        """The common case has to be free: no reroute, and the branch runs as it always did."""
+        product_info, recommend = self._route("عندكو خمره", "product_info")
+
+        self.assertTrue(product_info.called)
+        self.assertFalse(recommend.called)
+
+
+class ConfidentCatalogueMatchTests(TestCase):
+    """The deterministic check behind the routing correction, tested directly.
+
+    It reuses `product_resolver`'s existing thresholds — `_MIN_COVERAGE`, `_MIN_CHARS`, `_GAP` — and
+    `naming.phonetic_ranking`. No new numbers, no model call. Measured over all 2961 stored customer
+    messages at 39 fires and 0 false positives (`eval_harness.backtest_name_routing`).
+    """
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Match Test")
+        lattafa = Brand.objects.create(store=self.store, name="Lattafa")
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        chanel = Brand.objects.create(store=self.store, name="Chanel")
+        for brand, name in (
+            (lattafa, "Khamrah"), (lattafa, "Khamrah Qahwa"), (lattafa, "Khamrah Waha"),
+            (lattafa, "Asad"), (dior, "Dior Sauvage"), (dior, "Dior Homme Sport"),
+            (chanel, "Bleu de Chanel"), (chanel, "Coco Mademoiselle"),
+        ):
+            product = Product.objects.create(
+                store=self.store, brand=brand, name=name, gender="unisex",
+            )
+            ProductVariant.objects.create(
+                product=product, volume=100, price=900, bottle_type="normal"
+            )
+
+    def _match(self, message):
+        from products.services.product_resolver import confident_catalogue_match
+
+        return confident_catalogue_match(message, self.store)
+
+    def test_it_names_the_perfume_the_letters_point_at(self):
+        match = self._match("عندكو خمره")
+
+        self.assertIsNotNone(match)
+        self.assertEqual(match.name, "Khamrah")
+
+    def test_the_base_name_beats_its_own_variants(self):
+        """The customer typed the base name of a three-variant line, so the base is what wins.
+
+        🔴 Recorded as behaviour, not relied on as the answer. This function decides the *route*;
+        which Khamrah the reply is about is `resolve_products`' call, made afterwards with the full
+        prompt, and `product_formatting._line_mates_for` emits the `⚠️ عطر مختلف عن` warning that
+        keeps the three distinct.
+        """
+        from products.services.sales import naming
+
+        ranking = naming.phonetic_ranking("عندكو خمره", self.store)
+        self.assertEqual(ranking[0][2].name, "Khamrah")
+        self.assertGreaterEqual(ranking[0][0] - ranking[1][0], 0.10)
+
+    def test_it_abstains_on_a_browse_request(self):
+        for message in (
+            "عايز عطر حلو للشتا",
+            "عندكو حاجه من ديور",
+            "عايز عطر شرقي ثابت",
+            "عايز حاجه رجالي فواحه",
+            "عندكو عطور نيش",
+            "عايز هديه لمراتي",
+        ):
+            with self.subTest(message=message):
+                self.assertIsNone(self._match(message))
+
+    def test_it_abstains_on_a_span_carrying_latin_characters(self):
+        """"عايز حاجه شبه Baccarat Rouge بس مش هي" names a perfume outright and asks for NOT it.
+
+        The same restriction `_disagreement` carries, for the same reason.
+        """
+        self.assertIsNone(self._match("عايز حاجه شبه Baccarat Rouge بس مش هي"))
+
+    def test_it_abstains_on_a_name_this_store_does_not_stock(self):
+        """"لاكوست اسنشال" is a real perfume and not in this catalogue, so nothing may fire.
+
+        The top phonetic match for it here is an unrelated row at roughly half the coverage floor.
+        """
+        self.assertIsNone(self._match("في لاكوست اسنشال؟"))
+
+    def test_it_abstains_when_the_message_names_nothing(self):
+        for message in ("بكام ده", "تمام شكرا", "ايه الاحجام"):
+            with self.subTest(message=message):
+                self.assertIsNone(self._match(message))
+
+    def test_it_abstains_with_no_store(self):
+        """`router` passes whatever it was given, and several callers pass None."""
+        from products.services.product_resolver import confident_catalogue_match
+
+        self.assertIsNone(confident_catalogue_match("عندكو خمره", None))
+
+    def test_the_vocabulary_fix_removes_the_sweeps_only_false_positive(self):
+        """"كنت محتاج اعرف عنكو اكتر" — "I wanted to know more about you".
+
+        It scored 0.727 coverage against *Silver Mountain Water* before `كنت`, `اكتر` and `عنكو` went
+        into `_REFERENTIAL`. The fix is vocabulary, not a threshold: the words were padding the span,
+        which is the same slack `product_resolver._disagreement`'s conv726 caveat describes.
+        """
+        from products.services.sales import naming
+
+        self.assertEqual(naming.identifying_tokens("كنت محتاج اعرف عنكو اكتر"), set())
+        self.assertEqual(naming.arabic_span("كنت محتاج اعرف عنكو اكتر"), "")
+        self.assertIsNone(self._match("كنت محتاج اعرف عنكو اكتر"))
+
+    def test_the_vocabulary_fix_recovers_a_real_name_it_was_diluting(self):
+        """The same "كنت" was padding a genuine name's span and holding it below the floor."""
+        from products.services.sales import naming
+
+        self.assertEqual(naming.arabic_span("كنت عاوز خمره"), "خمره")
+        self.assertEqual(self._match("كنت عاوز خمره").name, "Khamrah")
+
+
+class DescribesRatherThanNamesTests(TestCase):
+    """Wanting something *like* a perfume, versus asking about it.
+
+    The one thing the phonetic check structurally cannot see: "عندكو خمره" and
+    "عايز عطر ريحته خمره" both reduce to the span "خمره" at coverage 1.0, and only the first is
+    asking about the product.
+    """
+
+    def test_scent_phrasing_reads_as_describing(self):
+        from products.services.sales import naming
+
+        for message in (
+            "عايز عطر ريحته خمره",
+            "عايز حاجه زي خمره",
+            "في حاجه قريبه من خمره",
+            "عايز عطر نوتته خمره",
+            "عندكو حاجه تشبه خمره",
+            "عايز ريحه حلوه",
+        ):
+            with self.subTest(message=message):
+                self.assertTrue(naming.describes_rather_than_names(message))
+
+    def test_asking_about_a_named_perfume_does_not(self):
+        from products.services.sales import naming
+
+        for message in ("عندكو خمره", "خمره", "برفان خمره", "عندكو خمرة", "بكام خمره"):
+            with self.subTest(message=message):
+                self.assertFalse(naming.describes_rather_than_names(message))
+
+    def test_the_short_pointers_are_whitespace_bounded(self):
+        """"زي" and "شبه" are two letters and would otherwise fire inside ordinary words."""
+        from products.services.sales import naming
+
+        self.assertFalse(naming.describes_rather_than_names("عندكو زيتون"))
+        self.assertFalse(naming.describes_rather_than_names("عايز شبها"))
+        self.assertTrue(naming.describes_rather_than_names("عايز حاجه زي ده"))
+
+    def test_empty_input_is_false(self):
+        from products.services.sales import naming
+
+        self.assertFalse(naming.describes_rather_than_names(""))
+        self.assertFalse(naming.describes_rather_than_names(None))

@@ -283,6 +283,96 @@ def _verify_placement(message, resolved, store, products):
     return [answer], ()
 
 
+def confident_catalogue_match(message, store, products=None):
+    """The perfume this message's own letters point at, if they point unmistakably. Else `None`.
+
+    🔴 **This is a routing signal, not a placement.** The caller is `router`, deciding which branch
+    the turn belongs to; it must never be read as "this is the perfume the answer is about". That
+    stays `resolve_products`' job, runs afterwards inside `get_product_info`, and may legitimately
+    land on a different row — the customer who types the base name of a four-variant line gets the
+    `⚠️ عطر مختلف عن` warning `product_formatting._line_mates_for` already builds, and that
+    disambiguation has to happen with the full prompt rather than from a `difflib` ratio. Returning
+    the row at all is a convenience for the log line.
+
+    Conversation 1106 is why it exists. "عندكو خمره" — do you have Khamrah — went to the
+    recommendation branch, which read `خمره` as *khamra*, liquor, and answered with two boozy niche
+    perfumes while four Lattafa Khamrahs sat active in that store. The reading is not wrong in
+    isolation; booze is a real scent family. It is wrong because `resolve_products` places `Khamrah`
+    from that exact message every single time, and was never asked. `classify` returned
+    `recommendation` 6 times in 10 on it — a coin flip, and `router` assigns `request_type` once.
+
+    About a tenth of a real catalogue is unreachable by any classifier for this reason. 18 of Misk
+    Perfume's 188 active names are built from scent-note words — Khamrah, 7 Oud, Oud Wood, Oud Mood,
+    Oud Bouquet, Oud for Glory, Bare Vanilla, Vanilla 28, Vanilla Freak, Tobacco Vanille, Musk
+    Therapy, MISK Marshmallow, Tuscan Leather, Pink Sugar, Berry On Top — and for every one of them
+    the text alone cannot settle whether the word is a name or a note. Only the catalogue can, and
+    the classifier never sees it. Names that are ordinary words but *not* notes are fine:
+    "عندكو اسد" (lion), "عندكو فخر" (pride), "عندكو هوس" (obsession), "عندكو رغبه" (desire) all
+    classify correctly 5 times in 5, which is the control that isolates the cause.
+
+    The rule is `_disagreement`'s, minus the two clauses that only make sense when there is a
+    placement to argue with:
+
+        matched_chars >= _MIN_CHARS           enough real characters to mean anything
+        coverage      >= _MIN_COVERAGE        the row explains nearly all of what was typed
+        best_score    >= second + _GAP        and it separates from the field
+
+    No `_PICK_RATIO` — nothing has been picked yet. No "best is not the pick" identity test, for the
+    same reason. The thresholds are reused rather than re-tuned: the scorer and its frontier are
+    `_disagreement`'s, and a second set of numbers for the same measurement would be two things to
+    keep in step.
+
+    ⚠️ **The population is different, though, and that mattered.** `_disagreement` uses this scorer
+    as a veto — it only ever withholds something. Here it *proposes*, and it runs on every turn of
+    three classifications rather than on the rare turn that placed exactly one row. So it was
+    re-measured from scratch over all 2961 stored customer messages, each scored against its own
+    conversation's store (`eval_harness.backtest_name_routing`):
+
+      * **39 fires, 1.3% of messages, 0 false positives.** Khamrah, Megamare, Afnan 9PM, Lattafa
+        Asad, Stronger With You and Intensely, Safrano, Ultra Male in seven spellings, Fahrenheit,
+        Good Girl, ZARA GOLD, Bleu de Chanel.
+      * Abstains on genuine browse requests ("عايز عطر حلو للشتا", "عندكو حاجه من ديور",
+        "عايز عطر شرقي ثابت", "عايز حاجه رجالي فواحه", "عندكو عطور نيش", "عايز هديه لمراتي"), each
+        scoring 0.357–0.500 coverage against some unrelated row.
+      * Abstains on "في لاكوست اسنشال؟" — a perfume that store does not stock, whose top phonetic
+        match is *Lattafa Asad* at 0.500.
+
+    The single false positive in the first sweep was "كنت محتاج اعرف عنكو اكتر" at 0.727, and it was
+    span pollution rather than a loose threshold — `كنت`, `اكتر`, `عنكو` were missing from
+    `naming._REFERENTIAL` and padded the span. Adding them removed it *and* recovered a real name
+    that the same `كنت` had been diluting. The lesson is `_disagreement`'s conv726 caveat again, now
+    acted on once: the slack is in the vocabulary.
+
+    🔴 `naming.arabic_span` builds the span. Do not re-derive it. A probe that rebuilt it by hand
+    kept "لاكوست" but dropped "اسنشال؟" on the punctuation, so coverage came out 1.0 instead of 0.5
+    and the Lacoste message read as a confident match for a perfume that store does not carry.
+    """
+    span = naming.arabic_span(message)
+    if not span or _HAS_LATIN.search(span):
+        return None
+
+    latin = naming.transliterate(span)
+    ranking = naming.phonetic_ranking(message, store, products=products)
+    if not latin or len(ranking) < 2:
+        return None
+
+    best_score, matched_chars, best = ranking[0]
+    second_score = ranking[1][0]
+    coverage = matched_chars / len(latin)
+    if matched_chars < _MIN_CHARS:
+        return None
+    if coverage < _MIN_COVERAGE:
+        return None
+    if best_score < second_score + _GAP:
+        return None
+
+    logger.info(
+        "routing: span=%r translit=%r names=%r (%.3f) second=%.3f chars=%d cov=%.3f",
+        span, latin, best.name, best_score, second_score, matched_chars, coverage,
+    )
+    return best
+
+
 _FAMILIES_HEADER = (
     "Perfume lines (each line below is ONE family: same house, one name nested inside another. "
     "A customer naming the base plus one extra word is naming the VARIANT, not the base):"

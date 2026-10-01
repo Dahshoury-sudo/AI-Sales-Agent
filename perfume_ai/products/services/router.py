@@ -15,6 +15,7 @@ from .notification_service import create_notification, notify_handoff
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
+from .product_resolver import confident_catalogue_match
 from .reply_sanitizer import soften_marketing_language, strip_premature_closing
 from .sales import constraints as sales_constraints
 from .sales import described as sales_described
@@ -36,6 +37,17 @@ from difflib import SequenceMatcher
 OBJECTION_ELIGIBLE = frozenset(
     {"faq", "handoff", "recommendation", "product_info", "greeting"}
 )
+
+# Classifications the catalogue may overrule, when the customer's own letters unmistakably spell a
+# perfume we stock. See the long comment at the correction itself for conversation 1106 and why the
+# catalogue outranks the classifier here.
+#
+# 🔴 The omissions carry the safety. `order` and `order_cancel` hold a cart, `comparison` holds two
+# perfumes, and `identification` is a customer who cannot spell the name they are trying to recall —
+# which is the one intent whose whole premise is that the letters should NOT be trusted. Rerouting
+# any of them would discard state this branch does not have. `faq` and `out_of_domain` are listed
+# because the ta-marbuta spelling ("عندكو خمرة") lands on them rather than on `recommendation`.
+_CATALOGUE_CORRECTABLE = frozenset({"recommendation", "faq", "out_of_domain"})
 
 # An explicit request for a person still goes to handoff, even when it carries an objection.
 _ASKED_FOR_HUMAN = (
@@ -476,6 +488,37 @@ def route(message, history=None, store=None, conversation=None):
     # anything, and classify() is the first model call on every path that remains.
     record_llm_message(store)
     request_type = classify(message, history)
+
+    # 🔴 The only reassignment of `request_type` in this file, and it is deliberate: the catalogue
+    # outranks the classifier when the customer's own letters unmistakably spell a perfume we stock.
+    #
+    # Conversation 1106 is "عندكو خمره" — do you have Khamrah — answered with two boozy niche
+    # perfumes while four Lattafa Khamrahs sat active in that store. `خمره` is both a perfume name
+    # and the ordinary word for liquor, and booze is a real scent family, so reading it as a note is
+    # not a mistake the prompt can be told out of: the evidence that settles it is the catalogue, and
+    # `classify` never sees the catalogue. It returned `recommendation` 6 times in 10 on that message
+    # while `resolve_products` placed `Khamrah` from it every time. A coin flip decided the turn.
+    #
+    # This also unsticks the follow-up for free. The customer rephrased to "برفان خمره" — Khamrah
+    # *perfume*, the reasonable clarification — and that went from `product_info` 6/6 with no history
+    # to `recommendation` 10/10 once turn 1's wrong answer was in the history. The check reads the
+    # message alone, so turn 2 is corrected on its own evidence.
+    #
+    # Three classifications only, and the omissions are the point: `order` and `order_cancel` hold a
+    # cart, `comparison` holds two perfumes, `identification` is a customer trying to recall a name
+    # they cannot spell. Each carries state this branch would discard. `faq` and `out_of_domain` are
+    # in because the ta-marbuta spelling "عندكو خمرة" lands on them.
+    #
+    # Placed above the objection block rather than below it so a corrected turn stays
+    # objection-eligible — `product_info` is in `OBJECTION_ELIGIBLE` and `out_of_domain` is not, so a
+    # customer grumbling about Khamrah's price reaches the playbook only on this side of it.
+    if request_type in _CATALOGUE_CORRECTABLE and not sales_naming.describes_rather_than_names(message):
+        # Deterministic: no model call, and the one query `phonetic_ranking` makes. Abstains on
+        # genuine browse requests, on spans carrying Latin characters, and on names we do not stock
+        # — measured at 0 false positives over all 2961 stored customer messages
+        # (`eval_harness.backtest_name_routing`).
+        if confident_catalogue_match(message, store):
+            request_type = "product_info"
 
     # An objection is detected from the customer's own words rather than asked of the
     # classifier: it costs no extra model call, it is directly testable, and when it misses
