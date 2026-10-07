@@ -1,0 +1,47 @@
+{
+  "case": "L04",
+  "run": 1,
+  "turns": [
+    {
+      "user": "أنا راجل وعايز عطرين، زجاجتين كل واحدة 90 مل زجاجة البراند، ومعايا 1000 جنيه إجمالي للاتنين مع بعض، مش لكل واحدة. رشحلي اتنين أقدر أشتريهم بالمبلغ ده من غير ما أزود.",
+      "reply": "مش لاقي اختيار بيحقق كل الشروط دي مع بعض بميزانية إجمالية 1000 جنيه. تحب تغيّر الحجم ولا الميزانية؟",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "max_price": 1000,
+          "bottle_type": "normal",
+          "budget_scope": "total",
+          "budget_strict": true,
+          "requested_volume": 90,
+          "purchase_quantity": 2
+        },
+        "sales_state": {},
+        "pending": [],
+        "items": [],
+        "contacts": {},
+        "orders": []
+      }
+    },
+    {
+      "user": "اختارلي الاتنين وقولي السعر النهائي للاتنين مع بعض، الحد الأقصى ألف جنيه.",
+      "reply": "مش لاقي اختيار بيحقق كل الشروط دي مع بعض بميزانية إجمالية 1000 جنيه. تحب تغيّر الحجم ولا الميزانية؟",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "max_price": 1000,
+          "bottle_type": "original",
+          "budget_scope": "total",
+          "budget_strict": true,
+          "requested_volume": 90,
+          "purchase_quantity": 2
+        },
+        "sales_state": {},
+        "pending": [],
+        "items": [],
+        "contacts": {},
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

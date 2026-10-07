@@ -1,0 +1,119 @@
+{
+  "code": "C02",
+  "title": "The string false is accepted as order confirmation",
+  "mode": "Live initial quote; malformed extractor boolean injected into the real checkout handler",
+  "conversation_id": 1183,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أطلب واحدة Vanilo 50 مل زجاجة البراند. اسمي تجربة C02، موبايلي 01000000000 والبديل 01100000000، عنواني القاهرة مدينة نصر 10 شارع الاختبار شقة 1.",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة C02\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار شقة 1\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 86,
+          "pending_product": null,
+          "customer_name": "تجربة C02",
+          "phone": "01000000000",
+          "backup": "01100000000",
+          "address": "القاهرة مدينة نصر 10 شارع الاختبار شقة 1",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "استنى، ما تأكدش الطلب لسه.",
+      "reply": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #68.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": null,
+        "orders": [
+          {
+            "id": 68,
+            "total_price": "607.00",
+            "status": "pending"
+          }
+        ]
+      },
+      "injected_extractor_output": {
+        "customer_name": "تجربة C02",
+        "customer_phone": "01000000000",
+        "customer_secondary_phone": "01100000000",
+        "shipping_address": "القاهرة مدينة نصر 10 شارع الاختبار شقة 1",
+        "products": [
+          {
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1
+          }
+        ],
+        "is_confirmed": "false",
+        "cart_cleared": false
+      }
+    }
+  ],
+  "events": [
+    {
+      "description": "Fault injection",
+      "field": "is_confirmed",
+      "supplied_value": "false",
+      "supplied_type": "string",
+      "expected": "Reject invalid extraction and preserve cart"
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "The customer explicitly said not to confirm. Injecting JSON is_confirmed=\"false\" still created an order because the string is truthy. This is an extractor-boundary test, not a claim that the live model emitted that JSON.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": [
+      {
+        "id": 68,
+        "total_price": "607.00",
+        "status": "pending"
+      }
+    ]
+  },
+  "transcript": [
+    {
+      "id": 7349,
+      "role": "user",
+      "content": "عايز أطلب واحدة Vanilo 50 مل زجاجة البراند. اسمي تجربة C02، موبايلي 01000000000 والبديل 01100000000، عنواني القاهرة مدينة نصر 10 شارع الاختبار شقة 1.",
+      "internal_context": ""
+    },
+    {
+      "id": 7350,
+      "role": "assistant",
+      "content": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة C02\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار شقة 1\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    },
+    {
+      "id": 7351,
+      "role": "user",
+      "content": "استنى، ما تأكدش الطلب لسه.",
+      "internal_context": ""
+    },
+    {
+      "id": 7352,
+      "role": "assistant",
+      "content": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #68.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    }
+  ]
+}

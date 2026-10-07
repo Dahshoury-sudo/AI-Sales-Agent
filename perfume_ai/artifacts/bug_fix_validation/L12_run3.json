@@ -1,0 +1,88 @@
+{
+  "case": "L12",
+  "run": 3,
+  "turns": [
+    {
+      "user": "عايز أطلب Vanilo 50 مل زجاجة البراند، واحدة. اسمي تجربة L12 وعنواني القاهرة مدينة نصر 10 شارع الاختبار.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس رقمين للموبايل واحد اساسي وواحد بديل.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 178,
+            "product_ids": [
+              1743
+            ]
+          }
+        },
+        "pending": [],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    },
+    {
+      "user": "رقم موبايلي 01000000000 والرقم البديل 01100000000. وبتوصلوا للمحافظات؟",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة L12\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\nأيوة يا فندم، بنوصل لأي مكان في مصر بمصاريف شحن 60 جنيه.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 180,
+            "product_ids": [
+              1743
+            ]
+          }
+        },
+        "pending": [],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    },
+    {
+      "user": "أنا كتبتلك الرقمين فوق، إيه اللي ناقص في الطلب؟",
+      "reply": "تمام يا فندم، الأرقام اللي كتبتها معايا كاملة ومفيش حاجة ناقصة.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 180,
+            "product_ids": [
+              1743
+            ]
+          }
+        },
+        "pending": [],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

@@ -312,3 +312,9 @@ CELERY_TASK_ACKS_LATE = True
 
 # One retry attempt won't hog the worker — keep concurrency reasonable
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Durable notification failures are retried independently of customer messages.
+CELERY_BEAT_SCHEDULE = {
+    "retry-order-notifications": {
+        "task": "products.tasks.retry_order_notifications", "schedule": 60.0,
+    },
+}

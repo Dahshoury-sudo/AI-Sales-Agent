@@ -206,6 +206,7 @@ class Conversation(models.Model):
     # because clear_cart drops that row on every completed order, and a customer's
     # taste should outlive one purchase.
     preferences = models.JSONField(default=dict, blank=True)
+    sales_state = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -246,6 +247,8 @@ class Message(models.Model):
 
     content = models.TextField()
     internal_context = models.TextField(blank=True)
+    delivery_status = models.CharField(max_length=20, default="sent")
+    delivery_parts = models.JSONField(default=dict, blank=True)
     # URL of an image or file the customer attached (e.g. a payment receipt
     # screenshot). Saved as the platform-provided link — not downloaded — so
     # WhatsApp URLs may expire before the agent opens them. Messenger and
@@ -301,6 +304,8 @@ class Cart(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    pending_items = models.JSONField(default=list, blank=True)
+    quote = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"Cart for conversation #{self.conversation_id}"
@@ -315,6 +320,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    line_id = models.CharField(max_length=64, blank=True)
     bottle_type = models.CharField(max_length=20, choices=BOTTLE_CHOICES, default="normal")
 
     class Meta:
@@ -350,6 +356,8 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     conversation = models.ForeignKey(Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     bot_notes = models.TextField(blank=True)
+    checkout_token = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    notification_pending = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -406,6 +414,7 @@ class ConversationEvaluation(models.Model):
 
 
 class Notification(models.Model):
+    dedupe_key = models.CharField(max_length=100, unique=True, null=True, blank=True)
     TYPE_CHOICES = (
         ("handoff", "Human Handoff Required"),
         ("new_order", "New Order"),
@@ -481,6 +490,27 @@ class StoreMonthlyUsage(models.Model):
         return f"{self.store.name} {self.period:%Y-%m}: {self.llm_messages}"
 
 
+class InboundEvent(models.Model):
+    """A durable receipt; task retries resume this turn instead of recreating it."""
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    platform = models.CharField(max_length=50)
+    source_key = models.CharField(max_length=64)
+    sender_id = models.CharField(max_length=255, blank=True)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, null=True)
+    text = models.TextField()
+    attachment_url = models.TextField(blank=True)
+    status = models.CharField(max_length=20, default="pending")
+    user_message = models.OneToOneField(Message, on_delete=models.SET_NULL, null=True, related_name="inbound_event")
+    reply_message = models.OneToOneField(Message, on_delete=models.SET_NULL, null=True, related_name="reply_event")
+    result = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["store", "platform", "source_key"], name="unique_inbound_source")]
+        indexes = [models.Index(fields=["conversation", "status", "id"], name="inbound_pending_idx")]
+
+
 class PostCommentRule(models.Model):
     """Posts where the bot should NOT auto-reply to comments (blocklist).
 
@@ -522,4 +552,4 @@ class PostCommentRule(models.Model):
         verbose_name_plural = "قواعد الرد على البوستات"
 
     def __str__(self):
-        return f"{self.label or self.post_id} ({self.platform})"
+        return f"{self.label or self.post_id} ({self.platform})"

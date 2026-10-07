@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    ProductListView, ChatAPIView, AnalyticsAPIView, ChatDemoView,
+    ProductListView, ChatAPIView, ChatMessagesAPIView, AnalyticsAPIView, ChatDemoView,
     PublicChatDemoView, OrdersDashboardView, OrdersDashboardAPIView, OrderStatusUpdateView,
     BulkImportView, BulkImportAPIView, BulkImportTemplateView,
     AnalyticsDashboardView, HandoffDashboardView, HandoffConversationsAPIView,
@@ -12,6 +12,7 @@ from .views_meta import MetaWebhookView
 urlpatterns = [
     path("products/", ProductListView.as_view()),
     path("chat/", ChatAPIView.as_view()),
+    path("chat/messages/", ChatMessagesAPIView.as_view()),
     path("analytics/data/", AnalyticsAPIView.as_view(), name="analytics-api"),
     path("analytics/", AnalyticsDashboardView.as_view(), name="analytics-dashboard"),
     path("demo/", ChatDemoView.as_view()),

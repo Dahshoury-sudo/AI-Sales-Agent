@@ -1,0 +1,185 @@
+{
+  "database": "AIAgent",
+  "store_id": 1,
+  "store_name": "Perfamix",
+  "checkout": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "conversations": [
+    {
+      "code": "C01",
+      "id": 1182,
+      "message_count": 4,
+      "order_ids": [
+        67
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "C02",
+      "id": 1183,
+      "message_count": 4,
+      "order_ids": [
+        68
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "C03",
+      "id": 1184,
+      "message_count": 6,
+      "order_ids": [
+        69,
+        70
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "C04",
+      "id": 1185,
+      "message_count": 4,
+      "order_ids": [
+        71
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "C05",
+      "id": 1186,
+      "message_count": 8,
+      "order_ids": [
+        72
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "D01",
+      "id": 1187,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "D02",
+      "id": 1188,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "D03",
+      "id": 1189,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "D04",
+      "id": 1190,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "E01",
+      "id": 1191,
+      "message_count": 2,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L01",
+      "id": 1170,
+      "message_count": 6,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L02",
+      "id": 1173,
+      "message_count": 6,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L03",
+      "id": 1174,
+      "message_count": 4,
+      "order_ids": [
+        66
+      ],
+      "status": "reproduced"
+    },
+    {
+      "code": "L04",
+      "id": 1171,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L05",
+      "id": 1175,
+      "message_count": 2,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L06",
+      "id": 1176,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L07",
+      "id": 1172,
+      "message_count": 2,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L08",
+      "id": 1177,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "not reproduced"
+    },
+    {
+      "code": "L09",
+      "id": 1178,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L10",
+      "id": 1179,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L11",
+      "id": 1180,
+      "message_count": 12,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L12",
+      "id": 1181,
+      "message_count": 6,
+      "order_ids": [],
+      "status": "reproduced"
+    },
+    {
+      "code": "L13",
+      "id": 1192,
+      "message_count": 4,
+      "order_ids": [],
+      "status": "not reproduced"
+    }
+  ],
+  "catalog_price_or_stock_changes": [],
+  "reproduced_count": 21,
+  "control_count": 2
+}

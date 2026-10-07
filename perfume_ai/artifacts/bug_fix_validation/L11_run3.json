@@ -1,0 +1,164 @@
+{
+  "case": "L11",
+  "run": 3,
+  "turns": [
+    {
+      "user": "أنا راجل وعايز عطر صيفي في حدود 1000 جنيه. رشحلي اختيارين بس بالترتيب الأول والتاني.",
+      "reply": "🔹 Dior Homme Sport 50 ملي بـ 450 جنيه، ريحته منعشة وحيوية مناسبة للصيف. وفيه كمان 90 ملي بـ 1100 جنيه، أعلى حاجة بسيطة من ميزانيتك لو حابب حجم أكبر.\n\n🔹 Acqua di Gio 50 ملي بـ 503 جنيه، ريحته بحرية ومنعشة جداً للصيف. والـ 90 ملي بـ 1032 جنيه، أعلى حاجة بسيطة من ميزانيتك.\n\nأنا أرشحلك Dior Homme Sport أكتر لطلبك لأنه ريحته حيوية وتناسب الصيف بشكل خاص، أما Acqua di Gio فهو خيار منعش وكلاسيكي.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "budget_scope": "per_item",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 166,
+            "product_ids": [
+              1662,
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "التوصيل بياخد وقت قد إيه؟",
+      "reply": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "budget_scope": "per_item",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 166,
+            "product_ids": [
+              1662,
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "الدفع عند الاستلام موجود؟",
+      "reply": "(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "budget_scope": "per_item",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 166,
+            "product_ids": [
+              1662,
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "هل عندكم محل أقدر أزوره؟",
+      "reply": "لو حابب تشم العطور بنفسك أو تجربها، تقدر تزور الستور في المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي أول يمين بعد شاورما الريم في يمين. تاني فيلا على إيدك اليمين.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "budget_scope": "per_item",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 166,
+            "product_ids": [
+              1662,
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "بتوصلوا للمحافظات؟",
+      "reply": "أيوة يا فندم، التوصيل متاح لأي مكان في مصر ومصاريف الشحن 60 جنيه فقط.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "budget_scope": "per_item",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 166,
+            "product_ids": [
+              1662,
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "عايز أطلب التاني اللي رشحته في الأول، 50 مل زجاجة البراند، واحد منه.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Acqua di Gio (50ml) بـ 503 جنيه\nالمجموع: 503 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "summer",
+          "max_price": 1000.0,
+          "bottle_type": "normal",
+          "budget_scope": "per_item",
+          "budget_strict": false,
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 176,
+            "product_ids": [
+              1668
+            ]
+          }
+        },
+        "pending": [],
+        "items": [
+          {
+            "variant__product__name": "Acqua di Gio",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

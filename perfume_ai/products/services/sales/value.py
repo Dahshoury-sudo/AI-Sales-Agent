@@ -72,7 +72,23 @@ def as_budget(value):
         budget = Decimal(str(value))
     except (ArithmeticError, TypeError, ValueError):
         return None
-    return budget if budget > 0 else None
+    return budget if budget.is_finite() and budget > 0 else None
+
+
+def request_ceiling(intent):
+    budget = as_budget((intent or {}).get("max_price"))
+    if budget is None:
+        return None
+    return budget if intent.get("budget_strict") is True or intent.get("budget_scope") == "total" else budget * BUDGET_TOLERANCE
+
+
+def eligible_variants(product, intent):
+    from ..product_formatting import is_variant_available
+    ceiling = request_ceiling(intent)
+    return [v for v in product.variants.all() if is_variant_available(v)
+            and (not intent.get("requested_volume") or v.volume == intent["requested_volume"])
+            and (not intent.get("bottle_type") or v.bottle_type == intent["bottle_type"])
+            and (ceiling is None or v.price <= ceiling)]
 
 
 def stated_budget(conversation):

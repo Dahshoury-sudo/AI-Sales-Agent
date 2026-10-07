@@ -413,6 +413,7 @@ def build_ground_truth(store):
     from products.services.product_formatting import is_variant_available
 
     prices, volumes, names, name_tokens, brands = set(), set(), set(), set(), set()
+    variant_prices = {}
     longevity_numbers = set()
     # Active products with at least one sellable bottle. A denial of one of these is always
     # wrong, which is what the denial check needs and what `names` cannot express: `names`
@@ -438,6 +439,7 @@ def build_ground_truth(store):
         for number in re.findall(r"\d+", product.longevity or ""):
             longevity_numbers.add(number)
         for variant in product.variants.all():
+            variant_prices.setdefault(product.name, []).append({"volume": variant.volume, "bottle_type": variant.bottle_type, "price": str(variant.price)})
             volumes.add(str(int(variant.volume)))
             prices.add(str(int(variant.price)))
             prices.add(f"{variant.price:.2f}")
@@ -457,6 +459,7 @@ def build_ground_truth(store):
         store_text += " " + (faq.answer or "")
 
     return {
+        "variant_prices": variant_prices,
         "prices": prices,
         "volumes": volumes,
         "names": names,
@@ -491,6 +494,47 @@ def _allowed_numbers(truth, context, customer_text):
     return allowed
 
 
+def check_variant_prices(reply, truth, customer_text=""):
+    from decimal import Decimal
+    from products.services.static_faq_service import normalize_arabic
+    text = (reply or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    records = truth.get("variant_prices", {})
+    if not records:
+        return []
+    pattern = re.compile("|".join(re.escape(n) for n in sorted(records, key=len, reverse=True)), re.I)
+    names = list(pattern.finditer(text))
+    by_lower = {n.lower(): rows for n, rows in records.items()}
+    findings = []
+    for index, named in enumerate(names):
+        segment = text[named.end():names[index + 1].start() if index + 1 < len(names) else len(text)]
+        for quoted in re.finditer(r"(\d+(?:\.\d+)?)\s*(?:جنيه|EGP)\b", segment, re.I):
+            before = segment[:quoted.start()]
+            clause = normalize_arabic(re.split(r"[\n؛]", before)[-1])
+            if any(word in clause for word in ("اجمالي", "ميزاني", "فرق", "عربون", "شحن")):
+                continue
+            volumes = re.findall(r"(\d+)\s*(?:ملي|مل|ml)\b", before, re.I)
+            if not volumes:
+                volumes = re.findall(r"(\d+)\s*(?:ملي|مل|ml)\b", customer_text, re.I)
+            rows = by_lower[named.group().lower()]
+            if volumes:
+                rows = [r for r in rows if r["volume"] == int(volumes[-1])]
+            bottle_text = normalize_arabic(before or customer_text)
+            if "اوريجينال" in bottle_text or "original" in bottle_text:
+                rows = [r for r in rows if r["bottle_type"] == "original"]
+            elif "البراند" in bottle_text:
+                rows = [r for r in rows if r["bottle_type"] == "normal"]
+            expected = {Decimal(r["price"]) for r in rows}
+            if "سعر المل" in clause or "per ml" in clause:
+                expected = {(Decimal(r["price"]) / r["volume"]).quantize(Decimal(".01")) for r in rows if r["volume"]}
+            else:
+                quantity = re.search(r"(\d+)\s*[×x]\s*$", text[max(0, named.start()-15):named.start()])
+                if quantity and ("السعر" in clause or "المجموع" in clause):
+                    expected = {price * int(quantity[1]) for price in expected}
+            if Decimal(quoted[1]) not in expected:
+                findings.append(("wrong_variant_price", "critical", f"{named.group()}: quoted {quoted[1]} for the requested variant; expected {sorted(map(str, expected))}"))
+    return findings
+
+
 def check_reply(reply, *, truth, context, customer_text, turn_state, history_text=""):
     """Findings for one bot reply. Each finding is (code, severity, detail).
 
@@ -499,7 +543,7 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
     the phone numbers from the previous turn produced two `invented_number` criticals, the
     single worst class of false positive this file can emit.
     """
-    findings = []
+    findings = check_variant_prices(reply, truth, customer_text)
     reply = reply or ""
     allowed = _allowed_numbers(
         truth, context, f"{customer_text or ''}\n{history_text or ''}"

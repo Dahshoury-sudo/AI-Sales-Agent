@@ -152,10 +152,27 @@ Schema:
     "similar_to_notes": ["note1", "note2"] or [],
     "avoid_notes": ["note1", "note2"] or [],
     "avoid_traits": subset of ["heavy", "suffocating", "sweet", "loud", "strong", "old"] or [] — CLOSED list, nothing else,
-    "wants_uncommon": true or false
+    "wants_uncommon": true or false or null,
+    "requested_volume": integer ml or null,
+    "bottle_type": "normal" or "original" or null,
+    "purchase_quantity": integer or null,
+    "recommendation_count": integer or null,
+    "budget_scope": "total" or "per_item" or null,
+    "budget_strict": true or false or null,
+    "reset_preferences": true or false,
+    "clear_preferences": []
 }}
 
 Rules:
+- Extract updates from the LATEST message. Unspecified booleans are null, never false.
+- wants_uncommon=false means the customer explicitly withdrew the uncommon requirement.
+- reset_preferences=true when changing the recipient or explicitly discarding earlier requirements.
+  In that case extract ONLY the new recipient's requirements; never copy old budget/projection.
+- clear_preferences lists explicitly withdrawn keys (e.g. max_price when dropping the budget).
+- purchase_quantity is bottles to BUY; recommendation_count is alternatives to SEE. Never confuse them.
+- A combined budget for two or more bottles is budget_scope=total and budget_strict=true.
+- Exact ceilings (at most, cannot add one pound, حد أقصى) are strict; "around" is approximate.
+- Requested volume and bottle type are mandatory filters, not optional suggestions.
 - If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT the store's own blends and ask for real designer houses instead (e.g. "مش عايز تركيبات بتاعتكم", "عايز براندات أصلية", "بلاش تركيبكم", "عايز الأصلي مش تركيب", "مش عايز حاجة من تصميمكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
@@ -200,7 +217,7 @@ Rules:
 - If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
 - CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
 - 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, projection, or avoid_traits unless the user EXPLICITLY mentioned them. 'avoid_traits' is the most damaging field to guess, because it is scored as a penalty rather than a preference — a trait the customer never rejected actively pushes away perfumes that suit them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
-- STATE MANAGEMENT: Accumulate preferences from the history (e.g., if they asked for 'female' before, and now say 'Dior', return both). BUT if the user's latest message changes or overrides a previous preference (e.g., they wanted 'Xerjoff' before but now want 'Dior'), OVERRIDE the old preference and ONLY return the NEW one ('Dior'). Do NOT include outdated criteria from the history.
+- STATE MANAGEMENT: Return only preference updates expressed in the latest message. The application retains earlier preferences. Use history to resolve references, alternatives, and answers to earlier questions; do not copy old criteria into unspecified fields. Explicit changes replace the previous value; recipient changes discard earlier requirements.
 """
 
     messages = [
@@ -220,6 +237,23 @@ Rules:
     response = chat(messages, profile="extract", response_format={"type": "json_object"})
 
     try:
-        return _sanitize(json.loads(response))
+        intent = _sanitize(json.loads(response))
+        from ..sales.constraints import explicit_updates
+        intent.update(explicit_updates(message))
+        # A follow-up about the total must not silently change the bottle choice.
+        # Packaging changes need evidence in this turn; omission retains saved state.
+        from ..static_faq_service import normalize_arabic
+        text = normalize_arabic(message or "")
+        if not any(marker in text for marker in ("زجاج", "ازاز", "اوريجينال", "اوريجنال", "اصلي", "original", "bottle", "تركيب", "براند")):
+            intent.pop("bottle_type", None)
+        for key in ("requested_volume", "purchase_quantity", "recommendation_count"):
+            if intent.get(key) is not None and (type(intent[key]) is not int or intent[key] <= 0):
+                intent.pop(key)
+        if intent.get("bottle_type") not in (None, "normal", "original"):
+            intent.pop("bottle_type")
+        for key in ("wants_uncommon", "budget_strict", "reset_preferences"):
+            if intent.get(key) is not None and type(intent[key]) is not bool:
+                intent.pop(key)
+        return intent
     except Exception:
         return {}

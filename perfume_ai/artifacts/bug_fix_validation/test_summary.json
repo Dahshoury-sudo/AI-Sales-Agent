@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "database": "disposable PostgreSQL",
+  "external_http": "disabled",
+  "tests": 1401
+}

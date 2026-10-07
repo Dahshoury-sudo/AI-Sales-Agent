@@ -1,0 +1,163 @@
+{
+  "code": "L01",
+  "title": "Multiple unsized items lose quantity or the second item",
+  "conversation_id": 1170,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "mode": "live model, actual router",
+  "status": "reproduced",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أطلب 2 من Leatherio و3 من Vanilo في زجاجة البراند، لسه هحدد الأحجام.",
+      "reply": "تمام 👌 بس محتاج أعرف الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Leatherio و الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Vanilo؟",
+      "context": "No products found",
+      "error": null,
+      "seconds": 7.3,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 79,
+          "pending_product": "Leatherio",
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": []
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "خلي Leatherio 90 مل.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Leatherio (90ml) بـ 1075 جنيه\nالمجموع: 1075 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "context": "Leatherio (90 ملي) (زجاجة البراند) x 1 (1075.00 EGP)",
+      "error": null,
+      "seconds": 17.0,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 79,
+          "pending_product": null,
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": [
+            {
+              "variant__product__name": "Leatherio",
+              "variant__volume": 90,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 3,
+      "user": "وVanilo 50 مل. راجعلي كده الطلب كله والكميات.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Leatherio (90ml) بـ 2150 جنيه\n- 3 × Vanilo (50ml) بـ 1821 جنيه\nالمجموع: 3971 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+      "context": "Leatherio (90 ملي) (زجاجة البراند) x 2 (2150.00 EGP), Vanilo (50 ملي) (زجاجة البراند) x 3 (1821.00 EGP)",
+      "error": null,
+      "seconds": 15.6,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 79,
+          "pending_product": null,
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 3,
+              "bottle_type": "normal"
+            },
+            {
+              "variant__product__name": "Leatherio",
+              "variant__volume": 90,
+              "quantity": 2,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    }
+  ],
+  "focus_turn": 2,
+  "conclusion": "Requested 2 Leatherio and 3 Vanilo. The first cart stored only Leatherio as pending, with no quantities. After choosing Leatherio 90ml, the reply showed just 1 Leatherio and omitted Vanilo. Turn 3 recovered the original quantities from still-visible history; the earlier loss remains visible.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": {
+      "id": 79,
+      "pending_product": null,
+      "customer_name": "",
+      "phone": "",
+      "backup": "",
+      "address": "",
+      "items": [
+        {
+          "variant__product__name": "Vanilo",
+          "variant__volume": 50,
+          "quantity": 3,
+          "bottle_type": "normal"
+        },
+        {
+          "variant__product__name": "Leatherio",
+          "variant__volume": 90,
+          "quantity": 2,
+          "bottle_type": "normal"
+        }
+      ]
+    },
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7287,
+      "role": "user",
+      "content": "عايز أطلب 2 من Leatherio و3 من Vanilo في زجاجة البراند، لسه هحدد الأحجام.",
+      "internal_context": ""
+    },
+    {
+      "id": 7288,
+      "role": "assistant",
+      "content": "تمام 👌 بس محتاج أعرف الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Leatherio و الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Vanilo؟",
+      "internal_context": "No products found"
+    },
+    {
+      "id": 7289,
+      "role": "user",
+      "content": "خلي Leatherio 90 مل.",
+      "internal_context": ""
+    },
+    {
+      "id": 7290,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Leatherio (90ml) بـ 1075 جنيه\nالمجموع: 1075 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "internal_context": "Leatherio (90 ملي) (زجاجة البراند) x 1 (1075.00 EGP)"
+    },
+    {
+      "id": 7291,
+      "role": "user",
+      "content": "وVanilo 50 مل. راجعلي كده الطلب كله والكميات.",
+      "internal_context": ""
+    },
+    {
+      "id": 7292,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 2 × Leatherio (90ml) بـ 2150 جنيه\n- 3 × Vanilo (50ml) بـ 1821 جنيه\nالمجموع: 3971 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+      "internal_context": "Leatherio (90 ملي) (زجاجة البراند) x 2 (2150.00 EGP), Vanilo (50 ملي) (زجاجة البراند) x 3 (1821.00 EGP)"
+    }
+  ]
+}

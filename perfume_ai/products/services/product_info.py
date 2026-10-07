@@ -1055,6 +1055,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # conversation 757 from the other side. It is an argument for the labels landing only once the
     # falsehood is caught wherever it comes from, which `reply_sanitizer.strip_false_over_budget`
     # now does deterministically. That guard is why this can land at all.
+    from .comparison_service import requested_dimensions, requested_facts
+    dimensions = requested_dimensions(message)
+    if products and not deferring and ((len(products) > 1 and (products_from_message or naming.refers_to_several(message))) or "sweetness" in dimensions) and dimensions:
+        return requested_facts(message, products)
     budget = sales_value.stated_budget(conversation)
 
     # Are the rows in context something other than what the customer asked about? Two ways that

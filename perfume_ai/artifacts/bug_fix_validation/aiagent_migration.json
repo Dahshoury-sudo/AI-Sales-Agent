@@ -1,0 +1,16 @@
+{
+  "database": "AIAgent",
+  "host": "localhost",
+  "verified_at": "2026-10-07T02:25:18.441577+00:00",
+  "migration": "products.0037_conversation_integrity",
+  "already_applied_at": "2026-10-07T02:05:34.944449+00:00",
+  "pending_before": [],
+  "pending_after": [],
+  "schema_columns_verified": true,
+  "unique_constraints_verified": true,
+  "cart_lines": 21,
+  "cart_lines_missing_ids": 0,
+  "pending_products_missing_lines": 0,
+  "conversation_count": 931,
+  "system_checks": "passed"
+}

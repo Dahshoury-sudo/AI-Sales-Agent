@@ -1,0 +1,72 @@
+{
+  "code": "L08",
+  "title": "Original bottle confused with verified designer formulation",
+  "conversation_id": 1177,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "mode": "live model, actual router",
+  "status": "not reproduced",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "Dior Sauvage عندكم في زجاجة أوريجينال؟",
+      "reply": "Dior Sauvage متوفر عندنا يا فندم. تحب تعرف عن حجم معين أو السعر؟",
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 944 جنيه، وسعر الـ 50 ملي 642 جنيه، والفرق بين الحجمين 302 جنيه، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n",
+      "error": null,
+      "seconds": 1.6,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": null,
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "أنا بسأل عن السائل نفسه: هل أصلي مصنع ديور ولا تركيب؟ هل الزجاجة الأوريجينال لوحدها دليل إن العطر أصلي؟",
+      "reply": "العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!",
+      "context": "",
+      "error": null,
+      "seconds": 0.0,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": null,
+        "orders": []
+      }
+    }
+  ],
+  "focus_turn": 2,
+  "conclusion": "The targeted authenticity confusion did not reproduce in this run. The store FAQ correctly said the perfumes are blends and that original-looking bottles can contain those blends. Kept as a control conversation, not counted as a reproduced bug.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7315,
+      "role": "user",
+      "content": "Dior Sauvage عندكم في زجاجة أوريجينال؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7316,
+      "role": "assistant",
+      "content": "Dior Sauvage متوفر عندنا يا فندم. تحب تعرف عن حجم معين أو السعر؟",
+      "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 944 جنيه، وسعر الـ 50 ملي 642 جنيه، والفرق بين الحجمين 302 جنيه، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n"
+    },
+    {
+      "id": 7317,
+      "role": "user",
+      "content": "أنا بسأل عن السائل نفسه: هل أصلي مصنع ديور ولا تركيب؟ هل الزجاجة الأوريجينال لوحدها دليل إن العطر أصلي؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7318,
+      "role": "assistant",
+      "content": "العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!",
+      "internal_context": ""
+    }
+  ]
+}

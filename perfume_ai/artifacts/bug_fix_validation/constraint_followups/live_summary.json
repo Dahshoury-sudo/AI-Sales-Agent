@@ -1,0 +1,23 @@
+{
+  "runs": 3,
+  "cases": [
+    "L04",
+    "L05"
+  ],
+  "failures": [
+    {
+      "case": "L04",
+      "run": 2,
+      "errors": [
+        "Original bottle choice or total budget changed"
+      ]
+    },
+    {
+      "case": "L04",
+      "run": 3,
+      "errors": [
+        "Original bottle choice or total budget changed"
+      ]
+    }
+  ]
+}

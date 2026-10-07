@@ -1,0 +1,57 @@
+{
+  "case": "L10",
+  "run": 1,
+  "turns": [
+    {
+      "user": "عايز لنفسي عطر رجالي تقيل للشتا وفي حدود 600 جنيه.",
+      "reply": "أنصحك بـ Stronger With You Intensely، ريحته دافية وفوحانه قوي جداً، مناسب جداً للشتا والسهرات. الـ 50 ملي بـ 450 جنيه، يعني داخل ميزانيتك.\n\nولو حابب حاجة تانية، فيه Stronger With You Absolutely برضه 50 ملي بـ 480 جنيه، فواح وقوي ومناسب للشتا.\n\nالاختيار بينهم بيرجع لذوقك، لكن أنا أرشحلك Stronger With You Intensely أكتر لطلبك 👌.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "winter",
+          "max_price": 600.0,
+          "projection": "strong",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 38,
+            "product_ids": [
+              437,
+              442,
+              447
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "سيبك من طلبي أنا خالص. دلوقتي عايز هدية لصاحبتي للصيف، مش نفس الشروط ومش محدد ميزانية للهدية.",
+      "reply": "العطور الحريمي المناسبة للصيف عندنا كتير، منها Coco Mademoiselle وBloom، دول ريحتهم نضيفة وشيك ومناسبة للموسم.\n\nكمان Jasmino وCitrolo من تصميمنا الخاص، ريحتهم شرقية ناعمة ومناسبة للاستخدام اليومي بالصيف.\n\nأنا أرشحلك Bloom أكتر لو بتحبي الريحة الغربية الخفيفة، أما Jasmino فهي خيار مميز لو حابة حاجة شرقية ومختلفة.",
+      "state": {
+        "preferences": {
+          "gender": "female",
+          "season": "summer"
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 40,
+            "product_ids": [
+              428,
+              435,
+              457,
+              459
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

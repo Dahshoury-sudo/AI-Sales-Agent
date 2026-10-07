@@ -118,6 +118,20 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ("customer_name",)
     inlines = [OrderItemInline]
 
+    def get_readonly_fields(self, request, obj=None):
+        return ("status",) if obj and obj.status == "cancelled" else ()
+
+    def save_model(self, request, obj, form, change):
+        if change and "status" in form.changed_data:
+            from .services.order_service import change_order_status
+            from django.db import transaction
+            with transaction.atomic():
+                updated = change_order_status(obj.pk, obj.store, obj.status)
+                obj.status = updated.status
+                super().save_model(request, obj, form, change)
+        else:
+            super().save_model(request, obj, form, change)
+
     def get_search_results(self, request, queryset, search_term):
         """Let a store owner still find an order by phone number.
 

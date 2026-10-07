@@ -4,7 +4,7 @@ from products.models import Brand, Product, ProductVariant
 from .product_formatting import is_variant_available
 from .sales import naming, ranking, similarity
 from .sales.notes import expand_request_term
-from .sales.value import budget_ceiling, budget_tier
+from .sales.value import budget_ceiling, budget_tier, request_ceiling
 
 
 # The AI only ever picks 1-2 perfumes out of whatever we hand it, but every
@@ -332,6 +332,17 @@ def search_products(intent, store=None, keep=(), offered=()):
     # `exhausted` for what that separation answers. The move is only a move: every clause
     # in this chain is a conjunction over single-valued fields, so the SQL is the same set.
     base = queryset
+    # Size/type/stock/price must match the SAME variant, including fallback paths.
+    if intent.get("requested_volume") or intent.get("bottle_type") or intent.get("budget_strict") or intent.get("budget_scope") == "total":
+        eligible = ProductVariant.objects.filter(Q(bottle_type="normal") | Q(bottle_type="original", stock__gt=0))
+        if intent.get("requested_volume"):
+            eligible = eligible.filter(volume=intent["requested_volume"])
+        if intent.get("bottle_type"):
+            eligible = eligible.filter(bottle_type=intent["bottle_type"])
+        ceiling = request_ceiling(intent)
+        if ceiling is not None:
+            eligible = eligible.filter(price__lte=ceiling)
+        base = base.filter(pk__in=eligible.values("product_id"))
     if gender:
         base = base.filter(Q(gender=gender.lower()) | Q(gender="unisex"))
     if perfume_type:

@@ -1,0 +1,56 @@
+{
+  "code": "D03",
+  "title": "A task retry resends a reply after delivery acknowledgement is lost",
+  "mode": "Simulated Messenger transport accepts a send then times out; no external messages are sent",
+  "conversation_id": 1189,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [],
+  "events": [
+    {
+      "description": "First delivery acknowledgement timed out; task requested a retry"
+    },
+    {
+      "description": "Simulated provider send attempts",
+      "count": 2,
+      "bodies": [
+        "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+        "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚"
+      ],
+      "real_external_sends": 0
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "The same worker input was saved and replied to twice after an ambiguous first delivery. The simulated provider received two sends; no actual customer was contacted.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7379,
+      "role": "user",
+      "content": "التوصيل بياخد وقت قد إيه؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7380,
+      "role": "assistant",
+      "content": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+      "internal_context": ""
+    },
+    {
+      "id": 7381,
+      "role": "user",
+      "content": "التوصيل بياخد وقت قد إيه؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7382,
+      "role": "assistant",
+      "content": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+      "internal_context": ""
+    }
+  ]
+}

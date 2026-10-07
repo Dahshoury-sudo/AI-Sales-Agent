@@ -3,12 +3,13 @@ import random
 
 from celery import shared_task
 
-from products.models import Store
+from products.models import Store, InboundEvent, Message
 from products.services.conversation_service import (
     get_or_create_platform_conversation,
     get_conversation_messages,
     build_llm_history,
     save_message,
+    conversation_lock, receive_event, generate_event, pending_through, remember_offered,
 )
 from products.services.router import route
 from products.services.reply_sanitizer import sanitize_reply
@@ -27,20 +28,10 @@ logger = logging.getLogger(__name__)
 
 
 def _flag_undelivered_reply(conversation):
-    """The bot's reply was written and saved, but the platform refused to deliver it.
-
-    The message stays saved — it is the record of what the bot tried to say, and
-    deleting it would lose that. But the conversation is flagged for a human,
-    because two things are now true and neither is visible otherwise: the customer
-    is still waiting, and the bot's own history contains a turn it never delivered,
-    which will feed the next message's context as though it had.
-
-    No retry: the usual cause is Meta refusing a recipient who has no role on the
-    app while it is in development mode, which fails identically every time.
-    """
+    """Retain rejected/uncertain replies for staff, excluding them from model history."""
     logger.error(
         f"Reply for conversation #{conversation.id} ({conversation.platform}) was saved "
-        f"but the platform rejected delivery; flagging for a human."
+        f"but delivery failed or is uncertain; flagging for a human."
     )
     if not conversation.needs_human:
         conversation.needs_human = True
@@ -85,7 +76,7 @@ def _rate_limit_buckets(store_id, platform, sender_id):
     )
 
 
-def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted):
+def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted, event_id=None, source_id=None):
     """Push an over-limit message back, or drop it once it has waited long enough.
 
     Deferring rather than dropping is the deliberate choice: a dropped message is a real
@@ -107,7 +98,8 @@ def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, 
     )
     process_incoming_message.apply_async(
         args=[store_id, platform, sender_id, text],
-        kwargs={"deferrals": deferrals + 1},
+        kwargs={"deferrals": deferrals + 1, **({"event_id": event_id} if event_id else {}),
+                **({"source_id": source_id} if source_id else {})},
         countdown=countdown,
     )
 
@@ -119,73 +111,72 @@ def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, 
     name='products.tasks.process_incoming_message',
     acks_late=True,                   # only ack after the task succeeds
 )
-def process_incoming_message(self, store_id, platform, sender_id, text, deferrals=0):
-    """
-    Process an incoming message from a Meta platform (WhatsApp / Messenger / Instagram).
-    Runs inside a Celery worker so the webhook endpoint returns 200 immediately.
-
-    Retry behaviour:
-      - Retries up to 3 times with a 15-second delay on any unhandled exception.
-      - Uses acks_late so the message is never lost if the worker crashes mid-task.
-
-    `deferrals` counts how many times this message has been pushed back by the rate limit.
-    It is separate from Celery's retry count on purpose: `max_retries` is the budget for
-    genuine failures, and a deferral is not a failure — spending a retry on one would both
-    burn that budget and log an exception for normal back-pressure.
-    """
+def process_incoming_message(self, store_id, platform, sender_id, text, deferrals=0, event_id=None, source_id=None):
     buckets = _rate_limit_buckets(store_id, platform, sender_id)
     if deferrals:
-        # Already counted on first entry; only ask whether the window has rolled.
         allowed, retry_after = rate_limit.peek(buckets)
         exhausted = None if allowed else "still over limit"
     else:
         allowed, retry_after, exhausted = rate_limit.hit_all(buckets)
-
     if not allowed:
-        _defer_or_drop(
-            store_id, platform, sender_id, text, deferrals, retry_after, exhausted
-        )
+        _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted,
+                       event_id, source_id or self.request.id)
         return
-
     try:
         store = Store.objects.get(id=store_id)
-        conversation, created = get_or_create_platform_conversation(store, platform, sender_id)
-
-        # If a human agent has taken over, just save the message and stop.
-        if conversation.needs_human:
-            save_message(conversation, "user", text)
-            return
-
-        history = build_llm_history(conversation)
-
-        save_message(conversation, "user", text)
-
-        reply, context = route(text, history, store, conversation)
-        reply = sanitize_reply(reply, conversation)
-        save_message(conversation, "assistant", reply, internal_context=context)
-        delivered = send_platform_message(conversation, reply)
-        # None means nothing needed sending (web conversations); only False is a
-        # delivery failure.
-        if delivered is False:
-            _flag_undelivered_reply(conversation)
-
+        event = InboundEvent.objects.get(pk=event_id, store=store) if event_id else receive_event(
+            store, platform, sender_id, text, source_id or self.request.id)
+        with conversation_lock(f"conversation:{event.conversation_id}"):
+            for waiting in pending_through(event):
+                generate_event(waiting, _attachment_route if waiting.attachment_url else route, sanitize_reply)
+                _deliver_event(waiting)
     except Exception as exc:
-        logger.exception(
-            f"Error processing message — store={store_id}, platform={platform}, "
-            f"attempt={self.request.retries + 1}/{self.max_retries + 1}: {exc}"
-        )
-        # Re-raise so Celery can retry automatically
+        logger.exception("Message processing failed for store %s", store_id)
         raise self.retry(exc=exc)
 
 
-def process_message_async(store_id, platform, sender_id, text):
-    """
-    Enqueue process_incoming_message as a Celery task.
 
-    The calling view (views_meta.py) stays unchanged — it still calls
-    process_message_async() and returns 200 to Meta immediately.
-    """
-    process_incoming_message.delay(store_id, platform, sender_id, text)
+def process_message_async(store_id, platform, sender_id, text, source_id=None):
+    if source_id:
+        store = Store.objects.get(pk=store_id)
+        event = receive_event(store, platform, sender_id, text, source_id)
+        process_incoming_message.delay(store_id, platform, sender_id, text, event_id=event.pk)
+    else:
+        process_incoming_message.delay(store_id, platform, sender_id, text)
+
+
+def _deliver_event(event):
+    if event.status == "complete" or not event.reply_message_id:
+        return
+    message = Message.objects.get(pk=event.reply_message_id)
+    conversation = event.conversation
+    if message.delivery_status == "pending":
+        message.delivery_status = "sending"
+        message.save(update_fields=["delivery_status"])
+        try:
+            delivered = send_platform_message(conversation, message.content, saved_message=message)
+            message.delivery_status = "failed" if delivered is False else "sent"
+        except Exception:
+            logger.exception("Delivery acknowledgement uncertain for message %s", message.pk)
+            message.delivery_status = "uncertain"
+    elif message.delivery_status == "sending":
+        message.delivery_status = "uncertain"
+    message.save(update_fields=["delivery_status"])
+    if message.delivery_status == "sent":
+        remember_offered(conversation, message)
+    if message.delivery_status in ("failed", "uncertain"):
+        _flag_undelivered_reply(conversation)
+    event.status = "complete"
+    event.save(update_fields=["status"])
+
+
+@shared_task(name="products.tasks.retry_order_notifications")
+def retry_order_notifications():
+    from products.models import Order
+    from products.services.order_service import deliver_order_notification
+    for identifier in Order.objects.filter(notification_pending=True).values_list("pk", flat=True)[:100]:
+        deliver_order_notification(identifier)
+
 
 
 # ── Attachment (image) handling ─────────────────────────────────────────────
@@ -202,58 +193,39 @@ def process_message_async(store_id, platform, sender_id, text):
 
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=30)
-def process_incoming_attachment(self, store_id, platform, sender_id, image_url, caption):
-    """Handle an inbound image attachment (e.g. payment receipt screenshot)."""
-    from products.models import Order
-    from products.services.notification_service import notify_attachment_received
-
+def process_incoming_attachment(self, store_id, platform, sender_id, image_url, caption, source_id=None, event_id=None):
     try:
-        store = Store.objects.get(id=store_id)
-        conversation, _ = get_or_create_platform_conversation(store, platform, sender_id)
-
-        display_text = caption if caption else "📎 أرسل صورة"
-        save_message(conversation, "user", display_text, attachment_url=image_url)
-
-        # If a human agent already took over, just save — don't double-notify.
-        if conversation.needs_human:
-            return
-
-        has_pending_order = Order.objects.filter(
-            conversation=conversation, status="pending",
-        ).exists()
-
-        if has_pending_order:
-            # Likely a payment receipt → handoff + notify + auto-reply
-            conversation.needs_human = True
-            conversation.save(update_fields=["needs_human"])
-            notify_attachment_received(conversation)
-
-            reply = (
-                "تم استلام الصورة ✅\n"
-                "فريق المبيعات هيراجعها ويأكدلك قريباً 👍"
-            )
-        else:
-            # No pending order → probably a product enquiry photo
-            reply = (
-                "انا مش بقدر اعالج الصور وافهمها حاليا يا فندم اسف جدا ممكن تكتبلي وانا هساعد حضرتك ✨"
-            )
-
-        save_message(conversation, "assistant", reply)
-        delivered = send_platform_message(conversation, reply)
-        if delivered is False:
-            _flag_undelivered_reply(conversation)
-
+        store = Store.objects.get(pk=store_id)
+        event = InboundEvent.objects.get(pk=event_id, store=store) if event_id else receive_event(
+            store, platform, sender_id, caption or "📎 أرسل صورة", source_id or self.request.id, attachment_url=image_url)
+        with conversation_lock(f"conversation:{event.conversation_id}"):
+            for waiting in pending_through(event):
+                generate_event(waiting, _attachment_route if waiting.attachment_url else route, sanitize_reply)
+                _deliver_event(waiting)
     except Exception as exc:
-        logger.exception(
-            f"Error processing attachment — store={store_id}, platform={platform}, "
-            f"attempt={self.request.retries + 1}/{self.max_retries + 1}: {exc}"
-        )
         raise self.retry(exc=exc)
 
 
-def process_attachment_async(store_id, platform, sender_id, image_url, caption=""):
-    """Enqueue process_incoming_attachment as a Celery task."""
-    process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption)
+
+def process_attachment_async(store_id, platform, sender_id, image_url, caption="", source_id=None):
+    if source_id:
+        store = Store.objects.get(pk=store_id)
+        event = receive_event(store, platform, sender_id, caption or "📎 أرسل صورة", source_id, attachment_url=image_url)
+        process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption, event_id=event.pk)
+    else:
+        process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption)
+
+
+def _attachment_route(text, history, store, conversation):
+    from products.models import Order
+    from products.services.notification_service import notify_attachment_received
+    if Order.objects.filter(conversation=conversation, status="pending").exists():
+        conversation.needs_human = True
+        conversation.save(update_fields=["needs_human"])
+        notify_attachment_received(conversation)
+        return "تم استلام الصورة ✅\nفريق المبيعات هيراجعها ويأكدلك قريباً 👍", ""
+    return "انا مش بقدر اعالج الصور وافهمها حاليا يا فندم اسف جدا ممكن تكتبلي وانا هساعد حضرتك ✨", ""
+
 
 
 # ── Comment Auto-Reply ──────────────────────────────────────────────────────

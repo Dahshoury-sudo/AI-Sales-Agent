@@ -1,0 +1,2 @@
+# This existing file is stored with CRLF; preserve it to keep model migrations reviewable.
+products/models.py -text whitespace=cr-at-eol

@@ -1,0 +1,57 @@
+{
+  "case": "L10",
+  "run": 1,
+  "turns": [
+    {
+      "user": "عايز لنفسي عطر رجالي تقيل للشتا وفي حدود 600 جنيه.",
+      "reply": "أنصحك بـ Stronger With You Intensely، زجاجة 50 ملي بـ450 جنيه، مناسب جداً للشتا وفوحانه قوي زي ما طلبت. وفيه كمان Stronger With You Absolutely 50 ملي بـ480 جنيه، برضه مناسب وفواح.\n\nلو حابب حاجة مختلفة شوية، Leatherio 50 ملي بـ513 جنيه، عطر تركيب حصري من تصميمنا، ريحته دافية وقوية للشتا.\n\nهل أجهزلك واحد منهم؟",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "winter",
+          "max_price": 600.0,
+          "projection": "strong",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 38,
+            "product_ids": [
+              437,
+              442,
+              458
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "contacts": {},
+        "orders": []
+      }
+    },
+    {
+      "user": "سيبك من طلبي أنا خالص. دلوقتي عايز هدية لصاحبتي للصيف، مش نفس الشروط ومش محدد ميزانية للهدية.",
+      "reply": "العطور اللي رشحتها قبل كده للهدية مش مناسبة للصيف، لأنها مخصصة للشتا أو ريحتها تقيلة. \n\nأنصحك بـ Bloom من Gucci، مناسب للصيف وريحتها نضيفة ومنعشة، وكمان Citrolo من تصميمنا حصري، خفيف ومنعش للصيف.\n\nأنا أرشحلك Bloom أكتر لأنه غني بنوتات الأزهار وريحته مميزة للصيف.",
+      "state": {
+        "preferences": {
+          "gender": "female",
+          "season": "summer"
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 40,
+            "product_ids": [
+              435,
+              459
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "contacts": {},
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,54 @@
+{
+  "case": "L10",
+  "run": 2,
+  "turns": [
+    {
+      "user": "عايز لنفسي عطر رجالي تقيل للشتا وفي حدود 600 جنيه.",
+      "reply": "أنصحك بـ Stronger With You Intensely، زجاجة 50 ملي بـ450 جنيه، عطر رجالي تقيل للشتا وفوحانه قوي جداً، مناسب للموسم والسهرة، وثباته حوالي 8 ساعات.\n\nكمان عندنا Stronger With You Absolutely، 50 ملي بـ480 جنيه، برضه مناسب للشتا وفوحانه قوي، لكن ريحته مختلفة عن Intensely.",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "season": "winter",
+          "max_price": 600.0,
+          "projection": "strong",
+          "budget_strict": false
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 100,
+            "product_ids": [
+              1035,
+              1040
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "سيبك من طلبي أنا خالص. دلوقتي عايز هدية لصاحبتي للصيف، مش نفس الشروط ومش محدد ميزانية للهدية.",
+      "reply": "العطور اللي رشحتلك قبل كده خرجت من شروط الهدية للصيف، لأنها مش مناسبة للموسم ده.\n\nبالنسبة لهدية لصاحبتك للصيف، أنصحك بـ Citrolo، عطر شرقي خفيف ومنعش مناسب للصيف والاستخدام اليومي.\n\nوكمان Jasmino، عطر شرقي ناعم وأنيق يناسب كل المواسم والاستخدام اليومي.\n\nأنا أرشحلك Citrolo أكتر لأنه ريحته صيفية ومنعشة جداً.",
+      "state": {
+        "preferences": {
+          "gender": "female",
+          "season": "summer"
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 102,
+            "product_ids": [
+              1057,
+              1055
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

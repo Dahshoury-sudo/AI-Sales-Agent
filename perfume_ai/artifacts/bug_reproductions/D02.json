@@ -1,0 +1,81 @@
+{
+  "code": "D02",
+  "title": "Concurrent requests reply out of order and read incomplete history",
+  "mode": "Actual chat handler; a barrier delays the first request while the second completes",
+  "conversation_id": 1188,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [],
+  "events": [
+    {
+      "description": "Processing order",
+      "messages": [
+        {
+          "role": "user",
+          "content": "التوصيل بياخد وقت قد إيه؟"
+        },
+        {
+          "role": "user",
+          "content": "الدفع عند الاستلام موجود؟"
+        },
+        {
+          "role": "assistant",
+          "content": "(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)"
+        },
+        {
+          "role": "assistant",
+          "content": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚"
+        }
+      ],
+      "second_request_history": [
+        {
+          "role": "user",
+          "content": "التوصيل بياخد وقت قد إيه؟"
+        }
+      ],
+      "first_response": {
+        "conversation_id": "MTE4OA:i0Zh7n-sZr6Z_pc-S8MAFUhBS_bmdary3r4pQ3STuyY",
+        "reply": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+        "image_url": null
+      },
+      "second_response": {
+        "conversation_id": "MTE4OA:i0Zh7n-sZr6Z_pc-S8MAFUhBS_bmdary3r4pQ3STuyY",
+        "reply": "(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)",
+        "image_url": null
+      }
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "The saved order is customer 1, customer 2, reply 2, reply 1. The second request ran without the first reply in its history.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7375,
+      "role": "user",
+      "content": "التوصيل بياخد وقت قد إيه؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7376,
+      "role": "user",
+      "content": "الدفع عند الاستلام موجود؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7377,
+      "role": "assistant",
+      "content": "(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)",
+      "internal_context": ""
+    },
+    {
+      "id": 7378,
+      "role": "assistant",
+      "content": "التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚",
+      "internal_context": ""
+    }
+  ]
+}

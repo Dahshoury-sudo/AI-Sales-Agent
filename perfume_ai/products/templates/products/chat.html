@@ -347,6 +347,10 @@
         }
 
         function resetChat() {
+            if (sending) return;
+            afterMessageId = 0;
+            seenMessageIds.clear();
+            localStorage.removeItem('perfume_conv_id:pending');
             conversationId = null;
             localStorage.removeItem('perfume_conv_id');
             // Clear API Key for demo purposes
@@ -359,11 +363,41 @@
             chatWindow.innerHTML = '<div class="message ai">أهلاً بك! أنا مساعدك الذكي للعطور. كيف يمكنني مساعدتك اليوم؟ تم بدء محادثة جديدة.</div>';
         }
 
+        let sending = false, polling = false, afterMessageId = 0;
+        const seenMessageIds = new Set();
+        async function pollMessages() {
+            if (!conversationId || !apiKey || document.hidden || sending || polling) return;
+            polling = true;
+            const token = conversationId;
+            try {
+                const response = await fetch(`/api/chat/messages/?conversation_id=${encodeURIComponent(token)}&after_id=${afterMessageId}`, {headers: {'X-API-Key': apiKey}});
+                if (!response.ok) return;
+                const data = await response.json();
+                if (token !== conversationId || sending) return;
+                for (const message of data.messages) {
+                    if (!seenMessageIds.has(message.id)) {
+                        appendMessage(message.role === 'user' ? 'user' : 'ai', message.content, message.attachment_url);
+                        seenMessageIds.add(message.id);
+                    }
+                }
+                afterMessageId = data.after_id;
+            } catch (_) { /* Retry on the next polling interval. */ }
+            finally { polling = false; }
+        }
+        setInterval(pollMessages, 3000);
+        document.addEventListener('visibilitychange', pollMessages);
+
         async function sendMessage() {
+            if (sending) return;
             const text = inputField.value.trim();
             if (!text || !apiKey) return;
 
-            appendMessage('user', text);
+            const previous = JSON.parse(localStorage.getItem('perfume_conv_id:pending') || 'null');
+            const payload = previous && previous.message === text ? previous : {message: text, client_message_id: crypto.randomUUID()};
+            if (conversationId) payload.conversation_id = conversationId;
+            localStorage.setItem('perfume_conv_id:pending', JSON.stringify(payload));
+            if (!previous || previous.message !== text) appendMessage('user', text);
+            sending = true;
             inputField.value = '';
             
             // Show typing
@@ -372,8 +406,6 @@
             scrollToBottom();
 
             try {
-                const payload = { message: text };
-                if (conversationId) payload.conversation_id = conversationId;
 
                 const response = await fetch('/api/chat/', {
                     method: 'POST',
@@ -389,21 +421,26 @@
                 typingIndicator.style.display = 'none';
 
                 if (response.ok) {
+                    localStorage.removeItem('perfume_conv_id:pending');
+                    if (data.user_message_id) seenMessageIds.add(data.user_message_id);
+                    if (data.message_id) seenMessageIds.add(data.message_id);
+                    if (data.reply) appendMessage('ai', data.reply, data.image_url);
                     if (data.conversation_id) {
                         conversationId = data.conversation_id;
                         localStorage.setItem('perfume_conv_id', conversationId);
                     }
-                    if (data.needs_human) {
+                    if (data.needs_human && !data.reply) {
                         appendMessage('ai', "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء."));
-                    } else {
-                        appendMessage('ai', data.reply, data.image_url);
                     }
                 } else {
                     appendMessage('ai', "❌ خطأ: " + (data.error || "حدث خطأ غير متوقع."));
                 }
             } catch (err) {
+                inputField.value = text;
                 typingIndicator.style.display = 'none';
                 appendMessage('ai', "❌ خطأ في الاتصال بالسيرفر.");
+            } finally {
+                sending = false;
             }
         }
     </script>

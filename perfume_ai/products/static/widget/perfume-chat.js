@@ -772,20 +772,50 @@
 
   bubble.addEventListener("click", toggleChat);
 
+  let sending = false;
+  let polling = false;
+  let afterMessageId = 0;
+  const seenMessageIds = new Set();
+  async function pollMessages() {
+    if (!conversationId || !isOpen || document.hidden || sending || polling) return;
+    polling = true;
+    const token = conversationId;
+    try {
+      const response = await fetch(`${API_BASE}/api/chat/messages/?conversation_id=${encodeURIComponent(token)}&after_id=${afterMessageId}`, {headers: {'X-API-Key': API_KEY}});
+      if (!response.ok) return;
+      const data = await response.json();
+      if (token !== conversationId || sending) return;
+      for (const message of data.messages) {
+        if (!seenMessageIds.has(message.id)) {
+          appendMessage(message.role === 'user' ? 'user' : 'ai', message.content, message.attachment_url);
+          seenMessageIds.add(message.id);
+        }
+      }
+      afterMessageId = data.after_id;
+    } catch (_) { /* Resume polling when the connection returns. */ }
+    finally { polling = false; }
+  }
+  setInterval(pollMessages, 3000);
+  document.addEventListener('visibilitychange', pollMessages);
+
   // ─── Send Message ────────────────────────────────────────────────
   async function sendMessage() {
+    if (sending) return;
     const text = input.value.trim();
     if (!text) return;
 
-    appendMessage("user", text);
+    const previous = JSON.parse(localStorage.getItem(STORAGE_KEY + ':pending') || 'null');
+    const payload = previous && previous.message === text ? previous : {message: text, client_message_id: crypto.randomUUID()};
+    if (conversationId) payload.conversation_id = conversationId;
+    localStorage.setItem(STORAGE_KEY + ':pending', JSON.stringify(payload));
+    if (!previous || previous.message !== text) appendMessage("user", text);
+    sending = true;
     input.value = "";
     sendBtn.disabled = true;
 
     showTyping();
 
     try {
-      const payload = { message: text };
-      if (conversationId) payload.conversation_id = conversationId;
 
       const res = await fetch(`${API_BASE}/api/chat/`, {
         method: "POST",
@@ -800,15 +830,17 @@
       hideTyping();
 
       if (res.ok) {
+        localStorage.removeItem(STORAGE_KEY + ':pending');
+        if (data.user_message_id) seenMessageIds.add(data.user_message_id);
+        if (data.message_id) seenMessageIds.add(data.message_id);
         if (data.conversation_id) {
           conversationId = data.conversation_id;
           localStorage.setItem(STORAGE_KEY, conversationId);
         }
 
-        if (data.needs_human) {
+        if (data.reply) appendMessage("ai", data.reply, data.image_url);
+        if (data.needs_human && !data.reply) {
           appendMessage("ai", "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء. سيتم الرد عليك في أقرب وقت."));
-        } else {
-          appendMessage("ai", data.reply, data.image_url);
         }
 
         // Badge for unread if window is closed
@@ -822,9 +854,11 @@
         );
       }
     } catch (err) {
+      input.value = text;
       hideTyping();
       appendMessage("ai", "❌ خطأ في الاتصال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
     } finally {
+      sending = false;
       sendBtn.disabled = false;
       input.focus();
     }
@@ -838,7 +872,11 @@
 
   // ─── New Chat ────────────────────────────────────────────────────
   newChatBtn.addEventListener("click", () => {
+    if (sending) return;
     conversationId = null;
+    afterMessageId = 0;
+    seenMessageIds.clear();
+    localStorage.removeItem(STORAGE_KEY + ':pending');
     localStorage.removeItem(STORAGE_KEY);
     messagesContainer.innerHTML = "";
     showWelcomeMessage();

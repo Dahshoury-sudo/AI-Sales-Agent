@@ -1,0 +1,45 @@
+{
+  "code": "E01",
+  "title": "Evaluator accepts another products genuine price as the requested products price",
+  "mode": "Explicitly injected incorrect assistant quote to exercise the real evaluator; not a live model response",
+  "conversation_id": 1191,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [],
+  "events": [
+    {
+      "description": "Evaluate a known incorrect quote",
+      "correct_price": "607.00",
+      "supplied_price": "645.00",
+      "source_of_wrong_price": "Bleu de Chanel 50ml",
+      "findings": [
+        [
+          "named_product_without_data",
+          "high",
+          "named 'Vanilo' on a turn where no product data was injected"
+        ]
+      ]
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "The evaluator returned [('named_product_without_data', 'high', \"named 'Vanilo' on a turn where no product data was injected\")]; it failed to flag 645 EGP for Vanilo 50ml, whose actual price is 607 EGP, because 645 is a valid price elsewhere in the catalog.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7387,
+      "role": "user",
+      "content": "Vanilo 50 مل زجاجة البراند بكام؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7388,
+      "role": "assistant",
+      "content": "Vanilo — الـ50 مل بـ645 جنيه.",
+      "internal_context": "DIAGNOSTIC FIXTURE: deliberately wrong quote. Vanilo 50ml = 607 EGP; 645 EGP belongs to Bleu de Chanel 50ml. This reply tests the evaluator and was not produced by a live model."
+    }
+  ]
+}

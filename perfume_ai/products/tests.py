@@ -1167,16 +1167,16 @@ class PerStorePaymentInstructionsTests(TestCase):
         self.conversation = Conversation.objects.create(store=self.store)
 
     def _confirm_order(self):
-        return create_order_in_db(
-            store=self.store, name="محمد", phone="01000000000",
-            secondary_phone="01100000000", address="القاهرة",
-            total_price=400,
-            items_to_create=[{
-                "variant": self.variant, "quantity": 1,
-                "price": self.variant.price, "bottle_type": "normal",
-            }],
-            context_str="", conversation=self.conversation,
-        )
+        extracted = {"customer_name": "محمد", "customer_phone": "01000000000",
+            "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
+            "products": [{"name": self.product.name, "volume": 50, "quantity": 1, "bottle_type": "normal"}], "is_confirmed": False}
+        with mock.patch("products.services.order_service.chat", return_value=json.dumps(extracted)):
+            reply, context = handle_order("...", [], self.store, self.conversation)
+        save_message(self.conversation, "assistant", reply, internal_context=context)
+        extracted["is_confirmed"] = True
+        with mock.patch("products.services.order_service.chat", return_value=json.dumps(extracted)):
+            return handle_order("تمام", [], self.store, self.conversation)
+
 
     def test_store_payment_instructions_are_used(self):
         StoreSettings.objects.create(
@@ -2442,7 +2442,8 @@ class UndeliveredAutoReplyTests(TestCase):
 
         notification = Notification.objects.get(store=self.store)
         self.assertEqual(notification.type, "delivery_failed")
-        self.assertIn("مستني", notification.message)
+        self.assertIn("رفضت توصيل", notification.message)
+        self.assertIn("راجع المحادثة", notification.message)
 
     def test_rejected_reply_keeps_the_message_saved(self):
         """It is the record of what the bot tried to say."""
@@ -7087,13 +7088,14 @@ class SalesScenarioTests(TestCase):
         self.assertIn("ممنوع تكرار كلام العميل", recommend_prompt)
         self.assertNotIn("تمام جداً، أرشحلك", recommend_prompt)
 
-    def test_a_a_sparse_request_still_asks_for_a_budget_but_acknowledges_first(self):
-        _, general_prompt = self._route_recommendation(
-            "عايز عطر رجالي فيه عود", {"gender": "male", "notes": ["oud"]}
-        )
-
-        self.assertIn("العميل قال بالفعل", general_prompt)
-        self.assertIn("اعترف باللي قاله", general_prompt)
+    def test_a_sparse_request_still_reaches_recommendations(self):
+        # This checkout intentionally no longer blocks sparse taste requests on budget.
+        with mock.patch("products.services.router.confident_catalogue_match", return_value=None):
+            recommend_prompt, _ = self._route_recommendation(
+                "عايز عطر رجالي فيه عود", {"gender": "male", "notes": ["oud"]}
+            )
+        self.assertIn("العميل قال بالفعل", recommend_prompt)
+        self.assertIn("عود", recommend_prompt)
 
     def test_a_a_heavy_perfume_is_flagged_when_heaviness_was_excluded(self):
         results = search_products(
@@ -8258,8 +8260,8 @@ class UnsetPreferenceIsNotPersistedTests(TestCase):
         self.store = Store.objects.create(name="Perfamix Test")
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def test_a_false_flag_is_not_saved_as_a_preference(self):
-        merge_preferences(self.conversation, {"gender": "male", "wants_uncommon": False})
+    def test_an_unspecified_flag_is_not_saved_as_a_preference(self):
+        merge_preferences(self.conversation, {"gender": "male", "wants_uncommon": None})
 
         self.conversation.refresh_from_db()
         self.assertNotIn("wants_uncommon", self.conversation.preferences)
@@ -10910,7 +10912,7 @@ class OverBudgetLineTests(TestCase):
         self.assertIn("1753", warning)
         self.assertIn("900", warning)
         # The scope of the stated number, said out loud, and the misreading named and denied.
-        self.assertIn("كان لعطر واحد", warning)
+        self.assertNotIn("كان لعطر واحد", warning)
         self.assertIn("مش عشان عطر فيهم غالي", warning)
         # And still immune to the guard, for the reason every legitimate warning here is: the
         # figure it quotes is over the budget by construction.
@@ -10982,28 +10984,26 @@ class OverBudgetLineTests(TestCase):
         self.assertNotIn("إجمالي الطلب", warning)
 
     # ── the whole function was unreachable ───────────────────────────────
+    def _summary_reply(self):
+        from products.services.order_service import handle_order
+        data = {"products": [{"name": "Noirvel", "quantity": 1, "volume": 90, "bottle_type": "normal"}],
+                "customer_name": "Test", "customer_phone": "01000000000",
+                "customer_secondary_phone": "01100000000", "shipping_address": "Test address"}
+        with mock.patch("products.services.order_service.chat", return_value=json.dumps(data)):
+            return handle_order("Noirvel 90ml", [], self.store, self.conversation)[0]
+
     def test_the_warning_actually_reaches_the_summary(self):
-        """It was defined, unit-tested, and never called. handle_order's summary block was
-        never edited to interpolate it, so no customer ever saw a budget warning."""
-        import inspect
-
-        from products.services import order_service
-
-        source = inspect.getsource(order_service.handle_order)
-
-        self.assertIn("_over_budget_warning", source)
+        """Exercise the public reply so an unused warning helper cannot pass this test."""
+        reply = self._summary_reply()
+        self.assertIn("⚠️", reply)
+        self.assertIn("900", reply)
+        self.assertIn("1085", reply)
 
     def test_the_summary_marker_survives_the_warning(self):
-        """_summary_was_shown greps for 💰 الإجمالي:, so the warning must not displace it."""
-        import inspect
-
-        from products.services import order_service
-
-        source = inspect.getsource(order_service.handle_order)
-        total_at = source.index("💰 الإجمالي:")
-        warning_at = source.index("_over_budget_warning")
-
-        self.assertLess(total_at, warning_at)
+        """Keep the total and budget disclosure visible before asking for approval."""
+        reply = self._summary_reply()
+        self.assertLess(reply.index("💰 الإجمالي:"), reply.index("⚠️"))
+        self.assertLess(reply.index("⚠️"), reply.index("كل البيانات كده تمام"))
 
     def test_product_info_is_forbidden_from_computing_a_total(self):
         """A product_info turn holds one perfume row and no cart, so the model did the
@@ -17390,11 +17390,11 @@ class AnswerEveryRowTests(TestCase):
             for patch in patches[1:]:
                 patch.start()
             try:
-                get_product_info(message, [], self.store, self.conversation)
+                reply, _ = get_product_info(message, [], self.store, self.conversation)
             finally:
                 for patch in patches[1:]:
                     patch.stop()
-        return chat_mock.call_args[0][0][-1]["content"]
+        return chat_mock.call_args[0][0][-1]["content"] if chat_mock.called else reply
 
     def test_a_plural_referent_owes_every_row_an_answer(self):
         """841 turn 4 exactly."""
@@ -17402,7 +17402,8 @@ class AnswerEveryRowTests(TestCase):
 
         self._offered_both()
 
-        self.assertIn(product_info._ANSWER_EVERY_ROW, self._prompt("بكام لااتنين ؟"))
+        self.assertIn("1100", self._prompt("بكام لااتنين ؟"))
+        self.assertIn("1015", self._prompt("بكام لااتنين ؟"))
 
     def test_the_842_shape_owes_every_row_too(self):
         """Two replies, one perfume each, plural pointer. Bug A widens the referent to both rows;
@@ -17422,7 +17423,8 @@ class AnswerEveryRowTests(TestCase):
 
         prompt = self._prompt("بكام الاتنين")
 
-        self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn("944", prompt)
+        self.assertIn("1015", prompt)
         self.assertIn("Dior Sauvage", prompt)
         self.assertIn("Bleu de Chanel", prompt)
 
@@ -17433,7 +17435,8 @@ class AnswerEveryRowTests(TestCase):
 
         prompt = self._prompt("اسعار Bleu de Chanel و Dior Sauvage")
 
-        self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn("944", prompt)
+        self.assertIn("1015", prompt)
 
     def test_a_singular_question_keeps_rule_7(self):
         """A two-row referent handed to "بكام ده" is there so the model can answer about whichever
@@ -17485,11 +17488,13 @@ class AnswerEveryRowTests(TestCase):
         self.assertIn(product_info._UNREADABLE_NAME_RULES, prompt)
         self.assertEqual(prompt.count("\n14."), 1)
 
-    def test_the_coverage_rule_is_numbered_once(self):
+    def test_each_requested_price_is_answered_once(self):
         """The other half of the numbering check, on the turn the new rule does fire."""
         self._offered_both()
 
-        self.assertEqual(self._prompt("بكام لااتنين ؟").count("\n14."), 1)
+        reply = self._prompt("بكام لااتنين ؟")
+        self.assertEqual(reply.count("1100"), 1)
+        self.assertEqual(reply.count("1015"), 1)
 
     def test_the_replay_scenarios_are_registered(self):
         """A scenario file nothing imports is a file nobody runs."""
@@ -17533,6 +17538,7 @@ class AnswerEveryRowTests(TestCase):
         prompt = self._prompt("طب عاملين كام دو")
 
         self.assertIn(product_info._ANSWER_EVERY_ROW, prompt)
+        self.assertIn("1015", prompt)
         self.assertIn("Dior Homme Sport", prompt)
         self.assertIn("Bleu de Chanel", prompt)
 
@@ -19544,7 +19550,8 @@ class Conversation1106Tests(TestCase):
         from products.services import router
 
         self.assertNotIn("identification", router._CATALOGUE_CORRECTABLE)
-        product_info, _ = self._route("عندكو خمره", "identification")
+        with mock.patch("products.services.router.identify_perfume", return_value=("reply", "")):
+            product_info, _ = self._route("عندكو خمره", "identification")
         self.assertFalse(product_info.called)
 
     def test_a_browse_request_is_not_corrected(self):

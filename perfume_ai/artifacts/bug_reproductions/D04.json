@@ -1,0 +1,69 @@
+{
+  "code": "D04",
+  "title": "Web chat cannot retrieve a staff reply during handoff",
+  "mode": "Real web chat and staff-reply handlers; synthetic staff text",
+  "conversation_id": 1190,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أتكلم مع حد من خدمة العملاء لو سمحت.",
+      "reply": "يا فندم، أنا حولت طلبك لفريق خدمة العملاء وهم هيتواصلوا مع حضرتك قريب جداً.",
+      "context": "",
+      "state": {
+        "preferences": {},
+        "needs_human": true,
+        "cart": null,
+        "orders": []
+      }
+    }
+  ],
+  "events": [
+    {
+      "description": "Staff reply is in the database but the public client has no retrieval route",
+      "staff_response_status": 200,
+      "saved_staff_reply": "[رد موظف تجريبي] أهلاً، أنا موجود أساعدك في اختيار العطر.",
+      "subsequent_chat_response": {
+        "conversation_id": "MTE5MA:qOE93AGYC6AqVuA3d3Ss0OIP88oLH8TW9-ejZnKW7e4",
+        "reply": "",
+        "needs_human": true,
+        "info": "This conversation is currently handed over to a human agent."
+      },
+      "public_polling_endpoint_exists": false
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "The staff reply was saved, but the next public POST returned an empty reply and /api/chat/messages/ does not exist in this checkout.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": true,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7383,
+      "role": "user",
+      "content": "عايز أتكلم مع حد من خدمة العملاء لو سمحت.",
+      "internal_context": ""
+    },
+    {
+      "id": 7384,
+      "role": "assistant",
+      "content": "يا فندم، أنا حولت طلبك لفريق خدمة العملاء وهم هيتواصلوا مع حضرتك قريب جداً.",
+      "internal_context": ""
+    },
+    {
+      "id": 7385,
+      "role": "agent",
+      "content": "[رد موظف تجريبي] أهلاً، أنا موجود أساعدك في اختيار العطر.",
+      "internal_context": ""
+    },
+    {
+      "id": 7386,
+      "role": "user",
+      "content": "أنا لسه مستني، فين رد خدمة العملاء؟",
+      "internal_context": ""
+    }
+  ]
+}

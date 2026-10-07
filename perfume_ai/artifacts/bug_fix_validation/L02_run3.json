@@ -1,0 +1,109 @@
+{
+  "case": "L02",
+  "run": 3,
+  "turns": [
+    {
+      "user": "عايز أطلب Vanilo 50 مل زجاجة البراند وواحد كمان اسمه Mystery Azure 50 مل. الاتنين في نفس الطلب.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nلسه محتاج أتأكد من: Mystery Azure. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 132,
+            "product_ids": [
+              1283
+            ]
+          }
+        },
+        "pending": [
+          {
+            "name": "Mystery Azure",
+            "volume": 50,
+            "line_id": "04eb45b14a41457ca9308d0713ae4b11",
+            "quantity": 1
+          }
+        ],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    },
+    {
+      "user": "Vanilo تمام، والعطر التاني لسه محتاجين نتأكد من اسمه، خليه في الطلب لحد ما أتأكد.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nلسه محتاج أتأكد من: Mystery Azure. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 134,
+            "product_ids": [
+              1283
+            ]
+          }
+        },
+        "pending": [
+          {
+            "name": "Mystery Azure",
+            "volume": 50,
+            "line_id": "04eb45b14a41457ca9308d0713ae4b11",
+            "quantity": 1
+          }
+        ],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    },
+    {
+      "user": "راجعلي كل الحاجات اللي طلبتها، بما فيها اللي لسه مش متأكدين منها.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nلسه محتاج أتأكد من: Mystery Azure. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 136,
+            "product_ids": [
+              1283
+            ]
+          }
+        },
+        "pending": [
+          {
+            "name": "Mystery Azure",
+            "volume": 50,
+            "line_id": "04eb45b14a41457ca9308d0713ae4b11",
+            "quantity": 1
+          }
+        ],
+        "items": [
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 1,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

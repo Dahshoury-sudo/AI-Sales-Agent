@@ -1,10 +1,61 @@
 import json
+import re
+from decimal import Decimal
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .product_formatting import format_products
 from .product_info import get_product_info
 from .product_resolver import resolve_products
+
+
+def requested_dimensions(message):
+    from .static_faq_service import normalize_arabic
+    text = normalize_arabic(message)
+    if "نوع السائل" in text or "مصنع" in text:
+        return set()
+    return {key for key, words in {
+        "price": ("سعر", "بكام", "price", "اسعار"),
+        "longevity": ("ثبات", "يثبت", "longevity"),
+        "projection": ("فوحان", "projection"),
+        "value": ("اوفَر", "اوفر", "سعر المل", "per ml"),
+        "sweetness": ("حلاوه", "اقل حلو", "اقل مسكر", "sweet"),
+    }.items() if any(word in text for word in words)}
+
+
+def requested_facts(message, products):
+    from .sales.constraints import explicit_updates
+    from .sales.value import price_per_ml
+    dims = requested_dimensions(message)
+    wanted = explicit_updates(message)
+    lines, values = [], []
+    for product in products:
+        facts = []
+        if dims & {"price", "value"}:
+            variants = [v for v in product.variants.all()
+                        if (not wanted.get("requested_volume") or v.volume == wanted["requested_volume"])
+                        and (not wanted.get("bottle_type") or v.bottle_type == wanted["bottle_type"])]
+            if not variants:
+                facts.append("الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً")
+            for v in variants:
+                bottle = "زجاجة البراند" if v.bottle_type == "normal" else "زجاجة أوريجينال"
+                facts.append(f"{bottle} {v.volume} مل بـ{v.price:g} جنيه")
+                if v.bottle_type == "original" and not (v.stock or 0):
+                    facts.append("الحجم ده نفد حالياً")
+                if "value" in dims and v.volume > 0:
+                    unit = price_per_ml(v).quantize(Decimal(".01"))
+                    facts.append(f"سعر المل: {unit} جنيه")
+                    values.append((price_per_ml(v), product.name, v.volume, bottle))
+        for key, label in (("longevity", "الثبات"), ("projection", "الفوحان")):
+            if key in dims:
+                facts.append(f"{label}: {getattr(product, key) or 'مش متأكد منه حالياً'}")
+        lines.append(f"{product.name}: " + "؛ ".join(facts) if facts else product.name)
+    if "value" in dims and len(values) >= 2:
+        best = min(values)
+        lines.append(f"الأوفر في سعر المل بين الأحجام دي: {best[1]} ({best[2]} مل، {best[3]}).")
+    if "sweetness" in dims:
+        lines.append("ماقدرش أجزم أنهي أقل حلاوة؛ وجود نوتة زي الفانيليا لوحده مش كفاية عشان نقارن درجة الحلاوة بدقة.")
+    return "\n\n".join(lines), format_products(products, show_prices=bool(dims & {"price", "value"}), show_value_pick=False)
 
 
 def compare_products(message, history=None, store=None, conversation=None, retry_hint=""):
@@ -48,10 +99,19 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     repetition check of any kind — and instruction 5 below *requires* the closing frame
     "أنا أرشحلك X أكتر لأن…", the same frame conversation 973 repeated across four replies.
     """
-    matches = resolve_products(message, history, store, conversation)[:2]
+    from .product_info import _named_in_message, _referent_from_conversation
+    matches = _named_in_message(message, store)
+    if len(matches) < 2:
+        resolved = resolve_products(message, history, store, conversation)
+        matches += [p for p in resolved if p.pk not in {m.pk for m in matches}]
+    if not matches:
+        matches = _referent_from_conversation(message, store, conversation)
 
     if len(matches) < 2:
         return get_product_info(message, history, store, conversation, retry_hint=retry_hint)
+
+    if requested_dimensions(message):
+        return requested_facts(message, matches)
 
     context = format_products(matches, show_prices=False)
 
@@ -78,7 +138,7 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 2. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). ادمج الفروقات المهمة بس في كلام طبيعي.
 3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة، الثبات، المناسبة). متسردش كل حاجة.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.
-5. 🔴🔴 لازم تختار واحد وتقول إنه الأنسب، وتقول ليه في نص جملة مربوطة بذوق العميل أو بسؤاله. ❌ ممنوع تسيبه بين اختيارين من غير ترجيح — العميل سأل عشان يقرر، ولو رجّعتله الكرة تاني يبقى مساعدتوش. مثال: "الاتنين حلوين، بس أنا أرشحلك Ambero أكتر لأنك قلت بتحب الدافي والتوابل."
+5. رجّح واحد فقط لو بياناته بتدعم الترجيح حسب طلب العميل. لو البيانات مش كفاية قول إنك مش قادر تجزم؛ ممنوع تخمّن الحلاوة من النوتات أو تجبر المقارنة على فائز.
 6. 🔴 العميل لسه بيوازن بين اختيارين ومختارش — ❌ ممنوع تقفل البيعة في الرد ده. ممنوع "تحب أساعدك في الطلب؟" ولا "تحب تطلب واحد فيهم؟". لو حابب تختم بسؤال، اسأله سؤال تضييق بيساعده يقرر (زي "بتستخدمه بالنهار ولا بالليل؟").
 7. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
 8. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.

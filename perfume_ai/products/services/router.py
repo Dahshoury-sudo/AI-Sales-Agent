@@ -464,7 +464,36 @@ def route(message, history=None, store=None, conversation=None):
         history = []
 
     # --- Static FAQ check (before AI — saves tokens) ---
-    from .static_faq_service import match_static_faq
+    from .static_faq_service import match_static_faq, normalize_arabic
+    import re
+    normalized = normalize_arabic(message)
+    if "نوع السائل" in normalized or "مصنع" in normalized:
+        formulation = match_static_faq("العطور اصليه ولا تركيب", store)
+        explanation = formulation["answer"] if formulation else "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل."
+        return explanation + "\n\nاسم مصنع الزيت تحديدًا محتاج تأكيد من الفريق.", ""
+    from products.models import Cart
+    active_cart = Cart.objects.filter(conversation=conversation).first() if conversation else None
+    checkout_update = active_cart and re.search(
+        r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message)
+    if checkout_update:
+        record_llm_message(store)
+        reply, context = handle_order(message, history, store, conversation)
+        order_reply = reply
+        for fragment in re.split(r"[.؟?\n]", message):
+            if re.search(r"شحن|توصيل|بتوصل|بتفتح|مواعيد", fragment) and not re.search(r"\d{7}", fragment):
+                faq = match_static_faq(fragment.strip(), store)
+                if faq:
+                    reply += "\n\n" + faq["answer"]
+                else:
+                    answer, _ = handle_general(fragment.strip(), history, store)
+                    reply += "\n\n" + answer
+        if reply != order_reply:
+            import hashlib
+            cart = Cart.objects.filter(conversation=conversation).first()
+            if cart and cart.quote.get("summary_hash") == hashlib.sha256(order_reply.encode()).hexdigest():
+                cart.quote = {**cart.quote, "summary_hash": hashlib.sha256(reply.encode()).hexdigest()}
+                cart.save(update_fields=["quote"])
+        return reply, context
     faq_match = match_static_faq(message, store)
     if faq_match:
         return faq_match["answer"], ""
@@ -1033,17 +1062,14 @@ def route(message, history=None, store=None, conversation=None):
                 if sales_naming.mentioned_in(message, in_cart):
                     return handle_order(message, history, store, conversation)
 
-            if cart and cart.items.exists():
+            if cart and (cart.items.exists() or cart.pending_items or cart.pending_product_id):
                 clear_cart(conversation, keep_details=True)
                 return "تم إلغاء الطلب اللي كنا بنجهزه يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
 
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
             if latest_order:
-                with transaction.atomic():
-                    latest_order.status = "cancelled"
-                    latest_order.bot_notes = "تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل."
-                    latest_order.save()
-                    restore_stock(latest_order)
+                from .order_service import change_order_status
+                change_order_status(latest_order.pk, store, "cancelled", bot_notes="تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل.")
                 return "تم الغاء اخر اوردر تم تسجيله يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
             else:
                 return "مفيش طلب نشط حالياً عشان ألغيه يا فندم. لو كنت حابب تعمل طلب جديد أو محتاج أي مساعدة، أنا تحت أمرك!", ""

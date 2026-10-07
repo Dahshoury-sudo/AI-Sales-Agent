@@ -1,0 +1,35 @@
+{
+  "case": "L05",
+  "run": 1,
+  "turns": [
+    {
+      "user": "عايز عطر رجالي للشغل، زجاجة البراند 90 مل، ومعايا 900 جنيه بالظبط ومش هقدر أزود جنيه. رشحلي اختيارين بس بالحجم ده وسعر كل واحد.",
+      "reply": "• Stronger With You — زجاجة البراند 90 مل بـ700.00 جنيه. الثبات: 6 hours، الفوحان: Moderate\n\n• Le Male — زجاجة البراند 90 مل بـ856.00 جنيه. الثبات: 7 hours، الفوحان: Moderate",
+      "state": {
+        "preferences": {
+          "gender": "male",
+          "occasion": "office",
+          "max_price": 900.0,
+          "bottle_type": "normal",
+          "budget_scope": "per_item",
+          "budget_strict": true,
+          "requested_volume": 90
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 22,
+            "product_ids": [
+              217,
+              203
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "contacts": {},
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

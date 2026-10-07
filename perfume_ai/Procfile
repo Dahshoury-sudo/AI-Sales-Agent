@@ -1,3 +1,4 @@
 web: gunicorn --workers 3 --threads 4 perfume_ai.wsgi:application
 worker: celery -A perfume_ai worker --loglevel=info --concurrency=2 -E
+scheduler: celery -A perfume_ai beat --loglevel=info
 release: python manage.py collectstatic --noinput && python manage.py migrate

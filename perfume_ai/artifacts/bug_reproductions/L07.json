@@ -1,0 +1,46 @@
+{
+  "code": "L07",
+  "title": "A question about two products and several dimensions is only partly answered",
+  "conversation_id": 1172,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "mode": "live model, actual router",
+  "status": "reproduced",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "قارنلي Dior Sauvage وBleu de Chanel: سعر 50 مل من زجاجة البراند لكل واحد كام، وثبات وفوحان كل واحد إيه، وأنهي واحد أوفر في سعر الملي؟",
+      "reply": "Dior Sauvage 50 ملي بـ642 جنيه، و90 ملي بـ944 جنيه، وفيه كمان زجاجات أوريجينال 100 و200 ملي. ثباته حوالي 8-10 ساعات وفوحانه قوي خصوصاً أول كام ساعة.\n\nبالنسبة لـ Bleu de Chanel، ممكن تكتب اسمه عشان أتأكد من تفاصيله وأسعاره عندنا؟",
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 944 جنيه، وسعر الـ 50 ملي 642 جنيه، والفرق بين الحجمين 302 جنيه، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n",
+      "error": null,
+      "seconds": 2.5,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": null,
+        "orders": []
+      }
+    }
+  ],
+  "focus_turn": 1,
+  "conclusion": "The customer explicitly named both Dior Sauvage and Bleu de Chanel and asked for price, longevity, projection and price per ml. The bot answered only Sauvage, asked the customer to type Bleu de Chanel again, and omitted the requested value comparison.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7297,
+      "role": "user",
+      "content": "قارنلي Dior Sauvage وBleu de Chanel: سعر 50 مل من زجاجة البراند لكل واحد كام، وثبات وفوحان كل واحد إيه، وأنهي واحد أوفر في سعر الملي؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7298,
+      "role": "assistant",
+      "content": "Dior Sauvage 50 ملي بـ642 جنيه، و90 ملي بـ944 جنيه، وفيه كمان زجاجات أوريجينال 100 و200 ملي. ثباته حوالي 8-10 ساعات وفوحانه قوي خصوصاً أول كام ساعة.\n\nبالنسبة لـ Bleu de Chanel، ممكن تكتب اسمه عشان أتأكد من تفاصيله وأسعاره عندنا؟",
+      "internal_context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 944 جنيه، وسعر الـ 50 ملي 642 جنيه، والفرق بين الحجمين 302 جنيه، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n"
+    }
+  ]
+}

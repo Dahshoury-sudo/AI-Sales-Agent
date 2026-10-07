@@ -58,90 +58,57 @@ class ChatAPIView(APIView):
     throttle_classes = [ChatThrottle]
 
     def post(self, request):
-
+        from .services.conversation_service import conversation_lock, receive_event, generate_event, pending_through
         message = request.data.get("message")
-        conversation_token = request.data.get("conversation_id")
-        store = request.store
-
-        if not message:
-            return Response(
-                {"error": "message is required"},
-                status=400
-            )
-
+        source_id = request.data.get("client_message_id")
+        token = request.data.get("conversation_id")
+        if not isinstance(message, str) or not message.strip():
+            return Response({"error": "message is required"}, status=400)
+        if source_id is not None and (not isinstance(source_id, str) or not 1 <= len(source_id) <= 128):
+            return Response({"error": "Invalid client_message_id"}, status=400)
+        conversation = None
+        if token:
+            try:
+                conversation = get_conversation(signer.unsign_object(token), request.store)
+            except (BadSignature, TypeError, ValueError):
+                pass
+            if conversation is None:
+                return Response({"error": "Invalid conversation"}, status=404)
         try:
-            conversation = None
-            history = []
+            event = receive_event(request.store, "web", "", message, source_id, conversation)
+            with conversation_lock(f"conversation:{event.conversation_id}"):
+                for waiting in pending_through(event):
+                    generate_event(waiting, route, sanitize_reply)
+                event.refresh_from_db()
+                return Response({**event.result, "conversation_id": signer.sign_object(event.conversation_id)})
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=409)
+        except Exception:
+            logger.exception("Chat error for store %s", request.store.pk)
+            return Response({"error": "حصل مشكلة غير متوقعة. لو المشكلة استمرت تواصل مع الدعم الفني."}, status=500)
 
-            if conversation_token:
-                try:
-                    # Verify the cryptographic signature (prevents ID guessing/tampering)
-                    real_conversation_id = signer.unsign_object(conversation_token)
-                    conversation = get_conversation(real_conversation_id, store)
-                except BadSignature:
-                    # If it's an old unsigned ID or tampered with, treat as new
-                    pass
-                
-                if conversation:
-                    history = build_llm_history(conversation)
 
-            if not conversation:
-                conversation = create_conversation(store)
-                history = []
+class ChatMessagesAPIView(APIView):
+    authentication_classes = [StoreAPIKeyAuthentication]
+    throttle_classes = [StoreKeyThrottle]
 
-            save_message(
-                conversation,
-                "user",
-                message
-            )
+    def get(self, request):
+        try:
+            identifier = signer.unsign_object(request.query_params.get("conversation_id", ""))
+            conversation = get_conversation(identifier, request.store)
+            after = int(request.query_params.get("after_id", 0))
+            if after < 0:
+                raise ValueError()
+        except (BadSignature, TypeError, ValueError):
+            return Response({"error": "Invalid conversation or cursor"}, status=400)
+        if conversation is None or conversation.platform != "web":
+            return Response({"error": "Conversation not found"}, status=404)
+        rows = list(conversation.messages.filter(id__gt=after, role__in=["user", "assistant", "agent"])
+            .exclude(delivery_status__in=["pending", "sending", "failed", "uncertain"]).order_by("id")[:100])
+        return Response({"messages": [{"id": m.pk, "role": m.role, "content": m.content,
+            "attachment_url": m.attachment_url, "created_at": m.created_at.isoformat()} for m in rows],
+            "after_id": rows[-1].pk if rows else after, "needs_human": conversation.needs_human})
 
-            signed_id = signer.sign_object(conversation.id)
-
-            if conversation.needs_human:
-                return Response({
-                    "conversation_id": signed_id,
-                    "reply": "",
-                    "needs_human": True,
-                    "info": "This conversation is currently handed over to a human agent."
-                })
-
-            reply, context = route(message, history, store, conversation)
-            reply = sanitize_reply(reply, conversation)
-
-            image_url = None
-            if "[SEND_BOTTLE_IMAGE]" in reply:
-                reply = reply.replace("[SEND_BOTTLE_IMAGE]", "").strip()
-                # Per-store, not a global setting — otherwise every store's
-                # customers see the first store's bottles.
-                try:
-                    image_url = store.settings.bottle_image_url or None
-                except Exception:
-                    image_url = None
-                if not image_url:
-                    logger.warning(
-                        f"Store '{store.name}' emitted [SEND_BOTTLE_IMAGE] but has no "
-                        f"bottle_image_url configured; replying without an image."
-                    )
-
-            save_message(
-                conversation,
-                "assistant",
-                reply,
-                internal_context=context
-            )
-
-            return Response({
-                "conversation_id": signed_id,
-                "reply": reply,
-                "image_url": image_url
-            })
-
-        except Exception as e:
-            logger.exception(f"Chat error for store '{store.name}': {e}")
-            return Response(
-                {"error": "حصل مشكلة غير متوقعة. لو المشكلة استمرت تواصل مع الدعم الفني."},
-                status=500
-            )
 
 class AnalyticsAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
@@ -261,23 +228,14 @@ class OrderStatusUpdateView(APIView):
         if new_status not in valid_statuses:
             return Response({"error": "Invalid status"}, status=400)
 
+        from .services.order_service import change_order_status
         try:
-            order = Order.objects.get(id=order_id, store=store)
+            order = change_order_status(order_id, store, new_status)
         except Order.DoesNotExist:
             return Response({"error": "Order not found"}, status=404)
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=400)
 
-        old_status = order.status
-
-        with transaction.atomic():
-            order.status = new_status
-            order.save()
-
-            # Restore stock if the order is being cancelled (and wasn't already cancelled)
-            if new_status == "cancelled" and old_status != "cancelled":
-                from products.services.order_service import restore_stock
-                restore_stock(order)
-
-        logger.info(f"Order #{order.id} status changed: {old_status} -> {new_status} (store: {store.name})")
         return Response({"id": order.id, "status": order.status})
 
 
@@ -423,53 +381,34 @@ class HandoffReplyAPIView(APIView):
     throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
-        store = request.store
+        from .services.conversation_service import conversation_lock
+        from .services.meta_service import send_platform_message
         message = request.data.get("message")
-        
-        if not message:
+        if not isinstance(message, str) or not message.strip():
             return Response({"error": "Message is required"}, status=400)
-            
-        try:
-            conv = Conversation.objects.get(id=conversation_id, store=store)
-        except Conversation.DoesNotExist:
-            return Response({"error": "Conversation not found"}, status=404)
-            
-        if not conv.needs_human:
+        with conversation_lock(f"conversation:{conversation_id}"):
+            try:
+                conv = Conversation.objects.get(pk=conversation_id, store=request.store)
+            except Conversation.DoesNotExist:
+                return Response({"error": "Conversation not found"}, status=404)
             conv.needs_human = True
-            conv.save()
-            
-        # Saved as "agent", not "assistant": once the handoff is resolved and the bot
-        # resumes, an "assistant" row here would read to the model as its own earlier
-        # output, so it copied the human's introduction and claims.
-        save_message(conv, "agent", message)
-
-        # Send reply back to the customer on their platform
-        from products.services.meta_service import send_platform_message
-        try:
-            delivered = send_platform_message(conv, message)
-        except Exception as e:
-            logger.exception(f"Failed to send handoff reply to {conv.platform}: {e}")
-            delivered = False
-
-        # delivered is None for web conversations, where the widget polls the
-        # thread and saving IS delivery. Only False means the customer missed it.
-        if delivered is False:
-            logger.error(
-                f"Handoff reply for conversation #{conv.id} ({conv.platform}) was "
-                f"saved but the platform rejected it."
-            )
-            return Response(
-                {
-                    "status": "not_delivered",
-                    "error": (
-                        "الرسالة اتسجلت في المحادثة بس المنصة رفضت توصيلها للعميل. "
-                        "راجع الـ logs وجرب تاني، أو تواصل مع العميل بطريقة تانية."
-                    ),
-                },
-                status=502,
-            )
-
-        return Response({"status": "Message sent"})
+            conv.save(update_fields=["needs_human"])
+            saved = save_message(conv, "agent", message, delivery_status="sent" if conv.platform == "web" else "sending")
+            if conv.platform == "web":
+                return Response({"status": "Message sent", "message_id": saved.pk})
+            try:
+                delivered = send_platform_message(conv, message, saved_message=saved)
+                saved.delivery_status = "failed" if delivered is False else "sent"
+            except Exception:
+                logger.exception("Uncertain staff reply delivery: %s", saved.pk)
+                saved.delivery_status = "uncertain"
+            saved.save(update_fields=["delivery_status"])
+            if saved.delivery_status != "sent":
+                from .services.notification_service import notify_delivery_failure
+                notify_delivery_failure(conv)
+                return Response({"status": "not_delivered" if saved.delivery_status == "failed" else "uncertain",
+                    "error": "الرسالة محفوظة لكن التوصيل فشل أو مش مؤكد. راجع المحادثة قبل إعادة الإرسال."}, status=502)
+            return Response({"status": "Message sent", "message_id": saved.pk})
 
 class HandoffResolveAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]

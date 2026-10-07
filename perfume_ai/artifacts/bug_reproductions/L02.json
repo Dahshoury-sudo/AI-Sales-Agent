@@ -1,0 +1,158 @@
+{
+  "code": "L02",
+  "title": "An unresolved product disappears from the cart",
+  "conversation_id": 1173,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "mode": "live model, actual router",
+  "status": "reproduced",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أطلب Vanilo 50 مل زجاجة البراند وواحد كمان اسمه Mystery Azure 50 مل. الاتنين في نفس الطلب.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "error": null,
+      "seconds": 8.0,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 81,
+          "pending_product": null,
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "Vanilo تمام، والعطر التاني لسه محتاجين نتأكد من اسمه، خليه في الطلب لحد ما أتأكد.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "error": null,
+      "seconds": 13.3,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 81,
+          "pending_product": null,
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 3,
+      "user": "راجعلي كل الحاجات اللي طلبتها، بما فيها اللي لسه مش متأكدين منها.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "error": null,
+      "seconds": 6.8,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 81,
+          "pending_product": null,
+          "customer_name": "",
+          "phone": "",
+          "backup": "",
+          "address": "",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    }
+  ],
+  "focus_turn": 1,
+  "conclusion": "Mystery Azure was requested alongside Vanilo. Only Vanilo was saved and recapped; the unresolved name never became a pending item, even after the customer explicitly asked to retain it.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": {
+      "id": 81,
+      "pending_product": null,
+      "customer_name": "",
+      "phone": "",
+      "backup": "",
+      "address": "",
+      "items": [
+        {
+          "variant__product__name": "Vanilo",
+          "variant__volume": 50,
+          "quantity": 1,
+          "bottle_type": "normal"
+        }
+      ]
+    },
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7299,
+      "role": "user",
+      "content": "عايز أطلب Vanilo 50 مل زجاجة البراند وواحد كمان اسمه Mystery Azure 50 مل. الاتنين في نفس الطلب.",
+      "internal_context": ""
+    },
+    {
+      "id": 7300,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    },
+    {
+      "id": 7301,
+      "role": "user",
+      "content": "Vanilo تمام، والعطر التاني لسه محتاجين نتأكد من اسمه، خليه في الطلب لحد ما أتأكد.",
+      "internal_context": ""
+    },
+    {
+      "id": 7302,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    },
+    {
+      "id": 7303,
+      "role": "user",
+      "content": "راجعلي كل الحاجات اللي طلبتها، بما فيها اللي لسه مش متأكدين منها.",
+      "internal_context": ""
+    },
+    {
+      "id": 7304,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    }
+  ]
+}

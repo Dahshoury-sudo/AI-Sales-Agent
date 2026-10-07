@@ -1,0 +1,103 @@
+{
+  "code": "C04",
+  "title": "A notification failure reports order failure after the order has committed",
+  "mode": "Live checkout; dashboard-notification function raises a controlled exception",
+  "conversation_id": 1185,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أطلب واحدة Vanilo 50 مل زجاجة البراند. اسمي تجربة C04، موبايلي 01000000000 والبديل 01100000000، عنواني القاهرة مدينة نصر 10 شارع الاختبار شقة 1.",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة C04\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار شقة 1\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 88,
+          "pending_product": null,
+          "customer_name": "تجربة C04",
+          "phone": "01000000000",
+          "backup": "01100000000",
+          "address": "القاهرة مدينة نصر 10 شارع الاختبار شقة 1",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "تمام أكد الطلب.",
+      "reply": "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.",
+      "context": "",
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": null,
+        "orders": [
+          {
+            "id": 71,
+            "total_price": "607.00",
+            "status": "pending"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "description": "Notification fault occurred after SQL order commit",
+      "order_ids": [
+        71
+      ],
+      "reply": "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك."
+    }
+  ],
+  "status": "reproduced",
+  "conclusion": "Order(s) [71] exist, but the customer received an order-failure message and was asked to retry.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": null,
+    "orders": [
+      {
+        "id": 71,
+        "total_price": "607.00",
+        "status": "pending"
+      }
+    ]
+  },
+  "transcript": [
+    {
+      "id": 7359,
+      "role": "user",
+      "content": "عايز أطلب واحدة Vanilo 50 مل زجاجة البراند. اسمي تجربة C04، موبايلي 01000000000 والبديل 01100000000، عنواني القاهرة مدينة نصر 10 شارع الاختبار شقة 1.",
+      "internal_context": ""
+    },
+    {
+      "id": 7360,
+      "role": "assistant",
+      "content": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة C04\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار شقة 1\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    },
+    {
+      "id": 7361,
+      "role": "user",
+      "content": "تمام أكد الطلب.",
+      "internal_context": ""
+    },
+    {
+      "id": 7362,
+      "role": "assistant",
+      "content": "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.",
+      "internal_context": ""
+    }
+  ]
+}

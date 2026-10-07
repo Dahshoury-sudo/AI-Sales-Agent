@@ -94,6 +94,10 @@ def fetch_post_content(post_id, token, platform="facebook"):
         return None
 
 
+class UncertainDelivery(Exception):
+    """The provider may have accepted a send; automatically resending is unsafe."""
+
+
 def send_whatsapp_message(phone_number_id, recipient_id, text, token):
     url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
     headers = {
@@ -111,6 +115,8 @@ def send_whatsapp_message(phone_number_id, recipient_id, text, token):
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        raise UncertainDelivery("Provider acknowledgement unavailable") from e
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending WhatsApp message: {e}")
         if e.response is not None:
@@ -132,6 +138,8 @@ def send_messenger_message(page_id, recipient_id, text, token):
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        raise UncertainDelivery("Provider acknowledgement unavailable") from e
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Messenger message: {e}")
         if e.response is not None:
@@ -157,6 +165,8 @@ def send_instagram_message(page_id, recipient_id, text, token):
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        raise UncertainDelivery("Provider acknowledgement unavailable") from e
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Instagram message: {e}")
         if hasattr(e, 'response') and e.response is not None:
@@ -180,6 +190,8 @@ def send_whatsapp_image(phone_number_id, recipient_id, image_url, token):
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        raise UncertainDelivery("Provider acknowledgement unavailable") from e
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending WhatsApp image: {e}")
         if e.response is not None:
@@ -205,6 +217,8 @@ def send_messenger_image(page_id, recipient_id, image_url, token):
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
         return response.json()
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        raise UncertainDelivery("Provider acknowledgement unavailable") from e
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Messenger image: {e}")
         if e.response is not None:
@@ -242,7 +256,7 @@ def conversation_platform_for(source_platform):
     return _CONVERSATION_PLATFORM.get(source_platform, source_platform)
 
 
-def send_platform_message(conversation, text):
+def send_platform_message(conversation, text, saved_message=None):
     """
     Unified function to send a message back to the user on whatever
     platform they're chatting from. Does nothing for web conversations.
@@ -296,39 +310,48 @@ def send_platform_message(conversation, text):
                 f"no bottle_image_url configured; sending text only."
             )
 
-    # Send the image first if requested
-    image_accepted = None
+    def send_part(part, operation):
+        if saved_message is None:
+            return operation()
+        parts = dict(saved_message.delivery_parts or {})
+        state = parts.get(part, {}).get("status", "pending")
+        if state == "sent":
+            return parts[part]
+        if state in ("sending", "uncertain"):
+            raise UncertainDelivery("An earlier attempt may have reached the provider")
+        if state == "failed":
+            return None
+        parts[part] = {"status": "sending"}
+        saved_message.delivery_parts = parts
+        saved_message.save(update_fields=["delivery_parts"])
+        try:
+            result = operation()
+        except Exception:
+            parts[part] = {"status": "uncertain"}
+            saved_message.delivery_parts = parts
+            saved_message.save(update_fields=["delivery_parts"])
+            raise
+        parts[part] = {"status": "sent" if result is not None else "failed"}
+        if isinstance(result, dict):
+            parts[part]["provider_id"] = result.get("message_id") or result.get("id")
+        saved_message.delivery_parts = parts
+        saved_message.save(update_fields=["delivery_parts"])
+        return result
+
+    if conversation.platform == "whatsapp":
+        text_send = lambda: send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
+        image_send = lambda: send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
+    elif conversation.platform in MESSENGER_PLATFORMS:
+        text_send = lambda: send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
+        image_send = lambda: send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+    elif conversation.platform == "instagram":
+        text_send = lambda: send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
+        image_send = lambda: send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+    else:
+        return False
+    outcomes = []
     if bottle_image_url:
-        if conversation.platform == "whatsapp":
-            result = send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
-        elif conversation.platform in MESSENGER_PLATFORMS:
-            result = send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
-        elif conversation.platform == "instagram":
-            # Instagram Messaging sends through the Facebook Page ID, not the IG
-            # account ID — same as send_instagram_message below. Passing the IG
-            # account ID here meant image sends failed.
-            result = send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
-        else:
-            result = None
-        image_accepted = result is not None
-
-    # Only send text if there is text left after removing the token
-    text_accepted = None
+        outcomes.append(send_part("image", image_send) is not None)
     if text:
-        if conversation.platform == "whatsapp":
-            result = send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
-        elif conversation.platform in MESSENGER_PLATFORMS:
-            result = send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
-        elif conversation.platform == "instagram":
-            result = send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
-        else:
-            logger.warning(f"Unknown platform '{conversation.platform}' for conversation {conversation.id}")
-            result = None
-        text_accepted = result is not None
-
-    # The text carries the message, so it decides the outcome. Fall back to the
-    # image result for the image-only case.
-    if text_accepted is not None:
-        return text_accepted
-    return image_accepted
-
+        outcomes.append(send_part("text", text_send) is not None)
+    return all(outcomes) if outcomes else None

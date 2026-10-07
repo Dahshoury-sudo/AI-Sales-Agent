@@ -30,22 +30,19 @@ def notify_handoff(conversation):
 
 def notify_new_order(order):
     """Trigger a notification when a new order is placed."""
-    create_notification(
-        store=order.store,
-        notif_type="new_order",
-        title="طلب جديد! 🛍️",
-        message=f"طلب جديد من {order.customer_name} بقيمة {order.total_price} ج.م (طلب #{order.id}).",
+    Notification.objects.get_or_create(
+        dedupe_key=f"order:{order.pk}",
+        defaults=dict(
+            store=order.store,
+            type="new_order",
+            title="طلب جديد! 🛍️",
+            message=f"طلب جديد من {order.customer_name} بقيمة {order.total_price} ج.م (طلب #{order.id}).",
+        ),
     )
 
 
 def notify_delivery_failure(conversation):
-    """Tell the owner the bot's reply never reached the customer.
-
-    Without this the failure lived only in the worker log: the reply is saved
-    before it is sent, so the thread looks answered, and Celery reports success.
-    The customer is left waiting, and the bot's own history now contains a turn it
-    never actually delivered.
-    """
+    """Flag a failed or uncertain delivery once per saved message for staff review."""
     platform_labels = {
         "whatsapp": "واتساب",
         "messenger": "ماسنجر",
@@ -54,13 +51,16 @@ def notify_delivery_failure(conversation):
         "web": "الموقع",
     }
     platform = platform_labels.get(conversation.platform, conversation.platform or "غير معروف")
-    create_notification(
-        store=conversation.store,
-        notif_type="delivery_failed",
-        title="رد البوت لم يوصل للعميل ⚠️",
-        message=(
-            f"البوت رد على عميل من {platform} (محادثة #{conversation.id}) بس المنصة "
-            f"رفضت توصيل الرسالة. العميل لسه مستني — راجع المحادثة وتواصل معاه."
+    latest = conversation.messages.filter(role__in=["assistant", "agent"]).order_by("-id").first()
+    uncertain = latest is not None and latest.delivery_status == "uncertain"
+    Notification.objects.get_or_create(
+        dedupe_key=f"delivery:{conversation.pk}:{latest.pk if latest else 0}",
+        defaults=dict(
+            store=conversation.store, type="delivery_failed",
+            title="توصيل الرد مش مؤكد ⚠️" if uncertain else "رد البوت لم يوصل للعميل ⚠️",
+            message=(f"محادثة #{conversation.id} على {platform}: " +
+                ("المنصة ممكن تكون استلمت الرسالة. راجع المحادثة قبل إعادة الإرسال." if uncertain else
+                 "المنصة رفضت توصيل الرسالة. راجع المحادثة وتواصل مع العميل.")),
         ),
     )
 

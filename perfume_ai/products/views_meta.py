@@ -89,7 +89,7 @@ class MetaWebhookView(APIView):
                                 sender_id = message.get("from")
                                 if msg_type == "text":
                                     text = message.get("text", {}).get("body")
-                                    self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+                                    self.process_message(store_settings.store, platform, sender_id, text, store_settings, source_id=message.get("id"))
                                 elif msg_type == "image":
                                     image_data = message.get("image", {})
                                     # WhatsApp Cloud API sends a media ID, not a
@@ -99,7 +99,7 @@ class MetaWebhookView(APIView):
                                     caption = image_data.get("caption", "")
                                     self.process_attachment(
                                         store_settings.store, platform, sender_id,
-                                        image_url, caption,
+                                        image_url, caption, source_id=message.get("id"),
                                     )
 
                         # ── Facebook Page comment ───────────────────────────
@@ -198,7 +198,7 @@ class MetaWebhookView(APIView):
                             msg = messaging_event["message"]
                             if "text" in msg:
                                 text = msg["text"]
-                                self.process_message(store_settings.store, platform, sender_id, text, store_settings)
+                                self.process_message(store_settings.store, platform, sender_id, text, store_settings, source_id=msg.get("mid"))
                             elif "attachments" in msg:
                                 # Image attachment without text (e.g. payment receipt)
                                 for att in msg.get("attachments", []):
@@ -207,7 +207,7 @@ class MetaWebhookView(APIView):
                                         if image_url:
                                             self.process_attachment(
                                                 store_settings.store, platform,
-                                                sender_id, image_url, "",
+                                                sender_id, image_url, "", source_id=msg.get("mid"),
                                             )
                                         break
 
@@ -252,15 +252,15 @@ class MetaWebhookView(APIView):
             return False
         return True
 
-    def process_message(self, store, platform, sender_id, text, store_settings):
+    def process_message(self, store, platform, sender_id, text, store_settings, source_id=None):
         """Dispatch message processing to a background thread for fast webhook response."""
         from products.tasks import process_message_async
-        process_message_async(store.id, platform, sender_id, text)
+        process_message_async(store.id, platform, sender_id, text, **({"source_id": source_id} if source_id else {}))
 
-    def process_attachment(self, store, platform, sender_id, image_url, caption):
+    def process_attachment(self, store, platform, sender_id, image_url, caption, source_id=None):
         """Dispatch image attachment processing to a background task."""
         from products.tasks import process_attachment_async
-        process_attachment_async(store.id, platform, sender_id, image_url, caption)
+        process_attachment_async(store.id, platform, sender_id, image_url, caption, **({"source_id": source_id} if source_id else {}))
 
     def process_comment(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
         """Dispatch comment processing to a background Celery task."""

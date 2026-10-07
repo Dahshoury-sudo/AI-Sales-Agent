@@ -1,0 +1,158 @@
+{
+  "code": "L12",
+  "title": "An FAQ intercepts contact details needed by checkout",
+  "conversation_id": 1181,
+  "commit": "8ec2e69cfe26459135fe7dde5ef946fe4ddc1756",
+  "mode": "live model, actual router",
+  "status": "reproduced",
+  "turns": [
+    {
+      "turn": 1,
+      "user": "عايز أطلب Vanilo 50 مل زجاجة البراند، واحدة. اسمي تجربة L12 وعنواني القاهرة مدينة نصر 10 شارع الاختبار.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس رقمين للموبايل واحد اساسي وواحد بديل.",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "error": null,
+      "seconds": 4.5,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 84,
+          "pending_product": null,
+          "customer_name": "تجربة L12",
+          "phone": "",
+          "backup": "",
+          "address": "القاهرة مدينة نصر 10 شارع الاختبار",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 2,
+      "user": "رقم موبايلي 01000000000 والرقم البديل 01100000000. وبتوصلوا للمحافظات؟",
+      "reply": "رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"",
+      "context": "",
+      "error": null,
+      "seconds": 0.0,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 84,
+          "pending_product": null,
+          "customer_name": "تجربة L12",
+          "phone": "",
+          "backup": "",
+          "address": "القاهرة مدينة نصر 10 شارع الاختبار",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    },
+    {
+      "turn": 3,
+      "user": "أنا كتبتلك الرقمين فوق، إيه اللي ناقص في الطلب؟",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة L12\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "error": null,
+      "seconds": 5.4,
+      "state": {
+        "preferences": {},
+        "needs_human": false,
+        "cart": {
+          "id": 84,
+          "pending_product": null,
+          "customer_name": "تجربة L12",
+          "phone": "01000000000",
+          "backup": "01100000000",
+          "address": "القاهرة مدينة نصر 10 شارع الاختبار",
+          "items": [
+            {
+              "variant__product__name": "Vanilo",
+              "variant__volume": 50,
+              "quantity": 1,
+              "bottle_type": "normal"
+            }
+          ]
+        },
+        "orders": []
+      }
+    }
+  ],
+  "focus_turn": 2,
+  "conclusion": "When the customer supplied both phone numbers, a static FAQ returned the store contact numbers instead. Neither customer number was saved on that turn. The next follow-up recovered them from history; the intercepted checkout action is visible in turn 2.",
+  "final_state": {
+    "preferences": {},
+    "needs_human": false,
+    "cart": {
+      "id": 84,
+      "pending_product": null,
+      "customer_name": "تجربة L12",
+      "phone": "01000000000",
+      "backup": "01100000000",
+      "address": "القاهرة مدينة نصر 10 شارع الاختبار",
+      "items": [
+        {
+          "variant__product__name": "Vanilo",
+          "variant__volume": 50,
+          "quantity": 1,
+          "bottle_type": "normal"
+        }
+      ]
+    },
+    "orders": []
+  },
+  "transcript": [
+    {
+      "id": 7339,
+      "role": "user",
+      "content": "عايز أطلب Vanilo 50 مل زجاجة البراند، واحدة. اسمي تجربة L12 وعنواني القاهرة مدينة نصر 10 شارع الاختبار.",
+      "internal_context": ""
+    },
+    {
+      "id": 7340,
+      "role": "assistant",
+      "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 607 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس رقمين للموبايل واحد اساسي وواحد بديل.",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    },
+    {
+      "id": 7341,
+      "role": "user",
+      "content": "رقم موبايلي 01000000000 والرقم البديل 01100000000. وبتوصلوا للمحافظات؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7342,
+      "role": "assistant",
+      "content": "رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"",
+      "internal_context": ""
+    },
+    {
+      "id": 7343,
+      "role": "user",
+      "content": "أنا كتبتلك الرقمين فوق، إيه اللي ناقص في الطلب؟",
+      "internal_context": ""
+    },
+    {
+      "id": 7344,
+      "role": "assistant",
+      "content": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: تجربة L12\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر 10 شارع الاختبار\n\n🛍️ الطلب:\n- 1 × Vanilo (50ml) - زجاجة البراند (السعر: 607.00 جنيه)\n\n💰 الإجمالي: 607.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "internal_context": "Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "case": "L07",
+  "run": 3,
+  "turns": [
+    {
+      "user": "قارنلي Dior Sauvage وBleu de Chanel: سعر 50 مل من زجاجة البراند لكل واحد كام، وثبات وفوحان كل واحد إيه، وأنهي واحد أوفر في سعر الملي؟",
+      "reply": "Bleu de Chanel: زجاجة البراند 50 مل بـ645.00 جنيه؛ سعر المل: 12.90 جنيه؛ الثبات: 8–10 hrs؛ الفوحان: Moderate–Strong\n\nDior Sauvage: زجاجة البراند 50 مل بـ642.00 جنيه؛ سعر المل: 12.84 جنيه؛ الثبات: 8–10 hrs؛ الفوحان: Strong\n\nالأوفر في سعر المل بين الأحجام دي: Dior Sauvage (50 مل، زجاجة البراند).",
+      "state": {
+        "preferences": {},
+        "sales_state": {
+          "offered": {
+            "message_id": 152,
+            "product_ids": [
+              1518,
+              1477
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

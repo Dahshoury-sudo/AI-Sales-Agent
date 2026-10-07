@@ -1,10 +1,116 @@
 from datetime import timedelta
+from contextlib import contextmanager
+import hashlib
+import threading
+import uuid
+from django.db import transaction
+from django.db import connection
 from django.utils import timezone
 from products.models import Conversation, Message
+
+_LOCAL_LOCKS = [threading.RLock() for _ in range(128)]
+
+
+@contextmanager
+def conversation_lock(key):
+    """Cross-worker serialization, including generation and delivery for each turn.
+
+    PostgreSQL session locks require a direct/session-pooled database connection.
+    SQLite uses process locks only, for the single-process unit test runner.
+    """
+    number = int.from_bytes(hashlib.sha256(str(key).encode()).digest()[:8], "big", signed=True)
+    if connection.vendor != "postgresql":
+        with _LOCAL_LOCKS[number % len(_LOCAL_LOCKS)]:
+            yield
+        return
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_lock(%s)", [number])
+    try:
+        yield
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_unlock(%s)", [number])
 
 
 def create_conversation(store=None, platform="web", platform_sender_id=""):
     return Conversation.objects.create(store=store, platform=platform, platform_sender_id=platform_sender_id)
+
+
+def remember_offered(conversation, message):
+    if not message.internal_context or message.delivery_status != "sent":
+        return
+    from products.models import Product
+    from .sales.naming import names_in
+    products = list(Product.objects.filter(store=conversation.store, is_active=True))
+    names = [p.name for p in products]
+    supported = set(names_in(message.internal_context, names))
+    ordered = [n for n in names_in(message.content, names) if n in supported]
+    if not ordered:
+        return
+    ids = {p.name: p.pk for p in products}
+    state = dict(Conversation.objects.values_list("sales_state", flat=True).get(pk=conversation.pk) or {})
+    state["offered"] = {"product_ids": [ids[n] for n in ordered], "message_id": message.pk}
+    Conversation.objects.filter(pk=conversation.pk).update(sales_state=state)
+    conversation.sales_state = state
+
+
+def receive_event(store, platform, sender_id, text, source_id=None, conversation=None, attachment_url=""):
+    from products.models import InboundEvent
+    source = str(source_id or uuid.uuid4().hex)
+    key = hashlib.sha256(f"{sender_id}:{source}".encode()).hexdigest()
+    with conversation_lock(f"receipt:{store.pk}:{platform}:{key}"):
+        event = InboundEvent.objects.filter(store=store, platform=platform, source_key=key).first()
+        if event:
+            if event.text != text or event.attachment_url != attachment_url or (conversation and event.conversation_id != conversation.pk):
+                raise ValueError("Message ID was already used for a different request")
+            return event
+        if conversation is None:
+            if platform == "web":
+                conversation = create_conversation(store)
+            else:
+                with conversation_lock(f"sender:{store.pk}:{platform}:{sender_id}"):
+                    conversation, _ = get_or_create_platform_conversation(store, platform, sender_id)
+        return InboundEvent.objects.create(store=store, platform=platform, source_key=key,
+            sender_id=sender_id, text=text, conversation=conversation, attachment_url=attachment_url)
+
+
+def generate_event(event, route_func, sanitize_func):
+    """Commit the state changes and their saved reply together; delivery follows commit."""
+    if event.status != "pending":
+        return
+    with transaction.atomic():
+        conversation = Conversation.objects.get(pk=event.conversation_id)
+        history = build_llm_history(conversation)
+        user = save_message(conversation, "user", event.text, attachment_url=event.attachment_url)
+        event.user_message = user
+        if conversation.needs_human:
+            event.result = {"reply": "", "needs_human": True, "user_message_id": user.pk}
+            event.status = "complete"
+            event.save()
+            return
+        reply, context = route_func(event.text, history, event.store, conversation)
+        reply = sanitize_func(reply, conversation)
+        image_url = None
+        if event.platform == "web" and "[SEND_BOTTLE_IMAGE]" in reply:
+            reply = reply.replace("[SEND_BOTTLE_IMAGE]", "").strip()
+            try:
+                image_url = event.store.settings.bottle_image_url or None
+            except Exception:
+                pass
+        assistant = save_message(conversation, "assistant", reply, internal_context=context,
+            attachment_url=image_url or "", delivery_status="sent" if event.platform == "web" else "pending")
+        conversation.refresh_from_db(fields=["needs_human"])
+        event.reply_message = assistant
+        event.result = {"reply": reply, "image_url": image_url, "message_id": assistant.pk,
+                        "user_message_id": user.pk, "needs_human": conversation.needs_human}
+        event.status = "complete" if event.platform == "web" else "ready"
+        event.save()
+
+
+def pending_through(event):
+    from products.models import InboundEvent
+    return InboundEvent.objects.filter(conversation_id=event.conversation_id, id__lte=event.pk).exclude(
+        status="complete").select_related("store", "conversation", "reply_message").order_by("id")
 
 def get_or_create_platform_conversation(store, platform, sender_id):
     # Get the latest conversation for this user
@@ -43,18 +149,27 @@ def get_conversation(conversation_id, store=None):
         return None
 
 
-def save_message(conversation, role, content, internal_context="", attachment_url=""):
-    return Message.objects.create(
+def save_message(conversation, role, content, internal_context="", attachment_url="", delivery_status="sent"):
+    message = Message.objects.create(
         conversation=conversation,
         role=role,
         content=content,
         internal_context=internal_context,
         attachment_url=attachment_url,
+        delivery_status=delivery_status,
     )
+    if role == "assistant":
+        from products.models import Cart
+        cart = Cart.objects.filter(conversation=conversation).first()
+        if cart and cart.quote.get("summary_hash") == hashlib.sha256(content.encode()).hexdigest():
+            cart.quote = {**cart.quote, "message_id": message.pk}
+            cart.save(update_fields=["quote"])
+        remember_offered(conversation, message)
+    return message
 
 
 def get_conversation_messages(conversation, limit=8):
-    messages = conversation.messages.order_by("-created_at")[:limit]
+    messages = conversation.messages.exclude(role="assistant", delivery_status__in=["pending", "sending", "failed", "uncertain"]).order_by("-created_at", "-id")[:limit]
     return reversed(messages)
 
 
@@ -101,6 +216,7 @@ def build_llm_history(conversation, limit=8):
 # re-deriving intent from an 8-message window loses that. Losing an exclusion is worse
 # than losing a preference — it means recommending the exact thing they rejected.
 PERSISTED_PREFERENCE_KEYS = (
+    "requested_volume", "bottle_type", "purchase_quantity", "budget_scope", "budget_strict",
     "gender",
     "max_price",
     "perfume_type",
@@ -308,14 +424,9 @@ def _contradicted_keys(intent, message):
 def _is_set(value):
     """A preference the customer actually expressed, as opposed to an empty slot.
 
-    `False` counts as unset, matching sales.constraints._is_set. `wants_uncommon: false` is
-    the extractor reporting the *absence* of a preference, and a plain membership test
-    against (None, "", [], {}) treats it as present — so once wants_uncommon joined
-    PERSISTED_PREFERENCE_KEYS every conversation began saving `wants_uncommon: False` as
-    though the customer had asked for something.
+    False is an explicit withdrawal and must survive future omitted updates.
+    None, empty strings and empty collections mean no update.
     """
-    if value is False:
-        return False
     return value not in (None, "", [], {})
 
 
@@ -339,10 +450,23 @@ def merge_preferences(conversation, intent, message=None, pending=None):
     answer; the unambiguous phrasings need no such help.
     """
     merged = dict(intent or {})
+    from .sales.constraints import explicit_updates
+    merged.update(explicit_updates(message))
     if conversation is None:
         return merged
 
     saved = conversation.preferences or {}
+    if merged.get("reset_preferences") is True:
+        saved = {}
+        conversation.sales_state = {}
+        conversation.save(update_fields=["sales_state"])
+    cleared = set(merged.get("clear_preferences") or ()) & set(PERSISTED_PREFERENCE_KEYS)
+    for key in cleared:
+        if merged.get(key) is False:
+            # Explicit withdrawal of a boolean is a value, not a missing slot.
+            continue
+        saved = {k: v for k, v in saved.items() if k != key}
+        merged.pop(key, None)
     contradicted = _contradicted_keys(intent, message)
 
     # Deleted, not merely left un-gap-filled. `ai/intent.py` tells the extractor to accumulate
@@ -399,7 +523,7 @@ def merge_preferences(conversation, intent, message=None, pending=None):
     if to_save.get("gender") == _TRANSIENT_GENDER:
         to_save.pop("gender")
 
-    if to_save != saved:
+    if to_save != (conversation.preferences or {}):
         conversation.preferences = to_save
         conversation.save(update_fields=["preferences"])
 

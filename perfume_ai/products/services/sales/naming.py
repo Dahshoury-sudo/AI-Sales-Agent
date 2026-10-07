@@ -82,7 +82,9 @@ def tokens(text):
     A run of three or more single letters is fused first — see `_fuse_spelled_out` — so a name the
     customer spelled out survives the length filter below instead of vanishing.
     """
-    cleaned = re.sub(r"\W+", " ", normalize_arabic(text or ""), flags=re.UNICODE)
+    # Arabic conjunctions are often attached to Latin names: "وBleu de Chanel".
+    text = re.sub(r"(?<=[\u0600-\u06ff])(?=[A-Za-z])|(?<=[A-Za-z])(?=[\u0600-\u06ff])", " ", text or "")
+    cleaned = re.sub(r"\W+", " ", normalize_arabic(text), flags=re.UNICODE)
     return {
         token
         for token in _fuse_spelled_out(cleaned.split())

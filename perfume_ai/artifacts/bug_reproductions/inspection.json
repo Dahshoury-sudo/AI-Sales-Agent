@@ -1,0 +1,1735 @@
+{
+  "stores": [
+    {
+      "id": 1,
+      "name": "Perfamix",
+      "owner_id": 1
+    },
+    {
+      "id": 5,
+      "name": "Misk Fragrance",
+      "owner_id": 2
+    },
+    {
+      "id": 6,
+      "name": "Tyiee",
+      "owner_id": 4
+    },
+    {
+      "id": 7,
+      "name": "مطعم شاورما",
+      "owner_id": 5
+    },
+    {
+      "id": 8,
+      "name": "عطر الشعلة",
+      "owner_id": 6
+    },
+    {
+      "id": 9,
+      "name": "عطور",
+      "owner_id": 7
+    },
+    {
+      "id": 10,
+      "name": "Misk Perfume",
+      "owner_id": 8
+    }
+  ],
+  "catalog": [
+    {
+      "id": 1,
+      "name": "Dior Sauvage",
+      "brand": "Dior",
+      "gender": "male",
+      "notes": [
+        "Bergamot, Mandarin",
+        "Lavender, Nutmeg, Star Anise",
+        "Ambroxan, Vanilla"
+      ],
+      "longevity": "8–10 hrs",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 1,
+          "volume": 50,
+          "price": "642.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 158,
+          "volume": 90,
+          "price": "944.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 168,
+          "volume": 60,
+          "price": "456.00",
+          "bottle_type": "original",
+          "stock": 0
+        },
+        {
+          "id": 169,
+          "volume": 100,
+          "price": "815.00",
+          "bottle_type": "original",
+          "stock": 2
+        },
+        {
+          "id": 170,
+          "volume": 200,
+          "price": "1623.00",
+          "bottle_type": "original",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Bleu de Chanel",
+      "brand": "Chanel",
+      "gender": "male",
+      "notes": [
+        "Grapefruit, Lemon, Mint",
+        "Ginger, Nutmeg, Jasmine",
+        "Incense, Cedar, Sandalwood, Patchouli"
+      ],
+      "longevity": "8–10 hrs",
+      "projection": "Moderate–Strong",
+      "variants": [
+        {
+          "id": 4,
+          "volume": 50,
+          "price": "645.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 117,
+          "volume": 90,
+          "price": "1015.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 165,
+          "volume": 50,
+          "price": "800.00",
+          "bottle_type": "original",
+          "stock": 6
+        },
+        {
+          "id": 166,
+          "volume": 100,
+          "price": "1400.00",
+          "bottle_type": "original",
+          "stock": 8
+        },
+        {
+          "id": 167,
+          "volume": 150,
+          "price": "1700.00",
+          "bottle_type": "original",
+          "stock": 17
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Tom Ford Ombre Leather",
+      "brand": "Tom Ford",
+      "gender": "unisex",
+      "notes": [
+        "Cardamom",
+        "Leather, Jasmine Sambac",
+        "Amber, Moss, Patchouli"
+      ],
+      "longevity": "8–12 hrs",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 7,
+          "volume": 50,
+          "price": "592.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 118,
+          "volume": 90,
+          "price": "873.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 163,
+          "volume": 50,
+          "price": "700.00",
+          "bottle_type": "original",
+          "stock": 25
+        },
+        {
+          "id": 164,
+          "volume": 100,
+          "price": "1000.00",
+          "bottle_type": "original",
+          "stock": 7
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Lattafa Asad",
+      "brand": "Lattafa",
+      "gender": "male",
+      "notes": [
+        "Black Pepper, Pineapple, Tobacco",
+        "Coffee, Patchouli, Iris",
+        "Amber, Vanilla, Dry Woods, Benzoin"
+      ],
+      "longevity": "8–10 hrs",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 10,
+          "volume": 50,
+          "price": "642.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 119,
+          "volume": 90,
+          "price": "982.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 162,
+          "volume": 100,
+          "price": "794.00",
+          "bottle_type": "original",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Afnan 9PM",
+      "brand": "Afnan",
+      "gender": "male",
+      "notes": [
+        "Apple, Cinnamon, Wild Lavender, Bergamot",
+        "Orange Blossom, Lily of the Valley",
+        "Vanilla, Tonka Bean, Amber, Patchouli"
+      ],
+      "longevity": "8–11 hrs",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 120,
+          "volume": 50,
+          "price": "508.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 121,
+          "volume": 90,
+          "price": "1077.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 161,
+          "volume": 100,
+          "price": "881.00",
+          "bottle_type": "original",
+          "stock": 27
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Aventus",
+      "brand": "Creed",
+      "gender": "male",
+      "notes": [
+        "Pineapple, Blackcurrant, Apple",
+        "Birch, Patchouli, Jasmine",
+        "Musk, Oakmoss, Ambergris"
+      ],
+      "longevity": "9 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 16,
+          "volume": 50,
+          "price": "631.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 122,
+          "volume": 90,
+          "price": "990.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 159,
+          "volume": 50,
+          "price": "1000.00",
+          "bottle_type": "original",
+          "stock": 8
+        },
+        {
+          "id": 160,
+          "volume": 100,
+          "price": "1400.00",
+          "bottle_type": "original",
+          "stock": 7
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Black Opium",
+      "brand": "Yves Saint Laurent",
+      "gender": "female",
+      "notes": [
+        "Pink Pepper, Orange Blossom",
+        "Coffee, Jasmine",
+        "Vanilla, Patchouli, Cedar"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 20,
+          "volume": 50,
+          "price": "677.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 21,
+          "volume": 90,
+          "price": "883.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Good Girl",
+      "brand": "Carolina Herrera",
+      "gender": "female",
+      "notes": [
+        "Almond, Coffee, Bergamot",
+        "Tuberose, Jasmine",
+        "Tonka Bean, Cacao, Vanilla"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 23,
+          "volume": 50,
+          "price": "650.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 123,
+          "volume": 90,
+          "price": "1083.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Light Blue",
+      "brand": "Dolce & Gabbana",
+      "gender": "female",
+      "notes": [
+        "Sicilian Lemon, Apple, Cedar",
+        "Bamboo, Jasmine, White Rose",
+        "Musk, Amber, Cedar"
+      ],
+      "longevity": "5 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 26,
+          "volume": 50,
+          "price": "691.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 124,
+          "volume": 90,
+          "price": "852.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Acqua di Gio",
+      "brand": "Giorgio Armani",
+      "gender": "male",
+      "notes": [
+        "Bergamot, Neroli, Green Notes",
+        "Jasmine, Calone, Rosemary",
+        "Musk, Cedar, Patchouli"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 28,
+          "volume": 50,
+          "price": "503.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 125,
+          "volume": 90,
+          "price": "1032.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Y Eau de Parfum",
+      "brand": "Yves Saint Laurent",
+      "gender": "male",
+      "notes": [
+        "Apple, Bergamot, Ginger",
+        "Sage, Juniper Berries",
+        "Tonka Bean, Cedar, Amberwood"
+      ],
+      "longevity": "7 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 126,
+          "volume": 50,
+          "price": "594.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 127,
+          "volume": 90,
+          "price": "900.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "La Vie Est Belle",
+      "brand": "Lancome",
+      "gender": "female",
+      "notes": [
+        "Black Currant, Pear",
+        "Iris, Jasmine, Orange Blossom",
+        "Praline, Vanilla, Patchouli"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 35,
+          "volume": 50,
+          "price": "669.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 128,
+          "volume": 90,
+          "price": "1046.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Coco Mademoiselle",
+      "brand": "Chanel",
+      "gender": "female",
+      "notes": [
+        "Orange, Bergamot, Mandarin",
+        "Jasmine, Rose, Mimosa",
+        "Patchouli, Vetiver, Vanilla"
+      ],
+      "longevity": "7 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 38,
+          "volume": 50,
+          "price": "534.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 129,
+          "volume": 90,
+          "price": "1006.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "1 Million",
+      "brand": "Paco Rabanne",
+      "gender": "male",
+      "notes": [
+        "Blood Mandarin, Grapefruit, Mint",
+        "Cinnamon, Rose, Spicy Notes",
+        "Leather, Amber, Patchouli"
+      ],
+      "longevity": "7 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 40,
+          "volume": 50,
+          "price": "514.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 130,
+          "volume": 90,
+          "price": "888.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Invictus",
+      "brand": "Paco Rabanne",
+      "gender": "male",
+      "notes": [
+        "Marine Notes, Grapefruit, Mandarin",
+        "Bay Leaf, Hedione",
+        "Guaiac Wood, Ambergris, Oakmoss"
+      ],
+      "longevity": "6 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 43,
+          "volume": 50,
+          "price": "540.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 131,
+          "volume": 90,
+          "price": "1102.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Baccarat Rouge 540",
+      "brand": "Maison Francis Kurkdjian",
+      "gender": "unisex",
+      "notes": [
+        "Saffron, Jasmine",
+        "Amberwood, Ambergris",
+        "Fir Resin, Cedar"
+      ],
+      "longevity": "9 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 132,
+          "volume": 50,
+          "price": "686.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 133,
+          "volume": 90,
+          "price": "1136.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Oud Wood",
+      "brand": "Tom Ford",
+      "gender": "unisex",
+      "notes": [
+        "Rosewood, Cardamom",
+        "Oud, Sandalwood",
+        "Vetiver, Amber, Tonka Bean"
+      ],
+      "longevity": "8 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 50,
+          "volume": 50,
+          "price": "540.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 134,
+          "volume": 90,
+          "price": "1160.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Le Male",
+      "brand": "Jean Paul Gaultier",
+      "gender": "male",
+      "notes": [
+        "Mint, Lavender, Bergamot",
+        "Cinnamon, Cumin, Orange Blossom",
+        "Vanilla, Sandalwood, Tonka Bean"
+      ],
+      "longevity": "7 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 135,
+          "volume": 50,
+          "price": "623.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 136,
+          "volume": 90,
+          "price": "856.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Chloe Eau de Parfum",
+      "brand": "Chloe",
+      "gender": "female",
+      "notes": [
+        "Peony, Lychee, Freesia",
+        "Rose, Magnolia, Lily",
+        "Amber, Musk, Cedar"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 56,
+          "volume": 50,
+          "price": "692.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 115,
+          "volume": 90,
+          "price": "1058.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Armani Code",
+      "brand": "Giorgio Armani",
+      "gender": "male",
+      "notes": [
+        "Bergamot, Lemon",
+        "Guaiac Wood, Star Anise, Olive Blossom",
+        "Tonka Bean, Leather, Tobacco"
+      ],
+      "longevity": "7 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 58,
+          "volume": 50,
+          "price": "633.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 116,
+          "volume": 90,
+          "price": "866.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Flowerbomb",
+      "brand": "Viktor & Rolf",
+      "gender": "female",
+      "notes": [
+        "Bergamot, Tea",
+        "Jasmine, Orchid, Freesia",
+        "Patchouli, Musk, Vanilla"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 62,
+          "volume": 50,
+          "price": "577.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 137,
+          "volume": 90,
+          "price": "928.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Bloom",
+      "brand": "Gucci",
+      "gender": "female",
+      "notes": [
+        "Jasmine Sambac, Tuberose",
+        "Rangoon Creeper",
+        "Sandalwood, Musk"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 65,
+          "volume": 50,
+          "price": "549.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 138,
+          "volume": 90,
+          "price": "1067.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Eros",
+      "brand": "Versace",
+      "gender": "male",
+      "notes": [
+        "Mint, Green Apple, Lemon",
+        "Tonka Bean, Ambroxan, Geranium",
+        "Vanilla, Vetiver, Oakmoss"
+      ],
+      "longevity": "7 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 67,
+          "volume": 50,
+          "price": "666.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 139,
+          "volume": 90,
+          "price": "1019.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Libre",
+      "brand": "Yves Saint Laurent",
+      "gender": "female",
+      "notes": [
+        "Lavender, Mandarin, Ginger",
+        "Orange Blossom, Jasmine",
+        "Vanilla, Musk, Cedar"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 71,
+          "volume": 50,
+          "price": "561.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 72,
+          "volume": 90,
+          "price": "927.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Citrolo",
+      "brand": "Perfamix",
+      "gender": "female",
+      "notes": [
+        "Mandarin, Lemon, Bergamot",
+        "Orange Blossom, Freesia, Jasmine",
+        "White Musk, Blonde Woods"
+      ],
+      "longevity": "5 hours",
+      "projection": "Light",
+      "variants": [
+        {
+          "id": 91,
+          "volume": 50,
+          "price": "598.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 146,
+          "volume": 90,
+          "price": "943.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "name": "Leatherio",
+      "brand": "Perfamix",
+      "gender": "male",
+      "notes": [
+        "Black Pepper, Juniper, Bergamot",
+        "Leather, Tobacco Leaf, Cedar",
+        "Oud, Amber, Vetiver"
+      ],
+      "longevity": "9 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 94,
+          "volume": 50,
+          "price": "513.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 147,
+          "volume": 90,
+          "price": "1075.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "name": "Jasmino",
+      "brand": "Perfamix",
+      "gender": "female",
+      "notes": [
+        "Bergamot, Green Notes, Mandarin",
+        "Jasmine Sambac, Tuberose, Ylang Ylang",
+        "Sandalwood, White Musk, Vanilla"
+      ],
+      "longevity": "7 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 97,
+          "volume": 50,
+          "price": "578.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 148,
+          "volume": 90,
+          "price": "1106.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "name": "Vanilo",
+      "brand": "Perfamix",
+      "gender": "unisex",
+      "notes": [
+        "Cardamom, Orange Peel",
+        "Tonka Bean, Praline, Cinnamon",
+        "Vanilla, Tobacco, Amber"
+      ],
+      "longevity": "8 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 100,
+          "volume": 50,
+          "price": "607.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 149,
+          "volume": 90,
+          "price": "897.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "name": "Safrano",
+      "brand": "Perfamix",
+      "gender": "male",
+      "notes": [
+        "Saffron, Bergamot, Cardamom",
+        "Rose, Oud, Cinnamon",
+        "Amber, Leather, Musk"
+      ],
+      "longevity": "11 hours",
+      "projection": "Very Strong",
+      "variants": [
+        {
+          "id": 103,
+          "volume": 50,
+          "price": "651.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 150,
+          "volume": 90,
+          "price": "1024.00",
+          "bottle_type": "normal",
+          "stock": null
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "name": "Dior Homme Intense",
+      "brand": "Dior",
+      "gender": "male",
+      "notes": [
+        "Lavender",
+        "Iris, Ambrette, Pear",
+        "Virginia Cedar, Vetiver"
+      ],
+      "longevity": "8 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 171,
+          "volume": 50,
+          "price": "550.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 173,
+          "volume": 90,
+          "price": "1300.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 174,
+          "volume": 100,
+          "price": "5500.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 175,
+          "volume": 200,
+          "price": "9800.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "name": "Dior Homme Sport",
+      "brand": "Dior",
+      "gender": "male",
+      "notes": [
+        "Lemon, Bergamot, Aldehydes",
+        "Elemi, Pink Pepper",
+        "Woody Notes, Amber, Olibanum"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 176,
+          "volume": 50,
+          "price": "450.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 178,
+          "volume": 90,
+          "price": "1100.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 179,
+          "volume": 100,
+          "price": "4500.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 180,
+          "volume": 200,
+          "price": "8000.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "name": "Fahrenheit",
+      "brand": "Dior",
+      "gender": "male",
+      "notes": [
+        "Nutmeg Flower, Lavender, Mandarin Orange, Bergamot, Lemon",
+        "Violet Leaf, Sandalwood, Carnation, Jasmine",
+        "Leather, Vetiver, Musk, Amber, Patchouli, Tonka Bean"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 182,
+          "volume": 50,
+          "price": "900.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 183,
+          "volume": 90,
+          "price": "1200.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 184,
+          "volume": 100,
+          "price": "5000.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 185,
+          "volume": 200,
+          "price": "9000.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "name": "XJ 1861 Naxos",
+      "brand": "Xerjoff",
+      "gender": "unisex",
+      "notes": [
+        "Lavender, Bergamot, Lemon",
+        "Honey, Cinnamon, Cashmeran, Jasmine Sambac",
+        "Tobacco Leaf, Vanilla, Tonka Bean"
+      ],
+      "longevity": "10 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 187,
+          "volume": 50,
+          "price": "2900.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 188,
+          "volume": 90,
+          "price": "5200.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 189,
+          "volume": 50,
+          "price": "22000.00",
+          "bottle_type": "original",
+          "stock": 3
+        },
+        {
+          "id": 190,
+          "volume": 100,
+          "price": "40000.00",
+          "bottle_type": "original",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "name": "Erba Pura",
+      "brand": "Xerjoff",
+      "gender": "unisex",
+      "notes": [
+        "Sicilian Orange, Calabrian Bergamot, Sicilian Lemon",
+        "Fruits",
+        "White Musk, Madagascar Vanilla, Amber"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 192,
+          "volume": 50,
+          "price": "2700.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 193,
+          "volume": 90,
+          "price": "4900.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 194,
+          "volume": 50,
+          "price": "20000.00",
+          "bottle_type": "original",
+          "stock": 3
+        },
+        {
+          "id": 195,
+          "volume": 100,
+          "price": "36000.00",
+          "bottle_type": "original",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "name": "Accento Overdose",
+      "brand": "Xerjoff",
+      "gender": "unisex",
+      "notes": [
+        "Pineapple, Green Notes, Aldehydes",
+        "Egyptian Jasmine, Bulgarian Rose",
+        "Eucalyptus, Mediterranean Pine"
+      ],
+      "longevity": "6 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 197,
+          "volume": 50,
+          "price": "2800.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 198,
+          "volume": 90,
+          "price": "5000.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 199,
+          "volume": 50,
+          "price": "21000.00",
+          "bottle_type": "original",
+          "stock": 3
+        },
+        {
+          "id": 200,
+          "volume": 100,
+          "price": "38000.00",
+          "bottle_type": "original",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "name": "Green Irish Tweed",
+      "brand": "Creed",
+      "gender": "male",
+      "notes": [
+        "Iris, Lemon Verbena",
+        "Violet Leaf",
+        "Ambergris, Sandalwood"
+      ],
+      "longevity": "7 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 202,
+          "volume": 50,
+          "price": "3300.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 203,
+          "volume": 90,
+          "price": "6000.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 204,
+          "volume": 50,
+          "price": "26000.00",
+          "bottle_type": "original",
+          "stock": 3
+        },
+        {
+          "id": 205,
+          "volume": 100,
+          "price": "46000.00",
+          "bottle_type": "original",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "name": "Silver Mountain Water",
+      "brand": "Creed",
+      "gender": "unisex",
+      "notes": [
+        "Bergamot, Mandarin Orange",
+        "Green Tea, Black Currant",
+        "Musk, Petitgrain, Sandalwood, Galbanum"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 207,
+          "volume": 50,
+          "price": "3100.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 208,
+          "volume": 90,
+          "price": "5700.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 209,
+          "volume": 50,
+          "price": "24000.00",
+          "bottle_type": "original",
+          "stock": 3
+        },
+        {
+          "id": 210,
+          "volume": 100,
+          "price": "43000.00",
+          "bottle_type": "original",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "name": "Stronger With You",
+      "brand": "Emporio Armani",
+      "gender": "male",
+      "notes": [
+        "Cardamom, Pink Pepper, Violet Leaf, Mint",
+        "Pineapple, Cinnamon, Melon, Sage, Lavender",
+        "Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood"
+      ],
+      "longevity": "6 hours",
+      "projection": "Moderate",
+      "variants": [
+        {
+          "id": 211,
+          "volume": 50,
+          "price": "400.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 212,
+          "volume": 90,
+          "price": "700.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 214,
+          "volume": 100,
+          "price": "3800.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 215,
+          "volume": 200,
+          "price": "6800.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "name": "Stronger With You Intensely",
+      "brand": "Emporio Armani",
+      "gender": "male",
+      "notes": [
+        "Pink Pepper, Juniper, Violet",
+        "Toffee, Cinnamon, Lavender, Sage",
+        "Vanilla, Tonka Bean, Amber, Suede"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 216,
+          "volume": 50,
+          "price": "450.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 217,
+          "volume": 90,
+          "price": "780.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 219,
+          "volume": 100,
+          "price": "4200.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 220,
+          "volume": 200,
+          "price": "7500.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "name": "Stronger With You Absolutely",
+      "brand": "Emporio Armani",
+      "gender": "male",
+      "notes": [
+        "Rum, Elemi, Bergamot",
+        "Lavender, Davana",
+        "Chestnut, Madagascar Vanilla, Cedar, Patchouli"
+      ],
+      "longevity": "8 hours",
+      "projection": "Strong",
+      "variants": [
+        {
+          "id": 221,
+          "volume": 50,
+          "price": "480.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 222,
+          "volume": 90,
+          "price": "830.00",
+          "bottle_type": "normal",
+          "stock": null
+        },
+        {
+          "id": 224,
+          "volume": 100,
+          "price": "4500.00",
+          "bottle_type": "original",
+          "stock": 5
+        },
+        {
+          "id": 225,
+          "volume": 200,
+          "price": "8000.00",
+          "bottle_type": "original",
+          "stock": 2
+        }
+      ]
+    }
+  ],
+  "migrations": [
+    [
+      "products",
+      "0041_sales_conversation_fixes"
+    ],
+    [
+      "products",
+      "0040_event_transport"
+    ],
+    [
+      "products",
+      "0039_positive_quantities"
+    ],
+    [
+      "products",
+      "0038_agent_delivery"
+    ],
+    [
+      "products",
+      "0037_agent_sales_integrity"
+    ],
+    [
+      "products",
+      "0036_add_attachment_url_to_message"
+    ],
+    [
+      "products",
+      "0035_post_comment_rule"
+    ],
+    [
+      "products",
+      "0035_add_perfumecatalog"
+    ]
+  ],
+  "required_columns": [
+    [
+      "products_cart",
+      "id",
+      null
+    ],
+    [
+      "products_cart",
+      "customer_name",
+      null
+    ],
+    [
+      "products_cart",
+      "customer_phone",
+      null
+    ],
+    [
+      "products_cart",
+      "secondary_phone",
+      null
+    ],
+    [
+      "products_cart",
+      "shipping_address",
+      null
+    ],
+    [
+      "products_cart",
+      "created_at",
+      null
+    ],
+    [
+      "products_cart",
+      "updated_at",
+      null
+    ],
+    [
+      "products_cart",
+      "conversation_id",
+      null
+    ],
+    [
+      "products_cart",
+      "agent_version",
+      null
+    ],
+    [
+      "products_cart",
+      "pending_items",
+      null
+    ],
+    [
+      "products_cart",
+      "quote_digest",
+      null
+    ],
+    [
+      "products_cart",
+      "revision",
+      null
+    ],
+    [
+      "products_cartitem",
+      "id",
+      null
+    ],
+    [
+      "products_cartitem",
+      "quantity",
+      null
+    ],
+    [
+      "products_cartitem",
+      "bottle_type",
+      null
+    ],
+    [
+      "products_cartitem",
+      "cart_id",
+      null
+    ],
+    [
+      "products_cartitem",
+      "variant_id",
+      null
+    ],
+    [
+      "products_cartitem",
+      "line_id",
+      null
+    ],
+    [
+      "products_conversation",
+      "id",
+      null
+    ],
+    [
+      "products_conversation",
+      "created_at",
+      null
+    ],
+    [
+      "products_conversation",
+      "needs_human",
+      null
+    ],
+    [
+      "products_conversation",
+      "platform",
+      null
+    ],
+    [
+      "products_conversation",
+      "platform_sender_id",
+      null
+    ],
+    [
+      "products_conversation",
+      "preferences",
+      null
+    ],
+    [
+      "products_conversation",
+      "sales_state",
+      null
+    ],
+    [
+      "products_message",
+      "id",
+      null
+    ],
+    [
+      "products_message",
+      "role",
+      null
+    ],
+    [
+      "products_message",
+      "content",
+      null
+    ],
+    [
+      "products_message",
+      "created_at",
+      null
+    ],
+    [
+      "products_message",
+      "conversation_id",
+      null
+    ],
+    [
+      "products_message",
+      "internal_context",
+      null
+    ],
+    [
+      "products_message",
+      "attachment_url",
+      null
+    ],
+    [
+      "products_message",
+      "delivery_status",
+      null
+    ],
+    [
+      "products_order",
+      "id",
+      null
+    ],
+    [
+      "products_order",
+      "customer_name",
+      null
+    ],
+    [
+      "products_order",
+      "customer_phone",
+      null
+    ],
+    [
+      "products_order",
+      "shipping_address",
+      null
+    ],
+    [
+      "products_order",
+      "total_price",
+      null
+    ],
+    [
+      "products_order",
+      "status",
+      null
+    ],
+    [
+      "products_order",
+      "created_at",
+      null
+    ],
+    [
+      "products_order",
+      "store_id",
+      null
+    ],
+    [
+      "products_order",
+      "bot_notes",
+      null
+    ],
+    [
+      "products_order",
+      "secondary_phone",
+      null
+    ],
+    [
+      "products_order",
+      "customer_phone_hash",
+      null
+    ],
+    [
+      "products_order",
+      "notification_pending",
+      null
+    ],
+    [
+      "products_order",
+      "pricing_snapshot",
+      null
+    ],
+    [
+      "products_orderitem",
+      "id",
+      null
+    ],
+    [
+      "products_orderitem",
+      "quantity",
+      null
+    ],
+    [
+      "products_orderitem",
+      "price_at_time_of_order",
+      null
+    ],
+    [
+      "products_orderitem",
+      "order_id",
+      null
+    ],
+    [
+      "products_orderitem",
+      "variant_id",
+      null
+    ],
+    [
+      "products_orderitem",
+      "bottle_type",
+      null
+    ]
+  ]
+}

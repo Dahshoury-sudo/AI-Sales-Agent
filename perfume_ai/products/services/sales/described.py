@@ -268,7 +268,7 @@ def under_discussion(conversation, store, turns=2):
     from .naming import names_in
 
     recent = list(
-        conversation.messages.filter(role="assistant")
+        conversation.messages.filter(role="assistant", delivery_status="sent")
         .order_by("-created_at")
         .values_list("content", "internal_context")[:turns]
     )
@@ -354,7 +354,7 @@ def offered_ever(conversation, store):
     from .naming import names_in
 
     rows = list(
-        conversation.messages.filter(role="assistant")
+        conversation.messages.filter(role="assistant", delivery_status="sent")
         .order_by("created_at")
         .values_list("content", "internal_context")
     )
@@ -411,10 +411,17 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
     """
     names = under_discussion(conversation, store, turns=turns)
     if not names:
+        if conversation is not None:
+            from products.models import Conversation, Product, Message
+            state = Conversation.objects.values_list("sales_state", flat=True).get(pk=conversation.pk) or {}
+            offered = state.get("offered") or {}
+            if Message.objects.filter(pk=offered.get("message_id"), delivery_status="sent").exists():
+                rows = {p.pk: p.name for p in Product.objects.filter(store=store, pk__in=offered.get("product_ids", []))}
+                return [rows[pk] for pk in offered.get("product_ids", []) if pk in rows]
         return []
 
     latest = (
-        conversation.messages.filter(role="assistant")
+        conversation.messages.filter(role="assistant", delivery_status="sent")
         .order_by("-created_at")
         .values_list("content", flat=True)
         .first()
@@ -520,7 +527,7 @@ def _recent_contexts(conversation, turns):
     if conversation is None:
         return []
     return list(
-        conversation.messages.filter(role="assistant")
+        conversation.messages.filter(role="assistant", delivery_status="sent")
         .order_by("-created_at")
         .values_list("internal_context", flat=True)[:turns]
     )
@@ -690,7 +697,7 @@ def moved_past(conversation, store):
     if conversation is None or store is None:
         return frozenset()
 
-    contexts = conversation.messages.filter(role="assistant").values_list(
+    contexts = conversation.messages.filter(role="assistant", delivery_status="sent").values_list(
         "internal_context", flat=True
     )
 

@@ -14,6 +14,40 @@ produced the identical budget sentence every time.
 """
 
 from ..static_faq_service import normalize_arabic
+import re
+
+
+def explicit_updates(message):
+    """Literal constraints remain authoritative even if extraction omits them."""
+    text = normalize_arabic(message or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    updates = {}
+    volume = re.search(r"(?<!\d)(\d+)\s*(?:مل(?:ي)?|ml)\b", text)
+    if volume:
+        updates["requested_volume"] = int(volume[1])
+    if any(x in text for x in ("زجاجه البراند", "زجاجه الاستور", "زجاجه المحل")):
+        updates["bottle_type"] = "normal"
+    if any(x in text for x in ("حد اقصي", "حد اقصى", "مش هقدر ازود", "مش هقدر ازود", "مش هقدر أزود", "بالظبط", "بالضبط", "at most", "maximum")):
+        updates["budget_strict"] = True
+    if any(x in text for x in ("للاتنين", "الاتنين مع بعض", "اجمالي", "combined", "total budget")):
+        updates.update(budget_scope="total", budget_strict=True)
+        if "اتنين" in text or "للاتنين" in text:
+            updates["purchase_quantity"] = 2
+        # The extractor sometimes divides a combined ceiling by the bottle count.
+        # Preserve a single explicit currency amount as the customer's total.
+        amounts = re.findall(r"(?<![\d.,])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:جنيه|egp)\b", text)
+        if len(amounts) == 1:
+            updates["max_price"] = float(amounts[0].replace(",", ""))
+    if any(x in text for x in ("مش لازم يكون نادر", "عادي لو منتشر", "مش مهم يكون نادر")):
+        updates["wants_uncommon"] = False
+    if any(x in text for x in ("انسي الشروط", "انسي الميزانيه", "سيبك من الشروط", "الغي الشروط", "شروط جديده", "سيبك من طلبي", "مش نفس الشروط")):
+        updates["reset_preferences"] = True
+    if "مش محدد ميزانيه" in text or "من غير ميزانيه" in text:
+        updates["clear_preferences"] = ["max_price", "budget_strict", "budget_scope"]
+    if "رشح" in text and any(x in text for x in ("اختيارين", "اختيارات")) and updates.get("budget_scope") != "total" and not any(x in text for x in ("اشتري", "اطلب", "هاخد", "الحد الاقصي للاتنين")):
+        updates.update(recommendation_count=2, purchase_quantity=None, budget_scope="per_item")
+    if "حدود" in text and "budget_strict" not in updates:
+        updates["budget_strict"] = False
+    return updates
 
 # The slots that describe taste. max_price is deliberately excluded: it is the thing the
 # budget gate is deciding whether to ask about, so counting it would let a bare budget

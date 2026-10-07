@@ -1,0 +1,93 @@
+{
+  "case": "L01",
+  "run": 1,
+  "turns": [
+    {
+      "user": "عايز أطلب 2 من Leatherio و3 من Vanilo في زجاجة البراند، لسه هحدد الأحجام.",
+      "reply": "تمام 👌 بس محتاج أعرف الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Leatherio و الحجم المطلوب (متاح: 50 ملي، 90 ملي) من عطر Vanilo؟",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal"
+        },
+        "sales_state": {},
+        "pending": [
+          {
+            "name": "Leatherio",
+            "line_id": "e44424b46d304bf49206370f4ea84c88",
+            "quantity": 2,
+            "bottle_type": "normal"
+          },
+          {
+            "name": "Vanilo",
+            "line_id": "3083a072cec046e89a8d9db53447a786",
+            "quantity": 3,
+            "bottle_type": "normal"
+          }
+        ],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "خلي Leatherio 90 مل.",
+      "reply": "تمام 👌 3 × Vanilo — تحب 50 ملي ولا 90 ملي؟",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 90
+        },
+        "sales_state": {},
+        "pending": [
+          {
+            "name": "Vanilo",
+            "line_id": "3083a072cec046e89a8d9db53447a786",
+            "quantity": 3,
+            "bottle_type": "normal"
+          }
+        ],
+        "items": [
+          {
+            "variant__product__name": "Leatherio",
+            "quantity": 2,
+            "variant__volume": 90
+          }
+        ],
+        "orders": []
+      }
+    },
+    {
+      "user": "وVanilo 50 مل. راجعلي كده الطلب كله والكميات.",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Leatherio (90ml) بـ 2150 جنيه\n- 3 × Vanilo (50ml) بـ 1821 جنيه\nالمجموع: 3971 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "state": {
+        "preferences": {
+          "bottle_type": "normal",
+          "requested_volume": 50
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 6,
+            "product_ids": [
+              44,
+              41
+            ]
+          }
+        },
+        "pending": [],
+        "items": [
+          {
+            "variant__product__name": "Leatherio",
+            "quantity": 2,
+            "variant__volume": 90
+          },
+          {
+            "variant__product__name": "Vanilo",
+            "quantity": 3,
+            "variant__volume": 50
+          }
+        ],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}

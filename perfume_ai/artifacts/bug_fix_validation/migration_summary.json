@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "checks": [
+    "Migration on clean PostgreSQL",
+    "Legacy pending product retained",
+    "Resolved quantity retained",
+    "Stable line IDs backfilled",
+    "Legacy quote requires review"
+  ]
+}

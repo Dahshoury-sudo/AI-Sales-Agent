@@ -1,0 +1,75 @@
+{
+  "case": "L06",
+  "run": 3,
+  "turns": [
+    {
+      "user": "عايز عطر شبه Baccarat Rouge 540 بس أقل حلاوة منه، دي أهم حاجة، في حدود 1200 جنيه و50 مل.",
+      "reply": "• Bleu de Chanel — زجاجة البراند 50 مل بـ645.00 جنيه. الثبات: 8–10 hrs، الفوحان: Moderate–Strong\n\n• Black Opium — زجاجة البراند 50 مل بـ677.00 جنيه. الثبات: 8 hours، الفوحان: Strong",
+      "state": {
+        "preferences": {
+          "max_price": 1200.0,
+          "similar_to": "Baccarat Rouge 540",
+          "avoid_traits": [
+            "sweet"
+          ],
+          "budget_scope": "per_item",
+          "budget_strict": false,
+          "requested_volume": 50,
+          "similar_to_notes": [
+            "saffron",
+            "amberwood",
+            "cedar",
+            "jasmine"
+          ]
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 148,
+            "product_ids": [
+              1472,
+              1430
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    },
+    {
+      "user": "أنهي واحد أقل حلاوة فعلاً؟ وقولي على أساس إيه حكمت إنه أقل حلاوة.",
+      "reply": "Bleu de Chanel\n\nBlack Opium\n\nماقدرش أجزم أنهي أقل حلاوة؛ وجود نوتة زي الفانيليا لوحده مش كفاية عشان نقارن درجة الحلاوة بدقة.",
+      "state": {
+        "preferences": {
+          "max_price": 1200.0,
+          "similar_to": "Baccarat Rouge 540",
+          "avoid_traits": [
+            "sweet"
+          ],
+          "budget_scope": "per_item",
+          "budget_strict": false,
+          "requested_volume": 50,
+          "similar_to_notes": [
+            "saffron",
+            "amberwood",
+            "cedar",
+            "jasmine"
+          ]
+        },
+        "sales_state": {
+          "offered": {
+            "message_id": 150,
+            "product_ids": [
+              1472,
+              1430
+            ]
+          }
+        },
+        "pending": [],
+        "items": [],
+        "orders": []
+      }
+    }
+  ],
+  "errors": []
+}
