@@ -1,0 +1,114 @@
+[
+  {
+    "case": "R01",
+    "name": "same_product_sizes",
+    "reproduced": true,
+    "evidence": {
+      "before": [
+        [
+          50,
+          1
+        ],
+        [
+          90,
+          1
+        ]
+      ],
+      "after": [
+        [
+          50,
+          2
+        ],
+        [
+          90,
+          2
+        ]
+      ],
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: Review\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: Synthetic test address\n\n🛍️ الطلب:\n- 2 × Review Perfume (50ml) - زجاجة البراند (السعر: 1000.00 جنيه)\n- 2 × Review Perfume (90ml) - زجاجة البراند (السعر: 1600.00 جنيه)\n\n💰 الإجمالي: 2600.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "condition": "Extractor returns the unchanged two-size cart without line_id fields"
+    }
+  },
+  {
+    "case": "R02",
+    "name": "stale_admin_save",
+    "reproduced": true,
+    "evidence": {
+      "status_after_stale_save": "pending",
+      "stock_after_first_cancel": 2,
+      "stock_after_second_cancel": 3
+    }
+  },
+  {
+    "case": "R03",
+    "name": "cancelled_confirmation",
+    "reproduced": true,
+    "evidence": {
+      "reply": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #2.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\nفريق المبيعات هيتواصل معاك في أقرب وقت يأكدلك تفاصيل الدفع والشحن.",
+      "actual_order_status": "cancelled"
+    }
+  },
+  {
+    "case": "R04",
+    "name": "comment_replay_during_handoff",
+    "reproduced": true,
+    "evidence": {
+      "human_handoff_active": true,
+      "replayed_comment_id": "same-comment-id",
+      "generated_replies": 2,
+      "public_send_attempts": 2,
+      "private_send_attempts": 2,
+      "private_provider_result": null,
+      "saved_assistant_messages": [
+        {
+          "content": "comment reply",
+          "delivery_status": "sent"
+        },
+        {
+          "content": "comment reply",
+          "delivery_status": "sent"
+        }
+      ],
+      "model_history": [
+        {
+          "role": "user",
+          "content": "Hello"
+        },
+        {
+          "role": "assistant",
+          "content": "comment reply"
+        },
+        {
+          "role": "user",
+          "content": "Hello"
+        },
+        {
+          "role": "assistant",
+          "content": "comment reply"
+        }
+      ]
+    }
+  },
+  {
+    "case": "R05",
+    "name": "formulation_intercepts_contacts",
+    "reproduced": true,
+    "evidence": {
+      "checkout_calls": 0,
+      "phone_saved": false,
+      "secondary_saved": false,
+      "reply": "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل.\n\nاسم مصنع الزيت تحديدًا محتاج تأكيد من الفريق."
+    }
+  },
+  {
+    "case": "R06",
+    "name": "dropped_event_revives",
+    "reproduced": true,
+    "evidence": {
+      "status_after_max_deferrals": "pending",
+      "generated_on_later_request": [
+        "old request",
+        "new request"
+      ]
+    }
+  }
+]

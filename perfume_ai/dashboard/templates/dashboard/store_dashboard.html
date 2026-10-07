@@ -4,718 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - Perfume AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>لوحة التحكم - WebVitas AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --purple: #8b5cf6;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            right: 0;
-            height: 100vh;
-            z-index: 100;
-        }
-
-        .sidebar-brand {
-            padding: 25px 20px;
-            border-bottom: 1px solid var(--glass-border);
-            text-align: center;
-        }
-
-        .sidebar-brand h2 {
-            font-size: 1.4rem;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar-brand small {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 15px 10px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 4px;
-            text-decoration: none;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary);
-        }
-
-        .nav-item i { width: 20px; text-align: center; }
-
-        .nav-badge {
-            margin-right: auto;
-            background: var(--danger);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .sidebar-footer {
-            padding: 15px;
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .btn-logout {
-            width: 100%;
-            padding: 10px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* Main content */
-        .main-content {
-            flex: 1;
-            margin-right: 260px;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-        }
-
-        .page-header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        .page-header p {
-            color: var(--text-muted);
-        }
-
-        /* Stats grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-        }
-
-        .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-        .stat-icon.green { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
-        .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
-        .stat-icon.orange { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-        .stat-icon.red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Sections */
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        /* Settings form */
-        .settings-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .settings-card h3 {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: white;
-            font-family: inherit;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
-            border-color: var(--primary);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.25);
-        }
-
-        .btn-sm { padding: 8px 14px; font-size: 0.85rem; }
-
-        /* Products table */
-        .products-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .products-table th, .products-table td {
-            padding: 12px 15px;
-            text-align: right;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .products-table th {
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .products-table tr:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .badge-active {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        .badge-inactive {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        /* API Key display */
-        .api-key-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            word-break: break-all;
-        }
-
-        .api-key-box .copy-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        /* Notifications badge in sidebar */
-        .notification-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--danger);
-            border-radius: 50%;
-            display: none;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--success);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: transform 0.4s ease;
-            z-index: 999;
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Platform breakdown */
-        .platform-list {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .platform-chip {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .platform-chip.whatsapp { background: rgba(37, 211, 102, 0.15); color: #25d366; }
-        .platform-chip.messenger { background: rgba(0, 132, 255, 0.15); color: #0084ff; }
-        .platform-chip.instagram { background: rgba(225, 48, 108, 0.15); color: #e1306c; }
-        .platform-chip.web { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        /* Mobile Header */
-        .mobile-header {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 105;
-        }
-        
-        .mobile-header h2 {
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .mobile-toggle {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 95;
-            backdrop-filter: blur(5px);
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        /* Responsive — Laptop (small screens ≤ 1366px) */
-        @media (max-width: 1366px) {
-            .sidebar { width: 240px; }
-            .main-content { margin-right: 240px; padding: 20px; }
-            .stats-grid { gap: 15px; }
-            .stat-card { padding: 15px; }
-            .analytics-kpis { gap: 14px; }
-        }
-
-        /* Responsive — Small laptop / tablet (≤ 1024px) */
-        @media (max-width: 1024px) {
-            .sidebar { width: 220px; }
-            .main-content { margin-right: 220px; padding: 15px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .page-header h1 { font-size: 1.5rem; }
-            .analytics-kpis { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        }
-
-        /* Responsive — Mobile (≤ 768px) */
-        @media (max-width: 768px) {
-            .mobile-header { display: flex; }
-            .sidebar {
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-overlay.open {
-                display: block;
-            }
-            .main-content {
-                margin-right: 0;
-                padding: 15px !important;
-                padding-top: 80px !important;
-            }
-            .section.active {
-                padding-top: 20px;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .products-table th, .products-table td {
-                white-space: nowrap;
-            }
-            #edit-product-modal > div {
-                width: 95% !important;
-                padding: 15px !important;
-            }
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 15px;
-            }
-            .page-header > div {
-                width: 100%;
-            }
-            #product-search {
-                width: 100%;
-                margin-left: 0 !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        /* ── Analytics Section ──────────────────────────────────────────── */
-
-        .analytics-kpis {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 18px;
-            margin-bottom: 28px;
-        }
-
-        .kpi-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px 18px;
-            transition: transform 0.3s;
-        }
-
-        .kpi-card:hover { transform: translateY(-3px); }
-
-        .kpi-card .kpi-label {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .kpi-card .kpi-value {
-            font-size: 1.9rem;
-            font-weight: 700;
-        }
-
-        .kpi-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 20px;
-            margin-top: 6px;
-        }
-
-        .kpi-badge.up   { background: rgba(34,197,94,0.15);  color: #22c55e; }
-        .kpi-badge.down { background: rgba(239,68,68,0.15);  color: #ef4444; }
-        .kpi-badge.flat { background: rgba(148,163,184,0.15); color: #94a3b8; }
-
-        /* Comparison period tabs */
-        .period-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .period-tab {
-            padding: 8px 18px;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            background: transparent;
-            color: var(--text-muted);
-            font-family: inherit;
-            font-size: 0.88rem;
-            cursor: pointer;
-            transition: all 0.25s;
-        }
-
-        .period-tab.active,
-        .period-tab:hover {
-            background: rgba(59,130,246,0.15);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Charts grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .chart-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 22px;
-        }
-
-        .chart-card h3 {
-            font-size: 1rem;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-main);
-        }
-
-        .chart-card canvas { max-height: 260px; }
-
-        /* Comparison mini-cards row */
-        .comparison-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .cmp-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 18px;
-        }
-
-        .cmp-card .cmp-title {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-
-        .cmp-metric {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.9rem;
-        }
-
-        .cmp-metric:last-child { border-bottom: none; }
-
-        .cmp-metric .cmp-name  { color: var(--text-muted); }
-        .cmp-metric .cmp-val   { font-weight: 600; }
-
-    </style>
+    <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}">
+    {% include 'dashboard/includes/theme_head.html' %}
 </head>
-<body>
+<body data-page="store_dashboard" data-layout="app">
     <!-- Mobile Header -->
     <div class="mobile-header">
-        <h2><i class="fas fa-robot"></i> Perfume AI</h2>
-        <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <a class="wv-brand" href="/dashboard/" aria-label="WebVitas AI — لوحة التحكم"><img src="{% static 'dashboard/webvitas-mark.svg' %}" alt="" width="36" height="26"><span>webvitas<small>AI</small></span></a>
+        <button type="button" aria-label="فتح قائمة التنقل" aria-controls="workspace-sidebar" aria-expanded="false" class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     </div>
     
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <aside class="sidebar" id="workspace-sidebar" aria-label="قائمة لوحة التحكم">
         <div class="sidebar-brand">
-            <h2><i class="fas fa-robot"></i> Perfume AI</h2>
+            <a class="wv-brand" href="/dashboard/" aria-label="WebVitas AI — لوحة التحكم"><img src="{% static 'dashboard/webvitas-mark.svg' %}" alt="" width="36" height="26"><span>webvitas<small>AI</small></span></a>
             <small id="sidebar-store-name"></small>
         </div>
 
-        <nav class="sidebar-nav">
-            <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+        <nav class="sidebar-nav" aria-label="أقسام المتجر">
+            <button type="button" class="nav-item active" onclick="showSection('overview')" id="nav-overview">
                 <i class="fas fa-chart-pie"></i> نظرة عامة
-            </div>
-            <div class="nav-item" onclick="showSection('analytics')" id="nav-analytics">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('analytics')" id="nav-analytics">
                 <i class="fas fa-chart-bar"></i> التحليلات
-            </div>
-            <div class="nav-item" onclick="showSection('products')" id="nav-products">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('products')" id="nav-products">
                 <i class="fas fa-box"></i> المنتجات
-            </div>
-            <div class="nav-item" onclick="showSection('orders')" id="nav-orders">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('orders')" id="nav-orders">
                 <i class="fas fa-shopping-bag"></i> الطلبات
-            </div>
-            <div class="nav-item" onclick="showSection('handoff')" id="nav-handoff">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('handoff')" id="nav-handoff">
                 <i class="fas fa-headset"></i> خدمة العملاء
                 <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
-            </div>
-            <div class="nav-item" onclick="showSection('chat_demo')" id="nav-chat_demo">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('chat_demo')" id="nav-chat_demo">
                 <i class="fas fa-comment-dots"></i> شات تجريبي
-            </div>
-            <div class="nav-item" onclick="showSection('chat_history')" id="nav-chat_history">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('chat_history')" id="nav-chat_history">
                 <i class="fas fa-history"></i> سجل المحادثات
-            </div>
-            <div class="nav-item" onclick="showSection('faq')" id="nav-faq">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('faq')" id="nav-faq">
                 <i class="fas fa-question-circle"></i> الأسئلة الثابتة
-            </div>
-            <div class="nav-item" onclick="showSection('post_rules')" id="nav-post_rules">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('post_rules')" id="nav-post_rules">
                 <i class="fas fa-filter"></i> فلترة البوستات
-            </div>
-            <div class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
                 <i class="fas fa-file-upload"></i> رفع جماعي
-            </div>
-            <div class="nav-item" onclick="showSection('settings')" id="nav-settings">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('settings')" id="nav-settings">
                 <i class="fas fa-cog"></i> الإعدادات
-            </div>
-            <div class="nav-item" onclick="showSection('meta')" id="nav-meta">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('meta')" id="nav-meta">
                 <i class="fab fa-meta"></i> ربط المنصات
-            </div>
-            <div class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
+            </button>
+            <button type="button" class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
                 <i class="fas fa-bell"></i> الإشعارات
                 <span class="nav-badge" id="notif-badge" style="display:none">0</span>
-            </div>
+            </button>
         </nav>
 
         <div class="sidebar-footer">
@@ -723,15 +75,16 @@
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
         </div>
-    </div>
+    </aside>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <main class="main-content" id="main-content" tabindex="-1">
+        <div class="workspace-topline"><span>مساحة عملك</span><span class="workspace-kicker" dir="ltr">WEBVITAS / WORKSPACE</span></div>
 
         <!-- Analytics Section -->
         <div class="section" id="section-analytics">
             <div class="page-header">
-                <h1>📊 التحليلات والإحصائيات</h1>
+                <h1> التحليلات والإحصائيات</h1>
                 <p>لوحة شاملة لمراقبة أداء متجرك</p>
             </div>
 
@@ -772,7 +125,7 @@
                     <canvas id="chart-platforms"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3><i class="fas fa-trophy" style="color:#f59e0b;"></i> أكثر 5 منتجات مبيعاً</h3>
+                    <h3><i class="fas fa-trophy" style="color:#946200;"></i> أكثر 5 منتجات مبيعاً</h3>
                     <canvas id="chart-top-products"></canvas>
                 </div>
             </div>
@@ -781,7 +134,7 @@
         <!-- Overview Section -->
         <div class="section active" id="section-overview">
             <div class="page-header">
-                <h1>👋 أهلاً، <span id="owner-name"></span></h1>
+                <h1> أهلاً، <span id="owner-name"></span></h1>
                 <p>إليك ملخص نشاط متجرك</p>
             </div>
 
@@ -823,12 +176,12 @@
         <div class="section" id="section-products">
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h1>📦 المنتجات</h1>
+                    <h1> المنتجات</h1>
                     <p>إدارة منتجات متجرك</p>
                 </div>
                 <div>
-                    <input type="text" id="product-search" placeholder="🔍 بحث..."
-                           style="padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:10px;color:white;font-family:inherit;outline:none;margin-left:10px;"
+                    <input type="text" id="product-search" placeholder=" بحث..."
+                           style="padding:10px 14px;background:#f5f5f5;border:1px solid var(--glass-border);border-radius:10px;color:var(--ink);font-family:inherit;outline:none;margin-left:10px;"
                            onkeyup="debounceSearch()">
                 </div>
             </div>
@@ -861,7 +214,7 @@
         <!-- Settings Section -->
         <div class="section" id="section-settings">
             <div class="page-header">
-                <h1>⚙️ إعدادات المتجر</h1>
+                <h1> إعدادات المتجر</h1>
                 <p>تخصيص متجرك والبوت</p>
             </div>
 
@@ -896,7 +249,7 @@
                 </p>
                 <div class="form-group">
                     <label>تعليمات الدفع والعربون</label>
-                    <textarea id="setting-payment-instructions" rows="8" placeholder="📌 لتأكيد وشحن الأوردر برجاء تحويل عربون...&#10;&#10;💳 طرق التحويل:&#10;إنستاباي: ..."></textarea>
+                    <textarea id="setting-payment-instructions" rows="8" placeholder=" لتأكيد وشحن الأوردر برجاء تحويل عربون...&#10;&#10; طرق التحويل:&#10;إنستاباي: ..."></textarea>
                 </div>
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
@@ -909,7 +262,7 @@
                     الحقائق اللي البوت يقولها للعميل: نسب الزيت، الأحجام المتاحة، هل فيه فرع على أرض
                     الواقع. لو سيبتها فاضية، البوت مش هيدّعي أي حاجة من دي — وده الأأمن لو مش متأكد.
                     <br>
-                    ⚠️ مهم: لازم اللي تكتبه هنا يطابق أحجام المنتجات الفعلية عندك. الأسئلة العامة
+                     مهم: لازم اللي تكتبه هنا يطابق أحجام المنتجات الفعلية عندك. الأسئلة العامة
                     (زي "الأحجام المتاحة إيه؟") البوت يجاوبها من هنا، أما السؤال عن عطر بالاسم
                     فيجاوبه من بيانات المنتج — فلو الاتنين مختلفين، البوت هيناقض نفسه.
                 </p>
@@ -931,43 +284,43 @@
         <!-- Orders Section -->
         <div class="section" id="section-orders">
             <div class="page-header">
-                <h1>🛍️ الطلبات</h1>
+                <h1> الطلبات</h1>
                 <p>إدارة طلبات متجرك</p>
             </div>
             <div class="settings-card" style="min-height: 400px; padding: 0;">
-                <iframe id="iframe-orders" src="" style="width:100%; height:800px; border:none; border-radius: 16px;"></iframe>
+                <iframe id="iframe-orders" title="الطلبات"></iframe>
             </div>
         </div>
 
         <!-- Handoff Section -->
-        <div class="section" id="section-handoff" style="height: 100vh;">
-            <iframe id="iframe-handoff" src="" style="width:100%; height:100%; border:none;"></iframe>
+        <div class="section" id="section-handoff">
+            <iframe id="iframe-handoff" title="خدمة العملاء"></iframe>
         </div>
 
         <!-- Chat Demo Section -->
-        <div class="section" id="section-chat_demo" style="height: 100vh;">
-            <iframe id="iframe-chat_demo" src="" style="width:100%; height:100%; border:none;"></iframe>
+        <div class="section" id="section-chat_demo">
+            <iframe id="iframe-chat_demo" title="شات تجريبي"></iframe>
         </div>
 
         <!-- Chat History Section -->
-        <div class="section" id="section-chat_history" style="height: 100vh;">
-            <iframe id="iframe-chat_history" src="" style="width:100%; height:100%; border:none;"></iframe>
+        <div class="section" id="section-chat_history">
+            <iframe id="iframe-chat_history" title="سجل المحادثات"></iframe>
         </div>
 
         <!-- Bulk Import Section -->
-        <div class="section" id="section-bulk_import" style="height: 100vh;">
-            <iframe id="iframe-bulk_import" src="" style="width:100%; height:100%; border:none;"></iframe>
+        <div class="section" id="section-bulk_import">
+            <iframe id="iframe-bulk_import" title="رفع جماعي"></iframe>
         </div>
 
         <!-- Meta Integration Section -->
         <div class="section" id="section-meta">
             <div class="page-header">
-                <h1>🔗 ربط المنصات</h1>
+                <h1> ربط المنصات</h1>
                 <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
             </div>
 
             <div class="settings-card">
-                <h3><i class="fab fa-whatsapp" style="color:#25d366;"></i> واتساب</h3>
+                <h3><i class="fab fa-whatsapp" style="color:#0a0a0a;"></i> واتساب</h3>
                 <div class="form-group">
                     <label>WhatsApp Phone Number ID</label>
                     <input type="text" id="meta-wa-phone-id" placeholder="مثال: 1234567890">
@@ -979,7 +332,7 @@
             </div>
 
             <div class="settings-card">
-                <h3><i class="fab fa-facebook-messenger" style="color:#0084ff;"></i> ماسنجر</h3>
+                <h3><i class="fab fa-facebook-messenger" style="color:#0a0a0a;"></i> ماسنجر</h3>
                 <div class="form-group">
                     <label>Facebook Page ID</label>
                     <input type="text" id="meta-fb-page-id" placeholder="مثال: 1234567890">
@@ -987,7 +340,7 @@
             </div>
 
             <div class="settings-card">
-                <h3><i class="fab fa-instagram" style="color:#e1306c;"></i> انستجرام</h3>
+                <h3><i class="fab fa-instagram" style="color:#0a0a0a;"></i> انستجرام</h3>
                 <div class="form-group">
                     <label>Instagram Account ID</label>
                     <input type="text" id="meta-ig-id" placeholder="مثال: 1234567890">
@@ -995,17 +348,17 @@
             </div>
 
             <div class="settings-card">
-                <h3><i class="fas fa-shield-alt" style="color:#f59e0b;"></i> بيانات Meta API</h3>
+                <h3><i class="fas fa-shield-alt" style="color:#946200;"></i> بيانات Meta API</h3>
                 <div class="form-group">
                     <label>Verify Token (اختر كلمة سر للـ Webhook)</label>
                     <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
                 </div>
                 <div class="form-group">
-                    <label><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Access Token</label>
+                    <label><i class="fab fa-whatsapp" style="color:#0a0a0a;"></i> WhatsApp Access Token</label>
                     <input type="password" id="meta-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label><i class="fab fa-facebook-messenger" style="color:#0084ff;"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
+                    <label><i class="fab fa-facebook-messenger" style="color:#0a0a0a;"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
                     <input type="password" id="messenger-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
@@ -1015,16 +368,16 @@
             </div>
 
             <div class="settings-card">
-                <h3><i class="fas fa-comment-dots" style="color:#10b981;"></i> ردود التعليقات التلقائية</h3>
+                <h3><i class="fas fa-comment-dots" style="color:#187047;"></i> ردود التعليقات التلقائية</h3>
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
                     كتب رسائل الرد العلني على التعليقات <strong>كل سطر رسالة</strong> — البوت يختار واحدة بشكل عشوائي لتجنب السبام بحد أقصى 5 رسائل.
                 </p>
                 <div class="form-group">
-                    <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,#1e293b); color:var(--text-primary,#f1f5f9); border:1px solid var(--border-color,#334155); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder="✅ تم الرد في الخاص، راجع رسائلك!
-📩 جاوبناك في الخاص، اتفضل شوف!
-تم الرد في الإنبوكس ✅
-Check your DM, we replied! 💬
-راجع رسائلك الخاصة، بعتنالك الرد 📬"></textarea>
+                    <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,#ffffff); color:var(--text-primary,#0a0a0a); border:1px solid var(--border-color,#e5e5e5); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder=" تم الرد في الخاص، راجع رسائلك!
+ جاوبناك في الخاص، اتفضل شوف!
+تم الرد في الإنبوكس
+Check your DM, we replied!
+راجع رسائلك الخاصة، بعتنالك الرد "></textarea>
                 </div>
             </div>
 
@@ -1036,7 +389,7 @@ Check your DM, we replied! 💬
         <!-- Notifications Section -->
         <div class="section" id="section-notifications">
             <div class="page-header">
-                <h1>🔔 الإشعارات</h1>
+                <h1> الإشعارات</h1>
                 <p>آخر التحديثات على متجرك</p>
             </div>
             <div id="notifications-list">
@@ -1050,7 +403,7 @@ Check your DM, we replied! 💬
         <div class="section" id="section-faq">
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h1>❓ الأسئلة الثابتة</h1>
+                    <h1> الأسئلة الثابتة</h1>
                     <p>أسئلة وأجوبة ثابتة يرد عليها البوت فوراً بدون AI</p>
                 </div>
                 <button class="btn btn-primary" onclick="openFaqModal()" style="padding:10px 20px; background:var(--primary); border:none; border-radius:10px; color:white; cursor:pointer; font-family:inherit; font-size:0.9rem;">
@@ -1059,7 +412,7 @@ Check your DM, we replied! 💬
             </div>
 
             <div class="settings-card" style="padding:15px;">
-                <div style="margin-bottom:15px; padding:12px 16px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); border-radius:10px; font-size:0.85rem; color:#93c5fd;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:#f3f3f3; border:1px solid #f3f3f3; border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> لما العميل يبعت رسالة فيها أي كلمة من الكلمات المفتاحية، البوت هيرد الرد الثابت فوراً بدون ما يستخدم الـ AI. لو ملقاش تطابق هيشتغل بالـ AI عادي.
                 </div>
@@ -1087,7 +440,7 @@ Check your DM, we replied! 💬
         <div class="section" id="section-post_rules">
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h1>🚫 فلترة البوستات</h1>
+                    <h1> فلترة البوستات</h1>
                     <p>حدد البوستات اللي البوت مش هيرد على تعليقاتها</p>
                 </div>
                 <button class="btn btn-primary" onclick="openPostRuleModal()" style="padding:10px 20px; background:var(--primary); border:none; border-radius:10px; color:white; cursor:pointer; font-family:inherit; font-size:0.9rem;">
@@ -1096,7 +449,7 @@ Check your DM, we replied! 💬
             </div>
 
             <div class="settings-card" style="padding:15px;">
-                <div style="margin-bottom:15px; padding:12px 16px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); border-radius:10px; font-size:0.85rem; color:#93c5fd;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:#f3f3f3; border:1px solid #f3f3f3; border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
                 </div>
@@ -1119,7 +472,7 @@ Check your DM, we replied! 💬
             </div>
         </div>
 
-    </div>
+    </main>
 
     <!-- FAQ Modal -->
     <div id="faq-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
@@ -1129,24 +482,24 @@ Check your DM, we replied! 💬
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>السؤال (للعرض فقط)</label>
-                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الكلمات المفتاحية (مفصولة بفاصلة)</label>
-                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
-                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">💡 كل ما تضيف كلمات أكتر، كل ما البوت يمسك صيغ أكتر من أسئلة العملاء</small>
+                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> كل ما تضيف كلمات أكتر، كل ما البوت يمسك صيغ أكتر من أسئلة العملاء</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الرد الثابت</label>
-                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit; resize:vertical;"></textarea>
+                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
             </div>
 
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الأولوية (رقم أعلى = أولوية أعلى)</label>
-                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; display:flex; align-items:flex-end;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding-bottom:10px;">
@@ -1157,7 +510,7 @@ Check your DM, we replied! 💬
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
                 <button onclick="saveFaq()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
             </div>
         </div>
@@ -1171,7 +524,7 @@ Check your DM, we replied! 💬
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>المنصة</label>
-                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
                 </select>
@@ -1179,23 +532,23 @@ Check your DM, we replied! 💬
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>رابط البوست</label>
-                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;" dir="ltr">
-                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">💡 افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
+                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;" dir="ltr">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>وصف (اختياري)</label>
-                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-family:inherit;">
+                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
                 <button onclick="savePostRule()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
             </div>
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" role="status" aria-live="polite" id="toast"></div>
 
     <script>
         const API_BASE = '/dashboard/api';
@@ -1205,18 +558,9 @@ Check your DM, we replied! 💬
         window.STORE_API_KEY = localStorage.getItem('store_api_key') || ''; // pre-populate from cache
         let searchTimeout;
 
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.querySelector('.sidebar-overlay').classList.toggle('open');
-        }
+        function toggleSidebar() { window.WebVitasUI.toggleSidebar(); }
 
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    toggleSidebar();
-                }
-            });
-        });
+
 
         // Auth guard
         if (!accessToken) {
@@ -1268,6 +612,7 @@ Check your DM, we replied! 💬
                 }
             }
 
+            if (!res.ok) window.WebVitasUI?.showError();
             return res;
         }
 
@@ -1284,21 +629,8 @@ Check your DM, we replied! 💬
             document.getElementById(`section-${name}`).classList.add('active');
             document.getElementById(`nav-${name}`).classList.add('active');
             
-            // Adjust padding for iframes so they take full height
-            const mainContent = document.querySelector('.main-content');
-            if (['orders', 'handoff', 'chat_demo', 'chat_history', 'bulk_import'].includes(name)) {
-                if (window.innerWidth > 768) {
-                    mainContent.style.padding = '0';
-                } else {
-                    mainContent.style.padding = '80px 0 0 0'; // keep top padding for header
-                }
-            } else {
-                if (window.innerWidth > 768) {
-                    mainContent.style.padding = '30px';
-                } else {
-                    mainContent.style.padding = '80px 15px 15px 15px';
-                }
-            }
+            document.body.dataset.section = name;
+            window.WebVitasUI?.sectionChanged(name);
 
             if (name === 'overview')   loadOverview();
             if (name === 'analytics')  loadAnalytics();
@@ -1392,6 +724,7 @@ Check your DM, we replied! 💬
                 localStorage.setItem('perfume_api_key', profile.store.api_key);
                 window.STORE_API_KEY = profile.store.api_key;
             } catch (e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading overview:', e);
             }
         }
@@ -1420,10 +753,10 @@ Check your DM, we replied! 💬
                     tr.innerHTML = `
                         <td><strong>${p.name}</strong></td>
                         <td>${p.brand}</td>
-                        <td>${p.gender === 'male' ? '👨 رجالي' : p.gender === 'female' ? '👩 نسائي' : '🧑 يونيسكس'}</td>
+                        <td>${p.gender === 'male' ? ' رجالي' : p.gender === 'female' ? ' نسائي' : ' يونيسكس'}</td>
                         <td><span class="${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'نشط' : 'غير نشط'}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background: #f3f3f3; border: 1px solid #f3f3f3; color: #0a0a0a;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
@@ -1433,6 +766,7 @@ Check your DM, we replied! 💬
                 const loadMoreBtn = document.getElementById('load-more-btn');
                 loadMoreBtn.style.display = page < data.total_pages ? 'inline-block' : 'none';
             } catch (e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading products:', e);
             }
         }
@@ -1469,6 +803,7 @@ Check your DM, we replied! 💬
                 localStorage.setItem('perfume_api_key', profile.store.api_key);
                 window.STORE_API_KEY = profile.store.api_key;
             } catch (e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading settings:', e);
             }
         }
@@ -1484,7 +819,7 @@ Check your DM, we replied! 💬
                         bottle_image_url: document.getElementById('setting-bottle-image-url').value,
                     })
                 });
-                if (res && res.ok) showToast('✅ تم حفظ الإعدادات');
+                if (res && res.ok) showToast(' تم حفظ الإعدادات');
             } catch (e) {
                 console.error('Error saving settings:', e);
             }
@@ -1493,7 +828,7 @@ Check your DM, we replied! 💬
         async function copyApiKey() {
             const key = document.getElementById('api-key-display').textContent;
             await navigator.clipboard.writeText(key);
-            showToast('📋 تم نسخ المفتاح');
+            showToast(' تم نسخ المفتاح');
         }
 
         async function regenerateApiKey() {
@@ -1503,7 +838,7 @@ Check your DM, we replied! 💬
                 if (!res) return;
                 const data = await res.json();
                 document.getElementById('api-key-display').textContent = data.api_key;
-                showToast('🔑 تم إعادة توليد المفتاح');
+                showToast(' تم إعادة توليد المفتاح');
             } catch (e) {
                 console.error('Error regenerating key:', e);
             }
@@ -1526,6 +861,7 @@ Check your DM, we replied! 💬
                 document.getElementById('meta-app-secret').value = s.meta_app_secret || '';
                 document.getElementById('comment-reply-messages').value = s.comment_reply_messages || '';
             } catch (e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading meta settings:', e);
             }
         }
@@ -1546,7 +882,7 @@ Check your DM, we replied! 💬
                         comment_reply_messages: document.getElementById('comment-reply-messages').value,
                     })
                 });
-                if (res && res.ok) showToast('✅ تم حفظ إعدادات المنصات');
+                if (res && res.ok) showToast(' تم حفظ إعدادات المنصات');
             } catch (e) {
                 console.error('Error saving meta settings:', e);
             }
@@ -1617,26 +953,26 @@ Check your DM, we replied! 💬
             if (!container) return;
 
             if (!data.notifications || data.notifications.length === 0) {
-                container.innerHTML = '<div class="settings-card" style="text-align:center;color:var(--text-muted);">لا توجد إشعارات جديدة 🎉</div>';
+                container.innerHTML = '<div class="settings-card" style="text-align:center;color:var(--text-muted);">لا توجد إشعارات جديدة </div>';
                 return;
             }
 
             const typeIcons  = { handoff: 'fas fa-headset', new_order: 'fas fa-shopping-cart', low_stock: 'fas fa-exclamation-triangle' };
-            const typeColors = { handoff: '#ef4444', new_order: '#22c55e', low_stock: '#f59e0b' };
+            const typeColors = { handoff: '#b42318', new_order: '#187047', low_stock: '#946200' };
 
             container.innerHTML = '';
             data.notifications.forEach(n => {
                 const card = document.createElement('div');
                 card.className = 'settings-card';
-                card.style.borderRight = `4px solid ${typeColors[n.type] || '#3b82f6'}`;
-                card.style.opacity = n.is_read ? '0.6' : '1';
+                card.style.borderRight = `4px solid ${typeColors[n.type] || '#0a0a0a'}`;
+                card.classList.toggle('notification-read', n.is_read);
                 card.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <div>
                             <strong>
-                                <i class="${typeIcons[n.type] || 'fas fa-bell'}" style="color:${typeColors[n.type] || '#3b82f6'}"></i>
+                                <i class="${typeIcons[n.type] || 'fas fa-bell'}" style="color:${typeColors[n.type] || '#0a0a0a'}"></i>
                                 ${n.title}
-                                ${!n.is_read ? '<span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px;"></span>' : ''}
+                                ${!n.is_read ? '<span style="display:inline-block;width:8px;height:8px;background:#b42318;border-radius:50%;margin-right:6px;"></span>' : ''}
                             </strong>
                             <p style="color:var(--text-muted);margin-top:5px;">${n.message}</p>
                         </div>
@@ -1666,6 +1002,7 @@ Check your DM, we replied! 💬
                     _updateNotifBadge(0);
                 }
             } catch (e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading notifications:', e);
             }
         }
@@ -1704,8 +1041,11 @@ Check your DM, we replied! 💬
         let _activePeriodIdx = 0;
 
         // ── Chart.js defaults ───────────────────────────────────────────────
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.font.family = "'Tajawal', sans-serif";
+        Chart.defaults.color = '#606060';
+        Chart.defaults.borderColor = '#e5e5e5';
+        Chart.defaults.animation = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        Chart.defaults.font.size = 12;
+        Chart.defaults.font.family = "'Cairo', sans-serif";
 
         // ── Helper: destroy & recreate chart ───────────────────────────────
         function _makeChart(id, config) {
@@ -1798,7 +1138,7 @@ Check your DM, we replied! 💬
 
             container.innerHTML = metrics.map(m => `
                 <div class="cmp-card">
-                    <div class="cmp-title">📌 ${m.label}</div>
+                    <div class="cmp-title"> ${m.label}</div>
                     <div class="cmp-metric">
                         <span class="cmp-name">الفترة الحالية</span>
                         <span class="cmp-val">${m.fmt(p.current[m.key])}</span>
@@ -1828,13 +1168,13 @@ Check your DM, we replied! 💬
                         {
                             label: labelCurrent,
                             data: [p.current.revenue, p.current.orders, p.current.conversations],
-                            backgroundColor: 'rgba(59,130,246,0.7)',
+                            backgroundColor: '#0a0a0a',
                             borderRadius: 8,
                         },
                         {
                             label: labelPrevious,
                             data: [p.previous.revenue, p.previous.orders, p.previous.conversations],
-                            backgroundColor: 'rgba(139,92,246,0.5)',
+                            backgroundColor: '#888888',
                             borderRadius: 8,
                         },
                     ],
@@ -1843,8 +1183,8 @@ Check your DM, we replied! 💬
                     responsive: true,
                     plugins: { legend: { position: 'top' } },
                     scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+                        x: { grid: { color: '#f5f5f5' } },
+                        y: { grid: { color: '#f5f5f5' }, beginAtZero: true },
                     },
                 },
             });
@@ -1859,22 +1199,22 @@ Check your DM, we replied! 💬
                 cancelled: 'ملغي',
             };
             const colorMap = {
-                pending:   'rgba(245,158,11,0.8)',
-                confirmed: 'rgba(59,130,246,0.8)',
-                delivered: 'rgba(34,197,94,0.8)',
-                cancelled: 'rgba(239,68,68,0.8)',
+                pending:   '#946200',
+                confirmed: '#0a0a0a',
+                delivered: '#187047',
+                cancelled: '#b42318',
             };
 
             const keys    = Object.keys(statusData);
             const labels  = keys.map(k => labelMap[k] || k);
             const values  = keys.map(k => statusData[k]);
-            const colors  = keys.map(k => colorMap[k] || 'rgba(148,163,184,0.7)');
+            const colors  = keys.map(k => colorMap[k] || '#888888');
 
             _makeChart('chart-order-status', {
                 type: 'doughnut',
                 data: {
                     labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: 'rgba(15,23,42,0.8)' }],
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }],
                 },
                 options: {
                     responsive: true,
@@ -1889,23 +1229,18 @@ Check your DM, we replied! 💬
         // ── Donut Chart: platform breakdown ────────────────────────────────
         function _renderPlatformChart(platformData) {
             const labelMap = { whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'انستجرام', web: 'ويب' };
-            const colorMap = {
-                whatsapp:  'rgba(37,211,102,0.8)',
-                messenger: 'rgba(0,132,255,0.8)',
-                instagram: 'rgba(225,48,108,0.8)',
-                web:       'rgba(59,130,246,0.8)',
-            };
+            const colorMap = { whatsapp: '#151515', messenger: '#606060', instagram: '#999999', web: '#cccccc' };
 
             const keys   = Object.keys(platformData);
             const labels = keys.map(k => labelMap[k] || k);
             const values = keys.map(k => platformData[k]);
-            const colors = keys.map(k => colorMap[k] || 'rgba(148,163,184,0.7)');
+            const colors = keys.map(k => colorMap[k] || '#888888');
 
             _makeChart('chart-platforms', {
                 type: 'doughnut',
                 data: {
                     labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: 'rgba(15,23,42,0.8)' }],
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }],
                 },
                 options: {
                     responsive: true,
@@ -1931,13 +1266,7 @@ Check your DM, we replied! 💬
                     datasets: [{
                         label: 'الكميات المباعة',
                         data: values,
-                        backgroundColor: [
-                            'rgba(245,158,11,0.8)',
-                            'rgba(59,130,246,0.8)',
-                            'rgba(139,92,246,0.8)',
-                            'rgba(34,197,94,0.8)',
-                            'rgba(239,68,68,0.8)',
-                        ],
+                        backgroundColor: '#303030',
                         borderRadius: 8,
                     }],
                 },
@@ -1946,8 +1275,8 @@ Check your DM, we replied! 💬
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { color: '#f5f5f5' }, beginAtZero: true },
+                        y: { grid: { color: '#f5f5f5' } },
                     },
                 },
             });
@@ -1974,8 +1303,8 @@ Check your DM, we replied! 💬
                 p.variants.forEach(v => {
                     vContainer.innerHTML += `
                         <div class="variant-edit-row" data-id="${v.id}" style="display:flex; gap:8px; margin-bottom:8px;">
-                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); color:white; border-radius:6px; text-align:center;">
-                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; border-radius:6px;">
+                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:#f5f5f5; border:1px solid var(--glass-border); color:var(--ink); border-radius:6px; text-align:center;">
+                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:#f5f5f5; border:1px solid var(--glass-border); color:var(--ink); border-radius:6px;">
                         </div>
                     `;
                 });
@@ -2080,11 +1409,11 @@ Check your DM, we replied! 💬
 
                 tbody.innerHTML = data.faqs.map(faq => {
                     const statusBadge = faq.is_active
-                        ? '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مفعّل</span>'
-                        : '<span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:3px 10px;border-radius:8px;font-size:0.8rem;">معطّل</span>';
+                        ? '<span style="background:#edf7f0;color:#187047;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مفعّل</span>'
+                        : '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">معطّل</span>';
 
                     const keywords = faq.keywords.split(',').map(k => k.trim()).filter(k => k).map(k =>
-                        `<span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
+                        `<span style="background:#f3f3f3;color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
                     ).join('');
 
                     const shortAnswer = faq.answer.length > 60 ? faq.answer.substring(0, 60) + '...' : faq.answer;
@@ -2096,12 +1425,13 @@ Check your DM, we replied! 💬
                         <td>${faq.priority}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' style="background:rgba(59,130,246,0.15);color:#3b82f6;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteFaq(${faq.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف"><i class="fas fa-trash"></i></button>
+                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' style="background:#f3f3f3;color:#0a0a0a;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteFaq(${faq.id})" style="background:#fef3f2;color:#b42318;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`;
                 }).join('');
             } catch(e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading FAQs:', e);
             }
         }
@@ -2210,12 +1540,12 @@ Check your DM, we replied! 💬
 
                 tbody.innerHTML = data.map(rule => {
                     const platformBadge = rule.platform === 'facebook'
-                        ? '<span style="background:rgba(59,130,246,0.15);color:#3b82f6;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
-                        : '<span style="background:rgba(228,64,95,0.15);color:#e4405f;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
+                        ? '<span style="background:#f3f3f3;color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
+                        : '<span style="background:#f3f3f3;color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
 
                     const statusBadge = rule.is_active
-                        ? '<span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
-                        : '<span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
+                        ? '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
+                        : '<span style="background:#edf7f0;color:#187047;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
 
                     return `<tr>
                         <td>${platformBadge}</td>
@@ -2223,16 +1553,17 @@ Check your DM, we replied! 💬
                         <td style="color:var(--text-muted);">${rule.label || '—'}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
+                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" style="background:#fff8e7;color:#946200;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
                                 <i class="fas fa-${rule.is_active ? 'toggle-on' : 'toggle-off'}"></i>
                             </button>
-                            <button onclick="deletePostRule(${rule.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف">
+                            <button onclick="deletePostRule(${rule.id})" style="background:#fef3f2;color:#b42318;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>`;
                 }).join('');
             } catch(e) {
+                window.WebVitasUI?.showError();
                 console.error('Error loading post rules:', e);
             }
         }
@@ -2324,50 +1655,50 @@ Check your DM, we replied! 💬
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الاسم</label>
-                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الوصف</label>
-                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;"></textarea>
+                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);"></textarea>
             </div>
 
             <div style="display:flex; gap:10px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>افتتاحية العطر</label>
-                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قلب العطر</label>
-                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قاعدة العطر</label>
-                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الموسم</label>
-                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>المناسبة</label>
-                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الثبات</label>
-                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الفوحان</label>
-                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>التركيز</label>
-                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white;">
+                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
                 </div>
             </div>
 
@@ -2377,7 +1708,7 @@ Check your DM, we replied! 💬
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white; cursor:pointer;">إلغاء</button>
+                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer;">إلغاء</button>
                 <button onclick="saveProductEdit()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer;">حفظ التغييرات</button>
             </div>
         </div>
