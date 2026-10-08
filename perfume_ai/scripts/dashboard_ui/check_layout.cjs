@@ -64,6 +64,12 @@ if (require.main === module) (async()=>{
    for(const section of sections){
     await page.evaluate(s=>showSection(s),section);
     await ready(page);
+    if(section==='analytics'){
+     await page.waitForFunction(()=>document.querySelectorAll('.chart-frame canvas').length===4 && [...document.querySelectorAll('.chart-frame canvas')].every(c=>c.getBoundingClientRect().height>=230));
+     for(const canvas of await page.locator('.chart-frame canvas').all()){
+      const bounds=await canvas.boundingBox();assert.ok(bounds.width>=180 && bounds.height>=230,'Chart collapsed after showing analytics');
+     }
+    }
     const frameEl=page.locator('#iframe-'+section);
     if(await frameEl.count()){
      const frame=await (await frameEl.elementHandle()).contentFrame();

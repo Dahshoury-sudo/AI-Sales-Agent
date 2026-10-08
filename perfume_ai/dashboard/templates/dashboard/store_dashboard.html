@@ -23,51 +23,59 @@
     <aside class="sidebar" id="workspace-sidebar" aria-label="قائمة لوحة التحكم">
         <div class="sidebar-brand">
             <a class="wv-brand" href="/dashboard/" aria-label="WebVitas AI — لوحة التحكم"><img src="{% static 'dashboard/webvitas-mark.svg' %}" alt="" width="36" height="26"><span>webvitas<small>AI</small></span></a>
-            <small id="sidebar-store-name"></small>
+            <div class="sidebar-workspace"><span class="workspace-symbol" aria-hidden="true">W</span><div><small>مساحة عمل المتجر</small><strong id="sidebar-store-name">متجرك</strong></div></div>
         </div>
 
         <nav class="sidebar-nav" aria-label="أقسام المتجر">
-            <button type="button" class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+            <div class="nav-group"><p class="nav-group-label">مساحة العمل</p>
+                <button type="button" class="nav-item active" onclick="showSection('overview')" id="nav-overview">
                 <i class="fas fa-chart-pie"></i> نظرة عامة
             </button>
-            <button type="button" class="nav-item" onclick="showSection('analytics')" id="nav-analytics">
+                <button type="button" class="nav-item" onclick="showSection('analytics')" id="nav-analytics">
                 <i class="fas fa-chart-bar"></i> التحليلات
             </button>
-            <button type="button" class="nav-item" onclick="showSection('products')" id="nav-products">
-                <i class="fas fa-box"></i> المنتجات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('orders')" id="nav-orders">
-                <i class="fas fa-shopping-bag"></i> الطلبات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('handoff')" id="nav-handoff">
-                <i class="fas fa-headset"></i> خدمة العملاء
-                <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('chat_demo')" id="nav-chat_demo">
-                <i class="fas fa-comment-dots"></i> شات تجريبي
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('chat_history')" id="nav-chat_history">
-                <i class="fas fa-history"></i> سجل المحادثات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('faq')" id="nav-faq">
-                <i class="fas fa-question-circle"></i> الأسئلة الثابتة
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('post_rules')" id="nav-post_rules">
-                <i class="fas fa-filter"></i> فلترة البوستات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
-                <i class="fas fa-file-upload"></i> رفع جماعي
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('settings')" id="nav-settings">
-                <i class="fas fa-cog"></i> الإعدادات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('meta')" id="nav-meta">
-                <i class="fab fa-meta"></i> ربط المنصات
-            </button>
-            <button type="button" class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
+                <button type="button" class="nav-item" onclick="showSection('notifications')" id="nav-notifications">
                 <i class="fas fa-bell"></i> الإشعارات
                 <span class="nav-badge" id="notif-badge" style="display:none">0</span>
             </button>
+            </div>
+            <div class="nav-group"><p class="nav-group-label">المتجر</p>
+                <button type="button" class="nav-item" onclick="showSection('products')" id="nav-products">
+                <i class="fas fa-box"></i> المنتجات
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('orders')" id="nav-orders">
+                <i class="fas fa-shopping-bag"></i> الطلبات
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('bulk_import')" id="nav-bulk_import">
+                <i class="fas fa-file-upload"></i> رفع جماعي
+            </button>
+            </div>
+            <div class="nav-group"><p class="nav-group-label">المساعد الذكي</p>
+                <button type="button" class="nav-item" onclick="showSection('handoff')" id="nav-handoff">
+                <i class="fas fa-headset"></i> خدمة العملاء
+                <span class="nav-badge" id="handoff-badge" style="display:none">0</span>
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('chat_history')" id="nav-chat_history">
+                <i class="fas fa-history"></i> سجل المحادثات
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('chat_demo')" id="nav-chat_demo">
+                <i class="fas fa-comment-dots"></i> شات تجريبي
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('faq')" id="nav-faq">
+                <i class="fas fa-question-circle"></i> الأسئلة الثابتة
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('post_rules')" id="nav-post_rules">
+                <i class="fas fa-filter"></i> فلترة البوستات
+            </button>
+            </div>
+            <div class="nav-group"><p class="nav-group-label">الإدارة</p>
+                <button type="button" class="nav-item" onclick="showSection('settings')" id="nav-settings">
+                <i class="fas fa-cog"></i> الإعدادات
+            </button>
+                <button type="button" class="nav-item" onclick="showSection('meta')" id="nav-meta">
+                <i class="fab fa-meta"></i> ربط المنصات
+            </button>
+            </div>
         </nav>
 
         <div class="sidebar-footer">
@@ -79,7 +87,10 @@
 
     <!-- Main Content -->
     <main class="main-content" id="main-content" tabindex="-1">
-        <div class="workspace-topline"><span>مساحة عملك</span><span class="workspace-kicker" dir="ltr">WEBVITAS / WORKSPACE</span></div>
+        <header class="workspace-topline">
+            <div class="workspace-breadcrumb"><span>مساحة العمل</span><span aria-hidden="true">/</span><strong id="workspace-section-title">نظرة عامة</strong></div>
+            <div class="workspace-tools"><span id="workspace-store-name">متجرك</span><button type="button" class="notification-shortcut" onclick="showSection('notifications')" aria-label="عرض الإشعارات"><i class="far fa-bell" aria-hidden="true"></i></button></div>
+        </header>
 
         <!-- Analytics Section -->
         <div class="section" id="section-analytics">
@@ -110,11 +121,11 @@
             <div class="charts-grid">
                 <div class="chart-card">
                     <h3><i class="fas fa-chart-bar" style="color:var(--primary);"></i> مقارنة الإيرادات والطلبات</h3>
-                    <canvas id="chart-comparison"></canvas>
+                    <div class="chart-frame"><canvas id="chart-comparison"></canvas></div>
                 </div>
                 <div class="chart-card">
                     <h3><i class="fas fa-circle-dot" style="color:var(--warning);"></i> توزيع حالات الطلبات</h3>
-                    <canvas id="chart-order-status"></canvas>
+                    <div class="chart-frame"><canvas id="chart-order-status"></canvas></div>
                 </div>
             </div>
 
@@ -122,53 +133,43 @@
             <div class="charts-grid">
                 <div class="chart-card">
                     <h3><i class="fas fa-signal" style="color:var(--success);"></i> توزيع المنصات</h3>
-                    <canvas id="chart-platforms"></canvas>
+                    <div class="chart-frame"><canvas id="chart-platforms"></canvas></div>
                 </div>
                 <div class="chart-card">
                     <h3><i class="fas fa-trophy" style="color:#946200;"></i> أكثر 5 منتجات مبيعاً</h3>
-                    <canvas id="chart-top-products"></canvas>
+                    <div class="chart-frame"><canvas id="chart-top-products"></canvas></div>
                 </div>
             </div>
         </div>
 
         <!-- Overview Section -->
         <div class="section active" id="section-overview">
-            <div class="page-header">
-                <h1> أهلاً، <span id="owner-name"></span></h1>
-                <p>إليك ملخص نشاط متجرك</p>
+            <div class="page-header overview-heading">
+                <div><p class="page-eyebrow">نظرة عامة</p><h1>أهلاً، <span id="owner-name"></span></h1><p>كل ما تحتاجه لمتابعة متجرك، في مكان واحد.</p></div>
+                <button type="button" class="btn btn-secondary" onclick="showSection('analytics')">عرض التحليلات <i class="fas fa-arrow-left" aria-hidden="true"></i></button>
             </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
-                    <div class="stat-value" id="stat-conversations">—</div>
-                    <div class="stat-label">محادثة</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="stat-value" id="stat-orders">—</div>
-                    <div class="stat-label">طلب</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon purple"><i class="fas fa-coins"></i></div>
-                    <div class="stat-value" id="stat-revenue">—</div>
-                    <div class="stat-label">إيرادات (ج.م)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
-                    <div class="stat-value" id="stat-pending">—</div>
-                    <div class="stat-label">طلبات معلقة</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon red"><i class="fas fa-headset"></i></div>
-                    <div class="stat-value" id="stat-handoffs">—</div>
-                    <div class="stat-label">بحاجة لتدخل بشري</div>
+            <p id="overview-message" class="overview-message" role="status">جاري تحميل ملخص المتجر…</p>
+            <div class="overview-summary" id="overview-summary" aria-busy="true">
+                <article class="revenue-card" aria-labelledby="revenue-heading">
+                    <div class="revenue-heading"><h2 id="revenue-heading">إجمالي الإيرادات</h2><i class="fas fa-arrow-trend-up" aria-hidden="true"></i></div>
+                    <div class="revenue-amount"><span id="stat-revenue">—</span><span class="revenue-currency">ج.م</span></div>
+                    <p>قيمة الطلبات المؤكدة والمسلّمة</p>
+                    <div class="revenue-footer"><span>إجمالي نشاط المتجر</span><button type="button" onclick="showSection('analytics')">التفاصيل <i class="fas fa-arrow-left" aria-hidden="true"></i></button></div>
+                </article>
+                <div class="stats-grid">
+                    <article class="stat-card"><div class="stat-heading"><span class="stat-label">إجمالي المحادثات</span><i class="far fa-comments" aria-hidden="true"></i></div><div class="stat-value" id="stat-conversations">—</div><button class="metric-link" type="button" onclick="showSection('chat_history')">سجل المحادثات <span aria-hidden="true">←</span></button></article>
+                    <article class="stat-card"><div class="stat-heading"><span class="stat-label">إجمالي الطلبات</span><i class="fas fa-bag-shopping" aria-hidden="true"></i></div><div class="stat-value" id="stat-orders">—</div><button class="metric-link" type="button" onclick="showSection('orders')">عرض الطلبات <span aria-hidden="true">←</span></button></article>
+                    <article class="stat-card"><div class="stat-heading"><span class="stat-label">طلبات قيد الانتظار</span><i class="far fa-clock" aria-hidden="true"></i></div><div class="stat-value" id="stat-pending">—</div><span class="metric-note">بانتظار مراجعتك</span></article>
+                    <article class="stat-card"><div class="stat-heading"><span class="stat-label">بحاجة لتدخل بشري</span><i class="fas fa-headset" aria-hidden="true"></i></div><div class="stat-value" id="stat-handoffs">—</div><button class="metric-link" type="button" onclick="showSection('handoff')">متابعة المحادثات <span aria-hidden="true">←</span></button></article>
                 </div>
             </div>
-
-            <div class="settings-card">
-                <h3><i class="fas fa-signal"></i> توزيع المنصات</h3>
-                <div class="platform-list" id="platform-breakdown"></div>
+            <div class="overview-detail-grid">
+                <section class="settings-card platform-panel" aria-labelledby="platform-heading"><div class="panel-heading"><div><h2 id="platform-heading">من أين تأتي محادثاتك؟</h2><p>توزيع المحادثات على القنوات</p></div><span class="panel-symbol" aria-hidden="true"><i class="fas fa-chart-bar"></i></span></div><div id="platform-breakdown" class="platform-distribution"><p class="empty-state">جاري تحميل القنوات…</p></div></section>
+                <section class="settings-card quick-actions" aria-labelledby="quick-actions-heading"><div class="panel-heading"><div><h2 id="quick-actions-heading">خطوتك التالية</h2><p>اختصارات لإدارة متجرك</p></div></div>
+                    <button type="button" class="quick-action" onclick="showSection('products')"><span class="quick-action-icon"><i class="fas fa-box" aria-hidden="true"></i></span><span><strong>إدارة المنتجات</strong><small>راجع منتجاتك وحدّث الأسعار</small></span><span aria-hidden="true">←</span></button>
+                    <button type="button" class="quick-action" onclick="showSection('bulk_import')"><span class="quick-action-icon"><i class="fas fa-arrow-up-from-bracket" aria-hidden="true"></i></span><span><strong>إضافة منتجات جماعية</strong><small>ارفع منتجاتك من ملف Excel</small></span><span aria-hidden="true">←</span></button>
+                    <button type="button" class="quick-action" onclick="showSection('analytics')"><span class="quick-action-icon"><i class="fas fa-chart-column" aria-hidden="true"></i></span><span><strong>متابعة الأداء</strong><small>الإيرادات والطلبات ومقارنة الفترات</small></span><span aria-hidden="true">←</span></button>
+                </section>
             </div>
         </div>
 
@@ -186,7 +187,7 @@
                 </div>
             </div>
 
-            <div class="settings-card">
+            <div class="settings-card table-panel">
                 <div class="table-responsive">
                     <table class="products-table">
                         <thead>
@@ -218,9 +219,7 @@
                 <p>تخصيص متجرك والبوت</p>
             </div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-key"></i> مفتاح API</h3>
-                <p style="color:var(--text-muted);margin-bottom:10px;">استخدم هذا المفتاح لربط متجرك بالبوت</p>
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-key"></i> مفتاح API</h3><p>استخدم هذا المفتاح لربط متجرك بالبوت</p></div><div class="settings-fields">
                 <div class="api-key-box">
                     <span id="api-key-display">—</span>
                     <button class="copy-btn" onclick="copyApiKey()"><i class="fas fa-copy"></i> نسخ</button>
@@ -228,25 +227,21 @@
                 <button class="btn btn-danger btn-sm" style="margin-top:15px;" onclick="regenerateApiKey()">
                     <i class="fas fa-redo"></i> إعادة توليد المفتاح
                 </button>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-robot"></i> البرومبت الخاص</h3>
-                <div class="form-group">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-robot"></i> البرومبت الخاص</h3><p>حدد أسلوب المساعد وطريقة رده على العملاء.</p></div><div class="settings-fields"><div class="form-group">
                     <label>System Prompt (تعليمات البوت)</label>
                     <textarea id="setting-system-prompt" rows="5" placeholder="اكتب تعليمات خاصة للبوت هنا..."></textarea>
                 </div>
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-credit-card"></i> تعليمات الدفع</h3>
-                <p style="color:var(--text-muted);margin-bottom:10px;">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-credit-card"></i> تعليمات الدفع</h3><p>
                     الرسالة اللي العميل بيشوفها بعد تأكيد الطلب — العربون، طرق التحويل، وسياسة الإلغاء.
                     لو سيبتها فاضية، البوت هيقول للعميل إن فريق المبيعات هيتواصل معاه بتفاصيل الدفع.
-                </p>
+                </p></div><div class="settings-fields">
                 <div class="form-group">
                     <label>تعليمات الدفع والعربون</label>
                     <textarea id="setting-payment-instructions" rows="8" placeholder=" لتأكيد وشحن الأوردر برجاء تحويل عربون...&#10;&#10; طرق التحويل:&#10;إنستاباي: ..."></textarea>
@@ -254,18 +249,16 @@
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-circle-info"></i> حقائق الستور</h3>
-                <p style="color:var(--text-muted);margin-bottom:10px;">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-circle-info"></i> حقائق الستور</h3><p>
                     الحقائق اللي البوت يقولها للعميل: نسب الزيت، الأحجام المتاحة، هل فيه فرع على أرض
                     الواقع. لو سيبتها فاضية، البوت مش هيدّعي أي حاجة من دي — وده الأأمن لو مش متأكد.
                     <br>
                      مهم: لازم اللي تكتبه هنا يطابق أحجام المنتجات الفعلية عندك. الأسئلة العامة
                     (زي "الأحجام المتاحة إيه؟") البوت يجاوبها من هنا، أما السؤال عن عطر بالاسم
                     فيجاوبه من بيانات المنتج — فلو الاتنين مختلفين، البوت هيناقض نفسه.
-                </p>
+                </p></div><div class="settings-fields">
                 <div class="form-group">
                     <label>حقائق خاصة بالستور</label>
                     <textarea id="setting-business-facts" rows="6" placeholder="- الأحجام المتاحة: ...&#10;- طبيعة المنتجات: ...&#10;- الستور على أرض الواقع: ..."></textarea>
@@ -277,7 +270,7 @@
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
-            </div>
+            </div></div>
         </div>
 
 
@@ -319,9 +312,7 @@
                 <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
             </div>
 
-            <div class="settings-card">
-                <h3><i class="fab fa-whatsapp" style="color:#0a0a0a;"></i> واتساب</h3>
-                <div class="form-group">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fab fa-whatsapp"></i> واتساب</h3><p>اربط رقم متجرك لاستقبال المحادثات على واتساب.</p></div><div class="settings-fields"><div class="form-group">
                     <label>WhatsApp Phone Number ID</label>
                     <input type="text" id="meta-wa-phone-id" placeholder="مثال: 1234567890">
                 </div>
@@ -329,27 +320,21 @@
                     <label>رقم واتساب</label>
                     <input type="text" id="meta-wa-number" placeholder="مثال: +201234567890">
                 </div>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fab fa-facebook-messenger" style="color:#0a0a0a;"></i> ماسنجر</h3>
-                <div class="form-group">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fab fa-facebook-messenger"></i> ماسنجر</h3><p>اربط صفحة فيسبوك بمساعد متجرك.</p></div><div class="settings-fields"><div class="form-group">
                     <label>Facebook Page ID</label>
                     <input type="text" id="meta-fb-page-id" placeholder="مثال: 1234567890">
                 </div>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fab fa-instagram" style="color:#0a0a0a;"></i> انستجرام</h3>
-                <div class="form-group">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fab fa-instagram"></i> انستجرام</h3><p>استقبل رسائل عملائك من انستجرام.</p></div><div class="settings-fields"><div class="form-group">
                     <label>Instagram Account ID</label>
                     <input type="text" id="meta-ig-id" placeholder="مثال: 1234567890">
                 </div>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-shield-alt" style="color:#946200;"></i> بيانات Meta API</h3>
-                <div class="form-group">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-shield-alt"></i> بيانات Meta API</h3><p>أدخل بيانات الربط الخاصة بتطبيقك وصفحاتك.</p></div><div class="settings-fields"><div class="form-group">
                     <label>Verify Token (اختر كلمة سر للـ Webhook)</label>
                     <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
                 </div>
@@ -365,13 +350,11 @@
                     <label>App Secret</label>
                     <input type="password" id="meta-app-secret" placeholder="••••••••">
                 </div>
-            </div>
+            </div></div>
 
-            <div class="settings-card">
-                <h3><i class="fas fa-comment-dots" style="color:#187047;"></i> ردود التعليقات التلقائية</h3>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-comment-dots"></i> ردود التعليقات التلقائية</h3><p>
                     كتب رسائل الرد العلني على التعليقات <strong>كل سطر رسالة</strong> — البوت يختار واحدة بشكل عشوائي لتجنب السبام بحد أقصى 5 رسائل.
-                </p>
+                </p></div><div class="settings-fields">
                 <div class="form-group">
                     <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,#ffffff); color:var(--text-primary,#0a0a0a); border:1px solid var(--border-color,#e5e5e5); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder=" تم الرد في الخاص، راجع رسائلك!
  جاوبناك في الخاص، اتفضل شوف!
@@ -379,7 +362,7 @@
 Check your DM, we replied!
 راجع رسائلك الخاصة، بعتنالك الرد "></textarea>
                 </div>
-            </div>
+            </div></div>
 
             <button class="btn btn-primary" onclick="saveMetaSettings()" style="margin-bottom:30px;">
                 <i class="fas fa-save"></i> حفظ إعدادات المنصات
@@ -411,7 +394,7 @@ Check your DM, we replied!
                 </button>
             </div>
 
-            <div class="settings-card" style="padding:15px;">
+            <div class="settings-card table-panel">
                 <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> لما العميل يبعت رسالة فيها أي كلمة من الكلمات المفتاحية، البوت هيرد الرد الثابت فوراً بدون ما يستخدم الـ AI. لو ملقاش تطابق هيشتغل بالـ AI عادي.
@@ -448,7 +431,7 @@ Check your DM, we replied!
                 </button>
             </div>
 
-            <div class="settings-card" style="padding:15px;">
+            <div class="settings-card table-panel">
                 <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
@@ -633,7 +616,10 @@ Check your DM, we replied!
             window.WebVitasUI?.sectionChanged(name);
 
             if (name === 'overview')   loadOverview();
-            if (name === 'analytics')  loadAnalytics();
+            if (name === 'analytics') {
+                loadAnalytics();
+                requestAnimationFrame(() => Object.values(_charts).forEach(chart => chart.resize()));
+            }
             if (name === 'products')   loadProducts();
             if (name === 'settings')   loadSettings();
             if (name === 'meta')       loadMetaSettings();
@@ -670,13 +656,18 @@ Check your DM, we replied!
 
         // ===== OVERVIEW =====
         async function loadOverview() {
+            // The shared presentation script is deferred; wait for it on first load.
+            if (!window.WebVitasUI && document.readyState !== 'complete') {
+                await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+            }
+            window.WebVitasUI?.overviewState("loading");
             try {
                 const [overviewRes, profileRes] = await Promise.all([
                     authFetch(`${API_BASE}/overview/`),
                     authFetch(`${API_BASE}/profile/`)
                 ]);
 
-                if (!overviewRes || !profileRes) return;
+                if (!overviewRes?.ok || !profileRes?.ok) { window.WebVitasUI?.overviewState("error"); return; }
 
                 const overview = await overviewRes.json();
                 const profile = await profileRes.json();
@@ -695,27 +686,7 @@ Check your DM, we replied!
                     document.getElementById('handoff-badge').style.display = 'inline';
                 }
 
-                // Platform breakdown
-                const container = document.getElementById('platform-breakdown');
-                container.innerHTML = '';
-                const platformIcons = {
-                    whatsapp: 'fab fa-whatsapp',
-                    messenger: 'fab fa-facebook-messenger',
-                    instagram: 'fab fa-instagram',
-                    web: 'fas fa-globe'
-                };
-                const platformLabels = { whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'انستجرام', web: 'ويب' };
-
-                for (const [platform, count] of Object.entries(overview.platform_breakdown || {})) {
-                    const chip = document.createElement('div');
-                    chip.className = `platform-chip ${platform}`;
-                    chip.innerHTML = `<i class="${platformIcons[platform] || 'fas fa-question'}"></i> ${platformLabels[platform] || platform}: ${count}`;
-                    container.appendChild(chip);
-                }
-
-                if (Object.keys(overview.platform_breakdown || {}).length === 0) {
-                    container.innerHTML = '<span style="color:var(--text-muted)">لا توجد محادثات بعد</span>';
-                }
+                window.WebVitasUI?.renderOverview(overview, profile);
 
                 document.getElementById('api-key-display').textContent = profile.store.api_key;
                 
@@ -725,6 +696,7 @@ Check your DM, we replied!
                 window.STORE_API_KEY = profile.store.api_key;
             } catch (e) {
                 window.WebVitasUI?.showError();
+                window.WebVitasUI?.overviewState('error');
                 console.error('Error loading overview:', e);
             }
         }
@@ -1045,13 +1017,14 @@ Check your DM, we replied!
         Chart.defaults.borderColor = '#e5e5e5';
         Chart.defaults.animation = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         Chart.defaults.font.size = 12;
-        Chart.defaults.font.family = "'Cairo', sans-serif";
+        Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
 
         // ── Helper: destroy & recreate chart ───────────────────────────────
         function _makeChart(id, config) {
             if (_charts[id]) _charts[id].destroy();
             const ctx = document.getElementById(id);
             if (!ctx) return;
+            config.options = { ...config.options, maintainAspectRatio: false };
             _charts[id] = new Chart(ctx, config);
         }
 
@@ -1199,10 +1172,10 @@ Check your DM, we replied!
                 cancelled: 'ملغي',
             };
             const colorMap = {
-                pending:   '#946200',
-                confirmed: '#0a0a0a',
-                delivered: '#187047',
-                cancelled: '#b42318',
+                pending:   '#999999',
+                confirmed: '#555555',
+                delivered: '#111111',
+                cancelled: '#cccccc',
             };
 
             const keys    = Object.keys(statusData);

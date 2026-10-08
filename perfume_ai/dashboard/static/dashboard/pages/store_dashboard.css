@@ -3,7 +3,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             background: var(--surface);
             color: var(--text-main);
             min-height: 100vh;
@@ -324,7 +324,7 @@
             border-radius: 6px;
             cursor: pointer;
             white-space: nowrap;
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
         }
 
         /* Notifications badge in sidebar */
@@ -595,7 +595,6 @@
             color: var(--text-main);
         }
 
-        .chart-card canvas { max-height: 260px; }
 
         /* Comparison mini-cards row */
         .comparison-row {

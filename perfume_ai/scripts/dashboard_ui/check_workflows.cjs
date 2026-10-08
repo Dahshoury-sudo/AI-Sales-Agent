@@ -1,5 +1,5 @@
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const {intercept,base,ready,apiCalls,setEmpty}=require('./check_layout.cjs');
+const {intercept,base,ready,apiCalls,setEmpty,profile}=require('./check_layout.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -14,6 +14,38 @@ const passed=[];
   await page.goto(base+'/dashboard/',{waitUntil:'networkidle'});await ready(page);
   async function section(name){await page.evaluate(s=>showSection(s),name);await ready(page);}
   async function posted(since,match){await page.waitForTimeout(200);const call=apiCalls.slice(since).find(c=>c.path.includes(match));assert.ok(call,'Missing request '+match);return call;}
+
+  await page.locator('.platform-row').first().waitFor();
+  assert.deepEqual(await page.locator('.platform-share').allTextContents(), ['50%', '25%', '18.8%', '6.3%']);
+  for(const [index,destination] of [[0,'products'],[1,'bulk_import'],[2,'analytics']]){
+   await section('overview');await page.locator('.quick-action').nth(index).click();
+   assert.equal(await page.locator('.section.active').getAttribute('id'),'section-'+destination);
+   assert.equal(await page.locator('#workspace-section-title').innerText(),await page.locator('#nav-'+destination).innerText());
+  }
+  await page.locator('.notification-shortcut').click();assert.equal(await page.locator('.section.active').getAttribute('id'),'section-notifications');
+  const overviewRoute='**/dashboard/api/overview/';
+  await page.route(overviewRoute,route=>route.fulfill({contentType:'application/json',body:JSON.stringify({total_conversations:0,total_orders:0,revenue:'0',pending_orders:0,pending_handoffs:0,platform_breakdown:{web:0}})}));
+  await section('overview');await page.waitForFunction(()=>document.querySelector('#stat-revenue').textContent==='0');
+  assert.match(await page.locator('#platform-breakdown').innerText(),/لا توجد محادثات/);
+  assert.equal(await page.locator('.platform-row').count(),0);
+  await page.unroute(overviewRoute);
+  await page.route(overviewRoute,route=>route.fulfill({status:503,contentType:'text/html',body:'<!doctype html><title>Unavailable</title>'}));
+  await section('overview');await page.locator('#overview-message.is-error').waitFor();
+  assert.equal(await page.locator('#stat-revenue').innerText(),'—');
+  await page.unroute(overviewRoute);await page.locator('#overview-message button').click();
+  await page.locator('#overview-message').waitFor({state:'hidden'});assert.equal(await page.locator('#stat-revenue').innerText(),'48,500');
+  passed.push('Overview percentages, zero-data state, failure/retry, quick actions and header navigation');
+
+  const unusualPlatform='<img src=x onerror=alert(1)>';
+  await page.route(overviewRoute,route=>route.fulfill({contentType:'application/json',body:JSON.stringify({total_conversations:999999999,total_orders:99999999,revenue:'999999999999.99',pending_orders:9999999,pending_handoffs:999999,platform_breakdown:{[unusualPlatform]:5}})}));
+  await page.route('**/dashboard/api/profile/',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({...profile,full_name:'محمد أحمد صاحب متجر العطور والمنتجات الطبيعية',store:{...profile.store,name:'متجر العطور والمنتجات الطبيعية لجميع المناسبات'}})}));
+  await page.setViewportSize({width:375,height:1000});await section('overview');
+  await page.waitForFunction(()=>document.querySelector('.platform-name')?.textContent.startsWith('<img'));
+  assert.equal(await page.locator('.platform-name').innerText(),unusualPlatform);
+  assert.equal(await page.locator('#platform-breakdown img').count(),0);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Large values or Arabic names overflow on mobile');
+  await page.unroute(overviewRoute);await page.unroute('**/dashboard/api/profile/');await page.setViewportSize({width:1440,height:1000});await section('overview');
+  passed.push('Large metrics, long Arabic names and safe rendering of unknown platform names');
 
   await section('products');
   await page.locator('#product-search').fill('Oud');await page.locator('#product-search').press('d');await page.waitForTimeout(500);

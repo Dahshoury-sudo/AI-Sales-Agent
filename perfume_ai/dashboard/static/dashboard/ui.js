@@ -28,6 +28,58 @@
     }
 
     window.WebVitasUI = {
+        overviewState(state) {
+            const summary = document.getElementById('overview-summary');
+            const message = document.getElementById('overview-message');
+            if (!summary || !message) return;
+            summary.setAttribute('aria-busy', String(state === 'loading'));
+            message.hidden = state === 'ready';
+            message.classList.toggle('is-error', state === 'error');
+            message.textContent = state === 'error' ? 'تعذّر تحميل ملخص المتجر. حاول مرة أخرى.' : 'جاري تحميل ملخص المتجر…';
+            if (state === 'error') {
+                summary.querySelectorAll('.stat-value, #stat-revenue').forEach(value => value.textContent = '—');
+                document.getElementById('platform-breakdown').textContent = 'تظهر بيانات القنوات بعد تحميل الملخص.';
+                const retry = document.createElement('button');
+                retry.type = 'button'; retry.className = 'btn btn-secondary btn-sm';
+                retry.textContent = 'إعادة المحاولة';
+                retry.addEventListener('click', () => window.loadOverview());
+                message.append(' ', retry);
+            }
+        },
+        renderOverview(overview, profile) {
+            const storeName = document.getElementById('workspace-store-name');
+            if (storeName) storeName.textContent = profile.store.name;
+            const container = document.getElementById('platform-breakdown');
+            if (!container) return;
+            const platforms = {
+                whatsapp: ['واتساب', 'fab fa-whatsapp'], messenger: ['ماسنجر', 'fab fa-facebook-messenger'],
+                instagram: ['انستجرام', 'fab fa-instagram'], web: ['ويب', 'fas fa-globe']
+            };
+            const entries = Object.entries(overview.platform_breakdown || {})
+                .map(([name, count]) => [name, Number.isFinite(Number(count)) ? Math.max(0, Number(count)) : 0])
+                .sort((a, b) => b[1] - a[1]);
+            const total = entries.reduce((sum, [, count]) => sum + count, 0);
+            container.replaceChildren();
+            if (!total) {
+                const empty = document.createElement('p'); empty.className = 'empty-state';
+                empty.textContent = 'لا توجد محادثات بعد. ستظهر قنوات عملائك هنا بمجرد بدء المحادثات.';
+                container.append(empty);
+            } else {
+                for (const [name, count] of entries) {
+                    const [label, iconClass] = platforms[name] || [name, 'fas fa-globe'];
+                    const row = document.createElement('div'); row.className = 'platform-row';
+                    const iconBox = document.createElement('span'); iconBox.className = 'platform-icon';
+                    const icon = document.createElement('i'); icon.className = iconClass; icon.setAttribute('aria-hidden', 'true'); iconBox.append(icon);
+                    const title = document.createElement('span'); title.className = 'platform-name'; title.textContent = label;
+                    const value = document.createElement('span'); value.className = 'platform-count'; value.textContent = count.toLocaleString();
+                    const track = document.createElement('span'); track.className = 'platform-track'; track.setAttribute('aria-hidden', 'true');
+                    const fill = document.createElement('span'); fill.style.setProperty('--share', (count / total * 100) + '%'); track.append(fill);
+                    const share = document.createElement('span'); share.className = 'platform-share'; share.textContent = (count / total * 100).toFixed(1).replace(/\.0$/, '') + '%';
+                    row.append(iconBox, title, value, track, share); container.append(row);
+                }
+            }
+            window.WebVitasUI.overviewState('ready');
+        },
         showError(message = 'تعذّر إتمام الطلب. تحقق من الاتصال وحاول مرة أخرى.') {
             let alert = document.getElementById('wv-request-error');
             if (!alert) {
@@ -47,6 +99,10 @@
                 if (item.id === 'nav-' + name) item.setAttribute('aria-current', 'page');
                 else item.removeAttribute('aria-current');
             });
+            const title = document.getElementById('workspace-section-title');
+            const activeItem = document.getElementById('nav-' + name)?.cloneNode(true);
+            activeItem?.querySelectorAll('.nav-badge').forEach(badge => badge.remove());
+            if (title && activeItem) title.textContent = activeItem.textContent.trim();
             setDrawer(false, false);
             const section = document.getElementById('section-' + name);
             const target = section?.querySelector('h1') || section;

@@ -15,7 +15,7 @@
 <div id="login-screen">
     <div class="login-card">
         <a href="/" class="back-link" style="justify-content: center; width: 100%;">→ الرجوع للصفحة الرئيسية</a>
-        <div class="login-icon"></div>
+        <div class="login-icon"><i class="fas fa-lock" aria-hidden="true"></i></div>
         <h1>لوحة الطلبات</h1>
         <p>ادخل مفتاح API الخاص بمتجرك لعرض الطلبات</p>
         <form id="login-form">
@@ -33,7 +33,7 @@
     <a href="/" class="back-link">→ الرجوع للصفحة الرئيسية</a>
     <div class="dashboard-header">
         <div class="brand">
-            <div class="brand-icon"></div>
+            <div class="brand-icon"><i class="fas fa-bag-shopping" aria-hidden="true"></i></div>
             <div>
                 <h1>لوحة الطلبات</h1>
                 <div class="store-name" id="store-name-display"></div>
@@ -46,22 +46,22 @@
     <!-- Stats -->
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon" style="background: var(--primary-glow);"></div>
+            <div class="stat-icon" ><i class="fas fa-bag-shopping" aria-hidden="true"></i></div>
             <div class="stat-label">إجمالي الطلبات</div>
             <div class="stat-value" id="stat-total">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="background: var(--warning-bg);">⏳</div>
+            <div class="stat-icon" ><i class="far fa-clock" aria-hidden="true"></i></div>
             <div class="stat-label">قيد الانتظار</div>
             <div class="stat-value" id="stat-pending" style="color: var(--warning);">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="background: var(--success-bg);"></div>
+            <div class="stat-icon" ><i class="fas fa-check" aria-hidden="true"></i></div>
             <div class="stat-label">تم التوصيل</div>
             <div class="stat-value" id="stat-delivered" style="color: var(--success);">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="background: var(--danger-bg);"></div>
+            <div class="stat-icon" ><i class="fas fa-xmark" aria-hidden="true"></i></div>
             <div class="stat-label">ملغي</div>
             <div class="stat-value" id="stat-cancelled" style="color: var(--danger);">0</div>
         </div>
@@ -70,7 +70,7 @@
     <!-- Filter Bar -->
     <div class="filter-bar">
         <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">الكل</button>
-        <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">⏳ قيد الانتظار</button>
+        <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">قيد الانتظار</button>
         <button class="filter-btn" data-filter="confirmed" onclick="setFilter('confirmed', this)"> مؤكد</button>
         <button class="filter-btn" data-filter="delivered" onclick="setFilter('delivered', this)"> تم التوصيل</button>
         <button class="filter-btn" data-filter="cancelled" onclick="setFilter('cancelled', this)"> ملغي</button>
@@ -105,7 +105,7 @@
     <div class="modal">
         <div class="modal-header">
             <h2 id="modal-title">تفاصيل الطلب</h2>
-            <button class="modal-close" onclick="closeModal()"></button>
+            <button class="modal-close" onclick="closeModal()">×</button>
         </div>
         <div class="modal-body" id="modal-body">
         </div>

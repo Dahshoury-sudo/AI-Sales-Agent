@@ -3,7 +3,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', 'Inter', sans-serif;
+            font-family: var(--font-body);
             background: var(--bg-color);
             background-image: none;
             color: var(--text-main);

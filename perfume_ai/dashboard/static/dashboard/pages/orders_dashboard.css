@@ -7,7 +7,7 @@
         }
 
         body {
-            font-family: 'Cairo', 'Inter', sans-serif;
+            font-family: var(--font-body);
             background: var(--bg-color);
             background-image: none;
             color: var(--text-main);
@@ -98,7 +98,7 @@
             border: none;
             border-radius: 14px;
             color:var(--ink);
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             font-size: 1.05rem;
             font-weight: 600;
             cursor: pointer;
@@ -188,7 +188,7 @@
             border: 1px solid #fef3f2;
             border-radius: 12px;
             color: var(--danger);
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -260,7 +260,7 @@
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             color: var(--text-muted);
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -286,7 +286,7 @@
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             color: var(--text-main);
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.85rem;
             transition: all 0.3s ease;
         }
@@ -602,7 +602,7 @@
             padding: 8px 16px;
             border-radius: 10px;
             border: 1px solid;
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;

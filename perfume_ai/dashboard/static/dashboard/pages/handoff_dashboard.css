@@ -1,7 +1,7 @@
 /* Theme tokens are shared in theme.css. */
 
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: var(--font-body);
             background: var(--surface);
             color: var(--text-main);
             margin: 0;
