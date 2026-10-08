@@ -181,7 +181,7 @@
                 </div>
                 <div>
                     <input type="text" id="product-search" placeholder=" بحث..."
-                           style="padding:10px 14px;background:#f5f5f5;border:1px solid var(--glass-border);border-radius:10px;color:var(--ink);font-family:inherit;outline:none;margin-left:10px;"
+                           style="padding:10px 14px;background:var(--input-bg);border:1px solid var(--glass-border);border-radius:10px;color:var(--ink);font-family:inherit;outline:none;margin-left:10px;"
                            onkeyup="debounceSearch()">
                 </div>
             </div>
@@ -412,7 +412,7 @@ Check your DM, we replied!
             </div>
 
             <div class="settings-card" style="padding:15px;">
-                <div style="margin-bottom:15px; padding:12px 16px; background:#f3f3f3; border:1px solid #f3f3f3; border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> لما العميل يبعت رسالة فيها أي كلمة من الكلمات المفتاحية، البوت هيرد الرد الثابت فوراً بدون ما يستخدم الـ AI. لو ملقاش تطابق هيشتغل بالـ AI عادي.
                 </div>
@@ -449,7 +449,7 @@ Check your DM, we replied!
             </div>
 
             <div class="settings-card" style="padding:15px;">
-                <div style="margin-bottom:15px; padding:12px 16px; background:#f3f3f3; border:1px solid #f3f3f3; border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
                 </div>
@@ -476,30 +476,30 @@ Check your DM, we replied!
 
     <!-- FAQ Modal -->
     <div id="faq-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:var(--bg-color); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height:90vh; overflow-y:auto;">
+        <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height:90vh; overflow-y:auto;">
             <h2 id="faq-modal-title" style="margin-bottom:20px;">إضافة سؤال ثابت</h2>
             <input type="hidden" id="faq-edit-id">
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>السؤال (للعرض فقط)</label>
-                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الكلمات المفتاحية (مفصولة بفاصلة)</label>
-                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                 <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> كل ما تضيف كلمات أكتر، كل ما البوت يمسك صيغ أكتر من أسئلة العملاء</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الرد الثابت</label>
-                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
             </div>
 
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الأولوية (رقم أعلى = أولوية أعلى)</label>
-                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; display:flex; align-items:flex-end;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding-bottom:10px;">
@@ -510,7 +510,7 @@ Check your DM, we replied!
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
                 <button onclick="saveFaq()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
             </div>
         </div>
@@ -518,13 +518,13 @@ Check your DM, we replied!
 
     <!-- Post Rule Modal -->
     <div id="post-rule-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:var(--bg-color); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:500px; max-width:90%; max-height:90vh; overflow-y:auto;">
+        <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:500px; max-width:90%; max-height:90vh; overflow-y:auto;">
             <h2 id="post-rule-modal-title" style="margin-bottom:20px;">إضافة بوست للقائمة المحظورة</h2>
             <input type="hidden" id="post-rule-edit-id">
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>المنصة</label>
-                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
                 </select>
@@ -532,17 +532,17 @@ Check your DM, we replied!
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>رابط البوست</label>
-                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;" dir="ltr">
+                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;" dir="ltr">
                 <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>وصف (اختياري)</label>
-                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink); font-family:inherit;">
+                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
+                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
                 <button onclick="savePostRule()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
             </div>
         </div>
@@ -756,7 +756,7 @@ Check your DM, we replied!
                         <td>${p.gender === 'male' ? ' رجالي' : p.gender === 'female' ? ' نسائي' : ' يونيسكس'}</td>
                         <td><span class="${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'نشط' : 'غير نشط'}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background: #f3f3f3; border: 1px solid #f3f3f3; color: #0a0a0a;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background:var(--surface); border:1px solid var(--line); color: #0a0a0a;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
@@ -1303,8 +1303,8 @@ Check your DM, we replied!
                 p.variants.forEach(v => {
                     vContainer.innerHTML += `
                         <div class="variant-edit-row" data-id="${v.id}" style="display:flex; gap:8px; margin-bottom:8px;">
-                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:#f5f5f5; border:1px solid var(--glass-border); color:var(--ink); border-radius:6px; text-align:center;">
-                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:#f5f5f5; border:1px solid var(--glass-border); color:var(--ink); border-radius:6px;">
+                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:var(--hover-surface); border:1px solid var(--glass-border); color:var(--ink); border-radius:6px; text-align:center;">
+                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:var(--input-bg); border:1px solid var(--glass-border); color:var(--ink); border-radius:6px;">
                         </div>
                     `;
                 });
@@ -1413,7 +1413,7 @@ Check your DM, we replied!
                         : '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">معطّل</span>';
 
                     const keywords = faq.keywords.split(',').map(k => k.trim()).filter(k => k).map(k =>
-                        `<span style="background:#f3f3f3;color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
+                        `<span style="background:var(--surface);color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
                     ).join('');
 
                     const shortAnswer = faq.answer.length > 60 ? faq.answer.substring(0, 60) + '...' : faq.answer;
@@ -1425,7 +1425,7 @@ Check your DM, we replied!
                         <td>${faq.priority}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' style="background:#f3f3f3;color:#0a0a0a;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
+                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' style="background:var(--surface);color:#0a0a0a;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
                             <button onclick="deleteFaq(${faq.id})" style="background:#fef3f2;color:#b42318;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`;
@@ -1540,8 +1540,8 @@ Check your DM, we replied!
 
                 tbody.innerHTML = data.map(rule => {
                     const platformBadge = rule.platform === 'facebook'
-                        ? '<span style="background:#f3f3f3;color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
-                        : '<span style="background:#f3f3f3;color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
+                        ? '<span style="background:var(--surface);color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
+                        : '<span style="background:var(--surface);color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
 
                     const statusBadge = rule.is_active
                         ? '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
@@ -1648,57 +1648,57 @@ Check your DM, we replied!
 
     <!-- Edit Product Modal -->
     <div id="edit-product-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:var(--bg-color); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height: 90vh; overflow-y: auto;">
+        <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height: 90vh; overflow-y: auto;">
             <h2 style="margin-bottom:20px;">تعديل المنتج</h2>
             <input type="hidden" id="edit-product-id">
             
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الاسم</label>
-                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الوصف</label>
-                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);"></textarea>
+                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);"></textarea>
             </div>
 
             <div style="display:flex; gap:10px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>افتتاحية العطر</label>
-                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قلب العطر</label>
-                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قاعدة العطر</label>
-                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الموسم</label>
-                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>المناسبة</label>
-                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الثبات</label>
-                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الفوحان</label>
-                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>التركيز</label>
-                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:#f5f5f5; color:var(--ink);">
+                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
@@ -1708,7 +1708,7 @@ Check your DM, we replied!
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:#e5e5e5; color:var(--ink); cursor:pointer;">إلغاء</button>
+                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer;">إلغاء</button>
                 <button onclick="saveProductEdit()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer;">حفظ التغييرات</button>
             </div>
         </div>

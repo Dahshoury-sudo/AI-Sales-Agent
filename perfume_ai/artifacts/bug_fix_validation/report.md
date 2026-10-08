@@ -1,4 +1,4 @@
-# Conversation bug fixes
+Conversation bug fixes
 
 Implemented in the existing Django apps, services, tasks and web clients. No project restructuring. Original evidence in `artifacts/bug_reproductions` and the original diagnostic scripts was preserved.
 
@@ -6,23 +6,23 @@ Implemented in the existing Django apps, services, tasks and web clients. No pro
 
 All 21 reproduced cases have regression coverage. L08 and L13 remain controls, rather than being counted as reproduced defects.
 
-| Cases | Implemented behavior |
-|---|---|
-| L01, L02 | Persist every cart line, including unknown products and unsized quantities. Omitted lines survive extraction; explicit line IDs remove items. Unresolved lines prevent checkout. |
-| L03, C01, C02 | Require a delivered summary of the current cart, contacts and prices. An edit or price change produces a revised quote requiring another approval. Only JSON `true` confirms. |
-| C03 | Serialize confirmations and commit the order, stock change and cart clearing atomically. A unique checkout token prevents duplicate orders. |
-| C04 | Report success once the order commits. Failed dashboard notifications remain pending and retry independently, with deduplication. |
-| C05 | Cancellation restores stock once. Cancelled orders cannot reopen through the bot, API or admin. |
-| L04, L05 | Apply requested size, bottle type, availability and price to the same variant. Combined budgets use the aggregate price; exact budgets stay strict. Approximate budgets retain disclosed 20% flexibility. A literal combined amount cannot be divided by the extractor. |
-| L06, L07 | Cover each requested product and factual comparison dimension. Calculate price per ml from variant data; acknowledge uncertainty about comparative sweetness. |
-| L09, L10 | Retain explicit false preferences and clear previous requirements when the recipient changes. |
-| L11 | Preserve the ordered list of delivered recommendations across FAQs. Failed or uncertain replies cannot replace that list. |
-| L12 | Save checkout contact details before answering a supplemental FAQ. The combined response remains a confirmable quote. |
-| D01, D02 | Persist inbound receipts, reuse replies for repeated source IDs, and process accepted messages in order under a conversation lock. Generation failure rolls back the turn and its state changes together. |
-| D03 | Persist delivery outcomes, including separate image/text parts. An ambiguous acknowledgement or interrupted send flags staff and is not automatically resent. Exclude undelivered assistant replies from model history. |
-| D04 | Provide an authenticated, signed-conversation message cursor and poll it from the widget and both demo clients. Staff replies and attachments appear once. |
-| E01 | Bind quoted prices to the named product, size and bottle type, rather than accepting any catalogue price. |
-| L08, L13 controls | Use the store's configured formulation facts and acknowledge unknown oil-manufacturer information. |
+| Cases             | Implemented behavior                                                                                                                                                                                                                                                    |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L01, L02          | Persist every cart line, including unknown products and unsized quantities. Omitted lines survive extraction; explicit line IDs remove items. Unresolved lines prevent checkout.                                                                                        |
+| L03, C01, C02     | Require a delivered summary of the current cart, contacts and prices. An edit or price change produces a revised quote requiring another approval. Only JSON`true` confirms.                                                                                          |
+| C03               | Serialize confirmations and commit the order, stock change and cart clearing atomically. A unique checkout token prevents duplicate orders.                                                                                                                             |
+| C04               | Report success once the order commits. Failed dashboard notifications remain pending and retry independently, with deduplication.                                                                                                                                       |
+| C05               | Cancellation restores stock once. Cancelled orders cannot reopen through the bot, API or admin.                                                                                                                                                                         |
+| L04, L05          | Apply requested size, bottle type, availability and price to the same variant. Combined budgets use the aggregate price; exact budgets stay strict. Approximate budgets retain disclosed 20% flexibility. A literal combined amount cannot be divided by the extractor. |
+| L06, L07          | Cover each requested product and factual comparison dimension. Calculate price per ml from variant data; acknowledge uncertainty about comparative sweetness.                                                                                                           |
+| L09, L10          | Retain explicit false preferences and clear previous requirements when the recipient changes.                                                                                                                                                                           |
+| L11               | Preserve the ordered list of delivered recommendations across FAQs. Failed or uncertain replies cannot replace that list.                                                                                                                                               |
+| L12               | Save checkout contact details before answering a supplemental FAQ. The combined response remains a confirmable quote.                                                                                                                                                   |
+| D01, D02          | Persist inbound receipts, reuse replies for repeated source IDs, and process accepted messages in order under a conversation lock. Generation failure rolls back the turn and its state changes together.                                                               |
+| D03               | Persist delivery outcomes, including separate image/text parts. An ambiguous acknowledgement or interrupted send flags staff and is not automatically resent. Exclude undelivered assistant replies from model history.                                                 |
+| D04               | Provide an authenticated, signed-conversation message cursor and poll it from the widget and both demo clients. Staff replies and attachments appear once.                                                                                                              |
+| E01               | Bind quoted prices to the named product, size and bottle type, rather than accepting any catalogue price.                                                                                                                                                               |
+| L08, L13 controls | Use the store's configured formulation facts and acknowledge unknown oil-manufacturer information.                                                                                                                                                                      |
 
 Validation:
 
