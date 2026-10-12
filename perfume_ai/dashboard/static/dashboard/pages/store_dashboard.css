@@ -62,7 +62,7 @@
         }
 
         .nav-item:hover, .nav-item.active {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--primary);
         }
 
@@ -86,8 +86,8 @@
         .btn-logout {
             width: 100%;
             padding: 10px;
-            background: #fef3f2;
-            border: 1px solid #fef3f2;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-bg);
             color: var(--danger);
             border-radius: 10px;
             cursor: pointer;
@@ -97,7 +97,7 @@
         }
 
         .btn-logout:hover {
-            background: #fef3f2;
+            background: var(--danger-bg);
         }
 
         /* Main content */
@@ -153,11 +153,11 @@
             margin-bottom: 12px;
         }
 
-        .stat-icon.blue { background: #f3f3f3; color: var(--ink); }
-        .stat-icon.green { background: #edf7f0; color: var(--success); }
-        .stat-icon.purple { background: #f3f3f3; color: var(--ink); }
-        .stat-icon.orange { background: #fff8e7; color: var(--warning); }
-        .stat-icon.red { background: #fef3f2; color: var(--danger); }
+        .stat-icon.blue { background: var(--surface); color: var(--ink); }
+        .stat-icon.green { background: var(--success-bg); color: var(--success); }
+        .stat-icon.purple { background: var(--surface); color: var(--ink); }
+        .stat-icon.orange { background: var(--warning-bg); color: var(--warning); }
+        .stat-icon.red { background: var(--danger-bg); color: var(--danger); }
 
         .stat-value {
             font-size: 2rem;
@@ -251,13 +251,13 @@
         }
 
         .btn-danger {
-            background: #fef3f2;
+            background: var(--danger-bg);
             color: var(--danger);
-            border: 1px solid #fef3f2;
+            border: 1px solid var(--danger-bg);
         }
 
         .btn-danger:hover {
-            background: #fef3f2;
+            background: var(--danger-bg);
         }
 
         .btn-sm { padding: 8px 14px; font-size: 0.85rem; }
@@ -287,7 +287,7 @@
         }
 
         .badge-active {
-            background: #edf7f0;
+            background: var(--success-bg);
             color: var(--success);
             padding: 4px 10px;
             border-radius: 20px;
@@ -295,7 +295,7 @@
         }
 
         .badge-inactive {
-            background: #fef3f2;
+            background: var(--danger-bg);
             color: var(--danger);
             padding: 4px 10px;
             border-radius: 20px;
@@ -372,10 +372,10 @@
             gap: 6px;
         }
 
-        .platform-chip.whatsapp { background: #f3f3f3; color: var(--ink); }
-        .platform-chip.messenger { background: #f3f3f3; color: var(--ink); }
-        .platform-chip.instagram { background: #f3f3f3; color: var(--ink); }
-        .platform-chip.web { background: #f3f3f3; color: var(--ink); }
+        .platform-chip.whatsapp { background: var(--surface); color: var(--ink); }
+        .platform-chip.messenger { background: var(--surface); color: var(--ink); }
+        .platform-chip.instagram { background: var(--surface); color: var(--ink); }
+        .platform-chip.web { background: var(--surface); color: var(--ink); }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -419,7 +419,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: var(--overlay);
             z-index: 95;
 
         }
@@ -539,9 +539,9 @@
             margin-top: 6px;
         }
 
-        .kpi-badge.up   { background: #edf7f0;  color: var(--success); }
-        .kpi-badge.down { background: #fef3f2;  color: var(--danger); }
-        .kpi-badge.flat { background: #f3f3f3; color: var(--muted); }
+        .kpi-badge.up   { background: var(--success-bg);  color: var(--success); }
+        .kpi-badge.down { background: var(--danger-bg);  color: var(--danger); }
+        .kpi-badge.flat { background: var(--surface); color: var(--muted); }
 
         /* Comparison period tabs */
         .period-tabs {
@@ -565,7 +565,7 @@
 
         .period-tab.active,
         .period-tab:hover {
-            background: #f3f3f3;
+            background: var(--surface);
             border-color: var(--primary);
             color: var(--primary);
         }

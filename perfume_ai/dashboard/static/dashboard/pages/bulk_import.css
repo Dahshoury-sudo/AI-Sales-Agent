@@ -89,7 +89,7 @@
         }
 
         .step-card:hover {
-            border-color: #f3f3f3;
+            border-color: var(--control-border);
         }
 
         .step-header {
@@ -116,7 +116,7 @@
         .step-title {
             font-size: 1.15rem;
             font-weight: 700;
-            color: #303030;
+            color: var(--ink);
         }
 
         .step-desc {
@@ -155,11 +155,11 @@
         .btn-secondary {
             background: var(--surface);
             color: var(--ink);
-            border: 1px solid #f3f3f3;
+            border: 1px solid var(--line);
         }
 
         .btn-secondary:hover {
-            background: #f3f3f3;
+            background: var(--surface);
         }
 
         .btn:disabled {
@@ -170,18 +170,18 @@
 
         /* Upload Zone */
         .upload-zone {
-            border: 2px dashed #f3f3f3;
+            border: 2px dashed var(--control-border);
             border-radius: 16px;
             padding: 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #f3f3f3;
+            background: var(--surface);
         }
 
         .upload-zone:hover, .upload-zone.dragover {
             border-color: var(--ink);
-            background: #f3f3f3;
+            background: var(--surface);
         }
 
         .upload-zone .icon {
@@ -214,20 +214,20 @@
         }
 
         .result-success {
-            background: #edf7f0;
-            border: 1px solid #edf7f0;
+            background: var(--success-bg);
+            border: 1px solid var(--success-bg);
             color: var(--success);
         }
 
         .result-warning {
-            background: #fff8e7;
-            border: 1px solid #fff8e7;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-bg);
             color: var(--warning);
         }
 
         .result-error {
-            background: #fef3f2;
-            border: 1px solid #fef3f2;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-bg);
             color: var(--danger);
         }
 
@@ -285,7 +285,7 @@
         }
 
         .columns-table th {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--ink);
             padding: 8px 12px;
             text-align: right;

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إضافة منتجات جماعية</title>
-    <link rel="stylesheet" href="{% static 'dashboard/pages/bulk_import.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/pages/bulk_import.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
 </head>
 <body data-page="bulk_import" data-layout="app">
@@ -34,7 +34,7 @@
             </a>
 
             <details style="margin-top: 16px; cursor: pointer;">
-                <summary style="color: #0a0a0a; font-weight: 600;"> شرح الأعمدة</summary>
+                <summary style="color: var(--ink); font-weight: 600;"> شرح الأعمدة</summary>
                 <div class="table-responsive">
                     <table class="columns-table">
                         <tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th></tr>
@@ -89,7 +89,7 @@
                 <div class="dot"></div>
                 <div class="dot"></div>
                 <div class="dot"></div>
-                <p style="margin-top: 12px; color: #606060;">جاري إضافة المنتجات...</p>
+                <p style="margin-top: 12px; color: var(--muted);">جاري إضافة المنتجات...</p>
             </div>
         </div>
 

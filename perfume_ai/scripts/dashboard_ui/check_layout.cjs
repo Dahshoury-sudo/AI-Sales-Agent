@@ -85,7 +85,7 @@ if (require.main === module) (async()=>{
     const checks=await Promise.all(activeFrames.map(overflow));
     const bad=checks.filter(x=>x.scroll>x.width+1);
     if(bad.length) layouts.push({width,section,bad});
-    if(width===1440||width===375) await page.screenshot({path:path.join(out,`${section}-${width}.png`),fullPage:true});
+    await page.screenshot({path:path.join(out,`${section}-${width}.png`),fullPage:true});
    }
   }
   assert.deepEqual(layouts, [], 'Unexpected horizontal overflow'); assert.deepEqual(errors, [], 'Browser runtime errors');

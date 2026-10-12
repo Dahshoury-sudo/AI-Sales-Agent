@@ -67,7 +67,7 @@
             } else {
                 for (const [name, count] of entries) {
                     const [label, iconClass] = platforms[name] || [name, 'fas fa-globe'];
-                    const row = document.createElement('div'); row.className = 'platform-row';
+                    const row = document.createElement('div'); row.className = 'platform-row'; row.dataset.platform = name;
                     const iconBox = document.createElement('span'); iconBox.className = 'platform-icon';
                     const icon = document.createElement('i'); icon.className = iconClass; icon.setAttribute('aria-hidden', 'true'); iconBox.append(icon);
                     const title = document.createElement('span'); title.className = 'platform-name'; title.textContent = label;

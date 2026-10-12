@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - WebVitas AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
 </head>
 <body data-page="store_dashboard" data-layout="app">
@@ -136,7 +136,7 @@
                     <div class="chart-frame"><canvas id="chart-platforms"></canvas></div>
                 </div>
                 <div class="chart-card">
-                    <h3><i class="fas fa-trophy" style="color:#946200;"></i> أكثر 5 منتجات مبيعاً</h3>
+                    <h3><i class="fas fa-trophy" style="color:var(--warning);"></i> أكثر 5 منتجات مبيعاً</h3>
                     <div class="chart-frame"><canvas id="chart-top-products"></canvas></div>
                 </div>
             </div>
@@ -182,7 +182,7 @@
                 </div>
                 <div>
                     <input type="text" id="product-search" placeholder=" بحث..."
-                           style="padding:10px 14px;background:var(--input-bg);border:1px solid var(--glass-border);border-radius:10px;color:var(--ink);font-family:inherit;outline:none;margin-left:10px;"
+                           style="padding:10px 14px;background:var(--input-bg);border:1px solid var(--control-border);border-radius:10px;color:var(--ink);font-family:inherit;outline:none;margin-left:10px;"
                            onkeyup="debounceSearch()">
                 </div>
             </div>
@@ -339,11 +339,11 @@
                     <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
                 </div>
                 <div class="form-group">
-                    <label><i class="fab fa-whatsapp" style="color:#0a0a0a;"></i> WhatsApp Access Token</label>
+                    <label><i class="fab fa-whatsapp" style="color:var(--ink);"></i> WhatsApp Access Token</label>
                     <input type="password" id="meta-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label><i class="fab fa-facebook-messenger" style="color:#0a0a0a;"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
+                    <label><i class="fab fa-facebook-messenger" style="color:var(--ink);"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
                     <input type="password" id="messenger-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
@@ -356,7 +356,7 @@
                     كتب رسائل الرد العلني على التعليقات <strong>كل سطر رسالة</strong> — البوت يختار واحدة بشكل عشوائي لتجنب السبام بحد أقصى 5 رسائل.
                 </p></div><div class="settings-fields">
                 <div class="form-group">
-                    <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,#ffffff); color:var(--text-primary,#0a0a0a); border:1px solid var(--border-color,#e5e5e5); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder=" تم الرد في الخاص، راجع رسائلك!
+                    <textarea id="comment-reply-messages" rows="6" style="width:100%; resize:vertical; background:var(--input-bg,var(--paper)); color:var(--text-primary,var(--ink)); border:1px solid var(--border-color,var(--line)); border-radius:8px; padding:10px; font-size:0.9rem; font-family:inherit;" placeholder=" تم الرد في الخاص، راجع رسائلك!
  جاوبناك في الخاص، اتفضل شوف!
 تم الرد في الإنبوكس
 Check your DM, we replied!
@@ -389,13 +389,13 @@ Check your DM, we replied!
                     <h1> الأسئلة الثابتة</h1>
                     <p>أسئلة وأجوبة ثابتة يرد عليها البوت فوراً بدون AI</p>
                 </div>
-                <button class="btn btn-primary" onclick="openFaqModal()" style="padding:10px 20px; background:var(--primary); border:none; border-radius:10px; color:white; cursor:pointer; font-family:inherit; font-size:0.9rem;">
+                <button class="btn btn-primary" onclick="openFaqModal()">
                     <i class="fas fa-plus"></i> إضافة سؤال
                 </button>
             </div>
 
             <div class="settings-card table-panel">
-                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--ink);">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> لما العميل يبعت رسالة فيها أي كلمة من الكلمات المفتاحية، البوت هيرد الرد الثابت فوراً بدون ما يستخدم الـ AI. لو ملقاش تطابق هيشتغل بالـ AI عادي.
                 </div>
@@ -426,13 +426,13 @@ Check your DM, we replied!
                     <h1> فلترة البوستات</h1>
                     <p>حدد البوستات اللي البوت مش هيرد على تعليقاتها</p>
                 </div>
-                <button class="btn btn-primary" onclick="openPostRuleModal()" style="padding:10px 20px; background:var(--primary); border:none; border-radius:10px; color:white; cursor:pointer; font-family:inherit; font-size:0.9rem;">
+                <button class="btn btn-primary" onclick="openPostRuleModal()">
                     <i class="fas fa-plus"></i> إضافة بوست
                 </button>
             </div>
 
             <div class="settings-card table-panel">
-                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:#0a0a0a;">
+                <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--ink);">
                     <i class="fas fa-info-circle"></i>
                     <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
                 </div>
@@ -458,31 +458,31 @@ Check your DM, we replied!
     </main>
 
     <!-- FAQ Modal -->
-    <div id="faq-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+    <div id="faq-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay); z-index:1000; justify-content:center; align-items:center;">
         <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height:90vh; overflow-y:auto;">
             <h2 id="faq-modal-title" style="margin-bottom:20px;">إضافة سؤال ثابت</h2>
             <input type="hidden" id="faq-edit-id">
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>السؤال (للعرض فقط)</label>
-                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                <input type="text" id="faq-question" placeholder="مثال: الشحن بكام؟" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الكلمات المفتاحية (مفصولة بفاصلة)</label>
-                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                <input type="text" id="faq-keywords" placeholder="مثال: شحن, توصيل, توصل, ديليفري" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                 <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> كل ما تضيف كلمات أكتر، كل ما البوت يمسك صيغ أكتر من أسئلة العملاء</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الرد الثابت</label>
-                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+                <textarea id="faq-answer" rows="4" placeholder="الرد اللي هيبعته البوت للعميل" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
             </div>
 
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الأولوية (رقم أعلى = أولوية أعلى)</label>
-                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                    <input type="number" id="faq-priority" value="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; display:flex; align-items:flex-end;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding-bottom:10px;">
@@ -493,21 +493,21 @@ Check your DM, we replied!
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeFaqModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
-                <button onclick="saveFaq()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
+                <button onclick="closeFaqModal()" class="btn btn-secondary">إلغاء</button>
+                <button onclick="saveFaq()" class="btn btn-primary">حفظ</button>
             </div>
         </div>
     </div>
 
     <!-- Post Rule Modal -->
-    <div id="post-rule-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+    <div id="post-rule-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay); z-index:1000; justify-content:center; align-items:center;">
         <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:500px; max-width:90%; max-height:90vh; overflow-y:auto;">
             <h2 id="post-rule-modal-title" style="margin-bottom:20px;">إضافة بوست للقائمة المحظورة</h2>
             <input type="hidden" id="post-rule-edit-id">
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>المنصة</label>
-                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
                 </select>
@@ -515,18 +515,18 @@ Check your DM, we replied!
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>رابط البوست</label>
-                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;" dir="ltr">
+                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;" dir="ltr">
                 <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>وصف (اختياري)</label>
-                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closePostRuleModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer; font-family:inherit;">إلغاء</button>
-                <button onclick="savePostRule()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit;">حفظ</button>
+                <button onclick="closePostRuleModal()" class="btn btn-secondary">إلغاء</button>
+                <button onclick="savePostRule()" class="btn btn-primary">حفظ</button>
             </div>
         </div>
     </div>
@@ -728,7 +728,7 @@ Check your DM, we replied!
                         <td>${p.gender === 'male' ? ' رجالي' : p.gender === 'female' ? ' نسائي' : ' يونيسكس'}</td>
                         <td><span class="${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'نشط' : 'غير نشط'}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-primary" style="margin-left: 5px; background:var(--surface); border:1px solid var(--line); color: #0a0a0a;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-secondary" style="margin-inline-end:5px;" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
@@ -930,21 +930,21 @@ Check your DM, we replied!
             }
 
             const typeIcons  = { handoff: 'fas fa-headset', new_order: 'fas fa-shopping-cart', low_stock: 'fas fa-exclamation-triangle' };
-            const typeColors = { handoff: '#b42318', new_order: '#187047', low_stock: '#946200' };
+            const typeColors = { handoff: 'var(--danger)', new_order: 'var(--success)', low_stock: 'var(--warning)' };
 
             container.innerHTML = '';
             data.notifications.forEach(n => {
                 const card = document.createElement('div');
                 card.className = 'settings-card';
-                card.style.borderRight = `4px solid ${typeColors[n.type] || '#0a0a0a'}`;
+                card.style.borderInlineStart = `3px solid ${typeColors[n.type] || 'var(--ink)'}`;
                 card.classList.toggle('notification-read', n.is_read);
                 card.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <div>
                             <strong>
-                                <i class="${typeIcons[n.type] || 'fas fa-bell'}" style="color:${typeColors[n.type] || '#0a0a0a'}"></i>
+                                <i class="${typeIcons[n.type] || 'fas fa-bell'}" style="color:${typeColors[n.type] || 'var(--ink)'}"></i>
                                 ${n.title}
-                                ${!n.is_read ? '<span style="display:inline-block;width:8px;height:8px;background:#b42318;border-radius:50%;margin-right:6px;"></span>' : ''}
+                                ${!n.is_read ? '<span style="display:inline-block;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-right:6px;"></span>' : ''}
                             </strong>
                             <p style="color:var(--text-muted);margin-top:5px;">${n.message}</p>
                         </div>
@@ -1013,11 +1013,23 @@ Check your DM, we replied!
         let _activePeriodIdx = 0;
 
         // ── Chart.js defaults ───────────────────────────────────────────────
-        Chart.defaults.color = '#606060';
-        Chart.defaults.borderColor = '#e5e5e5';
+        // Canvas colors must be resolved from the same tokens as the workspace.
+        const _chartStyle = getComputedStyle(document.body);
+        const _chartColor = name => _chartStyle.getPropertyValue(name).trim();
+        Chart.defaults.color = _chartColor('--muted');
+        Chart.defaults.borderColor = _chartColor('--line');
         Chart.defaults.animation = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         Chart.defaults.font.size = 12;
         Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.pointStyle = 'rectRounded';
+        Chart.defaults.plugins.tooltip.backgroundColor = _chartColor('--primary');
+        Chart.defaults.plugins.tooltip.titleColor = _chartColor('--on-dark');
+        Chart.defaults.plugins.tooltip.bodyColor = _chartColor('--on-dark');
+        Chart.defaults.plugins.tooltip.borderColor = _chartColor('--navigation-line');
+        Chart.defaults.plugins.tooltip.borderWidth = 1;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+        Chart.defaults.plugins.tooltip.padding = 12;
 
         // ── Helper: destroy & recreate chart ───────────────────────────────
         function _makeChart(id, config) {
@@ -1141,13 +1153,13 @@ Check your DM, we replied!
                         {
                             label: labelCurrent,
                             data: [p.current.revenue, p.current.orders, p.current.conversations],
-                            backgroundColor: '#0a0a0a',
+                            backgroundColor: _chartColor('--primary'),
                             borderRadius: 8,
                         },
                         {
                             label: labelPrevious,
                             data: [p.previous.revenue, p.previous.orders, p.previous.conversations],
-                            backgroundColor: '#888888',
+                            backgroundColor: _chartColor('--chart-bronze'),
                             borderRadius: 8,
                         },
                     ],
@@ -1156,8 +1168,8 @@ Check your DM, we replied!
                     responsive: true,
                     plugins: { legend: { position: 'top' } },
                     scales: {
-                        x: { grid: { color: '#f5f5f5' } },
-                        y: { grid: { color: '#f5f5f5' }, beginAtZero: true },
+                        x: { grid: { display: false } },
+                        y: { grid: { color: _chartColor('--line') }, beginAtZero: true },
                     },
                 },
             });
@@ -1172,22 +1184,22 @@ Check your DM, we replied!
                 cancelled: 'ملغي',
             };
             const colorMap = {
-                pending:   '#999999',
-                confirmed: '#555555',
-                delivered: '#111111',
-                cancelled: '#cccccc',
+                pending:   _chartColor('--warning'),
+                confirmed: _chartColor('--primary'),
+                delivered: _chartColor('--success'),
+                cancelled: _chartColor('--danger'),
             };
 
             const keys    = Object.keys(statusData);
             const labels  = keys.map(k => labelMap[k] || k);
             const values  = keys.map(k => statusData[k]);
-            const colors  = keys.map(k => colorMap[k] || '#888888');
+            const colors  = keys.map(k => colorMap[k] || _chartColor('--muted'));
 
             _makeChart('chart-order-status', {
                 type: 'doughnut',
                 data: {
                     labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }],
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: _chartColor('--paper') }],
                 },
                 options: {
                     responsive: true,
@@ -1202,18 +1214,21 @@ Check your DM, we replied!
         // ── Donut Chart: platform breakdown ────────────────────────────────
         function _renderPlatformChart(platformData) {
             const labelMap = { whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'انستجرام', web: 'ويب' };
-            const colorMap = { whatsapp: '#151515', messenger: '#606060', instagram: '#999999', web: '#cccccc' };
+            const colorMap = {
+                whatsapp: _chartColor('--primary'), messenger: _chartColor('--chart-bronze'),
+                instagram: _chartColor('--chart-plum'), web: _chartColor('--chart-slate'),
+            };
 
             const keys   = Object.keys(platformData);
             const labels = keys.map(k => labelMap[k] || k);
             const values = keys.map(k => platformData[k]);
-            const colors = keys.map(k => colorMap[k] || '#888888');
+            const colors = keys.map(k => colorMap[k] || _chartColor('--muted'));
 
             _makeChart('chart-platforms', {
                 type: 'doughnut',
                 data: {
                     labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }],
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: _chartColor('--paper') }],
                 },
                 options: {
                     responsive: true,
@@ -1239,7 +1254,7 @@ Check your DM, we replied!
                     datasets: [{
                         label: 'الكميات المباعة',
                         data: values,
-                        backgroundColor: '#303030',
+                        backgroundColor: _chartColor('--chart-bronze'),
                         borderRadius: 8,
                     }],
                 },
@@ -1248,8 +1263,8 @@ Check your DM, we replied!
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { color: '#f5f5f5' }, beginAtZero: true },
-                        y: { grid: { color: '#f5f5f5' } },
+                        x: { grid: { color: _chartColor('--line') }, beginAtZero: true },
+                        y: { grid: { display: false } },
                     },
                 },
             });
@@ -1276,8 +1291,8 @@ Check your DM, we replied!
                 p.variants.forEach(v => {
                     vContainer.innerHTML += `
                         <div class="variant-edit-row" data-id="${v.id}" style="display:flex; gap:8px; margin-bottom:8px;">
-                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:var(--hover-surface); border:1px solid var(--glass-border); color:var(--ink); border-radius:6px; text-align:center;">
-                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:var(--input-bg); border:1px solid var(--glass-border); color:var(--ink); border-radius:6px;">
+                            <input type="text" value="${v.volume}ml" disabled style="width:65px; padding:8px; background:var(--hover-surface); border:1px solid var(--control-border); color:var(--ink); border-radius:6px; text-align:center;">
+                            <input type="number" class="var-price" value="${v.price}" placeholder="السعر" style="flex:1; padding:8px; background:var(--input-bg); border:1px solid var(--control-border); color:var(--ink); border-radius:6px;">
                         </div>
                     `;
                 });
@@ -1382,11 +1397,11 @@ Check your DM, we replied!
 
                 tbody.innerHTML = data.faqs.map(faq => {
                     const statusBadge = faq.is_active
-                        ? '<span style="background:#edf7f0;color:#187047;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مفعّل</span>'
-                        : '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">معطّل</span>';
+                        ? '<span style="background:var(--success-bg);color:var(--success);padding:3px 10px;border-radius:8px;font-size:0.8rem;">مفعّل</span>'
+                        : '<span style="background:var(--danger-bg);color:var(--danger);padding:3px 10px;border-radius:8px;font-size:0.8rem;">معطّل</span>';
 
                     const keywords = faq.keywords.split(',').map(k => k.trim()).filter(k => k).map(k =>
-                        `<span style="background:var(--surface);color:#0a0a0a;padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
+                        `<span style="background:var(--surface);color:var(--ink);padding:2px 8px;border-radius:6px;font-size:0.75rem;margin:2px;display:inline-block;">${k}</span>`
                     ).join('');
 
                     const shortAnswer = faq.answer.length > 60 ? faq.answer.substring(0, 60) + '...' : faq.answer;
@@ -1398,8 +1413,8 @@ Check your DM, we replied!
                         <td>${faq.priority}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' style="background:var(--surface);color:#0a0a0a;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteFaq(${faq.id})" style="background:#fef3f2;color:#b42318;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف"><i class="fas fa-trash"></i></button>
+                            <button onclick='editFaq(${JSON.stringify(faq).replace(/'/g, "&#39;")})' class="btn btn-sm btn-secondary" style="margin-inline-end:5px;" title="تعديل"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteFaq(${faq.id})" class="btn btn-sm btn-danger" title="حذف"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`;
                 }).join('');
@@ -1513,12 +1528,12 @@ Check your DM, we replied!
 
                 tbody.innerHTML = data.map(rule => {
                     const platformBadge = rule.platform === 'facebook'
-                        ? '<span style="background:var(--surface);color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
-                        : '<span style="background:var(--surface);color:#0a0a0a;padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
+                        ? '<span style="background:var(--surface);color:var(--ink);padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
+                        : '<span style="background:var(--surface);color:var(--ink);padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
 
                     const statusBadge = rule.is_active
-                        ? '<span style="background:#fef3f2;color:#b42318;padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
-                        : '<span style="background:#edf7f0;color:#187047;padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
+                        ? '<span style="background:var(--danger-bg);color:var(--danger);padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
+                        : '<span style="background:var(--success-bg);color:var(--success);padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
 
                     return `<tr>
                         <td>${platformBadge}</td>
@@ -1526,10 +1541,10 @@ Check your DM, we replied!
                         <td style="color:var(--text-muted);">${rule.label || '—'}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" style="background:#fff8e7;color:#946200;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;margin-left:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
+                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" class="btn btn-sm btn-warning" style="margin-inline-end:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
                                 <i class="fas fa-${rule.is_active ? 'toggle-on' : 'toggle-off'}"></i>
                             </button>
-                            <button onclick="deletePostRule(${rule.id})" style="background:#fef3f2;color:#b42318;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;" title="حذف">
+                            <button onclick="deletePostRule(${rule.id})" class="btn btn-sm btn-danger" title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -1620,7 +1635,7 @@ Check your DM, we replied!
 </script>
 
     <!-- Edit Product Modal -->
-    <div id="edit-product-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+    <div id="edit-product-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay); z-index:1000; justify-content:center; align-items:center;">
         <div style="background:var(--paper); border:1px solid var(--glass-border); padding:30px; border-radius:16px; width:600px; max-width:90%; max-height: 90vh; overflow-y: auto;">
             <h2 style="margin-bottom:20px;">تعديل المنتج</h2>
             <input type="hidden" id="edit-product-id">
@@ -1628,50 +1643,50 @@ Check your DM, we replied!
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>الاسم</label>
-                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-name" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
                 <label>الوصف</label>
-                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);"></textarea>
+                <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);"></textarea>
             </div>
 
             <div style="display:flex; gap:10px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>افتتاحية العطر</label>
-                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-top" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قلب العطر</label>
-                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-mid" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1;">
                     <label>قاعدة العطر</label>
-                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-base" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الموسم</label>
-                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-season" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>المناسبة</label>
-                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-occasion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الثبات</label>
-                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-longevity" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>الفوحان</label>
-                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-projection" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
                 <div class="form-group" style="margin-bottom:15px; flex:1; min-width:30%;">
                     <label>التركيز</label>
-                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--ink);">
+                    <input type="text" id="edit-product-concentration" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);">
                 </div>
             </div>
 
@@ -1681,8 +1696,8 @@ Check your DM, we replied!
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="closeEditModal()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--hover-surface); color:var(--ink); cursor:pointer;">إلغاء</button>
-                <button onclick="saveProductEdit()" style="padding:10px 15px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer;">حفظ التغييرات</button>
+                <button onclick="closeEditModal()" class="btn btn-secondary">إلغاء</button>
+                <button onclick="saveProductEdit()" class="btn btn-primary">حفظ التغييرات</button>
             </div>
         </div>
     </div>

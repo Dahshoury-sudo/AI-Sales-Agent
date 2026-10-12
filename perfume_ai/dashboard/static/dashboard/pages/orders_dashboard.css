@@ -184,8 +184,8 @@
 
         .btn-logout {
             padding: 10px 20px;
-            background: #fef3f2;
-            border: 1px solid #fef3f2;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-bg);
             border-radius: 12px;
             color: var(--danger);
             font-family: var(--font-body);
@@ -195,7 +195,7 @@
         }
 
         .btn-logout:hover {
-            background: #fef3f2;
+            background: var(--danger-bg);
         }
 
         /* Stats Cards */
@@ -336,7 +336,7 @@
         }
 
         .orders-table tbody tr:hover {
-            background: #f3f3f3;
+            background: var(--surface);
         }
 
         .orders-table tbody td {
@@ -429,7 +429,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: var(--overlay);
 
             z-index: 100;
             justify-content: center;
@@ -483,9 +483,9 @@
         }
 
         .modal-close:hover {
-            background: #fef3f2;
+            background: var(--danger-bg);
             color: var(--danger);
-            border-color: #fef3f2;
+            border-color: var(--danger-bg);
         }
 
         .modal-body {
@@ -581,8 +581,8 @@
         }
 
         .bot-notes {
-            background: #f3f3f3;
-            border: 1px solid #f3f3f3;
+            background: var(--surface);
+            border: 1px solid var(--line);
             border-radius: 14px;
             padding: 14px 18px;
             color: var(--text-muted);
@@ -615,19 +615,19 @@
 
         .btn-confirm {
             background: var(--info-bg);
-            border-color: #f3f3f3;
+            border-color: var(--control-border);
             color: var(--info);
         }
 
         .btn-deliver {
             background: var(--success-bg);
-            border-color: #edf7f0;
+            border-color: var(--success-bg);
             color: var(--success);
         }
 
         .btn-cancel {
             background: var(--danger-bg);
-            border-color: #fef3f2;
+            border-color: var(--danger-bg);
             color: var(--danger);
         }
 
@@ -650,7 +650,7 @@
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #f3f3f3; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 3px; }
 
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

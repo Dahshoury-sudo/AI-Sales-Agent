@@ -60,7 +60,7 @@
         }
 
         .conv-item:hover, .conv-item.active {
-            background: #f3f3f3;
+            background: var(--surface);
             border-color: var(--primary);
         }
 
@@ -250,27 +250,27 @@
         }
 
         .platform-badge.whatsapp {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--ink);
-            border: 1px solid #f3f3f3;
+            border: 1px solid var(--line);
         }
 
         .platform-badge.messenger {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--ink);
-            border: 1px solid #f3f3f3;
+            border: 1px solid var(--line);
         }
 
         .platform-badge.instagram {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--ink);
-            border: 1px solid #f3f3f3;
+            border: 1px solid var(--line);
         }
 
         .platform-badge.web {
-            background: #f3f3f3;
+            background: var(--surface);
             color: var(--ink);
-            border: 1px solid #f3f3f3;
+            border: 1px solid var(--line);
         }
 
         .chat-header-info {

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سجل المحادثات - WebVitas AI</title>
-    <link rel="stylesheet" href="{% static 'dashboard/pages/chat_history.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/pages/chat_history.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
 </head>
 <body data-page="chat_history" data-layout="app">
@@ -90,7 +90,7 @@
                 list.innerHTML = '';
                 
                 if (data.conversations.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; color: #606060; margin-top:20px;">لا توجد محادثات في السجل.</div>';
+                    list.innerHTML = '<div style="text-align:center; color: var(--muted); margin-top:20px;">لا توجد محادثات في السجل.</div>';
                 }
 
                 data.conversations.forEach(conv => {
@@ -167,7 +167,7 @@
             
             // Clear messages instantly and show loading state
             const msgContainer = document.getElementById('chat-messages');
-            msgContainer.innerHTML = '<div style="text-align:center; color: #606060; margin-top:20px;">جاري تحميل المحادثة... <i class="fas fa-circle-notch fa-spin"></i></div>';
+            msgContainer.innerHTML = '<div style="text-align:center; color: var(--muted); margin-top:20px;">جاري تحميل المحادثة... <i class="fas fa-circle-notch fa-spin"></i></div>';
             
             // Reset JSON cache to force re-render
             lastMessagesJSON = "";
@@ -192,7 +192,7 @@
                 msgContainer.innerHTML = '';
                 
                 if (data.messages.length === 0) {
-                    msgContainer.innerHTML = '<div style="text-align:center; color: #606060; margin-top:20px;">لا توجد رسائل سابقة.</div>';
+                    msgContainer.innerHTML = '<div style="text-align:center; color: var(--muted); margin-top:20px;">لا توجد رسائل سابقة.</div>';
                 }
 
                 data.messages.forEach(msg => {
