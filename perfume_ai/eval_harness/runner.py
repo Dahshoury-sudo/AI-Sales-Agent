@@ -246,6 +246,13 @@ def run_scenario(scenario, truth):
                 save_message(conversation, "assistant", reply, internal_context=context)
 
                 state = dict(_local.turn)
+                from products.models import Cart, Order
+                cart = Cart.objects.filter(conversation=conversation).first()
+                cart_state = {
+                    "items": list(cart.items.values("variant__product_id", "variant__product__name", "variant_id", "quantity")) if cart else [],
+                    "pending": cart.pending_items if cart else [],
+                    "order_count": Order.objects.filter(conversation=conversation).count(),
+                }
                 turn_findings = checks.check_reply(
                     reply,
                     truth=truth,
@@ -257,6 +264,16 @@ def run_scenario(scenario, truth):
                         for turn in record["turns"]
                     ),
                 )
+                expected_names = scenario.get("assert_cart_names")
+                if expected_names:
+                    for item in cart_state["items"]:
+                        if item["variant__product__name"] not in expected_names:
+                            turn_findings.append(("cart_product_mismatch", "critical",
+                                f"Cart contains {item['variant__product__name']}; customer requested {expected_names}"))
+                if index == len(scenario["turns"]) and scenario.get("assert_final_quantity"):
+                    quantity = sum(line.get("quantity") or 1 for line in cart_state["items"] + cart_state["pending"])
+                    if quantity != scenario["assert_final_quantity"]:
+                        turn_findings.append(("cart_quantity_mismatch", "high", f"Saved quantity {quantity}, expected {scenario['assert_final_quantity']}"))
 
                 # Not folded into `check_reply`: the defect is a relation between two replies, so
                 # it needs the earlier ones as replies, and `history_text` has already flattened
@@ -319,6 +336,7 @@ def run_scenario(scenario, truth):
                     "keeping": state.get("keeping"),
                     "dropped": state.get("dropped"),
                     "offered": state.get("offered"),
+                    "cart": cart_state,
                     "context_chars": len(context or ""),
                     "context": context,
                     "findings": [list(f) for f in turn_findings],

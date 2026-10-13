@@ -478,6 +478,9 @@ def rank(products, intent, reference=None, keep=(), offered=()):
                 # The requested terms, never the fit value: a number rendered here is how
                 # "شبهه بنسبة 95%" gets born, and reasons_note is read straight into a prompt.
                 entry.reasons.append("فيه " + "، ".join(str(n) for n in matched_notes))
+            missing_notes = [str(n) for n in wanted_notes if n not in matched_notes]
+            if missing_notes:
+                entry.mismatches.append("مش مسجل فيه " + "، ".join(missing_notes))
 
         hit_avoided = [
             note for note in avoid_notes
@@ -570,6 +573,8 @@ def rank(products, intent, reference=None, keep=(), offered=()):
                 continue
             entry.score += WEIGHTS[key] * hit + _within_band_bonus(key, recorded, hit)
             reason = label if hit >= 1.0 else short_label
+            if hit < 1.0:
+                entry.mismatches.append(short_label)
             # The recorded value rides along so the reply can quote it instead of asserting
             # "وثباتهم كويس" with no number, which is what the evaluation caught it doing on
             # the turn the customer said longevity mattered most.
@@ -630,7 +635,9 @@ def rank(products, intent, reference=None, keep=(), offered=()):
     # `-oil_stock_grams` term that used to sit here went with oil tracking; there is
     # deliberately no replacement, because re-sorting on a second criterion here would
     # override the caller's ordering rather than defer to it.
-    ranked.sort(key=lambda entry: -entry.score)
+    ranked.sort(key=lambda entry: (
+        any(m.startswith("مش مسجل فيه ") for m in entry.mismatches), -entry.score
+    ))
     return ranked
 
 

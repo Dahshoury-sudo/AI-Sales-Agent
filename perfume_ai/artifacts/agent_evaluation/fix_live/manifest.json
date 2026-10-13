@@ -1,0 +1,182 @@
+{
+  "started_utc": "2026-10-13T11:25:35.939462+00:00",
+  "budget_usd": "0.30",
+  "resume_from": null,
+  "invalidated_harness_attempts": [],
+  "temporary_database": "test_agent_eval_15ac92fc09",
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "P2",
+        "turns": 3
+      },
+      {
+        "id": "F4",
+        "turns": 4
+      },
+      {
+        "id": "F2",
+        "turns": 4
+      },
+      {
+        "id": "D1",
+        "turns": 1
+      },
+      {
+        "id": "S4",
+        "turns": 1
+      },
+      {
+        "id": "O4",
+        "turns": 1
+      },
+      {
+        "id": "O5",
+        "turns": 2
+      },
+      {
+        "id": "P3",
+        "turns": 2
+      },
+      {
+        "id": "M2",
+        "turns": 2
+      },
+      {
+        "id": "M4",
+        "turns": 2
+      },
+      {
+        "id": "C2",
+        "turns": 1
+      },
+      {
+        "id": "R2",
+        "turns": 1
+      },
+      {
+        "id": "R3",
+        "turns": 1
+      },
+      {
+        "id": "R4",
+        "turns": 1
+      },
+      {
+        "id": "R5",
+        "turns": 1
+      },
+      {
+        "id": "X3",
+        "turns": 1
+      },
+      {
+        "id": "D2",
+        "turns": 2
+      },
+      {
+        "id": "D3",
+        "turns": 2
+      },
+      {
+        "id": "R1",
+        "turns": 1
+      },
+      {
+        "id": "S1",
+        "turns": 1
+      },
+      {
+        "id": "S2",
+        "turns": 1
+      },
+      {
+        "id": "S3",
+        "turns": 1
+      },
+      {
+        "id": "C1",
+        "turns": 1
+      },
+      {
+        "id": "C3",
+        "turns": 1
+      },
+      {
+        "id": "O1",
+        "turns": 2
+      },
+      {
+        "id": "O2",
+        "turns": 1
+      },
+      {
+        "id": "O3",
+        "turns": 1
+      },
+      {
+        "id": "G1",
+        "turns": 1
+      },
+      {
+        "id": "G2",
+        "turns": 1
+      },
+      {
+        "id": "P1",
+        "turns": 1
+      },
+      {
+        "id": "CS1",
+        "turns": 2
+      },
+      {
+        "id": "CS2",
+        "turns": 1
+      },
+      {
+        "id": "M1",
+        "turns": 4
+      },
+      {
+        "id": "M3",
+        "turns": 3
+      },
+      {
+        "id": "X1",
+        "turns": 1
+      },
+      {
+        "id": "X2",
+        "turns": 1
+      },
+      {
+        "id": "X4",
+        "turns": 1
+      },
+      {
+        "id": "X5",
+        "turns": 1
+      },
+      {
+        "id": "F1",
+        "turns": 4
+      },
+      {
+        "id": "F3",
+        "turns": 4
+      }
+    ]
+  },
+  "catalogue_products": 46,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192
+  },
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

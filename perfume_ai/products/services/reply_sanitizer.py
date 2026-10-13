@@ -21,6 +21,71 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 
+_NOTE_ALIASES = {
+    "oud": ("oud", "agarwood", "عود"), "amber": ("amber", "عنبر"),
+    "vanilla": ("vanilla", "فانيليا", "فانيلا"),
+    "lavender": ("lavender", "لافندر", "لفندر", "خزامي"),
+    "ambroxan": ("ambroxan", "امبروكسان"), "berry": ("berry", "berries", "توت"),
+    "tonka": ("tonka", "تونكا", "توتكا"), "tobacco": ("tobacco", "تبغ", "توباكو"),
+    "honey": ("honey", "عسل"), "cinnamon": ("cinnamon", "قرفه"),
+    "rum": ("rum", "روم"), "musk": ("musk", "مسك"),
+    "leather": ("leather", "جلد"), "rose": ("rose", "ورد", "ورده"),
+    "patchouli": ("patchouli", "باتشولي", "باتشوللي"),
+    "jasmine": ("jasmine", "ياسمين"), "coffee": ("coffee", "قهوه"),
+    "praline": ("praline", "برالين", "بريلين"),
+    "cardamom": ("cardamom", "هيل", "حبهان"),
+    "sandalwood": ("sandalwood", "صندل"), "vetiver": ("vetiver", "فيتيفر"),
+}
+
+
+def _claim_normalize(text):
+    return str(text or "").lower().translate(str.maketrans("أإآىة٠١٢٣٤٥٦٧٨٩", "ااايه0123456789"))
+
+
+def product_claim_issues(reply, facts):
+    """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
+    text = _claim_normalize(reply)
+    issues = []
+    for clause in re.split(r"[.!؟?\n]", text):
+        if re.search(r"(?:عطر|برفان|عطور)\s+(?:رجالي\s+|حريمي\s+)?(?:اصلي|اصليه)|براندات\s+اصليه", clause):
+            if not re.search(r"(?:مش|غير|لا|مفيش)\s+(?:متوفر\s+)?(?:عندنا\s+)?(?:عطر|برفان|عطور|براندات)", clause):
+                issues.append("authenticity: زجاجة الأوريجينال لا تعني سائل أصلي")
+    for popularity in re.finditer(r"معظم الناس|اغلب الناس|مش منتشر|مش موجود عند حد|مضمون هيعجب|\bنادره?\b", text):
+        if not re.search(r"ماقدرش|مقدرش|مش متاكد|مش مؤكد", text[max(0, popularity.start()-35):popularity.start()]):
+            issues.append("popularity: لا توجد بيانات شعبية أو ضمان إعجاب")
+    if not facts:
+        return issues
+    names = {_claim_normalize(name): row for name, row in facts.items()}
+    pattern = re.compile("|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)))
+    matches = list(pattern.finditer(text))
+    for index, named in enumerate(matches):
+        row = names[named.group()]
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        segment = text[named.end():end]
+        recorded = _claim_normalize(" ".join(row.get("notes", [])))
+        for key, aliases in _NOTE_ALIASES.items():
+            alias_pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"
+            for claim in re.finditer(alias_pattern, segment):
+                before = segment[max(0, claim.start() - 28):claim.start()]
+                if re.search(r"مش|بدون|من غير|مفيهوش|مفيش|مافيش|ولا|بتحب|تحب", before):
+                    continue
+                if not any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
+                    issues.append(f"note:{named.group()}:{key}")
+        allowed_hours = set(re.findall(r"\d+(?:\.\d+)?", row.get("longevity", "")))
+        for hours in re.findall(r"(\d+(?:\.\d+)?)\s*ساع(?:ه|ات)", segment):
+            if hours not in allowed_hours:
+                issues.append(f"longevity:{named.group()}:{hours}")
+        projection = _claim_normalize(row.get("projection", ""))
+        projection_claim = re.search(r"فوحانه\s+(هادي|خفيف|متوسط|قوي)", segment)
+        levels = {"هادي": ("intimate", "weak", "soft"), "خفيف": ("intimate", "weak", "soft"),
+                  "متوسط": ("moderate",), "قوي": ("strong", "very strong", "enormous")}
+        if projection_claim and projection not in levels[projection_claim[1]]:
+            issues.append(f"projection:{named.group()}:{projection_claim[1]}")
+        if re.search(r"ثابت اكتر|ثباته اطول|يدوم اطول", segment) and len(matches) < 2:
+            issues.append(f"comparison:{named.group()}: طرف المقارنة غير محدد")
+    return list(dict.fromkeys(issues))
+
+
 # Each pattern matches a whole trailing question, including the whitespace before it,
 # so removing it leaves the preceding sentence intact.
 #

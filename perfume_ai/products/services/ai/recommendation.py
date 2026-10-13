@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from .prompts import get_system_prompt
-from ..product_formatting import format_products, is_variant_available
+from ..product_formatting import format_products, is_variant_available, factual_description
 from ..sales import described
 from ..sales.constraints import acknowledgement_hint, describe_filters
 from ..sales.ranking import reasons_note
@@ -12,7 +12,7 @@ from itertools import combinations
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
-def _constrained_recommendation(products, intent):
+def _constrained_recommendation(products, intent, message="", search=None):
     """Render hard requirements from eligible variants, never model arithmetic."""
     choices = []
     for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
@@ -23,6 +23,10 @@ def _constrained_recommendation(products, intent):
     total_scope = intent.get("budget_scope") == "total"
     count = intent.get("purchase_quantity") if total_scope else intent.get("recommendation_count", 2)
     count = count if type(count) is int and count > 0 else 2
+    from ..static_faq_service import normalize_arabic
+    best = any(word in normalize_arabic(message) for word in ("احسن", "افضل", "انهي", "اختارلي واحد"))
+    if best and not total_scope:
+        count = 1
     if total_scope:
         selected = next((group for group in combinations(choices, count)
                          if budget is not None and sum(v.price for _, v in group) <= budget), ())
@@ -37,12 +41,15 @@ def _constrained_recommendation(products, intent):
         line = f"• {product.name} — {bottle} {variant.volume} مل بـ{variant.price:g} جنيه."
         if budget is not None and variant.price > budget:
             line += " أعلى حاجة بسيطة من ميزانيتك."
-        facts = []
-        if product.longevity:
-            facts.append(f"الثبات: {product.longevity}")
-        if product.projection:
-            facts.append(f"الفوحان: {product.projection}")
-        lines.append(line + (" " + "، ".join(facts) if facts else ""))
+        facts = factual_description(product)
+        lines.append(line + (" " + facts if facts else ""))
+    if best or len(selected) > 1:
+        product = selected[0][0]
+        ranked = (search or {}).get("ranked", {}).get(product.pk)
+        reasons = [r for r in (ranked.reasons if ranked else [])
+                   if "بيتكلم" not in r and "منتشر" not in r]
+        reason = reasons[0] if reasons else "حجمه وسعره مناسبين للشروط اللي حددتها"
+        lines.append(f"أرشحلك {product.name} لأنه {reason}.")
     if total_scope:
         lines.append(f"إجمالي الـ{count} زجاجات: {sum(v.price for _, v in selected):g} جنيه.")
     reply = "\n\n".join(lines)
@@ -552,8 +559,17 @@ def recommend(
     # name mentioned anywhere in the conversation — which excluded the perfume the
     # customer had just asked about, contradicting the persona's own rule to stay on it.
     # Deleted rather than narrowed: a hard queryset filter beats asking the model twice.
+    from ..static_faq_service import normalize_arabic
+    from ..sales.similarity import peak_hours
+    import re
+    requested_days = re.search(r"(?:ثبات|ثابت|يدوم).*?(يومين|48\s*ساع)", normalize_arabic(message))
+    candidates = list(products) or list(alternatives or [])
+    if requested_days and candidates and not any((peak_hours(p.longevity) or 0) >= 48 for p in candidates):
+        return "ماقدرش أوعدك بثبات يومين للعطور دي، حتى لو زودت الميزانية. نختار على أساس الثبات الفعلي مع الحفاظ على ميزانيتك؟", "UNSUPPORTED_LONGEVITY"
+    if intent and as_budget(intent.get("max_price")) and candidates and not any(eligible_variants(p, intent) for p in candidates):
+        return "مفيش اختيار بيجمع الشروط دي مع ميزانيتك. أنهي شرط في العطر ممكن نغيّره مع الحفاظ على الميزانية؟", described.relax_offer_block(intent)
     if intent and (intent.get("requested_volume") or intent.get("bottle_type") or intent.get("budget_strict") or intent.get("budget_scope") == "total"):
-        return _constrained_recommendation(products if products else alternatives or [], intent)
+        return _constrained_recommendation(products if products else alternatives or [], intent, message, search)
     max_price = _coerce_budget(intent.get("max_price") if intent else None)
     budget_note = ""
     if max_price:

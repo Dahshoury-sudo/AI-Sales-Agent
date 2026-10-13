@@ -1,0 +1,1345 @@
+{
+  "variant_prices": {
+    "Chloe Eau de Parfum": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "692.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1058.00"
+      }
+    ],
+    "Armani Code": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "633.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "866.00"
+      }
+    ],
+    "Afnan 9PM": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "508.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1077.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "881.00"
+      }
+    ],
+    "Black Opium": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "677.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "883.00"
+      }
+    ],
+    "Dior Sauvage": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "642.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "944.00"
+      },
+      {
+        "volume": 60,
+        "bottle_type": "original",
+        "price": "456.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "815.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "1623.00"
+      }
+    ],
+    "Dior Homme Sport": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "450.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1100.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "4500.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "8000.00"
+      }
+    ],
+    "Dior Homme Intense": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "550.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1300.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "5500.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "9800.00"
+      }
+    ],
+    "Libre": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "561.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "927.00"
+      }
+    ],
+    "La Vie Est Belle": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "669.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1046.00"
+      }
+    ],
+    "Good Girl": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "650.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1083.00"
+      }
+    ],
+    "Light Blue": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "691.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "852.00"
+      }
+    ],
+    "Acqua di Gio": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "503.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1032.00"
+      }
+    ],
+    "Y Eau de Parfum": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "594.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "900.00"
+      }
+    ],
+    "Coco Mademoiselle": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "534.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1006.00"
+      }
+    ],
+    "1 Million": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "514.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "888.00"
+      }
+    ],
+    "Invictus": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "540.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1102.00"
+      }
+    ],
+    "Baccarat Rouge 540": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "686.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1136.00"
+      }
+    ],
+    "Oud Wood": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "540.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1160.00"
+      }
+    ],
+    "Le Male": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "623.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "856.00"
+      }
+    ],
+    "Flowerbomb": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "577.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "928.00"
+      }
+    ],
+    "Bloom": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "549.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1067.00"
+      }
+    ],
+    "Eros": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "666.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1019.00"
+      }
+    ],
+    "Stronger With You Intensely": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "450.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "780.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "4200.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "7500.00"
+      }
+    ],
+    "Silver Mountain Water": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "3100.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "5700.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "24000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "43000.00"
+      }
+    ],
+    "Green Irish Tweed": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "3300.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "6000.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "26000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "46000.00"
+      }
+    ],
+    "Tom Ford Ombre Leather": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "592.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "873.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "700.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "1000.00"
+      }
+    ],
+    "Aventus": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "631.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "990.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "1000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "1400.00"
+      }
+    ],
+    "Stronger With You Absolutely": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "480.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "830.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "4500.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "8000.00"
+      }
+    ],
+    "Accento Overdose": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "2800.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "5000.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "21000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "38000.00"
+      }
+    ],
+    "XJ 1861 Naxos": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "2900.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "5200.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "22000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "40000.00"
+      }
+    ],
+    "Fahrenheit": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "900.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1200.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "5000.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "9000.00"
+      }
+    ],
+    "Erba Pura": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "2700.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "4900.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "20000.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "36000.00"
+      }
+    ],
+    "Stronger With You": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "400.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "700.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "3800.00"
+      },
+      {
+        "volume": 200,
+        "bottle_type": "original",
+        "price": "6800.00"
+      }
+    ],
+    "Lattafa Asad": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "642.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "982.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "794.00"
+      }
+    ],
+    "Marino": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "649.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1093.00"
+      }
+    ],
+    "Rosalia": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "575.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1030.00"
+      }
+    ],
+    "Oudora": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "514.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "988.00"
+      }
+    ],
+    "Noirvel": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "562.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1085.00"
+      }
+    ],
+    "Dark Aura": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "680.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1151.00"
+      }
+    ],
+    "Ambero": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "601.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1180.00"
+      }
+    ],
+    "Vanilo": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "607.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "897.00"
+      }
+    ],
+    "Safrano": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "651.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1024.00"
+      }
+    ],
+    "Jasmino": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "578.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1106.00"
+      }
+    ],
+    "Leatherio": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "513.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1075.00"
+      }
+    ],
+    "Citrolo": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "598.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "943.00"
+      }
+    ],
+    "Bleu de Chanel": [
+      {
+        "volume": 50,
+        "bottle_type": "normal",
+        "price": "645.00"
+      },
+      {
+        "volume": 90,
+        "bottle_type": "normal",
+        "price": "1015.00"
+      },
+      {
+        "volume": 50,
+        "bottle_type": "original",
+        "price": "800.00"
+      },
+      {
+        "volume": 100,
+        "bottle_type": "original",
+        "price": "1400.00"
+      },
+      {
+        "volume": 150,
+        "bottle_type": "original",
+        "price": "1700.00"
+      }
+    ]
+  },
+  "prices": [
+    "1000",
+    "1000.0",
+    "1000.00",
+    "1006",
+    "1006.0",
+    "1006.00",
+    "1015",
+    "1015.0",
+    "1015.00",
+    "1019",
+    "1019.0",
+    "1019.00",
+    "1024",
+    "1024.0",
+    "1024.00",
+    "1030",
+    "1030.0",
+    "1030.00",
+    "1032",
+    "1032.0",
+    "1032.00",
+    "1046",
+    "1046.0",
+    "1046.00",
+    "1058",
+    "1058.0",
+    "1058.00",
+    "1067",
+    "1067.0",
+    "1067.00",
+    "1075",
+    "1075.0",
+    "1075.00",
+    "1077",
+    "1077.0",
+    "1077.00",
+    "1083",
+    "1083.0",
+    "1083.00",
+    "1085",
+    "1085.0",
+    "1085.00",
+    "1093",
+    "1093.0",
+    "1093.00",
+    "1100",
+    "1100.0",
+    "1100.00",
+    "1102",
+    "1102.0",
+    "1102.00",
+    "1106",
+    "1106.0",
+    "1106.00",
+    "1136",
+    "1136.0",
+    "1136.00",
+    "1151",
+    "1151.0",
+    "1151.00",
+    "1160",
+    "1160.0",
+    "1160.00",
+    "1180",
+    "1180.0",
+    "1180.00",
+    "1200",
+    "1200.0",
+    "1200.00",
+    "1300",
+    "1300.0",
+    "1300.00",
+    "1400",
+    "1400.0",
+    "1400.00",
+    "1623",
+    "1623.0",
+    "1623.00",
+    "1700",
+    "1700.0",
+    "1700.00",
+    "20000",
+    "20000.0",
+    "20000.00",
+    "21000",
+    "21000.0",
+    "21000.00",
+    "22000",
+    "22000.0",
+    "22000.00",
+    "24000",
+    "24000.0",
+    "24000.00",
+    "26000",
+    "26000.0",
+    "26000.00",
+    "2700",
+    "2700.0",
+    "2700.00",
+    "2800",
+    "2800.0",
+    "2800.00",
+    "2900",
+    "2900.0",
+    "2900.00",
+    "3100",
+    "3100.0",
+    "3100.00",
+    "3300",
+    "3300.0",
+    "3300.00",
+    "36000",
+    "36000.0",
+    "36000.00",
+    "3800",
+    "3800.0",
+    "3800.00",
+    "38000",
+    "38000.0",
+    "38000.00",
+    "400",
+    "400.0",
+    "400.00",
+    "40000",
+    "40000.0",
+    "40000.00",
+    "4200",
+    "4200.0",
+    "4200.00",
+    "43000",
+    "43000.0",
+    "43000.00",
+    "450",
+    "450.0",
+    "450.00",
+    "4500",
+    "4500.0",
+    "4500.00",
+    "456",
+    "456.0",
+    "456.00",
+    "46000",
+    "46000.0",
+    "46000.00",
+    "480",
+    "480.0",
+    "480.00",
+    "4900",
+    "4900.0",
+    "4900.00",
+    "5000",
+    "5000.0",
+    "5000.00",
+    "503",
+    "503.0",
+    "503.00",
+    "508",
+    "508.0",
+    "508.00",
+    "513",
+    "513.0",
+    "513.00",
+    "514",
+    "514.0",
+    "514.00",
+    "5200",
+    "5200.0",
+    "5200.00",
+    "534",
+    "534.0",
+    "534.00",
+    "540",
+    "540.0",
+    "540.00",
+    "549",
+    "549.0",
+    "549.00",
+    "550",
+    "550.0",
+    "550.00",
+    "5500",
+    "5500.0",
+    "5500.00",
+    "561",
+    "561.0",
+    "561.00",
+    "562",
+    "562.0",
+    "562.00",
+    "5700",
+    "5700.0",
+    "5700.00",
+    "575",
+    "575.0",
+    "575.00",
+    "577",
+    "577.0",
+    "577.00",
+    "578",
+    "578.0",
+    "578.00",
+    "592",
+    "592.0",
+    "592.00",
+    "594",
+    "594.0",
+    "594.00",
+    "598",
+    "598.0",
+    "598.00",
+    "6000",
+    "6000.0",
+    "6000.00",
+    "601",
+    "601.0",
+    "601.00",
+    "607",
+    "607.0",
+    "607.00",
+    "623",
+    "623.0",
+    "623.00",
+    "631",
+    "631.0",
+    "631.00",
+    "633",
+    "633.0",
+    "633.00",
+    "642",
+    "642.0",
+    "642.00",
+    "645",
+    "645.0",
+    "645.00",
+    "649",
+    "649.0",
+    "649.00",
+    "650",
+    "650.0",
+    "650.00",
+    "651",
+    "651.0",
+    "651.00",
+    "666",
+    "666.0",
+    "666.00",
+    "669",
+    "669.0",
+    "669.00",
+    "677",
+    "677.0",
+    "677.00",
+    "680",
+    "680.0",
+    "680.00",
+    "6800",
+    "6800.0",
+    "6800.00",
+    "686",
+    "686.0",
+    "686.00",
+    "691",
+    "691.0",
+    "691.00",
+    "692",
+    "692.0",
+    "692.00",
+    "700",
+    "700.0",
+    "700.00",
+    "7500",
+    "7500.0",
+    "7500.00",
+    "780",
+    "780.0",
+    "780.00",
+    "794",
+    "794.0",
+    "794.00",
+    "800",
+    "800.0",
+    "800.00",
+    "8000",
+    "8000.0",
+    "8000.00",
+    "815",
+    "815.0",
+    "815.00",
+    "830",
+    "830.0",
+    "830.00",
+    "852",
+    "852.0",
+    "852.00",
+    "856",
+    "856.0",
+    "856.00",
+    "866",
+    "866.0",
+    "866.00",
+    "873",
+    "873.0",
+    "873.00",
+    "881",
+    "881.0",
+    "881.00",
+    "883",
+    "883.0",
+    "883.00",
+    "888",
+    "888.0",
+    "888.00",
+    "897",
+    "897.0",
+    "897.00",
+    "900",
+    "900.0",
+    "900.00",
+    "9000",
+    "9000.0",
+    "9000.00",
+    "927",
+    "927.0",
+    "927.00",
+    "928",
+    "928.0",
+    "928.00",
+    "943",
+    "943.0",
+    "943.00",
+    "944",
+    "944.0",
+    "944.00",
+    "9800",
+    "9800.0",
+    "9800.00",
+    "982",
+    "982.0",
+    "982.00",
+    "988",
+    "988.0",
+    "988.00",
+    "990",
+    "990.0",
+    "990.00"
+  ],
+  "volumes": [
+    "100",
+    "150",
+    "200",
+    "50",
+    "60",
+    "90"
+  ],
+  "names": [
+    "1 Million",
+    "Accento Overdose",
+    "Acqua di Gio",
+    "Afnan 9PM",
+    "Ambero",
+    "Armani Code",
+    "Aventus",
+    "Baccarat Rouge 540",
+    "Black Opium",
+    "Bleu de Chanel",
+    "Bloom",
+    "Chloe Eau de Parfum",
+    "Citrolo",
+    "Coco Mademoiselle",
+    "Dark Aura",
+    "Dior Homme Intense",
+    "Dior Homme Sport",
+    "Dior Sauvage",
+    "Erba Pura",
+    "Eros",
+    "Fahrenheit",
+    "Flowerbomb",
+    "Good Girl",
+    "Green Irish Tweed",
+    "Invictus",
+    "Jasmino",
+    "La Vie Est Belle",
+    "Lattafa Asad",
+    "Le Male",
+    "Leatherio",
+    "Libre",
+    "Light Blue",
+    "Marino",
+    "Noirvel",
+    "Oud Wood",
+    "Oudora",
+    "Rosalia",
+    "Safrano",
+    "Silver Mountain Water",
+    "Stronger With You",
+    "Stronger With You Absolutely",
+    "Stronger With You Intensely",
+    "Tom Ford Ombre Leather",
+    "Vanilo",
+    "XJ 1861 Naxos",
+    "Y Eau de Parfum"
+  ],
+  "available_names": [
+    "1 Million",
+    "Accento Overdose",
+    "Acqua di Gio",
+    "Afnan 9PM",
+    "Armani Code",
+    "Aventus",
+    "Baccarat Rouge 540",
+    "Black Opium",
+    "Bleu de Chanel",
+    "Bloom",
+    "Chloe Eau de Parfum",
+    "Citrolo",
+    "Coco Mademoiselle",
+    "Dior Homme Intense",
+    "Dior Homme Sport",
+    "Dior Sauvage",
+    "Erba Pura",
+    "Eros",
+    "Fahrenheit",
+    "Flowerbomb",
+    "Good Girl",
+    "Green Irish Tweed",
+    "Invictus",
+    "Jasmino",
+    "La Vie Est Belle",
+    "Lattafa Asad",
+    "Le Male",
+    "Leatherio",
+    "Libre",
+    "Light Blue",
+    "Oud Wood",
+    "Safrano",
+    "Silver Mountain Water",
+    "Stronger With You",
+    "Stronger With You Absolutely",
+    "Stronger With You Intensely",
+    "Tom Ford Ombre Leather",
+    "Vanilo",
+    "XJ 1861 Naxos",
+    "Y Eau de Parfum"
+  ],
+  "name_tokens": [
+    "1861",
+    "540",
+    "9pm",
+    "absolutely",
+    "accento",
+    "acqua",
+    "afnan",
+    "ambero",
+    "armani",
+    "asad",
+    "aura",
+    "aventus",
+    "baccarat",
+    "belle",
+    "black",
+    "bleu",
+    "bloom",
+    "blue",
+    "carolina",
+    "chanel",
+    "chloe",
+    "citrolo",
+    "coco",
+    "code",
+    "creed",
+    "dark",
+    "de",
+    "di",
+    "dior",
+    "dolce",
+    "eau",
+    "emporio",
+    "erba",
+    "eros",
+    "est",
+    "fahrenheit",
+    "flowerbomb",
+    "ford",
+    "francis",
+    "gabbana",
+    "gaultier",
+    "gio",
+    "giorgio",
+    "girl",
+    "good",
+    "green",
+    "gucci",
+    "herrera",
+    "homme",
+    "intense",
+    "intensely",
+    "invictus",
+    "irish",
+    "jasmino",
+    "jean",
+    "kurkdjian",
+    "la",
+    "lancome",
+    "lattafa",
+    "laurent",
+    "le",
+    "leather",
+    "leatherio",
+    "libre",
+    "light",
+    "mademoiselle",
+    "maison",
+    "male",
+    "marino",
+    "million",
+    "mountain",
+    "naxos",
+    "noirvel",
+    "ombre",
+    "opium",
+    "oud",
+    "oudora",
+    "overdose",
+    "paco",
+    "parfum",
+    "paul",
+    "perfamix",
+    "pura",
+    "rabanne",
+    "rolf",
+    "rosalia",
+    "rouge",
+    "safrano",
+    "saint",
+    "sauvage",
+    "silver",
+    "sport",
+    "stronger",
+    "tom",
+    "tweed",
+    "vanilo",
+    "versace",
+    "vie",
+    "viktor",
+    "water",
+    "with",
+    "wood",
+    "xerjoff",
+    "xj",
+    "you",
+    "yves"
+  ],
+  "brands": [
+    "Afnan",
+    "Carolina Herrera",
+    "Chanel",
+    "Chloe",
+    "Creed",
+    "Dior",
+    "Dolce & Gabbana",
+    "Emporio Armani",
+    "Giorgio Armani",
+    "Gucci",
+    "Jean Paul Gaultier",
+    "Lancome",
+    "Lattafa",
+    "Maison Francis Kurkdjian",
+    "Paco Rabanne",
+    "Perfamix",
+    "Tom Ford",
+    "Versace",
+    "Viktor & Rolf",
+    "Xerjoff",
+    "Yves Saint Laurent"
+  ],
+  "longevity_numbers": [
+    "10",
+    "11",
+    "12",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "store_numbers": [
+    "01098190098",
+    "01127027327",
+    "1",
+    "10",
+    "100",
+    "1200",
+    "150",
+    "16",
+    "2",
+    "20",
+    "200",
+    "2000",
+    "24",
+    "25",
+    "28",
+    "288",
+    "3",
+    "3000",
+    "36",
+    "4",
+    "450",
+    "50",
+    "6",
+    "60",
+    "8",
+    "90",
+    "92",
+    "95",
+    "٢٥٠"
+  ],
+  "store_text": "اسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت - كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\" 📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن. التوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚 تقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين) ثبات العطور بتاعتنا ممتاز جداً، العطور الصيفية المنعشة بتقعد من 6 لـ 8 ساعات على الأقل، والعطور الشتوية الثقيلة ممكن توصل لـ 24 ساعة وأكتر على الهدوم. التركيز بيكون عالي جداً. العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط! احنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\" كل المسكات والميكسات المميزة بتاعتنا متاحة! وتقدر تشوفها وتطلبها بكل سهولة من خلال الويبسايت بتاعنا. تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\" كل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه عندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه نحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة تقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327 مصاريف الشحن بتختلف حسب المحافظة، بس بشكل عام بتكون في حدود 50 لـ 60 جنيه لمعظم المحافظات. طرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\" (دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه) اهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي [SEND_BOTTLE_IMAGE]",
+  "catalog_size": 46
+}

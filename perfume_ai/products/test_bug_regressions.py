@@ -1,7 +1,7 @@
 """Regressions for artifacts/bug_reproductions; all providers are simulated."""
 import json
 from decimal import Decimal
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from django.test import TestCase, TransactionTestCase
 from rest_framework.test import APIClient
@@ -37,6 +37,8 @@ class BugFixture(TestCase):
             "customer_name": "Test", "customer_phone": "01000000000",
             "customer_secondary_phone": "01100000000", "shipping_address": "Test address"}
         data.update(changes)
+        if message == "...":
+            message = " و ".join(p["name"] for p in (products or [])) or "تمام"
         with patch("products.services.order_service.chat", return_value=json.dumps(data)):
             reply, context = handle_order(message, [], self.store, self.conv)
         save_message(self.conv, "assistant", reply, internal_context=context)
@@ -478,3 +480,238 @@ class ConcurrentBugTests(TransactionTestCase):
                 self.assertEqual([first.result(), second.result()], [200, 200])
         self.assertEqual([h[0] for h in histories], ["first", "second"])
         self.assertEqual(histories[1][1][-1]["content"], "first reply")
+
+
+class AgentEvaluationFixTests(BugFixture):
+    def test_checkout_rejects_rewritten_product_identity(self):
+        Product.objects.create(store=self.store, brand=self.a.brand, name="Ambero", is_active=False)
+        data = self.line(self.a, 90)
+        data["source_text"] = "امبيرو"
+        inactive = Product.objects.get(name="Ambero")
+        with patch("products.services.product_resolver.confirm_placement", return_value=inactive):
+            reply = self.turn([data], message="عايز اطلب امبيرو 90 ملي")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.count(), 0)
+        self.assertEqual(cart.pending_items[0]["name"], "Ambero")
+        self.assertIn("مش متاح", reply)
+        self.turn(is_confirmed=True)
+        self.assertFalse(Order.objects.exists())
+
+    def test_unrelated_confirmation_cannot_authorize_wrong_product(self):
+        from products.services.product_resolver import resolve_order_name
+        with patch("products.services.product_resolver.chat", return_value='{"name":"Vanilo"}'):
+            self.assertIsNone(resolve_order_name("امبيرو", self.store))
+
+    def test_pending_quantity_is_acknowledged(self):
+        first = self.turn([{"name":"Mystery Azure", "quantity":1}], message="هاخد Mystery Azure")
+        second = self.turn([{"name":"Mystery Azure", "quantity":2}], message="خليها 2 بدل واحدة")
+        self.assertNotEqual(first, second)
+        self.assertIn("2 × Mystery Azure", second)
+        self.assertEqual(Cart.objects.get(conversation=self.conv).pending_items[0]["quantity"], 2)
+
+    def test_explicit_replacement_of_pending_line(self):
+        self.turn([{"name":"Mystery Azure", "quantity":2}], message="هاخد Mystery Azure")
+        pending = Cart.objects.get(conversation=self.conv).pending_items[0]
+        replacement = {**self.line(), "line_id":pending["line_id"], "source_text":"Vanilo"}
+        self.turn([replacement], message="بدل Mystery Azure خليها Vanilo")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.av.pk)
+        self.assertEqual(cart.pending_items, [])
+
+    def test_authenticity_survives_followups_and_blocks_original_bottle(self):
+        from products.services.router import route
+        with patch("products.services.router.classify") as classify:
+            reply, _ = route("مش عايز تركيبات بتاعتكم، عايز براندات أصلية", [], self.store, self.conv)
+            self.assertIn("كلها تركيب", reply)
+            classify.assert_not_called()
+        with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"exclude_brands":["Dior"]}):
+            second, _ = route("وبلاش ديور", [], self.store, self.conv)
+            third, _ = route("طب ايه احسن حاجة", [], self.store, self.conv)
+        self.assertNotEqual(second, third)
+        self.assertEqual(self.conv.preferences["exclude_brands"], ["Dior"])
+        reply = self.turn([self.line(volume=100, bottle_type="original")], message="هاخد Vanilo 100 ملي")
+        self.assertIn("كلها تركيب", reply)
+        self.assertFalse(Order.objects.exists())
+        merge_preferences(self.conv, {}, "خلاص تركيب تمام")
+        self.assertIs(self.conv.preferences["requires_original_liquid"], False)
+        self.turn([self.line()], message="هاخد Vanilo")
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.count(), 1)
+
+    def test_bottle_and_exclusive_rejection_are_not_liquid_requirements(self):
+        from products.services.sales.constraints import original_liquid_update
+        for message in ("عايز زجاجة أوريجينال", "مش عايز حاجة من تصميمكم", "بلاش براندكم"):
+            self.assertIsNone(original_liquid_update(message))
+
+    def test_nice_is_not_sweet_but_saved_sweetness_survives(self):
+        from products.services.ai.intent import extract_intent
+        with patch("products.services.ai.intent.chat", return_value='{"notes":["sweet"],"requested_volume":90}'):
+            intent = extract_intent("عايز عطر حلو")
+            self.assertEqual(intent["notes"], [])
+            self.assertNotIn("requested_volume", intent)
+            intent = extract_intent("عايز حاجة حلوة", [{"role":"user", "content":"بحب المسكر"}])
+            self.assertEqual(intent["notes"], ["sweet"])
+
+    def test_unknown_similarity_asks_without_recommendation(self):
+        from products.services.router import route
+        with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"similar_to":"Lattafa Khamrah"}), patch("products.services.router.recommend") as recommend:
+            reply, _ = route("عايز عطر زي Lattafa Khamrah", [], self.store, self.conv)
+        recommend.assert_not_called()
+        self.assertIn("Khamrah", reply)
+        self.assertIn("؟", reply)
+        self.assertNotIn("Vanilo", reply)
+
+    def test_inactive_reference_uses_catalogue_notes(self):
+        from products.services.search_service import _resolve_reference
+        self.a.is_active = False
+        self.a.top_notes = "Vanilla"
+        self.a.save()
+        reference = _resolve_reference({"similar_to":"Vanilo"}, self.store)
+        self.assertEqual(reference.product.pk, self.a.pk)
+
+    def test_thinking_has_no_product_lookup_or_pitch(self):
+        from products.services.objection_service import handle_objection
+        from products.services.sales.objection import detect
+        message = "طيب هفكر وارجعلك"
+        with patch("products.services.objection_service.resolve_products") as resolve, patch("products.services.objection_service.chat") as chat:
+            reply, _ = handle_objection(message, detect(message), store=self.store)
+        resolve.assert_not_called()
+        chat.assert_not_called()
+        self.assertNotIn("؟", reply)
+        self.assertNotIn("جنيه", reply)
+
+    def test_best_followup_is_not_the_same_constrained_list(self):
+        from products.services.ai.recommendation import recommend
+        intent = {"requested_volume":90, "max_price":1000}
+        first, _ = recommend("رشحلي", [self.a, self.b], intent=intent)
+        best, _ = recommend("طب ايه احسن حاجة", [self.a, self.b], intent=intent)
+        self.assertNotEqual(first, best)
+        self.assertIn("أرشحلك Vanilo", best)
+        self.assertNotIn("Leatherio", best)
+        self.assertNotIn("Strong", best)
+
+    def test_factual_guard_retries_once_then_uses_recorded_facts(self):
+        from products.services.router import _rephrased
+        from products.services.product_formatting import format_products
+        invalid = "Vanilo فيه عود وثباته 48 ساعة."
+        with patch("products.services.router.repetition.repeated_sentences", return_value=[]), patch("products.services.router.repetition.repeated_frames", return_value=[]):
+            regenerate = Mock(return_value=(invalid, format_products([self.a])))
+            reply, _, _ = _rephrased(invalid, format_products([self.a]), [], self.store, regenerate)
+        self.assertEqual(regenerate.call_count, 1)
+        self.assertNotIn("عود", reply)
+        self.assertNotIn("48", reply)
+        self.assertIn("حوالي 8", reply)
+
+    def test_claims_are_per_product_and_negation_is_respected(self):
+        from products.services.reply_sanitizer import product_claim_issues
+        facts = {"Vanilo":{"notes":["Vanilla, Amber"],"longevity":"8 hours"}, "Oud Wood":{"notes":["Oud"],"longevity":"6 hours"}}
+        self.assertTrue(product_claim_issues("Vanilo فيه عود. Oud Wood فيه عود.", facts))
+        self.assertFalse(product_claim_issues("Vanilo فيه فانيليا وعنبر، مش عود. Oud Wood فيه عود.", facts))
+        self.assertFalse(product_claim_issues("Vanilo في زجاجة أوريجينال بس السائل تركيب.", facts))
+        self.assertTrue(product_claim_issues("عطر رجالي أصلي من البراندات", facts))
+        self.assertTrue(product_claim_issues("Oud Wood فيه عود وباتشولي", facts))
+        self.assertTrue(product_claim_issues("Oud Wood ريحته نادرة وفيه وردة", facts))
+
+    def test_unknown_reference_answer_supplies_a_profile(self):
+        from products.services.router import route
+        from products.services.search_service import search_products
+        merge_preferences(self.conv, {"similar_to": "Mystery Perfume"})
+        history = [{"role": "assistant", "content": "إيه أكتر حاجة بتحبها في Mystery Perfume، الحلاوة ولا التوابل ولا طابع تاني؟"}]
+        self.a.base_notes = "Vanilla, Tonka Bean"
+        self.a.save()
+        with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"notes":["sweet"]}), patch("products.services.router.recommend", return_value=("Vanilo", "Vanilo")) as recommend:
+            route("بحب الحلاوة", history, self.store, self.conv)
+        self.assertEqual(self.conv.preferences["similar_to_notes"], ["sweet"])
+        recommend.assert_called_once()
+
+    def test_evaluation_accepts_subtotals_but_not_wrong_unit_prices(self):
+        from eval_harness.checks import build_ground_truth, check_variant_prices
+        truth = build_ground_truth(self.store)
+        self.assertFalse(check_variant_prices("2 × Vanilo (50ml) بـ 1214 جنيه", truth))
+        self.assertTrue(check_variant_prices("Vanilo 50ml بـ 1214 جنيه", truth))
+
+    def test_projection_claim_must_match_its_product(self):
+        from products.services.reply_sanitizer import product_claim_issues
+        facts = {"Vanilo": {"projection": "Strong"}}
+        self.assertTrue(product_claim_issues("Vanilo فوحانه خفيف", facts))
+        self.assertFalse(product_claim_issues("Vanilo فوحانه قوي", facts))
+
+    def test_inactive_reference_preserves_gender(self):
+        from products.services.sales.gender import resolve
+        self.a.is_active = False
+        self.a.save()
+        self.assertEqual(resolve({"similar_to":"Vanilo"}, "نفس الجو", store=self.store), "male")
+
+    def test_budget_followup_does_not_start_an_order(self):
+        from products.services.router import route
+        history = [{"role":"assistant", "content":"Vanilo مناسب ليك"}]
+        with patch("products.services.router.classify", return_value="order"), patch("products.services.router.extract_intent", return_value={"max_price":1200}), patch("products.services.router.recommend", return_value=("Vanilo", "Vanilo")), patch("products.services.router.handle_order") as order:
+            route("1200", history, self.store, self.conv)
+        order.assert_not_called()
+        self.assertEqual(self.conv.preferences["max_price"], 1200)
+
+    def test_unavailable_order_acknowledges_new_contact_details(self):
+        with patch("products.services.product_resolver.confirm_placement", return_value=None):
+            first = self.turn([{"name":"Mystery Azure"}], message="Mystery Azure", customer_name=None, customer_phone=None, customer_secondary_phone=None, shipping_address=None)
+            second = self.turn(message="اسمي أحمد", customer_name="أحمد", customer_phone=None, customer_secondary_phone=None, shipping_address=None)
+            third = self.turn(message="العنوان القاهرة", customer_name="أحمد", customer_phone=None, customer_secondary_phone=None, shipping_address="القاهرة")
+        self.assertEqual(len({first, second, third}), 3)
+        self.assertIn("سجلت اسمك", second)
+        self.assertIn("سجلت العنوان", third)
+
+    def test_impossible_longevity_does_not_become_a_price_upsell(self):
+        from products.services.ai.recommendation import recommend
+        with patch("products.services.ai.recommendation.chat") as chat:
+            reply, _ = recommend("عايز نيش ثباته يومين", [self.a], intent={"max_price":300})
+        chat.assert_not_called()
+        self.assertIn("حتى لو زودت الميزانية", reply)
+        self.assertNotIn("607", reply)
+
+    def test_supported_rounding_of_price_per_ml(self):
+        from eval_harness.checks import build_ground_truth, check_variant_prices
+        self.a90.price = 1200
+        self.a90.save()
+        self.assertFalse(check_variant_prices("Vanilo سعر الملي 13.3 جنيه", build_ground_truth(self.store)))
+
+    def test_old_size_mention_cannot_authorize_a_new_size(self):
+        from products.services.ai.intent import extract_intent
+        history = [{"role":"user", "content":"عايز 50 ملي"}]
+        with patch("products.services.ai.intent.chat", return_value='{"requested_volume":90}'):
+            intent = extract_intent("أحسن حاجة؟", history)
+        self.assertNotIn("requested_volume", intent)
+
+    def test_demonstrative_source_uses_the_current_offer(self):
+        save_message(self.conv, "assistant", "Vanilo ثم Leatherio", internal_context="Vanilo Leatherio")
+        line = {**self.line(), "source_text":"ده", "quantity":2}
+        self.turn([line], message="تمام هاخد ده، وضيف كمان واحد للهدية")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.av.pk)
+        self.assertEqual(cart.items.get().quantity, 2)
+
+    def test_ordinal_cannot_select_both_offers(self):
+        save_message(self.conv, "assistant", "Vanilo ثم Leatherio", internal_context="Vanilo Leatherio")
+        line = {**self.line(), "source_text":"التاني"}
+        self.turn([line], message="هاخد التاني")
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.get().variant_id, self.bv.pk)
+
+    def test_missing_source_does_not_break_a_clear_demonstrative(self):
+        save_message(self.conv, "assistant", "Vanilo ثم Leatherio", internal_context="Vanilo Leatherio")
+        self.turn([self.line(quantity=2)], message="تمام هاخد ده، وضيف كمان واحد للهدية")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.av.pk)
+        self.assertEqual(cart.items.get().quantity, 2)
+
+    def test_demonstrative_cannot_hide_an_unresolved_name(self):
+        save_message(self.conv, "assistant", "Vanilo", internal_context="Vanilo")
+        self.turn([self.line()], message="هاخد ده امبيرو")
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.count(), 0)
+
+    def test_price_objection_uses_two_real_offers(self):
+        from products.services.objection_service import handle_objection
+        from products.services.sales.objection import detect
+        message = "ليه ادفع 944 في Vanilo وانا ممكن اجيب حاجه ب 700؟"
+        with patch("products.services.objection_service.resolve_products", return_value=[self.a]), patch("products.services.objection_service.chat") as chat:
+            reply, _ = handle_objection(message, detect(message), store=self.store)
+        chat.assert_not_called()
+        for expected in ("Vanilo", "944", "Leatherio", "645"):
+            self.assertIn(expected, reply)
+        self.assertNotIn("غالباً", reply)

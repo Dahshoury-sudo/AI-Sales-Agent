@@ -411,6 +411,7 @@ def build_ground_truth(store):
     """Everything the agent is factually allowed to say about this store."""
     from products.models import Product
     from products.services.product_formatting import is_variant_available
+    from products.services.product_formatting import product_claim_facts
 
     prices, volumes, names, name_tokens, brands = set(), set(), set(), set(), set()
     variant_prices = {}
@@ -460,6 +461,7 @@ def build_ground_truth(store):
 
     return {
         "variant_prices": variant_prices,
+        "product_facts": product_claim_facts(products),
         "prices": prices,
         "volumes": volumes,
         "names": names,
@@ -525,10 +527,11 @@ def check_variant_prices(reply, truth, customer_text=""):
                 rows = [r for r in rows if r["bottle_type"] == "normal"]
             expected = {Decimal(r["price"]) for r in rows}
             if "سعر المل" in clause or "per ml" in clause:
-                expected = {(Decimal(r["price"]) / r["volume"]).quantize(Decimal(".01")) for r in rows if r["volume"]}
+                precision = Decimal(1).scaleb(Decimal(quoted[1]).as_tuple().exponent)
+                expected = {(Decimal(r["price"]) / r["volume"]).quantize(precision) for r in rows if r["volume"]}
             else:
                 quantity = re.search(r"(\d+)\s*[×x]\s*$", text[max(0, named.start()-15):named.start()])
-                if quantity and ("السعر" in clause or "المجموع" in clause):
+                if quantity and "سعر الواحد" not in clause and "للوحده" not in clause:
                     expected = {price * int(quantity[1]) for price in expected}
             if Decimal(quoted[1]) not in expected:
                 findings.append(("wrong_variant_price", "critical", f"{named.group()}: quoted {quoted[1]} for the requested variant; expected {sorted(map(str, expected))}"))
@@ -544,6 +547,9 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
     single worst class of false positive this file can emit.
     """
     findings = check_variant_prices(reply, truth, customer_text)
+    from products.services.reply_sanitizer import product_claim_issues
+    for issue in product_claim_issues(reply, truth.get("product_facts", {})):
+        findings.append(("unsupported_product_claim", "high", issue))
     reply = reply or ""
     allowed = _allowed_numbers(
         truth, context, f"{customer_text or ''}\n{history_text or ''}"
@@ -656,7 +662,8 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
 
     # ── Unsupported certainty ─────────────────────────────────────────────
     for pattern in _GUARANTEE:
-        if pattern.search(reply):
+        match = pattern.search(reply)
+        if match and not re.search(r"مش|ماقدرش|مقدرش|لا يمكن|بدون", reply[max(0, match.start()-24):match.start()]):
             findings.append((
                 "unsupported_guarantee", "high",
                 f"guarantee/precision claim matched /{pattern.pattern}/",

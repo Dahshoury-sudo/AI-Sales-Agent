@@ -95,6 +95,29 @@ def budget_label(price, max_price):
 LOW_BOTTLE_THRESHOLD = 3
 
 
+def product_claim_facts(products):
+    """Serializable evidence shared by reply validation and evaluation."""
+    return {p.name: {
+        "notes": [p.top_notes or "", p.middle_notes or "", p.base_notes or ""],
+        "longevity": p.longevity or "", "projection": p.projection or "",
+        "season": p.season or "", "occasion": p.occasion or "",
+    } for p in products}
+
+
+def factual_description(product):
+    """Short Egyptian wording with no inferred ingredients or performance."""
+    import re
+    from .static_faq_service import normalize_arabic
+    facts = []
+    hours = re.findall(r"\d+(?:\.\d+)?", product.longevity or "")
+    if hours:
+        facts.append("ثباته حوالي " + "–".join(hours) + " ساعات")
+    projection = {"intimate": "هادي", "weak": "هادي", "soft": "هادي", "moderate": "متوسط", "strong": "قوي", "very strong": "قوي جداً", "enormous": "قوي جداً"}.get(normalize_arabic(product.projection or ""))
+    if projection:
+        facts.append("فوحانه " + projection)
+    return "، ".join(facts)
+
+
 def is_variant_available(variant):
     """Whether this size can actually be sold.
 

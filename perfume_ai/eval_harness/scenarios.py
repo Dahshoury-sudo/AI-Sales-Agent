@@ -179,9 +179,8 @@ SCENARIOS = [
         "persona": "comparer",
         "turns": ["مين اثبت، اوداورا ولا سافرانو؟"],
         "probe": (
-            "Both are store-exclusive blends with recorded longevity (Oudora 12 hours, Safrano "
-            "11 hours). Correct move: answer the actual question from recorded longevity. Refusing "
-            "to answer, or inverting the recorded values, is a failure."
+            "Use current catalogue availability and recorded longevity. If Oudora is inactive, "
+            "say so and answer for available Safrano. Do not assume both are stocked or invent values."
         ),
     },
     {
@@ -298,23 +297,29 @@ SCENARIOS = [
     },
     {
         "id": "P2",
+        "assert_cart_names": ["Ambero"],
         "category": "purchase",
         "persona": "ready_buyer",
         "turns": ["عايز اطلب امبيرو 90 ملي", "اسمي بلال حسن، 01012345678، ورقم تاني 01198765432", "العنوان مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3"],
         "probe": (
             "Clear purchase with details supplied across turns. Correct move: collect what is "
             "missing without re-asking what was already given, then show a summary WITH the total "
-            "before any confirmation. Prices and total must be arithmetically correct from the DB."
+            "before any confirmation. Prices and total must be arithmetically correct from the DB. "
+            "If Ambero is inactive, retain the requested identity and explain unavailability; "
+            "never substitute another perfume. Contact follow-ups do not authorize substitution."
         ),
     },
     {
         "id": "P3",
+        "assert_cart_names": ["Oudora"],
+        "assert_final_quantity": 2,
         "category": "purchase",
         "persona": "ready_buyer",
         "turns": ["هاخد اودورا", "خليها 2 بدل واحده"],
         "probe": (
             "Quantity change mid-order. Correct move: carry the perfume, apply the new quantity, "
-            "ask only for what is genuinely still missing. Must not lose the perfume or duplicate it."
+            "ask only for what is genuinely still missing. Must not lose the perfume or duplicate it. "
+            "If Oudora is unavailable, acknowledge the changed pending quantity and explain the next step."
         ),
     },
 
@@ -402,8 +407,8 @@ SCENARIOS = [
             "عايز حاجه تانيه في نفس الجو",
         ],
         "probe": (
-            "Returning happy customer. Ambero is stocked (cinnamon/pepper/amber/vanilla/musk/"
-            "sandalwood — warm spicy amber). Correct move: treat Ambero as the reference and offer "
+            "Returning happy customer. Use Ambero's recorded profile even if it is inactive. "
+            "Correct move: treat Ambero as the reference and offer "
             "something in the same warm-spicy family, EXCLUDING Ambero itself. Restarting discovery "
             "from scratch wastes what they told us."
         ),

@@ -17,10 +17,35 @@ from ..static_faq_service import normalize_arabic
 import re
 
 
+def original_liquid_update(message):
+    """A requirement about the liquid is independent of the bottle or designer house."""
+    text = normalize_arabic(message or "")
+    if re.search(r"(?:مش عايز|مش عاوزه|بلاش|لا اريد)\s+(?:اي\s+)?تركيب|(?:الاصلي|اصلي)\s+مش\s+تركيب|براندات اصليه|original perfume", text):
+        return True
+    if re.search(r"(?:موافق|ماشي|تمام|خلاص|عايز)\s+(?:علي\s+)?(?:ال)?تركيب|تركيب\s+(?:تمام|عادي|ماشي)", text):
+        return False
+    return None
+
+
+def formulation_reply(message="", followup=False):
+    if followup:
+        if any(term in normalize_arabic(message) for term in ("احسن", "افضل", "اختار")):
+            return "مفيش اختيار أصلي يحقق طلبك عندنا؛ كل المتاح تركيب. هل العطر التركيب مناسب ليك؟"
+        return "تمام، بس شرطك إن السائل يكون أصلي لسه مش متاح عندنا، حتى مع تغيير البراند. نكمل لو التركيب مناسب ليك."
+    return "العطور عندنا كلها تركيب، حتى اللي في زجاجة بشكل الأوريجينال. مش متوفر عندنا عطر أصلي من تصنيع البراند. لو مناسب ليك التركيب أقدر أساعدك تختار."
+
+
+def preference_reversal(message):
+    return bool(re.search(r"غيرت رايي|غيرت رائي|بدل الصيف|بدل الشتا", normalize_arabic(message or "")))
+
+
 def explicit_updates(message):
     """Literal constraints remain authoritative even if extraction omits them."""
     text = normalize_arabic(message or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
     updates = {}
+    original = original_liquid_update(message)
+    if original is not None:
+        updates["requires_original_liquid"] = original
     volume = re.search(r"(?<!\d)(\d+)\s*(?:مل(?:ي)?|ml)\b", text)
     if volume:
         updates["requested_volume"] = int(volume[1])

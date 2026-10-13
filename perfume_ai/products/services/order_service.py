@@ -2,6 +2,7 @@ import json
 import logging
 import hashlib
 import uuid
+import re
 from functools import wraps
 from decimal import Decimal, InvalidOperation
 from django.db import transaction
@@ -9,7 +10,7 @@ from django.db.models import F, Q
 from products.models import Cart, CartItem, Order, OrderItem, Product, ProductVariant, Conversation
 from .ai.client import chat
 from .fallback import suggest_alternatives
-from .product_resolver import resolve_product
+from .product_resolver import resolve_product, resolve_order_name
 from .notification_service import notify_new_order
 from .sales.value import budget_tier, stated_budget
 
@@ -61,7 +62,7 @@ def _merge_lines(cart, data):
     for entry in supplied:
         if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) or not entry["name"].strip():
             raise ValueError("Invalid product name")
-        entry = {k: v for k, v in entry.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type")}
+        entry = {k: v for k, v in entry.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type", "source_text", "resolution_status", "product_id")}
         for key in ("quantity", "volume"):
             value = entry.get(key)
             if value is not None and (type(value) is not int or value <= 0):
@@ -547,12 +548,71 @@ def _cart_recap(conversation, items_to_create, total_price):
     return recap + "\n"
 
 
+def _ground_order_lines(data, message, cart, conversation, store):
+    """Extractor output proposes edits; customer wording authorizes identities."""
+    from .sales import naming, described
+    from .static_faq_service import normalize_arabic
+    saved = _saved_lines(cart)
+    offered = described.offered_in_order(conversation, store)
+    for entry in data.get("products") or []:
+        if not isinstance(entry, dict) or not isinstance(entry.get("name"), str):
+            continue
+        entry.pop("product_id", None)
+        entry.pop("resolution_status", None)
+        previous = next((line for line in saved if (
+            entry.get("line_id") == line.get("line_id") or
+            entry["name"].casefold() == line["name"].casefold()
+        )), None)
+        if previous and entry["name"].casefold() == previous["name"].casefold():
+            entry["line_id"] = previous["line_id"]
+            entry["source_text"] = previous.get("source_text", previous["name"])
+            entry["product_id"] = previous.get("product_id")
+            entry["resolution_status"] = previous.get("resolution_status", "saved")
+            continue
+        source = entry.get("source_text")
+        if not isinstance(source, str) or not source.strip() or source.casefold() not in message.casefold():
+            source = entry["name"] if entry["name"].casefold() in message.casefold() else None
+        if source is None:
+            if not naming.identifying_tokens(naming.arabic_span(message)) and entry["name"] in offered:
+                source = entry["name"]
+            else:
+                source = message.strip()
+        reference = normalize_arabic(source).strip(" .!؟")
+        ordinal = {"ده": 0, "دي": 0, "ديت": 0, "الاول": 0, "اول واحد": 0,
+                   "الاولاني": 0, "التاني": 1, "تاني واحد": 1, "الثاني": 1, "الاخير": -1}
+        if reference not in ordinal:
+            remaining = naming.identifying_tokens(naming.arabic_span(source)) - {
+                "هاخد", "هات", "خدلي", "وضيف", "ضيف", "للهديه", "هديه", "هدايا",
+                "عايز", "عايزه", "اطلب", "خليه", "واحده", "عبوه", "زجاجه",
+            }
+            pointing = re.search(r"(?:هاخد|هات|خدلي|عايز|عايزه|اطلب)\s+(ده|دي|ديت|الاولاني|اول واحد|الاول|التاني|تاني واحد|الثاني|الاخير)\b", reference)
+            if pointing and not remaining:
+                reference = pointing[1]
+        if reference in ordinal:
+            position = ordinal[reference]
+            name = offered[position] if offered and -len(offered) <= position < len(offered) else None
+            product = Product.objects.filter(store=store, name=name).first() if name else None
+        else:
+            product = resolve_order_name(source, store)
+        entry["source_text"] = source
+        entry["name"] = product.name if product else source
+        entry["product_id"] = product.pk if product else None
+        entry["resolution_status"] = ("resolved" if product.is_active else "unavailable") if product else "ambiguous"
+
+
 @_serialized
 def handle_order(message, history, store, conversation):
     """
     Handles the order collection flow. Extracts Name, Phone, Address, Products, Quantities, and Confirmation.
     """
     from .static_faq_service import normalize_arabic
+    from .sales.constraints import original_liquid_update, formulation_reply
+    from .conversation_service import merge_preferences
+    original = original_liquid_update(message)
+    if original is not None:
+        merge_preferences(conversation, {"requires_original_liquid": original}, message)
+    if (conversation.preferences or {}).get("requires_original_liquid"):
+        return formulation_reply(), "ORIGINAL_LIQUID_REQUIRED"
     if not Cart.objects.filter(conversation=conversation).exists() and normalize_arabic(message).strip(" .!؟") in ("تمام", "تمام اكد الطلب", "اكد الطلب", "ايوه", "اكد"):
         previous = Order.objects.filter(conversation=conversation, checkout_token__isnull=False).order_by("-id").first()
         if previous:
@@ -607,6 +667,9 @@ Carry each saved line_id unchanged. A changed size or quantity updates that line
 Never remove a saved line by omission: put explicitly removed line IDs in removed_line_ids.
 Preserve unresolved names and all unsized quantities. An edit plus confirmation is NOT approval
 of a new total. is_confirmed and cart_cleared must be JSON booleans, never strings.
+For every newly named perfume include source_text: the EXACT substring the customer typed,
+in their own script, without spelling corrections. Never replace an unavailable perfume.
+For saved lines preserve name and line_id unless the customer explicitly replaces that perfume.
 Return valid JSON in this exact format:
 {
     "customer_name": "...",
@@ -642,6 +705,9 @@ Return valid JSON in this exact format:
         for key in ("customer_name", "customer_phone", "customer_secondary_phone", "shipping_address"):
             if data.get(key) is not None and not isinstance(data[key], str):
                 raise ValueError("Invalid contact field")
+        if not isinstance(data.get("products", []), (list, type(None))):
+            raise ValueError("Invalid products")
+        _ground_order_lines(data, message, cart, conversation, store)
         products_data = _merge_lines(cart, data)
     except ValueError:
         return "ممكن توضح تفاصيل الطلب؟ الطلب المحفوظ زي ما هو ومش هيتأكد دلوقتي.", ""
@@ -650,6 +716,10 @@ Return valid JSON in this exact format:
     secondary_phone = data.get("customer_secondary_phone") or cart.secondary_phone or None
     address = data.get("shipping_address") or cart.shipping_address or None
     is_confirmed = data.get("is_confirmed") is True
+    changed_contact = [label for field, value, label in (
+        ("customer_name", name, "اسمك"), ("customer_phone", phone, "رقم الموبايل"),
+        ("secondary_phone", secondary_phone, "الرقم البديل"), ("shipping_address", address, "العنوان")
+    ) if value and value != getattr(cart, field)]
     _save_cart_details(cart, name, phone, secondary_phone, address)
     if data.get("cart_cleared") is True:
         clear_cart(conversation, keep_details=True)
@@ -682,9 +752,12 @@ Return valid JSON in this exact format:
                 qty = int(qty)
             except (ValueError, TypeError):
                 qty = 1
-            product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
-            if not product:
-                product = resolve_product(message=p_name, store=store)
+            product = None
+            if p_data.get("resolution_status") not in ("ambiguous", "unavailable"):
+                product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
+            if not product and not p_data.get("resolution_status"):
+                candidate = resolve_order_name(p_data.get("source_text") or p_name, store)
+                product = candidate if candidate and candidate.is_active else None
             if product:
                 p_data['name'] = product.name
                 p_data['product_obj'] = product
@@ -821,7 +894,7 @@ Return valid JSON in this exact format:
         else:
             combined[pk] = dict(item)
     items_to_create = list(combined.values())
-    pending_lines = [{k: v for k, v in p.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type")}
+    pending_lines = [{k: v for k, v in p.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type", "source_text", "resolution_status", "product_id")}
                      for p in products_data if not p.get("_resolved")]
     with transaction.atomic():
         _save_cart_items(cart, items_to_create)
@@ -831,7 +904,17 @@ Return valid JSON in this exact format:
     if issues or unknown:
         details = [issue[0] for issue in issues]
         if unknown:
-            details.append("لسه محتاج أتأكد من: " + "، ".join(p["name"] for p in unknown) + ". الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.")
+            for p in unknown:
+                requested = f"{p.get('quantity') or 1} × {p['name']}"
+                if changed_contact:
+                    saved = " و".join(changed_contact)
+                    problem = f"{p['name']} مش متاح حالياً، نحدد بديل مناسب ليك؟" if p.get("resolution_status") == "unavailable" else f"محتاجين نحدد {p['name']}. ممكن توضح اسم العطر؟"
+                    details.append(f"سجلت {saved}. لسه {problem}")
+                    continue
+                if p.get("resolution_status") == "unavailable":
+                    details.append(f"تمام، طلبك {requested} محفوظ، لكن العطر مش متاح حالياً. تحب تشيله ولا تختار بديل؟")
+                else:
+                    details.append(f"تمام، طلبك {requested} محفوظ. ممكن تكتب اسم العطر تاني أو تختار بديل؟ مش هأكد الطلب قبل ما نحدده.")
         return _cart_recap(conversation, items_to_create, total_price) + "\n".join(details), context_str
 
     # 2. Check for missing product details FIRST (size, bottle type, quantity)

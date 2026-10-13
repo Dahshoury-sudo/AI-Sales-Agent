@@ -107,7 +107,7 @@ def _resolve_reference(intent, store):
         return None
 
     if store is not None:
-        match = naming.match_product(name, store)
+        match = naming.match_product(name, store, products=Product.objects.filter(store=store).select_related("brand"))
         if match is not None:
             # Re-fetch with variants so downstream performance comparisons do not
             # trigger a query per candidate.

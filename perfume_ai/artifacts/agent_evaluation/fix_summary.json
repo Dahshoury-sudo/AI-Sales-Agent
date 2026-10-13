@@ -1,0 +1,12 @@
+{
+  "project_structure_preserved": true,
+  "database_migrations": false,
+  "offline_tests": {"passed": 1428, "failed": 0, "database": "local PostgreSQL", "seconds": 26.475},
+  "latest_main_results": {"scenarios": 40, "turns": 67, "automated_findings": 0, "final_claim_recheck_findings": 0},
+  "live_iterations": {"scenario_executions": 50, "turn_executions": 91, "completed_model_requests": 241},
+  "budget": {"cap_usd": "0.30", "accounted_usd": "0.27696325", "reserved_usd": "0"},
+  "results_method": "Latest observation per scenario across an initial full run and focused reruns; not a fresh full final-source run or a new holistic score.",
+  "report": "fix_report.md",
+  "transcripts": "fix_live_complete/runs.json",
+  "usage": "fix_live_complete/usage.json"
+}

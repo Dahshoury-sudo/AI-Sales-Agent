@@ -1,0 +1,54 @@
+{
+  "started_utc": "2026-10-13T11:32:02.085083+00:00",
+  "budget_usd": "0.30",
+  "resume_from": "artifacts\\agent_evaluation\\fix_live",
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [
+    "F1",
+    "F2",
+    "F4",
+    "O4",
+    "P2",
+    "X3"
+  ],
+  "temporary_database": "test_agent_eval_10cbcc109d",
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "P2",
+        "turns": 3
+      },
+      {
+        "id": "F1",
+        "turns": 4
+      },
+      {
+        "id": "F2",
+        "turns": 4
+      },
+      {
+        "id": "F4",
+        "turns": 4
+      },
+      {
+        "id": "X3",
+        "turns": 1
+      },
+      {
+        "id": "O4",
+        "turns": 1
+      }
+    ]
+  },
+  "catalogue_products": 46,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192
+  },
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

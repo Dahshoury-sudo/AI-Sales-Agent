@@ -1,4 +1,5 @@
 import json
+import re
 
 from .client import chat
 
@@ -173,7 +174,7 @@ Rules:
 - A combined budget for two or more bottles is budget_scope=total and budget_strict=true.
 - Exact ceilings (at most, cannot add one pound, حد أقصى) are strict; "around" is approximate.
 - Requested volume and bottle type are mandatory filters, not optional suggestions.
-- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT the store's own blends and ask for real designer houses instead (e.g. "مش عايز تركيبات بتاعتكم", "عايز براندات أصلية", "بلاش تركيبكم", "عايز الأصلي مش تركيب", "مش عايز حاجة من تصميمكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
+- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT only the store's exclusive creations and ask for designer-inspired blends instead (e.g. "مش عايز حاجة من تصميمكم", "بلاش البراند بتاعكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), or uses terms like "bi" or "bisexual", map it exactly to 'male', 'female', or 'unisex' (map "bi" and "bisexual" to 'unisex').
@@ -238,12 +239,30 @@ Rules:
 
     try:
         intent = _sanitize(json.loads(response))
-        from ..sales.constraints import explicit_updates
+        from ..sales.constraints import explicit_updates, original_liquid_update
         intent.update(explicit_updates(message))
         # A follow-up about the total must not silently change the bottle choice.
         # Packaging changes need evidence in this turn; omission retains saved state.
         from ..static_faq_service import normalize_arabic
         text = normalize_arabic(message or "")
+        if re.search(r"مش\s+(?:عايز(?:ه)?\s+)?(?:حاجه\s+)?تقيل", text):
+            intent["avoid_traits"] = list(dict.fromkeys([*(intent.get("avoid_traits") or []), "heavy"]))
+        # A suggested size in an assistant reply is not a customer choice.
+        customer_text = " ".join([message or ""] + [
+            entry.get("content", "") for entry in (history or []) if entry.get("role") == "user"
+        ])
+        if not explicit_updates(message).get("requested_volume"):
+            intent.pop("requested_volume", None)
+        sweet_evidence = normalize_arabic(customer_text)
+        if intent.get("notes") and not re.search(r"مسكر|مسكره|سويت|sweet|gourmand|حلاوه", sweet_evidence):
+            intent["notes"] = [note for note in intent.get("notes", [])
+                               if str(note).lower() not in ("sweet", "gourmand", "حلو", "حلوه")]
+        original = original_liquid_update(message)
+        if original is None:
+            intent.pop("requires_original_liquid", None)
+        elif original:
+            intent["exclude_brands"] = [b for b in intent.get("exclude_brands", [])
+                                        if b != STORE_BRAND_EXCLUSIVE]
         if not any(marker in text for marker in ("زجاج", "ازاز", "اوريجينال", "اوريجنال", "اصلي", "original", "bottle", "تركيب", "براند")):
             intent.pop("bottle_type", None)
         for key in ("requested_volume", "purchase_quantity", "recommendation_count"):

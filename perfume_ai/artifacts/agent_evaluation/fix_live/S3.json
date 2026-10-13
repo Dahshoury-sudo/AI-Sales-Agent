@@ -1,0 +1,220 @@
+{
+  "id": "S3",
+  "category": "similarity",
+  "persona": "clone_hunter",
+  "probe": "Explicit alternative request, so BR540 itself must be excluded from the answer. Correct move: nearest genuine match on scent character with evidence, or honest admission that nothing is close.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز حاجه شبه Baccarat Rouge بس مش هي",
+      "reply": "مفيش حاجة قريبة من Baccarat Rouge 540 بالظبط عندنا، بس عندنا Bleu de Chanel رجالي وأنيق وفيه نوتات خشب وزهور قريبة من اللي في Baccarat Rouge 540، وفيه كمان Black Opium حريمي ريحته فيها قهوة وفانيليا مع خشب وجاسمين، مختلف بس ممكن يعجبك. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Baccarat Rouge"
+        ],
+        "notes": [],
+        "similar_to": "Baccarat Rouge",
+        "similar_to_notes": [
+          "amber",
+          "fruity",
+          "woody",
+          "spicy",
+          "vanilla"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Baccarat Rouge"
+        ],
+        "notes": [],
+        "similar_to": "Baccarat Rouge",
+        "similar_to_notes": [
+          "amber",
+          "fruity",
+          "woody",
+          "spicy",
+          "vanilla"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Bleu de Chanel",
+          "Black Opium",
+          "Light Blue",
+          "Libre",
+          "Oud Wood",
+          "Chloe Eau de Parfum",
+          "Green Irish Tweed",
+          "Y Eau de Parfum",
+          "Tom Ford Ombre Leather",
+          "Safrano",
+          "Aventus",
+          "Acqua di Gio"
+        ],
+        "alternatives": [],
+        "similarity": {
+          "reference_name": "Baccarat Rouge 540",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "reasons": {
+          "Bleu de Chanel": {
+            "score": 2.074,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Black Opium": {
+            "score": 1.906,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 1.702,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Libre": {
+            "score": 1.615,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 1.6,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Baccarat Rouge 540"
+            ]
+          },
+          "Chloe Eau de Parfum": {
+            "score": 1.558,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Green Irish Tweed": {
+            "score": 1.532,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: ambergris — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Y Eau de Parfum": {
+            "score": 1.515,
+            "reasons": [
+              "Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، amberwood. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Tom Ford Ombre Leather": {
+            "score": 1.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Baccarat Rouge 540"
+            ]
+          },
+          "Safrano": {
+            "score": 1.394,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Baccarat Rouge 540"
+            ]
+          },
+          "Aventus": {
+            "score": 1.392,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Baccarat Rouge 540"
+            ]
+          },
+          "Acqua di Gio": {
+            "score": 1.253,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Baccarat Rouge 540"
+            ]
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0
+      },
+      "context_chars": 11922,
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP\n- الـ 90 ملي: 852.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP\n- الـ 90 ملي: 927.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Baccarat Rouge 540\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP\n- الـ 90 ملي: 1058.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: ambergris — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، amberwood. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP\n- الـ 90 ملي: 873.00 EGP\n- زجاجة أوريجينال 50 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Baccarat Rouge 540\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP\n- الـ 90 ملي: 1024.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Baccarat Rouge 540\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 631.00 EGP\n- الـ 90 ملي: 990.00 EGP\n- زجاجة أوريجينال 50 ملي: 1000.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Pineapple, Blackcurrant, Apple\nMiddle Notes: Birch, Patchouli, Jasmine\nBase Notes: Musk, Oakmoss, Ambergris\nDescription: A bold, fruity-smoky fragrance symbolizing strength and success\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Baccarat Rouge 540\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP\n- الـ 90 ملي: 1032.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Baccarat Rouge 540\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1136 جنيه، وسعر الـ 50 ملي 686 جنيه، والفرق بين الحجمين 450 جنيه، بس سعر الملي أرخص: 12.6 بدل 13.7 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n🔴 Baccarat Rouge 540 متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Baccarat Rouge 540\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "similar_to": "Baccarat Rouge",
+    "similar_to_notes": [
+      "amber",
+      "fruity",
+      "woody",
+      "spicy",
+      "vanilla"
+    ]
+  },
+  "seconds": 4.4,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO S3 — category: similarity — persona: clone_hunter\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nExplicit alternative request, so BR540 itself must be excluded from the answer. Correct move: nearest genuine match on scent character with evidence, or honest admission that nothing is close.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز حاجه شبه Baccarat Rouge بس مش هي\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Baccarat Rouge\"], \"similar_to\": \"Baccarat Rouge\", \"similar_to_notes\": [\"amber\", \"fruity\", \"woody\", \"spicy\", \"vanilla\"]}\n[internal] shortlist_shown_to_model=['Bleu de Chanel', 'Black Opium', 'Light Blue', 'Libre', 'Oud Wood', 'Chloe Eau de Parfum', 'Green Irish Tweed', 'Y Eau de Parfum', 'Tom Ford Ombre Leather', 'Safrano', 'Aventus', 'Acqua di Gio']\n[internal] similarity_summary={\"reference_name\": \"Baccarat Rouge 540\", \"reference_source\": \"catalogue\", \"best_band\": \"loose\", \"has_close_match\": false}\n[internal] ranking_evidence={\"Bleu de Chanel\": {\"score\": 2.074, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Black Opium\": {\"score\": 1.906, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 1.702, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Libre\": {\"score\": 1.615, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar، jasmine. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 1.6, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Baccarat Rouge 540\"]}, \"Chloe Eau de Parfum\": {\"score\": 1.558, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: cedar — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Green Irish Tweed\": {\"score\": 1.532, \"reasons\": [\"Match: فيه شبه مع Baccarat Rouge 540 — مشترك في: ambergris — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Y Eau de Parfum\": {\"score\": 1.515, \"reasons\": [\"M\nAGENT: مفيش حاجة قريبة من Baccarat Rouge 540 بالظبط عندنا، بس عندنا Bleu de Chanel رجالي وأنيق وفيه نوتات خشب وزهور قريبة من اللي في Baccarat Rouge 540، وفيه كمان Black Opium حريمي ريحته فيها قهوة وفانيليا مع خشب وجاسمين، مختلف بس ممكن يعجبك. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Acqua di Gio | brand=Giorgio Armani | gender=male | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Neroli, Green Notes | mid=Jasmine, Calone, Rosemary | base=Musk, Cedar, Patchouli | sizes: brand 50ml=503EGP; brand 90ml=1032EGP\n- Aventus | brand=Creed | gender=male | type=niche | season=All Seasons | occasion=Formal | longevity=9 hours | projection=Strong | top=Pineapple, Blackcurrant, Apple | mid=Birch, Patchouli, Jasmine | base=Musk, Oakmoss, Ambergris | sizes: brand 50ml=631EGP; brand 90ml=990EGP; original 50ml=1000EGP stock=8; original 100ml=1400EGP stock=7\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=unisex | type=niche | season=All Seasons | occasion=Evening | longevity=9 hours | projection=Strong | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=686EGP; brand 90ml=1136EGP\n- Black Opium | brand=Yves Saint Laurent | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Orange Blossom | mid=Coffee, Jasmine | base=Vanilla, Patchouli, Cedar | sizes: brand 50ml=677EGP; brand 90ml=883EGP\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office, Formal, Daily | longevity=8–10 hrs | projection=Moderate–Strong | top=Grapefruit, Lemon, Mint | mid=Ginger, Nutmeg, Jasmine | base=Incense, Cedar, Sandalwood, Patchouli | sizes: brand 50ml=645EGP; brand 90ml=1015EGP; original 50ml=800EGP stock=6; original 100ml=1400EGP stock=8; original 150ml=1700EGP stock=17\n- Chloe Eau de Parfum | brand=Chloe | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Peony, Lychee, Freesia | mid=Rose, Magnolia, Lily | base=Amber, Musk, Cedar | sizes: brand 50ml=692EGP; brand 90ml=1058EGP\n- Green Irish Tweed | brand=Creed | gender=male | type=niche | season=Spring/Summer | occasion=Business/Casual | longevity=7 hours | projection=Moderate | top=Iris, Lemon Verbena | mid=Violet Leaf | base=Ambergris, Sandalwood | sizes: brand 50ml=3300EGP; brand 90ml=6000EGP; original 50ml=26000EGP stock=3; original 100ml=46000EGP stock=1\n- Libre | brand=Yves Saint Laurent | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=8 hours | projection=Strong | top=Lavender, Mandarin, Ginger | mid=Orange Blossom, Jasmine | base=Vanilla, Musk, Cedar | sizes: brand 50ml=561EGP; brand 90ml=927EGP\n- Light Blue | brand=Dolce & Gabbana | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=5 hours | projection=Moderate | top=Sicilian Lemon, Apple, Cedar | mid=Bamboo, Jasmine, White Rose | base=Musk, Amber, Cedar | sizes: brand 50ml=691EGP; brand 90ml=852EGP\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n- Safrano | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Special Occasion | longevity=11 hours | projection=Very Strong | top=Saffron, Bergamot, Cardamom | mid=Rose, Oud, Cinnamon | base=Amber, Leather, Musk | sizes: brand 50ml=651EGP; brand 90ml=1024EGP\n- Tom Ford Ombre Leather | brand=Tom Ford | gender=unisex | type=niche | season=Fall & Winter | occasion=Evening, Dates, Special occasions | longevity=8–12 hrs | projection=Strong | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=592EGP; brand 90ml=873EGP; original 50ml=700EGP stock=25; original 100ml=1000EGP stock=7\n- Y Eau de Parfum | brand=Yves Saint Laurent | gender=male | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Strong | top=Apple, Bergamot, Ginger | mid=Sage, Juniper Berries | base=Tonka Bean, Cedar, Amberwood | sizes: brand 50ml=594EGP; brand 90ml=900EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"similar_to\": \"Baccarat Rouge\", \"similar_to_notes\": [\"amber\", \"fruity\", \"woody\", \"spicy\", \"vanilla\"]}"
+}

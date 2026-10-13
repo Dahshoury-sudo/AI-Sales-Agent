@@ -1,0 +1,22 @@
+{
+  "gpt-4.1-mini": {
+    "url": "https://developers.openai.com/api/docs/models/gpt-4.1-mini",
+    "pricing_excerpts": [
+      "on of GPT-4.1 Smaller, faster version of GPT-4.1 Compare Try in Playground Intelligence High Speed Fast Price $0.4 \u2022 $1.6 Input \u2022 Output Input Text, Image Output Text GPT-4.1 Mini excels at instruction following and tool calling. It features a 1M token context window, and low latency witho",
+      "PT-4.1 Smaller, faster version of GPT-4.1 Compare Try in Playground Intelligence High Speed Fast Price $0.4 \u2022 $1.6 Input \u2022 Output Input Text, Image Output Text GPT-4.1 Mini excels at instruction following and tool calling. It features a 1M token context window, and low latency without a re",
+      "re\u2019s a fee per tool call. See details in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.40 Cached input $0.10 Output $1.60 Quick comparison Input Cached input Output GPT-4.1 Mini $ 0.40 GPT-5 Mini $ 0.25 GPT-4o Mini $ 0.15 Modalities Text Input and output Image Inp",
+      " call. See details in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.40 Cached input $0.10 Output $1.60 Quick comparison Input Cached input Output GPT-4.1 Mini $ 0.40 GPT-5 Mini $ 0.25 GPT-4o Mini $ 0.15 Modalities Text Input and output Image Input only Audio Not s",
+      "tails in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.40 Cached input $0.10 Output $1.60 Quick comparison Input Cached input Output GPT-4.1 Mini $ 0.40 GPT-5 Mini $ 0.25 GPT-4o Mini $ 0.15 Modalities Text Input and output Image Input only Audio Not supported Vide"
+    ]
+  },
+  "gpt-5-mini": {
+    "url": "https://developers.openai.com/api/docs/models/gpt-5-mini",
+    "pricing_excerpts": [
+      " cost sensitive, low latency, high volume workloads Compare Try in Playground Reasoning High Speed Fast Price $0.25 \u2022 $2 Input \u2022 Output Input Text, Image Output Text GPT-5 Mini is a faster, more cost-efficient version of GPT-5. It&#x27;s great for well-defined tasks and precise prompts. Fo",
+      "nsitive, low latency, high volume workloads Compare Try in Playground Reasoning High Speed Fast Price $0.25 \u2022 $2 Input \u2022 Output Input Text, Image Output Text GPT-5 Mini is a faster, more cost-efficient version of GPT-5. It&#x27;s great for well-defined tasks and precise prompts. For most n",
+      "re\u2019s a fee per tool call. See details in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.25 Cached input $0.025 Output $2.00 Quick comparison Input Cached input Output GPT-5.4 Mini $ 0.75 GPT-5 Mini $ 0.25 GPT-5.4 nano $ 0.20 Modalities Text Input and output Image I",
+      " call. See details in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.25 Cached input $0.025 Output $2.00 Quick comparison Input Cached input Output GPT-5.4 Mini $ 0.75 GPT-5 Mini $ 0.25 GPT-5.4 nano $ 0.20 Modalities Text Input and output Image Input only Audio Not",
+      "ails in the pricing page . Text tokens Per 1M tokens \u2219 Batch API price Input $0.25 Cached input $0.025 Output $2.00 Quick comparison Input Cached input Output GPT-5.4 Mini $ 0.75 GPT-5 Mini $ 0.25 GPT-5.4 nano $ 0.20 Modalities Text Input and output Image Input only Audio Not supported Vid"
+    ]
+  }
+}

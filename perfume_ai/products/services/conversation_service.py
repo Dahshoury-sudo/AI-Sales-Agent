@@ -216,6 +216,7 @@ def build_llm_history(conversation, limit=8):
 # re-deriving intent from an 8-message window loses that. Losing an exclusion is worse
 # than losing a preference — it means recommending the exact thing they rejected.
 PERSISTED_PREFERENCE_KEYS = (
+    "requires_original_liquid",
     "requested_volume", "bottle_type", "purchase_quantity", "budget_scope", "budget_strict",
     "gender",
     "max_price",

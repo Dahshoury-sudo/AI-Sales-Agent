@@ -1,0 +1,109 @@
+{
+  "score_out_of_10": 6.8,
+  "unrounded_score": 6.75,
+  "score_method": "Codex review of all 40 complete main-suite transcripts, internal state, catalogue evidence and configured store facts. One holistic outcome score per scenario, using the calibration and dimensions in eval_harness/judge.py RUBRIC. This is not output from judge.py and no additional paid judge was called. The overall score is the equal-weight mean of these 40 scores; offline test counts and incomplete historical replays do not enter the score.",
+  "main_scenarios": 40,
+  "main_turns": 67,
+  "historical_replays_completed": 1,
+  "historical_replays_budget_stopped": 20,
+  "offline_tests": {
+    "run": 1401,
+    "failures": 0,
+    "errors": 0,
+    "database": "disposable local PostgreSQL",
+    "seconds": 26.596,
+    "live_http_blocked": true
+  },
+  "chat_client_checks_passed": 3,
+  "ui": {
+    "workflow_groups_passed": 13,
+    "layout_overflows": 0,
+    "browser_runtime_errors": 0,
+    "accessibility_violations": 0,
+    "screenshots": 60
+  },
+  "historical_backtests": {
+    "placement": "passed available corpus checks; 3 reference turns and one control absent; 2 documented misses remain",
+    "praise": "passed",
+    "name_routing": "incomplete: required conversation 1106 is absent from this database"
+  },
+  "budget_usd": "0.30",
+  "confirmed_response_usage_cost_usd": "0.28078685",
+  "interrupted_request_maximum_usd": "0.01007640",
+  "conservative_total_usd": "0.29086325",
+  "models": {
+    "gpt-4.1-mini": {
+      "completed_calls": 220,
+      "interrupted_calls": 1,
+      "prompt_tokens": 1274937,
+      "cached_prompt_tokens": 945408,
+      "completion_tokens": 13017,
+      "accounted_usd": "0.2572560"
+    },
+    "gpt-5-mini": {
+      "completed_calls": 42,
+      "interrupted_calls": 0,
+      "prompt_tokens": 88165,
+      "cached_prompt_tokens": 55040,
+      "completion_tokens": 11975,
+      "accounted_usd": "0.03360725"
+    }
+  },
+  "truncated_model_responses": 0,
+  "agent_crashes_in_valid_main_run": 0,
+  "first_pass_flags_main": 5,
+  "second_pass_flags_main": 2,
+  "category_scores": {
+    "comparison": {
+      "scenarios": 3,
+      "mean": 7.33
+    },
+    "customer_service": {
+      "scenarios": 2,
+      "mean": 8
+    },
+    "discovery": {
+      "scenarios": 3,
+      "mean": 6.67
+    },
+    "purchase": {
+      "scenarios": 4,
+      "mean": 5.5
+    },
+    "adversarial": {
+      "scenarios": 8,
+      "mean": 7.12
+    },
+    "gift": {
+      "scenarios": 2,
+      "mean": 8
+    },
+    "memory": {
+      "scenarios": 4,
+      "mean": 6.75
+    },
+    "objection": {
+      "scenarios": 5,
+      "mean": 5.6
+    },
+    "recommendation": {
+      "scenarios": 5,
+      "mean": 7
+    },
+    "similarity": {
+      "scenarios": 4,
+      "mean": 6.75
+    }
+  },
+  "calibration_notes": [
+    "One sampled pass of each main scenario; no statistical confidence interval.",
+    "M1 first attempt invalidated due to harness file sharing error and rerun; all spend retained.",
+    "C2, P2, P3 and M4 have outdated assumptions about Ambero/Oudora availability; evaluated against current inactive status.",
+    "First-pass guarantee flag in G1 and two quantity/price flags in F1 were false positives.",
+    "Historical extensions are incomplete because budget took precedence; no incomplete case is scored."
+  ],
+  "cleanup": {
+    "temporary_databases_remaining": 0,
+    "preview_server_stopped": true
+  }
+}

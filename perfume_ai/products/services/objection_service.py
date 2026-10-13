@@ -27,7 +27,7 @@ from decimal import Decimal
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-from .product_formatting import format_products, is_variant_available
+from .product_formatting import format_products, is_variant_available, factual_description
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
@@ -139,6 +139,30 @@ def _price_gap_context(message, history, store):
     return "\n" + value_comparison_note(priced[0][1], priced[1][1]) + "\n"
 
 
+def _price_gap_reply(products, message, store):
+    """Compare explicit catalogue offers without inferring quality from their prices."""
+    amounts = [Decimal(number) for number in re.findall(r"\d{2,6}", message) if Decimal(number) >= 50]
+    priced = [(p, v) for p in products for v in p.variants.all()
+              if v.bottle_type == "normal" and is_variant_available(v)]
+    if not priced:
+        return "فاهم إن فرق السعر كبير. ماقدرش أحكم على عطر من سعره بس؛ ممكن تقولي اسمي العطرين؟", ""
+    named, variant = next(((p, v) for p, v in priced if amounts and v.price == max(amounts)), max(priced, key=lambda pair: pair[1].price))
+    ceiling = min(amounts) if amounts else variant.price
+    alternatives = [p for p in products if p.pk != named.pk] or _cheaper_alternatives(store, ceiling, exclude=named)
+    affordable = [(p, v) for p in alternatives for v in p.variants.all()
+                  if v.bottle_type == "normal" and is_variant_available(v) and v.price <= ceiling]
+    reply = f"فاهم إن فرق السعر كبير. {named.name} الـ{variant.volume} ملي بـ{variant.price:g} جنيه، {factual_description(named)}."
+    context_products = [named]
+    if affordable:
+        cheaper, small = min(affordable, key=lambda pair: pair[1].price)
+        reply += f" لو الأولوية للسعر، {cheaper.name} الـ{small.volume} ملي بـ{small.price:g} جنيه، {factual_description(cheaper)}."
+        reply += " السعر الأعلى لوحده مش دليل إن العطر أنسب ليك."
+        context_products.append(cheaper)
+    else:
+        reply += " ماقدرش أقارن ثباته بعطر مش محدد من سعره بس؛ اسم العطر الأرخص إيه؟"
+    return reply, format_products(context_products)
+
+
 def _budget_verdict_note(budget, context):
     """The budget markers, and what a challenged over-budget claim obliges.
 
@@ -194,6 +218,8 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     see it.
     """
     guidance = PLAYBOOK.get(objection.kind, "")
+    if objection.kind == "thinking" and not re.search(r"[?؟]|بكام|سعر|فيه ايه|ثبات|عنوان|احجام|ملي", message):
+        return "تمام يا فندم، خد وقتك. تحت أمرك لما تحب ترجع.", "CUSTOMER_DEFERRED"
     stage = sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
 
     # Only the perfumes actually under discussion, so the reply stays on the customer's
@@ -205,12 +231,10 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     # and it is not worth a confirming LLM call on every objection turn. The turn that quotes a price
     # by name goes through `product_info`, which does verify.
     products = resolve_products(message, history, store, verify=False)
+    if objection.kind == "price_gap":
+        return _price_gap_reply(products, message, store)
     budget = stated_budget(conversation)
     context = format_products(products[:2], max_price=budget) if products else ""
-
-    extra = ""
-    if objection.kind == "price_gap":
-        extra = _price_gap_context(message, history, store)
 
     sequence = _SEQUENCE
     if not sales_stage.closing_allowed(stage):
@@ -228,7 +252,7 @@ def handle_objection(message, objection, history=None, store=None, conversation=
 {sequence}
 {_NO_GUARANTEE}
 {("═══ بيانات العطور اللي بيتكلم عنها ═══" + chr(10) + context) if context else "⚠️ مفيش بيانات منتجات مبعوتة لك — ❌ ممنوع تذكر أي سعر أو اسم عطر من دمك."}
-{extra}{_budget_verdict_note(budget, context)}{retry_hint}
+{_budget_verdict_note(budget, context)}{retry_hint}
 """
 
     messages = [{"role": "system", "content": get_system_prompt(store)}]

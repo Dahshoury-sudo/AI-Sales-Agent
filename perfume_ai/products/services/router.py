@@ -137,6 +137,13 @@ def _rephrased(reply, context, history, store, regenerate):
     Returns `(reply, context, repeats)` — the sentences that triggered it, or `()` — so a caller that
     wants to log or test the decision can, without re-running the comparison.
     """
+    from .product_formatting import product_claim_facts, factual_description
+    from .reply_sanitizer import product_claim_issues
+    from products.models import Product
+    rows = list(Product.objects.filter(store=store).select_related("brand")) if store else []
+    rows = [p for p in rows if p.name.casefold() in (context or "").casefold()]
+    facts = product_claim_facts(rows)
+    issues = product_claim_issues(reply, facts)
     repeats = repetition.repeated_sentences(reply, history, store=store)
     # Plus the frames, which are a different question about the same draft: that one asks whether a
     # sentence has been SAID before, this asks whether a sentence has been STARTED the same way
@@ -147,10 +154,29 @@ def _rephrased(reply, context, history, store, regenerate):
     for sentence in repetition.repeated_frames(reply, history, store=store):
         if sentence not in repeats:
             repeats.append(sentence)
-    if not repeats:
+    if not repeats and not issues:
         return reply, context, ()
 
-    retried, retried_context = regenerate(repetition.retry_hint(repeats))
+    hint = repetition.retry_hint(repeats)
+    if issues:
+        hint += "\nصحح الادعاءات غير المدعومة دي من بيانات العطر فقط: " + "؛ ".join(issues)
+    try:
+        retried, retried_context = regenerate(hint)
+    except Exception:
+        if not issues:
+            raise
+        retried, retried_context = "", context
+    remaining = product_claim_issues(retried, facts)
+    if remaining or (issues and not (retried or "").strip()):
+        if any(i.startswith("authenticity:") for i in remaining or issues):
+            return sales_constraints.formulation_reply(), context, repeats
+        mentioned = sales_naming.names_in(reply, [p.name for p in rows])
+        by_name = {p.name: p for p in rows}
+        selected = [by_name[name] for name in mentioned[:2]]
+        fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
+        if fallback and any(i.startswith("popularity:") for i in remaining or issues):
+            fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
+        return fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context, repeats
     # A generator that returns nothing usable is not an improvement. `chat` can come back empty on a
     # provider error, and `reply_sanitizer`'s bail-rather-than-empty rule exists because a blank
     # reply is the one outcome worse than a flawed one.
@@ -467,6 +493,14 @@ def route(message, history=None, store=None, conversation=None):
     from .static_faq_service import match_static_faq, normalize_arabic
     import re
     normalized = normalize_arabic(message)
+    original = sales_constraints.original_liquid_update(message)
+    if original is not None or sales_constraints.explicit_updates(message).get("reset_preferences"):
+        merge_preferences(conversation, sales_constraints.explicit_updates(message), message)
+    requires_original = original if original is not None else bool(
+        conversation and (conversation.preferences or {}).get("requires_original_liquid")
+    )
+    if original is True and not _wants_a_human(message):
+        return sales_constraints.formulation_reply(), "ORIGINAL_LIQUID_REQUIRED"
     if "نوع السائل" in normalized or "مصنع" in normalized:
         formulation = match_static_faq("العطور اصليه ولا تركيب", store)
         explanation = formulation["answer"] if formulation else "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل."
@@ -517,6 +551,10 @@ def route(message, history=None, store=None, conversation=None):
     # anything, and classify() is the first model call on every path that remains.
     record_llm_message(store)
     request_type = classify(message, history)
+    if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message) and history:
+        request_type = "recommendation"
+    if requires_original and request_type not in ("recommendation", "handoff", "order_cancel") and not _wants_a_human(message):
+        return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
 
     # 🔴 The only reassignment of `request_type` in this file, and it is deliberate: the catalogue
     # outranks the classifier when the customer's own letters unmistakably spell a perfume we stock.
@@ -630,6 +668,12 @@ def route(message, history=None, store=None, conversation=None):
     if request_type == "recommendation":
         # The only branch that needs the extracted intent.
         intent = extract_intent(message, history, store)
+        previous_reply = next((h.get("content", "") for h in reversed(history) if h.get("role") == "assistant"), "")
+        if previous_reply.startswith("إيه أكتر حاجة بتحبها في") and not intent.get("similar_to_notes"):
+            from .sales.notes import terms_in
+            supplied = intent.get("notes") or list(terms_in(message))
+            if supplied:
+                intent["similar_to_notes"] = supplied
         # Restore anything the customer said before the 8-message window cut it off.
         # Merged here, before every check below, so the gender and budget prompts and
         # search_products all see the full picture rather than a truncated one.
@@ -642,6 +686,8 @@ def route(message, history=None, store=None, conversation=None):
             conversation, intent, message,
             pending=sales_described.pending_relaxations(conversation),
         )
+        if intent.get("requires_original_liquid"):
+            return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":
@@ -780,6 +826,8 @@ def route(message, history=None, store=None, conversation=None):
         # Subtracted here rather than inside `under_discussion`, which `offered_in_order` also reads
         # to resolve a reference: "بكام Bloom؟" after moving past Bloom must still place Bloom.
         keep = keep - sales_described.moved_past(conversation, store)
+        if sales_constraints.preference_reversal(message):
+            keep = set()
 
         # And what he has already SEEN, over the whole conversation rather than the two-reply
         # window `keep` uses. `ranking.WEIGHTS["repeat"]` sinks these below fresh candidates
@@ -791,6 +839,11 @@ def route(message, history=None, store=None, conversation=None):
         # search; nothing in it knew the customer had seen those two already.
         offered = sales_described.offered_ever(conversation, store)
         results = search_products(intent, store, keep=keep, offered=offered)
+        if intent.get("similar_to") and not results.get("similarity"):
+            return (
+                f"إيه أكتر حاجة بتحبها في {intent['similar_to']}، الحلاوة ولا التوابل ولا طابع تاني؟",
+                "SIMILARITY_NEEDS_PROFILE",
+            )
 
         # Both retries below regenerate with the same products and the same arguments; only the
         # instruction text differs. A closure rather than three near-identical nine-argument calls,
@@ -803,11 +856,6 @@ def route(message, history=None, store=None, conversation=None):
             )
 
         response, context = _recommend_again()
-
-        if _is_repetitive(response, history):
-            # Re-try with anti-repetition hint instead of handle_general (which lacks product context and may hallucinate)
-            modified_msg = f"{message}\n\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم تختار منتجات مختلفة تماماً وتقدمها بأسلوب جديد."
-            response, context = _recommend_again(msg=modified_msg)
 
         # After the whole-reply guard above, and a different question from it: that one asks
         # whether this reply IS the previous reply (0.7 on the full text) and answers it by
@@ -826,24 +874,6 @@ def route(message, history=None, store=None, conversation=None):
 
     elif request_type == "product_info":
         response, context = get_product_info(message, history, store, conversation)
-
-        if _is_repetitive(response, history):
-            # Re-try with an anti-repetition hint instead of handle_general (which lacks product
-            # data and may hallucinate). The hint goes in as instruction text, not appended to the
-            # customer's message: `get_product_info` reads the message to decide what perfume was
-            # named, and a warning glued onto it reads as a perfume name we cannot place. See that
-            # function's docstring for what it did to conversation 816's last turn.
-            response, context = get_product_info(
-                message,
-                history,
-                store,
-                conversation,
-                retry_hint=(
-                    "\n⚠️ تنبيه: ردك السابق كان مكرر لكلام قلته قبل كده. لازم ترد بأسلوب مختلف "
-                    "تماماً. ❌ ومتغيّرش إجابتك نفسها عشان كده — لو العطر مش موجود عندنا، فهو لسه "
-                    "مش موجود؛ غيّر الصيغة مش الحقيقة.\n"
-                ),
-            )
 
         # The one deterministic guard on the phrase this whole change exists to remove. Rules alone
         # are not enough here: "لحظة أتأكدلك منه" was the scripted reply on this branch for a long

@@ -120,7 +120,8 @@ def _catalogue_gender(name, store):
 
     from . import naming
 
-    product = naming.match_product(name, store)
+    from products.models import Product
+    product = naming.match_product(name, store, products=Product.objects.filter(store=store).select_related("brand"))
     if product is None:
         return None
     # A unisex perfume is not evidence about who is shopping.

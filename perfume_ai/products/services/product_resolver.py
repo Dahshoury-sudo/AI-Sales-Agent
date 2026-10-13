@@ -596,6 +596,26 @@ def _log_outcome(message, resolved, unplaced, failed, ambiguous=()):
     )
 
 
+def resolve_order_name(source, store):
+    """Resolve customer wording, including inactive identities, without substituting stock."""
+    products = Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")
+    match = naming.match_product(source, store, products=products)
+    if match:
+        return match
+    span = naming.arabic_span(source)
+    latin = naming.transliterate(span) if span else ""
+    if not latin:
+        return None
+    ranking = naming.phonetic_ranking(source, store, products=products)
+    shortlist = [row for score, chars, row in ranking[:5]
+                 if score >= 0.45 and chars / len(latin) >= 0.65]
+    try:
+        return confirm_placement(source, shortlist, store) if shortlist else None
+    except Exception:
+        logger.warning("Order identity could not be verified", exc_info=True)
+        return None
+
+
 def resolve_product(message: str, history=None, store=None, conversation=None):
     """
     Try to resolve a single product. Returns the first matched product or None.

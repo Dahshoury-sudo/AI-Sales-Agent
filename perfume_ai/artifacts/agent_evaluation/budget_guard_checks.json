@@ -1,0 +1,9 @@
+{
+  "passed": [
+    "Cached-token accounting and completion cap",
+    "Pre-request budget rejection and stopping later requests",
+    "Uncertain request retains maximum cost",
+    "Transient Windows sharing violation and set serialization"
+  ],
+  "model_api_calls": 0
+}

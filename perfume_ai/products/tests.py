@@ -858,7 +858,7 @@ class CartPersistenceTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            reply, context = handle_order("...", [], self.store, self.conversation)
+            reply, context = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
 
         save_message(self.conversation, "assistant", reply, internal_context=context)
         return reply, context
@@ -1102,7 +1102,7 @@ class OrderGuardTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            return handle_order("...", [], self.store, self.conversation)
+            return handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
 
     def test_cart_context_never_shows_placeholder_text(self):
         """The source of the bug: readable placeholders got echoed back as data."""
@@ -1171,7 +1171,7 @@ class PerStorePaymentInstructionsTests(TestCase):
             "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
             "products": [{"name": self.product.name, "volume": 50, "quantity": 1, "bottle_type": "normal"}], "is_confirmed": False}
         with mock.patch("products.services.order_service.chat", return_value=json.dumps(extracted)):
-            reply, context = handle_order("...", [], self.store, self.conversation)
+            reply, context = handle_order(self.product.name, [], self.store, self.conversation)
         save_message(self.conversation, "assistant", reply, internal_context=context)
         extracted["is_confirmed"] = True
         with mock.patch("products.services.order_service.chat", return_value=json.dumps(extracted)):
@@ -2098,7 +2098,7 @@ class CartClearedTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            return handle_order("...", [], self.store, self.conversation)
+            return handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
 
     def test_clearing_the_cart_empties_it(self):
         """The regression: the item used to come straight back."""
@@ -2643,7 +2643,7 @@ class CallSiteProfileTests(TestCase):
         })
         profile = self._profile_used(
             "products.services.order_service.chat",
-            lambda: handle_order("...", [], self.store, self.conversation),
+            lambda: handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation),
             return_value=payload,
         )
 
@@ -3976,7 +3976,7 @@ class ScriptedRepliesSurviveSanitizingTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=payload
         ):
-            summary, _ = handle_order("...", [], self.store, self.conversation)
+            summary, _ = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
 
         self.assertIn("💰 الإجمالي:", summary)
         self.assertEqual(sanitize_reply(summary), summary)
@@ -7279,33 +7279,37 @@ class SalesScenarioTests(TestCase):
     # ---- E: price-gap objection ----
 
     def test_e_the_price_gap_objection_is_recognised(self):
-        prompt = self._route_objection("ليه أجيب ده بـ1200 وأنا ممكن أجيب حاجة بـ500؟")
-
-        self.assertIn("price_gap", prompt)
+        with mock.patch("products.services.router.classify", return_value="faq"), mock.patch("products.services.objection_service.resolve_products", return_value=[]):
+            reply, _ = route("ليه أجيب ده بـ1200 وأنا ممكن أجيب حاجة بـ500؟", [], self.store, self.conversation)
+        self.assertIn("فرق السعر", reply)
+        self.assertIn("اسمي العطرين", reply)
 
     def test_e_the_value_answer_is_built_from_real_dimensions(self):
+        self.light.variants.filter(volume=50).update(price=500)
+        self.heavy.variants.filter(volume=90).update(price=1200)
         with mock.patch("products.services.router.classify", return_value="faq"), \
              mock.patch(
                  "products.services.objection_service.resolve_products",
                  return_value=[self.light, self.heavy],
              ), \
              mock.patch("products.services.objection_service.chat", return_value="ok") as chat_mock:
-            route("ليه أدفع 1200 بدل 500؟", [], self.store, self.conversation)
-
-        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
-
-        self.assertIn("الفرق الحقيقي بين", prompt)
-        self.assertIn("سعر الملي", prompt)
+            reply, _ = route("ليه أدفع 1200 بدل 500؟", [], self.store, self.conversation)
+        chat_mock.assert_not_called()
+        for fact in ("Oudy", "1200", "12", "Citrolo", "500", "8"):
+            self.assertIn(fact, reply)
 
     def test_e_recommending_the_cheaper_option_is_explicitly_permitted(self):
-        prompt = self._route_objection("ليه أدفع 1200 بدل 500؟")
-
-        self.assertIn("الأرخص أنسب ليه", prompt)
+        from products.services.objection_service import _price_gap_reply
+        self.light.variants.filter(volume=50).update(price=500)
+        reply, _ = _price_gap_reply([self.heavy, self.light], "1200 بدل 500", self.store)
+        self.assertIn("لو الأولوية للسعر", reply)
+        self.assertIn("Citrolo", reply)
 
     def test_e_no_invented_differentiator_is_allowed(self):
-        prompt = self._route_objection("ليه أدفع 1200 بدل 500؟")
-
-        self.assertIn("الفروقات الحقيقية الموجودة في البيانات", prompt)
+        from products.services.objection_service import _price_gap_reply
+        reply, _ = _price_gap_reply([], "1200 بدل 500", self.store)
+        self.assertIn("ماقدرش أحكم", reply)
+        self.assertNotIn("ثبات", reply)
 
     # ---- F: gift with unknown taste ----
 
@@ -10662,7 +10666,7 @@ class BudgetWarningReachesTheCustomerTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            reply, _ = handle_order("...", [], self.store, self.conversation)
+            reply, _ = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
         return reply
 
     def test_the_customer_is_warned_when_the_cart_breaks_their_budget(self):
@@ -10708,7 +10712,7 @@ class BudgetWarningReachesTheCustomerTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            reply, _ = handle_order("...", [], self.store, self.conversation)
+            reply, _ = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
         return reply
 
     def test_the_details_request_says_what_is_in_the_cart(self):
@@ -17982,7 +17986,8 @@ class RefusedBrandsLeaveTheCatalogueTests(TestCase):
         prohibition attached, the shape that overrides a refusal written after it."""
         prompt = get_system_prompt(self.store)
 
-        self.assertIn("مش عايز تركيباتكم وعايز براندات أصلية", prompt)
+        self.assertIn("مش عايز تصميماتكم الحصرية وعايز تركيب مستوحى من براند عالمي", prompt)
+        self.assertIn("رفض كل التركيب شرط لا يمكننا تلبيته", prompt)
         self.assertIn("زي الأصلي", prompt)
 
 

@@ -1,0 +1,235 @@
+{
+  "id": "M4",
+  "category": "memory",
+  "persona": "returning",
+  "probe": "Returning happy customer. Ambero is stocked (cinnamon/pepper/amber/vanilla/musk/sandalwood — warm spicy amber). Correct move: treat Ambero as the reference and offer something in the same warm-spicy family, EXCLUDING Ambero itself. Restarting discovery from scratch wastes what they told us.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "انا اشتريت منكم امبيرو قبل كده وعجبني جدا",
+      "reply": "شكرًا ليك يا فندم على كلامك الجميل وثقتك في امبيرو. تحت أمرك في أي وقت.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "context_chars": 3664,
+      "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: انا اشتريت منكم امبيرو قبل كده وعجبني جدا\nABSENCE_DENIED\nالعطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة متأكدين منها مش تخمين.\n🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من البدائل اللي بتعرضها عليه في نفس الرد.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 780.00 EGP\n- زجاجة أوريجينال 100 ملي: 4200.00 EGP\n- زجاجة أوريجينال 200 ملي: 7500.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Absolutely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: A richer, sweeter take on the line with toffee, suede and amber.\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "عايز حاجه تانيه في نفس الجو",
+      "reply": "مفيش حاجة قريبة من Ambiro بالظبط عندنا، بس ممكن يعجبك Oud Wood أو Baccarat Rouge 540، الاتنين دول ينفعوا للراجل وللست وريحته مختلفة وفخمة. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Ambiro"
+        ],
+        "notes": [],
+        "similar_to": "Ambiro",
+        "similar_to_notes": [
+          "citrus",
+          "woody",
+          "spicy"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "requested_volume": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Ambiro"
+        ],
+        "notes": [],
+        "similar_to": "Ambiro",
+        "similar_to_notes": [
+          "citrus",
+          "woody",
+          "spicy"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "requested_volume": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Oud Wood",
+          "Baccarat Rouge 540",
+          "XJ 1861 Naxos",
+          "Silver Mountain Water",
+          "Armani Code",
+          "Black Opium",
+          "Tom Ford Ombre Leather",
+          "Leatherio",
+          "Y Eau de Parfum",
+          "Le Male",
+          "Bleu de Chanel",
+          "Afnan 9PM"
+        ],
+        "alternatives": [],
+        "similarity": {
+          "reference_name": "Ambiro",
+          "reference_source": "general_knowledge",
+          "best_band": "none",
+          "has_close_match": false
+        },
+        "reasons": {
+          "Oud Wood": {
+            "score": 1.2,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Baccarat Rouge 540": {
+            "score": 1.2,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "XJ 1861 Naxos": {
+            "score": 1.2,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Silver Mountain Water": {
+            "score": 1.2,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Armani Code": {
+            "score": 1.2,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Black Opium": {
+            "score": 1.2,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Tom Ford Ombre Leather": {
+            "score": 1.067,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Leatherio": {
+            "score": 1.0,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Y Eau de Parfum": {
+            "score": 1.0,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Le Male": {
+            "score": 1.0,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Bleu de Chanel": {
+            "score": 1.0,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          },
+          "Afnan 9PM": {
+            "score": 0.857,
+            "reasons": [],
+            "mismatches": [
+              "مش قريب من Ambiro"
+            ]
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "context_chars": 9745,
+      "context": "\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Armani Code\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 633.00 EGP\n- الـ 90 ملي: 866.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Lemon\nMiddle Notes: Guaiac Wood, Star Anise, Olive Blossom\nBase Notes: Tonka Bean, Leather, Tobacco\nDescription: A seductive, mysterious oriental fragrance for the evening\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP\n- الـ 90 ملي: 873.00 EGP\n- زجاجة أوريجينال 50 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP\n- الـ 90 ملي: 1075.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Ambiro\nMOVED_PAST: Ambiro\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "similar_to": "Ambiro",
+    "similar_to_notes": [
+      "citrus",
+      "woody",
+      "spicy"
+    ]
+  },
+  "seconds": 55.8,
+  "suite": "core",
+  "judge_evidence": "SCENARIO M4 — category: memory — persona: returning\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReturning happy customer. Ambero is stocked (cinnamon/pepper/amber/vanilla/musk/sandalwood — warm spicy amber). Correct move: treat Ambero as the reference and offer something in the same warm-spicy family, EXCLUDING Ambero itself. Restarting discovery from scratch wastes what they told us.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: انا اشتريت منكم امبيرو قبل كده وعجبني جدا\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: شكرًا ليك يا فندم على كلامك الجميل وثقتك في امبيرو. تحت أمرك في أي وقت.\n\n--- TURN 2 ---\nCUSTOMER: عايز حاجه تانيه في نفس الجو\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Ambiro\"], \"similar_to\": \"Ambiro\", \"similar_to_notes\": [\"citrus\", \"woody\", \"spicy\"]}\n[internal] shortlist_shown_to_model=['Oud Wood', 'Baccarat Rouge 540', 'XJ 1861 Naxos', 'Silver Mountain Water', 'Armani Code', 'Black Opium', 'Tom Ford Ombre Leather', 'Leatherio', 'Y Eau de Parfum', 'Le Male', 'Bleu de Chanel', 'Afnan 9PM']\n[internal] similarity_summary={\"reference_name\": \"Ambiro\", \"reference_source\": \"general_knowledge\", \"best_band\": \"none\", \"has_close_match\": false}\n[internal] ranking_evidence={\"Oud Wood\": {\"score\": 1.2, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Baccarat Rouge 540\": {\"score\": 1.2, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"XJ 1861 Naxos\": {\"score\": 1.2, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Silver Mountain Water\": {\"score\": 1.2, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Armani Code\": {\"score\": 1.2, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Black Opium\": {\"score\": 1.2, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Tom Ford Ombre Leather\": {\"score\": 1.067, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Leatherio\": {\"score\": 1.0, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Y Eau de Parfum\": {\"score\": 1.0, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Le Male\": {\"score\": 1.0, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Bleu de Chanel\": {\"score\": 1.0, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}, \"Afnan 9PM\": {\"score\": 0.857, \"reasons\": [], \"mismatches\": [\"مش قريب من Ambiro\"]}}\nAGENT: مفيش حاجة قريبة من Ambiro بالظبط عندنا، بس ممكن يعجبك Oud Wood أو Baccarat Rouge 540، الاتنين دول ينفعوا للراجل وللست وريحته مختلفة وفخمة. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Afnan 9PM | brand=Afnan | gender=male | type=oriental | season=Fall & Winter | occasion=Night out, Parties, Dates | longevity=8–11 hrs | projection=Strong | top=Apple, Cinnamon, Wild Lavender, Bergamot | mid=Orange Blossom, Lily of the Valley | base=Vanilla, Tonka Bean, Amber, Patchouli | sizes: brand 50ml=508EGP; brand 90ml=1077EGP; original 100ml=881EGP stock=27\n- Armani Code | brand=Giorgio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=7 hours | projection=Moderate | top=Bergamot, Lemon | mid=Guaiac Wood, Star Anise, Olive Blossom | base=Tonka Bean, Leather, Tobacco | sizes: brand 50ml=633EGP; brand 90ml=866EGP\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=unisex | type=niche | season=All Seasons | occasion=Evening | longevity=9 hours | projection=Strong | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=686EGP; brand 90ml=1136EGP\n- Black Opium | brand=Yves Saint Laurent | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Orange Blossom | mid=Coffee, Jasmine | base=Vanilla, Patchouli, Cedar | sizes: brand 50ml=677EGP; brand 90ml=883EGP\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office, Formal, Daily | longevity=8–10 hrs | projection=Moderate–Strong | top=Grapefruit, Lemon, Mint | mid=Ginger, Nutmeg, Jasmine | base=Incense, Cedar, Sandalwood, Patchouli | sizes: brand 50ml=645EGP; brand 90ml=1015EGP; original 50ml=800EGP stock=6; original 100ml=1400EGP stock=8; original 150ml=1700EGP stock=17\n- Le Male | brand=Jean Paul Gaultier | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Moderate | top=Mint, Lavender, Bergamot | mid=Cinnamon, Cumin, Orange Blossom | base=Vanilla, Sandalwood, Tonka Bean | sizes: brand 50ml=623EGP; brand 90ml=856EGP\n- Leatherio | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Evening | longevity=9 hours | projection=Strong | top=Black Pepper, Juniper, Bergamot | mid=Leather, Tobacco Leaf, Cedar | base=Oud, Amber, Vetiver | sizes: brand 50ml=513EGP; brand 90ml=1075EGP\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n- Silver Mountain Water | brand=Creed | gender=unisex | type=niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Mandarin Orange | mid=Green Tea, Black Currant | base=Musk, Petitgrain, Sandalwood, Galbanum | sizes: brand 50ml=3100EGP; brand 90ml=5700EGP; original 50ml=24000EGP stock=3; original 100ml=43000EGP stock=1\n- Tom Ford Ombre Leather | brand=Tom Ford | gender=unisex | type=niche | season=Fall & Winter | occasion=Evening, Dates, Special occasions | longevity=8–12 hrs | projection=Strong | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=592EGP; brand 90ml=873EGP; original 50ml=700EGP stock=25; original 100ml=1000EGP stock=7\n- XJ 1861 Naxos | brand=Xerjoff | gender=unisex | type=ultra_niche | season=All Seasons | occasion=Casual/Evening | longevity=10 hours | projection=Strong | top=Lavender, Bergamot, Lemon | mid=Honey, Cinnamon, Cashmeran, Jasmine Sambac | base=Tobacco Leaf, Vanilla, Tonka Bean | sizes: brand 50ml=2900EGP; brand 90ml=5200EGP; original 50ml=22000EGP stock=3; original 100ml=40000EGP stock=1\n- Y Eau de Parfum | brand=Yves Saint Laurent | gender=male | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Strong | top=Apple, Bergamot, Ginger | mid=Sage, Juniper Berries | base=Tonka Bean, Cedar, Amberwood | sizes: brand 50ml=594EGP; brand 90ml=900EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"similar_to\": \"Ambiro\", \"similar_to_notes\": [\"citrus\", \"woody\", \"spicy\"]}"
+}
