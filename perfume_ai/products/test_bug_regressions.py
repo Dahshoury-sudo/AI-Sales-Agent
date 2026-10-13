@@ -48,6 +48,238 @@ class BugFixture(TestCase):
         return {"name": (product or self.a).name, "volume": volume, "quantity": quantity, "bottle_type": bottle_type}
 
 
+class Conversation1069Tests(BugFixture):
+    def setUp(self):
+        super().setUp()
+        self.a.name = "Ambero"
+        self.a.save()
+        self.b.name = "Afnan 9PM"
+        self.b.save()
+        self.av.price = Decimal("642")
+        self.av.save()
+        self.bv.price = Decimal("508")
+        self.bv.save()
+        self.b90.price = Decimal("1077")
+        self.b90.save()
+        self.b_original = ProductVariant.objects.create(product=self.b, volume=100, price=881, bottle_type="original", stock=1)
+
+    def offered(self, products=None, content=None, **extra):
+        from products.services.product_formatting import format_products
+        products = products or [self.a, self.b]
+        return save_message(self.conv, "assistant", content or "، ".join(p.name for p in products),
+                            internal_context=format_products(products), **extra)
+
+    def info(self, message, history=None):
+        from products.services.product_info import get_product_info
+        with patch("products.services.product_info.chat", return_value="وصف بسيط."), patch("products.services.product_info.resolve_products", return_value=[]):
+            reply, context = get_product_info(message, history or [], self.store, self.conv)
+        save_message(self.conv, "assistant", reply, internal_context=context)
+        return reply, context
+
+    def test_1069_replay_and_arabic_checkout(self):
+        from products.services.product_formatting import quote_evidence
+        self.offered()
+        first, _ = self.info("الأول بكام؟")
+        self.assertIn("Ambero", first)
+        second, context = self.info("طب والتاني")
+        self.assertIn("Afnan 9PM", second)
+        for price in ("508", "1077", "881"):
+            self.assertIn(price, second)
+        self.assertNotIn("642", second)
+        self.assertEqual({q["product_id"] for q in quote_evidence(context)["quotes"]}, {self.b.pk})
+        self.turn([{**self.line(self.b, 90), "source_text": "9 بي ام"}], message="عايز 9 بي ام 90 ملي")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.b90.pk)
+        from products.services.order_service import _ground_order_lines
+        data = {"products": [{**self.line(self.b, 90), "source_text": "9 بي ام"}]}
+        fresh = Conversation.objects.create(store=self.store)
+        _ground_order_lines(data, "عايز 9 بي ام 90 ملي", Cart.objects.create(conversation=fresh), fresh, self.store)
+        self.assertEqual(data["products"][0]["source_text"], "9 بي ام")
+        self.assertFalse(Order.objects.exists())
+
+    def test_list_order_survives_followups_and_undelivered_turns(self):
+        from products.services.sales.described import resolve_ordinal
+        self.offered([self.b, self.a])
+        self.offered([self.b])
+        self.offered([self.b])
+        self.offered([self.a, self.b], delivery_status="pending")
+        for word in ("التاني", "الثاني", "التانية", "الأخير"):
+            self.assertEqual(resolve_ordinal(word, self.conv, self.store), self.a.name)
+        self.assertEqual(resolve_ordinal("الأول", self.conv, self.store), self.b.name)
+        self.offered([Product.objects.create(store=self.store, brand=self.a.brand, name="New Topic")])
+        self.assertIsNone(resolve_ordinal("التاني", self.conv, self.store))
+
+    def test_cart_summary_is_not_a_recommendation_and_window_is_bounded(self):
+        from products.services.sales.described import resolve_ordinal
+        self.offered()
+        save_message(self.conv, "assistant", "Afnan 9PM، Ambero", internal_context="Afnan 9PM (90 ملي) x 1 (1077.00 EGP)")
+        self.assertEqual(resolve_ordinal("التاني", self.conv, self.store), self.b.name)
+        for _ in range(8):
+            save_message(self.conv, "assistant", "تحت أمرك")
+        self.assertIsNone(resolve_ordinal("التاني", self.conv, self.store))
+
+    def test_explicit_name_beats_ordinal_and_missing_position_asks(self):
+        self.offered()
+        reply, _ = self.info("التاني Ambero بكام")
+        self.assertIn("Ambero", reply)
+        self.assertNotIn("9PM", reply)
+        self.conv.messages.all().delete()
+        reply, _ = self.info("الثاني بكام")
+        self.assertIn("تقصد", reply)
+
+    def test_numeric_names_sizes_flankers_and_store_isolation(self):
+        from products.services.product_resolver import resolve_order_name
+        from products.services.sales.naming import tokens
+        for spelling in ("9 بي ام", "٩ بي إم", "9 pm", "9PM"):
+            self.assertIn("9pm", tokens(spelling))
+            self.assertEqual(resolve_order_name("عايز " + spelling + " ٩٠ ملي", self.store), self.b)
+        other = Store.objects.create(name="Other")
+        self.assertIsNone(resolve_order_name("9 بي ام", other))
+        flanker = Product.objects.create(store=self.store, brand=self.b.brand, name="Afnan 9PM Rebel")
+        self.assertIsNone(resolve_order_name("9 بي ام", self.store))
+        self.assertEqual(resolve_order_name("9 بي ام Rebel", self.store), flanker)
+        from products.services.product_info import get_product_info
+        with patch("products.services.product_info.resolve_products", return_value=[self.b]) as resolver:
+            reply, _ = get_product_info("9 بي ام بكام", [], self.store, self.conv)
+        self.assertIn("أنهي إصدار", reply)
+        resolver.assert_not_called()
+        self.b.is_active = False
+        self.b.save()
+        self.assertEqual(resolve_order_name("Afnan 9PM", self.store), self.b)
+
+    def test_unsupported_and_wrong_variant_drafts_fail_one_correction(self):
+        from products.services.router import _rephrased
+        from products.services.product_formatting import format_products
+        context = format_products([self.b, self.a])
+        for draft in ("Afnan 9PM 90 ملي بـ990 جنيه", "Afnan 9PM 50 ملي بـ642 جنيه",
+                      "Afnan 9PM 90 ملي بـ508 جنيه", "Afnan 9PM 100 ملي أوريجينال بـ1077 جنيه"):
+            retry = Mock(return_value=(draft, context))
+            reply, _, _ = _rephrased(draft, context, [{"role": "assistant", "content": draft}], self.store, retry)
+            retry.assert_called_once()
+            self.assertNotIn("990", reply)
+            self.assertNotIn("642", reply)
+            self.assertIn("1077", reply)
+        retry = Mock(return_value=("بـ990 جنيه", ""))
+        reply, _, _ = _rephrased("بـ990 جنيه", "", [], self.store, retry)
+        self.assertIn("تقصد", reply)
+
+    def test_combined_question_attaches_code_quote_after_bad_rewrite(self):
+        from products.services.router import route
+        with patch("products.services.router.classify", return_value="product_info"), patch("products.services.product_info.chat", return_value="Afnan 9PM 90 ملي بـ990 جنيه، ثباته 6 ساعات."):
+            reply, context = route("Afnan 9PM 90 ملي بكام وثباته؟", [], self.store, self.conv)
+        self.assertNotIn("990", reply)
+        self.assertIn("1077", reply)
+        self.assertNotIn("508", reply)
+
+    def test_requested_original_stock_and_size_are_respected(self):
+        reply, _ = self.info("Afnan 9PM 100 ملي أوريجينال بكام")
+        self.assertIn("881", reply)
+        self.assertNotIn("508", reply)
+        self.b_original.stock = 0
+        self.b_original.save()
+        reply, _ = self.info("Afnan 9PM 100 ملي أوريجينال بكام")
+        self.assertNotIn("881", reply)
+        self.assertIn("مش متاح", reply)
+
+    def test_disputes_override_general_and_acknowledge_recorded_error(self):
+        from products.services.router import route
+        self.offered([self.b], "Afnan 9PM 90 ملي بـ990 جنيه")
+        for message in ("مش قولت بـ990؟", "إنت قلت سعر تاني", "ليه السعر اتغير؟"):
+            with patch("products.services.router.classify", return_value="general"), patch("products.services.objection_service.resolve_products", return_value=[]):
+                reply, _ = route(message, [], self.store, self.conv)
+            self.assertIn("1077", reply)
+            self.assertIn("كان غلط", reply)
+            self.assertNotIn("990", reply)
+
+    def test_dispute_cart_priority_ambiguity_and_real_price_change(self):
+        from products.services.objection_service import handle_price_dispute
+        from products.services.product_formatting import ProductQuote, quote_context, render_quotes
+        self.turn([self.line(self.b, 90)])
+        self.offered([self.a], "Ambero 50 ملي بـ642 جنيه")
+        reply, _ = handle_price_dispute("ليه السعر اتغير؟", self.store, self.conv)
+        self.assertIn("1077", reply)
+        self.turn([self.line(self.a)])
+        reply, _ = handle_price_dispute("ليه السعر اتغير؟", self.store, self.conv)
+        self.assertIn("تقصد", reply)
+        self.conv.cart.delete()
+        q = ProductQuote.from_variant(self.b90)
+        save_message(self.conv, "assistant", render_quotes([q]), internal_context=quote_context("", [q]))
+        self.b90.price = Decimal("1100")
+        self.b90.save()
+        reply, _ = handle_price_dispute("ليه السعر اتغير؟", self.store, self.conv)
+        self.assertIn("1100", reply)
+        self.assertNotIn("كان غلط", reply)
+
+    def test_priced_recommendations_and_objections_use_verified_quotes(self):
+        from products.services.ai.recommendation import recommend
+        from products.services.objection_service import handle_objection
+        from products.services.sales.objection import detect
+        from products.services.router import _rephrased
+        from products.services.product_formatting import quote_evidence
+        draft = "Afnan 9PM 90 ملي بـ990 جنيه"
+        with patch("products.services.ai.recommendation.chat", return_value=draft):
+            reply, context = recommend("رجالي سويت في حدود 1200", Product.objects.filter(pk=self.b.pk), [], store=self.store,
+                                       intent={"max_price": 1200, "gender": "male"})
+            retry = Mock(return_value=(reply, context))
+            final, _, _ = _rephrased(reply, context, [], self.store, retry)
+        self.assertTrue(quote_evidence(context)["quotes"])
+        self.assertNotIn("990", final)
+        self.assertIn("1077", final)
+        with patch("products.services.objection_service.chat", return_value="فاهم إن السعر عالي."):
+            reply, context = handle_objection("Afnan 9PM غالي", detect("غالي"), [], self.store, self.conv)
+        self.assertIn("508", reply)
+        self.assertTrue(quote_evidence(context)["quotes"])
+
+    def test_nonproduct_money_is_scoped_to_its_recorded_subject(self):
+        from products.services.product_formatting import product_price_issues
+        from products.services.router import _rephrased
+        config = self.store.settings
+        config.business_facts = "الشحن 75 جنيه. عرض خصم 100 جنيه."
+        config.save()
+        reply = "الشحن 75 جنيه. عرض خصم 100 جنيه. ميزانيتك 900 جنيه."
+        retry = Mock(return_value=(reply, ""))
+        final, _, _ = _rephrased(reply, "", [{"role": "user", "content": "ميزانيتي 900 جنيه"}], self.store, retry)
+        self.assertEqual(reply, final)
+        retry.assert_not_called()
+        self.assertTrue(product_price_issues("الشحن 100 جنيه", [], monetary_sources=[config.business_facts]))
+        self.assertTrue(product_price_issues("Afnan 9PM 90 ملي بـ75 جنيه", [self.b], monetary_sources=[config.business_facts]))
+
+    def test_quote_evidence_cannot_swap_variant_relationships(self):
+        from products.services.product_formatting import ProductQuote, quote_context, quote_evidence, product_price_issues
+        evidence = quote_evidence(quote_context("", [ProductQuote.from_variant(self.b90)]))
+        evidence["quotes"][0]["variant_id"] = self.bv.pk
+        self.assertTrue(product_price_issues(evidence["text"], [self.b], evidence=evidence))
+
+    def test_ordinal_checkout_overrules_an_empty_or_stale_extractor(self):
+        self.offered()
+        self.offered([self.a])
+        self.turn([], message="هاخد التانية 90 ملي")
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.get().variant_id, self.b90.pk)
+        self.conv.cart.delete()
+        self.turn([self.line(self.a, 90)])
+        self.turn([self.line(self.a, 90)], message="هاخد الثاني 90 ملي")
+        self.assertTrue(Cart.objects.get(conversation=self.conv).items.filter(variant=self.b90).exists())
+
+    def test_explicit_cancel_and_handoff_survive_a_dispute(self):
+        from products.services.router import route
+        with patch("products.services.router.classify", return_value="order_cancel"), patch("products.services.objection_service.handle_price_dispute") as dispute:
+            route("مش قولت بـ990؟ الغي الطلب", [], self.store, self.conv)
+            dispute.assert_not_called()
+        with patch("products.services.router.classify", return_value="handoff"), patch("products.services.router.notify_handoff"), patch("products.services.objection_service.handle_price_dispute") as dispute:
+            route("إنت قلت سعر تاني، عايز اكلم حد حقيقي", [], self.store, self.conv)
+            dispute.assert_not_called()
+        self.conv.refresh_from_db()
+        self.assertTrue(self.conv.needs_human)
+
+    def test_ambiguous_and_unknown_numeric_flankers_ask(self):
+        from products.services.product_resolver import resolve_order_name
+        self.assertIsNone(resolve_order_name("Afnan 9 بي ام Unknown", self.store))
+        from products.services.objection_service import handle_price_dispute
+        self.offered([self.b], "Afnan 9PM 50 ملي بـ508 جنيه، 90 ملي بـ1077 جنيه")
+        reply, _ = handle_price_dispute("ليه السعر اتغير؟", self.store, self.conv)
+        self.assertIn("تقصد", reply)
+
+
 class CartBugTests(BugFixture):
     def test_L01_all_unsized_quantities_survive_partial_resolution(self):
         self.turn([self.line(self.a, None, 2), self.line(self.b, None, 3)])

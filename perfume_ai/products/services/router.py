@@ -137,25 +137,40 @@ def _rephrased(reply, context, history, store, regenerate):
     Returns `(reply, context, repeats)` — the sentences that triggered it, or `()` — so a caller that
     wants to log or test the decision can, without re-running the comparison.
     """
-    from .product_formatting import product_claim_facts, factual_description
+    from .product_formatting import (product_claim_facts, factual_description,
+        product_price_issues, quote_evidence, append_quotation, product_quotes, render_quotes, quote_context)
     from .reply_sanitizer import product_claim_issues
     from products.models import Product
-    rows = list(Product.objects.filter(store=store).select_related("brand")) if store else []
-    rows = [p for p in rows if p.name.casefold() in (context or "").casefold()]
+    catalogue = list(Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")) if store else []
+    rows = [p for p in catalogue if p.name.casefold() in (context or "").casefold()]
     facts = product_claim_facts(rows)
-    issues = product_claim_issues(reply, facts)
-    repeats = repetition.repeated_sentences(reply, history, store=store)
+    from products.models import StoreSettings, StaticFAQ
+    sources = []
+    if store:
+        config = StoreSettings.objects.filter(store=store).first()
+        if config:
+            sources += [config.business_facts or "", config.payment_instructions or ""]
+        sources += list(StaticFAQ.objects.filter(store=store, is_active=True).values_list("answer", flat=True))
+    sources += [m.get("content", "") for m in history or [] if m.get("role") == "user"]
+    evidence = quote_evidence(context)
+    if evidence.get("budget") is not None:
+        sources.append("ميزانية " + evidence["budget"] + " جنيه")
+    if evidence and not evidence.get("append"):
+        sources.append(context)
+    issues = product_claim_issues(reply, facts) + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
+    prose = reply.replace(evidence.get("text") or "\0", "")
+    repeats = repetition.repeated_sentences(prose, history, store=store)
     # Plus the frames, which are a different question about the same draft: that one asks whether a
     # sentence has been SAID before, this asks whether a sentence has been STARTED the same way
     # three times. Conversation 973's replays fail only the second — its closing frame ended four
     # of five replies while every remaining pair measured under `SENTENCE_THRESHOLD`, because the
     # model varies the reason clause and keeps the opening. Merged into one list so a draft failing
     # both gets one retry, not two.
-    for sentence in repetition.repeated_frames(reply, history, store=store):
+    for sentence in repetition.repeated_frames(prose, history, store=store):
         if sentence not in repeats:
             repeats.append(sentence)
     if not repeats and not issues:
-        return reply, context, ()
+        return append_quotation(reply, context), context, ()
 
     hint = repetition.retry_hint(repeats)
     if issues:
@@ -166,8 +181,22 @@ def _rephrased(reply, context, history, store, regenerate):
         if not issues:
             raise
         retried, retried_context = "", context
-    remaining = product_claim_issues(retried, facts)
+    remaining = product_claim_issues(retried, facts) + product_price_issues(
+        retried, rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
     if remaining or (issues and not (retried or "").strip()):
+        if any(i.startswith("price:") for i in remaining or issues):
+            ids = {q.get("product_id") for q in evidence.get("quotes", [])}
+            mentioned = sales_naming.names_in(reply, [p.name for p in rows])
+            selected = [p for p in rows if p.pk in ids or p.name in mentioned]
+            if not selected and len(rows) == 1 and not sales_naming.names_in(reply, [p.name for p in catalogue]):
+                selected = rows
+            quotes = product_quotes(selected)
+            variant_ids = {q.get("variant_id") for q in evidence.get("quotes", [])}
+            if variant_ids:
+                quotes = [q for q in quotes if q.variant_id in variant_ids]
+            if quotes:
+                return render_quotes(quotes), quote_context(context, quotes), repeats
+            return "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟", context, repeats
         if any(i.startswith("authenticity:") for i in remaining or issues):
             return sales_constraints.formulation_reply(), context, repeats
         mentioned = sales_naming.names_in(reply, [p.name for p in rows])
@@ -176,13 +205,13 @@ def _rephrased(reply, context, history, store, regenerate):
         fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
         if fallback and any(i.startswith("popularity:") for i in remaining or issues):
             fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
-        return fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context, repeats
+        return append_quotation(fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context), context, repeats
     # A generator that returns nothing usable is not an improvement. `chat` can come back empty on a
     # provider error, and `reply_sanitizer`'s bail-rather-than-empty rule exists because a blank
     # reply is the one outcome worse than a flawed one.
     if not (retried or "").strip():
         return reply, context, repeats
-    return retried, retried_context, repeats
+    return append_quotation(retried, retried_context), retried_context, repeats
 
 
 def _is_repetitive(new_response, history):
@@ -507,6 +536,10 @@ def route(message, history=None, store=None, conversation=None):
         return explanation + "\n\nاسم مصنع الزيت تحديدًا محتاج تأكيد من الفريق.", ""
     from products.models import Cart
     active_cart = Cart.objects.filter(conversation=conversation).first() if conversation else None
+    from .objection_service import is_price_dispute, handle_price_dispute
+    cancelling = bool(re.search(r"الغ[ياء]|الغي|كنسل|مش عايز (?:الطلب|الاوردر)|cancel", normalized))
+    if is_price_dispute(message) and not cancelling and not _wants_a_human(message):
+        return handle_price_dispute(message, store, conversation)
     checkout_update = active_cart and re.search(
         r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message)
     if checkout_update:
@@ -551,6 +584,8 @@ def route(message, history=None, store=None, conversation=None):
     # anything, and classify() is the first model call on every path that remains.
     record_llm_message(store)
     request_type = classify(message, history)
+    if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff"):
+        request_type = "product_info"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message) and history:
         request_type = "recommendation"
     if requires_original and request_type not in ("recommendation", "handoff", "order_cancel") and not _wants_a_human(message):

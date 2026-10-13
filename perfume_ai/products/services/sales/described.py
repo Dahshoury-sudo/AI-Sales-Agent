@@ -376,6 +376,48 @@ def offered_ever(conversation, store):
     return frozenset(found)
 
 
+def ordinal_position(message):
+    """Return a requested list position; None means no ordinal was used."""
+    text = normalize_arabic(message or "")
+    for pattern, position in (
+        (r"(?:الاولاني|الاولى|الاولي|الاول|اول واحده?)", 0),
+        (r"(?:التانيه?|الثانيه?|تاني واحده?)", 1),
+        (r"(?:الاخيره?)", -1),
+    ):
+        if re.search(r"(?<!\w)(?:و)?" + pattern + r"(?!\w)", text):
+            return position
+    return None
+
+
+def ordinal_products(conversation, store, turns=8):
+    """Keep the latest supported list's order through follow-ups on its members."""
+    if conversation is None or store is None or conversation.store_id != store.pk:
+        return []
+    from products.models import Product
+    from .naming import names_in
+    names = list(Product.objects.filter(store=store).values_list("name", flat=True))
+    messages = list(conversation.messages.filter(role="assistant", delivery_status="sent")
+                    .order_by("-created_at", "-pk").values_list("content", "internal_context")[:turns])
+    current = []
+    for content, context in reversed(messages):
+        if _is_cart_context(context):
+            continue
+        said = names_in(content, names)
+        supported = set(names_in(context, names))
+        ordered = [name for name in said if name in supported]
+        if len(ordered) > 1:
+            current = ordered
+        elif said and (not current or not set(said).issubset(current)):
+            current = ordered
+    return current
+
+
+def resolve_ordinal(message, conversation, store):
+    position = ordinal_position(message)
+    offered = ordinal_products(conversation, store)
+    return offered[position] if position is not None and -len(offered) <= position < len(offered) else None
+
+
 def offered_in_order(conversation, store, turns=2, latest_only=False):
     """The perfumes under discussion, in the order we named them in our latest reply.
 
@@ -731,7 +773,7 @@ def offered_context_block(conversation, store):
     Returns "" when nothing is offered, so a caller can concatenate it unconditionally.
     """
     try:
-        offered = offered_in_order(conversation, store)
+        offered = ordinal_products(conversation, store) or offered_in_order(conversation, store)
     except Exception:
         offered = []
     if not offered:

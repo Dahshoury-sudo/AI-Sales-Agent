@@ -32,6 +32,20 @@ _STOPWORDS = frozenset({
 })
 
 
+def normalize_product_name(text):
+    """Normalize bounded mixed-script names before dropping conversational tokens."""
+    text = normalize_arabic(text or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    return re.sub(r"(?<!\w)9\s*(?:بي\s*ام|p\s*m)(?!\w)", "9pm", text)
+
+
+def product_name_span(text):
+    text = normalize_product_name(text)
+    text = re.sub(r"(?<!\w)\d+(?:\.\d+)?\s*(?:ملي|مل|ml)\b", " ", text)
+    text = re.sub(r"\b(?:هاخد|هات|خدلي|اطلب|وضيف|ضيف|خليه|عبوه|زجاجه)\b", " ", text)
+    text = re.sub(r"\b(?:اوريجينال|اوريجنال|اورجينال|original)\b", " ", text)
+    return text
+
+
 def _fuse_spelled_out(raw):
     """Join runs of three or more single-character tokens into one word.
 
@@ -83,7 +97,7 @@ def tokens(text):
     customer spelled out survives the length filter below instead of vanishing.
     """
     # Arabic conjunctions are often attached to Latin names: "وBleu de Chanel".
-    text = re.sub(r"(?<=[\u0600-\u06ff])(?=[A-Za-z])|(?<=[A-Za-z])(?=[\u0600-\u06ff])", " ", text or "")
+    text = re.sub(r"(?<=[\u0600-\u06ff])(?=[A-Za-z])|(?<=[A-Za-z])(?=[\u0600-\u06ff])", " ", product_name_span(text))
     cleaned = re.sub(r"\W+", " ", normalize_arabic(text), flags=re.UNICODE)
     return {
         token
@@ -280,7 +294,7 @@ _REFERENTIAL = frozenset({
     "لا", "كمان", "برضه", "بس", "خلاص", "يعني", "امال",
     # Quantifiers and ordinals.
     "كل", "واحد", "واحده", "لوحده", "لوحدها", "الاتنين", "التلاته", "التاني",
-    "الاول", "الاخير", "بعض", "تاني", "تانيه",
+    "الاول", "الاولاني", "الاولي", "الثاني", "الثانيه", "الاخير", "الاخيره", "بعض", "تاني", "تانيه",
 # A message that only chases, or only points, names nothing — so the gate must not fire on either.
 }) | _CHASING | _PLURAL_POINTERS
 
@@ -428,7 +442,11 @@ def identifying_tokens(text):
     conjunction peeled off as well as bare — see `_probe_forms` for why that is a test and not a
     rewrite. The token that survives is always the one the customer typed.
     """
-    return {token for token in tokens(text) if not _is_filler(token)}
+    raw = tokens(text)
+    identifying = {token for token in raw if not _is_filler(token)}
+    if identifying:
+        identifying |= {token for token in raw if token.isdigit()}
+    return identifying
 
 
 def may_name_a_perfume(text):
@@ -659,6 +677,7 @@ def arabic_span(text):
     Space-separated, so the word count survives for a caller that needs it and the string is
     readable in a log line.
     """
+    text = product_name_span(text)
     keep = identifying_tokens(text)
     if not keep:
         return ""
@@ -854,6 +873,8 @@ def candidates(name, store, products=None):
     for product in products:
         candidate = tokens(product.name)
         if not candidate:
+            continue
+        if "9pm" in wanted and identifying_tokens(name) - candidate - tokens(product.brand.name):
             continue
         hits = _overlap(wanted, candidate)
         reverse = _overlap(candidate, wanted)

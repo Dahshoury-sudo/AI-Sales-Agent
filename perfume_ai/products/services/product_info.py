@@ -27,8 +27,8 @@ def _named_in_message(message, store):
     catalogue at 1019 جنيه the whole time. `naming.mentioned_in` resolves it in one pass with
     no model call, so the data is simply there and the question cannot arise.
 
-    Latin names only, which is `naming.tokens`' existing limitation — an Arabic
-    transliteration still depends on the LLM resolver.
+    Latin names and bounded mixed-script aliases are deterministic; other Arabic
+    transliterations still depend on the resolver.
     """
     if not message or store is None:
         return []
@@ -42,7 +42,13 @@ def _named_in_message(message, store):
         .prefetch_related("variants")
         .select_related("brand")
     )
-    return naming.mentioned_in(message, candidates)
+    if "9pm" in naming.tokens(message):
+        match = naming.match_product(naming.arabic_span(message), store, products=candidates)
+        return [match] if match else []
+    found = naming.mentioned_in(message, candidates)
+    return [p for p in found if not any(
+        p != other and naming.tokens(p.name) < naming.tokens(other.name) for other in found
+    )]
 
 
 def _referent_from_conversation(message, store, conversation):
@@ -675,6 +681,13 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 
     # An explicit name in this message beats anything inferred from earlier turns.
     products = _named_in_message(message, store)
+    if not products and "9pm" in naming.tokens(message):
+        return "تقصد أنهي إصدار من 9PM؟ ممكن تكتب اسم العطر كامل؟", "NUMERIC_NAME_UNRESOLVED"
+    if not products and sales_described.ordinal_position(message) is not None and not naming.identifying_tokens(message):
+        name = sales_described.resolve_ordinal(message, conversation, store)
+        products = _products_named([name], store) if name else []
+        if not products:
+            return "تقصد أنهي عطر؟ ممكن تكتب اسمه؟", "ORDINAL_UNRESOLVED"
     # Kept because the `chasing` gate below needs to know the name came from *this* message: a
     # deterministic match is never a resolved pronoun, so it always ends a chase.
     named_here = bool(products)
@@ -1078,6 +1091,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # alone: a message that names nothing IS asking about the referent, and "بكام ده" must keep getting
     # a straight answer about the perfume we just offered.
     rows_are_not_the_subject = deferring or (not products_from_message and named_but_unresolved)
+    from .product_formatting import (price_question, product_quotes, quote_context,
+        append_quotation, QUOTE_PROSE_INSTRUCTION)
+    quoting = bool(products) and not rows_are_not_the_subject and price_question(message, history, conversation)
+    quotes = product_quotes(products, message, budget, filter_budget=False) if quoting else []
+    if quoting and not quotes:
+        return "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً.", format_products(products)
 
     # Does this turn owe the customer an answer about every row it is being given? Computed here,
     # after the widening above, so `products` is final.
@@ -1245,6 +1264,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     if praised:
         instructions += appreciation.RULES
 
+    if quoting:
+        instructions += QUOTE_PROSE_INSTRUCTION
+        context = quote_context(context, quotes, append=True, max_price=budget)
+
     messages = [
         {
             "role": "system",
@@ -1266,4 +1289,4 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     })
 
     response = chat(messages, profile="converse")
-    return response, context
+    return append_quotation(response, context), context

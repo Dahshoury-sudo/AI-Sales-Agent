@@ -594,5 +594,29 @@ SCENARIOS = [
     },
 ]
 
+SCENARIOS.append({
+    "id": "CONV1069",
+    "category": "adversarial",
+    "persona": "hard_budget",
+    "turns": [
+        "عايز عطر رجالي سويت للسهر، Ambero ولا Afnan 9PM؟",
+        "الأول بكام؟",
+        "طب والتاني",
+        "عايز 9 بي ام 90 ملي زجاجة البراند",
+        "مش قولت بـ990؟",
+    ],
+    "probe": (
+        "Keep the delivered recommendation order through the first-product price follow-up; "
+        "the second ordinal must select the other product and retain price intent. "
+        "Resolve 9 بي ام to the current store's Afnan 9PM and its 90 ml brand bottle immediately. "
+        "Every quoted product, size and price must match the current catalogue. "
+        "The incident fixture prices are 508 (50 ml), 1077 (90 ml), and 881 (original 100 ml) EGP; "
+        "642 and 990 must never be presented as current 9PM prices. "
+        "On the disputed price, acknowledge an earlier error only when the saved reply and its "
+        "catalogue evidence prove one. Do not invent a discount or reason for a price change, "
+        "and do not confirm checkout without the existing confirmation safeguards."
+    ),
+})
+
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"
 MULTI_TURN = [s for s in SCENARIOS if len(s["turns"]) > 1]

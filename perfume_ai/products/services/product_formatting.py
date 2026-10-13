@@ -12,6 +12,10 @@ trying to prevent. Both drifts are resolved by including the superset.
 """
 
 from itertools import islice
+from dataclasses import dataclass, asdict
+from decimal import Decimal
+import json
+import re
 
 from .sales import naming
 from .sales.value import (
@@ -93,6 +97,187 @@ def budget_label(price, max_price):
 # so that count drifted away from reality and the scarcity line became a false urgency
 # claim. Brand bottles are compounded to order, so they carry no count at all now.
 LOW_BOTTLE_THRESHOLD = 3
+
+QUOTE_MARKER = "QUOTE_EVIDENCE:"
+QUOTE_PROSE_INSTRUCTION = (
+    "\nاكتب وصف العطر والرد على السؤال فقط من البيانات. لا تكتب أسعار منتجات أو أحجام؛ "
+    "الأسعار والأحجام هتتضاف تلقائياً بعد ردك. لا تنقل أي سعر من المحادثة.\n"
+)
+
+
+@dataclass(frozen=True)
+class ProductQuote:
+    product_id: int
+    variant_id: int
+    name: str
+    volume: int
+    bottle_type: str
+    quantity: int
+    price: Decimal
+
+    @classmethod
+    def from_variant(cls, variant, quantity=1):
+        if type(quantity) is not int or quantity < 1:
+            raise ValueError("A quotation needs a positive integer quantity")
+        return cls(variant.product_id, variant.pk, variant.product.name, variant.volume,
+                   variant.bottle_type, quantity, Decimal(variant.price))
+
+    def evidence(self):
+        return {**asdict(self), "price": str(self.price)}
+
+
+def requested_quote_options(message):
+    text = naming.normalize_product_name(message)
+    sizes = [int(n) for n in re.findall(r"(?<!\d)(\d+)\s*(?:ملي|مل|ml)\b", text)]
+    bottle = None
+    if re.search(r"اوريجينال|اوريجنال|اورجينال|original", text):
+        bottle = "original"
+    elif re.search(r"زجاجه (?:البراند|الاستور|المحل)|تركيب", text):
+        bottle = "normal"
+    return sizes, bottle
+
+
+def product_quotes(products, message="", max_price=None, *, filter_budget=True):
+    """Select sellable variants, preserving the existing value-pick ordering."""
+    sizes, bottle = requested_quote_options(message)
+    quotes = []
+    for product in products:
+        if not product.is_active:
+            continue
+        variants = [v for v in product.variants.all() if v.volume > 0 and is_variant_available(v)
+                    and (not sizes or v.volume in sizes) and (not bottle or v.bottle_type == bottle)]
+        if max_price is not None and filter_budget:
+            variants = [v for v in variants if budget_tier(v.price, max_price) != "far"]
+        eligible = [v for v in variants if v.bottle_type == "normal"
+                    and (max_price is None or v.price <= max_price)]
+        value = size_value(eligible)
+        if not sizes and value:
+            variants = [value.best] + [v for v in variants if v.pk != value.best.pk]
+        quotes.extend(ProductQuote.from_variant(v) for v in variants)
+    return quotes
+
+
+def render_quotes(quotes, max_price=None):
+    lines = []
+    for quote in quotes:
+        bottle = "زجاجة البراند" if quote.bottle_type == "normal" else "زجاجة أوريجينال"
+        quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
+        line = f"{quote.name} — {bottle} {quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه."
+        if max_price is not None and budget_tier(quote.price, max_price) == "near":
+            line += " أعلى حاجة بسيطة من ميزانيتك."
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def quote_context(context, quotes, *, append=False, max_price=None, rendered=None):
+    if not quotes:
+        return context
+    payload = {"quotes": [q.evidence() for q in quotes], "append": append,
+               "text": rendered if rendered is not None else render_quotes(quotes, max_price),
+               "budget": str(max_price) if max_price is not None else None}
+    return context + "\n" + QUOTE_MARKER + json.dumps(payload, ensure_ascii=False)
+
+
+def quote_evidence(context):
+    for line in reversed((context or "").splitlines()):
+        if line.startswith(QUOTE_MARKER):
+            try:
+                payload = json.loads(line[len(QUOTE_MARKER):])
+                if isinstance(payload, dict) and isinstance(payload.get("quotes"), list):
+                    return payload
+            except (ValueError, TypeError):
+                pass
+    return {}
+
+
+def append_quotation(reply, context):
+    evidence = quote_evidence(context)
+    block = evidence.get("text", "")
+    if evidence.get("append") and block and block not in reply:
+        return (reply.strip() + "\n\n" + block).strip()
+    return reply
+
+
+def price_question(message, history=None, conversation=None):
+    text = naming.normalize_product_name(message)
+    if re.search(r"بكام|سعر|اسعار|ثمن|احجام|حجم|\d+\s*(?:ملي|مل|ml)\b", text):
+        return True
+    from .sales.described import ordinal_position
+    if ordinal_position(message) is not None:
+        if conversation is not None:
+            latest = conversation.messages.filter(role="assistant", delivery_status="sent").order_by("-created_at", "-pk").first()
+            if latest and monetary_claims(latest.content):
+                return True
+    # Bare continuations inherit the customer's most recent price question.
+    if not re.search(r"متوفر|موجود|عندك|ثبات|فوحان|مكونات|ريح", text):
+        previous = next((m.get("content", "") for m in reversed(history or []) if m.get("role") == "user"), "")
+        return bool(re.search(r"بكام|سعر|اسعار|ثمن", previous))
+    return False
+
+
+_AMOUNT = r"\d+(?:[,٬]\d{3})*(?:[.٫]\d+)?"
+_MONEY = re.compile(r"(?:بـ?\s*|بسعر\s*|سعره?\s*[:：]?\s*)(?P<prefix>" + _AMOUNT + r")(?!\w)|(?P<currency>" + _AMOUNT + r")\s*(?:جنيه|جنيها|ج\.م|egp)\b", re.I)
+
+
+def monetary_claims(text):
+    """Money expressions with offsets; sizes and perfume-name digits are not prices."""
+    normalized = naming.normalize_product_name(text).replace("ـ", "")
+    return [(m.start(), m.end(), Decimal((m['prefix'] or m['currency']).replace(",", "").replace("٬", "").replace("٫", ".")))
+            for m in _MONEY.finditer(normalized)
+            if not (m['prefix'] and re.match(r"\s*(?:ملي|مل|ml)\b", normalized[m.end():]))]
+
+
+def product_price_issues(reply, products, *, evidence=None, monetary_sources=(), catalogue=None):
+    """Bind every price to its local product, size and bottle, never a global number set."""
+    evidence = evidence or {}
+    # This exact block was rendered by code. Only the surrounding prose needs parsing.
+    block = evidence.get("text", "")
+    prose = reply.replace(block, "") if block else reply
+    text = naming.normalize_product_name(prose).replace("ـ", "")
+    names = [p.name for p in (catalogue if catalogue is not None else products)]
+    by_name = {p.name: p for p in products}
+    issues, subject = [], None
+    variants_by_id = {v.pk: v for p in products for v in p.variants.all()}
+    for record in evidence.get("quotes", []):
+        variant = variants_by_id.get(record.get("variant_id"))
+        try:
+            valid = (variant is not None and variant.product.is_active and is_variant_available(variant)
+                     and record.get("product_id") == variant.product_id
+                     and record.get("name") == variant.product.name
+                     and record.get("volume") == variant.volume
+                     and record.get("bottle_type") == variant.bottle_type
+                     and type(record.get("quantity")) is int and record["quantity"] > 0
+                     and Decimal(record["price"]) == Decimal(variant.price))
+        except (KeyError, ValueError, TypeError, ArithmeticError):
+            valid = False
+        if not valid:
+            issues.append("price: quotation no longer matches its catalogue variant")
+    for clause in re.split(r"[\n؛;!?؟]|(?<!\d)[.،,]|[.،,](?!\d)", text):
+        mentioned = naming.names_in(clause, names)
+        if mentioned:
+            subject = mentioned[-1]
+        for start, end, amount in monetary_claims(clause):
+            # Configured money is accepted only under its own subject (shipping,
+            # promotion, budget, deposit or total), never as a product price.
+            scope = clause[:end]
+            category = next((words for words in (("شحن", "توصيل"), ("خصم", "عرض"), ("ميزاني",),
+                            ("اجمالي", "مجموع"), ("عربون", "مقدم")) if any(word in scope for word in words)), None)
+            if category and not mentioned and any(any(word in naming.normalize_product_name(fragment) for word in category)
+                    and amount in [m[2] for m in monetary_claims(fragment)]
+                    for source in monetary_sources for fragment in re.split(r"[\n؛;]|(?<!\d)[.،]|[.،](?!\d)", source)):
+                continue
+            sizes, bottle = requested_quote_options(scope)
+            local_names = naming.names_in(scope, names)
+            product = by_name.get(local_names[-1] if local_names else subject)
+            if product is None and subject is None and len(products) == 1:
+                product = products[0]
+            variants = [v for v in product.variants.all() if v.volume > 0 and is_variant_available(v)
+                        and (not sizes or v.volume == sizes[-1]) and (not bottle or v.bottle_type == bottle)] if product else []
+            # No size/bottle association is safe only if exactly one variant remains.
+            valid = len(variants) == 1 and Decimal(variants[0].price) == amount
+            if evidence.get("append") or not valid:
+                issues.append(f"price: {amount} has no verified product/variant association")
+    return issues
 
 
 def product_claim_facts(products):

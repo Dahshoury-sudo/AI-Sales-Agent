@@ -599,10 +599,14 @@ def _log_outcome(message, resolved, unplaced, failed, ambiguous=()):
 def resolve_order_name(source, store):
     """Resolve customer wording, including inactive identities, without substituting stock."""
     products = Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")
-    match = naming.match_product(source, store, products=products)
+    span = naming.arabic_span(source)
+    match = naming.match_product(span or source, store, products=products)
     if match:
         return match
-    span = naming.arabic_span(source)
+    # A recognized numeric name with an ambiguous/unknown suffix must not fall
+    # through to a phonetic guess that silently substitutes the base perfume.
+    if "9pm" in naming.tokens(source):
+        return None
     latin = naming.transliterate(span) if span else ""
     if not latin:
         return None

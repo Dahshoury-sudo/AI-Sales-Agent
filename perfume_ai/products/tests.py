@@ -7512,7 +7512,7 @@ class SalesScenarioTests(TestCase):
 
     def test_h_a_purchase_intent_reply_keeps_its_closing_question(self):
         """The gate must not strip a close the customer has earned."""
-        reply = "تمام، الـ90 بـ 900 جنيه. تحب أساعدك في الطلب؟"
+        reply = "تمام يا فندم. تحب أساعدك في الطلب؟"
 
         with mock.patch("products.services.router.classify", return_value="product_info"), \
              mock.patch(
@@ -18841,18 +18841,27 @@ class Conv973SaidItTwiceTests(TestCase):
 
     # ── the retry (router._rephrased) ───────────────────────────────────────────────
 
+    def _verified_price_context(self):
+        """Repetition fixtures also need the catalogue evidence required by pricing."""
+        from products.services.product_formatting import format_products
+        for product, price in ((self.coco, 1006), (self.chloe, 1058), (self.light_blue, 852)):
+            ProductVariant.objects.get_or_create(product=product, volume=90,
+                defaults={"price": price, "bottle_type": "normal"})
+        return format_products([self.bloom, self.coco, self.chloe, self.light_blue])
+
     def test_a_clean_draft_is_not_regenerated(self):
         from products.services.router import _rephrased
 
         calls = []
+        verified = self._verified_price_context()
 
         reply, context, repeats = _rephrased(
-            self.REPLY_2, "ctx", self._history(), self.store,
+            self.REPLY_2, verified, self._history(), self.store,
             lambda hint: (calls.append(hint), ("لأ", ""))[1],
         )
 
         self.assertEqual(calls, [])
-        self.assertEqual((reply, context, repeats), (self.REPLY_2, "ctx", ()))
+        self.assertEqual((reply, context, repeats), (self.REPLY_2, verified, ()))
 
     def test_a_repeating_draft_is_regenerated_once_with_the_sentences_quoted(self):
         from products.services.router import _rephrased
@@ -18880,30 +18889,32 @@ class Conv973SaidItTwiceTests(TestCase):
         from products.services.router import _rephrased
 
         calls = []
+        verified = self._verified_price_context()
 
         def regenerate(hint):
             calls.append(hint)
-            return self.REPLY_5, "ctx2"
+            return self.REPLY_5, verified
 
         reply, context, _ = _rephrased(
-            self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4),
+            self.REPLY_5, verified, self._history(self.REPLY_3, self.REPLY_4),
             self.store, regenerate,
         )
 
         self.assertEqual(len(calls), 1)
-        self.assertEqual((reply, context), (self.REPLY_5, "ctx2"))
+        self.assertEqual((reply, context), (self.REPLY_5, verified))
 
     def test_an_empty_regeneration_keeps_the_first_draft(self):
         """`reply_sanitizer`'s bail-rather-than-empty rule, applied to a retry: a blank reply is the
         one outcome worse than a flawed one, and `chat` can come back empty on a provider error."""
         from products.services.router import _rephrased
+        verified = self._verified_price_context()
 
         reply, context, _ = _rephrased(
-            self.REPLY_5, "ctx", self._history(self.REPLY_3, self.REPLY_4),
+            self.REPLY_5, verified, self._history(self.REPLY_3, self.REPLY_4),
             self.store, lambda hint: ("   ", ""),
         )
 
-        self.assertEqual((reply, context), (self.REPLY_5, "ctx"))
+        self.assertEqual((reply, context), (self.REPLY_5, verified))
 
     def test_a_draft_that_only_repeats_a_frame_is_regenerated(self):
         """Reply 4 passes `repeated_sentences` — its closing sentence peaks at 0.594 against reply 3

@@ -554,6 +554,13 @@ def _ground_order_lines(data, message, cart, conversation, store):
     from .static_faq_service import normalize_arabic
     saved = _saved_lines(cart)
     offered = described.offered_in_order(conversation, store)
+    points_to_position = described.ordinal_position(message) is not None and not naming.identifying_tokens(message)
+    if points_to_position and not data.get("products"):
+        from .product_formatting import requested_quote_options
+        sizes, bottle = requested_quote_options(message)
+        data["products"] = [{"name": message, "source_text": message,
+                             "volume": sizes[0] if len(sizes) == 1 else None,
+                             "bottle_type": bottle, "quantity": 1}]
     for entry in data.get("products") or []:
         if not isinstance(entry, dict) or not isinstance(entry.get("name"), str):
             continue
@@ -563,7 +570,7 @@ def _ground_order_lines(data, message, cart, conversation, store):
             entry.get("line_id") == line.get("line_id") or
             entry["name"].casefold() == line["name"].casefold()
         )), None)
-        if previous and entry["name"].casefold() == previous["name"].casefold():
+        if previous and entry["name"].casefold() == previous["name"].casefold() and not points_to_position:
             entry["line_id"] = previous["line_id"]
             entry["source_text"] = previous.get("source_text", previous["name"])
             entry["product_id"] = previous.get("product_id")
@@ -578,8 +585,16 @@ def _ground_order_lines(data, message, cart, conversation, store):
             else:
                 source = message.strip()
         reference = normalize_arabic(source).strip(" .!؟")
-        ordinal = {"ده": 0, "دي": 0, "ديت": 0, "الاول": 0, "اول واحد": 0,
-                   "الاولاني": 0, "التاني": 1, "تاني واحد": 1, "الثاني": 1, "الاخير": -1}
+        ordinal = {"ده": 0, "دي": 0, "ديت": 0}
+        if points_to_position:
+            name = described.resolve_ordinal(message, conversation, store)
+            product = Product.objects.filter(store=store, name=name, is_active=True).first() if name else None
+            entry["source_text"] = message
+            entry.pop("line_id", None)
+            entry["name"] = product.name if product else source
+            entry["product_id"] = product.pk if product else None
+            entry["resolution_status"] = "resolved" if product else "ambiguous"
+            continue
         if reference not in ordinal:
             remaining = naming.identifying_tokens(naming.arabic_span(source)) - {
                 "هاخد", "هات", "خدلي", "وضيف", "ضيف", "للهديه", "هديه", "هدايا",

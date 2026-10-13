@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
-from .product_formatting import format_products
+from .product_formatting import format_products, product_quotes, render_quotes, quote_context
 from .product_info import get_product_info
 from .product_resolver import resolve_products
 
@@ -24,24 +24,22 @@ def requested_dimensions(message):
 
 
 def requested_facts(message, products):
-    from .sales.constraints import explicit_updates
     from .sales.value import price_per_ml
     dims = requested_dimensions(message)
-    wanted = explicit_updates(message)
-    lines, values = [], []
+    lines, values, quotes = [], [], []
     for product in products:
         facts = []
         if dims & {"price", "value"}:
-            variants = [v for v in product.variants.all()
-                        if (not wanted.get("requested_volume") or v.volume == wanted["requested_volume"])
-                        and (not wanted.get("bottle_type") or v.bottle_type == wanted["bottle_type"])]
+            current_quotes = product_quotes([product], message)
+            quotes.extend(current_quotes)
+            by_id = {v.pk: v for v in product.variants.all()}
+            variants = [by_id[q.variant_id] for q in current_quotes]
             if not variants:
                 facts.append("الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً")
             for v in variants:
                 bottle = "زجاجة البراند" if v.bottle_type == "normal" else "زجاجة أوريجينال"
-                facts.append(f"{bottle} {v.volume} مل بـ{v.price:g} جنيه")
-                if v.bottle_type == "original" and not (v.stock or 0):
-                    facts.append("الحجم ده نفد حالياً")
+                quote = next(q for q in current_quotes if q.variant_id == v.pk)
+                facts.append(render_quotes([quote]))
                 if "value" in dims and v.volume > 0:
                     unit = price_per_ml(v).quantize(Decimal(".01"))
                     facts.append(f"سعر المل: {unit} جنيه")
@@ -55,7 +53,9 @@ def requested_facts(message, products):
         lines.append(f"الأوفر في سعر المل بين الأحجام دي: {best[1]} ({best[2]} مل، {best[3]}).")
     if "sweetness" in dims:
         lines.append("ماقدرش أجزم أنهي أقل حلاوة؛ وجود نوتة زي الفانيليا لوحده مش كفاية عشان نقارن درجة الحلاوة بدقة.")
-    return "\n\n".join(lines), format_products(products, show_prices=bool(dims & {"price", "value"}), show_value_pick=False)
+    reply = "\n\n".join(lines)
+    context = format_products(products, show_prices=bool(dims & {"price", "value"}), show_value_pick=False)
+    return reply, quote_context(context, quotes, rendered=reply)
 
 
 def compare_products(message, history=None, store=None, conversation=None, retry_hint=""):

@@ -2,7 +2,8 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from .prompts import get_system_prompt
-from ..product_formatting import format_products, is_variant_available, factual_description
+from ..product_formatting import (format_products, is_variant_available, factual_description,
+    ProductQuote, product_quotes, render_quotes, quote_context, append_quotation, QUOTE_PROSE_INSTRUCTION)
 from ..sales import described
 from ..sales.constraints import acknowledgement_hint, describe_filters
 from ..sales.ranking import reasons_note
@@ -37,8 +38,7 @@ def _constrained_recommendation(products, intent, message="", search=None):
         return f"مش لاقي اختيار بيحقق كل الشروط دي مع بعض{limit}. تحب تغيّر الحجم ولا الميزانية؟", ""
     lines = []
     for product, variant in selected:
-        bottle = "زجاجة البراند" if variant.bottle_type == "normal" else "زجاجة أوريجينال"
-        line = f"• {product.name} — {bottle} {variant.volume} مل بـ{variant.price:g} جنيه."
+        line = "• " + render_quotes([ProductQuote.from_variant(variant)])
         if budget is not None and variant.price > budget:
             line += " أعلى حاجة بسيطة من ميزانيتك."
         facts = factual_description(product)
@@ -53,7 +53,8 @@ def _constrained_recommendation(products, intent, message="", search=None):
     if total_scope:
         lines.append(f"إجمالي الـ{count} زجاجات: {sum(v.price for _, v in selected):g} جنيه.")
     reply = "\n\n".join(lines)
-    return reply, reply
+    context = quote_context(reply, [ProductQuote.from_variant(v) for _, v in selected], rendered=reply)
+    return reply, context
 
 
 def _coerce_budget(value):
@@ -814,7 +815,7 @@ def recommend(
 
     messages.append({
         "role": "user",
-        "content": user_content + (repeat_hint or ""),
+        "content": user_content + (QUOTE_PROSE_INSTRUCTION if max_price else "") + (repeat_hint or ""),
     })
 
     response = chat(messages, profile="converse")
@@ -831,4 +832,14 @@ def recommend(
     # `relax_offer_block` on the no-match branch — the marker is persisted, not injected, so it
     # changes what the NEXT turn can read and never what this one says.
     context = (context or "") + described.moved_past_block(intent, store)
-    return response, context
+    if max_price:
+        from ..sales.naming import names_in
+        pool = list(products or alternatives or [])
+        if not pool:
+            pool = _named_in_message(message, store)
+        supported = [p for p in pool if p.name in context]
+        ordered = names_in(response, [p.name for p in supported])
+        selected = [next(p for p in supported if p.name == name) for name in ordered[:2]]
+        quotes = product_quotes(selected, message, max_price)
+        context = quote_context(context, quotes, append=True, max_price=max_price)
+    return append_quotation(response, context), context
