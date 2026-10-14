@@ -147,6 +147,51 @@ class Conversation1069Tests(BugFixture):
         self.b.save()
         self.assertEqual(resolve_order_name("Afnan 9PM", self.store), self.b)
 
+    def test_arabic_checkout_verifies_the_full_literal_message(self):
+        from products.services.order_service import _ground_order_lines
+        message = "عايز 9 بي ام ٩٠ ملي زجاجة البراند"
+        data = {"products": [self.line(self.b, 90)]}
+        _ground_order_lines(data, message, Cart.objects.create(conversation=self.conv), self.conv, self.store)
+        self.assertEqual(data["products"][0]["source_text"], message)
+        self.turn(data["products"], message=message)
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.b90.pk)
+        self.assertFalse(cart.pending_items)
+        self.assertFalse(Order.objects.exists())
+
+    def test_numeric_price_question_respects_brand_bottle_wording(self):
+        reply, context = self.info("9 بي ام ٩٠ ملي زجاجة البراند بكام؟")
+        self.assertIn("Afnan 9PM", reply)
+        self.assertIn("1077", reply)
+        self.assertNotIn("881", reply)
+        self.assertNotIn("508", reply)
+
+    def test_ambiguous_numeric_objections_do_not_accept_a_model_guess(self):
+        from products.services.objection_service import handle_objection, handle_price_dispute
+        from products.services.sales.objection import detect
+        Product.objects.create(store=self.store, brand=self.b.brand, name="Afnan 9PM Rebel")
+        with patch("products.services.objection_service.resolve_products", return_value=[self.b]) as resolver:
+            reply, _ = handle_objection("9 بي ام غالي", detect("غالي"), [], self.store, self.conv)
+            self.assertIn("أنهي إصدار", reply)
+            reply, _ = handle_price_dispute("9 بي ام، إنت قلت سعر تاني", self.store, self.conv)
+            self.assertIn("أنهي إصدار", reply)
+        resolver.assert_not_called()
+
+    def test_inactive_numeric_product_is_not_replaced_by_an_active_flanker(self):
+        from products.services.objection_service import handle_objection
+        from products.services.sales.objection import detect
+        self.b.is_active = False
+        self.b.save()
+        Product.objects.create(store=self.store, brand=self.b.brand, name="Afnan 9PM Rebel")
+        reply, _ = self.info("Afnan 9PM 90 ملي بكام؟")
+        self.assertIn("مش متاح", reply)
+        self.assertNotIn("Rebel", reply)
+        with patch("products.services.objection_service.resolve_products") as resolver:
+            reply, _ = handle_objection("Afnan 9PM غالي", detect("غالي"), [], self.store, self.conv)
+        resolver.assert_not_called()
+        self.assertIn("مش متاح", reply)
+        self.assertNotIn("Rebel", reply)
+
     def test_unsupported_and_wrong_variant_drafts_fail_one_correction(self):
         from products.services.router import _rephrased
         from products.services.product_formatting import format_products
@@ -225,7 +270,9 @@ class Conversation1069Tests(BugFixture):
         self.assertTrue(quote_evidence(context)["quotes"])
         self.assertNotIn("990", final)
         self.assertIn("1077", final)
-        with patch("products.services.objection_service.chat", return_value="فاهم إن السعر عالي."):
+        with patch("products.services.objection_service.chat", return_value="فاهم إن السعر عالي."), patch(
+            "products.services.objection_service.resolve_products", side_effect=AssertionError("An explicit name must resolve from the catalogue")
+        ):
             reply, context = handle_objection("Afnan 9PM غالي", detect("غالي"), [], self.store, self.conv)
         self.assertIn("508", reply)
         self.assertTrue(quote_evidence(context)["quotes"])
@@ -265,7 +312,9 @@ class Conversation1069Tests(BugFixture):
         with patch("products.services.router.classify", return_value="order_cancel"), patch("products.services.objection_service.handle_price_dispute") as dispute:
             route("مش قولت بـ990؟ الغي الطلب", [], self.store, self.conv)
             dispute.assert_not_called()
-        with patch("products.services.router.classify", return_value="handoff"), patch("products.services.router.notify_handoff"), patch("products.services.objection_service.handle_price_dispute") as dispute:
+        with patch("products.services.router.classify", return_value="handoff"), patch("products.services.router.notify_handoff"), patch("products.services.objection_service.handle_price_dispute") as dispute, patch(
+            "products.services.general_service.chat", return_value="حولت المحادثة لفريق خدمة العملاء."
+        ):
             route("إنت قلت سعر تاني، عايز اكلم حد حقيقي", [], self.store, self.conv)
             dispute.assert_not_called()
         self.conv.refresh_from_db()

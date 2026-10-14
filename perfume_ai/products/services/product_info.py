@@ -37,14 +37,16 @@ def _named_in_message(message, store):
 
     from .sales import naming
 
-    candidates = list(
-        Product.objects.filter(store=store, is_active=True)
-        .prefetch_related("variants")
-        .select_related("brand")
-    )
-    if "9pm" in naming.tokens(message):
+    numeric_name = "9pm" in naming.tokens(message)
+    catalogue = Product.objects.filter(store=store)
+    if not numeric_name:
+        catalogue = catalogue.filter(is_active=True)
+    candidates = list(catalogue.prefetch_related("variants").select_related("brand"))
+    if numeric_name:
+        # Keep inactive identities in this lookup so an unavailable base perfume
+        # cannot be replaced by the only active flanker.
         match = naming.match_product(naming.arabic_span(message), store, products=candidates)
-        return [match] if match else []
+        return [match] if match and match.is_active else []
     found = naming.mentioned_in(message, candidates)
     return [p for p in found if not any(
         p != other and naming.tokens(p.name) < naming.tokens(other.name) for other in found
@@ -682,6 +684,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # An explicit name in this message beats anything inferred from earlier turns.
     products = _named_in_message(message, store)
     if not products and "9pm" in naming.tokens(message):
+        from .product_resolver import resolve_order_name
+        unavailable = resolve_order_name(message, store)
+        if unavailable and not unavailable.is_active:
+            return f"{unavailable.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
         return "تقصد أنهي إصدار من 9PM؟ ممكن تكتب اسم العطر كامل؟", "NUMERIC_NAME_UNRESOLVED"
     if not products and sales_described.ordinal_position(message) is not None and not naming.identifying_tokens(message):
         name = sales_described.resolve_ordinal(message, conversation, store)

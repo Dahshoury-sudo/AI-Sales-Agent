@@ -92,7 +92,7 @@ def _recorded_price(context, quote):
 def handle_price_dispute(message, store, conversation):
     """Correct a quotation without changing the cart or inventing a discount."""
     from products.models import Product, ProductVariant, Cart
-    from .product_info import _named_in_message
+    from .product_info import _named_in_message, get_product_info
     from .sales import naming
     products = list(Product.objects.filter(store=store, is_active=True).prefetch_related("variants").select_related("brand"))
     named = _named_in_message(message, store)
@@ -103,7 +103,10 @@ def handle_price_dispute(message, store, conversation):
     if not named:
         residue = re.sub(r"(?<!\w)(?:مش|انت|انتي|قولت|قلت|ليه|ازاي|السعر|سعره|سعرين|سعر|تاني|مختلف|اتغير|جنيه)(?!\w)|(?<!\w)بـ?\s*\d+(?:[.,]\d+)?", " ", naming.normalize_product_name(message))
         if naming.identifying_tokens(residue):
-            named = _named_in_message(residue, store) or list(resolve_products(residue, [], store, conversation))
+            named = _named_in_message(residue, store)
+            if not named and "9pm" in naming.tokens(residue):
+                return get_product_info(residue, [], store, conversation)
+            named = named or list(resolve_products(residue, [], store, conversation))
             if not named:
                 return "تقصد سعر أنهي عطر وحجم؟", "PRICE_DISPUTE_UNRESOLVED"
             variants = [v for p in named for v in p.variants.all()]
@@ -314,8 +317,12 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     #
     # Objections may carry a quotation too, so they use the same identity verification
     # as product questions before any price is rendered.
-    from .product_info import _named_in_message, _referent_from_conversation
-    products = _named_in_message(message, store) or resolve_products(message, history, store, conversation)
+    from .product_info import _named_in_message, _referent_from_conversation, get_product_info
+    from .sales import naming
+    products = _named_in_message(message, store)
+    if not products and "9pm" in naming.tokens(message):
+        return get_product_info(message, history, store, conversation)
+    products = products or resolve_products(message, history, store, conversation)
     if not products:
         products = _referent_from_conversation(message, store, conversation)
     if objection.kind == "price_gap":
