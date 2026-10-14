@@ -1,0 +1,137 @@
+{
+  "budget_usd": "1.00",
+  "accounted_usd": "0.01275245",
+  "reserved_usd": "0E-8",
+  "calls": [
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-4.1-mini",
+      "reserved_usd": "0.0092744",
+      "status": "complete",
+      "prompt_tokens": 3139,
+      "cached_tokens": 0,
+      "completion_tokens": 6,
+      "cost_usd": "0.0012652",
+      "seconds": 1.974,
+      "finish_reason": "stop",
+      "response_model": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-5-mini",
+      "reserved_usd": "0.01901725",
+      "status": "complete",
+      "prompt_tokens": 2313,
+      "cached_tokens": 0,
+      "completion_tokens": 87,
+      "cost_usd": "0.00075225",
+      "seconds": 1.804,
+      "finish_reason": "stop",
+      "response_model": "gpt-5-mini-2025-08-07"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-4.1-mini",
+      "reserved_usd": "0.021522",
+      "status": "complete",
+      "prompt_tokens": 9104,
+      "cached_tokens": 0,
+      "completion_tokens": 56,
+      "cost_usd": "0.0037312",
+      "seconds": 1.23,
+      "finish_reason": "stop",
+      "response_model": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-4.1-mini",
+      "reserved_usd": "0.0095684",
+      "status": "complete",
+      "prompt_tokens": 3293,
+      "cached_tokens": 2944,
+      "completion_tokens": 5,
+      "cost_usd": "0.000442",
+      "seconds": 0.701,
+      "finish_reason": "stop",
+      "response_model": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-5-mini",
+      "reserved_usd": "0.01857325",
+      "status": "complete",
+      "prompt_tokens": 1661,
+      "cached_tokens": 0,
+      "completion_tokens": 1084,
+      "cost_usd": "0.00258325",
+      "seconds": 9.277,
+      "finish_reason": "stop",
+      "response_model": "gpt-5-mini-2025-08-07"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-4.1-mini",
+      "reserved_usd": "0.0097768",
+      "status": "complete",
+      "prompt_tokens": 3395,
+      "cached_tokens": 3072,
+      "completion_tokens": 9,
+      "cost_usd": "0.0004508",
+      "seconds": 0.792,
+      "finish_reason": "stop",
+      "response_model": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-5-mini",
+      "reserved_usd": "0.0187525",
+      "status": "complete",
+      "prompt_tokens": 1830,
+      "cached_tokens": 0,
+      "completion_tokens": 812,
+      "cost_usd": "0.0020815",
+      "seconds": 6.889,
+      "finish_reason": "stop",
+      "response_model": "gpt-5-mini-2025-08-07"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-4.1-mini",
+      "reserved_usd": "0.0099008",
+      "status": "complete",
+      "prompt_tokens": 3460,
+      "cached_tokens": 3200,
+      "completion_tokens": 9,
+      "cost_usd": "0.0004384",
+      "seconds": 0.709,
+      "finish_reason": "stop",
+      "response_model": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "scenario": "CONV1075",
+      "model": "gpt-5-mini",
+      "reserved_usd": "0.01883",
+      "status": "complete",
+      "prompt_tokens": 1897,
+      "cached_tokens": 1664,
+      "completion_tokens": 454,
+      "cost_usd": "0.00100785",
+      "seconds": 4.151,
+      "finish_reason": "stop",
+      "response_model": "gpt-5-mini-2025-08-07"
+    }
+  ],
+  "pricing_per_million": {
+    "gpt-4.1-mini": [
+      "0.40",
+      "0.10",
+      "1.60"
+    ],
+    "gpt-5-mini": [
+      "0.25",
+      "0.025",
+      "2.00"
+    ]
+  },
+  "note": "Actual response usage with cached-input discounts; uncertain requests retain their entire reservation. Taxes/credits excluded."
+}

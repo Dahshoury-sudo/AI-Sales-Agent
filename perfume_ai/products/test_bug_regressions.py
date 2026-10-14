@@ -364,7 +364,7 @@ class CartBugTests(BugFixture):
 
     def test_L03_edit_and_confirmation_requires_another_approval(self):
         self.turn([self.line()])
-        reply = self.turn([self.line(quantity=2)], is_confirmed=True)
+        reply = self.turn([self.line(quantity=2)], message="خليها 2 بدل واحدة وأكد الطلب", is_confirmed=True)
         self.assertIn("1214", reply)
         self.assertFalse(Order.objects.exists())
         self.turn(is_confirmed=True)
@@ -938,6 +938,7 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertEqual(len({first, second, third}), 3)
         self.assertIn("سجلت اسمك", second)
         self.assertIn("سجلت العنوان", third)
+        self.assertEqual(Cart.objects.get(conversation=self.conv).pending_items[0]["name"], "Mystery Azure")
 
     def test_impossible_longevity_does_not_become_a_price_upsell(self):
         from products.services.ai.recommendation import recommend

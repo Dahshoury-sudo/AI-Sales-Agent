@@ -1,0 +1,27 @@
+{
+  "started_utc": "2026-10-14T11:56:06.485600+00:00",
+  "budget_usd": "1.00",
+  "resume_from": null,
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [],
+  "temporary_database": "test_agent_eval_de5c0d4d5e",
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "CONV1075",
+        "turns": 4
+      }
+    ]
+  },
+  "catalogue_products": 46,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192
+  },
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

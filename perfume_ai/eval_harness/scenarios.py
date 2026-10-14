@@ -618,5 +618,25 @@ SCENARIOS.append({
     ),
 })
 
+SCENARIOS.append({
+    "id": "CONV1075",
+    "category": "purchase",
+    "persona": "ready_buyer",
+    "turns": ["بكام سوفاج", "هات واحده اوريجنال 100 ملي", "سوفاج", "عايز واحده قولت"],
+    "assert_cart_by_turn": {
+        turn: {"items": [{"name": "Dior Sauvage", "volume": 100, "bottle_type": "original", "quantity": 1}],
+               "pending_count": 0, "order_count": 0, "contact_fields": [],
+               **({"reply_kind": "checkout"} if turn in (2, 4) else {})}
+        for turn in (2, 3, 4)
+    },
+    "probe": (
+        "Use the single delivered Sauvage offer for the unnamed 100 ml original-bottle purchase. "
+        "The cart must contain one resolved variant immediately after turn 2 and retain it through "
+        "the name and repeated purchase follow-ups. Never use the purchase sentence as a perfume "
+        "name, duplicate the quantity, invent contact details or confirm an order. "
+        "Prices come from the current catalogue; packaging does not imply original liquid."
+    ),
+})
+
 assert len({s["id"] for s in SCENARIOS}) == len(SCENARIOS), "duplicate scenario id"
 MULTI_TURN = [s for s in SCENARIOS if len(s["turns"]) > 1]

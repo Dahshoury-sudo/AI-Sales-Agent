@@ -841,7 +841,7 @@ class CartPersistenceTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def _turn(self, extracted):
+    def _turn(self, extracted, message=None):
         """Run one order turn with the extractor's JSON stubbed.
 
         The reply is persisted the way products/tasks.py does it. That matters for
@@ -858,7 +858,8 @@ class CartPersistenceTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            reply, context = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
+            text = message if message is not None else " ".join(p["name"] for p in payload.get("products", [])) or "تمام"
+            reply, context = handle_order(text, [], self.store, self.conversation)
 
         save_message(self.conversation, "assistant", reply, internal_context=context)
         return reply, context
@@ -874,7 +875,8 @@ class CartPersistenceTests(TestCase):
         """The real two-step confirmation: summary first, then the customer agrees."""
         self._turn({"products": self.ONE_PERFUME, **self.ALL_DETAILS, **extra})
         return self._turn(
-            {"products": self.ONE_PERFUME, **self.ALL_DETAILS, "is_confirmed": True, **extra}
+            {"products": self.ONE_PERFUME, **self.ALL_DETAILS, "is_confirmed": True, **extra},
+            message="تمام أكد الطلب",
         )
 
     ONE_PERFUME = [{"name": "Dior Sauvage", "quantity": 1, "volume": 50, "bottle_type": "normal"}]
@@ -899,9 +901,9 @@ class CartPersistenceTests(TestCase):
 
     def test_customer_details_accumulate_across_turns(self):
         """Name given early must still be there when the address arrives late."""
-        self._turn({"products": self.ONE_PERFUME, "customer_name": "محمد"})
-        self._turn({"products": self.ONE_PERFUME, "customer_phone": "01000000000"})
-        self._turn({"products": self.ONE_PERFUME, "shipping_address": "القاهرة"})
+        self._turn({"products": self.ONE_PERFUME, "customer_name": "محمد"}, message="عايز Dior Sauvage واسمي محمد")
+        self._turn({"products": self.ONE_PERFUME, "customer_phone": "01000000000"}, message="رقمي 01000000000")
+        self._turn({"products": self.ONE_PERFUME, "shipping_address": "القاهرة"}, message="العنوان القاهرة")
 
         cart = Cart.objects.get(conversation=self.conversation)
         self.assertEqual(cart.customer_name, "محمد")
@@ -915,7 +917,7 @@ class CartPersistenceTests(TestCase):
         self._turn({"products": self.ONE_PERFUME})
         self._turn({"products": [
             {"name": "Dior Sauvage", "quantity": 1, "volume": 90, "bottle_type": "normal"}
-        ]})
+        ]}, message="خليه 90 ملي بدل 50")
 
         cart = Cart.objects.get(conversation=self.conversation)
         self.assertEqual(cart.items.count(), 1)
@@ -10712,7 +10714,8 @@ class BudgetWarningReachesTheCustomerTests(TestCase):
         with mock.patch(
             "products.services.order_service.chat", return_value=json.dumps(payload)
         ):
-            reply, _ = handle_order(" ".join(p["name"] for p in (json.loads(payload) if isinstance(payload, str) else payload).get("products", [])) or "تمام", [], self.store, self.conversation)
+            message = f"عايز {quantity} من Stronger With You Intensely حجم {volume} ملي"
+            reply, _ = handle_order(message, [], self.store, self.conversation)
         return reply
 
     def test_the_details_request_says_what_is_in_the_cart(self):

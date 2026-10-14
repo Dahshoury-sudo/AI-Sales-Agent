@@ -247,11 +247,20 @@ def run_scenario(scenario, truth):
 
                 state = dict(_local.turn)
                 from products.models import Cart, Order
+                from products.services.sales.described import _is_cart_context
                 cart = Cart.objects.filter(conversation=conversation).first()
                 cart_state = {
-                    "items": list(cart.items.values("variant__product_id", "variant__product__name", "variant_id", "quantity")) if cart else [],
+                    "items": [{"variant__product_id": item.variant.product_id,
+                               "variant__product__name": item.variant.product.name,
+                               "variant_id": item.variant_id, "name": item.variant.product.name,
+                               "volume": item.variant.volume, "bottle_type": item.bottle_type,
+                               "quantity": item.quantity, "price": str(item.variant.price)}
+                              for item in cart.items.select_related("variant__product")] if cart else [],
                     "pending": cart.pending_items if cart else [],
                     "order_count": Order.objects.filter(conversation=conversation).count(),
+                    "reply_kind": "checkout" if _is_cart_context(context) else "other",
+                    "contact_fields": [field for field in ("customer_name", "customer_phone", "secondary_phone", "shipping_address")
+                                       if cart and getattr(cart, field)],
                 }
                 turn_findings = checks.check_reply(
                     reply,
@@ -265,6 +274,9 @@ def run_scenario(scenario, truth):
                     ),
                 )
                 expected_names = scenario.get("assert_cart_names")
+                expected_cart = scenario.get("assert_cart_by_turn", {}).get(index)
+                if expected_cart is not None:
+                    turn_findings.extend(checks.check_expected_cart(cart_state, expected_cart))
                 if expected_names:
                     for item in cart_state["items"]:
                         if item["variant__product__name"] not in expected_names:

@@ -12,6 +12,31 @@ import re
 from collections import namedtuple
 from difflib import SequenceMatcher
 
+
+def check_expected_cart(state, expected):
+    """Scenario assertions concern resolved variants, not plausible reply text."""
+    findings = []
+    actual = list(state.get("items", []))
+    wanted = expected.get("items", [])
+    matched = True
+    for line in wanted:
+        match = next((row for row in actual if all(row.get(k) == v for k, v in line.items())), None)
+        if match is None:
+            matched = False
+        else:
+            actual.remove(match)
+    if not matched or actual:
+        findings.append(("cart_variant_mismatch", "critical", f"Expected resolved cart {wanted}; found {state.get('items', [])}"))
+    if len(state.get("pending", [])) != expected.get("pending_count", 0):
+        findings.append(("cart_pending_mismatch", "critical", "Checkout still contains unresolved choices"))
+    if state.get("order_count", 0) != expected.get("order_count", 0):
+        findings.append(("cart_order_count_mismatch", "critical", "Unexpected number of confirmed orders"))
+    if "reply_kind" in expected and state.get("reply_kind") != expected["reply_kind"]:
+        findings.append(("checkout_routing_mismatch", "critical", "Purchase follow-up did not receive a checkout response"))
+    if "contact_fields" in expected and set(state.get("contact_fields", [])) != set(expected["contact_fields"]):
+        findings.append(("checkout_contact_mismatch", "critical", "Checkout saved personal details not supplied by the customer"))
+    return findings
+
 # Latin tokens that appear in replies without naming a product.
 _LATIN_ALLOWLIST = {
     "ml", "egp", "eau", "de", "parfum", "edp", "edt", "ok", "instapay", "www",

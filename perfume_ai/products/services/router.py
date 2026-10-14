@@ -8,7 +8,9 @@ from .product_info import (
     NAME_UNREADABLE_MARKER,
 )
 from .comparison_service import compare_products
-from .order_service import handle_order, restore_stock, clear_cart
+from .order_service import (
+    handle_order, restore_stock, clear_cart, is_order_identity_reply, is_contextual_order_request,
+)
 from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
 from .notification_service import create_notification, notify_handoff
@@ -540,8 +542,12 @@ def route(message, history=None, store=None, conversation=None):
     cancelling = bool(re.search(r"الغ[ياء]|الغي|كنسل|مش عايز (?:الطلب|الاوردر)|cancel", normalized))
     if is_price_dispute(message) and not cancelling and not _wants_a_human(message):
         return handle_price_dispute(message, store, conversation)
-    checkout_update = active_cart and re.search(
-        r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message)
+    checkout_update = (
+        is_order_identity_reply(message, active_cart, conversation)
+        or is_contextual_order_request(message, active_cart, conversation, store)
+        or (active_cart and re.search(
+            r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message))
+    )
     if checkout_update:
         record_llm_message(store)
         reply, context = handle_order(message, history, store, conversation)

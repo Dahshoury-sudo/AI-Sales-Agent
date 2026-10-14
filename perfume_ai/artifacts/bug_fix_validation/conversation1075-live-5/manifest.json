@@ -1,0 +1,29 @@
+{
+  "started_utc": "2026-10-14T12:06:50.197265+00:00",
+  "budget_usd": "1.00",
+  "resume_from": "artifacts\\bug_fix_validation\\conversation1075-live-4",
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [
+    "CONV1075"
+  ],
+  "temporary_database": "test_agent_eval_d4ff362cee",
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "CONV1075",
+        "turns": 4
+      }
+    ]
+  },
+  "catalogue_products": 46,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192
+  },
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

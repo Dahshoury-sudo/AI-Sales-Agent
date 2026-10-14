@@ -1,0 +1,81 @@
+{
+  "verified_utc": "2026-10-14T12:15:55.861004+00:00",
+  "base_commit": "9fb899c65b36f2c3be8aae69925aba0128d54890",
+  "source_sha256": {
+    "products/services/order_service.py": "ace24f6fc017a8196d97d2d72dbf0d7376c23296664fb83ac4e9dcdac8c4cfe8",
+    "products/services/router.py": "1552aeeb907cc25c8d7e78d0733a969cf8a48366ad8d5019005a4e806f906856",
+    "products/services/ai/classifier.py": "1b244ed5d28a30047157f2cd8a330b45fb51d2263aee1f284664295f9b154454",
+    "products/test_conversation1075.py": "16abf32ee2a2a0173bff8c08d21556b3b7a94b96ed20c933fe05afbb137e759b",
+    "products/test_bug_regressions.py": "58358567317ad90f675d7a8d55411f58b18b6012edd011e0ed2c35eeb217e59c",
+    "products/tests.py": "cb8cdedd35e29b4ab7497ed121c6bc3fc84608e23760098d13ef7ddfd4e50058",
+    "scripts/run_offline_tests.py": "2839d2935fe66c334222cb014ce2916e1777a13c6e94bcdcf4bd9d1dc02d6cd4",
+    "eval_harness/checks.py": "4606449495f44b4fca3f874a3375267c3e7ca6629ae67977a85e2d5cb54523d8",
+    "eval_harness/runner.py": "e14f9d5ccd62aa91ca6207ea12e2e80eb0278b98b6049be707a0b8b71d3d0d4f",
+    "eval_harness/scenarios.py": "7630028c7fa7c23367486359963d3293624b7c1f5e99439aa38e835c2c390820"
+  },
+  "offline": {
+    "baseline_tests": 1448,
+    "final_tests": 1480,
+    "focused_tests": 32,
+    "failures": 0,
+    "unexpected_http_attempts": 0
+  },
+  "live": {
+    "accounted_usd": "0.11475965",
+    "reserved_usd": "0E-8",
+    "budget_usd": "1.00",
+    "incident_clean_runs": [
+      "conversation1075-live-5",
+      "conversation1075-live-6",
+      "conversation1075-live-final"
+    ],
+    "latest_scenarios": [
+      {
+        "id": "CONV1069",
+        "turns": 5,
+        "automated_findings": 0,
+        "error": null
+      },
+      {
+        "id": "CONV1075",
+        "turns": 4,
+        "automated_findings": 0,
+        "error": null
+      },
+      {
+        "id": "F1",
+        "turns": 4,
+        "automated_findings": 0,
+        "error": null
+      },
+      {
+        "id": "F4",
+        "turns": 4,
+        "automated_findings": 0,
+        "error": null
+      },
+      {
+        "id": "P2",
+        "turns": 3,
+        "automated_findings": 0,
+        "error": null
+      },
+      {
+        "id": "P3",
+        "turns": 2,
+        "automated_findings": 0,
+        "error": null
+      }
+    ]
+  },
+  "preexisting_comparison_issue": {
+    "scenario": "CONV1069",
+    "context": "NUMERIC_NAME_UNRESOLVED",
+    "baseline_and_current_identical": true,
+    "comparison": "Original HEAD product_info.get_product_info and current function return the same result for the opening multi-product message; no model calls or database writes."
+  },
+  "cleanup": {
+    "disposable_database_names_checked": 26,
+    "remaining": []
+  }
+}
