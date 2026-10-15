@@ -319,6 +319,41 @@ class CartBugTests(BugFixture):
         self.assertIn("Mystery Azure", reply)
         self.assertFalse(Order.objects.exists())
 
+    def test_an_inactive_name_is_never_swapped_for_a_stocked_perfume(self):
+        """Live P2: 'امبيرو' was answered with Stronger With You Intensely and confirmed."""
+        Product.objects.create(store=self.store, brand=self.a.brand, name="Ambero", is_active=False)
+        with patch("products.services.order_service.resolve_product", return_value=self.a) as fallback:
+            reply = self.turn([{"name": "Ambero", "volume": 90, "quantity": 1, "bottle_type": "normal"}],
+                              message="عايز اطلب امبيرو 90 ملي")
+        fallback.assert_not_called()
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.count(), 0)
+        self.assertEqual([p["name"] for p in cart.pending_items], ["Ambero"])
+        self.assertIn("مش متاح", reply)
+        self.turn(is_confirmed=True)
+        self.assertFalse(Order.objects.exists())
+
+    def test_a_referent_cannot_override_an_inactive_name_the_customer_typed(self):
+        """'هاخد ده Ambero' must not sell the perfume we had just offered."""
+        Product.objects.create(store=self.store, brand=self.a.brand, name="Ambero", is_active=False)
+        save_message(self.conv, "assistant", self.a.name, internal_context=self.a.name)
+        reply = self.turn([self.line()], message="هاخد ده Ambero")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.count(), 0)
+        self.assertEqual([p["name"] for p in cart.pending_items], ["Ambero"])
+        self.assertIn("مش متاح", reply)
+
+    def test_an_unknown_spelling_still_reaches_the_resolver(self):
+        """The other side of the two guards above: a name matching NO catalogue row must still go
+        to `resolve_product`, or Arabic spellings like 'سوفاج' stop resolving in checkout."""
+        with patch("products.services.order_service.resolve_product", return_value=self.a) as fallback:
+            self.turn([{"name": "سوفاج", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                      message="عايز سوفاج")
+        fallback.assert_called_once()
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant_id, self.av.pk)
+        self.assertFalse(cart.pending_items)
+
     def test_unavailable_size_does_not_discard_other_lines(self):
         self.turn([self.line(self.a, 25), self.line(self.b)])
         cart = Cart.objects.get(conversation=self.conv)

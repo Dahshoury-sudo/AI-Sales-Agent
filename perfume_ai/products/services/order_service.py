@@ -690,8 +690,39 @@ Return valid JSON in this exact format:
             except (ValueError, TypeError):
                 qty = 1
             product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
-            if not product:
+            # A name matching a catalogue row we have DEACTIVATED is not an unknown name — it is a
+            # perfume we cannot sell. Sending it to `resolve_product`, which only ever sees active
+            # rows, gets a DIFFERENT perfume back, and the lines below stamp that over
+            # `p_data['name']` before anything can fail, so it is never `unknown`: it is `_resolved`
+            # under the wrong name and rides into the order summary. That is live P2, where
+            # "عايز اطلب امبيرو 90 ملي" was answered with Stronger With You Intensely at 780 and
+            # confirmed with the customer's real name, phones and address.
+            if not product and not Product.objects.filter(store=store, name__iexact=p_name).exists():
                 product = resolve_product(message=p_name, store=store)
+            # The extractor may name a perfume the customer never typed, having resolved a
+            # demonstrative against an earlier turn. That is usually right, and it stays right here —
+            # except when the customer's own letters name something we have deactivated, in which
+            # case "هاخد ده Ambero" must not sell them the perfume we had just offered instead.
+            #
+            # Deterministic on purpose: `match_product` over a queryset that includes inactive rows,
+            # never the phonetic/`confirm_placement` path. Resolving the customer's span with a model
+            # would cost a call on every contact-detail turn too — a saved line's name is absent from
+            # "اسمي أحمد والعنوان القاهرة" like any other referent — and that span measures as
+            # 'اسمي احمد والعنوان القاهره', indistinguishable from a name without asking the model.
+            # The price of staying free is that an Arabic-script spelling of an inactive perfume
+            # ("امبيرو") is not caught here; the catalogue holds Latin names only.
+            #
+            # Only an INACTIVE match vetoes: a near-miss on a stocked perfume is a no-op, so this can
+            # never redirect an order it merely failed to understand.
+            if product and p_name.casefold() not in (message or "").casefold():
+                from .sales import naming
+                span = naming.arabic_span(message)
+                typed = naming.match_product(
+                    span, store, products=Product.objects.filter(store=store).select_related("brand"),
+                ) if span else None
+                if typed and not typed.is_active and typed.pk != product.pk:
+                    p_data['name'] = typed.name
+                    product = None
             if product:
                 p_data['name'] = product.name
                 p_data['product_obj'] = product
@@ -838,7 +869,17 @@ Return valid JSON in this exact format:
     if issues or unknown:
         details = [issue[0] for issue in issues]
         if unknown:
-            details.append("لسه محتاج أتأكد من: " + "، ".join(p["name"] for p in unknown) + ". الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.")
+            # Two different situations share this list, and they owe the customer different
+            # sentences: a name we do not recognise needs checking, a name we recognise and have
+            # deactivated is simply unavailable. Derived here rather than stored on the line, so
+            # `pending_items` keeps its five keys and `_fingerprint` keeps hashing the same shape.
+            unavailable = [p for p in unknown if Product.objects.filter(
+                store=store, name__iexact=p["name"], is_active=False).exists()]
+            for p in unavailable:
+                details.append(f"{p['name']} مش متاح حالياً. تحب نشوف بديل مناسب ليك؟")
+            unrecognised = [p for p in unknown if p not in unavailable]
+            if unrecognised:
+                details.append("لسه محتاج أتأكد من: " + "، ".join(p["name"] for p in unrecognised) + ". الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.")
         return _cart_recap(conversation, items_to_create, total_price) + "\n".join(details), context_str
 
     # 2. Check for missing product details FIRST (size, bottle type, quantity)
