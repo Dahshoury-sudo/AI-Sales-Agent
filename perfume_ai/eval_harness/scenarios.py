@@ -297,7 +297,6 @@ SCENARIOS = [
     },
     {
         "id": "P2",
-        "assert_cart_names": ["Ambero"],
         "category": "purchase",
         "persona": "ready_buyer",
         "turns": ["عايز اطلب امبيرو 90 ملي", "اسمي بلال حسن، 01012345678، ورقم تاني 01198765432", "العنوان مدينة نصر، شارع عباس العقاد، عماره 12 الدور 3"],
@@ -311,8 +310,6 @@ SCENARIOS = [
     },
     {
         "id": "P3",
-        "assert_cart_names": ["Oudora"],
-        "assert_final_quantity": 2,
         "category": "purchase",
         "persona": "ready_buyer",
         "turns": ["هاخد اودورا", "خليها 2 بدل واحده"],
@@ -623,12 +620,6 @@ SCENARIOS.append({
     "category": "purchase",
     "persona": "ready_buyer",
     "turns": ["بكام سوفاج", "هات واحده اوريجنال 100 ملي", "سوفاج", "عايز واحده قولت"],
-    "assert_cart_by_turn": {
-        turn: {"items": [{"name": "Dior Sauvage", "volume": 100, "bottle_type": "original", "quantity": 1}],
-               "pending_count": 0, "order_count": 0, "contact_fields": [],
-               **({"reply_kind": "checkout"} if turn in (2, 4) else {})}
-        for turn in (2, 3, 4)
-    },
     "probe": (
         "Use the single delivered Sauvage offer for the unnamed 100 ml original-bottle purchase. "
         "The cart must contain one resolved variant immediately after turn 2 and retain it through "

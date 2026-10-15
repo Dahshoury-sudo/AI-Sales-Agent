@@ -2,7 +2,6 @@ import json
 import logging
 import hashlib
 import uuid
-import re
 from functools import wraps
 from decimal import Decimal, InvalidOperation
 from django.db import transaction
@@ -10,7 +9,7 @@ from django.db.models import F, Q
 from products.models import Cart, CartItem, Order, OrderItem, Product, ProductVariant, Conversation
 from .ai.client import chat
 from .fallback import suggest_alternatives
-from .product_resolver import resolve_product, resolve_order_name
+from .product_resolver import resolve_product
 from .notification_service import notify_new_order
 from .sales.value import budget_tier, stated_budget
 
@@ -62,7 +61,7 @@ def _merge_lines(cart, data):
     for entry in supplied:
         if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) or not entry["name"].strip():
             raise ValueError("Invalid product name")
-        entry = {k: v for k, v in entry.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type", "source_text", "resolution_status", "product_id")}
+        entry = {k: v for k, v in entry.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type")}
         for key in ("quantity", "volume"):
             value = entry.get(key)
             if value is not None and (type(value) is not int or value <= 0):
@@ -548,265 +547,6 @@ def _cart_recap(conversation, items_to_create, total_price):
     return recap + "\n"
 
 
-# Checkout-only vocabulary. Do not weaken the shared perfume-name matcher to
-# accommodate an order instruction (which could affect browsing and flankers).
-_ORDER_QUESTION = re.compile(
-    r"[؟?]|\b(?:بكام|كام|سعر\w*|اسعار\w*|ريح\w*|ثبات\w*|فوحان\w*|متوفر\w*|متاح\w*|"
-    r"موجود\w*|ينفع|هل|ليه|ازاي|اعرف|شحن|توصيل|الغ\w*|كنسل|مش|بلاش|اكلم|مندوب|خدمه)\b"
-)
-_BUY_WORD = re.compile(r"\b(?:هاتلي|هات|هاخد|خدلي|عايزه?|عاوزه?|اطلب|خليه|خليها)\b")
-_CONTACT_UPDATE = re.compile(r"\b(?:اسمي|الاسم|عنواني|العنوان|موبايلي|رقمي|الرقم)\b|\d[\d\s-]{6,}\d")
-_ORDER_FILLER = {"هاتلي", "قولت", "قلت", "اتنين", "اثنين", "ازازه", "ازازتين", "زجاجتين", "عبوتين", "خليها"}
-
-
-def _implicit_order_options(message, *, has_cart=False):
-    """Only an unnamed purchase/size edit; never a name, question or confirmation."""
-    from .sales import naming, described
-    from .product_formatting import requested_quote_options
-    text = naming.normalize_product_name(message)
-    if _ORDER_QUESTION.search(text) or described.ordinal_position(text) is not None:
-        return None
-    # Keep established demonstrative/add-another semantics in their existing path.
-    if re.search(r"\b(?:ده|دي|ديت|دا|كمان|ضيف|وضيف)\b", text):
-        return None
-    sizes, bottle = requested_quote_options(message)
-    if not _BUY_WORD.search(text) and not (has_cart and (sizes or bottle)):
-        return None
-    if naming.identifying_tokens(naming.arabic_span(message)) - _ORDER_FILLER:
-        return None
-    options = {}
-    if len(set(sizes)) == 1:
-        options["volume"] = sizes[0]
-    if bottle:
-        options["bottle_type"] = bottle
-    # A number followed by ml is a volume, not a bottle count.
-    count = re.search(r"\b(?:هاتلي|هات|هاخد|خدلي|عايزه?|عاوزه?|اطلب|خليه|خليها)\s+"
-                      r"(واحده?|اتنين|اثنين|\d+)\b(?!\s*(?:مل(?:ي)?|ml)\b)", text)
-    if count:
-        value = count[1]
-        options["quantity"] = int(value) if value.isdigit() else (2 if value in ("اتنين", "اثنين") else 1)
-    return options
-
-
-def _recent_checkout_offers(conversation, store):
-    """Latest supported offer within two delivered replies and this checkout."""
-    if not conversation or conversation.store_id != store.pk:
-        return []
-    from .sales.naming import names_in
-    from .sales.described import _is_cart_context
-    from .static_faq_service import normalize_arabic
-    products = list(Product.objects.filter(store=store))
-    by_name = {p.name: p for p in products}
-    closed_at = Order.objects.filter(conversation=conversation).order_by("-created_at").values_list("created_at", flat=True).first()
-    replies = conversation.messages.filter(role="assistant", delivery_status="sent").order_by("-created_at", "-pk")[:2]
-    for reply in replies:
-        text = normalize_arabic(reply.content)
-        if (closed_at and reply.created_at <= closed_at) or any(marker in text for marker in (
-            "تم تاكيد طلبك", "شلت الطلب", "تم الغاء الطلب", "الغيت الطلب", "الغيت الاوردر",
-        )):
-            break
-        if _is_cart_context(reply.internal_context):
-            continue
-        said = names_in(reply.content, by_name)
-        if said:
-            supported = set(names_in(reply.internal_context, by_name))
-            return [by_name[name] for name in said if name in supported]
-    return []
-
-
-def is_order_identity_reply(message, cart, conversation):
-    """A name answering our outstanding checkout question, not product browsing."""
-    if not cart or not conversation or cart.conversation_id != conversation.pk:
-        return False
-    pending = [p for p in cart.pending_items if p.get("resolution_status") in ("ambiguous", "unavailable")]
-    if not pending:
-        return False
-    from .sales import naming
-    text = naming.normalize_product_name(message)
-    if (_ORDER_QUESTION.search(text) or _BUY_WORD.search(text) or _CONTACT_UPDATE.search(text)
-            or re.search(r"\b(?:بدل|ضيف|وضيف|شيل)\b", text)
-            or not naming.identifying_tokens(naming.arabic_span(message))):
-        return False
-    previous = conversation.messages.filter(role="assistant", delivery_status="sent",
-                                            created_at__gte=cart.created_at).order_by("-created_at", "-pk").first()
-    if not previous:
-        return False
-    from .sales.described import _is_cart_context
-    return _is_cart_context(previous.internal_context) and any(marker in previous.content for marker in (
-        "اسم العطر", "نحدد بديل", "تختار بديل", "أنهي اختيار",
-    ))
-
-
-def is_contextual_order_request(message, cart, conversation, store):
-    """Keep an unambiguous purchase follow-up in checkout despite classifier drift."""
-    has_selection = bool(cart and (cart.pending_items or cart.pending_product_id or cart.items.exists()))
-    if _implicit_order_options(message, has_cart=has_selection) is None:
-        return False
-    return has_selection or bool(_recent_checkout_offers(conversation, store))
-
-
-def _checkout_name_from_history(message, conversation, store):
-    """Reuse a literal name already answered with one verified catalogue product.
-
-    Egyptian shorthand such as سوفاج does not pass the order resolver's phonetic
-    threshold. Preserve its established identity without relaxing that threshold
-    or trusting a new extractor guess. Both the customer wording and the delivered
-    product evidence must match; a recommendation listing several products cannot
-    create this mapping.
-    """
-    from .sales import naming
-    if re.search(r"[a-z0-9]", naming.normalize_product_name(message)):
-        return None
-    span = naming.arabic_span(message)
-    if not span:
-        return None
-    offers = _recent_checkout_offers(conversation, store)
-    if len(offers) != 1:
-        return None
-    catalogue = list(Product.objects.filter(store=store).values_list("name", "brand_id"))
-    if naming.line_mates(offers[0].name, catalogue):
-        return None
-    replies = conversation.messages.filter(role="assistant", delivery_status="sent").order_by("-created_at", "-pk")[:2]
-    for reply in replies:
-        if (naming.names_in(reply.content, [offers[0].name])
-                and naming.names_in(reply.internal_context, [offers[0].name])):
-            question = conversation.messages.filter(role="user", pk__lt=reply.pk).order_by("-created_at", "-pk").first()
-            if question and naming.arabic_span(question.content) == span:
-                return offers[0]
-    return None
-
-
-def _ground_contextual_order(data, message, cart, conversation, store, saved):
-    """Resolve contextual purchases before inspecting the extractor's source span."""
-    options = _implicit_order_options(message, has_cart=bool(saved))
-    clarification = options is None and is_order_identity_reply(message, cart, conversation)
-    repeated_name = None
-    if options is None and not clarification and len(saved) == 1:
-        from .sales import naming
-        text = naming.normalize_product_name(message)
-        if not _ORDER_QUESTION.search(text) and not _BUY_WORD.search(text) and not _CONTACT_UPDATE.search(text):
-            selected = Product.objects.filter(store=store, name=saved[0]["name"]).first()
-            if selected and saved[0].get("resolution_status") not in ("ambiguous", "unavailable"):
-                if text.strip(" .!") == naming.normalize_product_name(selected.name):
-                    repeated_name = selected
-                elif _checkout_name_from_history(message, conversation, store) == selected:
-                    repeated_name = selected
-    if options is None and not clarification and not repeated_name:
-        return False
-    pending = [p for p in saved if p.get("resolution_status") in ("ambiguous", "unavailable")]
-    targets = pending if clarification else saved
-    # No omissions, removals or confirmation may be inferred from a name/size reply.
-    data.update(products=[], removed_line_ids=[], cart_cleared=False, is_confirmed=False)
-    # These messages contain only a selection, never new personal information.
-    # In the live 1075 replay the extractor mistook "سوفاج" for customer_name.
-    data.update(customer_name=cart.customer_name, customer_phone=cart.customer_phone,
-                customer_secondary_phone=cart.secondary_phone, shipping_address=cart.shipping_address)
-    if len(targets) > 1:
-        data["_clarify_line"] = True
-        return True
-    previous = targets[0] if targets else None
-    product = None
-    if repeated_name:
-        product = repeated_name
-        options = {}
-    elif clarification:
-        product = resolve_order_name(message, store)
-        if not product:
-            product = _checkout_name_from_history(message, conversation, store)
-    elif previous and _implicit_order_options(previous.get("source_text") or previous["name"]) is None:
-        # An unresolved explicit name must not silently become the offered perfume.
-        product = Product.objects.filter(store=store, name__iexact=previous["name"]).first()
-    else:
-        offers = _recent_checkout_offers(conversation, store)
-        product = offers[0] if len(offers) == 1 else None
-    entry = {**(previous or {}), "quantity": (previous or {}).get("quantity") or 1}
-    if clarification:
-        from .product_formatting import requested_quote_options
-        sizes, bottle = requested_quote_options(message)
-        options = {"volume": sizes[0]} if len(set(sizes)) == 1 else {}
-        if bottle:
-            options["bottle_type"] = bottle
-    entry.update(options)
-    entry.update(name=product.name if product else (message if clarification or not previous else previous["name"]),
-                 source_text=message if clarification or not previous else previous.get("source_text", previous["name"]),
-                 product_id=product.pk if product else None,
-                 resolution_status=("resolved" if product.is_active else "unavailable") if product else "ambiguous")
-    data["_repeated_selection"] = bool(previous and product and not clarification and not repeated_name
-        and previous.get("resolution_status") not in ("ambiguous", "unavailable")
-        and all(entry.get(key) == previous.get(key) for key in ("name", "quantity", "volume", "bottle_type")))
-    data["products"] = [entry]
-    return True
-
-
-def _ground_order_lines(data, message, cart, conversation, store):
-    """Extractor output proposes edits; customer wording authorizes identities."""
-    from .sales import naming, described
-    from .static_faq_service import normalize_arabic
-    saved = _saved_lines(cart)
-    if _ground_contextual_order(data, message, cart, conversation, store, saved):
-        return
-    offered = described.offered_in_order(conversation, store)
-    points_to_position = described.ordinal_position(message) is not None and not naming.identifying_tokens(message)
-    if points_to_position and not data.get("products"):
-        from .product_formatting import requested_quote_options
-        sizes, bottle = requested_quote_options(message)
-        data["products"] = [{"name": message, "source_text": message,
-                             "volume": sizes[0] if len(sizes) == 1 else None,
-                             "bottle_type": bottle, "quantity": 1}]
-    for entry in data.get("products") or []:
-        if not isinstance(entry, dict) or not isinstance(entry.get("name"), str):
-            continue
-        entry.pop("product_id", None)
-        entry.pop("resolution_status", None)
-        previous = next((line for line in saved if (
-            entry.get("line_id") == line.get("line_id") or
-            entry["name"].casefold() == line["name"].casefold()
-        )), None)
-        if previous and entry["name"].casefold() == previous["name"].casefold() and not points_to_position:
-            entry["line_id"] = previous["line_id"]
-            entry["source_text"] = previous.get("source_text", previous["name"])
-            entry["product_id"] = previous.get("product_id")
-            entry["resolution_status"] = previous.get("resolution_status", "saved")
-            continue
-        source = entry.get("source_text")
-        if not isinstance(source, str) or not source.strip() or source.casefold() not in message.casefold():
-            source = entry["name"] if entry["name"].casefold() in message.casefold() else None
-        if source is None:
-            if not naming.identifying_tokens(naming.arabic_span(message)) and entry["name"] in offered:
-                source = entry["name"]
-            else:
-                source = message.strip()
-        reference = normalize_arabic(source).strip(" .!؟")
-        ordinal = {"ده": 0, "دي": 0, "ديت": 0}
-        if points_to_position:
-            name = described.resolve_ordinal(message, conversation, store)
-            product = Product.objects.filter(store=store, name=name, is_active=True).first() if name else None
-            entry["source_text"] = message
-            entry.pop("line_id", None)
-            entry["name"] = product.name if product else source
-            entry["product_id"] = product.pk if product else None
-            entry["resolution_status"] = "resolved" if product else "ambiguous"
-            continue
-        if reference not in ordinal:
-            remaining = naming.identifying_tokens(naming.arabic_span(source)) - {
-                "هاخد", "هات", "خدلي", "وضيف", "ضيف", "للهديه", "هديه", "هدايا",
-                "عايز", "عايزه", "اطلب", "خليه", "واحده", "عبوه", "زجاجه",
-            }
-            pointing = re.search(r"(?:هاخد|هات|خدلي|عايز|عايزه|اطلب)\s+(ده|دي|ديت|الاولاني|اول واحد|الاول|التاني|تاني واحد|الثاني|الاخير)\b", reference)
-            if pointing and not remaining:
-                reference = pointing[1]
-        if reference in ordinal:
-            position = ordinal[reference]
-            name = offered[position] if offered and -len(offered) <= position < len(offered) else None
-            product = Product.objects.filter(store=store, name=name).first() if name else None
-        else:
-            product = resolve_order_name(source, store)
-        entry["source_text"] = source
-        entry["name"] = product.name if product else source
-        entry["product_id"] = product.pk if product else None
-        entry["resolution_status"] = ("resolved" if product.is_active else "unavailable") if product else "ambiguous"
-
-
 @_serialized
 def handle_order(message, history, store, conversation):
     """
@@ -850,12 +590,7 @@ Rules:
    - Customer changes the size or bottle type of something already saved → return that perfume ONCE with the new size/type, do NOT duplicate it.
    - Customer removes a perfume → the saved items WITHOUT it.
    - Customer says nothing about products (just "تمام", or gives their phone/address) → return the saved items UNCHANGED.
-   - An unnamed purchase such as "هات واحدة أوريجينال 100 ملي" selects the ONE
-     perfume just offered, or the single existing cart line. Preserve the exact
-     request as source_text. Multiple possible perfumes require clarification.
-   - A name answering your checkout identity question repairs that pending line_id;
-     preserve its quantity, size and packaging instead of adding another line.
-   - Saved cart is empty and no named or unambiguous contextual selection exists → return [].
+   - Saved cart is empty and no perfume named yet → return [].
    🔴 POSITIONAL REFERENCE: "اول واحد" / "الأول" means the FIRST perfume in the "PERFUMES YOU
      JUST OFFERED" list below; "التاني" the second; "الأخير" the last. One ordinal means exactly
      ONE perfume — return that one only. "هات 90 ملي من اول واحد ده" put BOTH perfumes from the
@@ -868,9 +603,7 @@ Rules:
    🔴 A leading "ماشي" / "تمام" / "اوك" followed by a specific request is a REQUEST, not a
      blanket yes to everything on the table. "ماشي هات كذا" = they want كذا. Do not read it as
      accepting every perfume you had just listed.
-   🚨 CRITICAL: Do NOT refill an empty cart from a finished/cancelled order in history.
-   A NEW purchase names a perfume, points at one with a demonstrative/ordinal,
-   or selects the single perfume in the current offer. A bare confirmation is not a purchase.
+   🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message OR points at one with a demonstrative/ordinal, in which case resolve it against the "PERFUMES YOU JUST OFFERED" list below — that list is the perfumes of the CURRENT conversation, not of a finished order.
    For each product extract "bottle_type" ("original" for أوريجينال, "normal" for زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل).
    CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
 6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
@@ -881,9 +614,6 @@ Carry each saved line_id unchanged. A changed size or quantity updates that line
 Never remove a saved line by omission: put explicitly removed line IDs in removed_line_ids.
 Preserve unresolved names and all unsized quantities. An edit plus confirmation is NOT approval
 of a new total. is_confirmed and cart_cleared must be JSON booleans, never strings.
-For every newly named perfume include source_text: the EXACT substring the customer typed,
-in their own script, without spelling corrections. Never replace an unavailable perfume.
-For saved lines preserve name and line_id unless the customer explicitly replaces that perfume.
 Return valid JSON in this exact format:
 {
     "customer_name": "...",
@@ -919,11 +649,6 @@ Return valid JSON in this exact format:
         for key in ("customer_name", "customer_phone", "customer_secondary_phone", "shipping_address"):
             if data.get(key) is not None and not isinstance(data[key], str):
                 raise ValueError("Invalid contact field")
-        if not isinstance(data.get("products", []), (list, type(None))):
-            raise ValueError("Invalid products")
-        _ground_order_lines(data, message, cart, conversation, store)
-        if data.get("_clarify_line"):
-            return "تقصد أنهي اختيار من الطلب؟ قولي اسم العطر والحجم عشان أعدّل الاختيار الصح.", "No products found"
         products_data = _merge_lines(cart, data)
     except ValueError:
         return "ممكن توضح تفاصيل الطلب؟ الطلب المحفوظ زي ما هو ومش هيتأكد دلوقتي.", ""
@@ -932,10 +657,6 @@ Return valid JSON in this exact format:
     secondary_phone = data.get("customer_secondary_phone") or cart.secondary_phone or None
     address = data.get("shipping_address") or cart.shipping_address or None
     is_confirmed = data.get("is_confirmed") is True
-    changed_contact = [label for field, value, label in (
-        ("customer_name", name, "اسمك"), ("customer_phone", phone, "رقم الموبايل"),
-        ("secondary_phone", secondary_phone, "الرقم البديل"), ("shipping_address", address, "العنوان")
-    ) if value and value != getattr(cart, field)]
     _save_cart_details(cart, name, phone, secondary_phone, address)
     if data.get("cart_cleared") is True:
         clear_cart(conversation, keep_details=True)
@@ -968,12 +689,9 @@ Return valid JSON in this exact format:
                 qty = int(qty)
             except (ValueError, TypeError):
                 qty = 1
-            product = None
-            if p_data.get("resolution_status") not in ("ambiguous", "unavailable"):
-                product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
-            if not product and not p_data.get("resolution_status"):
-                candidate = resolve_order_name(p_data.get("source_text") or p_name, store)
-                product = candidate if candidate and candidate.is_active else None
+            product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
+            if not product:
+                product = resolve_product(message=p_name, store=store)
             if product:
                 p_data['name'] = product.name
                 p_data['product_obj'] = product
@@ -1110,7 +828,7 @@ Return valid JSON in this exact format:
         else:
             combined[pk] = dict(item)
     items_to_create = list(combined.values())
-    pending_lines = [{k: v for k, v in p.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type", "source_text", "resolution_status", "product_id")}
+    pending_lines = [{k: v for k, v in p.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type")}
                      for p in products_data if not p.get("_resolved")]
     with transaction.atomic():
         _save_cart_items(cart, items_to_create)
@@ -1120,20 +838,7 @@ Return valid JSON in this exact format:
     if issues or unknown:
         details = [issue[0] for issue in issues]
         if unknown:
-            for p in unknown:
-                if _implicit_order_options(p.get("source_text") or p["name"]) is not None:
-                    details.append("حافظت على الكمية والحجم ونوع الزجاجة. ممكن تقولي اسم العطر اللي عايزه؟")
-                    continue
-                requested = f"{p.get('quantity') or 1} × {p['name']}"
-                if changed_contact:
-                    saved = " و".join(changed_contact)
-                    problem = f"{p['name']} مش متاح حالياً، نحدد بديل مناسب ليك؟" if p.get("resolution_status") == "unavailable" else f"محتاجين نحدد {p['name']}. ممكن توضح اسم العطر؟"
-                    details.append(f"سجلت {saved}. لسه {problem}")
-                    continue
-                if p.get("resolution_status") == "unavailable":
-                    details.append(f"تمام، طلبك {requested} محفوظ، لكن العطر مش متاح حالياً. تحب تشيله ولا تختار بديل؟")
-                else:
-                    details.append(f"تمام، طلبك {requested} محفوظ. ممكن تكتب اسم العطر تاني أو تختار بديل؟ مش هأكد الطلب قبل ما نحدده.")
+            details.append("لسه محتاج أتأكد من: " + "، ".join(p["name"] for p in unknown) + ". الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.")
         return _cart_recap(conversation, items_to_create, total_price) + "\n".join(details), context_str
 
     # 2. Check for missing product details FIRST (size, bottle type, quantity)
@@ -1205,14 +910,6 @@ Return valid JSON in this exact format:
         personal_missing_fields.append("عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل")
 
     if personal_missing_fields:
-        if data.get("_repeated_selection") and len(items_to_create) == 1:
-            item = items_to_create[0]
-            variant = item["variant"]
-            bottle = "أوريجينال" if item["bottle_type"] == "original" else "البراند"
-            return (f"أيوه، مسجل لك {item['quantity']} × {variant.product.name}، زجاجة {bottle} "
-                    f"{variant.volume} ملي بـ{item['price'] * item['quantity']:.0f} جنيه. "
-                    f"محتاج بس {_short_missing(name, phone, secondary_phone, address)}."
-                    + _over_budget_warning(conversation, items_to_create)), context_str
         missing_text = " و ".join(personal_missing_fields)
         ask = f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}."
         # Asking for the same fields a second time in a row gets the short form. The long
