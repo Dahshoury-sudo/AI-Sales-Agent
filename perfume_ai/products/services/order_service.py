@@ -515,6 +515,50 @@ def _short_missing(name, phone, secondary_phone, address):
     return " و".join(parts) or "التفاصيل"
 
 
+def _house_brand_for_line(p_name, store):
+    """The brand a cart line names on its own, or `None`.
+
+    Only an Arabic house word or a Latin brand spelling is a house here: `naming.house_for_span`
+    handles "امبيرو" through `_HOUSE_ALIASES`, and `naming.names_a_bare_brand` handles "Dior".
+    Both require the line's words to be the house and nothing more, so a real product name — even
+    one that starts with its brand — never gets here.
+
+    🔴 This is the guard for conversations 1093/1094/1096. "امبيرو" is the house Emporio Armani.
+    The extractor was taught it meant the catalogue row "Ambero" and, when that row was inactive,
+    substituted a different Stronger With You flanker on each run — Stronger With You at 700 in one
+    conversation, Intensely at 450 in the next, nothing at all in the third. A house is a question,
+    never a cart line.
+    """
+    from .sales import naming
+
+    if not isinstance(p_name, str) or not p_name.strip():
+        return None
+    brand = naming.house_for_span(p_name, store)
+    if brand is not None:
+        return brand
+    if naming.names_a_bare_brand(p_name, store):
+        match = Product.objects.filter(
+            store=store, is_active=True, brand__name__iexact=p_name.strip(),
+        ).select_related("brand").first()
+        return match.brand if match else None
+    return None
+
+
+def _house_choice_question(brand, store):
+    """Ask which perfume from a house, listing the ones we stock — never pick one for them."""
+    names = list(
+        Product.objects.filter(store=store, brand=brand, is_active=True)
+        .order_by("name")
+        .values_list("name", flat=True)
+    )
+    if not names:
+        return f"مفيش عندنا عطور متاحة من {brand.name} دلوقتي، لكن ممكن أرشحلك بدائل من نفس الطابع."
+    if len(names) == 1:
+        return f"تمام 👌 من {brand.name} عندنا {names[0]} — تحب أنهي حجم؟"
+    listed = " و ".join(names[:-1]) + f" و {names[-1]}"
+    return f"تمام 👌 من {brand.name} عندنا: {listed}. تحب أنهي واحد، وأي حجم؟"
+
+
 def _cart_recap(conversation, items_to_create, total_price):
     """One line naming what is in the cart and what it comes to, above a details request.
 
@@ -665,7 +709,24 @@ Return valid JSON in this exact format:
         if data.get("removed_line_ids"):
             clear_cart(conversation, keep_details=True)
             return "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟", ""
+        # Conversation 1093: "عايز امبيرو 50 ملي" — the extractor placed nothing and this branch
+        # asked "which perfume?" without ever reading the house the customer did name. When the
+        # message names a house we carry, answer that question instead: list its perfumes.
+        from .sales import naming
+
+        house = naming.house_mentioned_alone(message, store)
+        if house is not None:
+            reply = _house_choice_question(house, store)
+            cart.pending_items = [{"name": message.strip(), "line_id": uuid.uuid4().hex,
+                                   "quantity": 1, "volume": None, "bottle_type": None}]
+            cart.save(update_fields=["pending_items"])
+            return reply, ""
         return _ask_which_perfume(conversation, store), ""
+    # Snapshot the lines that existed BEFORE this turn. The block below overwrites pending_items
+    # with the extractor's answer, so anything read from the cart after that point cannot tell a
+    # line the customer just named from one chosen on an earlier turn — and the house guard must
+    # only veto a line this turn introduced.
+    saved_line_ids = {line["line_id"] for line in _saved_lines(cart) if line.get("line_id")}
     # Save the complete requested set before resolving individual lines. An unavailable
     # size must not discard the rest of the customer's request.
     cart.pending_items = products_data
@@ -674,7 +735,17 @@ Return valid JSON in this exact format:
     total_price = 0
     items_to_create = []
     context_data = []
-    
+
+    # Conversations 1093/1094/1096: "امبيرو" is the house Emporio Armani, and the extractor turned
+    # it into whichever Stronger With You flanker it happened to pick that run. Two facts are read
+    # off the customer's own words before any line is carted: a line whose TEXT is a bare house
+    # (1093/1094 return "امبيرو" / a substituted flanker), and a house mentioned with no perfume
+    # word after it anywhere in the message (1096's "واحد امبيرو 50 ملي").
+    from .sales import naming
+
+    typed_house = naming.house_mentioned_alone(message, store)
+    house_choices = []
+
     issues = []
     for p_data in products_data:
         try:
@@ -689,8 +760,17 @@ Return valid JSON in this exact format:
                 qty = int(qty)
             except (ValueError, TypeError):
                 qty = 1
-            product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()
-            # A name matching a catalogue row we have DEACTIVATED is not an unknown name — it is a
+            line_house = _house_brand_for_line(p_name, store)
+            if line_house is not None:
+                # The extractor handed us the house itself. Never a product: keep the line pending
+                # and ask which perfume, listing the ones we stock. §`_house_choice_question`.
+                p_data['name'] = p_name.strip()
+                p_data['volume'] = None
+                p_data['house_choice'] = line_house
+                if line_house not in (brand for brand, _ in house_choices):
+                    house_choices.append((line_house, p_data['line_id']))
+                continue
+            product = Product.objects.prefetch_related('variants').filter(store=store, name__iexact=p_name, is_active=True).first()            # A name matching a catalogue row we have DEACTIVATED is not an unknown name — it is a
             # perfume we cannot sell. Sending it to `resolve_product`, which only ever sees active
             # rows, gets a DIFFERENT perfume back, and the lines below stamp that over
             # `p_data['name']` before anything can fail, so it is never `unknown`: it is `_resolved`
@@ -715,7 +795,6 @@ Return valid JSON in this exact format:
             # Only an INACTIVE match vetoes: a near-miss on a stocked perfume is a no-op, so this can
             # never redirect an order it merely failed to understand.
             if product and p_name.casefold() not in (message or "").casefold():
-                from .sales import naming
                 span = naming.arabic_span(message)
                 typed = naming.match_product(
                     span, store, products=Product.objects.filter(store=store).select_related("brand"),
@@ -723,6 +802,33 @@ Return valid JSON in this exact format:
                 if typed and not typed.is_active and typed.pk != product.pk:
                     p_data['name'] = typed.name
                     product = None
+            # The house half of the same idea, and the guard these three conversations needed. Only a
+            # NEW line is checked: a saved line was already chosen by name on an earlier turn, and
+            # a later message that mentions a house for some other reason ("وطيب امبيرو؟") must not
+            # erase it. A line the customer's bare house explains is not a product — ask which one.
+            new_line = p_data.get("line_id") not in saved_line_ids
+            if typed_house is not None and new_line and (
+                product is None
+                or product.brand_id == typed_house.pk
+                or len(products_data) == 1
+            ):
+                # Keep the customer's own word for the house on the pending line. The extractor's
+                # substituted name ("Stronger With You") must not survive anywhere — the summary
+                # and the next turn would read it as the perfume they chose.
+                typed_span = naming.arabic_span(message)
+                p_data['name'] = typed_span or p_name.strip()
+                p_data['volume'] = None
+                p_data['house_choice'] = typed_house
+                if typed_house not in (brand for brand, _ in house_choices):
+                    house_choices.append((typed_house, p_data['line_id']))
+                continue
+            if not product and line_house is not None:
+                # The extractor returned a house word and `resolve_product` found nothing for it.
+                # Treat it as the question it is rather than as an unknown name.
+                p_data['name'] = p_name.strip()
+                p_data['volume'] = None
+                p_data['house_choice'] = line_house
+                continue
             if product:
                 p_data['name'] = product.name
                 p_data['product_obj'] = product
@@ -859,15 +965,55 @@ Return valid JSON in this exact format:
         else:
             combined[pk] = dict(item)
     items_to_create = list(combined.values())
+    # A pending house line from the previous turn is replaced by the perfume the customer picks,
+    # never carried alongside it. "تمام، هات سترونجر 50 ملي" arrives as one new line with no
+    # line_id, so matching is by the HOUSE the old line names rather than by identity.
+    if items_to_create:
+        carted_brand_ids = {item['variant'].product.brand_id for item in items_to_create}
+        saved_house_to_drop = {
+            line["line_id"] for line in _saved_lines(cart)
+            if line.get("line_id") in saved_line_ids
+            and all(not p.get("_resolved") for p in products_data
+                    if isinstance(p, dict) and p.get("line_id") == line.get("line_id"))
+            and (brand := _house_brand_for_line(line.get("name", ""), store)) is not None
+            and brand.pk in carted_brand_ids
+        }
+        if saved_house_to_drop:
+            products_data = [p for p in products_data
+                             if not isinstance(p, dict) or p.get("line_id") not in saved_house_to_drop]
     pending_lines = [{k: v for k, v in p.items() if k in ("name", "line_id", "quantity", "volume", "bottle_type")}
                      for p in products_data if not p.get("_resolved")]
     with transaction.atomic():
         _save_cart_items(cart, items_to_create)
         cart.pending_items = pending_lines
         cart.save(update_fields=["pending_items"])
-    unknown = [p for p in products_data if not p.get("_resolved") and not p.get("product_obj")]
+    unknown = [p for p in products_data
+               if not p.get("_resolved") and not p.get("product_obj") and not p.get("house_choice")]
+    # One question per house, whatever the cart looks like otherwise. A house line can never be
+    # carted and never blocks confirmation, because it is not a product the customer chose — the
+    # next turn replaces it with the name they pick.
+    house_questions = []
+    for p in products_data:
+        brand = p.get("house_choice") if isinstance(p, dict) else None
+        if brand is not None and brand.pk not in {b.pk for b in house_questions}:
+            house_questions.append(brand)
+    if house_questions and not items_to_create:
+        # Nothing landed this turn. The house question leads, and anything else this turn still
+        # owes the customer — a bottle type for a perfume that did resolve (1096's Sauvage) —
+        # follows it instead of being swallowed by the early return.
+        details = [_house_choice_question(brand, store) for brand in house_questions]
+        details.extend(issue[0] for issue in issues)
+        bottle_questions = [
+            f"نوع الزجاجة (أوريجينال أم زجاجة البراند؟) من عطر {p.get('name')}"
+            for p in products_data
+            if isinstance(p, dict) and p.get("missing_bottle_type")
+        ]
+        if bottle_questions:
+            details.append("تمام 👌 بس محتاج أعرف " + " و ".join(bottle_questions) + "؟")
+        return "\n".join(details), context_str
     if issues or unknown:
         details = [issue[0] for issue in issues]
+        details.extend(_house_choice_question(brand, store) for brand in house_questions)
         if unknown:
             # Two different situations share this list, and they owe the customer different
             # sentences: a name we do not recognise needs checking, a name we recognise and have

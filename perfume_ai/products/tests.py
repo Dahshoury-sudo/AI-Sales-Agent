@@ -11752,8 +11752,8 @@ class CatalogueAbsenceVerifierTests(TestCase):
         brand arrives here shaped exactly like a name we have never heard of, and the extra
         `names_a_bare_brand` rung is what keeps it from being denied.
 
-        Latin only. The subtest below proves it, because it has to be known: the rung compares against
-        `Brand.name`, which holds "Dior" and never "ديور".
+        Latin spelling here; the Arabic spelling "ديور" is covered by the alias pass in the same
+        rung and asserted in `test_an_arabic_brand_is_unknown_not_absent`.
         """
         from products.services import absence
 
@@ -11761,33 +11761,24 @@ class CatalogueAbsenceVerifierTests(TestCase):
             with self.subTest(name=name):
                 self.assertEqual(self._verdict(name), absence.UNKNOWN)
 
-    def test_an_arabic_brand_reaches_the_witness_rung_instead(self):
-        """🔴 The hole in the rung above, asserted rather than left to be discovered.
+    def test_an_arabic_brand_is_unknown_not_absent(self):
+        """An Arabic spelling of a house we carry must never reach the witness rung.
 
-        "ديور" is a house we carry, and `names_a_bare_brand` cannot see that: `Brand.name` is Latin
-        and there is no alias column. So the Arabic spelling falls through to the witness rung —
-        UNKNOWN while nobody reports it, and **ABSENT the moment somebody does**, which is a denial
-        about a brand sitting on the shelf.
+        This used to be the documented hole: `names_a_bare_brand` compared against `Brand.name`,
+        which is Latin, so "ديور" fell through to the extractor's unplaced report and became
+        **ABSENT** the moment somebody reported it. `naming._HOUSE_ALIASES` now bridges the common
+        Arabic house spellings, and the brand is still resolved against the store — so the verdict
+        is UNKNOWN here, and a house the store does NOT carry still falls through to the witness
+        rung below.
 
-        Both halves are here so the second one cannot change silently. What keeps the witness from
-        existing is `product_resolver`'s rule 9, asserted in
-        `AbsentNameStillNotDeniedOnAbstainTests.test_the_extractor_is_told_not_to_report_a_house_as_a_perfume`;
-        what catches it when the rule is disobeyed is the owner notification on every denial.
-
-        ⚠️ This docstring used to end "if a transliteration bridge ever lands, this is the test that
-        should start failing." One has landed — `naming.transliterate` and `naming.phonetic_ranking`,
-        added for conversation 1041 — and **this test still passes, by design**. The bridge is a
-        similarity ranking wired into the *placement* channel, where it second-guesses a row the
-        extractor already chose and then asks the customer. It is deliberately not a witness on the
-        denial path: ranking cannot distinguish a spelling of a perfume we stock from a spelling of
-        one we do not, and `absence.py` records why that must stay true. So this assertion is still
-        the live description of the rung. What *would* justify changing it is a real alias or
-        Arabic-name column on `Brand`, which is a schema change, not a scoring one.
+        ⚠️ `naming.transliterate`/`phonetic_ranking` are still not wired into this rung, and the
+        earlier note that they must stay a ranking rather than a witness still holds: the alias
+        table is a literal list of houses, not a similarity score.
         """
         from products.services import absence
 
         self.assertEqual(self._verdict("ديور"), absence.UNKNOWN)
-        self.assertEqual(self._verdict("ديور", _absent("ديور")), absence.ABSENT)
+        self.assertEqual(self._verdict("ديور", _absent("ديور")), absence.UNKNOWN)
 
     def test_a_brand_the_store_does_not_carry_is_still_absent(self):
         """The rung above is about *our* brands. "Creed" is a house too, and nothing in this
@@ -13925,18 +13916,19 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
         never heard of — and `names_a_bare_brand` is the row of the ladder that stops the plainest
         possible false denial.
 
-        🔴 Latin only, and the limit is structural: `Brand.name` holds "Dior", the customer types
-        "ديور", and there is no alias column, so `tokens("ديور") <= tokens("Dior")` is False and the
-        Arabic spelling of a house we stock reaches the Arabic path with a witness behind it. Two
-        things cover that half of the alphabet instead, and neither is Python:
-        `product_resolver`'s rule 9 forbids reporting a bare house name as an unplaced perfume at
-        all, and `router._escalate_absent_name` tells the owner about every denied name on the turn
-        it happens. Worth knowing before adding a fourth reader of this verdict.
+        🔴 The Arabic half is covered by `naming._HOUSE_ALIASES` — a literal list of common house
+        spellings resolved against the store's brands — so "ديور" also abstains rather than denying.
+        What remains uncovered is an Arabic house spelling that is not in that table: it reaches the
+        Arabic path with a witness behind it, and two things cover that: `product_resolver`'s rule 9
+        forbids reporting a bare house name as an unplaced perfume at all, and
+        `router._escalate_absent_name` tells the owner about every denied name on the turn it
+        happens. Worth knowing before adding a fourth reader of this verdict.
 
-        `naming.transliterate` exists now (conversation 1041) and does not change this. It would let
-        "ديور" be *compared* to "Dior", but this rung has to answer whether a span is a house we
-        carry, and a ratio cannot answer that — it ranks, and a ranking always has a winner. See
-        `absence.py`'s note at the same rung.
+        `naming.transliterate` exists now (conversation 1041) and still does not change this. It
+        would let "ديور" be *compared* to "Dior", but this rung has to answer whether a span is a
+        house we carry, and a ratio cannot answer that — it ranks, and a ranking always has a
+        winner. The alias table is a fact list, which is why it can be a witness where a score
+        cannot. See `absence.py`'s note at the same rung.
         """
         context, prompt = self._turn("do you have Dior", _absent("Dior"))
 

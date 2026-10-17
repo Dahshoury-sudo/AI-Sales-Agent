@@ -19,26 +19,34 @@ Each probe's docstring says what a failure actually means:
           order-extractor prompt. Production may still be right when the real
           LLM resolves the reference; it is simply not enforced in code.
 
-Expected state after the probe-1/5b fix (commit following a282740): **3 failures,
-probes 2, 3 and 5 only.** Any other failure is a regression.
+Expected state after the house-alias fix (conversations 1093/1094/1096): **2 failures, probes 2
+and 3 only.** Any other failure is a regression.
   probe 2 — a quantity change on an unresolved line repeats the previous reply
             verbatim. The quantity IS saved correctly; only the wording repeats.
   probe 3 — no deterministic ordinal guard; ordinals go through the extractor
             prompt's POSITIONAL REFERENCE rules instead. Working as designed.
-  probe 5 — an Arabic-script spelling of a perfume absent from the catalogue.
-            Needs the resolver's `unplaced` judgement, i.e. a model call on every
-            checkout turn; see that probe's docstring. Deliberately not paid.
+Probe 5 — once a KNOWN GAP — now passes through the same deterministic house check
+`order_service` uses: "هاخد ده امبيرو" fires `naming.house_mentioned_alone`, and a single
+extractor line naming a different house's product is asked about instead of carted.
 """
 import json
 from contextlib import contextmanager
 from unittest.mock import patch
 
-from products.models import Cart, Order, Product
+from products.models import Brand, Cart, Order, Product
 from products.services.conversation_service import save_message
 from products.test_bug_regressions import BugFixture
 
 
 class OrderingGuardProbe(BugFixture):
+    def setUp(self):
+        super().setUp()
+        # "امبيرو" is a house while its brand is stocked (`naming._HOUSE_ALIASES` resolves the
+        # spelling and then requires the brand to exist in this store). Probes 5 and 5b are about a
+        # customer naming that house, so the house has to be one this store carries.
+        emporio = Brand.objects.create(store=self.store, name="Emporio Armani")
+        Product.objects.create(store=self.store, brand=emporio, name="Stronger With You")
+
     @contextmanager
     def resolver(self, picks=(), unplaced=()):
         """Stub the perfume resolver's model call.
@@ -71,11 +79,17 @@ class OrderingGuardProbe(BugFixture):
     def test_probe_1_unavailable_name_is_not_substituted(self):
         """HARD. Models artifacts/agent_evaluation/live/P2.json: the customer asks for an
         inactive perfume and the resolver answers with a stocked one. Failure = a perfume
-        the customer never asked for reaches the order summary."""
+        the customer never asked for reaches the order summary.
+
+        The message says "Ambero" in Latin on purpose. "عايز اطلب امبيرو 90 ملي" is the live
+        wording, but "امبيرو" is now read as the house Emporio Armani (probe 5's guard), which is
+        the correct answer for that spelling and would mask what this probe is pinning: a name
+        that matches a DEACTIVATED row must never be swapped for a stocked perfume.
+        """
         Product.objects.create(store=self.store, brand=self.a.brand, name="Ambero", is_active=False)
         with self.resolver(picks=[self.a.name]):
             reply = self.turn([{"name": "Ambero", "volume": 90, "quantity": 1, "bottle_type": "normal"}],
-                              message="عايز اطلب امبيرو 90 ملي")
+                              message="عايز اطلب Ambero 90 ملي")
         print(f"\n[probe 1 reply] {reply}\n")
         self.assertEqual(self.carted(), [], f"substituted {self.carted()}; reply={reply!r}")
         self.assertEqual([p["name"] for p in self.cart().pending_items], ["Ambero"],

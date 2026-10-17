@@ -298,6 +298,90 @@ class Conversation1069Tests(BugFixture):
         self.assertIn("تقصد", reply)
 
 
+class HouseOnlyOrderTests(BugFixture):
+    """Conversations 1093/1094/1096: "امبيرو" is the house Emporio Armani, not a perfume."""
+
+    def setUp(self):
+        super().setUp()
+        self.emporio = Brand.objects.create(store=self.store, name="Emporio Armani")
+        self.swy = Product.objects.create(store=self.store, brand=self.emporio, name="Stronger With You")
+        self.intensely = Product.objects.create(store=self.store, brand=self.emporio, name="Stronger With You Intensely")
+        self.absolutely = Product.objects.create(store=self.store, brand=self.emporio, name="Stronger With You Absolutely")
+        for volume, price in ((50, 400), (90, 700)):
+            ProductVariant.objects.create(product=self.swy, volume=volume, price=price)
+        ProductVariant.objects.create(product=self.intensely, volume=50, price=450)
+        ProductVariant.objects.create(product=self.absolutely, volume=50, price=480)
+        # The unrelated deactivated blend the extractor was taught to confuse with the house.
+        self.dior = Brand.objects.get(store=self.store, name="Dior")
+        Product.objects.create(store=self.store, brand=self.dior, name="Ambero", is_active=False)
+        # A real perfume with both bottle types, so the order path asks about the bottle instead of
+        # inventing a product.
+        self.sauvage = Product.objects.create(store=self.store, brand=self.dior, name="Dior Sauvage")
+        ProductVariant.objects.create(product=self.sauvage, volume=50, price=642)
+        ProductVariant.objects.create(product=self.sauvage, volume=50, price=800, bottle_type="original", stock=3)
+
+    def test_1093_house_with_a_size_asks_which_perfume(self):
+        """Conv 1093: the extractor placed nothing; the reply asked about an unknown 'امبيرو'."""
+        reply = self.turn([], message="عايز امبيرو 50 ملي")
+        self.assertIn("Emporio Armani", reply)
+        self.assertNotIn("لسه محتاج أتأكد", reply)
+        for name in ("Stronger With You", "Intensely", "Absolutely"):
+            self.assertIn(name, reply)
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.count(), 0)
+        self.assertFalse(Order.objects.exists())
+
+    def test_1094_substituted_flanker_is_not_carted(self):
+        """Conv 1094: the extractor returned Stronger With You for the bare house; 90ml/700 carted."""
+        reply = self.turn([{"name": "Stronger With You", "volume": 90, "quantity": 1, "bottle_type": "normal"}],
+                          message="عايز امبيرو 90 ملي")
+        self.assertIn("Emporio Armani", reply)
+        self.assertEqual(Cart.objects.get(conversation=self.conv).items.count(), 0)
+        self.assertEqual(len(Cart.objects.get(conversation=self.conv).pending_items), 1)
+        self.assertIn("امبيرو", Cart.objects.get(conversation=self.conv).pending_items[0]["name"])
+        self.assertFalse(Order.objects.exists())
+
+    def test_1096_house_beside_a_real_perfume_asks_only_for_the_house(self):
+        """Conv 1096: Sauvage is asked its bottle type; Emporio must be asked which perfume."""
+        reply = self.turn([
+            {"name": "Stronger With You Intensely", "volume": 50, "quantity": 1, "bottle_type": None},
+            {"name": "Dior Sauvage", "volume": 50, "quantity": 1, "bottle_type": None},
+        ], message="عايز واحد سوفاج وواحد امبيرو 50 ملي")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.count(), 0, f"carted an arbitrary flanker: {reply}")
+        self.assertIn("Emporio Armani", reply)
+        self.assertIn("نوع الزجاجة", reply)
+        self.assertIn("Dior Sauvage", reply)
+        pending = sorted(p["name"] for p in cart.pending_items)
+        self.assertEqual(len(pending), 2, f"pending={pending}")
+        self.assertTrue(any("امبيرو" in name for name in pending), f"pending={pending}")
+        self.assertIn("Dior Sauvage", pending)
+        self.assertFalse(Order.objects.exists())
+
+    def test_the_pick_replaces_the_pending_house_line(self):
+        self.turn([], message="عايز امبيرو 50 ملي")
+        reply = self.turn([{"name": "Stronger With You", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                          message="تمام هات سترونجر 50")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant.product, self.swy)
+        self.assertEqual(cart.pending_items, [], f"house line survived the pick: {reply}")
+        self.assertNotIn("تحب أنهي واحد", reply)
+
+    def test_a_named_perfume_from_the_house_is_untouched(self):
+        reply = self.turn([{"name": "Stronger With You Intensely", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                          message="عايز سترونجر انتنسلي 50 ملي")
+        cart = Cart.objects.get(conversation=self.conv)
+        self.assertEqual(cart.items.get().variant.product, self.intensely)
+        self.assertNotIn("تحب أنهي واحد", reply)
+
+    def test_house_detector_ignores_house_plus_product(self):
+        from products.services.sales import naming
+        self.assertEqual(naming.house_for_span("امبيرو", self.store).name, "Emporio Armani")
+        self.assertIsNone(naming.house_for_span("امبيرو سترونجر", self.store))
+        self.assertEqual(naming.house_mentioned_alone("عايز واحد سوفاج وواحد امبيرو 50 ملي", self.store).name,
+                         "Emporio Armani")
+        self.assertIsNone(naming.house_mentioned_alone("امبيرو سترونجر انتنسلي", self.store))
+
+
 class CartBugTests(BugFixture):
     def test_L01_all_unsized_quantities_survive_partial_resolution(self):
         self.turn([self.line(self.a, None, 2), self.line(self.b, None, 3)])

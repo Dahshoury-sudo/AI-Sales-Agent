@@ -906,6 +906,128 @@ def candidates(name, store, products=None):
     return exact, partial
 
 
+# Arabic spellings of the houses we carry, written in `normalize_arabic` form like `_REFERENTIAL`.
+#
+# Why a hand-written table rather than the transliterator: "امبيرو" transliterates to "ambyrw" and
+# scores 0.36 against the nearest row, while `Brand.name` holds "Emporio Armani" and nothing bridges
+# the two alphabets. Conversation 1093/1094/1096 is what that costs — the extractor was taught
+# `'امبيرو' -> 'Ambero'` (an unrelated inactive row named literally "Ambero"), so a customer naming
+# the house got no answer in one run, Stronger With You in the next and Stronger With You Intensely
+# in the third. A house is a finite, knowable list; spelling it out is the only deterministic option
+# and it is wrong in the safe direction when it misses (the model's brand-only rule still applies).
+#
+# 🔴 Never add a spelling that is also a perfume name. These entries only ever fire when the span's
+# identifying tokens are a SUBSET of the alias tokens (`house_for_span`), which is what keeps
+# "امبيرو سترونجر" out — but a one-word perfume name stored here would turn that perfume into a
+# house question on every mention.
+_HOUSE_ALIASES = {
+    "امبيرو": "Emporio Armani",
+    "امبوريو": "Emporio Armani",
+    "امبيرو ارماني": "Emporio Armani",
+    "جورجيو": "Giorgio Armani",
+    "جورجيو ارماني": "Giorgio Armani",
+    "ارماني": "Giorgio Armani",
+    "ديور": "Dior",
+    "شانيل": "Chanel",
+    "فيرزاتشي": "Versace",
+    "فرساتشي": "Versace",
+    "جوب": "Joop!",
+    "هوجو": "Hugo Boss",
+    "هوجو بوس": "Hugo Boss",
+    "كارولينا": "Carolina Herrera",
+    "كارولينا هيريرا": "Carolina Herrera",
+    "كريد": "Creed",
+    "توم فورد": "Tom Ford",
+    "لطافه": "Lattafa",
+    "لطافة": "Lattafa",
+    "غوتشي": "Gucci",
+    "جوتشي": "Gucci",
+    "برادا": "Prada",
+    "بادو رابان": "Paco Rabanne",
+    "باكو رابان": "Paco Rabanne",
+    "افنان": "Afnan",
+    "جيفنشي": "Givenchy",
+    "ريف لوران": "Yves Saint Laurent",
+    "ايف سان لوران": "Yves Saint Laurent",
+    "جان بول": "Jean Paul Gaultier",
+    "جان بول جوتييه": "Jean Paul Gaultier",
+    "كالڤن كلاين": "Calvin Klein",
+    "بوربري": "Burberry",
+    "لاكوست": "Lacoste",
+    "دافيدوف": "Davidoff",
+    "مونت بلانك": "Montblanc",
+    "رصاصي": "Rasasi",
+    "زيرجوف": "Xerjoff",
+    "ميسك": "Misk",
+    "زارا": "Zara",
+}
+
+
+def house_for_span(span, store, products=None):
+    """The brand a span names on its own, or `None`. The Arabic twin of `names_a_bare_brand`.
+
+    "امبيرو" names Emporio Armani, not a perfume. Nothing in the deterministic layer could say so:
+    `match_product` has no Arabic bridge, `names_a_bare_brand` compares against a Latin
+    `Brand.name`, and `phonetic_ranking` scores the word too low to be a disagreement — which left
+    the decision entirely to the extractor, and it substituted a different flanker on each run.
+
+    True only when the span's identifying tokens are a **subset** of one alias's tokens, so a bare
+    house fires and house-plus-perfume does not: "هاخد ده امبيرو" has "هاخد" and "ده" stripped as
+    filler and still fires on the house (correct — it names the house and nothing more), while
+    "امبيرو سترونجر" carries "سترونجر" and does not. The brand is then resolved against the store,
+    so an alias for a house this store does not carry returns `None` rather than a foreign brand.
+    """
+    wanted = identifying_tokens(span)
+    if not wanted or store is None:
+        return None
+
+    if products is None:
+        from products.models import Product
+
+        products = Product.objects.filter(store=store, is_active=True).select_related("brand")
+
+    for alias, brand_name in _HOUSE_ALIASES.items():
+        alias_tokens = identifying_tokens(alias)
+        if alias_tokens and wanted <= alias_tokens:
+            for product in products:
+                try:
+                    if product.brand.name and product.brand.name.casefold() == brand_name.casefold():
+                        return product.brand
+                except Exception:
+                    continue
+            return None
+    return None
+
+
+def house_mentioned_alone(text, store, products=None):
+    """The brand whose alias is named in `text` with no product words after it, or `None`.
+    `house_for_span` answers "the span is a house and nothing else" — enough for "عايز امبيرو 90 ملي",
+    where the size is stripped and the span is the bare house. It is the wrong question for
+    "عايز واحد سوفاج وواحد امبيرو 50 ملي", where the span is "سوفاج امبيرو" and the house sits beside
+    a real product name. The order extractor resolves each line separately, so the record of *which
+    words were a house* has to survive into that loop; this is that record.
+
+    A mention counts as bare when nothing but filler follows it: "امبيرو سترونجر" is the perfume
+    Stronger With You, said through its house, and must not become a question — "سترونجر" follows
+    the alias, so it does not fire. "سوفاج امبيرو" fires, because "امبيرو" has nothing after it.
+    """
+    words = identifying_tokens(text)
+    if not words:
+        return None
+    ordered = [token for token in arabic_span(text).split() if token in words]
+
+    for alias in sorted(_HOUSE_ALIASES, key=lambda alias: len(identifying_tokens(alias)), reverse=True):
+        alias_tokens = identifying_tokens(alias)
+        if not alias_tokens or not alias_tokens <= words:
+            continue
+        positions = [index for index, token in enumerate(ordered) if token in alias_tokens]
+        if positions and positions[-1] == len(ordered) - 1:
+            brand = house_for_span(alias, store, products=products)
+            if brand is not None:
+                return brand
+    return None
+
+
 def names_a_bare_brand(name, store, products=None):
     """Does this name say a house and nothing more — "Dior", "Tom Ford", "Rasasi"?
 
@@ -918,14 +1040,17 @@ def names_a_bare_brand(name, store, products=None):
     as naming Tom Ford — deliberately, since the cost of a false True here is a request to
     clarify and the cost of a false False is a denial.
 
-    🔴 Latin spellings only, and not by choice: the comparison is against `Brand.name`, which holds
-    "Chanel" and never "شانيل", and nothing in this codebase bridges the two. So "شانيل" returns
-    False here — a false False, the expensive direction. `absence.catalogue_verdict` documents what
-    covers that case instead at the rung that calls this.
+    Latin spellings first, then `_HOUSE_ALIASES` for the Arabic ones. The alias pass is what makes
+    "امبيرو" answer "ask which perfume" instead of reaching the witness rung, where the extractor's
+    unplaced report denies it. Latin comparison runs first and is unchanged, so a catalogue that
+    names a brand in Arabic still behaves exactly as before.
     """
     wanted = tokens(name)
     if not wanted or store is None:
         return False
+
+    if house_for_span(name, store, products=products) is not None:
+        return True
 
     if products is None:
         from products.models import Product

@@ -126,21 +126,22 @@ def catalogue_verdict(name, store, resolution=None):
         # shaped exactly like a name we have never heard of. Denying it would tell a customer we
         # do not carry Dior while three Diors sit on the shelf. Ask which one they mean.
         #
-        # 🔴 This rung reads one alphabet. `Brand.name` is "Dior", the customer writes "ديور", and
-        # there is no alias column and no Arabic-name column — so `tokens("ديور") <= tokens("Dior")`
-        # is False and an Arabic house name falls through to the witness rung below, where a witness
-        # denies it. What covers it instead: `product_resolver`'s rule 9 forbids reporting a bare
-        # house name as unplaced, so the witness should never exist; and `router._escalate_absent_name`
-        # tells the owner about every denied name on the turn it is denied, so a slip reaches a person
-        # immediately rather than sitting in a transcript. Read both before trusting this rung.
+        # 🔴 This rung reads one alphabet directly: `Brand.name` is "Dior", the customer writes
+        # "ديور", and there is no Arabic-name column on `Brand`. What bridges the common spellings is
+        # a literal alias table, `naming._HOUSE_ALIASES`, read through `naming.names_a_bare_brand` —
+        # not a similarity score. An Arabic house whose spelling is not in that table still falls
+        # through to the witness rung below, where a witness denies it. What covers that remainder:
+        # `product_resolver`'s rule 9 forbids reporting a bare house name as unplaced, so the witness
+        # should never exist; and `router._escalate_absent_name` tells the owner about every denied
+        # name on the turn it is denied. Read both before trusting this rung.
         #
-        # ⚠️ An Arabic→Latin bridge now exists — `naming.transliterate` / `naming.phonetic_ranking`,
-        # added for conversation 1041 — and it is deliberately **not** wired in here or anywhere else
-        # under this module. It is a similarity ranking, not a matcher: it cannot tell a spelling of a
-        # name we stock from a spelling of one we do not, which is precisely the question this rung
-        # asks. Its only caller uses it to *disagree* with a placement the extractor already made and
-        # then asks the customer. A guessed bridge underneath a denial is the mistake this whole
-        # module exists to prevent, and having one available does not make it a witness.
+        # ⚠️ `naming.transliterate` / `naming.phonetic_ranking` — the Arabic→Latin bridge added for
+        # conversation 1041 — is deliberately **not** wired in here or anywhere else under this
+        # module. It is a similarity ranking, not a matcher: it cannot tell a spelling of a name we
+        # stock from a spelling of one we do not, which is precisely the question this rung asks.
+        # Its only caller uses it to *disagree* with a placement the extractor already made and then
+        # asks the customer. A guessed bridge underneath a denial is the mistake this whole module
+        # exists to prevent, and having one available does not make it a witness.
 
         return UNKNOWN
 
