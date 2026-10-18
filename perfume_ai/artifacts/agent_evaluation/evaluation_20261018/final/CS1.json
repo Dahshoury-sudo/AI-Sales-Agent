@@ -1,0 +1,56 @@
+{
+  "scores": {
+    "intent_understanding": 9,
+    "constraint_extraction": 6,
+    "memory": 8,
+    "recommendation_quality": 7,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 7,
+    "objection_handling": 4,
+    "sales_effectiveness": 8,
+    "closing_timing": 8,
+    "human_feel": 5,
+    "trust": 6
+  },
+  "what_worked": [
+    "Agent correctly recognised the customer wanted to talk to a responsible person and offered to transfer: \"تحب أحولك ليهم؟\"",
+    "Agent asked for contact details when first offering handoff: \"لو حابب، اكتب رقم تليفونك عشان يتواصلوا معاك.\"",
+    "On the customer's explicit demand the agent executed a handoff/confirmation: \"أنا حولت طلبك لفريق خدمة العملاء وهم هيتواصلوا معاك قريب جداً.\" — this moves the conversation toward resolution."
+  ],
+  "failures": [
+    {
+      "severity": "high",
+      "category": "objection",
+      "what": "No apology or empathy when customer expressed anger",
+      "why_wrong": "Customer started with an angry accusation: \"انتو نصابين... الاوردر بقاله اسبوع\". Senior-sales handling requires absorbing anger and a brief professional apology before transferring; agent did not apologise or acknowledge the customer's frustration.",
+      "expected": "A senior salesperson would briefly acknowledge and apologise (e.g. \"آسف جدًا للازعاج—حقك علينا، هنحولك على طول\") then hand off."
+    },
+    {
+      "severity": "medium",
+      "category": "trust",
+      "what": "Claimed transfer without collecting required contact or giving a clear next-step",
+      "why_wrong": "On turn 2 the agent said \"أنا حولت طلبك... وهيتواصلوا معاك قريب جداً\" but had not previously received the phone number (the earlier offer had requested it). The store guidance requires asking for the number and then transferring; claiming transfer without the number risks an empty promise.",
+      "expected": "If the number was not provided, the agent should either request it again and state the exact contact channel, or immediately give the human contact/WhatsApp number (01127027327) and say they are connecting."
+    },
+    {
+      "severity": "low",
+      "category": "human_feel",
+      "what": "Tone was formal and slightly robotic; lacked de-escalation language",
+      "why_wrong": "The replies were functional but not comforting; with an angry customer a warmer, empathetic Egyptian phrasing would reduce escalation (e.g. \"معذرة جداً، هاعتذر لك وأوصلك مع المسؤول دلوقتي\").",
+      "expected": "Use brief empathy, reassure action, then hand off."
+    },
+    {
+      "severity": "low",
+      "category": "prompt",
+      "what": "Inconsistent naming of teams",
+      "why_wrong": "First message referenced \"فريق المبيعات\" and second said \"فريق خدمة العملاء\". While store facts allow human transfer, consistent wording (e.g. \"خدمة العملاء\" or \"المندوب البشري\") is clearer and more professional.",
+      "expected": "Use one clear term for the team and, when possible, provide the store contact number or confirm the customer's number."
+    }
+  ],
+  "salesperson_verdict": "Would not fully accept this turn as-is: the agent did the correct handoff action but failed to apologise and claimed a transfer without securing the customer's contact or giving a clear next step. A senior salesperson would add a brief apology, confirm/collect the phone number (or provide the human contact), then transfer.",
+  "id": "CS1",
+  "category": "customer_service",
+  "suite": "core",
+  "mean_score": 7.0
+}

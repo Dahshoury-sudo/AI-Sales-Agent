@@ -1,0 +1,16 @@
+[
+  {
+    "id": "resolver_prompt_format_error",
+    "severity": "high",
+    "source": "products/services/product_resolver.py:721",
+    "function": "confirm_unplaced",
+    "observed_exceptions": 24,
+    "exception": "ValueError: Invalid format specifier ' true' for object of type 'str'",
+    "cause": "A literal JSON example uses single braces inside an f-string.",
+    "effect": "The confirmation path fails before its model request. product_info._confirm_before_denying catches the exception and returns an unknown-name fallback, so scenario error fields remain null while customers can be asked repeatedly to retype names.",
+    "reproduction": "resolver_reproduction.txt",
+    "reproduction_api_calls": 0,
+    "coverage_gap": "The offline suite applies a default mock to products.services.product_info.confirm_unplaced; its passing result does not verify this prompt is constructible.",
+    "source_modified": false
+  }
+]

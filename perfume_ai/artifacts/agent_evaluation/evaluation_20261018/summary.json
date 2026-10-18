@@ -1,0 +1,175 @@
+{
+  "completed_utc": "2026-10-18T02:38:01.686528+00:00",
+  "commit": "aa7df41fd548357597d5582703c258268cb18284",
+  "score_out_of_10": 6.5903158569825235,
+  "rounded_score": 6.6,
+  "score_method": "Unmodified repository rubric; gpt-5-mini low-effort judge. Average non-null dimensions within each scenario, then average all 63 scenarios equally. Offline pass rate is not part of this quality score.",
+  "offline": {
+    "tests": 1448,
+    "passed": 1448,
+    "seconds": 30.942,
+    "unexpected_http": 0
+  },
+  "live": {
+    "scenarios": 63,
+    "turns": 185,
+    "skipped": 0,
+    "unhandled_scenario_errors": 0,
+    "handled_resolver_exceptions": 24,
+    "api_calls": 548,
+    "raw_findings": {
+      "repeated_reply": 12,
+      "filler_question": 2,
+      "too_long": 2,
+      "wrong_variant_price": 2
+    },
+    "false_positive_price_flags": 2,
+    "scenarios_with_raw_flags": 11
+  },
+  "grading": {
+    "scenarios": 63,
+    "api_calls": 64,
+    "malformed_responses_retried": [
+      "CS1"
+    ]
+  },
+  "cost": {
+    "budget_usd": "1.00",
+    "live_usd": "0.59546425",
+    "grading_usd": "0.25741030",
+    "total_usd": "0.85287455",
+    "remaining_usd": "0.14712545",
+    "note": "Token-priced API usage, including cached-input discounts and the malformed judge attempt. Taxes and credits excluded."
+  },
+  "dimensions": {
+    "closing_timing": {
+      "score": 6.25,
+      "n": 16
+    },
+    "confidence_calibration": {
+      "score": 6.7936507936507935,
+      "n": 63
+    },
+    "constraint_extraction": {
+      "score": 6.2063492063492065,
+      "n": 63
+    },
+    "human_feel": {
+      "score": 7.031746031746032,
+      "n": 63
+    },
+    "intent_understanding": {
+      "score": 6.968253968253968,
+      "n": 63
+    },
+    "memory": {
+      "score": 6.746031746031746,
+      "n": 63
+    },
+    "objection_handling": {
+      "score": 6.0,
+      "n": 22
+    },
+    "product_accuracy": {
+      "score": 7.984126984126984,
+      "n": 63
+    },
+    "recommendation_quality": {
+      "score": 6.031746031746032,
+      "n": 63
+    },
+    "sales_effectiveness": {
+      "score": 5.777777777777778,
+      "n": 63
+    },
+    "similarity_accuracy": {
+      "score": 7.4,
+      "n": 5
+    },
+    "trust": {
+      "score": 6.317460317460317,
+      "n": 63
+    }
+  },
+  "categories": {
+    "adversarial": {
+      "score": 7.338271604938271,
+      "n": 9
+    },
+    "comparison": {
+      "score": 6.62962962962963,
+      "n": 3
+    },
+    "customer_service": {
+      "score": 7.65,
+      "n": 2
+    },
+    "discovery": {
+      "score": 8.494949494949495,
+      "n": 3
+    },
+    "gift": {
+      "score": 5.533333333333333,
+      "n": 2
+    },
+    "memory": {
+      "score": 7.095454545454546,
+      "n": 4
+    },
+    "objection": {
+      "score": 8.1,
+      "n": 5
+    },
+    "purchase": {
+      "score": 4.895959595959596,
+      "n": 5
+    },
+    "recommendation": {
+      "score": 8.73111111111111,
+      "n": 5
+    },
+    "regression": {
+      "score": 5.074025974025973,
+      "n": 21
+    },
+    "similarity": {
+      "score": 8.458333333333334,
+      "n": 4
+    }
+  },
+  "suites": {
+    "core": {
+      "score": 7.348460798460799,
+      "n": 42
+    },
+    "replays": {
+      "score": 5.074025974025973,
+      "n": 21
+    }
+  },
+  "backtests": [
+    {
+      "backtest": "backtest_placement",
+      "exit_code": 0
+    },
+    {
+      "backtest": "backtest_name_routing",
+      "exit_code": 1
+    },
+    {
+      "backtest": "backtest_praise",
+      "exit_code": 0
+    }
+  ],
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "catalogue_products": 46,
+  "database_cleanup_verified": true,
+  "pricing_sources": [
+    "https://developers.openai.com/api/docs/models/gpt-4.1-mini",
+    "https://developers.openai.com/api/docs/models/gpt-5-mini"
+  ]
+}

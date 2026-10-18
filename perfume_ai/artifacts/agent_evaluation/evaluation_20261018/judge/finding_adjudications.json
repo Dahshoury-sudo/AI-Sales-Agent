@@ -1,0 +1,3 @@
+{
+  "CONV931": "Manual verification of deterministic findings: the two wrong_variant_price flags are false positives. At turn 5, 1319 is explicitly the CART TOTAL: 650 + 669 = 1319. At turn 7, 2119 is explicitly the CART TOTAL: 650 + 669 + (2 * 400) = 2119. The preceding line prices are correct. Do not count these totals as incorrect per-item prices. Assess compliance with the customer's budget independently; this correction does not excuse any failure to acknowledge an over-budget cart. Raw checker output is retained."
+}

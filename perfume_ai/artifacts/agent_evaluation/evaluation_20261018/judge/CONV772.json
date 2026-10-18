@@ -1,0 +1,49 @@
+{
+  "scores": {
+    "intent_understanding": 5,
+    "constraint_extraction": 4,
+    "memory": 7,
+    "recommendation_quality": 8,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 7,
+    "objection_handling": null,
+    "sales_effectiveness": 7,
+    "closing_timing": 8,
+    "human_feel": 6,
+    "trust": 6
+  },
+  "what_worked": [
+    "Turn 2 correctly confirmed that Eros is available and quoted the exact prices: \"الـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه.\" — matches DATABASE FACTS.",
+    "Turn 2 asked a sensible next question to move the sale: \"لو تحب أعرفك على تفاصيل الريحة أو تختار حجم معين؟\"",
+    "Turn 3 repeated availability and sizes clearly and again offered details or a size choice: \"تحب تعرف تفاصيل أكتر عن الريحة أو تختار حجم معين؟\" — keeps the conversation actionable."
+  ],
+  "failures": [
+    {
+      "severity": "high",
+      "category": "intent",
+      "what": "Turn 1 did not follow the required denial-and-alternatives pattern for a non-catalogue perfume.",
+      "why_wrong": "Customer asked 'موجود عطر جنتل مان ؟' — the catalogue does NOT contain جنتل مان. The agent asked the customer to rewrite the name instead of plainly denying availability with the required short apology and immediately offering stocked alternatives. This leaves the customer waiting and forces extra work.",
+      "expected": "A senior salesperson would say: 'آسف، موجودش عندنا عطر جنتل مان.' then immediately offer one or two stocked alternatives by full name."
+    },
+    {
+      "severity": "medium",
+      "category": "human_feel",
+      "what": "Agent used Latin script 'Versace Eros' instead of matching the customer's Arabic input form 'ڤيرزاتشي ايروس'.",
+      "why_wrong": "Scenario required replying about the customer's new choice using the Arabic rendering (with ڤ) and treating it as a stocked perfume. Using Latin script feels less localized and slightly off to an Egyptian shopper.",
+      "expected": "Reply using the customer's Arabic spelling (e.g., 'ڤيرزاتشي ايروس') and confirm availability/prices in the same message."
+    },
+    {
+      "severity": "low",
+      "category": "prompt",
+      "what": "Turn 1's question 'ممكن تكتب لي اسم العطر تاني...' is unnecessary and delays the sale.",
+      "why_wrong": "Customer already supplied a clear name; asking to rewrite when product is absent is a poor conversation move and breaches the required handling.",
+      "expected": "Deny then offer alternatives immediately, rather than asking for repetition."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable as-is. Turn 2 and 3 correctly presented Eros and prices and moved toward a sale, but the initial mishandling of جنتل مان and the use of Latin script weaken trust and UX; a floor manager would coach the agent to deny missing items succinctly and always follow with stocked alternatives, and to mirror the customer's Arabic wording for the chosen product.",
+  "id": "CONV772",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 6.7
+}

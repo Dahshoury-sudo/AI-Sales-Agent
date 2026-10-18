@@ -1,0 +1,61 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 0,
+    "memory": 1,
+    "recommendation_quality": 3,
+    "similarity_accuracy": null,
+    "product_accuracy": 3,
+    "confidence_calibration": 3,
+    "objection_handling": null,
+    "sales_effectiveness": 3,
+    "closing_timing": null,
+    "human_feel": 6,
+    "trust": 2
+  },
+  "what_worked": [
+    "Agent correctly listed the prices and sizes for Bleu de Chanel and Dior Sauvage exactly matching the DATABASE FACTS: e.g. 'Dior Sauvage — زجاجة البراند 90 ملي بـ944.00 جنيه.' and 'Bleu de Chanel — زجاجة البراند 50 ملي بـ645.00 جنيه.'"
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Omitted any statement about 'الكساندريا 2' on the first reply",
+      "why_wrong": "Customer asked prices for three perfumes. The scenario rules require naming الكساندريا 2 and plainly stating we do not carry it (searched before reply). The agent gave only two of the three answers, leaving the third out entirely.",
+      "expected": "State in the same reply: short apology and 'الكساندريا 2 مش موجود عندنا' (exact Arabic name as customer wrote) plus the two required price lists."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Asked the customer to re-write the perfume name and implied a check would be done",
+      "why_wrong": "Turn 2 and 3 contain 'ممكن تكتب لي اسم العطر تاني ... عشان أتأكد لك؟' which promises a lookup/check. The scenario forbids promising to check between turns because no lookup happens — that leaves the customer waiting and is deceptive.",
+      "expected": "If perfume is absent, simply state it's not available and (if appropriate) offer one or two stocked alternatives. Do NOT ask to 'check' or promise to look something up."
+    },
+    {
+      "severity": "high",
+      "category": "data",
+      "what": "Mismatched focus on re-checking instead of answering the customer's chase",
+      "why_wrong": "After the customer's follow-ups ('ها لقيت اي' / 'ماشي اعرفلي') the agent asked clarifying question instead of repeating the required answer that should have been given first — the customer was asking about the same perfume they already named, not asking to name other perfumes.",
+      "expected": "Keep the original answer (including statement that الكساندريا 2 is not carried) and do not re-send unrelated price lists in response to these chase turns."
+    },
+    {
+      "severity": "medium",
+      "category": "recommendation",
+      "what": "No alternatives named when the customer asked again",
+      "why_wrong": "When denying availability of a perfume, the store rules require naming one or two stocked perfumes worth trying. The agent failed to offer any alternative to الكساندريا 2 on subsequent turns.",
+      "expected": "After stating 'الكساندريا 2 مش موجود عندنا' offer one or two similar stocked options (but in this conversation the customer already had two real perfumes listed so simply restating their prices plus the absence statement sufficed)."
+    },
+    {
+      "severity": "low",
+      "category": "memory",
+      "what": "Repeated the same request for clarification twice",
+      "why_wrong": "Agent asked for the name twice across turns 2 and 3 despite no new information — this wastes the customer's time and indicates poor conversational state handling.",
+      "expected": "If a clarification is genuinely needed once, ask it succinctly; do not repeat the same prompt."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable. A floor manager would reject this turn: although the two prices were correct, failing to state clearly that 'الكساندريا 2' is not carried and promising to 'check' are critical trust and process violations that must be fixed before accepting this agent's replies.",
+  "id": "CONV836",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 2.5555555555555554
+}

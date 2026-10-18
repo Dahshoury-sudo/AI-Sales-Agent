@@ -1,0 +1,55 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 5,
+    "recommendation_quality": 0,
+    "similarity_accuracy": null,
+    "product_accuracy": 8,
+    "confidence_calibration": 6,
+    "objection_handling": null,
+    "sales_effectiveness": 2,
+    "closing_timing": null,
+    "human_feel": 7,
+    "trust": 6
+  },
+  "what_worked": [
+    "Polite Egyptian phrasing: \"ممكن تكتب اسم العطر تاني بشكل أوضح يا فندم؟\" keeps tone respectful.",
+    "Agent avoided making any false factual claim about availability."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Failed to answer a straightforward availability question",
+      "why_wrong": "Customer asked directly 'عندكم عطر اسمه بلاك اوركيد؟' — the agent asked for the name to be repeated even though it was already clear. Per the scenario rules, absence from the catalogue is evidence and the correct action is to say it's not available and offer alternatives.",
+      "expected": "Search the catalogue (or treat absence as evidence) and reply plainly that 'بلاك اوركيد مش عندنا' if it's not in stock, then propose 1–2 specific alternative perfumes we do have."
+    },
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "No alternatives or next-step offered",
+      "why_wrong": "The customer came asking to buy/confirm availability. The agent neither confirmed non-availability nor suggested any stocked alternatives or upsell paths, so the turn did nothing to move the sale forward.",
+      "expected": "If perfume absent, name 1–2 alternatives (by name) and briefly state why they're a good substitute, or offer to check availability of similar scents and provide store facts (sizes/pricing) if asked."
+    },
+    {
+      "severity": "medium",
+      "category": "ux",
+      "what": "Unnecessary clarification question",
+      "why_wrong": "Asking 'اكتب اسم العطر تاني' after a clear name wastes the customer's time and signals poor product knowledge/searching behaviour. The agent should have used the catalogue check immediately.",
+      "expected": "Only ask clarification when the customer's input is ambiguous — otherwise answer directly and efficiently."
+    },
+    {
+      "severity": "low",
+      "category": "trust",
+      "what": "Missed opportunity to use store-configured facts",
+      "why_wrong": "Agent didn't mention that products are 'عطور تركيب' or sizes/pricing/shipping info that would help the customer decide, losing credibility and chance to preempt questions.",
+      "expected": "When denying availability, immediately offer store facts: e.g., 'العطر ده مش عندنا، لكن عندنا تركيب مشابه وبنقدمه بـ50/90 مل...' plus contact or delivery info if customer wants to order."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable — a senior sales manager would expect a direct availability answer and one or two named alternatives. This turn wastes the customer's time and fails to advance the sale.",
+  "id": "X1",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 4.111111111111111
+}

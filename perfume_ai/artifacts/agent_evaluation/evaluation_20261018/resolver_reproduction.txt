@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "<stdin>", line 22, in <module>
+  File "F:\Programming\Projects\Ai_Agent\perfume_ai\products\services\product_resolver.py", line 721, in confirm_unplaced
+    • 🔴 A HOUSE is not a perfume: "امبيرو" is Emporio Armani, "ديور" is Dior. These words name a brand, not any single row — answer {"house": true}, never one of that house's products.
+                                                                                                                                     ^^^^^^^^^^^^^^^
+ValueError: Invalid format specifier ' true' for object of type 'str'
+{"exception": "ValueError", "message": "Invalid format specifier ' true' for object of type 'str'", "api_calls": 0}

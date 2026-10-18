@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "intent_understanding": 8,
+    "constraint_extraction": 6,
+    "memory": 4,
+    "recommendation_quality": 9,
+    "similarity_accuracy": null,
+    "product_accuracy": 7,
+    "confidence_calibration": 4,
+    "objection_handling": 1,
+    "sales_effectiveness": 6,
+    "closing_timing": null,
+    "human_feel": 7,
+    "trust": 3
+  },
+  "what_worked": [
+    "Named the correct Versace SKU (Eros) and the exact supported price: 'Eros — زجاجة البراند 50 ملي بـ666.00 جنيه.' (matches DATABASE FACTS).",
+    "Provided supported product facts for Eros (longevity 7 hours, projection strong) which are in DATABASE FACTS: 'ثباته حوالي 7 ساعات، فوحانه قوي'.",
+    "When customer changed to 'لجوزي' the agent switched to the correct gender (male) and recommended a men's Versace (Eros), which is the right product for the request."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "data",
+      "what": "Saying 'مش لاقي اختيار بيحقق كل الشروط دي مع بعض' when customer asked about Versace (female) and later repeated it.",
+      "why_wrong": "DATABASE FACTS contains Versace: Eros (male) in the catalogue. The correct behaviour when no female Versace exists is to explain 'فيرزاتشي هنا عندنا عطر واحد بس وهو رجالي (Eros)' and offer alternatives. Claiming no option matches all conditions is incorrect and contradicts the catalogue.",
+      "expected": "State clearly that Versace in the catalogue is only men's (Eros) and offer Eros for the husband or suggest specific women's perfumes under 1200 from other brands."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Failed to retract a false implication after the customer's explicit objection ('ازاي اعلي من ميزانيتي').",
+      "why_wrong": "Customer stated budget 1200; Eros 50ml = 666 and 90ml = 1019 are both under 1200 per DATABASE FACTS. The agent should have acknowledged the mistake and said 'معاك حق، الاتنين داخلين ميزانيتك' and repeated the prices. Instead the agent asked an irrelevant clarifying question and then repeated the previous line, undermining trust.",
+      "expected": "Immediately acknowledge the error, correct it plainly, and re-state the supported prices for both sizes. Do not repeat the conflicting statement."
+    },
+    {
+      "severity": "high",
+      "category": "ux",
+      "what": "Repeated identical canned reply twice ('مش لاقي اختيار...').",
+      "why_wrong": "After the customer provided new constraints (budget and later gender), continuing to send the same 'no match' reply is a failure to process new input and creates a loop. Deterministic findings flagged repeated replies as critical.",
+      "expected": "Update the answer based on new info; on female request explain only men's exists; on male request present Eros sizes and prices."
+    },
+    {
+      "severity": "medium",
+      "category": "objection",
+      "what": "When customer challenged price relation ('ازاي اعلي من ميزانيتي'), agent asked 'تقصد أنهي عطر وحجم؟' rather than addressing the customer's explicit claim.",
+      "why_wrong": "Customer already gave context (they think something is above budget). The correct next step was to correct or confirm the mistake — asking which item repeats already-known info and delays fixing the error.",
+      "expected": "Acknowledge and correct the mistaken statement immediately, then offer next steps (confirm purchase, suggest alternatives, or show both sizes)."
+    },
+    {
+      "severity": "low",
+      "category": "memory",
+      "what": "Didn't reconcile the cart total vs per-bottle budget in communications clearly.",
+      "why_wrong": "Cart total (2119) is larger than the per-bottle budget 1200, and this is allowed to mention, but the agent never clearly separated 'ميزانية لكل زجاجة' from 'مجموع العربة'. This could confuse the customer.",
+      "expected": "When relevant, explicitly state 'الميزانية 1200 لكل زجاجة، والمنتجات اللي في العربه حالياً بتوصل لمجموع 2119' so customer understands per-item vs basket."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable as-is. A competent floor manager would require an immediate correction to the customer's objection (plain retraction and re-stating that both Eros sizes are within 1200), stop repeating the canned 'no match' reply, and then proceed to close or suggest alternatives. Fix the trust-damaging responses before continuing the sale.",
+  "id": "CONV931",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 5.5
+}

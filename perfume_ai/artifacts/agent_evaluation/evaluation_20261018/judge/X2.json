@@ -1,0 +1,56 @@
+{
+  "scores": {
+    "intent_understanding": 9,
+    "constraint_extraction": 9,
+    "memory": 10,
+    "recommendation_quality": 8,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 8,
+    "objection_handling": null,
+    "sales_effectiveness": 6,
+    "closing_timing": null,
+    "human_feel": 6,
+    "trust": 8
+  },
+  "what_worked": [
+    "Resolved the three misspelled names to the correct catalogue items: 'Dior Sauvage', 'Bleu de Chanel', 'Eros'.",
+    "Provided clear price lists for each perfume and multiple available sizes (e.g. 'Bleu de Chanel — زجاجة البراند 90 ملي بـ1015.00 جنيه', 'Eros — زجاجة البراند 50 ملي بـ666.00 جنيه').",
+    "Covered all three requested products instead of dropping any one of them."
+  ],
+  "failures": [
+    {
+      "severity": "medium",
+      "category": "human_feel",
+      "what": "Robotic / repetitive formatting and phrasing",
+      "why_wrong": "The reply repeats the product name and uses semicolon-heavy, catalogue-like lines (e.g. 'Dior Sauvage: Dior Sauvage — ...') which feels unnatural to an Egyptian customer looking for quick help.",
+      "expected": "A senior salesperson would reply naturally in Egyptian Arabic, e.g. 'تمام، عندنا: ديور سيفاج — 90ملي براند 944ج، 50ملي براند 642ج، أوريجينال 100ملي 815ج...' and offer to help with الأحجام أو كمية."
+    },
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "No follow-up to close the sale or confirm sizes/quantities",
+      "why_wrong": "Customer asked 'بكام التلاته؟' which implies purchase intent; the agent listed prices but did not ask which sizes the customer wants, whether they prefer 'زجاجة البراند' أو 'أوريجينال', or offer a bundle/checkout step.",
+      "expected": "Ask a short confirming question and move the sale forward: 'تحب كل واحد منهم 90 ولا 50 ولا عايز أوريجينال لواحد منهم؟ أحجزلك واطلب عربون 250ج لو حابب.'"
+    },
+    {
+      "severity": "low",
+      "category": "product",
+      "what": "Missed opportunity to mention stock levels or that products are تركيب",
+      "why_wrong": "Store-configured facts require clear policy about 'عطور تركيب' (and some 'زجاجات أوريجينال' available). The reply didn't remind the customer that these are تركيب أو note stock where relevant (e.g. Dior original 100ml stock=2, Bleu original 100ml stock=8).",
+      "expected": "Briefly state store policy and availability when listing originals: 'علماً إن العطور عندنا تركيب لكن متاح بعض الزجاجات أوريجينال. نقدر نحجز لك — الأوريجنال 100ملي من ديور ستيشن 2 قطعة متبقيه.'"
+    },
+    {
+      "severity": "low",
+      "category": "ux",
+      "what": "No concise total price or bundle suggestion",
+      "why_wrong": "Customer asked price for the three together; agent listed individual prices but didn't offer a summary total or cheaper bundle options (the store has box offers).",
+      "expected": "Provide a quick total for the most likely combination (e.g. all 90ml brand sizes) and mention any relevant offers or that you can calculate a final total when sizes are chosen."
+    }
+  ],
+  "salesperson_verdict": "Acceptable — the essential task (resolve names and list prices for all three) was done correctly, but the reply is a bit robotic and misses quick sales moves: confirm sizes/quantities, mention تركيب vs زجاجات أوريجينال and stock, and offer a simple next step to close.",
+  "id": "X2",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 8.222222222222221
+}

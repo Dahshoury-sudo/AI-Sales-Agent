@@ -1,0 +1,588 @@
+{
+  "id": "CONV973",
+  "category": "regression",
+  "persona": "hard_budget",
+  "probe": "Replay of conversation 973. The customer wants a WOMEN'S perfume with ROSE in it, budget 1010 EGP per bottle, given in one word on turn 2. The perfumes with rose in their notes, women's or unisex, with real prices: Coco Mademoiselle (Chanel) 50ml 534 / 90ml 1006, Bloom (Gucci) 50ml 549 / 90ml 1067, Rosalia (Perfamix own blend) 50ml 575 / 90ml 1030, Jasmino (Perfamix own blend) 50ml 578 / 90ml 1106, Good Girl (Carolina Herrera) 50ml 650 / 90ml 1083, Light Blue (Dolce & Gabbana) 50ml 691 / 90ml 852, Chloe Eau de Parfum (Chloe) 50ml 692 / 90ml 1058, Oud Wood (Tom Ford, unisex) 50ml 540 / 90ml 1160, Oudora (Perfamix own blend, unisex) 50ml 514 / 90ml 988. ❌ Never quote a price for any perfume that is not one of the figures above. TURN 4 IS THE REPORTED BUG. 'مش عايز حاجه من البراند بتاعكو' refuses the STORE'S OWN blends — Perfamix is the house brand, and Jasmino, offered on turn 3, is one of them. ❌ CRITICAL on turn 4 and turn 5: offering Bloom or Coco Mademoiselle again. Both were offered on turn 2 and the customer moved past them with 'اي تاني'. Re-offering a perfume the customer has already seen and passed over is the whole reported defect, and it is a finding whether or not the reply is worded differently. ❌ CRITICAL on turn 5: re-offering any perfume that turn 4 already offered. Replay 2 answered 'اي تاني' with Bloom, Coco Mademoiselle AND Good Girl — three perfumes the customer had already been shown, and nothing new. 'اي تاني' asks for something else. ❌ CRITICAL on turns 4 and 5: recommending any Perfamix own blend — Jasmino, Rosalia, Oudora — or describing one as an exclusive in-house composition. The customer refused the house on turn 4 and never withdrew that. ✅ Required on turn 4: at least one perfume the customer has NOT yet been shown, from an outside brand, with its real price. Light Blue, Chloe Eau de Parfum and Oud Wood are all available and none had been offered by then. ✅ Allowed once on turn 4: acknowledging the refusal of the house — 'تمام، مش هرشحلك من تركيباتنا'. ❌ CRITICAL: re-asking about it on turn 5, or asking again whether the customer minds the own brand. It was said once and clearly. ❌ CRITICAL: re-asking the budget on any turn after turn 2. It is 1010. ❌ CRITICAL: saying nothing else matches, or that these are all the available options, on turn 4 or 5. Seven outside-brand perfumes with rose sit under 1010 in some size. THE SECOND DEFECT IS THE PHRASING, and it is graded independently of which perfumes are named. ❌ CRITICAL: opening three or more replies on the same sentence frame — 'عندك X الـ50 ملي بـN جنيه داخل الميزانية، وY الـ50 ملي بـM جنيه كمان داخل الميزانية' with nothing changed but the names and the numbers. Four of the five original replies did this. ❌ CRITICAL: closing three or more replies on the same sentence frame — 'أنا أرشحلك X أكتر لأنه…' followed by a reason. Four of the five original replies ended this way, and a customer reading the same closing sentence four times with a different noun in it is the repetition being fixed. ✅ Required across turns 3, 4 and 5: each reply reaches its recommendation by a visibly different route — a different opening, a different way of putting the comparison, a different angle on why. Naming new perfumes in an unchanged template is not a different reply. ✅ Still required, and NOT in tension with the above: every price stated with its budget verdict, and 'أعلى حاجة بسيطة من ميزانيتك' used verbatim for a size that is over 1010. Those phrasings are mandated; varying the SENTENCE is what is asked for, not varying the facts or the sanctioned budget wording. ❌ CRITICAL: changing a price, a verdict, or which perfume is recommended between two replies in order to sound different. The facts are the facts. ✅ Required on turn 1: ask for the budget, or recommend. Either is fine. ❌ CRITICAL: quoting Jasmino's 90ml at 1030 or Rosalia's at 1106 — those two figures belong to the other perfume, and swapping them is the kind of error a repeated template invites.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز برفان حريمي فيه ريحه ورد",
+      "reply": "Bloom: ثباته حوالي 6 ساعات، فوحانه متوسط.\nJasmino: ثباته حوالي 7 ساعات، فوحانه متوسط.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "rose"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "rose"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Bloom",
+          "Good Girl",
+          "Coco Mademoiselle",
+          "Chloe Eau de Parfum",
+          "Jasmino",
+          "Light Blue",
+          "Accento Overdose",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Bloom": {
+            "score": 3.417,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Good Girl": {
+            "score": 3.413,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 3.33,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 3.29,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Jasmino": {
+            "score": 3.264,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 3.254,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 0.31,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 0.262,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 6424,
+      "context": "\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP\n- الـ 90 ملي: 1067.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP\n- الـ 90 ملي: 1006.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP\n- الـ 90 ملي: 1058.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP\n- الـ 90 ملي: 852.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "1010",
+      "reply": "Bloom — زجاجة البراند 50 ملي بـ549.00 جنيه.\nBloom — زجاجة البراند 90 ملي بـ1067.00 جنيه.\nJasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.\nJasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": {
+        "max_price": 1010
+      },
+      "merged_intent": {
+        "max_price": 1010,
+        "gender": "female",
+        "notes": [
+          "rose"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Bloom",
+          "Jasmino",
+          "Good Girl",
+          "Coco Mademoiselle",
+          "Chloe Eau de Parfum",
+          "Light Blue",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Bloom": {
+            "score": 5.417,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Jasmino": {
+            "score": 5.264,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Good Girl": {
+            "score": 4.913,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 4.83,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 4.79,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 4.754,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 1.762,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [
+        "Bloom",
+        "Jasmino"
+      ],
+      "dropped": {},
+      "offered": [
+        "Bloom",
+        "Jasmino"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 8825,
+      "context": "\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1106.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 22, \"variant_id\": 65, \"name\": \"Bloom\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"549.00\"}, {\"product_id\": 22, \"variant_id\": 138, \"name\": \"Bloom\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1067.00\"}, {\"product_id\": 33, \"variant_id\": 97, \"name\": \"Jasmino\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"578.00\"}, {\"product_id\": 33, \"variant_id\": 148, \"name\": \"Jasmino\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1106.00\"}], \"append\": true, \"text\": \"Bloom — زجاجة البراند 50 ملي بـ549.00 جنيه.\\nBloom — زجاجة البراند 90 ملي بـ1067.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\\nJasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.\\nJasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\", \"budget\": \"1010\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 22, \"variant_id\": 65, \"name\": \"Bloom\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"549.00\"}, {\"product_id\": 22, \"variant_id\": 138, \"name\": \"Bloom\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1067.00\"}, {\"product_id\": 33, \"variant_id\": 97, \"name\": \"Jasmino\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"578.00\"}, {\"product_id\": 33, \"variant_id\": 148, \"name\": \"Jasmino\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1106.00\"}], \"append\": false, \"text\": \"Bloom — زجاجة البراند 50 ملي بـ549.00 جنيه.\\nBloom — زجاجة البراند 90 ملي بـ1067.00 جنيه.\\nJasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.\\nJasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "اي تاني",
+      "reply": "Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "exclude_names": [
+          "Bloom",
+          "Jasmino"
+        ]
+      },
+      "merged_intent": {
+        "exclude_names": [
+          "Bloom",
+          "Jasmino"
+        ],
+        "gender": "female",
+        "max_price": 1010,
+        "notes": [
+          "rose"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Good Girl",
+          "Coco Mademoiselle",
+          "Chloe Eau de Parfum",
+          "Light Blue",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Good Girl": {
+            "score": 4.913,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 4.83,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 4.79,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 4.754,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 1.762,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {
+        "Bloom": null,
+        "Jasmino": null
+      },
+      "offered": [
+        "Bloom",
+        "Jasmino"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 6774,
+      "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\nMOVED_PAST: Bloom,Jasmino\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 8, \"variant_id\": 23, \"name\": \"Good Girl\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"650.00\"}, {\"product_id\": 8, \"variant_id\": 123, \"name\": \"Good Girl\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1083.00\"}, {\"product_id\": 13, \"variant_id\": 38, \"name\": \"Coco Mademoiselle\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"534.00\"}, {\"product_id\": 13, \"variant_id\": 129, \"name\": \"Coco Mademoiselle\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1006.00\"}], \"append\": true, \"text\": \"Good Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nGood Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\", \"budget\": \"1010\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 8, \"variant_id\": 123, \"name\": \"Good Girl\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1083.00\"}, {\"product_id\": 8, \"variant_id\": 23, \"name\": \"Good Girl\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"650.00\"}, {\"product_id\": 13, \"variant_id\": 38, \"name\": \"Coco Mademoiselle\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"534.00\"}, {\"product_id\": 13, \"variant_id\": 129, \"name\": \"Coco Mademoiselle\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1006.00\"}], \"append\": false, \"text\": \"Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "مش عايز حاجه من البراند بتاعكو",
+      "reply": "Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "exclude_brands": [
+          "STORE_BRAND_EXCLUSIVE"
+        ]
+      },
+      "merged_intent": {
+        "exclude_brands": [
+          "STORE_BRAND_EXCLUSIVE"
+        ],
+        "gender": "female",
+        "max_price": 1010,
+        "notes": [
+          "rose"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Good Girl",
+          "Coco Mademoiselle",
+          "Chloe Eau de Parfum",
+          "Light Blue",
+          "Bloom",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Good Girl": {
+            "score": 5.413,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 5.33,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 4.79,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 4.754,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Bloom": {
+            "score": 2.917,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 1.762,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [
+        "Coco Mademoiselle",
+        "Good Girl"
+      ],
+      "dropped": {},
+      "offered": [
+        "Bloom",
+        "Coco Mademoiselle",
+        "Good Girl",
+        "Jasmino"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 7702,
+      "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 13, \"variant_id\": 38, \"name\": \"Coco Mademoiselle\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"534.00\"}, {\"product_id\": 13, \"variant_id\": 129, \"name\": \"Coco Mademoiselle\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1006.00\"}, {\"product_id\": 8, \"variant_id\": 23, \"name\": \"Good Girl\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"650.00\"}, {\"product_id\": 8, \"variant_id\": 123, \"name\": \"Good Girl\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1083.00\"}], \"append\": true, \"text\": \"Coco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nGood Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\", \"budget\": \"1010\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 8, \"variant_id\": 123, \"name\": \"Good Girl\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1083.00\"}, {\"product_id\": 8, \"variant_id\": 23, \"name\": \"Good Girl\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"650.00\"}, {\"product_id\": 13, \"variant_id\": 38, \"name\": \"Coco Mademoiselle\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"534.00\"}, {\"product_id\": 13, \"variant_id\": 129, \"name\": \"Coco Mademoiselle\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1006.00\"}], \"append\": false, \"text\": \"Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\", \"budget\": null}",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجا'"
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "user": "اي تاني",
+      "reply": "Good Girl: ثباته حوالي 8 ساعات، فوحانه قوي.\nCoco Mademoiselle: ثباته حوالي 7 ساعات، فوحانه متوسط.\n\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nGood Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "exclude_brands": [
+          "STORE_BRAND_EXCLUSIVE"
+        ],
+        "gender": "female",
+        "notes": [
+          "rose"
+        ]
+      },
+      "merged_intent": {
+        "exclude_brands": [
+          "STORE_BRAND_EXCLUSIVE"
+        ],
+        "gender": "female",
+        "notes": [
+          "rose"
+        ],
+        "max_price": 1010
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Good Girl",
+          "Coco Mademoiselle",
+          "Chloe Eau de Parfum",
+          "Light Blue",
+          "Bloom",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Good Girl": {
+            "score": 5.413,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 5.33,
+            "reasons": [
+              "فيه rose",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 4.79,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 4.754,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Bloom": {
+            "score": 2.917,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 1.762,
+            "reasons": [
+              "فيه rose"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [
+        "Coco Mademoiselle",
+        "Good Girl"
+      ],
+      "dropped": {},
+      "offered": [
+        "Bloom",
+        "Coco Mademoiselle",
+        "Good Girl",
+        "Jasmino"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 6871,
+      "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1083.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1006.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه rose | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1058.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 852.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 852 جنيه، وسعر الـ 50 ملي 691 جنيه، والفرق بين الحجمين 161 جنيه، بس سعر الملي أرخص: 9.5 بدل 13.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 161 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1067.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1160.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه rose\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 8, \"variant_id\": 23, \"name\": \"Good Girl\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"650.00\"}, {\"product_id\": 8, \"variant_id\": 123, \"name\": \"Good Girl\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1083.00\"}, {\"product_id\": 13, \"variant_id\": 38, \"name\": \"Coco Mademoiselle\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"534.00\"}, {\"product_id\": 13, \"variant_id\": 129, \"name\": \"Coco Mademoiselle\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1006.00\"}], \"append\": true, \"text\": \"Good Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nGood Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\", \"budget\": \"1010\"}",
+      "findings": []
+    }
+  ],
+  "findings": [
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجا'"
+    ]
+  ],
+  "error": null,
+  "final_preferences": {
+    "gender": "female",
+    "max_price": 1010,
+    "notes": [
+      "rose"
+    ],
+    "exclude_brands": [
+      "STORE_BRAND_EXCLUSIVE"
+    ]
+  },
+  "seconds": 79.6,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV973 — category: regression — persona: hard_budget\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 973. The customer wants a WOMEN'S perfume with ROSE in it, budget 1010 EGP per bottle, given in one word on turn 2. The perfumes with rose in their notes, women's or unisex, with real prices: Coco Mademoiselle (Chanel) 50ml 534 / 90ml 1006, Bloom (Gucci) 50ml 549 / 90ml 1067, Rosalia (Perfamix own blend) 50ml 575 / 90ml 1030, Jasmino (Perfamix own blend) 50ml 578 / 90ml 1106, Good Girl (Carolina Herrera) 50ml 650 / 90ml 1083, Light Blue (Dolce & Gabbana) 50ml 691 / 90ml 852, Chloe Eau de Parfum (Chloe) 50ml 692 / 90ml 1058, Oud Wood (Tom Ford, unisex) 50ml 540 / 90ml 1160, Oudora (Perfamix own blend, unisex) 50ml 514 / 90ml 988. ❌ Never quote a price for any perfume that is not one of the figures above. TURN 4 IS THE REPORTED BUG. 'مش عايز حاجه من البراند بتاعكو' refuses the STORE'S OWN blends — Perfamix is the house brand, and Jasmino, offered on turn 3, is one of them. ❌ CRITICAL on turn 4 and turn 5: offering Bloom or Coco Mademoiselle again. Both were offered on turn 2 and the customer moved past them with 'اي تاني'. Re-offering a perfume the customer has already seen and passed over is the whole reported defect, and it is a finding whether or not the reply is worded differently. ❌ CRITICAL on turn 5: re-offering any perfume that turn 4 already offered. Replay 2 answered 'اي تاني' with Bloom, Coco Mademoiselle AND Good Girl — three perfumes the customer had already been shown, and nothing new. 'اي تاني' asks for something else. ❌ CRITICAL on turns 4 and 5: recommending any Perfamix own blend — Jasmino, Rosalia, Oudora — or describing one as an exclusive in-house composition. The customer refused the house on turn 4 and never withdrew that. ✅ Required on turn 4: at least one perfume the customer has NOT yet been shown, from an outside brand, with its real price. Light Blue, Chloe Eau de Parfum and Oud Wood are all available and none had been offered by then. ✅ Allowed once on turn 4: acknowledging the refusal of the house — 'تمام، مش هرشحلك من تركيباتنا'. ❌ CRITICAL: re-asking about it on turn 5, or asking again whether the customer minds the own brand. It was said once and clearly. ❌ CRITICAL: re-asking the budget on any turn after turn 2. It is 1010. ❌ CRITICAL: saying nothing else matches, or that these are all the available options, on turn 4 or 5. Seven outside-brand perfumes with rose sit under 1010 in some size. THE SECOND DEFECT IS THE PHRASING, and it is graded independently of which perfumes are named. ❌ CRITICAL: opening three or more replies on the same sentence frame — 'عندك X الـ50 ملي بـN جنيه داخل الميزانية، وY الـ50 ملي بـM جنيه كمان داخل الميزانية' with nothing changed but the names and the numbers. Four of the five original replies did this. ❌ CRITICAL: closing three or more replies on the same sentence frame — 'أنا أرشحلك X أكتر لأنه…' followed by a reason. Four of the five original replies ended this way, and a customer reading the same closing sentence four times with a different noun in it is the repetition being fixed. ✅ Required across turns 3, 4 and 5: each reply reaches its recommendation by a visibly different route — a different opening, a different way of putting the comparison, a different angle on why. Naming new perfumes in an unchanged template is not a different reply. ✅ Still required, and NOT in tension with the above: every price stated with its budget verdict, and 'أعلى حاجة بسيطة من ميزانيتك' used verbatim for a size that is over 1010. Those phrasings are mandated; varying the SENTENCE is what is asked for, not varying the facts or the sanctioned budget wording. ❌ CRITICAL: changing a price, a verdict, or which perfume is recommended between two replies in order to sound different. The facts are the facts. ✅ Required on turn 1: ask for the budget, or recommend. Either is fine. ❌ CRITICAL: quoting Jasmino's 90ml at 1030 or Rosalia's at 1106 — those two figures belong to the other perfume, and swapping them is the kind of error a repeated template invites.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز برفان حريمي فيه ريحه ورد\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"female\", \"notes\": [\"rose\"]}\n[internal] shortlist_shown_to_model=['Bloom', 'Good Girl', 'Coco Mademoiselle', 'Chloe Eau de Parfum', 'Jasmino', 'Light Blue', 'Accento Overdose', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Bloom\": {\"score\": 3.417, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Good Girl\": {\"score\": 3.413, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 3.33, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 3.29, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Jasmino\": {\"score\": 3.264, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 3.254, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Accento Overdose\": {\"score\": 0.31, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 0.262, \"reasons\": [\"فيه rose\"], \"mismatches\": []}}\nAGENT: Bloom: ثباته حوالي 6 ساعات، فوحانه متوسط.\nJasmino: ثباته حوالي 7 ساعات، فوحانه متوسط.\n\n--- TURN 2 ---\nCUSTOMER: 1010\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={\"max_price\": 1010, \"gender\": \"female\", \"notes\": [\"rose\"]}\n[internal] shortlist_shown_to_model=['Bloom', 'Jasmino', 'Good Girl', 'Coco Mademoiselle', 'Chloe Eau de Parfum', 'Light Blue', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Bloom\": {\"score\": 5.417, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Jasmino\": {\"score\": 5.264, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Good Girl\": {\"score\": 4.913, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 4.83, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 4.79, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 4.754, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 1.762, \"reasons\": [\"فيه rose\"], \"mismatches\": []}}\nAGENT: Bloom — زجاجة البراند 50 ملي بـ549.00 جنيه.\nBloom — زجاجة البراند 90 ملي بـ1067.00 جنيه.\nJasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.\nJasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.\n\n--- TURN 3 ---\nCUSTOMER: اي تاني\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Bloom\", \"Jasmino\"], \"gender\": \"female\", \"max_price\": 1010, \"notes\": [\"rose\"]}\n[internal] shortlist_shown_to_model=['Good Girl', 'Coco Mademoiselle', 'Chloe Eau de Parfum', 'Light Blue', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Good Girl\": {\"score\": 4.913, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 4.83, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 4.79, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 4.754, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 1.762, \"reasons\": [\"فيه rose\"], \"mismatches\": []}}\nAGENT: Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\n\n--- TURN 4 ---\nCUSTOMER: مش عايز حاجه من البراند بتاعكو\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_brands\": [\"STORE_BRAND_EXCLUSIVE\"], \"gender\": \"female\", \"max_price\": 1010, \"notes\": [\"rose\"]}\n[internal] shortlist_shown_to_model=['Good Girl', 'Coco Mademoiselle', 'Chloe Eau de Parfum', 'Light Blue', 'Bloom', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Good Girl\": {\"score\": 5.413, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 5.33, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 4.79, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 4.754, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Bloom\": {\"score\": 2.917, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 1.762, \"reasons\": [\"فيه rose\"], \"mismatches\": []}}\nAGENT: Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\n\n--- TURN 5 ---\nCUSTOMER: اي تاني\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_brands\": [\"STORE_BRAND_EXCLUSIVE\"], \"gender\": \"female\", \"notes\": [\"rose\"], \"max_price\": 1010}\n[internal] shortlist_shown_to_model=['Good Girl', 'Coco Mademoiselle', 'Chloe Eau de Parfum', 'Light Blue', 'Bloom', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Good Girl\": {\"score\": 5.413, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 5.33, \"reasons\": [\"فيه rose\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 4.79, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Light Blue\": {\"score\": 4.754, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Bloom\": {\"score\": 2.917, \"reasons\": [\"فيه rose\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 1.762, \"reasons\": [\"فيه rose\"], \"mismatches\": []}}\nAGENT: Good Girl: ثباته حوالي 8 ساعات، فوحانه قوي.\nCoco Mademoiselle: ثباته حوالي 7 ساعات، فوحانه متوسط.\n\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\nGood Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\nCoco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه.\nCoco Mademoiselle — زجاجة البراند 90 ملي بـ1006.00 جنيه.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Accento Overdose | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Strong | top=Pineapple, Green Notes, Aldehydes | mid=Egyptian Jasmine, Bulgarian Rose | base=Eucalyptus, Mediterranean Pine | sizes: brand 50ml=2800EGP; brand 90ml=5000EGP; original 50ml=21000EGP stock=3; original 100ml=38000EGP stock=1\n- Bloom | brand=Gucci | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Jasmine Sambac, Tuberose | mid=Rangoon Creeper | base=Sandalwood, Musk | sizes: brand 50ml=549EGP; brand 90ml=1067EGP\n- Chloe Eau de Parfum | brand=Chloe | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Peony, Lychee, Freesia | mid=Rose, Magnolia, Lily | base=Amber, Musk, Cedar | sizes: brand 50ml=692EGP; brand 90ml=1058EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Moderate | top=Orange, Bergamot, Mandarin | mid=Jasmine, Rose, Mimosa | base=Patchouli, Vetiver, Vanilla | sizes: brand 50ml=534EGP; brand 90ml=1006EGP\n- Good Girl | brand=Carolina Herrera | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Almond, Coffee, Bergamot | mid=Tuberose, Jasmine | base=Tonka Bean, Cacao, Vanilla | sizes: brand 50ml=650EGP; brand 90ml=1083EGP\n- Jasmino | brand=Perfamix | gender=female | type=oriental | season=All Seasons | occasion=Daily | longevity=7 hours | projection=Moderate | top=Bergamot, Green Notes, Mandarin | mid=Jasmine Sambac, Tuberose, Ylang Ylang | base=Sandalwood, White Musk, Vanilla | sizes: brand 50ml=578EGP; brand 90ml=1106EGP\n- Light Blue | brand=Dolce & Gabbana | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=5 hours | projection=Moderate | top=Sicilian Lemon, Apple, Cedar | mid=Bamboo, Jasmine, White Rose | base=Musk, Amber, Cedar | sizes: brand 50ml=691EGP; brand 90ml=852EGP\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n[\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'Good Girl — زجاجة البراند 90 ملي بـ1083.00 جنيه.\\nGood Girl — زجاجة البراند 50 ملي بـ650.00 جنيه.\\nCoco Mademoiselle — زجا'\"\n ]\n]\n\n[context] Final saved preferences after the conversation: {\"gender\": \"female\", \"max_price\": 1010, \"notes\": [\"rose\"], \"exclude_brands\": [\"STORE_BRAND_EXCLUSIVE\"]}"
+}

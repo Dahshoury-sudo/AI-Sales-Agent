@@ -1,0 +1,11 @@
+{
+  "rubric": "eval_harness/judge.py:RUBRIC (unmodified)",
+  "model": "gpt-5-mini",
+  "reasoning_effort": "low",
+  "workers": 3,
+  "source": "F:\\Programming\\Projects\\Ai_Agent\\perfume_ai\\artifacts\\agent_evaluation\\evaluation_20261018\\live",
+  "prior_spend_usd": "0.59546425",
+  "score_method": "Mean of non-null dimensions within each scenario, then equal-weight mean across scenarios. Offline tests reported separately.",
+  "expected_scenarios": 63,
+  "cumulative_budget_usd": "1.00"
+}

@@ -1,0 +1,62 @@
+{
+  "scores": {
+    "intent_understanding": 4,
+    "constraint_extraction": 2,
+    "memory": 1,
+    "recommendation_quality": 3,
+    "similarity_accuracy": null,
+    "product_accuracy": 7,
+    "confidence_calibration": 6,
+    "objection_handling": null,
+    "sales_effectiveness": 2,
+    "closing_timing": null,
+    "human_feel": 2,
+    "trust": 2
+  },
+  "what_worked": [
+    "Agent named real SKUs that exist in the database: \"Stronger With You و Stronger With You Absolutely و Stronger With You Intensely.\" — these match DATABASE FACTS.",
+    "Agent asked which variant and which size: \"تحب أنهي واحد، وأي حجم؟\" which is a reasonable clarifying question when variants exist."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "memory",
+      "what": "Repeated identical reply after the customer supplied new information (name, phone numbers, address).",
+      "why_wrong": "Customer provided contact and delivery details in TURN 2 and TURN 3; the agent sent the exact same message three times without acknowledging or using any of that data. Deterministic findings flag this as a 100% identical repeated reply.",
+      "expected": "A senior salesperson would acknowledge the provided details (e.g. 'تمام يا أستاذ بلال، استلمت اسمك ورقمك والعنوان') and move the sale forward without re-asking the same question."
+    },
+    {
+      "severity": "high",
+      "category": "intent",
+      "what": "Failed to treat the customer's first message as a near-complete order and didn't summarise the order or give prices/total.",
+      "why_wrong": "Customer said 'عايز اطلب امبيرو 90 ملي' (clear purchase intent and size). Agent should have confirmed the exact product requested or clarified ambiguity, then given price and next steps. Instead agent asked again 'تحب أنهي واحد، وأي حجم؟' which re-asks already-provided size.",
+      "expected": "Confirm the requested product and size, show the price for 90ml and the total including shipping, and request the deposit or offer payment options per STORE-CONFIGURED FACTS."
+    },
+    {
+      "severity": "high",
+      "category": "data",
+      "what": "Ignored the store policy rule about substitution/availability handling.",
+      "why_wrong": "Scenario instructions require that if the requested perfume (Ambero) is inactive/unavailable, the agent must retain the requested identity and explain unavailability and not substitute. The agent prematurely assumed 'Emporio Armani' variants instead of asking whether the customer meant that or clarifying 'امبيرو' vs 'امبيرو Armani'.",
+      "expected": "If ambiguity exists, ask a single clarifying question ('هل تقصد Emporio Armani أو براند تاني؟') then, if unavailable, explain unavailability and offer named alternatives only after stating that the requested item isn't in stock."
+    },
+    {
+      "severity": "medium",
+      "category": "sales",
+      "what": "Didn't present prices, shipping cost, deposit instruction or next action to close the sale.",
+      "why_wrong": "Customer was a ready buyer and already provided contact and address; agent missed the opportunity to give price for 90ml and ask for the required deposit (min 250ج) or to send payment link.",
+      "expected": "Provide item price (use DB price for 90ml), add shipping (60ج), compute total, explain deposit options and give payment link or request confirmation to proceed."
+    },
+    {
+      "severity": "low",
+      "category": "human_feel",
+      "what": "Robotic, repetitive phrasing without Egyptian conversational warmth or acknowledgement.",
+      "why_wrong": "Replies were identical across three turns and did not use the customer's name or show empathy/engagement.",
+      "expected": "Use the customer's name, short Egyptian phrasing, and confirm receipt of info before proceeding ('تمام يا بلال، وصلت بياناتك...')."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable as-is. A floor manager would reject this turn: the agent repeated the same message, ignored supplied contact and address, and failed to summarise price/next steps for a ready buyer.",
+  "id": "P2",
+  "category": "purchase",
+  "suite": "core",
+  "mean_score": 3.2222222222222223
+}

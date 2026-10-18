@@ -1,0 +1,7 @@
+[
+  {
+    "id": "CS1",
+    "reason": "Judge returned incomplete or malformed dimensions",
+    "type": "ValueError"
+  }
+]

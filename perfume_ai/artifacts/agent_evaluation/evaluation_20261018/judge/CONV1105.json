@@ -1,0 +1,36 @@
+{
+  "scores": {
+    "intent_understanding": 9,
+    "constraint_extraction": 8,
+    "memory": 9,
+    "recommendation_quality": 9,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 10,
+    "objection_handling": null,
+    "sales_effectiveness": 8,
+    "closing_timing": null,
+    "human_feel": 9,
+    "trust": 10
+  },
+  "what_worked": [
+    "Agent thanked the customer warmly: \"شكرًا جداً على كلامك الطيب، ده يسعدنا...\"",
+    "Agent acknowledged the compliment and expressed pleasure: \"ده يسعدنا ويشجعنا نفضل دايمًا عند حسن ظنك.\"",
+    "Agent offered continued availability without pushing a sale: \"تحت أمرك في أي وقت.\" / \"لو حابب أي حاجة تانية في أي وقت، إحنا موجودين.\"",
+    "Tone is natural Egyptian and friendly, matching the customer's positive sentiment."
+  ],
+  "failures": [
+    {
+      "severity": "medium",
+      "category": "memory",
+      "what": "Repetitive phrasing across the two replies",
+      "why_wrong": "The scenario required that the second reply must not repeat the first reply sentence-for-sentence. Both replies reuse the core sentence '...بيشجعنا نفضل دايمًا عند حسن ظنك.' which makes the second message feel slightly recycled rather than a distinct, fresh thank-you.",
+      "expected": "A top salesperson would vary the wording more on the second thank-you (e.g., reference the customer's happiness directly: 'سعدنا جدًا إنك مبسوط منه، ده أحسن رد لينا') to feel more personal and avoid repetition."
+    }
+  ],
+  "salesperson_verdict": "Acceptable turn — the agent followed the critical rules (thanked warmly, did not ask which perfume or pitch anything) and maintained a friendly tone; improve by varying wording to avoid repetition between consecutive thank-yous.",
+  "id": "CONV1105",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 9.11111111111111
+}

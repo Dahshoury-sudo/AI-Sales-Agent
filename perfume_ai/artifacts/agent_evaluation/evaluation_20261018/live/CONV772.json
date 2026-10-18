@@ -1,0 +1,89 @@
+{
+  "id": "CONV772",
+  "category": "regression",
+  "persona": "browser",
+  "probe": "Replay of conversation 772. جنتل مان (Givenchy Gentleman) is NOT in this 35-product catalogue under any spelling. Versace Eros (brand Versace, listed in the catalogue under the bare name 'Eros') IS stocked and active: 50ml 666 and 90ml 1019. It is an EDT, male, longevity 7 hours, projection Strong. Top notes Mint, Green Apple, Lemon / middle Tonka Bean, Ambroxan, Geranium / base Vanilla, Vetiver, Oakmoss. It has no original-bottle variant, so the fixed sentence 'للأسف مش متوفر منه زجاجة أوريجينال حالياً' is CORRECT if it appears and is not a denial of the perfume. Stronger With You (Emporio Armani) is 50ml 400 and 90ml 700, plus original bottles 100ml 3800 and 200ml 6800. Turn 1 asks whether we have جنتل مان, and we do not. ✅ Required: say so plainly, in one sentence, with a short apology, echoing the name in the customer's own Arabic letters — AND in the SAME reply offer one or two stocked perfumes by FULL name, clearly labelled as DIFFERENT perfumes. ❌ CRITICAL: promising to check ('لحظة أتأكدلك منه' / 'هسأل وأرد عليك' / 'هشوفه لك'). Nothing looks a perfume up between two messages of a chat, so the promise leaves the customer waiting for an answer that never comes. That promise is what this transcript opens with. ❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. ❌ CRITICAL: writing جنتل مان in Latin letters, or claiming a stocked perfume is its 'correct name' or the same perfume. ❌ Any mention of a system, data, catalogue or 'مش ظاهر عندي'. Turn 2 ('طب ڤيرزاتشي ايروس' — 'ok then, Versace Eros') is the turn this conversation exists for. It switches to a DIFFERENT perfume, one we stock, written with ڤ instead of ف. ✅ Required: the reply is about Versace Eros and treats it as a perfume we carry — confirming it and asking which size, or quoting its prices. ❌ CRITICAL: saying Eros is unavailable, not found, or not in stock. It is active at 666 and 1019, and telling a customer otherwise is the worst reply on this turn. ❌ CRITICAL: promising to check on Eros. ❌ CRITICAL: answering about Stronger With You, or any perfume offered on turn 1, instead of Eros. The customer changed the subject and 'طب' is how they said so. ❌ CRITICAL: still answering about جنتل مان, or re-denying it, as though turn 2 had not named anything. ❌ Reading ڤيرزاتشي as a perfume in its own right, or as a perfume we do not carry. Turn 3 ('ها ؟' — 'well?') is the customer waiting on turn 2. ✅ Required: a real reply that carries the Eros answer forward — its prices, or its sizes, or a question that moves the sale on. ❌ CRITICAL: an empty reply, or a reply that says nothing about Eros. This turn got absolute silence in production and the whole conversation ended there. ❌ CRITICAL: claiming to have looked, searched or found anything ('لقيت', 'راجعت'). ❌ CRITICAL: reverting to جنتل مان, or announcing that a human will follow up. ❌ Never quote a price for Eros that is not 666 or 1019, and never quote a price for any perfume that is not among the figures above.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "موجود عطر جنتل مان ؟",
+      "reply": "ممكن تكتب لي اسم العطر تاني بطريقة مختلفة أو توضح لي أكتر قصدك أنهي بالظبط؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 405,
+      "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: موجود عطر جنتل مان ؟\nNAME_UNREADABLE\nمش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد منه في الكتالوج.\n🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. 🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "طب ڤيرزاتشي ايروس",
+      "reply": "عطر Versace Eros متوفر عندنا، والـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه. لو تحب أعرفك على تفاصيل الريحة أو تختار حجم معين؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 1442,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "ها ؟",
+      "reply": "عطر Eros متوفر عندنا بحجم 90 ملي بسعر 1019 جنيه، وفيه كمان حجم 50 ملي بـ666 جنيه. تحب تعرف تفاصيل أكتر عن الريحة أو تختار حجم معين؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 1442,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1019 جنيه، وسعر الـ 50 ملي 666 جنيه، والفرق بين الحجمين 353 جنيه، بس سعر الملي أرخص: 11.3 بدل 13.3 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {},
+  "seconds": 43.4,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV772 — category: regression — persona: browser\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 772. جنتل مان (Givenchy Gentleman) is NOT in this 35-product catalogue under any spelling. Versace Eros (brand Versace, listed in the catalogue under the bare name 'Eros') IS stocked and active: 50ml 666 and 90ml 1019. It is an EDT, male, longevity 7 hours, projection Strong. Top notes Mint, Green Apple, Lemon / middle Tonka Bean, Ambroxan, Geranium / base Vanilla, Vetiver, Oakmoss. It has no original-bottle variant, so the fixed sentence 'للأسف مش متوفر منه زجاجة أوريجينال حالياً' is CORRECT if it appears and is not a denial of the perfume. Stronger With You (Emporio Armani) is 50ml 400 and 90ml 700, plus original bottles 100ml 3800 and 200ml 6800. Turn 1 asks whether we have جنتل مان, and we do not. ✅ Required: say so plainly, in one sentence, with a short apology, echoing the name in the customer's own Arabic letters — AND in the SAME reply offer one or two stocked perfumes by FULL name, clearly labelled as DIFFERENT perfumes. ❌ CRITICAL: promising to check ('لحظة أتأكدلك منه' / 'هسأل وأرد عليك' / 'هشوفه لك'). Nothing looks a perfume up between two messages of a chat, so the promise leaves the customer waiting for an answer that never comes. That promise is what this transcript opens with. ❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. ❌ CRITICAL: writing جنتل مان in Latin letters, or claiming a stocked perfume is its 'correct name' or the same perfume. ❌ Any mention of a system, data, catalogue or 'مش ظاهر عندي'. Turn 2 ('طب ڤيرزاتشي ايروس' — 'ok then, Versace Eros') is the turn this conversation exists for. It switches to a DIFFERENT perfume, one we stock, written with ڤ instead of ف. ✅ Required: the reply is about Versace Eros and treats it as a perfume we carry — confirming it and asking which size, or quoting its prices. ❌ CRITICAL: saying Eros is unavailable, not found, or not in stock. It is active at 666 and 1019, and telling a customer otherwise is the worst reply on this turn. ❌ CRITICAL: promising to check on Eros. ❌ CRITICAL: answering about Stronger With You, or any perfume offered on turn 1, instead of Eros. The customer changed the subject and 'طب' is how they said so. ❌ CRITICAL: still answering about جنتل مان, or re-denying it, as though turn 2 had not named anything. ❌ Reading ڤيرزاتشي as a perfume in its own right, or as a perfume we do not carry. Turn 3 ('ها ؟' — 'well?') is the customer waiting on turn 2. ✅ Required: a real reply that carries the Eros answer forward — its prices, or its sizes, or a question that moves the sale on. ❌ CRITICAL: an empty reply, or a reply that says nothing about Eros. This turn got absolute silence in production and the whole conversation ended there. ❌ CRITICAL: claiming to have looked, searched or found anything ('لقيت', 'راجعت'). ❌ CRITICAL: reverting to جنتل مان, or announcing that a human will follow up. ❌ Never quote a price for Eros that is not 666 or 1019, and never quote a price for any perfume that is not among the figures above.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: موجود عطر جنتل مان ؟\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: ممكن تكتب لي اسم العطر تاني بطريقة مختلفة أو توضح لي أكتر قصدك أنهي بالظبط؟\n\n--- TURN 2 ---\nCUSTOMER: طب ڤيرزاتشي ايروس\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: عطر Versace Eros متوفر عندنا، والـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه. لو تحب أعرفك على تفاصيل الريحة أو تختار حجم معين؟\n\n--- TURN 3 ---\nCUSTOMER: ها ؟\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: عطر Eros متوفر عندنا بحجم 90 ملي بسعر 1019 جنيه، وفيه كمان حجم 50 ملي بـ666 جنيه. تحب تعرف تفاصيل أكتر عن الريحة أو تختار حجم معين؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Eros | brand=Versace | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Strong | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss | sizes: brand 50ml=666EGP; brand 90ml=1019EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {}"
+}

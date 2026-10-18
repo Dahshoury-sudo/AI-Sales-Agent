@@ -1,0 +1,62 @@
+{
+  "scores": {
+    "intent_understanding": 7,
+    "constraint_extraction": 8,
+    "memory": 7,
+    "recommendation_quality": 2,
+    "similarity_accuracy": null,
+    "product_accuracy": 1,
+    "confidence_calibration": 2,
+    "objection_handling": 2,
+    "sales_effectiveness": 2,
+    "closing_timing": null,
+    "human_feel": 7,
+    "trust": 1
+  },
+  "what_worked": [
+    "Agent correctly noted the customer's wish for original liquid (captured requires_original_liquid) and kept asking whether a mix is acceptable: \"لو مناسب ليك التركيب أقدر أساعدك تختار.\"",
+    "Tone and language felt natural Egyptian and conversational rather than robotic."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "data",
+      "what": "Claimed there are no original bottles at all in store",
+      "why_wrong": "STORE-CONFIGURED FACTS and DATABASE FACTS state that some perfumes have \"زجاجات أوريجينال\" and the database lists explicit original sizes/stock (e.g., Afnan 9PM original 100ml=881EGP stock=27; Dior Homme Sport and Stronger With You also list original sizes). Saying 'مش متوفر عندنا عطر أصلي من تصنيع البراند' contradicts supported facts.",
+      "expected": "Admit that the store mainly sells mixes but accurately state which perfumes DO have 'زجاجات أوريجينال' (or at least check specific names) and offer any original that fits constraints (e.g., Afnan 9PM original 100ml at 881EGP) or clearly say none if truly none match."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "Ignored the customer's explicit refusals and failed to offer valid designer originals that match constraints",
+      "why_wrong": "Customer excluded Dior and demanded original liquids under 1500. The agent didn't propose any non-Dior original-brand options (for example Afnan 9PM original 100ml is in the database at 881EGP and fits the customer's constraints), instead repeated a blanket denial and offered mixes.",
+      "expected": "From the remaining stocked designers (excluding Dior), propose concrete originals that meet the budget (name, size, price), or if none exist, state that plainly and offer one controlled relaxation (e.g., allow mix in original bottle or accept a different brand)."
+    },
+    {
+      "severity": "high",
+      "category": "trust",
+      "what": "Presented a definitive factual negative without calibration or sourcing",
+      "why_wrong": "Agent framed availability as absolute and final despite store facts that allow some original bottles; this is misleading and breaks trust.",
+      "expected": "Differentiate between company policy and stock: say 'احنا عادةً بنبيع تركيب لكن لبعض العطور متوفر زجاجات أورجينال — لو تحب اسمي لك اللي متوفرين أصلي هنشوفهم' or 'حالياً من اللي يحقق شرطك هـانعرض...' and cite a matching perfume if available."
+    },
+    {
+      "severity": "medium",
+      "category": "objection",
+      "what": "Failed to address the customer's objection sequence (two cumulative refusals)",
+      "why_wrong": "Customer refused store mixes and specifically the Dior house; agent treated the refusals but then continued discussion as if only Dior exclusion remained and offered mixes. The correct approach is to honor both refusals and present alternatives that satisfy both (designer originals not Dior).",
+      "expected": "Acknowledge both refusals explicitly and respond with acceptable options (e.g., 'تمام — يعني عايز براند أصلي، ومش Dior — من غير قيود تانية، أفضل حاجة تحت 1500 عندنا حالياً هي...')."
+    },
+    {
+      "severity": "low",
+      "category": "recommendation",
+      "what": "Missed chance to move sale forward",
+      "why_wrong": "After the customer asked 'ايه احسن حاجة عندك' the agent only asked again if mixes are OK instead of naming the best matching original item.",
+      "expected": "Offer a clear recommendation (name + size + price) of an original that fits constraints, and ask a soft next-step question (e.g., 'تحب أحجزلك زجاجة؟')."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable as-is: the agent misstated availability of originals and failed to offer valid non-Dior original options (e.g., Afnan 9PM). A senior sales manager would require correction, an accurate offer of matching originals, and a clear respectful acknowledgement of the customer's refusals.",
+  "id": "F4",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 3.9
+}

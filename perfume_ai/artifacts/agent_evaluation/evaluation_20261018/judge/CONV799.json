@@ -1,0 +1,62 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 2,
+    "recommendation_quality": 1,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 2,
+    "objection_handling": null,
+    "sales_effectiveness": 2,
+    "closing_timing": null,
+    "human_feel": 3,
+    "trust": 2
+  },
+  "what_worked": [
+    "Agent used polite Egyptian Arabic phrasing: \"ممكن تكتب لي اسم العطر تاني بشكل أوضح يا فندم؟\"",
+    "Agent asked for clarification rather than inventing an answer."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Ignored the customer's chase 'اتأكدلي منه' and repeated the same clarification request",
+      "why_wrong": "The customer explicitly asked the agent to 'check' the perfume they already named (الكساندريا 2). The agent should have treated that as a request for a definitive availability answer, not ask again for the name.",
+      "expected": "Plainly state that 'الكساندريا 2' is not in the catalogue (echoing the Arabic name), apologize briefly, and immediately offer one or two stocked alternatives by full name as different perfumes."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Failed to follow the store-required denial-and-offer flow",
+      "why_wrong": "Store rules require a clear denial if the named perfume isn't carried and to offer alternatives in the same reply. The agent did neither, leaving the customer waiting.",
+      "expected": "Provide the required denial and suggest stocked perfumes in the same turn; never say 'لحظة أتأكدلك' or imply a lookup will happen after the customer asked to check."
+    },
+    {
+      "severity": "high",
+      "category": "memory",
+      "what": "Asked for information the customer already provided",
+      "why_wrong": "Customer named the perfume; asking again violates rule 7 and signals poor attention to the chat history.",
+      "expected": "Use the name the customer already gave; if unclear, echo it and state the catalogue check result immediately."
+    },
+    {
+      "severity": "medium",
+      "category": "sales",
+      "what": "Missed opportunity to move the sale forward",
+      "why_wrong": "Customer is in product_info/recommendation stage and explicitly requested a check. The agent neither confirmed availability nor offered alternatives, so no progress toward purchase was made.",
+      "expected": "Either confirm availability/prices for that exact stocked product (if in database) or deny and recommend suitable stocked options to keep the sale alive."
+    },
+    {
+      "severity": "low",
+      "category": "human_feel",
+      "what": "Repetitive phrasing felt robotic",
+      "why_wrong": "The agent repeated nearly identical lines across turns which reduces natural conversational feel.",
+      "expected": "If clarification is truly needed, vary phrasing and acknowledge the previous message: e.g., \"باشكر حضرتك، اسم العطر اللي حضرتك قلت عليه 'الكساندريا 2'؟ هأأكد لحضرتك إن كان عندنا أو لا، ولو مش عندنا أقول لحضرتك بدائل فوراً.\""
+    }
+  ],
+  "salesperson_verdict": "Unacceptable: a senior salesperson would not repeat a clarification when the customer already asked to 'check' a named perfume. This turn fails to deny/offer as required and leaves the customer waiting — not acceptable on the sales floor.",
+  "id": "CONV799",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 2.6666666666666665
+}

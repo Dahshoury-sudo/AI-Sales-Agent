@@ -1,0 +1,69 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 1,
+    "recommendation_quality": 0,
+    "similarity_accuracy": null,
+    "product_accuracy": 1,
+    "confidence_calibration": 1,
+    "objection_handling": null,
+    "sales_effectiveness": 1,
+    "closing_timing": null,
+    "human_feel": 2,
+    "trust": 1
+  },
+  "what_worked": [
+    "Agent used polite Egyptian phrasing like 'يا فندم' and asked for clarification in a courteous tone: 'ممكن توضح لي اسم العطر ... عايز أتأكد بالظبط.'",
+    "Agent kept replies short and consistent (not long-winded)."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Failed to acknowledge the customer's clear question 'عندكو لادور بخور صح ؟' and later 'الكساندريا 2'.",
+      "why_wrong": "Customer explicitly asked about specific perfumes by name. The agent repeatedly asked for clarification instead of treating the names as valid search queries. The scenario requires a plain denial (if not in catalogue) and offering stocked alternatives in the same reply.",
+      "expected": "Immediately confirm whether 'لادور بخور' / 'الكساندريا 2' are in stock. If not stocked, apologize briefly, echo the name in the same Arabic letters, and in the same reply offer one or two stocked, different perfumes by full name (e.g., 'Dior Homme Sport', 'Bleu de Chanel')."
+    },
+    {
+      "severity": "critical",
+      "category": "data",
+      "what": "Promised to 'check' implicitly by repeating 'ممكن توضح' and thereby created an expectation of lookup.",
+      "why_wrong": "System guarantees that the catalogue was already searched before replying. Promising to check (or implying you will) is forbidden and leaves the customer waiting for a non-existent follow-up.",
+      "expected": "Do not promise to check. State the result of the catalogue search immediately (available / not available) and propose alternatives."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "No alternatives offered after denying or failing to confirm availability.",
+      "why_wrong": "Customer came to buy. A bare request for clarification that never resolves leaves the sale cold. Conversation required naming stocked alternatives with incense notes (Dior Homme Sport or Bleu de Chanel).",
+      "expected": "If perfume not stocked, offer stocked perfumes that match the requested note and state they are different perfumes by full name."
+    },
+    {
+      "severity": "high",
+      "category": "memory",
+      "what": "Failed to carry forward the original subject across turns.",
+      "why_wrong": "Turn 2 and 3 repeat the same clarification instead of answering based on turn 1 input. The customer's ask in turn 2 'طب اتأكدلي' referred to the initial 'لادور بخور' and should have been answered using the previous search result.",
+      "expected": "Keep the original item as the current subject and respond with the search outcome rather than re-asking for the same info."
+    },
+    {
+      "severity": "medium",
+      "category": "human",
+      "what": "Repetitive, robotic replies — identical phrasing across turns.",
+      "why_wrong": "Record shows agent reply is 96% identical to an earlier one; this feels automated and frustrates customers.",
+      "expected": "Use varied, concise responses and move the conversation forward (deny/confirm + alternatives)."
+    },
+    {
+      "severity": "medium",
+      "category": "trust",
+      "what": "Did not clarify product nature or store facts when relevant.",
+      "why_wrong": "Although the agent did not state false facts, failing to state supported shop facts (e.g., we sell تركيب and sizes available) when relevant missed an opportunity to build trust after denying availability.",
+      "expected": "After denying availability, briefly state relevant store facts (we sell تركيب, sizes 50/90 available) and offer to show alternatives or place an order."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable. A senior sales manager would not accept these turns — the agent should have immediately confirmed availability (or denied) for the named perfumes, apologised, and offered stocked incense alternatives by full name in the same reply.",
+  "id": "CONV795",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 1.1111111111111112
+}

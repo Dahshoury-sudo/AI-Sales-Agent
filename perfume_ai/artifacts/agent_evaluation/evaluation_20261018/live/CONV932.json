@@ -1,0 +1,475 @@
+{
+  "id": "CONV932",
+  "category": "regression",
+  "persona": "hard_budget",
+  "probe": "Replay of conversation 932. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. There is no women's Versace at any price, so the search on turn 2 correctly matches nothing. Twelve products match women's under 1200 once the brand is dropped, and EVERY size of all twelve is under 1200 — nine women's (Coco Mademoiselle 534/1006, Bloom 549/1067, Libre 561/927, Flowerbomb 577/928, Good Girl 650/1083, La Vie Est Belle 669/1046, Black Opium 677/883, Light Blue 691/852, Chloe Eau de Parfum 692/1058) and three unisex (Oud Wood 540/1160, Ombre Leather 592 or 700 for 50ml / 873 for 90ml / 1000 for 100ml, Baccarat Rouge 540 at 686/1136). ✅ Required on turn 2: name the actual reason nothing matched — Versace's only perfume here is a men's — and offer a way forward. Either half of the real offer is correct: Eros as a men's Versace, or a women's perfume from another brand. ❌ CRITICAL on turn 2: blaming the budget. 1200 covers both Eros sizes and every one of the twelve alternatives; the brand-and-gender pair is what emptied the search. Turns 3, 4 and 5 are the customer ACCEPTING the second option. 'شوفلي طيب اي حاجه حريمي تانيه', 'من براند تاني حريمي' and 'يعم منا قولت من براند تاني حريمي' all mean the same thing: drop Versace, keep women's. Turn 5 says so with visible irritation at having to repeat it. There is no ambiguity to resolve on any of these turns. ✅ Required on turns 3, 4 and 5: actual women's perfumes named, with their real prices, from the list above. A recommendation, not another question. ❌ CRITICAL: re-offering the same either/or after the customer has chosen one of its options — 'تحب من نفس البراند بس رجالي، ولا من براند تاني حريمي؟' or any rewording of it. Asking a question the customer has just answered is the whole bug, and it is a finding on turn 3 as much as on turn 5. ❌ CRITICAL: saying nothing matches, nothing is available, or that these are all the options, on any of turns 3, 4 and 5. Twelve products match once the brand is dropped. ❌ CRITICAL: still treating Versace as a requirement after turn 3 — offering Eros as though it were a women's perfume, or explaining again that Versace has no women's line. The customer stopped asking for Versace on turn 3 and never asked again. ❌ CRITICAL: re-asking the budget on any turn after turn 2. It is 1200 and it was given in one word. ✅ Allowed: asking about notes or an occasion INSTEAD of recommending, but only once and only if it does not repeat the brand/gender question — with twelve matches in hand, naming two or three of them is the better reply and the one being graded for. ❌ Never quote a price for any perfume that is not one of the figures above.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز حاجه حريمي من فيرزاتشي",
+      "reply": "حالياً مفيش عندنا عطور حريمي من فيرزاتشي، تحب أشوف لك نفس النوع بس من غير تحديد رجالي أو حريمي؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": "Versace",
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "Versace",
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 43,
+      "context": "PENDING_RELAX: gender=female|brand=Versace\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "1200",
+      "reply": "ما عندناش عطور نسائية من فيرزاتشي دلوقتي، بس ممكن أشوف لك نفس البراند بدون تحديد نوع، أو أجيب لك حاجة من براند تاني لو تحب.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": {
+        "max_price": 1200
+      },
+      "merged_intent": {
+        "max_price": 1200,
+        "gender": "female",
+        "brand": "Versace"
+      },
+      "pending_relax": {
+        "gender": "female",
+        "brand": "Versace"
+      },
+      "stage": "recommendation",
+      "search": {
+        "matched": [],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 43,
+      "context": "PENDING_RELAX: gender=female|brand=Versace\n",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "شوفلي طيب اي حاجه حريمي تانيه",
+      "reply": "قولي ذوقك، بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية؟ ولا عود؟ أو الحاجات المسكرة أكتر؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "brand",
+          "max_price"
+        ]
+      },
+      "merged_intent": {
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "brand",
+          "max_price"
+        ]
+      },
+      "pending_relax": {
+        "gender": "female",
+        "brand": "Versace"
+      },
+      "stage": "discovery",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "من براند تاني حريمي",
+      "reply": "🔹 Jasmino عطر تركيب حصري من تصميمنا، ريحته شرقية ناعمة وفيها ياسمين وتوبيروز وفانيليا، مناسب للاستخدام اليومي وهادي.\n\n🔹 Libre من Yves Saint Laurent، ريحته غريبة وقوية مع مزيج من اللافندر والبرغموت والفانيليا، مناسب للمناسبات الرسمية.\n\nأنا أرشحلك Jasmino أكتر لو بتحب الريحة الهادية والدافية، أما Libre فهو أقوى وفخم أكتر.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "bottle_type": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "bottle_type": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": {
+        "matched": [
+          "Coco Mademoiselle",
+          "Oud Wood",
+          "Bloom",
+          "Libre",
+          "Flowerbomb",
+          "Jasmino",
+          "Tom Ford Ombre Leather",
+          "Citrolo",
+          "Vanilo",
+          "Good Girl",
+          "La Vie Est Belle",
+          "Black Opium"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 9670,
+      "context": "\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP\n- الـ 90 ملي: 1006.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP\n- الـ 90 ملي: 1067.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP\n- الـ 90 ملي: 927.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP\n- الـ 90 ملي: 928.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n\nName (الاسم الصحيح): Tom Ford Ombre Leather\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 592.00 EGP\n- الـ 90 ملي: 873.00 EGP\n- زجاجة أوريجينال 50 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall & Winter\nOccasion: Evening, Dates, Special occasions\nLongevity: 8–12 hrs\nProjection: Strong\nTop Notes: Cardamom\nMiddle Notes: Leather, Jasmine Sambac\nBase Notes: Amber, Moss, Patchouli\nDescription: Rich leather with a smooth luxurious feel.\n\n-------------------------\n\nName (الاسم الصحيح): Citrolo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 598.00 EGP\n- الـ 90 ملي: 943.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: Spring/Summer\nOccasion: Daily\nLongevity: 5 hours\nProjection: Light\nTop Notes: Mandarin, Lemon, Bergamot\nMiddle Notes: Orange Blossom, Freesia, Jasmine\nBase Notes: White Musk, Blonde Woods\nDescription: A sunny, uplifting blend of citrus and white flowers. Light and effortless, it's designed for everyday wear when you want a fresh, clean signature scent.\n\n-------------------------\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP\n- الـ 90 ملي: 897.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "يعم منا قولت من براند تاني حريمي",
+      "reply": "لو بتدور على عطر يومي شرقي ناعم، Jasmino هو الاختيار المناسب ليك، ريحته هادية وأنيقة تناسب كل الأوقات. أما لو محتاج عطر رسمي وفخم، Libre بيقدم لك مزيج قوي يناسب السهرات والمناسبات الخاصة. أنا أرشحلك Jasmino أكتر لو حابب حاجة مريحة وأنيقة في نفس الوقت.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "bottle_type": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "exclude_brands": [
+          "Versace"
+        ],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "bottle_type": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": {
+        "matched": [
+          "Libre",
+          "Jasmino",
+          "Coco Mademoiselle",
+          "Bloom",
+          "Flowerbomb",
+          "Citrolo",
+          "Good Girl",
+          "La Vie Est Belle",
+          "Black Opium",
+          "Light Blue",
+          "Chloe Eau de Parfum",
+          "Oud Wood"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Libre": {
+            "score": 3.5,
+            "reasons": [
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Jasmino": {
+            "score": 3.5,
+            "reasons": [
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Bloom": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Flowerbomb": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Citrolo": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Good Girl": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "La Vie Est Belle": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Black Opium": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Chloe Eau de Parfum": {
+            "score": 3.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 0.0,
+            "reasons": [],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [
+        "Jasmino",
+        "Libre"
+      ],
+      "dropped": {},
+      "offered": [
+        "Jasmino",
+        "Libre"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 9605,
+      "context": "\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP\n- الـ 90 ملي: 927.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP\n- الـ 90 ملي: 1006.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 549.00 EGP\n- الـ 90 ملي: 1067.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Jasmine Sambac, Tuberose\nMiddle Notes: Rangoon Creeper\nBase Notes: Sandalwood, Musk\nDescription: A rich white floral fragrance inspired by an English garden\n\n-------------------------\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP\n- الـ 90 ملي: 928.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n\nName (الاسم الصحيح): Citrolo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 598.00 EGP\n- الـ 90 ملي: 943.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: Spring/Summer\nOccasion: Daily\nLongevity: 5 hours\nProjection: Light\nTop Notes: Mandarin, Lemon, Bergamot\nMiddle Notes: Orange Blossom, Freesia, Jasmine\nBase Notes: White Musk, Blonde Woods\nDescription: A sunny, uplifting blend of citrus and white flowers. Light and effortless, it's designed for everyday wear when you want a fresh, clean signature scent.\n\n-------------------------\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP\n- الـ 90 ملي: 852.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n\nName (الاسم الصحيح): Chloe Eau de Parfum\nBrand: Chloe\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chloe) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 692.00 EGP\n- الـ 90 ملي: 1058.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Peony, Lychee, Freesia\nMiddle Notes: Rose, Magnolia, Lily\nBase Notes: Amber, Musk, Cedar\nDescription: A romantic, powdery-floral fragrance with rose at its heart\n\n-------------------------\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "gender": "female",
+    "exclude_brands": [
+      "Versace"
+    ]
+  },
+  "seconds": 69.8,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV932 — category: regression — persona: hard_budget\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 932. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. There is no women's Versace at any price, so the search on turn 2 correctly matches nothing. Twelve products match women's under 1200 once the brand is dropped, and EVERY size of all twelve is under 1200 — nine women's (Coco Mademoiselle 534/1006, Bloom 549/1067, Libre 561/927, Flowerbomb 577/928, Good Girl 650/1083, La Vie Est Belle 669/1046, Black Opium 677/883, Light Blue 691/852, Chloe Eau de Parfum 692/1058) and three unisex (Oud Wood 540/1160, Ombre Leather 592 or 700 for 50ml / 873 for 90ml / 1000 for 100ml, Baccarat Rouge 540 at 686/1136). ✅ Required on turn 2: name the actual reason nothing matched — Versace's only perfume here is a men's — and offer a way forward. Either half of the real offer is correct: Eros as a men's Versace, or a women's perfume from another brand. ❌ CRITICAL on turn 2: blaming the budget. 1200 covers both Eros sizes and every one of the twelve alternatives; the brand-and-gender pair is what emptied the search. Turns 3, 4 and 5 are the customer ACCEPTING the second option. 'شوفلي طيب اي حاجه حريمي تانيه', 'من براند تاني حريمي' and 'يعم منا قولت من براند تاني حريمي' all mean the same thing: drop Versace, keep women's. Turn 5 says so with visible irritation at having to repeat it. There is no ambiguity to resolve on any of these turns. ✅ Required on turns 3, 4 and 5: actual women's perfumes named, with their real prices, from the list above. A recommendation, not another question. ❌ CRITICAL: re-offering the same either/or after the customer has chosen one of its options — 'تحب من نفس البراند بس رجالي، ولا من براند تاني حريمي؟' or any rewording of it. Asking a question the customer has just answered is the whole bug, and it is a finding on turn 3 as much as on turn 5. ❌ CRITICAL: saying nothing matches, nothing is available, or that these are all the options, on any of turns 3, 4 and 5. Twelve products match once the brand is dropped. ❌ CRITICAL: still treating Versace as a requirement after turn 3 — offering Eros as though it were a women's perfume, or explaining again that Versace has no women's line. The customer stopped asking for Versace on turn 3 and never asked again. ❌ CRITICAL: re-asking the budget on any turn after turn 2. It is 1200 and it was given in one word. ✅ Allowed: asking about notes or an occasion INSTEAD of recommending, but only once and only if it does not repeat the brand/gender question — with twelve matches in hand, naming two or three of them is the better reply and the one being graded for. ❌ Never quote a price for any perfume that is not one of the figures above.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز حاجه حريمي من فيرزاتشي\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"brand\": \"Versace\", \"gender\": \"female\"}\n[internal] shortlist_shown_to_model=[]\n[internal] similarity_summary=null\nAGENT: حالياً مفيش عندنا عطور حريمي من فيرزاتشي، تحب أشوف لك نفس النوع بس من غير تحديد رجالي أو حريمي؟\n\n--- TURN 2 ---\nCUSTOMER: 1200\n[internal] classified_as=order sales_stage=recommendation objection=None\n[internal] extracted_intent={\"max_price\": 1200, \"gender\": \"female\", \"brand\": \"Versace\"}\n[internal] shortlist_shown_to_model=[]\n[internal] similarity_summary=null\nAGENT: ما عندناش عطور نسائية من فيرزاتشي دلوقتي، بس ممكن أشوف لك نفس البراند بدون تحديد نوع، أو أجيب لك حاجة من براند تاني لو تحب.\n\n--- TURN 3 ---\nCUSTOMER: شوفلي طيب اي حاجه حريمي تانيه\n[internal] classified_as=recommendation sales_stage=discovery objection=None\n[internal] extracted_intent={\"exclude_brands\": [\"Versace\"], \"gender\": \"female\", \"clear_preferences\": [\"brand\", \"max_price\"]}\nAGENT: قولي ذوقك، بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية؟ ولا عود؟ أو الحاجات المسكرة أكتر؟\n\n--- TURN 4 ---\nCUSTOMER: من براند تاني حريمي\n[internal] classified_as=recommendation sales_stage=discovery objection=None\n[internal] extracted_intent={\"exclude_brands\": [\"Versace\"], \"gender\": \"female\"}\n[internal] shortlist_shown_to_model=['Coco Mademoiselle', 'Oud Wood', 'Bloom', 'Libre', 'Flowerbomb', 'Jasmino', 'Tom Ford Ombre Leather', 'Citrolo', 'Vanilo', 'Good Girl', 'La Vie Est Belle', 'Black Opium']\n[internal] similarity_summary=null\nAGENT: 🔹 Jasmino عطر تركيب حصري من تصميمنا، ريحته شرقية ناعمة وفيها ياسمين وتوبيروز وفانيليا، مناسب للاستخدام اليومي وهادي.\n\n🔹 Libre من Yves Saint Laurent، ريحته غريبة وقوية مع مزيج من اللافندر والبرغموت والفانيليا، مناسب للمناسبات الرسمية.\n\nأنا أرشحلك Jasmino أكتر لو بتحب الريحة الهادية والدافية، أما Libre فهو أقوى وفخم أكتر.\n\n--- TURN 5 ---\nCUSTOMER: يعم منا قولت من براند تاني حريمي\n[internal] classified_as=recommendation sales_stage=discovery objection=None\n[internal] extracted_intent={\"exclude_brands\": [\"Versace\"], \"gender\": \"female\"}\n[internal] shortlist_shown_to_model=['Libre', 'Jasmino', 'Coco Mademoiselle', 'Bloom', 'Flowerbomb', 'Citrolo', 'Good Girl', 'La Vie Est Belle', 'Black Opium', 'Light Blue', 'Chloe Eau de Parfum', 'Oud Wood']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Libre\": {\"score\": 3.5, \"reasons\": [\"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Jasmino\": {\"score\": 3.5, \"reasons\": [\"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Bloom\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Flowerbomb\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Citrolo\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Good Girl\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"La Vie Est Belle\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Black Opium\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Light Blue\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Chloe Eau de Parfum\": {\"score\": 3.0, \"reasons\": [], \"mismatches\": []}, \"Oud Wood\": {\"score\": 0.0, \"reasons\": [], \"mismatches\": []}}\nAGENT: لو بتدور على عطر يومي شرقي ناعم، Jasmino هو الاختيار المناسب ليك، ريحته هادية وأنيقة تناسب كل الأوقات. أما لو محتاج عطر رسمي وفخم، Libre بيقدم لك مزيج قوي يناسب السهرات والمناسبات الخاصة. أنا أرشحلك Jasmino أكتر لو حابب حاجة مريحة وأنيقة في نفس الوقت.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Black Opium | brand=Yves Saint Laurent | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Orange Blossom | mid=Coffee, Jasmine | base=Vanilla, Patchouli, Cedar | sizes: brand 50ml=677EGP; brand 90ml=883EGP\n- Bloom | brand=Gucci | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Jasmine Sambac, Tuberose | mid=Rangoon Creeper | base=Sandalwood, Musk | sizes: brand 50ml=549EGP; brand 90ml=1067EGP\n- Chloe Eau de Parfum | brand=Chloe | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Peony, Lychee, Freesia | mid=Rose, Magnolia, Lily | base=Amber, Musk, Cedar | sizes: brand 50ml=692EGP; brand 90ml=1058EGP\n- Citrolo | brand=Perfamix | gender=female | type=oriental | season=Spring/Summer | occasion=Daily | longevity=5 hours | projection=Light | top=Mandarin, Lemon, Bergamot | mid=Orange Blossom, Freesia, Jasmine | base=White Musk, Blonde Woods | sizes: brand 50ml=598EGP; brand 90ml=943EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Moderate | top=Orange, Bergamot, Mandarin | mid=Jasmine, Rose, Mimosa | base=Patchouli, Vetiver, Vanilla | sizes: brand 50ml=534EGP; brand 90ml=1006EGP\n- Flowerbomb | brand=Viktor & Rolf | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Strong | top=Bergamot, Tea | mid=Jasmine, Orchid, Freesia | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=577EGP; brand 90ml=928EGP\n- Good Girl | brand=Carolina Herrera | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Almond, Coffee, Bergamot | mid=Tuberose, Jasmine | base=Tonka Bean, Cacao, Vanilla | sizes: brand 50ml=650EGP; brand 90ml=1083EGP\n- Jasmino | brand=Perfamix | gender=female | type=oriental | season=All Seasons | occasion=Daily | longevity=7 hours | projection=Moderate | top=Bergamot, Green Notes, Mandarin | mid=Jasmine Sambac, Tuberose, Ylang Ylang | base=Sandalwood, White Musk, Vanilla | sizes: brand 50ml=578EGP; brand 90ml=1106EGP\n- La Vie Est Belle | brand=Lancome | gender=female | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Strong | top=Black Currant, Pear | mid=Iris, Jasmine, Orange Blossom | base=Praline, Vanilla, Patchouli | sizes: brand 50ml=669EGP; brand 90ml=1046EGP\n- Libre | brand=Yves Saint Laurent | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=8 hours | projection=Strong | top=Lavender, Mandarin, Ginger | mid=Orange Blossom, Jasmine | base=Vanilla, Musk, Cedar | sizes: brand 50ml=561EGP; brand 90ml=927EGP\n- Light Blue | brand=Dolce & Gabbana | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=5 hours | projection=Moderate | top=Sicilian Lemon, Apple, Cedar | mid=Bamboo, Jasmine, White Rose | base=Musk, Amber, Cedar | sizes: brand 50ml=691EGP; brand 90ml=852EGP\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n- Tom Ford Ombre Leather | brand=Tom Ford | gender=unisex | type=niche | season=Fall & Winter | occasion=Evening, Dates, Special occasions | longevity=8–12 hrs | projection=Strong | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=592EGP; brand 90ml=873EGP; original 50ml=700EGP stock=25; original 100ml=1000EGP stock=7\n- Vanilo | brand=Perfamix | gender=unisex | type=oriental | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Moderate | top=Cardamom, Orange Peel | mid=Tonka Bean, Praline, Cinnamon | base=Vanilla, Tobacco, Amber | sizes: brand 50ml=607EGP; brand 90ml=897EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"gender\": \"female\", \"exclude_brands\": [\"Versace\"]}"
+}

@@ -1,0 +1,8 @@
+{
+  "source": "F:\\Programming\\Projects\\Ai_Agent\\perfume_ai\\artifacts\\agent_evaluation\\evaluation_20261018\\judge",
+  "retried_malformed_ids": [
+    "CS1"
+  ],
+  "retry_reason": "Invalid or missing score dimensions; no scored verdict was replaced. All initial and retry costs are included.",
+  "cumulative_budget_usd": "1.00"
+}

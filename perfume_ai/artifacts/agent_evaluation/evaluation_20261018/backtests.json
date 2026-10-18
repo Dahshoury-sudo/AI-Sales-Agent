@@ -1,0 +1,14 @@
+[
+  {
+    "backtest": "backtest_placement",
+    "exit_code": 0
+  },
+  {
+    "backtest": "backtest_name_routing",
+    "exit_code": 1
+  },
+  {
+    "backtest": "backtest_praise",
+    "exit_code": 0
+  }
+]

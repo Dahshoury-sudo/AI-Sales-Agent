@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "intent_understanding": 8,
+    "constraint_extraction": 9,
+    "memory": 8,
+    "recommendation_quality": 8,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 8,
+    "objection_handling": 6,
+    "sales_effectiveness": 6,
+    "closing_timing": 5,
+    "human_feel": 6,
+    "trust": 8
+  },
+  "what_worked": [
+    "Agent correctly resolved the product to Afnan 9PM brand 90ml and listed the price as 1077 جنيه — matches DATABASE FACTS: \"brand 90ml=1077EGP\".",
+    "Agent added a clear cart line: \"1 × Afnan 9PM (90ml) بـ 1077 جنيه\" and presented an order summary (moves sale forward).",
+    "Agent requested necessary checkout details (name, two phone numbers, full address) which is appropriate for completing an order."
+  ],
+  "failures": [
+    {
+      "severity": "high",
+      "category": "human_feel",
+      "what": "Repeated vague clarification questions earlier: 'تقصد أنهي عطر؟' multiple times.",
+      "why_wrong": "Customer already referenced specific names (Ambero, Afnan 9PM) and later asked for the first/second price; asking the same clarification repeatedly feels robotic and frustrates customers.",
+      "expected": "A senior salesperson would stop repeating the same clarification, infer the referenced products from the conversation, and answer directly or ask a single precise clarifying question if necessary."
+    },
+    {
+      "severity": "medium",
+      "category": "objection",
+      "what": "Handled the customer's price objection ('مش قولت بـ990؟') by only restating the current price without acknowledging the customer's confusion or explaining next steps.",
+      "why_wrong": "Customer explicitly challenged an earlier price (990). The HARD RULES say acknowledge an earlier error only if catalogue evidence proves one; there is no catalogue price of 990, so the agent should have calmly explained that current catalogue price is 1077 and offered to check where the 990 came from (promo, previous message, external site) or show proof (screenshot link or note). Simply repeating the price misses an opportunity to reduce friction.",
+      "expected": "Say clearly: 'السعر عندنا في الكاتالوج الآن 1077 جنيه للـ90 مل. لو حضرتك شفت 990 من عندنا في رسالة سابقة أبعتلي إلها وهراجعها، أو لو من مكان تاني ممكن يكون عرض قديم/مختلف.' Offer to show catalogue evidence or next steps."
+    },
+    {
+      "severity": "medium",
+      "category": "closing_timing",
+      "what": "Requested full checkout details (address, two phone numbers) before resolving the customer's price challenge.",
+      "why_wrong": "Customer was objecting to price; pressing for contact/address before resolving the objection can erode trust and may feel pushy.",
+      "expected": "Resolve the price objection first (explain and show catalogue price), then proceed to request payment/ contact details once the customer accepts the price."
+    },
+    {
+      "severity": "low",
+      "category": "sales",
+      "what": "Did not offer alternatives or reassurance when the customer questioned the price.",
+      "why_wrong": "When a buyer suspects a lower price, a good salesperson either confirms the correct price and offers alternatives (other sizes, 50ml at 508, or explain offers) or proposes payment terms (deposit info) to keep momentum.",
+      "expected": "After confirming 1077, agent could mention the 50ml option at 508 EGP, or explain deposit options from STORE-CONFIGURED FACTS to ease conversion."
+    },
+    {
+      "severity": "low",
+      "category": "human_feel",
+      "what": "Tone was functional but a bit mechanical; lacked a brief empathetic phrase when the customer objected.",
+      "why_wrong": "Simple empathy like 'فاهم إن السعر متغير، خليني أوضحلك' would defuse tension.",
+      "expected": "Use short Egyptian-friendly reassurance and an offer to help."
+    }
+  ],
+  "salesperson_verdict": "Acceptable but improvable: the agent correctly identified the product and used catalogue pricing (1077 EGP) and progressed to checkout, but the repetitive clarification, weak handling of the customer's price objection, and requesting full details before resolving the dispute are flaws a floor manager would expect corrected.",
+  "id": "CONV1069",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 7.454545454545454
+}
