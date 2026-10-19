@@ -1,0 +1,70 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 2,
+    "memory": 1,
+    "recommendation_quality": 3,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 3,
+    "objection_handling": null,
+    "sales_effectiveness": 3,
+    "closing_timing": null,
+    "human_feel": 6,
+    "trust": 2
+  },
+  "what_worked": [
+    "Quoted correct prices for Stronger With You: 50ml 400 جنيه and 90ml 700 جنيه (matches DATABASE FACTS).",
+    "Mentioned availability of original bottles (100ml and 200ml) which aligns with the store-configured facts about original-stock lines.",
+    "Used conversational Egyptian phrasing ('حضرتك قصدك') which feels natural."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Did not follow the required first-reply handling for 'لادور بخور'.",
+      "why_wrong": "Customer asked 'عندك لادور بخور ؟' and the store had already searched catalogue and found 'لادور بخور' is not in stock (scenario requirement). Agent asked for the name again instead of plainly saying 'لادور بخور مش عندنا' with a short apology and offering one or two stocked perfumes as alternatives.",
+      "expected": "Say plainly that 'لادور بخور' is not carried (use the customer's Arabic spelling), apologize briefly, and immediately offer one or two named stocked perfumes as alternatives."
+    },
+    {
+      "severity": "critical",
+      "category": "memory",
+      "what": "Failed to keep or honor the promise/obligation about 'لادور بخور'.",
+      "why_wrong": "Turn 1 left the customer's question unresolved. Turn 2 drops the topic entirely and never states that 'لادور بخور' is unavailable — leaving an open promise. Scenario explicitly treats dropping that promise as critical.",
+      "expected": "Either state 'لادور بخور مش عندنا، آسفين' in turn 1 or, if asking to clarify, in the immediate next reply confirm availability; never drop the pending availability question silently."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "Misinterpreted 'بكام لااتنين ؟' and priced only one perfume.",
+      "why_wrong": "The customer asked 'بكام لااتنين ؟' referring to the two perfumes the agent should have offered previously. The agent responded with one perfume (Stronger With You) and its prices. The scenario mandates that when customer asks price for 'the two', both previously-offered perfumes must be priced. Pricing only one is the exact regression flagged.",
+      "expected": "If customer asks 'بكام الاتنين؟' provide separate price lines for each of the two perfumes that were offered in the previous reply. Do not sum or avoid one."
+    },
+    {
+      "severity": "high",
+      "category": "recommendation",
+      "what": "Offered Stronger With You instead of offering the two correct alternatives (Dior Homme Sport and Bleu de Chanel).",
+      "why_wrong": "Scenario expected the agent to offer Dior Homme Sport and Bleu de Chanel as alternatives to the unavailable 'لادور بخور'. Agent offered only Stronger With You, which does not match the required alternatives.",
+      "expected": "Offer the specific stocked perfumes (full names) required by the scenario, or if choosing other suggestions, ensure they match customer's intent and explain why."
+    },
+    {
+      "severity": "medium",
+      "category": "trust",
+      "what": "Asked for a clearer spelling of the name instead of confirming non-availability.",
+      "why_wrong": "Customer wrote the name clearly in Arabic. The agent asked for it again rather than using the store search result (which was already done) to confirm absence. That creates doubt and wastes customer's time.",
+      "expected": "Use the catalogue search result: if perfume absent, state that clearly. Only ask for clarification when the name is genuinely ambiguous."
+    },
+    {
+      "severity": "low",
+      "category": "confidence",
+      "what": "Presented the single suggestion and prices without acknowledging uncertainty about whether that was what the customer meant by 'الاتنين'.",
+      "why_wrong": "Agent asked 'حضرتك قصدك عطر Stronger With You؟' then proceeded as if confirmed; but the broader conversation context required pricing two previously-offered items. This shows poor confirmation and calibration to the customer's intent.",
+      "expected": "Confirm which two perfumes the customer means if there is any ambiguity, or better, ensure the previous reply offered two named items so 'الاتنين' unambiguously refers to them."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable. This turn fails critical scenario requirements (didn't say 'لادور بخور' is unavailable, dropped the promise, and answered pricing for only one perfume). As a sales manager I would ask the agent to redo the reply: clearly confirm non-availability of 'لادور بخور', name two stocked alternatives, and when asked 'بكام الاتنين' give prices for both items separately.",
+  "id": "CONV841",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 3.4444444444444446
+}

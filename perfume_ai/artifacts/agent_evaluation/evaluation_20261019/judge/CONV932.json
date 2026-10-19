@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "intent_understanding": 6,
+    "constraint_extraction": 7,
+    "memory": 8,
+    "recommendation_quality": 6,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 8,
+    "objection_handling": 2,
+    "sales_effectiveness": 6,
+    "closing_timing": null,
+    "human_feel": 6,
+    "trust": 6
+  },
+  "what_worked": [
+    "Agent correctly told the customer that there are no women's Versace perfumes in the catalogue: \"معندناش عطور حريمي من فيرزاتشي دلوقتي\" (turn 1/2).",
+    "Agent provided concrete alternative product recommendations with exact prices drawn from the database (e.g. \"Coco Mademoiselle — زجاجة البراند 50 ملي بـ534.00 جنيه\", \"Bloom — زجاجة البراند 50 ملي بـ549.00 جنيه\").",
+    "Product facts, prices and longevity/projection claims used (Coco Mademoiselle, Bloom, Libre, Oud Wood) match the DATABASE FACTS, so product_accuracy is strong."
+  ],
+  "failures": [
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "Repeated the same recommendation after the customer clearly asked to drop Versace and asked for 'من براند تاني حريمي'.",
+      "why_wrong": "Customer already switched to 'براند تاني حريمي' on turn 3 and repeated this on turns 4–5. Repeating the same two-item suggestion (Bloom + Libre) verbatim on turn 5 without acknowledging the customer's irritation is poor sales practice and was flagged as a deterministic repeated_reply.",
+      "expected": "A senior salesperson would acknowledge the customer's repeated request, apologise for any confusion, and present a fresh set of female alternatives (naming 2–3 different suitable perfumes with prices) or ask a single clarifying question about notes/occasion only once."
+    },
+    {
+      "severity": "critical",
+      "category": "ux",
+      "what": "Identical repeated reply (turn 3 vs turn 5).",
+      "why_wrong": "The system's deterministic finding shows the reply on turn 5 is 100% identical to an earlier one; after the customer expressed impatience the agent should not send the same message again — it feels robotic and ignores the customer's clear instruction.",
+      "expected": "Change wording, acknowledge the customer's repetition, and offer different/expanded options or a concise apology and next step."
+    },
+    {
+      "severity": "medium",
+      "category": "recommendation",
+      "what": "Included a unisex niche perfume (Oud Wood) in the first set when user explicitly asked for 'حريمي'.",
+      "why_wrong": "Customer requested female perfumes. While some unisex items are acceptable, presenting Oud Wood (unisex niche) alongside a female perfume without noting its unisex nature can cause mismatch with the stated gender preference.",
+      "expected": "Prefer female-labelled perfumes when the customer explicitly says 'حريمي'. If offering unisex, clearly flag it as unisex and why it might suit her."
+    },
+    {
+      "severity": "medium",
+      "category": "objection",
+      "what": "Did not acknowledge customer frustration or apologise when asked repeatedly.",
+      "why_wrong": "Customer's 'يعم منا قولت من براند تاني حريمي' shows irritation. Agent ignored tone and repeated same suggestions without empathy, missing an opportunity to defuse and retain trust.",
+      "expected": "Acknowledge frustration (“آسف على الإزعاج، حقك عليا”) then offer quick, new options meeting the constraints."
+    },
+    {
+      "severity": "low",
+      "category": "intent",
+      "what": "On turn 2 the agent asked again whether to search Versace with unspecified gender rather than offering the immediate available facts (Versace Eros exists here as men's).",
+      "why_wrong": "Customer gave a budget and clear 'حريمي' preference; agent should have immediately said 'عندنا Versace بس Eros رجالي — لو تحب أجيبلك حريمي من ماركات تانية أقدر أطلع لك ...' or directly offered alternatives.",
+      "expected": "State the real reason nothing matched (Versace's only entry here is men's Eros) and propose a forward path (either offer Eros as men's or list women's from other brands)."
+    }
+  ],
+  "salesperson_verdict": "Would not accept as-is. The agent had correct product facts and gave valid alternatives, but repeated identical replies, failed to acknowledge customer irritation, and sometimes offered a unisex niche option without clear flagging. Needs coaching on empathy, avoiding repetition, and sticking to the customer's stated gender preference.",
+  "id": "CONV932",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 6.4
+}

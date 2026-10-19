@@ -1,0 +1,909 @@
+{
+  "id": "CONV997",
+  "category": "regression",
+  "persona": "indecisive",
+  "probe": "Replay of conversation 997. It offered four different pairs of perfumes across seven turns (eight perfumes) while the customer never rejected anything. Turn 5 answered the bot own narrowing question with two perfumes that were neither option. Turn 7 dropped Le Male (50ml=623) on the turn the customer said they had 800. The conversation must stay on the same perfumes, converge to ONE when the customer answers a narrowing question, and state why any perfume stopped qualifying instead of swapping it silently.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز برفان ثابت وفواح بس مش لدرجه انه يخنق يعني",
+      "reply": "XJ 1861 Naxos من Xerjoff ثابت 10 ساعات وفوحانه قوي، وفي نفس الوقت ريحته مش خانقة وخفيف، وكمان ينفع للراجل وللست. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟ \nولو حابب، في Baccarat Rouge 540 كمان، ثابت 9 ساعات وفواح قوي، وينفع للراجل وللست برضه. \nأنا أرشحلك XJ 1861 Naxos أكتر لطلبك 👌.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [
+          "suffocating"
+        ],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [
+          "suffocating"
+        ],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "XJ 1861 Naxos",
+          "Good Girl",
+          "Y Eau de Parfum",
+          "Accento Overdose",
+          "Baccarat Rouge 540",
+          "Dior Homme Intense",
+          "Jasmino",
+          "Le Male",
+          "Green Irish Tweed",
+          "Invictus",
+          "Silver Mountain Water",
+          "Stronger With You"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "XJ 1861 Naxos": {
+            "score": 3.1,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (10 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Good Girl": {
+            "score": 2.6,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (8 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Y Eau de Parfum": {
+            "score": 2.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 2.45,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Baccarat Rouge 540": {
+            "score": 2.3,
+            "reasons": [
+              "ثباته بيطابق طلبه (9 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Dior Homme Intense": {
+            "score": 2.2,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (8 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Jasmino": {
+            "score": 2.15,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Le Male": {
+            "score": 2.15,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Green Irish Tweed": {
+            "score": 2.15,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Invictus": {
+            "score": 2.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Silver Mountain Water": {
+            "score": 2.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Stronger With You": {
+            "score": 1.65,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 11310,
+      "context": "\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (10 hours) | فوحانه بيطابق طلبه (Strong) | ينفع للراجل وللست\n\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong) | ينفع للراجل وللست\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong) | ينفع للراجل وللست\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية | ينفع للراجل وللست\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "راجل",
+      "reply": "لو بتدور على عطر ريحته قوية وثباته حوالي 7 ساعات، Y Eau de Parfum هو خيار ممتاز يناسبك تماماً، وريحته متوازنة مش تقيلة. \nلو حابب أضيف، XJ 1861 Naxos برضه ثابت وفواح أكتر وبيدي إحساس فاخر، لكن سعره أعلى شوية. \nأنا أنصحك بـ Y Eau de Parfum أكتر لأنه بيغطي طلبك بدقة وبسعر مناسب.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "avoid_traits": [
+          "suffocating"
+        ]
+      },
+      "merged_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "avoid_traits": [
+          "suffocating"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Y Eau de Parfum",
+          "Dior Homme Intense",
+          "Le Male",
+          "Green Irish Tweed",
+          "Invictus",
+          "Stronger With You",
+          "XJ 1861 Naxos",
+          "Baccarat Rouge 540",
+          "Accento Overdose",
+          "Afnan 9PM",
+          "Safrano",
+          "Dior Sauvage"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Y Eau de Parfum": {
+            "score": 5.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Dior Homme Intense": {
+            "score": 5.2,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (8 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Le Male": {
+            "score": 5.15,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Green Irish Tweed": {
+            "score": 5.15,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "Invictus": {
+            "score": 5.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Stronger With You": {
+            "score": 4.65,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه أقل من اللي طلبه شوية"
+            ]
+          },
+          "XJ 1861 Naxos": {
+            "score": 3.2,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (10 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Baccarat Rouge 540": {
+            "score": 2.4,
+            "reasons": [
+              "ثباته بيطابق طلبه (9 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 2.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Afnan 9PM": {
+            "score": 2.0,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–11 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Safrano": {
+            "score": 2.0,
+            "reasons": [
+              "ثباته بيطابق طلبه (11 hours)",
+              "فوحانه بيطابق طلبه (Very Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Dior Sauvage": {
+            "score": 1.95,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–10 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          }
+        }
+      },
+      "keeping": [
+        "Baccarat Rouge 540",
+        "XJ 1861 Naxos"
+      ],
+      "dropped": {},
+      "offered": [
+        "Baccarat Rouge 540",
+        "XJ 1861 Naxos"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 11130,
+      "context": "\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (10 hours) | فوحانه بيطابق طلبه (Strong) | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong) | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–11 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP\n- الـ 90 ملي: 1024.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | فوحانه بيطابق طلبه (Very Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "بكام دول",
+      "reply": "Y Eau de Parfum: Y Eau de Parfum — زجاجة البراند 90 ملي بـ900.00 جنيه.؛ Y Eau de Parfum — زجاجة البراند 50 ملي بـ594.00 جنيه.\n\nXJ 1861 Naxos: XJ 1861 Naxos — زجاجة البراند 90 ملي بـ5200.00 جنيه.؛ XJ 1861 Naxos — زجاجة البراند 50 ملي بـ2900.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 50 ملي بـ22000.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 100 ملي بـ40000.00 جنيه.\n\nBaccarat Rouge 540: Baccarat Rouge 540 — زجاجة البراند 90 ملي بـ1136.00 جنيه.؛ Baccarat Rouge 540 — زجاجة البراند 50 ملي بـ686.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 4012,
+      "context": "\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 11, \"variant_id\": 127, \"name\": \"Y Eau de Parfum\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"900.00\"}, {\"product_id\": 11, \"variant_id\": 126, \"name\": \"Y Eau de Parfum\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"594.00\"}, {\"product_id\": 44, \"variant_id\": 188, \"name\": \"XJ 1861 Naxos\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"5200.00\"}, {\"product_id\": 44, \"variant_id\": 187, \"name\": \"XJ 1861 Naxos\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"2900.00\"}, {\"product_id\": 44, \"variant_id\": 189, \"name\": \"XJ 1861 Naxos\", \"volume\": 50, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"22000.00\"}, {\"product_id\": 44, \"variant_id\": 190, \"name\": \"XJ 1861 Naxos\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"40000.00\"}, {\"product_id\": 16, \"variant_id\": 133, \"name\": \"Baccarat Rouge 540\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1136.00\"}, {\"product_id\": 16, \"variant_id\": 132, \"name\": \"Baccarat Rouge 540\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"686.00\"}], \"append\": false, \"text\": \"Y Eau de Parfum: Y Eau de Parfum — زجاجة البراند 90 ملي بـ900.00 جنيه.؛ Y Eau de Parfum — زجاجة البراند 50 ملي بـ594.00 جنيه.\\n\\nXJ 1861 Naxos: XJ 1861 Naxos — زجاجة البراند 90 ملي بـ5200.00 جنيه.؛ XJ 1861 Naxos — زجاجة البراند 50 ملي بـ2900.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 50 ملي بـ22000.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 100 ملي بـ40000.00 جنيه.\\n\\nBaccarat Rouge 540: Baccarat Rouge 540 — زجاجة البراند 90 ملي بـ1136.00 جنيه.؛ Baccarat Rouge 540 — زجاجة البراند 50 ملي بـ686.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "انا محتار بينهم ساعدني اختار",
+      "reply": "فاهم إنك محتار بين العطرين، ده طبيعي لأنهم مميزين. تحب ريحة أخف تناسب الاستخدام اليومي ولا أقوى تناسب السهرات والمناسبات؟",
+      "classification": "recommendation",
+      "objection": {
+        "kind": "cant_choose",
+        "matched": [
+          "محتار"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2823,
+      "context": "\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 900 جنيه، وسعر الـ 50 ملي 594 جنيه، والفرق بين الحجمين 306 جنيه، بس سعر الملي أرخص: 10.0 بدل 11.9 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 5200 جنيه، وسعر الـ 50 ملي 2900 جنيه، والفرق بين الحجمين 2300 جنيه، بس سعر الملي أرخص: 57.8 بدل 58.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "حاجه خفيفه لكل الاوقات",
+      "reply": "لو عايز حاجة خفيفة تناسب كل الأوقات، Dior Homme Intense هو الأنسب ليك لأنه ثابت وفوحانه متوسط بالضبط زي ما طلبت. \nلو حابب حاجة بنفس المواصفات بس بسعر أقل، Le Male برضه خيار جيد. \nأنا أميل لـ Dior Homme Intense أكتر لأنه بيغطي طلبك بشكل أدق.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "projection": "moderate",
+        "notes": [],
+        "similar_to": null,
+        "exclude_names": [],
+        "avoid_traits": [
+          "heavy",
+          "suffocating"
+        ],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "projection": "moderate",
+        "notes": [],
+        "similar_to": null,
+        "exclude_names": [],
+        "avoid_traits": [
+          "heavy",
+          "suffocating"
+        ],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Y Eau de Parfum",
+          "Dior Homme Intense",
+          "Le Male",
+          "Green Irish Tweed",
+          "Stronger With You",
+          "Invictus",
+          "XJ 1861 Naxos",
+          "Baccarat Rouge 540",
+          "Accento Overdose",
+          "Silver Mountain Water",
+          "Afnan 9PM",
+          "Safrano"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Y Eau de Parfum": {
+            "score": 6.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Dior Homme Intense": {
+            "score": 5.6,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (8 hours)",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": []
+          },
+          "Le Male": {
+            "score": 5.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": []
+          },
+          "Green Irish Tweed": {
+            "score": 5.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": []
+          },
+          "Stronger With You": {
+            "score": 5.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Invictus": {
+            "score": 5.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "XJ 1861 Naxos": {
+            "score": 3.2,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (10 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Baccarat Rouge 540": {
+            "score": 2.4,
+            "reasons": [
+              "ثباته بيطابق طلبه (9 hours)",
+              "فوحانه بيطابق طلبه (Strong)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 2.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Silver Mountain Water": {
+            "score": 2.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Afnan 9PM": {
+            "score": 2.0,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–11 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Safrano": {
+            "score": 2.0,
+            "reasons": [
+              "ثباته بيطابق طلبه (11 hours)",
+              "فوحانه بيطابق طلبه (Very Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          }
+        }
+      },
+      "keeping": [
+        "Baccarat Rouge 540",
+        "XJ 1861 Naxos",
+        "Y Eau de Parfum"
+      ],
+      "dropped": {},
+      "offered": [
+        "Baccarat Rouge 540",
+        "XJ 1861 Naxos",
+        "Y Eau de Parfum"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 10636,
+      "context": "\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\n⚠️ النوتات والثبات والفوحان والموسم والمناسبة مش معروضين للعطر ده هنا: ❌ ممنوع تقول ريحته فيها إيه، ولا تقيّم ثباته أو فوحانه، ولا تقول إنه مناسب لموسم أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من عندك، مش من البيانات.\nGender: male\nPerfume Type: عطور غربية\nDescription: A modern, intense fragrance for the confident and free-spirited man\n-----------------------\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Moderate)\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Moderate)\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Moderate)\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\n⚠️ النوتات والثبات والفوحان والموسم والمناسبة مش معروضين للعطر ده هنا: ❌ ممنوع تقول ريحته فيها إيه، ولا تقيّم ثباته أو فوحانه، ولا تقول إنه مناسب لموسم أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من عندك، مش من البيانات.\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n-----------------------\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Maison Francis Kurkdjian) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 686.00 EGP\n- الـ 90 ملي: 1136.00 EGP\n⚠️ النوتات والثبات والفوحان والموسم والمناسبة مش معروضين للعطر ده هنا: ❌ ممنوع تقول ريحته فيها إيه، ولا تقيّم ثباته أو فوحانه، ولا تقول إنه مناسب لموسم أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من عندك، مش من البيانات.\nGender: unisex\nPerfume Type: نيش\nDescription: A luminous, amber-floral signature scent with a saffron sparkle\n-----------------------\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–11 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP\n- الـ 90 ملي: 1024.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | فوحانه بيطابق طلبه (Very Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n",
+      "findings": []
+    },
+    {
+      "n": 6,
+      "user": "بكام دول طب",
+      "reply": "Dior Homme Intense: Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.؛ Dior Homme Intense — زجاجة البراند 90 ملي بـ1300.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 100 ملي بـ5500.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 200 ملي بـ9800.00 جنيه.\n\nLe Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2735,
+      "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 41, \"variant_id\": 171, \"name\": \"Dior Homme Intense\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"550.00\"}, {\"product_id\": 41, \"variant_id\": 173, \"name\": \"Dior Homme Intense\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1300.00\"}, {\"product_id\": 41, \"variant_id\": 174, \"name\": \"Dior Homme Intense\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"5500.00\"}, {\"product_id\": 41, \"variant_id\": 175, \"name\": \"Dior Homme Intense\", \"volume\": 200, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"9800.00\"}, {\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}, {\"product_id\": 18, \"variant_id\": 135, \"name\": \"Le Male\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"623.00\"}], \"append\": false, \"text\": \"Dior Homme Intense: Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.؛ Dior Homme Intense — زجاجة البراند 90 ملي بـ1300.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 100 ملي بـ5500.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 200 ملي بـ9800.00 جنيه.\\n\\nLe Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 7,
+      "user": "انا معايا 800 جنيه",
+      "reply": "Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.\nLe Male — زجاجة البراند 90 ملي بـ856.00 جنيه.\nLe Male — زجاجة البراند 50 ملي بـ623.00 جنيه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "max_price": 800.0
+      },
+      "merged_intent": {
+        "max_price": 800.0,
+        "gender": "male",
+        "longevity": "long-lasting",
+        "projection": "moderate",
+        "avoid_traits": [
+          "heavy",
+          "suffocating"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Dior Homme Intense",
+          "Le Male",
+          "Stronger With You",
+          "Invictus",
+          "Y Eau de Parfum",
+          "Afnan 9PM",
+          "Safrano",
+          "Dior Sauvage",
+          "Lattafa Asad",
+          "Bleu de Chanel",
+          "Leatherio",
+          "Aventus"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Dior Homme Intense": {
+            "score": 7.6,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (8 hours)",
+              "فوحانه بيطابق طلبه (Moderate)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Le Male": {
+            "score": 7.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Moderate)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Stronger With You": {
+            "score": 6.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Moderate)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Invictus": {
+            "score": 6.55,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته أقل من اللي طلبه شوية",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Y Eau de Parfum": {
+            "score": 5.05,
+            "reasons": [
+              "خفيف ومش خانق",
+              "ثباته بيطابق طلبه (7 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Afnan 9PM": {
+            "score": 3.5,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–11 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Safrano": {
+            "score": 3.5,
+            "reasons": [
+              "ثباته بيطابق طلبه (11 hours)",
+              "فوحانه بيطابق طلبه (Very Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Dior Sauvage": {
+            "score": 3.45,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–10 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Lattafa Asad": {
+            "score": 3.45,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–10 hrs)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Bleu de Chanel": {
+            "score": 3.45,
+            "reasons": [
+              "ثباته بيطابق طلبه (8–10 hrs)",
+              "فوحانه بيطابق طلبه (Moderate–Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Leatherio": {
+            "score": 3.4,
+            "reasons": [
+              "ثباته بيطابق طلبه (9 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          },
+          "Aventus": {
+            "score": 3.4,
+            "reasons": [
+              "ثباته بيطابق طلبه (9 hours)",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": [
+              "ممكن يكون تقيل على العميل"
+            ]
+          }
+        }
+      },
+      "keeping": [
+        "Dior Homme Intense",
+        "Le Male"
+      ],
+      "dropped": {},
+      "offered": [
+        "Baccarat Rouge 540",
+        "Dior Homme Intense",
+        "Le Male",
+        "XJ 1861 Naxos",
+        "Y Eau de Parfum"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 14898,
+      "context": "\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1300.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Moderate) | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Moderate) | العميل بيتكلم عنه بالفعل\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 700.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط) ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 700 جنيه، وسعر الـ 50 ملي 400 جنيه، والفرق بين الحجمين 300 جنيه، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 300 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1102.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته أقل من اللي طلبه شوية | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 900.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: خفيف ومش خانق | ثباته بيطابق طلبه (7 hours) | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1077.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 881.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–11 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Safrano\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 651.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1024.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Special Occasion\nLongevity: 11 hours\nProjection: Very Strong\nTop Notes: Saffron, Bergamot, Cardamom\nMiddle Notes: Rose, Oud, Cinnamon\nBase Notes: Amber, Leather, Musk\nDescription: A regal, spice-laden fragrance built around rare saffron and rose. Deep and long-lasting, it's designed for weddings, galas, and moments that call for something unforgettable.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (11 hours) | فوحانه بيطابق طلبه (Very Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 944.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط) ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Lattafa Asad\nBrand: Lattafa\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 982.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 794.00 EGP ✅ (داخل الميزانية)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Evening, Casual, Winter\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Black Pepper, Pineapple, Tobacco\nMiddle Notes: Coffee, Patchouli, Iris\nBase Notes: Amber, Vanilla, Dry Woods, Benzoin\nDescription: Warm spicy fragrance inspired by high-end niche scents with excellent value.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1015.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 800.00 EGP ✅ (داخل الميزانية)\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8–10 hrs) | فوحانه بيطابق طلبه (Moderate–Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Leatherio\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 513.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1075.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Black Pepper, Juniper, Bergamot\nMiddle Notes: Leather, Tobacco Leaf, Cedar\nBase Notes: Oud, Amber, Vetiver\nDescription: A confident, smoky leather scent for evenings that call for presence. Sharp spices open into a rugged leather and tobacco heart, deepened by oud and vetiver.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 631.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 990.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 50 ملي: 1000.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal\nLongevity: 9 hours\nProjection: Strong\nTop Notes: Pineapple, Blackcurrant, Apple\nMiddle Notes: Birch, Patchouli, Jasmine\nBase Notes: Musk, Oakmoss, Ambergris\nDescription: A bold, fruity-smoky fragrance symbolizing strength and success\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (9 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: ممكن يكون تقيل على العميل\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 41, \"variant_id\": 171, \"name\": \"Dior Homme Intense\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"550.00\"}, {\"product_id\": 18, \"variant_id\": 135, \"name\": \"Le Male\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"623.00\"}, {\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}], \"append\": true, \"text\": \"Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.\\nLe Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\\nLe Male — زجاجة البراند 90 ملي بـ856.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\", \"budget\": \"800.0\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 41, \"variant_id\": 171, \"name\": \"Dior Homme Intense\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"550.00\"}, {\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}, {\"product_id\": 18, \"variant_id\": 135, \"name\": \"Le Male\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"623.00\"}], \"append\": false, \"text\": \"Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.\\nLe Male — زجاجة البراند 90 ملي بـ856.00 جنيه.\\nLe Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "gender": "male",
+    "max_price": 800.0,
+    "longevity": "long-lasting",
+    "projection": "moderate",
+    "avoid_traits": [
+      "heavy",
+      "suffocating"
+    ]
+  },
+  "seconds": 193.1,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV997 — category: regression — persona: indecisive\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 997. It offered four different pairs of perfumes across seven turns (eight perfumes) while the customer never rejected anything. Turn 5 answered the bot own narrowing question with two perfumes that were neither option. Turn 7 dropped Le Male (50ml=623) on the turn the customer said they had 800. The conversation must stay on the same perfumes, converge to ONE when the customer answers a narrowing question, and state why any perfume stopped qualifying instead of swapping it silently.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز برفان ثابت وفواح بس مش لدرجه انه يخنق يعني\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"longevity\": \"long-lasting\", \"projection\": \"strong\", \"avoid_traits\": [\"suffocating\"]}\n[internal] shortlist_shown_to_model=['XJ 1861 Naxos', 'Good Girl', 'Y Eau de Parfum', 'Accento Overdose', 'Baccarat Rouge 540', 'Dior Homme Intense', 'Jasmino', 'Le Male', 'Green Irish Tweed', 'Invictus', 'Silver Mountain Water', 'Stronger With You']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"XJ 1861 Naxos\": {\"score\": 3.1, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (10 hours)\", \"فوحانه بيطابق طلبه (Strong)\", \"ينفع للراجل وللست\"], \"mismatches\": []}, \"Good Girl\": {\"score\": 2.6, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (8 hours)\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Y Eau de Parfum\": {\"score\": 2.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Accento Overdose\": {\"score\": 2.45, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Strong)\", \"ينفع للراجل وللست\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Baccarat Rouge 540\": {\"score\": 2.3, \"reasons\": [\"ثباته بيطابق طلبه (9 hours)\", \"فوحانه بيطابق طلبه (Strong)\", \"ينفع للراجل وللست\"], \"mismatches\": []}, \"Dior Homme Intense\": {\"score\": 2.2, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (8 hours)\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"فوحانه أقل من اللي طلبه شوية\"]}, \"Jasmino\": {\"score\": 2.15, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"فوحانه أقل من اللي طلبه شوية\"]}, \"Le Male\": {\"score\": 2.15, \"reasons\": [\"خفيف ومش خان\nAGENT: XJ 1861 Naxos من Xerjoff ثابت 10 ساعات وفوحانه قوي، وفي نفس الوقت ريحته مش خانقة وخفيف، وكمان ينفع للراجل وللست. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟ \nولو حابب، في Baccarat Rouge 540 كمان، ثابت 9 ساعات وفواح قوي، وينفع للراجل وللست برضه. \nأنا أرشحلك XJ 1861 Naxos أكتر لطلبك 👌.\n\n--- TURN 2 ---\nCUSTOMER: راجل\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"longevity\": \"long-lasting\", \"projection\": \"strong\", \"avoid_traits\": [\"suffocating\"]}\n[internal] shortlist_shown_to_model=['Y Eau de Parfum', 'Dior Homme Intense', 'Le Male', 'Green Irish Tweed', 'Invictus', 'Stronger With You', 'XJ 1861 Naxos', 'Baccarat Rouge 540', 'Accento Overdose', 'Afnan 9PM', 'Safrano', 'Dior Sauvage']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Y Eau de Parfum\": {\"score\": 5.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Dior Homme Intense\": {\"score\": 5.2, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (8 hours)\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"فوحانه أقل من اللي طلبه شوية\"]}, \"Le Male\": {\"score\": 5.15, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"فوحانه أقل من اللي طلبه شوية\"]}, \"Green Irish Tweed\": {\"score\": 5.15, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"فوحانه أقل من اللي طلبه شوية\"]}, \"Invictus\": {\"score\": 5.05, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Stronger With You\": {\"score\": 4.65, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\", \"فوحانه أقل من اللي طلبه شوية\"]}, \"XJ 1861 Naxos\": {\"score\": 3.2, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (10 hours)\", \"فوحانه بيطابق طلبه (Strong)\", \"العميل بيتكلم عنه بالفع\nAGENT: لو بتدور على عطر ريحته قوية وثباته حوالي 7 ساعات، Y Eau de Parfum هو خيار ممتاز يناسبك تماماً، وريحته متوازنة مش تقيلة. \nلو حابب أضيف، XJ 1861 Naxos برضه ثابت وفواح أكتر وبيدي إحساس فاخر، لكن سعره أعلى شوية. \nأنا أنصحك بـ Y Eau de Parfum أكتر لأنه بيغطي طلبك بدقة وبسعر مناسب.\n\n--- TURN 3 ---\nCUSTOMER: بكام دول\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Y Eau de Parfum: Y Eau de Parfum — زجاجة البراند 90 ملي بـ900.00 جنيه.؛ Y Eau de Parfum — زجاجة البراند 50 ملي بـ594.00 جنيه.\n\nXJ 1861 Naxos: XJ 1861 Naxos — زجاجة البراند 90 ملي بـ5200.00 جنيه.؛ XJ 1861 Naxos — زجاجة البراند 50 ملي بـ2900.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 50 ملي بـ22000.00 جنيه.؛ XJ 1861 Naxos — زجاجة أوريجينال 100 ملي بـ40000.00 جنيه.\n\nBaccarat Rouge 540: Baccarat Rouge 540 — زجاجة البراند 90 ملي بـ1136.00 جنيه.؛ Baccarat Rouge 540 — زجاجة البراند 50 ملي بـ686.00 جنيه.\n\n--- TURN 4 ---\nCUSTOMER: انا محتار بينهم ساعدني اختار\n[internal] classified_as=recommendation sales_stage=objection objection={'kind': 'cant_choose', 'matched': ['محتار'], 'past_purchase': False}\n[internal] extracted_intent={}\nAGENT: فاهم إنك محتار بين العطرين، ده طبيعي لأنهم مميزين. تحب ريحة أخف تناسب الاستخدام اليومي ولا أقوى تناسب السهرات والمناسبات؟\n\n--- TURN 5 ---\nCUSTOMER: حاجه خفيفه لكل الاوقات\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"longevity\": \"long-lasting\", \"projection\": \"moderate\", \"avoid_traits\": [\"heavy\", \"suffocating\"]}\n[internal] shortlist_shown_to_model=['Y Eau de Parfum', 'Dior Homme Intense', 'Le Male', 'Green Irish Tweed', 'Stronger With You', 'Invictus', 'XJ 1861 Naxos', 'Baccarat Rouge 540', 'Accento Overdose', 'Silver Mountain Water', 'Afnan 9PM', 'Safrano']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Y Eau de Parfum\": {\"score\": 6.05, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Strong)\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Dior Homme Intense\": {\"score\": 5.6, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (8 hours)\", \"فوحانه بيطابق طلبه (Moderate)\"], \"mismatches\": []}, \"Le Male\": {\"score\": 5.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Moderate)\"], \"mismatches\": []}, \"Green Irish Tweed\": {\"score\": 5.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Moderate)\"], \"mismatches\": []}, \"Stronger With You\": {\"score\": 5.05, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Moderate)\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Invictus\": {\"score\": 5.05, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"XJ 1861 Naxos\": {\"score\": 3.2, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (10 hours)\", \"فوحانه بيطابق طلبه (Strong)\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Baccarat Rouge 540\": {\"score\": 2.4, \"reasons\": [\"ثباته بيطابق طلب\nAGENT: لو عايز حاجة خفيفة تناسب كل الأوقات، Dior Homme Intense هو الأنسب ليك لأنه ثابت وفوحانه متوسط بالضبط زي ما طلبت. \nلو حابب حاجة بنفس المواصفات بس بسعر أقل، Le Male برضه خيار جيد. \nأنا أميل لـ Dior Homme Intense أكتر لأنه بيغطي طلبك بشكل أدق.\n\n--- TURN 6 ---\nCUSTOMER: بكام دول طب\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Dior Homme Intense: Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.؛ Dior Homme Intense — زجاجة البراند 90 ملي بـ1300.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 100 ملي بـ5500.00 جنيه.؛ Dior Homme Intense — زجاجة أوريجينال 200 ملي بـ9800.00 جنيه.\n\nLe Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\n\n--- TURN 7 ---\nCUSTOMER: انا معايا 800 جنيه\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"max_price\": 800.0, \"gender\": \"male\", \"longevity\": \"long-lasting\", \"projection\": \"moderate\", \"avoid_traits\": [\"heavy\", \"suffocating\"]}\n[internal] shortlist_shown_to_model=['Dior Homme Intense', 'Le Male', 'Stronger With You', 'Invictus', 'Y Eau de Parfum', 'Afnan 9PM', 'Safrano', 'Dior Sauvage', 'Lattafa Asad', 'Bleu de Chanel', 'Leatherio', 'Aventus']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Dior Homme Intense\": {\"score\": 7.6, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (8 hours)\", \"فوحانه بيطابق طلبه (Moderate)\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Le Male\": {\"score\": 7.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Moderate)\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Stronger With You\": {\"score\": 6.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Moderate)\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Invictus\": {\"score\": 6.55, \"reasons\": [\"خفيف ومش خانق\", \"ثباته أقل من اللي طلبه شوية\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Y Eau de Parfum\": {\"score\": 5.05, \"reasons\": [\"خفيف ومش خانق\", \"ثباته بيطابق طلبه (7 hours)\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Afnan 9PM\": {\"score\": 3.5, \"reasons\": [\"ثباته بيطابق طلبه (8–11 hrs)\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": [\"ممكن يكون تقيل على العميل\"]}, \"Safrano\": {\"score\": 3.5, \"reasons\": [\"ثباته بيطابق طلبه (11 hours)\", \"فوحانه بيطابق طلبه (Very Strong)\"], \"mismatches\": [\"ممكن يكون تقيل على العميل\"]}, \"Dior Sauvage\": {\"score\": 3.45, \"reasons\": [\"ثباته بيطابق\nAGENT: Dior Homme Intense — زجاجة البراند 50 ملي بـ550.00 جنيه.\nLe Male — زجاجة البراند 90 ملي بـ856.00 جنيه.\nLe Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Accento Overdose | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Strong | top=Pineapple, Green Notes, Aldehydes | mid=Egyptian Jasmine, Bulgarian Rose | base=Eucalyptus, Mediterranean Pine | sizes: brand 50ml=2800EGP; brand 90ml=5000EGP; original 50ml=21000EGP stock=3; original 100ml=38000EGP stock=1\n- Afnan 9PM | brand=Afnan | gender=male | type=oriental | season=Fall & Winter | occasion=Night out, Parties, Dates | longevity=8–11 hrs | projection=Strong | top=Apple, Cinnamon, Wild Lavender, Bergamot | mid=Orange Blossom, Lily of the Valley | base=Vanilla, Tonka Bean, Amber, Patchouli | sizes: brand 50ml=508EGP; brand 90ml=1077EGP; original 100ml=881EGP stock=27\n- Aventus | brand=Creed | gender=male | type=niche | season=All Seasons | occasion=Formal | longevity=9 hours | projection=Strong | top=Pineapple, Blackcurrant, Apple | mid=Birch, Patchouli, Jasmine | base=Musk, Oakmoss, Ambergris | sizes: brand 50ml=631EGP; brand 90ml=990EGP; original 50ml=1000EGP stock=8; original 100ml=1400EGP stock=7\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=unisex | type=niche | season=All Seasons | occasion=Evening | longevity=9 hours | projection=Strong | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=686EGP; brand 90ml=1136EGP\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office, Formal, Daily | longevity=8–10 hrs | projection=Moderate–Strong | top=Grapefruit, Lemon, Mint | mid=Ginger, Nutmeg, Jasmine | base=Incense, Cedar, Sandalwood, Patchouli | sizes: brand 50ml=645EGP; brand 90ml=1015EGP; original 50ml=800EGP stock=6; original 100ml=1400EGP stock=8; original 150ml=1700EGP stock=17\n- Dior Homme Intense | brand=Dior | gender=male | type=western | season=Fall/Winter | occasion=Evening/Formal | longevity=8 hours | projection=Moderate | top=Lavender | mid=Iris, Ambrette, Pear | base=Virginia Cedar, Vetiver | sizes: brand 50ml=550EGP; brand 90ml=1300EGP; original 100ml=5500EGP stock=5; original 200ml=9800EGP stock=2\n- Dior Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | occasion=Daily, Office, Dates | longevity=8–10 hrs | projection=Strong | top=Bergamot, Mandarin | mid=Lavender, Nutmeg, Star Anise | base=Ambroxan, Vanilla | sizes: brand 50ml=642EGP; brand 90ml=944EGP; original 60ml=456EGP stock=0; original 100ml=815EGP stock=2; original 200ml=1623EGP stock=10\n- Good Girl | brand=Carolina Herrera | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Almond, Coffee, Bergamot | mid=Tuberose, Jasmine | base=Tonka Bean, Cacao, Vanilla | sizes: brand 50ml=650EGP; brand 90ml=1083EGP\n- Green Irish Tweed | brand=Creed | gender=male | type=niche | season=Spring/Summer | occasion=Business/Casual | longevity=7 hours | projection=Moderate | top=Iris, Lemon Verbena | mid=Violet Leaf | base=Ambergris, Sandalwood | sizes: brand 50ml=3300EGP; brand 90ml=6000EGP; original 50ml=26000EGP stock=3; original 100ml=46000EGP stock=1\n- Invictus | brand=Paco Rabanne | gender=male | type=western | season=Spring/Summer | occasion=Sport | longevity=6 hours | projection=Strong | top=Marine Notes, Grapefruit, Mandarin | mid=Bay Leaf, Hedione | base=Guaiac Wood, Ambergris, Oakmoss | sizes: brand 50ml=540EGP; brand 90ml=1102EGP\n- Jasmino | brand=Perfamix | gender=female | type=oriental | season=All Seasons | occasion=Daily | longevity=7 hours | projection=Moderate | top=Bergamot, Green Notes, Mandarin | mid=Jasmine Sambac, Tuberose, Ylang Ylang | base=Sandalwood, White Musk, Vanilla | sizes: brand 50ml=578EGP; brand 90ml=1106EGP\n- Lattafa Asad | brand=Lattafa | gender=male | type=oriental | season=Fall & Winter | occasion=Evening, Casual, Winter | longevity=8–10 hrs | projection=Strong | top=Black Pepper, Pineapple, Tobacco | mid=Coffee, Patchouli, Iris | base=Amber, Vanilla, Dry Woods, Benzoin | sizes: brand 50ml=642EGP; brand 90ml=982EGP; original 100ml=794EGP stock=10\n- Le Male | brand=Jean Paul Gaultier | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Moderate | top=Mint, Lavender, Bergamot | mid=Cinnamon, Cumin, Orange Blossom | base=Vanilla, Sandalwood, Tonka Bean | sizes: brand 50ml=623EGP; brand 90ml=856EGP\n- Leatherio | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Evening | longevity=9 hours | projection=Strong | top=Black Pepper, Juniper, Bergamot | mid=Leather, Tobacco Leaf, Cedar | base=Oud, Amber, Vetiver | sizes: brand 50ml=513EGP; brand 90ml=1075EGP\n- Safrano | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Special Occasion | longevity=11 hours | projection=Very Strong | top=Saffron, Bergamot, Cardamom | mid=Rose, Oud, Cinnamon | base=Amber, Leather, Musk | sizes: brand 50ml=651EGP; brand 90ml=1024EGP\n- Silver Mountain Water | brand=Creed | gender=unisex | type=niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Mandarin Orange | mid=Green Tea, Black Currant | base=Musk, Petitgrain, Sandalwood, Galbanum | sizes: brand 50ml=3100EGP; brand 90ml=5700EGP; original 50ml=24000EGP stock=3; original 100ml=43000EGP stock=1\n- Stronger With You | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Casual/Evening | longevity=6 hours | projection=Moderate | top=Cardamom, Pink Pepper, Violet Leaf, Mint | mid=Pineapple, Cinnamon, Melon, Sage, Lavender | base=Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood | sizes: brand 50ml=400EGP; brand 90ml=700EGP; original 100ml=3800EGP stock=5; original 200ml=6800EGP stock=2\n- XJ 1861 Naxos | brand=Xerjoff | gender=unisex | type=ultra_niche | season=All Seasons | occasion=Casual/Evening | longevity=10 hours | projection=Strong | top=Lavender, Bergamot, Lemon | mid=Honey, Cinnamon, Cashmeran, Jasmine Sambac | base=Tobacco Leaf, Vanilla, Tonka Bean | sizes: brand 50ml=2900EGP; brand 90ml=5200EGP; original 50ml=22000EGP stock=3; original 100ml=40000EGP stock=1\n- Y Eau de Parfum | brand=Yves Saint Laurent | gender=male | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Strong | top=Apple, Bergamot, Ginger | mid=Sage, Juniper Berries | base=Tonka Bean, Cedar, Amberwood | sizes: brand 50ml=594EGP; brand 90ml=900EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"gender\": \"male\", \"max_price\": 800.0, \"longevity\": \"long-lasting\", \"projection\": \"moderate\", \"avoid_traits\": [\"heavy\", \"suffocating\"]}"
+}

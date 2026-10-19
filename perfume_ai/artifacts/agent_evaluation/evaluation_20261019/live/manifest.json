@@ -1,0 +1,302 @@
+{
+  "started_utc": "2026-10-19T11:30:59.824649+00:00",
+  "budget_usd": "1.24258970",
+  "resume_from": "artifacts\\agent_evaluation\\evaluation_20261018\\live",
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [
+    "C2",
+    "CONV1005",
+    "CONV1069",
+    "CONV1075",
+    "CONV1105",
+    "CONV726",
+    "CONV738",
+    "CONV768",
+    "CONV772",
+    "CONV795",
+    "CONV798",
+    "CONV799",
+    "CONV816",
+    "CONV817",
+    "CONV835",
+    "CONV836",
+    "CONV841",
+    "CONV931",
+    "CONV932",
+    "CONV973",
+    "CONV997",
+    "G1",
+    "M3",
+    "P2"
+  ],
+  "temporary_database": "test_agent_eval_dc8bdd2f19",
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "suites": {
+    "core": [
+      {
+        "id": "D1",
+        "turns": 1
+      },
+      {
+        "id": "D2",
+        "turns": 2
+      },
+      {
+        "id": "D3",
+        "turns": 2
+      },
+      {
+        "id": "R1",
+        "turns": 1
+      },
+      {
+        "id": "R2",
+        "turns": 1
+      },
+      {
+        "id": "R3",
+        "turns": 1
+      },
+      {
+        "id": "R4",
+        "turns": 1
+      },
+      {
+        "id": "R5",
+        "turns": 1
+      },
+      {
+        "id": "S1",
+        "turns": 1
+      },
+      {
+        "id": "S2",
+        "turns": 1
+      },
+      {
+        "id": "S3",
+        "turns": 1
+      },
+      {
+        "id": "S4",
+        "turns": 1
+      },
+      {
+        "id": "C1",
+        "turns": 1
+      },
+      {
+        "id": "C2",
+        "turns": 1
+      },
+      {
+        "id": "C3",
+        "turns": 1
+      },
+      {
+        "id": "O1",
+        "turns": 2
+      },
+      {
+        "id": "O2",
+        "turns": 1
+      },
+      {
+        "id": "O3",
+        "turns": 1
+      },
+      {
+        "id": "O4",
+        "turns": 1
+      },
+      {
+        "id": "O5",
+        "turns": 2
+      },
+      {
+        "id": "G1",
+        "turns": 1
+      },
+      {
+        "id": "G2",
+        "turns": 1
+      },
+      {
+        "id": "P1",
+        "turns": 1
+      },
+      {
+        "id": "P2",
+        "turns": 3
+      },
+      {
+        "id": "P3",
+        "turns": 2
+      },
+      {
+        "id": "CS1",
+        "turns": 2
+      },
+      {
+        "id": "CS2",
+        "turns": 1
+      },
+      {
+        "id": "M1",
+        "turns": 4
+      },
+      {
+        "id": "M2",
+        "turns": 2
+      },
+      {
+        "id": "M3",
+        "turns": 3
+      },
+      {
+        "id": "M4",
+        "turns": 2
+      },
+      {
+        "id": "X1",
+        "turns": 1
+      },
+      {
+        "id": "X2",
+        "turns": 1
+      },
+      {
+        "id": "X3",
+        "turns": 1
+      },
+      {
+        "id": "X4",
+        "turns": 1
+      },
+      {
+        "id": "X5",
+        "turns": 1
+      },
+      {
+        "id": "F1",
+        "turns": 4
+      },
+      {
+        "id": "F2",
+        "turns": 4
+      },
+      {
+        "id": "F3",
+        "turns": 4
+      },
+      {
+        "id": "F4",
+        "turns": 4
+      },
+      {
+        "id": "CONV1069",
+        "turns": 5
+      },
+      {
+        "id": "CONV1075",
+        "turns": 4
+      }
+    ],
+    "replays": [
+      {
+        "id": "CONV990",
+        "turns": 5
+      },
+      {
+        "id": "CONV997",
+        "turns": 7
+      },
+      {
+        "id": "CONV1005",
+        "turns": 15
+      },
+      {
+        "id": "CONV726",
+        "turns": 8
+      },
+      {
+        "id": "CONV738",
+        "turns": 7
+      },
+      {
+        "id": "CONV768",
+        "turns": 5
+      },
+      {
+        "id": "CONV795",
+        "turns": 4
+      },
+      {
+        "id": "CONV798",
+        "turns": 3
+      },
+      {
+        "id": "CONV799",
+        "turns": 2
+      },
+      {
+        "id": "CONV816",
+        "turns": 4
+      },
+      {
+        "id": "CONV817",
+        "turns": 3
+      },
+      {
+        "id": "CONV835",
+        "turns": 6
+      },
+      {
+        "id": "CONV836",
+        "turns": 3
+      },
+      {
+        "id": "CONV841",
+        "turns": 2
+      },
+      {
+        "id": "CONV842",
+        "turns": 3
+      },
+      {
+        "id": "CONV772",
+        "turns": 3
+      },
+      {
+        "id": "CONV931",
+        "turns": 12
+      },
+      {
+        "id": "CONV932",
+        "turns": 5
+      },
+      {
+        "id": "CONV973",
+        "turns": 5
+      },
+      {
+        "id": "CONV1021",
+        "turns": 5
+      },
+      {
+        "id": "CONV1105",
+        "turns": 2
+      }
+    ]
+  },
+  "catalogue_products": 46,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192
+  },
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

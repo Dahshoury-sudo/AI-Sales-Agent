@@ -1,0 +1,49 @@
+{
+  "scores": {
+    "intent_understanding": 8,
+    "constraint_extraction": 8,
+    "memory": 8,
+    "recommendation_quality": 6,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 9,
+    "objection_handling": null,
+    "sales_effectiveness": 8,
+    "closing_timing": 6,
+    "human_feel": 7,
+    "trust": 8
+  },
+  "what_worked": [
+    "Agent answered the customer's price question and listed the available sizes and exact prices that match the DATABASE FACTS (e.g. Stronger With You Intensely — زجاجة البراند 90 ملي بـ780.00 جنيه, زجاجة أوريجينال 100 ملي بـ4200.00 جنيه).",
+    "Agent asked the correct follow-up about bottle type (أوريجينال أم زجاجة البراند) in Turn 2 — that is the expected single clarification.",
+    "Longevity and projection claims for Stronger With You and Intensely matched the DATABASE FACTS (6 hours / 8 hours, moderate/strong projection)."
+  ],
+  "failures": [
+    {
+      "severity": "low",
+      "category": "sales",
+      "what": "Gave scent descriptions before answering the direct price question",
+      "why_wrong": "Customer explicitly asked 'كل واحده كام سعرها' (only asked for prices). Spending the top of the reply on extended scent descriptions delays the core answer and may annoy a ready buyer.",
+      "expected": "Return prices promptly and then optionally add a very short confirmation or a single-line note about character if helpful."
+    },
+    {
+      "severity": "low",
+      "category": "ux",
+      "what": "Re-stated both perfumes' longevity/character when customer asked specifically about Intensely",
+      "why_wrong": "At Turn 4 the customer narrowed to one product ('سعر انتنسلي لوحده عامل كام'). Repeating details about the other perfume wastes space and may indicate partial attention to the narrowed request.",
+      "expected": "When customer narrows to one product, respond focused on that product first (price options) and then offer a brief comparison or extras if needed."
+    },
+    {
+      "severity": "medium",
+      "category": "prompt",
+      "what": "No explicit next-step for purchase after listing prices",
+      "why_wrong": "Customer shows purchase intent. After giving prices the agent should prompt for bottle-type confirmation (if still unanswered), quantity, or deposit/checkout instructions per STORE-CONFIGURED FACTS. The agent earlier asked bottle-type, but after listing prices didn't close the loop (e.g., ask which sizes to add to cart or remind deposit requirement).",
+      "expected": "After prices, ask 'تحب أضيف لك [المنتج] — أي حجم؟ 50 براند / 90 براند / أورجينال 100؟' and remind payment/deposit options and shipping cost if the customer is ready."
+    }
+  ],
+  "salesperson_verdict": "Acceptable handling but not top-tier: prices and facts are correct and the required bottle-type clarification was asked, but replies should be sharper and more focused on the asked item and next purchase step to close the sale faster.",
+  "id": "F3",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 7.7
+}

@@ -1,0 +1,6 @@
+{
+  "handled_name_confirmation_exceptions": 23,
+  "unhandled_scenario_errors": [],
+  "catalogue_ground_truth_matches_baseline": true,
+  "rubric_matches_baseline": true
+}

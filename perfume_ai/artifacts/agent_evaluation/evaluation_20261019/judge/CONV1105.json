@@ -1,0 +1,36 @@
+{
+  "scores": {
+    "intent_understanding": 10,
+    "constraint_extraction": 10,
+    "memory": 10,
+    "recommendation_quality": 10,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 10,
+    "objection_handling": null,
+    "sales_effectiveness": 8,
+    "closing_timing": null,
+    "human_feel": 9,
+    "trust": 10
+  },
+  "what_worked": [
+    "Agent thanked the customer warmly and personally: \"شكرًا على كلامك الجميل يا فندم...\"",
+    "Agent avoided asking for the perfume name or asking the customer to retype/clarify — correctly treated the messages as compliments rather than a product lookup.",
+    "Second reply varied wording (\"بنشكر اختيارك لعطور Perfamix\") so it did not repeat the first reply word-for-word.",
+    "No unsolicited recommendations, pricing, or offers were pushed into a compliment thread — respects the store rule not to pitch here."
+  ],
+  "failures": [
+    {
+      "severity": "low",
+      "category": "human_feel",
+      "what": "Both replies use very similar phrasing and the formal address 'يا فندم' twice.",
+      "why_wrong": "While not prohibited, slightly repetitive/formal tone can feel templated rather than personally warm. The scenario required a warm, personal thank-you; a tiny bit more variation or a short personal touch would improve rapport.",
+      "expected": "A top salesperson would add one different personal touch in the second reply (e.g., 'سعدنا إن العطر عجبك، ده يفرّحنا') or invite a light, non-pushy follow-up like leaving a review link."
+    }
+  ],
+  "salesperson_verdict": "Acceptable: a sales manager would accept this turn — the agent followed the critical rules (thanked the customer, did not ask for the perfume name, did not pitch). A bit more natural variation would make it excellent.",
+  "id": "CONV1105",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 9.666666666666666
+}

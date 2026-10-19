@@ -1,0 +1,62 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 3,
+    "memory": 1,
+    "recommendation_quality": 3,
+    "similarity_accuracy": null,
+    "product_accuracy": 8,
+    "confidence_calibration": 4,
+    "objection_handling": null,
+    "sales_effectiveness": 3,
+    "closing_timing": null,
+    "human_feel": 6,
+    "trust": 2
+  },
+  "what_worked": [
+    "Agent provided correct price lines for Bleu de Chanel and Dior Sauvage (e.g. \"Bleu de Chanel — زجاجة البراند 90 ملي بـ1015.00 جنيه\", \"Dior Sauvage — زجاجة البراند 50 ملي بـ642.00 جنيه\").",
+    "Language used is natural Egyptian and polite when listing prices."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Omitted any clear statement about 'الكساندريا 2' (the third perfume named by the customer).",
+      "why_wrong": "Customer explicitly asked prices for three perfumes. The store search was done before replying and the scenario mandates naming الكساندريا 2 and stating plainly that it's not carried. The agent never did this and instead only listed two perfumes' prices.",
+      "expected": "Name الكساندريا 2 exactly as the customer wrote it and state clearly and briefly that 'العطر ده مش عندنا' (we don't carry it), while also giving the two requested prices."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Asked the customer to rewrite the perfume name after the customer already provided it three times.",
+      "why_wrong": "The customer supplied the name; per rules the agent must not ask to 'check' or to re-write names that were already given, and the catalogue was supposedly searched already. Asking again signals incompetence or that no search happened.",
+      "expected": "Accept the provided name, repeat the established result (not available) and proceed with the answers already owed to the customer."
+    },
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "Follow-up replies ignored the customer's chase question ('ها لقيت اي' / 'ماشي اعرفلي') and repeated a request for clarification instead of providing the missing definitive answer.",
+      "why_wrong": "Those turns were the customer asking for the awaited result. The agent should have answered concisely (prices for the two stocked perfumes + statement that الكساندريا 2 is not carried). Instead the agent asked for more input, leaving the customer waiting.",
+      "expected": "On the follow-up, provide the concise answer immediately (including the not-available statement) to move the sale forward."
+    },
+    {
+      "severity": "medium",
+      "category": "product",
+      "what": "Although the two listed price lines are correct, the agent missed an opportunity to communicate store-configured facts that are permitted and useful (e.g., availability counts for originals listed in DB or that these are 'زجاجة البراند' vs 'زجاجة أوريجينال').",
+      "why_wrong": "The customer asked for prices only; but since DB supplies stock counts for originals, a concise 'original stock' note for items that have limited stock (e.g., Sauvage 100ml stock=2) would be allowed if relevant. The agent neither clarified original vs brand packaging for all lines nor acknowledged the store policy about 'تركيب' vs 'أوريجينال' if customer might ask next.",
+      "expected": "Give the required prices, and when listing originals optionally add the stock if it matters, or keep the reply minimal focused on the customer's explicit request."
+    },
+    {
+      "severity": "low",
+      "category": "memory",
+      "what": "Repeated the same clarifying question twice, showing poor turn-to-turn continuity.",
+      "why_wrong": "The agent should have either answered or moved on; repeating the same request frustrates the customer.",
+      "expected": "Answer once clearly, and only ask follow-up if customer gives new conflicting info."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable as-is. A sales manager would not accept this turn: the agent failed to state that الكساندريا 2 is not carried and left the customer waiting despite having the two requested prices. Fix: give both prices and explicitly say the third perfume 'مش موجود عندنا' in the same reply.",
+  "id": "CONV836",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 3.5555555555555554
+}

@@ -1,0 +1,55 @@
+{
+  "scores": {
+    "intent_understanding": 6,
+    "constraint_extraction": 4,
+    "memory": 4,
+    "recommendation_quality": 3,
+    "similarity_accuracy": null,
+    "product_accuracy": 8,
+    "confidence_calibration": 3,
+    "objection_handling": 3,
+    "sales_effectiveness": 3,
+    "closing_timing": null,
+    "human_feel": 7,
+    "trust": 4
+  },
+  "what_worked": [
+    "Agent used natural Egyptian phrasing: \"تقصد سعر أنهي عطر وحجم ونوع زجاجة؟\" — a concise clarifying question that invites the customer to specify which listing they mean.",
+    "Earlier turns (context) quoted prices that actually match the DATABASE FACTS (Stronger With You 50=400 / 90=700, Stronger With You Intensely 50=450 / 90=780, Leatherio 50=513 / 90=1075) — the agent gave real catalogue prices rather than inventing numbers."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Failed to explicitly disambiguate two different Emporio Armani variants when customer complained about 'two different prices for 'سترونجر''.",
+      "why_wrong": "Customer pointed to two prices for 'سترونجر'. The store catalogue contains three distinct Stronger With You variants with different prices (Stronger With You 50=400/90=700, Stronger With You Intensely 50=450/90=780, Stronger With You Absolutely 50=480/90=830). Per the scenario rules, the correct action is to name the variants and map each price to the correct variant; apologising or implying a single product would be a critical trust failure.",
+      "expected": "A senior salesperson would say: \"معلش لو حصل لبس — فيه فعلًا أكتر من نوع من Emporio Armani باسم 'Stronger With You'. السعر 50/90 لـ 'Stronger With You' العادي هو 400/700، أما 'Stronger With You Intensely' فـ 450/780، و'Absolutely' 480/830 — تقصد أي واحدة؟\""
+    },
+    {
+      "severity": "high",
+      "category": "memory",
+      "what": "Agent didn't acknowledge prior recommendations and confusion; instead asked a generic clarifying question.",
+      "why_wrong": "Customer explicitly accused the agent of quoting two different prices; simply asking 'تقصد سعر أنهي...؟' leaves the customer to repeat information they already provided implicitly and fails to resolve the dispute. The conversation earlier already showed the agent quoting both Stronger With You and Intensely prices.",
+      "expected": "Reference the earlier quotes and resolve: repeat the two quoted prices and explain they belong to different variants, or ask one targeted question if ambiguous (e.g., 'هل تقصد الـ Intense ولا العادي؟')."
+    },
+    {
+      "severity": "medium",
+      "category": "recommendation",
+      "what": "Earlier turns conflated variants (recommended 'Stronger With You Intensely' then later referred to 'Stronger With You' as the same), creating the customer's confusion.",
+      "why_wrong": "TURN 1 recommended Intensely and gave longevity/notes that match Intensely, but TURN 4 said 'أنا رشحتلك Stronger With You قبل كده' without clarifying variant — implying they are the same product. Database shows different notes/longevity and distinct prices.",
+      "expected": "Always specify full product name (include 'Intensely'/'Absolutely') when recommending or quoting to avoid mixing line-mates."
+    },
+    {
+      "severity": "low",
+      "category": "objection",
+      "what": "Agent didn't apologize or take ownership of the confusion in this turn.",
+      "why_wrong": "Customer signals frustration; a brief acknowledgment ('آسف على اللبس') would reduce friction before clarifying facts.",
+      "expected": "Start with a short apology/acknowledgement then resolve the factual matter."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable as-is: the clarifying question is okay wording-wise, but the agent missed the mandatory disambiguation step and failed to resolve the customer's concern. A floor manager would ask the agent to explicitly map each quoted price to its exact variant and apologise for the confusion.",
+  "id": "CONV768",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 4.5
+}

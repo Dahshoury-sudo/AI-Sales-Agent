@@ -1,0 +1,186 @@
+{
+  "id": "S4",
+  "category": "similarity",
+  "persona": "clone_hunter",
+  "probe": "Khamrah is NOT in this catalogue, so the reference comes from general knowledge (dates/cinnamon/vanilla/tonka — sweet boozy gourmand). Correct move: be explicit that the comparison rests on the known profile of a perfume we do not stock, and either offer a genuine sweet-spicy match or admit nothing is close. Must NOT imply we sell it.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز عطر زي Lattafa Khamrah",
+      "reply": "إيه أكتر حاجة بتحبها في Lattafa Khamrah، الحلاوة ولا التوابل ولا طابع تاني؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Lattafa Khamrah"
+        ],
+        "notes": [],
+        "similar_to": "Lattafa Khamrah",
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Lattafa Khamrah"
+        ],
+        "notes": [],
+        "similar_to": "Lattafa Khamrah",
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": {
+        "matched": [
+          "Oud Wood",
+          "Tom Ford Ombre Leather",
+          "Vanilo",
+          "Baccarat Rouge 540",
+          "Erba Pura",
+          "Accento Overdose",
+          "XJ 1861 Naxos",
+          "Silver Mountain Water",
+          "Stronger With You",
+          "Dior Homme Sport",
+          "Stronger With You Intensely",
+          "Stronger With You Absolutely"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Oud Wood": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Tom Ford Ombre Leather": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Vanilo": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Baccarat Rouge 540": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Erba Pura": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "XJ 1861 Naxos": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Silver Mountain Water": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Stronger With You": {
+            "score": 0.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Dior Homme Sport": {
+            "score": 0.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Stronger With You Intensely": {
+            "score": 0.0,
+            "reasons": [],
+            "mismatches": []
+          },
+          "Stronger With You Absolutely": {
+            "score": 0.0,
+            "reasons": [],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 24,
+      "context": "SIMILARITY_NEEDS_PROFILE",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "similar_to": "Lattafa Khamrah"
+  },
+  "seconds": 9.7,
+  "suite": "core",
+  "judge_evidence": "SCENARIO S4 — category: similarity — persona: clone_hunter\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nKhamrah is NOT in this catalogue, so the reference comes from general knowledge (dates/cinnamon/vanilla/tonka — sweet boozy gourmand). Correct move: be explicit that the comparison rests on the known profile of a perfume we do not stock, and either offer a genuine sweet-spicy match or admit nothing is close. Must NOT imply we sell it.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز عطر زي Lattafa Khamrah\n[internal] classified_as=recommendation sales_stage=None objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Lattafa Khamrah\"], \"similar_to\": \"Lattafa Khamrah\"}\n[internal] shortlist_shown_to_model=['Oud Wood', 'Tom Ford Ombre Leather', 'Vanilo', 'Baccarat Rouge 540', 'Erba Pura', 'Accento Overdose', 'XJ 1861 Naxos', 'Silver Mountain Water', 'Stronger With You', 'Dior Homme Sport', 'Stronger With You Intensely', 'Stronger With You Absolutely']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Oud Wood\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Tom Ford Ombre Leather\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Vanilo\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Baccarat Rouge 540\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Erba Pura\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Accento Overdose\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"XJ 1861 Naxos\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Silver Mountain Water\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Stronger With You\": {\"score\": 0.0, \"reasons\": [], \"mismatches\": []}, \"Dior Homme Sport\": {\"score\": 0.0, \"reasons\": [], \"mismatches\": []}, \"Stronger With You Intensely\": {\"score\": 0.0, \"reasons\": [], \"mismatches\": []}, \"Stronger With You Absolutely\": {\"score\": 0.0, \"reasons\": [], \"mismatches\": []}}\nAGENT: إيه أكتر حاجة بتحبها في Lattafa Khamrah، الحلاوة ولا التوابل ولا طابع تاني؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Accento Overdose | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Strong | top=Pineapple, Green Notes, Aldehydes | mid=Egyptian Jasmine, Bulgarian Rose | base=Eucalyptus, Mediterranean Pine | sizes: brand 50ml=2800EGP; brand 90ml=5000EGP; original 50ml=21000EGP stock=3; original 100ml=38000EGP stock=1\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=unisex | type=niche | season=All Seasons | occasion=Evening | longevity=9 hours | projection=Strong | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=686EGP; brand 90ml=1136EGP\n- Dior Homme Sport | brand=Dior | gender=male | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Lemon, Bergamot, Aldehydes | mid=Elemi, Pink Pepper | base=Woody Notes, Amber, Olibanum | sizes: brand 50ml=450EGP; brand 90ml=1100EGP; original 100ml=4500EGP stock=5; original 200ml=8000EGP stock=2\n- Erba Pura | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=8 hours | projection=Strong | top=Sicilian Orange, Calabrian Bergamot, Sicilian Lemon | mid=Fruits | base=White Musk, Madagascar Vanilla, Amber | sizes: brand 50ml=2700EGP; brand 90ml=4900EGP; original 50ml=20000EGP stock=3; original 100ml=36000EGP stock=1\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n- Silver Mountain Water | brand=Creed | gender=unisex | type=niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Mandarin Orange | mid=Green Tea, Black Currant | base=Musk, Petitgrain, Sandalwood, Galbanum | sizes: brand 50ml=3100EGP; brand 90ml=5700EGP; original 50ml=24000EGP stock=3; original 100ml=43000EGP stock=1\n- Stronger With You | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Casual/Evening | longevity=6 hours | projection=Moderate | top=Cardamom, Pink Pepper, Violet Leaf, Mint | mid=Pineapple, Cinnamon, Melon, Sage, Lavender | base=Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood | sizes: brand 50ml=400EGP; brand 90ml=700EGP; original 100ml=3800EGP stock=5; original 200ml=6800EGP stock=2\n- Stronger With You Absolutely | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Rum, Elemi, Bergamot | mid=Lavender, Davana | base=Chestnut, Madagascar Vanilla, Cedar, Patchouli | sizes: brand 50ml=480EGP; brand 90ml=830EGP; original 100ml=4500EGP stock=5; original 200ml=8000EGP stock=2\n- Stronger With You Intensely | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Juniper, Violet | mid=Toffee, Cinnamon, Lavender, Sage | base=Vanilla, Tonka Bean, Amber, Suede | sizes: brand 50ml=450EGP; brand 90ml=780EGP; original 100ml=4200EGP stock=5; original 200ml=7500EGP stock=2\n- Tom Ford Ombre Leather | brand=Tom Ford | gender=unisex | type=niche | season=Fall & Winter | occasion=Evening, Dates, Special occasions | longevity=8–12 hrs | projection=Strong | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=592EGP; brand 90ml=873EGP; original 50ml=700EGP stock=25; original 100ml=1000EGP stock=7\n- Vanilo | brand=Perfamix | gender=unisex | type=oriental | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Moderate | top=Cardamom, Orange Peel | mid=Tonka Bean, Praline, Cinnamon | base=Vanilla, Tobacco, Amber | sizes: brand 50ml=607EGP; brand 90ml=897EGP\n- XJ 1861 Naxos | brand=Xerjoff | gender=unisex | type=ultra_niche | season=All Seasons | occasion=Casual/Evening | longevity=10 hours | projection=Strong | top=Lavender, Bergamot, Lemon | mid=Honey, Cinnamon, Cashmeran, Jasmine Sambac | base=Tobacco Leaf, Vanilla, Tonka Bean | sizes: brand 50ml=2900EGP; brand 90ml=5200EGP; original 50ml=22000EGP stock=3; original 100ml=40000EGP stock=1\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"similar_to\": \"Lattafa Khamrah\"}"
+}

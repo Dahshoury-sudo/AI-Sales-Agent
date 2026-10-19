@@ -1,0 +1,910 @@
+{
+  "id": "CONV931",
+  "category": "regression",
+  "persona": "hard_budget",
+  "probe": "Replay of conversation 931. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. Both sizes are UNDER 1200. There is no women's Versace at any price. The cart built over turns 5 and 7 holds 1 × Good Girl 50ml at 650, 1 × La Vie Est Belle 50ml at 669, and 2 × Stronger With You 50ml at 400 each — a real order total of 2119. Good Girl is 90ml 1083, La Vie Est Belle is 90ml 1046. ❌ CRITICAL on turns 10, 11 and 12: saying or implying that Eros' 90ml at 1019, or its 50ml at 666, is above / outside / more than the customer's budget. 1019 < 1200. Both sizes are in budget and the injected context labels them so. ❌ CRITICAL: quoting 353 as a gap between a price and the budget. 353 is 1019 − 666, the difference between the two SIZES of Eros. Any sentence that puts that number next to the word ميزانية is false however the arithmetic got there. The same goes for any other difference figure lifted from the value note: the value comparison is between two bottles of the same perfume and has no budget content in it. ✅ Required on turn 10: both Eros sizes named with their real prices and stated to be within the budget — and Eros named as a MEN'S perfume, which is what the customer asked for once they said لجوزي. ✅ Required on turn 11 ('ازاي اعلي من ميزانيتي'): a plain retraction. The customer is correct and the previous reply was wrong. Say so — 'معاك حق، الاتنين داخل ميزانيتك' — and give the two prices again. ❌ CRITICAL: repeating the over-budget claim on turn 11 or 12 after being challenged. Repeating a false statement the customer has just disproved is worse than making it the first time, and it is what turned this conversation into a loop. ❌ CRITICAL: answering turn 11 or 12 by changing the subject. An objection to a factual error is answered by correcting the error, not by moving on from it. ✅ Allowed, and true: a statement about the ORDER TOTAL being more than 1200 — 2119 really is more than 1200. The budget is per bottle and the basket has four bottles in it, so this is a different claim from the one banned above and it is not a finding. It must be about the total, by name, and never about a single size. ✅ Required on turn 9 (Versace, women's, 1200): name the actual reason nothing matched — Versace's only perfume here is a men's — and offer either Eros for the husband or a women's perfume from another brand. Twelve women's perfumes sit under 1200. ❌ CRITICAL on turn 9: blaming the budget, or implying a list of matching options exists ('دي كل الخيارات المتاحة اللي بتناسب ميزانيتك') when the search returned nothing. The customer was never shown options to be at the end of. ❌ Never quote a price for any perfume that is not one of the figures above.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عندكو اي ؟",
+      "reply": "بتدور على عطر رجالي ولا حريمي؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "exclude_names": [
+          "Bleu de Chanel",
+          "Dior Sauvage"
+        ]
+      },
+      "merged_intent": {
+        "exclude_names": [
+          "Bleu de Chanel",
+          "Dior Sauvage"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "حريمي",
+      "reply": "قولي ذوقك، بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية ولا العود؟ ولا بتحبي الحاجات المسكرة؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "المسكره",
+      "reply": "عندنا Jasmino من تصميمنا الخاص، ريحته مسكرة وفيها لمسة فانيليا ومسك ناعم، مناسبة للاستخدام اليومي وكمان للمساء. وكمان Vanilo، دافي وفيه مزيج من التوابل والفانيليا مع لمسة تبغ، مناسب للشتا والسهرات. أنا أرشحلك Jasmino أكتر لأنه أنعم وأنيق للاستخدام اليومي.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "female",
+        "notes": [
+          "sweet"
+        ]
+      },
+      "merged_intent": {
+        "gender": "female",
+        "notes": [
+          "sweet"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Good Girl",
+          "La Vie Est Belle",
+          "Black Opium",
+          "Libre",
+          "Flowerbomb",
+          "Coco Mademoiselle",
+          "Jasmino",
+          "Vanilo",
+          "XJ 1861 Naxos",
+          "Oud Wood",
+          "Erba Pura"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Good Girl": {
+            "score": 3.626,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "La Vie Est Belle": {
+            "score": 3.4,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Black Opium": {
+            "score": 3.226,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Libre": {
+            "score": 3.209,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Flowerbomb": {
+            "score": 3.2,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Coco Mademoiselle": {
+            "score": 3.186,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Jasmino": {
+            "score": 3.186,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Vanilo": {
+            "score": 0.48,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "XJ 1861 Naxos": {
+            "score": 0.453,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Oud Wood": {
+            "score": 0.386,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          },
+          "Erba Pura": {
+            "score": 0.238,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 9039,
+      "context": "\nName (الاسم الصحيح): Good Girl\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Carolina Herrera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 650.00 EGP\n- الـ 90 ملي: 1083.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Almond, Coffee, Bergamot\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Tonka Bean, Cacao, Vanilla\nDescription: A daring duality of light and dark in one seductive scent\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): La Vie Est Belle\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 669.00 EGP\n- الـ 90 ملي: 1046.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Currant, Pear\nMiddle Notes: Iris, Jasmine, Orange Blossom\nBase Notes: Praline, Vanilla, Patchouli\nDescription: An iconic gourmand floral celebrating happiness and femininity\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Black Opium\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 677.00 EGP\n- الـ 90 ملي: 883.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Orange Blossom\nMiddle Notes: Coffee, Jasmine\nBase Notes: Vanilla, Patchouli, Cedar\nDescription: An addictive gourmand fragrance blending coffee and vanilla\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 561.00 EGP\n- الـ 90 ملي: 927.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Mandarin, Ginger\nMiddle Notes: Orange Blossom, Jasmine\nBase Notes: Vanilla, Musk, Cedar\nDescription: A daring blend of lavender and orange blossom for the free-spirited\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 577.00 EGP\n- الـ 90 ملي: 928.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea\nMiddle Notes: Jasmine, Orchid, Freesia\nBase Notes: Patchouli, Musk, Vanilla\nDescription: An explosive floral bouquet with a warm, sweet base\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Coco Mademoiselle\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 534.00 EGP\n- الـ 90 ملي: 1006.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Orange, Bergamot, Mandarin\nMiddle Notes: Jasmine, Rose, Mimosa\nBase Notes: Patchouli, Vetiver, Vanilla\nDescription: An elegant, modern chypre with an oriental twist\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP\n- الـ 90 ملي: 897.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Oud Wood\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tom Ford) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1160.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall/Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Rosewood, Cardamom\nMiddle Notes: Oud, Sandalwood\nBase Notes: Vetiver, Amber, Tonka Bean\nDescription: An exotic, smoky-woody fragrance built around rare oud\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2700.00 EGP\n- الـ 90 ملي: 4900.00 EGP\n- زجاجة أوريجينال 50 ملي: 20000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 36000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: A juicy citrus-fruit oriental with a creamy vanilla-musk base.\n\n-------------------------\n✅ ليه مناسب: فيه sweet\n",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "بكام الاتنين",
+      "reply": "Jasmino: Jasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.؛ Jasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.\n\nVanilo: Vanilo — زجاجة البراند 90 ملي بـ897.00 جنيه.؛ Vanilo — زجاجة البراند 50 ملي بـ607.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2820,
+      "context": "\nName (الاسم الصحيح): Jasmino\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 578.00 EGP\n- الـ 90 ملي: 1106.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: All Seasons\nOccasion: Daily\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Bergamot, Green Notes, Mandarin\nMiddle Notes: Jasmine Sambac, Tuberose, Ylang Ylang\nBase Notes: Sandalwood, White Musk, Vanilla\nDescription: A luminous white floral built around jasmine sambac, layered with creamy tuberose and a soft musky-vanilla finish. Elegant enough for the office, warm enough for the evening.\n\n-------------------------\n\nName (الاسم الصحيح): Vanilo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 607.00 EGP\n- الـ 90 ملي: 897.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: عطور شرقية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom, Orange Peel\nMiddle Notes: Tonka Bean, Praline, Cinnamon\nBase Notes: Vanilla, Tobacco, Amber\nDescription: A cozy, gourmand fragrance with a smoky edge. Sweet tonka bean and praline are balanced by warm tobacco and amber, making it a comforting choice for cold evenings.\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 33, \"variant_id\": 97, \"name\": \"Jasmino\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"578.00\"}, {\"product_id\": 33, \"variant_id\": 148, \"name\": \"Jasmino\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1106.00\"}, {\"product_id\": 34, \"variant_id\": 149, \"name\": \"Vanilo\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"897.00\"}, {\"product_id\": 34, \"variant_id\": 100, \"name\": \"Vanilo\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"607.00\"}], \"append\": false, \"text\": \"Jasmino: Jasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.؛ Jasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.\\n\\nVanilo: Vanilo — زجاجة البراند 90 ملي بـ897.00 جنيه.؛ Vanilo — زجاجة البراند 50 ملي بـ607.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "ماشي عايزه 50 ملي من كل واحد اجربهم",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Jasmino (50ml) بـ 578 جنيه\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 1185 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 99,
+      "context": "Jasmino (50 ملي) (زجاجة البراند) x 1 (578.00 EGP), Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP)",
+      "findings": [
+        [
+          "wrong_variant_price",
+          "critical",
+          "Vanilo: quoted 1185 for the requested variant; expected ['607.00']"
+        ]
+      ]
+    },
+    {
+      "n": 6,
+      "user": "عندكو سترينجر ويذ يو ؟",
+      "reply": "Stronger With You متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 1982,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 400.00 EGP\n- الـ 90 ملي: 700.00 EGP\n- زجاجة أوريجينال 100 ملي: 3800.00 EGP\n- زجاجة أوريجينال 200 ملي: 6800.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You Absolutely، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 700 جنيه، وسعر الـ 50 ملي 400 جنيه، والفرق بين الحجمين 300 جنيه، بس سعر الملي أرخص: 7.8 بدل 8.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Casual/Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Cardamom, Pink Pepper, Violet Leaf, Mint\nMiddle Notes: Pineapple, Cinnamon, Melon, Sage, Lavender\nBase Notes: Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood\nDescription: A warm aromatic fougere of spiced lavender and sweet chestnut-vanilla.\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 7,
+      "user": "زودلي اتنين 50 ملي",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Jasmino (50ml) بـ 578 جنيه\n- 1 × Vanilo (50ml) بـ 607 جنيه\n- 2 × Stronger With You (50ml) بـ 800 جنيه\nالمجموع: 1985 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 160,
+      "context": "Jasmino (50 ملي) (زجاجة البراند) x 1 (578.00 EGP), Vanilo (50 ملي) (زجاجة البراند) x 1 (607.00 EGP), Stronger With You (50 ملي) (زجاجة البراند) x 2 (800.00 EGP)",
+      "findings": [
+        [
+          "wrong_variant_price",
+          "critical",
+          "Stronger With You: quoted 1985 for the requested variant; expected ['800.00']"
+        ]
+      ]
+    },
+    {
+      "n": 8,
+      "user": "عندكو حاجه من فيرزاتشي ؟",
+      "reply": "مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": "Versace",
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "Versace",
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "sweet"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "requested_volume": 50
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "keeping": [],
+      "dropped": {
+        "Stronger With You": "مش من نفس النوع اللي طلبه",
+        "Vanilo": "مش من البراند اللي طلبه",
+        "Jasmino": "مش من البراند اللي طلبه"
+      },
+      "offered": [
+        "Jasmino",
+        "Stronger With You",
+        "Vanilo"
+      ],
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": []
+    },
+    {
+      "n": 9,
+      "user": "1200",
+      "reply": "مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": "Versace",
+        "max_price": 1200,
+        "purchase_quantity": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "Versace",
+        "max_price": 1200,
+        "purchase_quantity": null,
+        "clear_preferences": [],
+        "requested_volume": 50,
+        "gender": "female",
+        "notes": [
+          "sweet"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "keeping": [],
+      "dropped": {
+        "Stronger With You": "مش من نفس النوع اللي طلبه",
+        "Vanilo": "مش من البراند اللي طلبه",
+        "Jasmino": "مش من البراند اللي طلبه"
+      },
+      "offered": [
+        "Jasmino",
+        "Stronger With You",
+        "Vanilo"
+      ],
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟'"
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "user": "بص انا عايزاه لجوزي مش ليا",
+      "reply": "• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "male"
+      },
+      "merged_intent": {
+        "gender": "male",
+        "requested_volume": 50,
+        "max_price": 1200,
+        "brand": "Versace",
+        "notes": [
+          "sweet"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Eros"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Eros": {
+            "score": 4.816,
+            "reasons": [
+              "فيه sweet"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [
+        "Jasmino",
+        "Stronger With You",
+        "Vanilo"
+      ],
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 352,
+      "context": "• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 23, \"variant_id\": 67, \"name\": \"Eros\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"666.00\"}], \"append\": false, \"text\": \"• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 11,
+      "user": "ازاي اعلي من ميزانيتي",
+      "reply": "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟",
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 0,
+      "context": "",
+      "findings": []
+    },
+    {
+      "n": 12,
+      "user": "انا ميزانيتي 1200",
+      "reply": "• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "max_price": 1200,
+        "gender": "male",
+        "brand": "Versace"
+      },
+      "merged_intent": {
+        "max_price": 1200,
+        "gender": "male",
+        "brand": "Versace",
+        "requested_volume": 50,
+        "notes": [
+          "sweet"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Eros"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Eros": {
+            "score": 5.316,
+            "reasons": [
+              "فيه sweet",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [
+        "Eros"
+      ],
+      "dropped": {},
+      "offered": [
+        "Eros",
+        "Jasmino",
+        "Stronger With You",
+        "Vanilo"
+      ],
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 33,
+            "variant__product__name": "Jasmino",
+            "variant_id": 97,
+            "name": "Jasmino",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "578.00"
+          },
+          {
+            "variant__product_id": 34,
+            "variant__product__name": "Vanilo",
+            "variant_id": 100,
+            "name": "Vanilo",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "607.00"
+          },
+          {
+            "variant__product_id": 49,
+            "variant__product__name": "Stronger With You",
+            "variant_id": 211,
+            "name": "Stronger With You",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "400.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 352,
+      "context": "• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 23, \"variant_id\": 67, \"name\": \"Eros\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"666.00\"}], \"append\": false, \"text\": \"• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\", \"budget\": null}",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي'"
+        ]
+      ]
+    }
+  ],
+  "findings": [
+    [
+      "wrong_variant_price",
+      "critical",
+      "Vanilo: quoted 1185 for the requested variant; expected ['607.00']"
+    ],
+    [
+      "wrong_variant_price",
+      "critical",
+      "Stronger With You: quoted 1985 for the requested variant; expected ['800.00']"
+    ],
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟'"
+    ],
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي'"
+    ]
+  ],
+  "error": null,
+  "final_preferences": {
+    "requested_volume": 50,
+    "gender": "male",
+    "max_price": 1200,
+    "brand": "Versace",
+    "notes": [
+      "sweet"
+    ]
+  },
+  "seconds": 57.6,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV931 — category: regression — persona: hard_budget\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 931. The stated budget is 1200 EGP, per bottle. Versace has exactly ONE perfume in this catalogue: Eros, a MEN'S perfume, 50ml 666 and 90ml 1019. Both sizes are UNDER 1200. There is no women's Versace at any price. The cart built over turns 5 and 7 holds 1 × Good Girl 50ml at 650, 1 × La Vie Est Belle 50ml at 669, and 2 × Stronger With You 50ml at 400 each — a real order total of 2119. Good Girl is 90ml 1083, La Vie Est Belle is 90ml 1046. ❌ CRITICAL on turns 10, 11 and 12: saying or implying that Eros' 90ml at 1019, or its 50ml at 666, is above / outside / more than the customer's budget. 1019 < 1200. Both sizes are in budget and the injected context labels them so. ❌ CRITICAL: quoting 353 as a gap between a price and the budget. 353 is 1019 − 666, the difference between the two SIZES of Eros. Any sentence that puts that number next to the word ميزانية is false however the arithmetic got there. The same goes for any other difference figure lifted from the value note: the value comparison is between two bottles of the same perfume and has no budget content in it. ✅ Required on turn 10: both Eros sizes named with their real prices and stated to be within the budget — and Eros named as a MEN'S perfume, which is what the customer asked for once they said لجوزي. ✅ Required on turn 11 ('ازاي اعلي من ميزانيتي'): a plain retraction. The customer is correct and the previous reply was wrong. Say so — 'معاك حق، الاتنين داخل ميزانيتك' — and give the two prices again. ❌ CRITICAL: repeating the over-budget claim on turn 11 or 12 after being challenged. Repeating a false statement the customer has just disproved is worse than making it the first time, and it is what turned this conversation into a loop. ❌ CRITICAL: answering turn 11 or 12 by changing the subject. An objection to a factual error is answered by correcting the error, not by moving on from it. ✅ Allowed, and true: a statement about the ORDER TOTAL being more than 1200 — 2119 really is more than 1200. The budget is per bottle and the basket has four bottles in it, so this is a different claim from the one banned above and it is not a finding. It must be about the total, by name, and never about a single size. ✅ Required on turn 9 (Versace, women's, 1200): name the actual reason nothing matched — Versace's only perfume here is a men's — and offer either Eros for the husband or a women's perfume from another brand. Twelve women's perfumes sit under 1200. ❌ CRITICAL on turn 9: blaming the budget, or implying a list of matching options exists ('دي كل الخيارات المتاحة اللي بتناسب ميزانيتك') when the search returned nothing. The customer was never shown options to be at the end of. ❌ Never quote a price for any perfume that is not one of the figures above.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عندكو اي ؟\n[internal] classified_as=recommendation sales_stage=discovery objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Bleu de Chanel\", \"Dior Sauvage\"]}\nAGENT: بتدور على عطر رجالي ولا حريمي؟\n\n--- TURN 2 ---\nCUSTOMER: حريمي\n[internal] classified_as=recommendation sales_stage=discovery objection=None\n[internal] extracted_intent={\"gender\": \"female\"}\nAGENT: قولي ذوقك، بتحبي الريحة الفريش والخفيفة ولا التقيلة والخشبية ولا العود؟ ولا بتحبي الحاجات المسكرة؟\n\n--- TURN 3 ---\nCUSTOMER: المسكره\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"female\", \"notes\": [\"sweet\"]}\n[internal] shortlist_shown_to_model=['Good Girl', 'La Vie Est Belle', 'Black Opium', 'Libre', 'Flowerbomb', 'Coco Mademoiselle', 'Jasmino', 'Vanilo', 'XJ 1861 Naxos', 'Oud Wood', 'Erba Pura']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Good Girl\": {\"score\": 3.626, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"La Vie Est Belle\": {\"score\": 3.4, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Black Opium\": {\"score\": 3.226, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Libre\": {\"score\": 3.209, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Flowerbomb\": {\"score\": 3.2, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Coco Mademoiselle\": {\"score\": 3.186, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Jasmino\": {\"score\": 3.186, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Vanilo\": {\"score\": 0.48, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"XJ 1861 Naxos\": {\"score\": 0.453, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Oud Wood\": {\"score\": 0.386, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}, \"Erba Pura\": {\"score\": 0.238, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}}\nAGENT: عندنا Jasmino من تصميمنا الخاص، ريحته مسكرة وفيها لمسة فانيليا ومسك ناعم، مناسبة للاستخدام اليومي وكمان للمساء. وكمان Vanilo، دافي وفيه مزيج من التوابل والفانيليا مع لمسة تبغ، مناسب للشتا والسهرات. أنا أرشحلك Jasmino أكتر لأنه أنعم وأنيق للاستخدام اليومي.\n\n--- TURN 4 ---\nCUSTOMER: بكام الاتنين\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Jasmino: Jasmino — زجاجة البراند 50 ملي بـ578.00 جنيه.؛ Jasmino — زجاجة البراند 90 ملي بـ1106.00 جنيه.\n\nVanilo: Vanilo — زجاجة البراند 90 ملي بـ897.00 جنيه.؛ Vanilo — زجاجة البراند 50 ملي بـ607.00 جنيه.\n\n--- TURN 5 ---\nCUSTOMER: ماشي عايزه 50 ملي من كل واحد اجربهم\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Jasmino (50ml) بـ 578 جنيه\n- 1 × Vanilo (50ml) بـ 607 جنيه\nالمجموع: 1185 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.\n\n--- TURN 6 ---\nCUSTOMER: عندكو سترينجر ويذ يو ؟\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: Stronger With You متوفر عندنا، تحب تعرف عن حجم معين أو سعره؟\n\n--- TURN 7 ---\nCUSTOMER: زودلي اتنين 50 ملي\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Jasmino (50ml) بـ 578 جنيه\n- 1 × Vanilo (50ml) بـ 607 جنيه\n- 2 × Stronger With You (50ml) بـ 800 جنيه\nالمجموع: 1985 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.\n\n--- TURN 8 ---\nCUSTOMER: عندكو حاجه من فيرزاتشي ؟\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"brand\": \"Versace\", \"gender\": \"female\", \"notes\": [\"sweet\"], \"requested_volume\": 50}\n[internal] shortlist_shown_to_model=[]\n[internal] similarity_summary=null\nAGENT: مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟\n\n--- TURN 9 ---\nCUSTOMER: 1200\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"brand\": \"Versace\", \"max_price\": 1200, \"requested_volume\": 50, \"gender\": \"female\", \"notes\": [\"sweet\"]}\n[internal] shortlist_shown_to_model=[]\n[internal] similarity_summary=null\nAGENT: مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟\n\n--- TURN 10 ---\nCUSTOMER: بص انا عايزاه لجوزي مش ليا\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"requested_volume\": 50, \"max_price\": 1200, \"brand\": \"Versace\", \"notes\": [\"sweet\"]}\n[internal] shortlist_shown_to_model=['Eros']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Eros\": {\"score\": 4.816, \"reasons\": [\"فيه sweet\"], \"mismatches\": []}}\nAGENT: • Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\n\n--- TURN 11 ---\nCUSTOMER: ازاي اعلي من ميزانيتي\n[internal] classified_as=faq sales_stage=discovery objection=None\n[internal] extracted_intent={}\nAGENT: تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟\n\n--- TURN 12 ---\nCUSTOMER: انا ميزانيتي 1200\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"max_price\": 1200, \"gender\": \"male\", \"brand\": \"Versace\", \"requested_volume\": 50, \"notes\": [\"sweet\"]}\n[internal] shortlist_shown_to_model=['Eros']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Eros\": {\"score\": 5.316, \"reasons\": [\"فيه sweet\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}}\nAGENT: • Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Black Opium | brand=Yves Saint Laurent | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Orange Blossom | mid=Coffee, Jasmine | base=Vanilla, Patchouli, Cedar | sizes: brand 50ml=677EGP; brand 90ml=883EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Moderate | top=Orange, Bergamot, Mandarin | mid=Jasmine, Rose, Mimosa | base=Patchouli, Vetiver, Vanilla | sizes: brand 50ml=534EGP; brand 90ml=1006EGP\n- Erba Pura | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=8 hours | projection=Strong | top=Sicilian Orange, Calabrian Bergamot, Sicilian Lemon | mid=Fruits | base=White Musk, Madagascar Vanilla, Amber | sizes: brand 50ml=2700EGP; brand 90ml=4900EGP; original 50ml=20000EGP stock=3; original 100ml=36000EGP stock=1\n- Eros | brand=Versace | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Strong | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss | sizes: brand 50ml=666EGP; brand 90ml=1019EGP\n- Flowerbomb | brand=Viktor & Rolf | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Strong | top=Bergamot, Tea | mid=Jasmine, Orchid, Freesia | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=577EGP; brand 90ml=928EGP\n- Good Girl | brand=Carolina Herrera | gender=female | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Almond, Coffee, Bergamot | mid=Tuberose, Jasmine | base=Tonka Bean, Cacao, Vanilla | sizes: brand 50ml=650EGP; brand 90ml=1083EGP\n- Jasmino | brand=Perfamix | gender=female | type=oriental | season=All Seasons | occasion=Daily | longevity=7 hours | projection=Moderate | top=Bergamot, Green Notes, Mandarin | mid=Jasmine Sambac, Tuberose, Ylang Ylang | base=Sandalwood, White Musk, Vanilla | sizes: brand 50ml=578EGP; brand 90ml=1106EGP\n- La Vie Est Belle | brand=Lancome | gender=female | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Strong | top=Black Currant, Pear | mid=Iris, Jasmine, Orange Blossom | base=Praline, Vanilla, Patchouli | sizes: brand 50ml=669EGP; brand 90ml=1046EGP\n- Libre | brand=Yves Saint Laurent | gender=female | type=western | season=All Seasons | occasion=Formal | longevity=8 hours | projection=Strong | top=Lavender, Mandarin, Ginger | mid=Orange Blossom, Jasmine | base=Vanilla, Musk, Cedar | sizes: brand 50ml=561EGP; brand 90ml=927EGP\n- Oud Wood | brand=Tom Ford | gender=unisex | type=niche | season=Fall/Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Rosewood, Cardamom | mid=Oud, Sandalwood | base=Vetiver, Amber, Tonka Bean | sizes: brand 50ml=540EGP; brand 90ml=1160EGP\n- Stronger With You | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Casual/Evening | longevity=6 hours | projection=Moderate | top=Cardamom, Pink Pepper, Violet Leaf, Mint | mid=Pineapple, Cinnamon, Melon, Sage, Lavender | base=Vanilla, Chestnut, Amberwood, Cedar, Guaiac Wood | sizes: brand 50ml=400EGP; brand 90ml=700EGP; original 100ml=3800EGP stock=5; original 200ml=6800EGP stock=2\n- Vanilo | brand=Perfamix | gender=unisex | type=oriental | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Moderate | top=Cardamom, Orange Peel | mid=Tonka Bean, Praline, Cinnamon | base=Vanilla, Tobacco, Amber | sizes: brand 50ml=607EGP; brand 90ml=897EGP\n- XJ 1861 Naxos | brand=Xerjoff | gender=unisex | type=ultra_niche | season=All Seasons | occasion=Casual/Evening | longevity=10 hours | projection=Strong | top=Lavender, Bergamot, Lemon | mid=Honey, Cinnamon, Cashmeran, Jasmine Sambac | base=Tobacco Leaf, Vanilla, Tonka Bean | sizes: brand 50ml=2900EGP; brand 90ml=5200EGP; original 50ml=22000EGP stock=3; original 100ml=40000EGP stock=1\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n[\n [\n  \"wrong_variant_price\",\n  \"critical\",\n  \"Vanilo: quoted 1185 for the requested variant; expected ['607.00']\"\n ],\n [\n  \"wrong_variant_price\",\n  \"critical\",\n  \"Stronger With You: quoted 1985 for the requested variant; expected ['800.00']\"\n ],\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'مش لاقي اختيار بيحقق كل الشروط دي مع بعض. تحب تغيّر الحجم ولا الميزانية؟'\"\n ],\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Eros — زجاجة البراند 50 ملي بـ666.00 جنيه. ثباته حوالي 7 ساعات، فوحانه قوي'\"\n ]\n]\n\n[context] Final saved preferences after the conversation: {\"requested_volume\": 50, \"gender\": \"male\", \"max_price\": 1200, \"brand\": \"Versace\", \"notes\": [\"sweet\"]}"
+}

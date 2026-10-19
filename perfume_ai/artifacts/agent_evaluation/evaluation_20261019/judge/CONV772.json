@@ -1,0 +1,56 @@
+{
+  "scores": {
+    "intent_understanding": 4,
+    "constraint_extraction": 2,
+    "memory": 8,
+    "recommendation_quality": 7,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 8,
+    "objection_handling": null,
+    "sales_effectiveness": 6,
+    "closing_timing": null,
+    "human_feel": 7,
+    "trust": 6
+  },
+  "what_worked": [
+    "Turn 2 reply correctly confirmed and sold the stocked perfume: \"عطر Versace Eros متوفر عندنا، والـ90 ملي بـ1019 جنيه، والـ50 ملي بـ666 جنيه.\" (accurate sizes and prices matching the database).",
+    "Turn 3 followed up with a clear, customer-facing question: \"تحب أساعدك تختار الحجم المناسب؟\" — moved the sale forward and invited choice.",
+    "Product facts (longevity/projection etc. not stated) — agent stuck to verifiable price/size facts for Eros."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Failed to answer the customer's initial direct availability question for 'جنتل مان' with the required plain denial and alternatives.",
+      "why_wrong": "Customer asked: \"موجود عطر جنتل مان ؟\" The store catalogue does NOT include جنتل مان. The required handling is a one-sentence apology + plain denial using the customer's Arabic spelling and offering one or two stocked alternatives. Instead the agent replied: \"ممكن تكتب لي اسم العطر تاني...\" which leaves the customer waiting and does not give the required alternatives.",
+      "expected": "Plainly say 'للأسف مش متوفر عطر جنتل مان' (echoing the Arabic name), apologize briefly, and immediately offer one or two stocked alternatives by full name."
+    },
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "Turn 1 missed an immediate sales opportunity and created friction.",
+      "why_wrong": "Asking the customer to rewrite the name rather than denying availability and offering alternatives wastes the customer's time and doesn't move the sale; the customer had already written the name clearly.",
+      "expected": "Offer alternatives (e.g., Eros) in the same reply so the customer can continue the purchase flow without extra steps."
+    },
+    {
+      "severity": "medium",
+      "category": "ux",
+      "what": "Use of Latin 'Versace Eros' in reply instead of using the customer's preferred Arabic script forms.",
+      "why_wrong": "While the agent did correctly offer Eros and gave right prices, the scenario guidance prefers matching customer script (the customer used 'ڤيرزاتشي ايروس') and using local orthography improves rapport.",
+      "expected": "Acknowledge the customer's phrasing (e.g. 'ڤيرزاتشي ايروس متوفر...') then state sizes/prices."
+    },
+    {
+      "severity": "low",
+      "category": "prompt",
+      "what": "Slight repetition between Turn 2 and Turn 3 answers.",
+      "why_wrong": "Turn 3 repeats the same price/size info; a better response could have asked a single focused question (preferred size / deliver now / reserve) to progress the sale.",
+      "expected": "After confirming sizes/prices once, ask a single clear next step: 'تحب أجهزلك زجاجة 50 ولا 90؟' or offer delivery/branch pickup options."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable as-is. The agent redeemed the interaction by correctly confirming and pricing Eros, but the critical failure on Turn 1 (not plainly denying 'جنتل مان' and not offering alternatives immediately) is a serious UX/sales mistake that a floor sales manager would correct before accepting this turn.",
+  "id": "CONV772",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 6.333333333333333
+}

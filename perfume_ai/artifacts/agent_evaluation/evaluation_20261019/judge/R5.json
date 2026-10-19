@@ -1,0 +1,49 @@
+{
+  "scores": {
+    "intent_understanding": 9,
+    "constraint_extraction": 9,
+    "memory": 9,
+    "recommendation_quality": 8,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 8,
+    "objection_handling": null,
+    "sales_effectiveness": 6,
+    "closing_timing": null,
+    "human_feel": 8,
+    "trust": 9
+  },
+  "what_worked": [
+    "فهم الطلب: جاب العطر اللي فيه ambroxan و lavender — «Dior Sauvage مناسب جداً ليك لأنه فيه ambroxan وlavender» (مطابقة لقاعدة البيانات).",
+    "قدم خيار بديل وذكر الفرق بوضوح: «Eros فيه ambroxan بس مش مسجل فيه lavender» — توضيح مفيد للعميل.",
+    "لغة بسيطة وطبيعية مناسبة لمحادثة بيع قصيرة."
+  ],
+  "failures": [
+    {
+      "severity": "medium",
+      "category": "recommendation",
+      "what": "نقص التفاصيل الفنية المتوقعة من 'خبير'",
+      "why_wrong": "المطلوب من شخصية 'expert' تسمية جزيئات ومداخل تقنية (مثلاً توضيح أن ambroxan هو مركب أمبروكسان صناعي وتأثيره على قاعدة العطر)، لكن الرد اكتفى بذكر الاسمين فقط دون تفسير تقني.",
+      "expected": "يشرح بشكل قصير دور الـ ambroxan (مكون أمبروكسان يعطي قاعدة أمبري/خشبية ومسطّح الرائحة) وأين يظهر (قاعدة في Sauvage)، ويقارن تأثير lavender في الوسط العطري."
+    },
+    {
+      "severity": "low",
+      "category": "sales",
+      "what": "ما سألش أسئلة متابعة ولا عرض خيارات عملية للشراء",
+      "why_wrong": "العميل ذكر النوع والمناسبة؛ البائع كان ممكن يسأل عن الميزانية، الحجم المفضل، أو يعرض الأحجام/أسعار أو وجود عينات/أوريجينال لتجربة — الرد توقف عند التوصية فقط.",
+      "expected": "سأل 'حابب 50 ولا 90؟' أو قدم سعر/مخزون أو عرض تجربة/عينه لتحريك الصفقة للأمام."
+    },
+    {
+      "severity": "low",
+      "category": "intent",
+      "what": "لم يذكر عطور أخرى ذات صلة تليق بالطلب",
+      "why_wrong": "في القوائم عطور تانية فيها lavender (مثل Le Male, Stronger With You) ولو العميل يفضل lavender أكثر من ambroxan كان ممكن ذكرها كبدائل؛ الرد ذكر Sauvage وEros فقط.",
+      "expected": "ذكر بدائل مناسبة وواضحة: Sauvage (مطابق جيد)، وLe Male أو Stronger With You كخيارات فيها lavender لكن بدون ambroxan، مع توضيح الفروقات."
+    }
+  ],
+  "salesperson_verdict": "الرد مقبول كموجز سريع ونصيحة عملية — كمدير مبيعات أقبله لكن أتوقع من مندوب 'خبير' إضافة شرح تقني قصير وطرح سؤال متابعة عن الحجم/ميزانية أو عرض تجربة لتقوية فرصة البيع.",
+  "id": "R5",
+  "category": "recommendation",
+  "suite": "core",
+  "mean_score": 8.444444444444445
+}

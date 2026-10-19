@@ -1,0 +1,1248 @@
+{
+  "id": "CONV1005",
+  "category": "regression",
+  "persona": "ready_buyer",
+  "probe": "Replay of conversation 1005. Two failures at checkout: \"ماشي هات 90 ملي من اول واحد ده\" put BOTH perfumes in the cart (the ordinal means one — Le Male, listed first) including Noirvel 90ml at 1085 against a stated 900 budget; and \"مش عايز 1 × Noirvel (90ml)\" — a removal of one line out of two — cancelled the whole order and erased the name, phone and address, forcing the customer to retype everything. Removing one item must EDIT the order, keep the other perfume and keep the contact details.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز برفان ثابت للجيم وفريش",
+      "reply": "Silver Mountain Water من Creed ريحته منعشة ونظيفة وبتناسب النشاط الرياضي، وكمان ينفع للراجل وللست، بس ثباته حوالي 6 ساعات. Erba Pura من Xerjoff برضه مناسب جداً، ريحته فريش وثباته حوالي 8 ساعات، وده بيطابق طلبك أكتر. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": "gym",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": "gym",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Silver Mountain Water",
+          "Erba Pura",
+          "Invictus",
+          "Acqua di Gio",
+          "Green Irish Tweed",
+          "Accento Overdose",
+          "Citrolo",
+          "XJ 1861 Naxos",
+          "Dior Sauvage",
+          "Le Male",
+          "Light Blue",
+          "Bleu de Chanel"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Silver Mountain Water": {
+            "score": 3.095,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Erba Pura": {
+            "score": 3.071,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته بيطابق طلبه (8 hours)",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Invictus": {
+            "score": 2.902,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Acqua di Gio": {
+            "score": 2.639,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Green Irish Tweed": {
+            "score": 2.583,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Accento Overdose": {
+            "score": 2.58,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Citrolo": {
+            "score": 2.451,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "XJ 1861 Naxos": {
+            "score": 2.277,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (10 hours)",
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Dior Sauvage": {
+            "score": 2.034,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          },
+          "Le Male": {
+            "score": 2.015,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Light Blue": {
+            "score": 2.004,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Bleu de Chanel": {
+            "score": 2.001,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 10868,
+      "context": "\nName (الاسم الصحيح): Silver Mountain Water\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3100.00 EGP\n- الـ 90 ملي: 5700.00 EGP\n- زجاجة أوريجينال 50 ملي: 24000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 43000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange\nMiddle Notes: Green Tea, Black Currant\nBase Notes: Musk, Petitgrain, Sandalwood, Galbanum\nDescription: A crisp, mentholated aromatic evoking cold mountain streams.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية | ينفع للراجل وللست\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2700.00 EGP\n- الـ 90 ملي: 4900.00 EGP\n- زجاجة أوريجينال 50 ملي: 20000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 36000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: A juicy citrus-fruit oriental with a creamy vanilla-musk base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته بيطابق طلبه (8 hours) | ينفع للراجل وللست\n\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP\n- الـ 90 ملي: 1032.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Accento Overdose\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2800.00 EGP\n- الـ 90 ملي: 5000.00 EGP\n- زجاجة أوريجينال 50 ملي: 21000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 38000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Pineapple, Green Notes, Aldehydes\nMiddle Notes: Egyptian Jasmine, Bulgarian Rose\nBase Notes: Eucalyptus, Mediterranean Pine\nDescription: A fruity floral amplified with an intense molecule for extra projection.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية | ينفع للراجل وللست\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Citrolo\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال.\"\nAvailable Sizes & Prices:\n- الـ 50 ملي: 598.00 EGP\n- الـ 90 ملي: 943.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور شرقية\nSeason: Spring/Summer\nOccasion: Daily\nLongevity: 5 hours\nProjection: Light\nTop Notes: Mandarin, Lemon, Bergamot\nMiddle Notes: Orange Blossom, Freesia, Jasmine\nBase Notes: White Musk, Blonde Woods\nDescription: A sunny, uplifting blend of citrus and white flowers. Light and effortless, it's designed for everyday wear when you want a fresh, clean signature scent.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): XJ 1861 Naxos\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 2900.00 EGP\n- الـ 90 ملي: 5200.00 EGP\n- زجاجة أوريجينال 50 ملي: 22000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 40000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: الترا نيش (بريميوم)\nSeason: All Seasons\nOccasion: Casual/Evening\nLongevity: 10 hours\nProjection: Strong\nTop Notes: Lavender, Bergamot, Lemon\nMiddle Notes: Honey, Cinnamon, Cashmeran, Jasmine Sambac\nBase Notes: Tobacco Leaf, Vanilla, Tonka Bean\nDescription: A rich citrus gourmand inspired by Sicily, blending honeyed spice with tobacco.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (10 hours) | ينفع للراجل وللست\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8–10 hrs)\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Light Blue\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dolce & Gabbana) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 691.00 EGP\n- الـ 90 ملي: 852.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 5 hours\nProjection: Moderate\nTop Notes: Sicilian Lemon, Apple, Cedar\nMiddle Notes: Bamboo, Jasmine, White Rose\nBase Notes: Musk, Amber, Cedar\nDescription: A vibrant, fresh Mediterranean-inspired citrus fragrance\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8–10 hrs)\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "رجالي",
+      "reply": "أنصحك بـ Dior Sauvage لأنه ثابت من 8 لـ10 ساعات وريحته فريش وقوية، فده أنسب لطلبك.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "notes": [
+          "fresh"
+        ],
+        "occasion": "gym"
+      },
+      "merged_intent": {
+        "gender": "male",
+        "longevity": "long-lasting",
+        "notes": [
+          "fresh"
+        ],
+        "occasion": "gym"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Invictus",
+          "Acqua di Gio",
+          "Green Irish Tweed",
+          "Dior Sauvage",
+          "Le Male",
+          "Bleu de Chanel",
+          "Dior Homme Sport",
+          "Eros",
+          "Y Eau de Parfum",
+          "Afnan 9PM",
+          "Stronger With You Absolutely",
+          "Dior Homme Intense"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Invictus": {
+            "score": 5.902,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Acqua di Gio": {
+            "score": 5.639,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Green Irish Tweed": {
+            "score": 5.583,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Dior Sauvage": {
+            "score": 5.034,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          },
+          "Le Male": {
+            "score": 5.015,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Bleu de Chanel": {
+            "score": 5.001,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          },
+          "Dior Homme Sport": {
+            "score": 4.988,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Eros": {
+            "score": 4.756,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Y Eau de Parfum": {
+            "score": 4.094,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Afnan 9PM": {
+            "score": 3.667,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8–11 hrs)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله",
+              "موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Stronger With You Absolutely": {
+            "score": 3.654,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Dior Homme Intense": {
+            "score": 3.502,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening/Formal، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          }
+        }
+      },
+      "keeping": [
+        "Erba Pura",
+        "Silver Mountain Water"
+      ],
+      "dropped": {},
+      "offered": [
+        "Erba Pura",
+        "Silver Mountain Water"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 10820,
+      "context": "\nName (الاسم الصحيح): Invictus\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 540.00 EGP\n- الـ 90 ملي: 1102.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Sport\nLongevity: 6 hours\nProjection: Strong\nTop Notes: Marine Notes, Grapefruit, Mandarin\nMiddle Notes: Bay Leaf, Hedione\nBase Notes: Guaiac Wood, Ambergris, Oakmoss\nDescription: A fresh, powerful fragrance inspired by the spirit of victory\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP\n- الـ 90 ملي: 1032.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Green Irish Tweed\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 3300.00 EGP\n- الـ 90 ملي: 6000.00 EGP\n- زجاجة أوريجينال 50 ملي: 26000.00 EGP (3 زجاجة فقط)\n- زجاجة أوريجينال 100 ملي: 46000.00 EGP (1 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Spring/Summer\nOccasion: Business/Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Iris, Lemon Verbena\nMiddle Notes: Violet Leaf\nBase Notes: Ambergris, Sandalwood\nDescription: A precision-crafted fougere: crisp citrus and iris over sandalwood.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8–10 hrs)\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 645.00 EGP\n- الـ 90 ملي: 1015.00 EGP\n- زجاجة أوريجينال 50 ملي: 800.00 EGP\n- زجاجة أوريجينال 100 ملي: 1400.00 EGP\n- زجاجة أوريجينال 150 ملي: 1700.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office, Formal, Daily\nLongevity: 8–10 hrs\nProjection: Moderate–Strong\nTop Notes: Grapefruit, Lemon, Mint\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Cedar, Sandalwood, Patchouli\nDescription: Elegant, clean and luxurious with excellent versatility.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8–10 hrs)\n\nName (الاسم الصحيح): Dior Homme Sport\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 450.00 EGP\n- الـ 90 ملي: 1100.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Aldehydes\nMiddle Notes: Elemi, Pink Pepper\nBase Notes: Woody Notes, Amber, Olibanum\nDescription: An energetic citrus-woody scent with a spicy frankincense heart.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله | ثباته أقل من اللي طلبه شوية\n⚠️ مش مطابق في: ثباته أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 666.00 EGP\n- الـ 90 ملي: 1019.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss\nDescription: A powerful, sensual fragrance inspired by the Greek god of love\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Y Eau de Parfum\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Yves Saint Laurent) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 594.00 EGP\n- الـ 90 ملي: 900.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Formal\nLongevity: 7 hours\nProjection: Strong\nTop Notes: Apple, Bergamot, Ginger\nMiddle Notes: Sage, Juniper Berries\nBase Notes: Tonka Bean, Cedar, Amberwood\nDescription: A modern, intense fragrance for the confident and free-spirited man\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه (7 hours)\n\nName (الاسم الصحيح): Afnan 9PM\nBrand: Afnan\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 508.00 EGP\n- الـ 90 ملي: 1077.00 EGP\n- زجاجة أوريجينال 100 ملي: 881.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور شرقية\nSeason: Fall & Winter\nOccasion: Night out, Parties, Dates\nLongevity: 8–11 hrs\nProjection: Strong\nTop Notes: Apple, Cinnamon, Wild Lavender, Bergamot\nMiddle Notes: Orange Blossom, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Amber, Patchouli\nDescription: Sweet, playful and seductive fragrance, often compared to premium clubbing scents.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه (8–11 hrs)\n⚠️ مش مطابق في: مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله | موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Emporio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 480.00 EGP\n- الـ 90 ملي: 830.00 EGP\n- زجاجة أوريجينال 100 ملي: 4500.00 EGP\n- زجاجة أوريجينال 200 ملي: 8000.00 EGP (2 زجاجة فقط)\n⚠️ عطر مختلف عن: Stronger With You، Stronger With You Intensely — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: The most intense flanker: boozy rum and spice over a woody-vanilla base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه (8 hours)\n⚠️ مش مطابق في: مناسبته المسجلة Evening، مش اللي قاله | موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله\n\nName (الاسم الصحيح): Dior Homme Intense\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 550.00 EGP\n- الـ 90 ملي: 1300.00 EGP\n- زجاجة أوريجينال 100 ملي: 5500.00 EGP\n- زجاجة أوريجينال 200 ملي: 9800.00 EGP (2 زجاجة فقط)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall/Winter\nOccasion: Evening/Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender\nMiddle Notes: Iris, Ambrette, Pear\nBase Notes: Virginia Cedar, Vetiver\nDescription: A refined woody floral musk built around powdery iris and warm cedar.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | ثباته بيطابق طلبه (8 hours)\n⚠️ مش مطابق في: مناسبته المسجلة Evening/Formal، مش اللي قاله | موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله\n",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "بكام ده",
+      "reply": "Dior Sauvage ريحته فريش وقوية، مناسبة للاستخدام اليومي والجيم، وثباته حوالي 8 لـ10 ساعات مع فوحان قوي خصوصاً في البداية. الحجم اللي عليه 💡 اقتراح هو 90 ملي، وفيه كمان 50 ملي وزجاجات أوريجينال بأحجام مختلفة لو حابب. تحب أجهزلك الطلب؟\n\nDior Sauvage — زجاجة البراند 90 ملي بـ944.00 جنيه.\nDior Sauvage — زجاجة البراند 50 ملي بـ642.00 جنيه.\nDior Sauvage — زجاجة أوريجينال 100 ملي بـ815.00 جنيه.\nDior Sauvage — زجاجة أوريجينال 200 ملي بـ1623.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2193,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Dior Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- الـ 50 ملي: 642.00 EGP\n- الـ 90 ملي: 944.00 EGP\n- زجاجة أوريجينال 100 ملي: 815.00 EGP (2 زجاجة فقط)\n- زجاجة أوريجينال 200 ملي: 1623.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 944 جنيه، وسعر الـ 50 ملي 642 جنيه، والفرق بين الحجمين 302 جنيه، بس سعر الملي أرخص: 10.5 بدل 12.8 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nزجاجة أوريجينال 60 ملي\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily, Office, Dates\nLongevity: 8–10 hrs\nProjection: Strong\nTop Notes: Bergamot, Mandarin\nMiddle Notes: Lavender, Nutmeg, Star Anise\nBase Notes: Ambroxan, Vanilla\nDescription: Fresh, masculine, versatile and modern.\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1, \"variant_id\": 158, \"name\": \"Dior Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"944.00\"}, {\"product_id\": 1, \"variant_id\": 1, \"name\": \"Dior Sauvage\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"642.00\"}, {\"product_id\": 1, \"variant_id\": 169, \"name\": \"Dior Sauvage\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"815.00\"}, {\"product_id\": 1, \"variant_id\": 170, \"name\": \"Dior Sauvage\", \"volume\": 200, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1623.00\"}], \"append\": true, \"text\": \"Dior Sauvage — زجاجة البراند 90 ملي بـ944.00 جنيه.\\nDior Sauvage — زجاجة البراند 50 ملي بـ642.00 جنيه.\\nDior Sauvage — زجاجة أوريجينال 100 ملي بـ815.00 جنيه.\\nDior Sauvage — زجاجة أوريجينال 200 ملي بـ1623.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "في اي تاني طيب يكون 90 ملي في حدود 900 جنيه",
+      "reply": "• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "gender": "male",
+        "requested_volume": 90,
+        "max_price": 900,
+        "exclude_names": [
+          "Dior Sauvage"
+        ],
+        "budget_strict": false
+      },
+      "merged_intent": {
+        "gender": "male",
+        "requested_volume": 90,
+        "max_price": 900,
+        "exclude_names": [
+          "Dior Sauvage"
+        ],
+        "budget_strict": false,
+        "occasion": "gym",
+        "notes": [
+          "fresh"
+        ],
+        "longevity": "long-lasting"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Acqua di Gio",
+          "Le Male",
+          "Bleu de Chanel",
+          "Eros",
+          "Y Eau de Parfum",
+          "Afnan 9PM",
+          "Stronger With You Absolutely",
+          "Safrano",
+          "1 Million",
+          "Leatherio",
+          "Armani Code",
+          "Stronger With You Intensely"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Acqua di Gio": {
+            "score": 7.139,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Le Male": {
+            "score": 6.515,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Bleu de Chanel": {
+            "score": 6.501,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          },
+          "Eros": {
+            "score": 6.256,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Y Eau de Parfum": {
+            "score": 5.594,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Afnan 9PM": {
+            "score": 5.167,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8–11 hrs)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله",
+              "موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Stronger With You Absolutely": {
+            "score": 5.154,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Safrano": {
+            "score": 4.984,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (11 hours)"
+            ],
+            "mismatches": [
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "1 Million": {
+            "score": 4.951,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Leatherio": {
+            "score": 4.884,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (9 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Armani Code": {
+            "score": 4.88,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Stronger With You Intensely": {
+            "score": 4.853,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {
+        "Dior Sauvage": null
+      },
+      "offered": [
+        "Dior Sauvage",
+        "Erba Pura",
+        "Silver Mountain Water"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 817,
+      "context": "• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 10, \"variant_id\": 125, \"name\": \"Acqua di Gio\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1032.00\"}, {\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}], \"append\": false, \"text\": \"• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\\n\\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\\n\\nأرشحلك Acqua di Gio لأنه فيه fresh.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "دول ينفعو للجيم ؟",
+      "reply": "• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": "gym",
+        "max_price": 900.0,
+        "longevity": "long-lasting",
+        "projection": null,
+        "exclude_names": [
+          "Dior Sauvage"
+        ],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": "per_item",
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": "gym",
+        "max_price": 900.0,
+        "longevity": "long-lasting",
+        "projection": null,
+        "exclude_names": [
+          "Dior Sauvage"
+        ],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": "per_item",
+        "budget_strict": false,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "requested_volume": 90
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Acqua di Gio",
+          "Le Male",
+          "Bleu de Chanel",
+          "Eros",
+          "Y Eau de Parfum",
+          "Afnan 9PM",
+          "Stronger With You Absolutely",
+          "Safrano",
+          "1 Million",
+          "Leatherio",
+          "Armani Code",
+          "Stronger With You Intensely"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Acqua di Gio": {
+            "score": 7.639,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله",
+              "ثباته أقل من اللي طلبه شوية",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": [
+              "ثباته أقل من اللي طلبه شوية"
+            ]
+          },
+          "Le Male": {
+            "score": 7.015,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)",
+              "العميل بيتكلم عنه بالفعل"
+            ],
+            "mismatches": []
+          },
+          "Bleu de Chanel": {
+            "score": 6.501,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (8–10 hrs)"
+            ],
+            "mismatches": []
+          },
+          "Eros": {
+            "score": 6.256,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Y Eau de Parfum": {
+            "score": 5.594,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": []
+          },
+          "Afnan 9PM": {
+            "score": 5.167,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8–11 hrs)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله",
+              "موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Stronger With You Absolutely": {
+            "score": 5.154,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Safrano": {
+            "score": 4.984,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (11 hours)"
+            ],
+            "mismatches": [
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "1 Million": {
+            "score": 4.951,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Leatherio": {
+            "score": 4.884,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (9 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Armani Code": {
+            "score": 4.88,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (7 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          },
+          "Stronger With You Intensely": {
+            "score": 4.853,
+            "reasons": [
+              "فيه fresh",
+              "ثباته بيطابق طلبه (8 hours)"
+            ],
+            "mismatches": [
+              "مناسبته المسجلة Evening، مش اللي قاله",
+              "موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله"
+            ]
+          }
+        }
+      },
+      "keeping": [
+        "Acqua di Gio",
+        "Le Male"
+      ],
+      "dropped": {
+        "Dior Sauvage": null
+      },
+      "offered": [
+        "Acqua di Gio",
+        "Dior Sauvage",
+        "Erba Pura",
+        "Le Male",
+        "Silver Mountain Water"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 817,
+      "context": "• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 10, \"variant_id\": 125, \"name\": \"Acqua di Gio\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1032.00\"}, {\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}], \"append\": false, \"text\": \"• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\\n\\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\\n\\nأرشحلك Acqua di Gio لأنه فيه fresh.\", \"budget\": null}",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• '"
+        ]
+      ]
+    },
+    {
+      "n": 6,
+      "user": "قولي النوتات",
+      "reply": "Acqua di Gio فيه نوتات عليا من البرغموت، النيرولي، والنوتات الخضراء، ونوتات وسطى من الياسمين، الكالون، وإكليل الجبل، وقاعدة من المسك، الأرز، والباتشولي. \nLe Male نوتاته العليا نعناع، لافندر، وبرغموت، والوسطى قرفة، كمون، وزهر البرتقال، والقاعدة فانيليا، خشب الصندل، وحبوب التونكا.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2453,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1032.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 856 جنيه، وسعر الـ 50 ملي 623 جنيه، والفرق بين الحجمين 233 جنيه، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 233 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 7,
+      "user": "والتاني ؟",
+      "reply": "Le Male ريحته مميزة بمزيج من النعناع واللافندر والبرغموت في البداية، وبعدين بتظهر نكهات القرفة والكمون وزهر البرتقال، وفي النهاية ريحة الفانيليا مع خشب الصندل وحبوب التونكا.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 1540,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 856 جنيه، وسعر الـ 50 ملي 623 جنيه، والفرق بين الحجمين 233 جنيه، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 233 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 8,
+      "user": "انهي فيهم مسكر اكتر ؟",
+      "reply": "Le Male: ثباته حوالي 7 ساعات، فوحانه متوسط.\nAcqua di Gio: ثباته حوالي 6 ساعات، فوحانه متوسط.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2453,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 1032.00 EGP ⚠️ (أعلى حاجة بسيطة من الميزانية — تقدر تعرضه بشرط تقول سعره المكتوب وجملة \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف، من غير أي رقم فرق)\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP ✅ (داخل الميزانية)\n- الـ 90 ملي: 856.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 856 جنيه، وسعر الـ 50 ملي 623 جنيه، والفرق بين الحجمين 233 جنيه، بس سعر الملي أرخص: 9.5 بدل 12.5 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 233 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 9,
+      "user": "قولتلي بكام",
+      "reply": "Le Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\n\nAcqua di Gio: Acqua di Gio — زجاجة البراند 50 ملي بـ503.00 جنيه.؛ Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2370,
+      "context": "\nName (الاسم الصحيح): Le Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 623.00 EGP\n- الـ 90 ملي: 856.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 7 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Bergamot\nMiddle Notes: Cinnamon, Cumin, Orange Blossom\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: A classic aromatic fougere with a sweet vanilla signature\n\n-------------------------\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Giorgio Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Giorgio Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة أوريجينال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- الـ 50 ملي: 503.00 EGP\n- الـ 90 ملي: 1032.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring/Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Neroli, Green Notes\nMiddle Notes: Jasmine, Calone, Rosemary\nBase Notes: Musk, Cedar, Patchouli\nDescription: A crisp, aquatic fragrance evoking the sea and sun\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 18, \"variant_id\": 136, \"name\": \"Le Male\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"856.00\"}, {\"product_id\": 18, \"variant_id\": 135, \"name\": \"Le Male\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"623.00\"}, {\"product_id\": 10, \"variant_id\": 28, \"name\": \"Acqua di Gio\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"503.00\"}, {\"product_id\": 10, \"variant_id\": 125, \"name\": \"Acqua di Gio\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1032.00\"}], \"append\": false, \"text\": \"Le Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\\n\\nAcqua di Gio: Acqua di Gio — زجاجة البراند 50 ملي بـ503.00 جنيه.؛ Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 10,
+      "user": "ماشي هات 90 ملي من اول واحد ده",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male (90ml) بـ 856 جنيه\nالمجموع: 856 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 18,
+            "variant__product__name": "Le Male",
+            "variant_id": 136,
+            "name": "Le Male",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "856.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 49,
+      "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 11,
+      "user": "محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 18,
+            "variant__product__name": "Le Male",
+            "variant_id": 136,
+            "name": "Le Male",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "856.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 49,
+      "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 12,
+      "user": "مش عايز 1 × Noirvel (90ml)",
+      "reply": "Noirvel مش متاح حالياً. تحب نشوف بديل مناسب ليك؟",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "Noirvel",
+            "volume": 90,
+            "line_id": "633abb318b954605a83aa1d500903dbc",
+            "quantity": 1,
+            "bottle_type": "normal"
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 17,
+      "context": "No products found",
+      "findings": []
+    },
+    {
+      "n": 13,
+      "user": "عايز Le Male (90ml)",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 18,
+            "variant__product__name": "Le Male",
+            "variant_id": 136,
+            "name": "Le Male",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "856.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 49,
+      "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: الم'"
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "user": "محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 18,
+            "variant__product__name": "Le Male",
+            "variant_id": 136,
+            "name": "Le Male",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "856.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 49,
+      "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: الم'"
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "user": "تمام",
+      "reply": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #1.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 1,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 49,
+      "context": "Le Male (90 ملي) (زجاجة البراند) x 1 (856.00 EGP)",
+      "findings": []
+    }
+  ],
+  "findings": [
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• '"
+    ],
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: الم'"
+    ],
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: الم'"
+    ]
+  ],
+  "error": null,
+  "final_preferences": {
+    "notes": [
+      "fresh"
+    ],
+    "gender": "male",
+    "occasion": "gym",
+    "longevity": "long-lasting",
+    "max_price": 900.0,
+    "budget_scope": "per_item",
+    "budget_strict": false,
+    "requested_volume": 90
+  },
+  "seconds": 164.3,
+  "suite": "replays",
+  "judge_evidence": "SCENARIO CONV1005 — category: regression — persona: ready_buyer\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nReplay of conversation 1005. Two failures at checkout: \"ماشي هات 90 ملي من اول واحد ده\" put BOTH perfumes in the cart (the ordinal means one — Le Male, listed first) including Noirvel 90ml at 1085 against a stated 900 budget; and \"مش عايز 1 × Noirvel (90ml)\" — a removal of one line out of two — cancelled the whole order and erased the name, phone and address, forcing the customer to retype everything. Removing one item must EDIT the order, keep the other perfume and keep the contact details.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز برفان ثابت للجيم وفريش\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"occasion\": \"gym\", \"longevity\": \"long-lasting\", \"notes\": [\"fresh\"]}\n[internal] shortlist_shown_to_model=['Silver Mountain Water', 'Erba Pura', 'Invictus', 'Acqua di Gio', 'Green Irish Tweed', 'Accento Overdose', 'Citrolo', 'XJ 1861 Naxos', 'Dior Sauvage', 'Le Male', 'Light Blue', 'Bleu de Chanel']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Silver Mountain Water\": {\"score\": 3.095, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\", \"ينفع للراجل وللست\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Erba Pura\": {\"score\": 3.071, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته بيطابق طلبه (8 hours)\", \"ينفع للراجل وللست\"], \"mismatches\": []}, \"Invictus\": {\"score\": 2.902, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Acqua di Gio\": {\"score\": 2.639, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Green Irish Tweed\": {\"score\": 2.583, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Accento Overdose\": {\"score\": 2.58, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه ا\nAGENT: Silver Mountain Water من Creed ريحته منعشة ونظيفة وبتناسب النشاط الرياضي، وكمان ينفع للراجل وللست، بس ثباته حوالي 6 ساعات. Erba Pura من Xerjoff برضه مناسب جداً، ريحته فريش وثباته حوالي 8 ساعات، وده بيطابق طلبك أكتر. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\n\n--- TURN 2 ---\nCUSTOMER: رجالي\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"longevity\": \"long-lasting\", \"notes\": [\"fresh\"], \"occasion\": \"gym\"}\n[internal] shortlist_shown_to_model=['Invictus', 'Acqua di Gio', 'Green Irish Tweed', 'Dior Sauvage', 'Le Male', 'Bleu de Chanel', 'Dior Homme Sport', 'Eros', 'Y Eau de Parfum', 'Afnan 9PM', 'Stronger With You Absolutely', 'Dior Homme Intense']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Invictus\": {\"score\": 5.902, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Acqua di Gio\": {\"score\": 5.639, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Green Irish Tweed\": {\"score\": 5.583, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Dior Sauvage\": {\"score\": 5.034, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (8–10 hrs)\"], \"mismatches\": []}, \"Le Male\": {\"score\": 5.015, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Bleu de Chanel\": {\"score\": 5.001, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (8–10 hrs)\"], \"mismatches\": []}, \"Dior Homme Sport\": {\"score\": 4.988, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ث\nAGENT: أنصحك بـ Dior Sauvage لأنه ثابت من 8 لـ10 ساعات وريحته فريش وقوية، فده أنسب لطلبك.\n\n--- TURN 3 ---\nCUSTOMER: بكام ده\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Dior Sauvage ريحته فريش وقوية، مناسبة للاستخدام اليومي والجيم، وثباته حوالي 8 لـ10 ساعات مع فوحان قوي خصوصاً في البداية. الحجم اللي عليه 💡 اقتراح هو 90 ملي، وفيه كمان 50 ملي وزجاجات أوريجينال بأحجام مختلفة لو حابب. تحب أجهزلك الطلب؟\n\nDior Sauvage — زجاجة البراند 90 ملي بـ944.00 جنيه.\nDior Sauvage — زجاجة البراند 50 ملي بـ642.00 جنيه.\nDior Sauvage — زجاجة أوريجينال 100 ملي بـ815.00 جنيه.\nDior Sauvage — زجاجة أوريجينال 200 ملي بـ1623.00 جنيه.\n\n--- TURN 4 ---\nCUSTOMER: في اي تاني طيب يكون 90 ملي في حدود 900 جنيه\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"requested_volume\": 90, \"max_price\": 900, \"exclude_names\": [\"Dior Sauvage\"], \"occasion\": \"gym\", \"notes\": [\"fresh\"], \"longevity\": \"long-lasting\"}\n[internal] shortlist_shown_to_model=['Acqua di Gio', 'Le Male', 'Bleu de Chanel', 'Eros', 'Y Eau de Parfum', 'Afnan 9PM', 'Stronger With You Absolutely', 'Safrano', '1 Million', 'Leatherio', 'Armani Code', 'Stronger With You Intensely']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Acqua di Gio\": {\"score\": 7.139, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Le Male\": {\"score\": 6.515, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Bleu de Chanel\": {\"score\": 6.501, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (8–10 hrs)\"], \"mismatches\": []}, \"Eros\": {\"score\": 6.256, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Y Eau de Parfum\": {\"score\": 5.594, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Afnan 9PM\": {\"score\": 5.167, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (8–11 hrs)\"], \"mismatches\": [\"مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله\", \"موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله\"]}, \"Stronger With You Absolutely\": {\"score\": 5.154, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (8 hours)\"], \"mismatches\": [\"مناسبته المسجلة Evening، مش اللي قاله\", \"موسمه المسجل Fall/Winter، مش الأنسب للمجهود اللي قاله\"]}, \"Safrano\": {\"scor\nAGENT: • Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.\n\n--- TURN 5 ---\nCUSTOMER: دول ينفعو للجيم ؟\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"occasion\": \"gym\", \"max_price\": 900.0, \"longevity\": \"long-lasting\", \"exclude_names\": [\"Dior Sauvage\"], \"notes\": [\"fresh\"], \"budget_scope\": \"per_item\", \"requested_volume\": 90}\n[internal] shortlist_shown_to_model=['Acqua di Gio', 'Le Male', 'Bleu de Chanel', 'Eros', 'Y Eau de Parfum', 'Afnan 9PM', 'Stronger With You Absolutely', 'Safrano', '1 Million', 'Leatherio', 'Armani Code', 'Stronger With You Intensely']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Acqua di Gio\": {\"score\": 7.639, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"موسمه المسجل (Spring/Summer) مناسب للنشاط اللي قاله\", \"ثباته أقل من اللي طلبه شوية\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": [\"ثباته أقل من اللي طلبه شوية\"]}, \"Le Male\": {\"score\": 7.015, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (7 hours)\", \"العميل بيتكلم عنه بالفعل\"], \"mismatches\": []}, \"Bleu de Chanel\": {\"score\": 6.501, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (8–10 hrs)\"], \"mismatches\": []}, \"Eros\": {\"score\": 6.256, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Y Eau de Parfum\": {\"score\": 5.594, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (7 hours)\"], \"mismatches\": []}, \"Afnan 9PM\": {\"score\": 5.167, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (8–11 hrs)\"], \"mismatches\": [\"مناسبته المسجلة Night out, Parties, Dates، مش اللي قاله\", \"موسمه المسجل Fall & Winter، مش الأنسب للمجهود اللي قاله\"]}, \"Stronger With You Absolutely\": {\"score\": 5.154, \"reasons\": [\"فيه fresh\", \"ثباته بيطابق طلبه (8 hours)\"], \"mismatches\": [\"مناسبته المسجلة Evening، مش اللي قاله\", \"موسمه المسجل Fall/W\nAGENT: • Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\n\n• Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه. ثباته حوالي 7 ساعات، فوحانه متوسط\n\nأرشحلك Acqua di Gio لأنه فيه fresh.\n\n--- TURN 6 ---\nCUSTOMER: قولي النوتات\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: Acqua di Gio فيه نوتات عليا من البرغموت، النيرولي، والنوتات الخضراء، ونوتات وسطى من الياسمين، الكالون، وإكليل الجبل، وقاعدة من المسك، الأرز، والباتشولي. \nLe Male نوتاته العليا نعناع، لافندر، وبرغموت، والوسطى قرفة، كمون، وزهر البرتقال، والقاعدة فانيليا، خشب الصندل، وحبوب التونكا.\n\n--- TURN 7 ---\nCUSTOMER: والتاني ؟\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: Le Male ريحته مميزة بمزيج من النعناع واللافندر والبرغموت في البداية، وبعدين بتظهر نكهات القرفة والكمون وزهر البرتقال، وفي النهاية ريحة الفانيليا مع خشب الصندل وحبوب التونكا.\n\n--- TURN 8 ---\nCUSTOMER: انهي فيهم مسكر اكتر ؟\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: Le Male: ثباته حوالي 7 ساعات، فوحانه متوسط.\nAcqua di Gio: ثباته حوالي 6 ساعات، فوحانه متوسط.\n\n--- TURN 9 ---\nCUSTOMER: قولتلي بكام\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Le Male: Le Male — زجاجة البراند 90 ملي بـ856.00 جنيه.؛ Le Male — زجاجة البراند 50 ملي بـ623.00 جنيه.\n\nAcqua di Gio: Acqua di Gio — زجاجة البراند 50 ملي بـ503.00 جنيه.؛ Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه.\n\n--- TURN 10 ---\nCUSTOMER: ماشي هات 90 ملي من اول واحد ده\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male (90ml) بـ 856 جنيه\nالمجموع: 856 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.\n\n--- TURN 11 ---\nCUSTOMER: محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك\n[internal] classified_as=None sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 12 ---\nCUSTOMER: مش عايز 1 × Noirvel (90ml)\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: Noirvel مش متاح حالياً. تحب نشوف بديل مناسب ليك؟\n\n--- TURN 13 ---\nCUSTOMER: عايز Le Male (90ml)\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 14 ---\nCUSTOMER: محمد فؤاد 01153032052 01051089101 المقطم شارع 9 جنب فاميلي درينك\n[internal] classified_as=None sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: محمد فؤاد\n📱 الموبايل: 01153032052\n📞 موبايل بديل: 01051089101\n📍 العنوان: المقطم شارع 9 جنب فاميلي درينك\n\n🛍️ الطلب:\n- 1 × Le Male (90ml) - زجاجة البراند (السعر: 856.00 جنيه)\n\n💰 الإجمالي: 856.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 15 ---\nCUSTOMER: تمام\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #1.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- 1 Million | brand=Paco Rabanne | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=7 hours | projection=Strong | top=Blood Mandarin, Grapefruit, Mint | mid=Cinnamon, Rose, Spicy Notes | base=Leather, Amber, Patchouli | sizes: brand 50ml=514EGP; brand 90ml=888EGP\n- Accento Overdose | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Strong | top=Pineapple, Green Notes, Aldehydes | mid=Egyptian Jasmine, Bulgarian Rose | base=Eucalyptus, Mediterranean Pine | sizes: brand 50ml=2800EGP; brand 90ml=5000EGP; original 50ml=21000EGP stock=3; original 100ml=38000EGP stock=1\n- Acqua di Gio | brand=Giorgio Armani | gender=male | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Neroli, Green Notes | mid=Jasmine, Calone, Rosemary | base=Musk, Cedar, Patchouli | sizes: brand 50ml=503EGP; brand 90ml=1032EGP\n- Afnan 9PM | brand=Afnan | gender=male | type=oriental | season=Fall & Winter | occasion=Night out, Parties, Dates | longevity=8–11 hrs | projection=Strong | top=Apple, Cinnamon, Wild Lavender, Bergamot | mid=Orange Blossom, Lily of the Valley | base=Vanilla, Tonka Bean, Amber, Patchouli | sizes: brand 50ml=508EGP; brand 90ml=1077EGP; original 100ml=881EGP stock=27\n- Armani Code | brand=Giorgio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=7 hours | projection=Moderate | top=Bergamot, Lemon | mid=Guaiac Wood, Star Anise, Olive Blossom | base=Tonka Bean, Leather, Tobacco | sizes: brand 50ml=633EGP; brand 90ml=866EGP\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office, Formal, Daily | longevity=8–10 hrs | projection=Moderate–Strong | top=Grapefruit, Lemon, Mint | mid=Ginger, Nutmeg, Jasmine | base=Incense, Cedar, Sandalwood, Patchouli | sizes: brand 50ml=645EGP; brand 90ml=1015EGP; original 50ml=800EGP stock=6; original 100ml=1400EGP stock=8; original 150ml=1700EGP stock=17\n- Citrolo | brand=Perfamix | gender=female | type=oriental | season=Spring/Summer | occasion=Daily | longevity=5 hours | projection=Light | top=Mandarin, Lemon, Bergamot | mid=Orange Blossom, Freesia, Jasmine | base=White Musk, Blonde Woods | sizes: brand 50ml=598EGP; brand 90ml=943EGP\n- Dior Homme Intense | brand=Dior | gender=male | type=western | season=Fall/Winter | occasion=Evening/Formal | longevity=8 hours | projection=Moderate | top=Lavender | mid=Iris, Ambrette, Pear | base=Virginia Cedar, Vetiver | sizes: brand 50ml=550EGP; brand 90ml=1300EGP; original 100ml=5500EGP stock=5; original 200ml=9800EGP stock=2\n- Dior Homme Sport | brand=Dior | gender=male | type=western | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Lemon, Bergamot, Aldehydes | mid=Elemi, Pink Pepper | base=Woody Notes, Amber, Olibanum | sizes: brand 50ml=450EGP; brand 90ml=1100EGP; original 100ml=4500EGP stock=5; original 200ml=8000EGP stock=2\n- Dior Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | occasion=Daily, Office, Dates | longevity=8–10 hrs | projection=Strong | top=Bergamot, Mandarin | mid=Lavender, Nutmeg, Star Anise | base=Ambroxan, Vanilla | sizes: brand 50ml=642EGP; brand 90ml=944EGP; original 60ml=456EGP stock=0; original 100ml=815EGP stock=2; original 200ml=1623EGP stock=10\n- Erba Pura | brand=Xerjoff | gender=unisex | type=ultra_niche | season=Spring/Summer | occasion=Casual | longevity=8 hours | projection=Strong | top=Sicilian Orange, Calabrian Bergamot, Sicilian Lemon | mid=Fruits | base=White Musk, Madagascar Vanilla, Amber | sizes: brand 50ml=2700EGP; brand 90ml=4900EGP; original 50ml=20000EGP stock=3; original 100ml=36000EGP stock=1\n- Eros | brand=Versace | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Strong | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss | sizes: brand 50ml=666EGP; brand 90ml=1019EGP\n- Green Irish Tweed | brand=Creed | gender=male | type=niche | season=Spring/Summer | occasion=Business/Casual | longevity=7 hours | projection=Moderate | top=Iris, Lemon Verbena | mid=Violet Leaf | base=Ambergris, Sandalwood | sizes: brand 50ml=3300EGP; brand 90ml=6000EGP; original 50ml=26000EGP stock=3; original 100ml=46000EGP stock=1\n- Invictus | brand=Paco Rabanne | gender=male | type=western | season=Spring/Summer | occasion=Sport | longevity=6 hours | projection=Strong | top=Marine Notes, Grapefruit, Mandarin | mid=Bay Leaf, Hedione | base=Guaiac Wood, Ambergris, Oakmoss | sizes: brand 50ml=540EGP; brand 90ml=1102EGP\n- Le Male | brand=Jean Paul Gaultier | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=7 hours | projection=Moderate | top=Mint, Lavender, Bergamot | mid=Cinnamon, Cumin, Orange Blossom | base=Vanilla, Sandalwood, Tonka Bean | sizes: brand 50ml=623EGP; brand 90ml=856EGP\n- Leatherio | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Evening | longevity=9 hours | projection=Strong | top=Black Pepper, Juniper, Bergamot | mid=Leather, Tobacco Leaf, Cedar | base=Oud, Amber, Vetiver | sizes: brand 50ml=513EGP; brand 90ml=1075EGP\n- Light Blue | brand=Dolce & Gabbana | gender=female | type=western | season=Spring/Summer | occasion=Casual | longevity=5 hours | projection=Moderate | top=Sicilian Lemon, Apple, Cedar | mid=Bamboo, Jasmine, White Rose | base=Musk, Amber, Cedar | sizes: brand 50ml=691EGP; brand 90ml=852EGP\n- Safrano | brand=Perfamix | gender=male | type=oriental | season=Fall/Winter | occasion=Special Occasion | longevity=11 hours | projection=Very Strong | top=Saffron, Bergamot, Cardamom | mid=Rose, Oud, Cinnamon | base=Amber, Leather, Musk | sizes: brand 50ml=651EGP; brand 90ml=1024EGP\n- Silver Mountain Water | brand=Creed | gender=unisex | type=niche | season=Spring/Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Mandarin Orange | mid=Green Tea, Black Currant | base=Musk, Petitgrain, Sandalwood, Galbanum | sizes: brand 50ml=3100EGP; brand 90ml=5700EGP; original 50ml=24000EGP stock=3; original 100ml=43000EGP stock=1\n- Stronger With You Absolutely | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Rum, Elemi, Bergamot | mid=Lavender, Davana | base=Chestnut, Madagascar Vanilla, Cedar, Patchouli | sizes: brand 50ml=480EGP; brand 90ml=830EGP; original 100ml=4500EGP stock=5; original 200ml=8000EGP stock=2\n- Stronger With You Intensely | brand=Emporio Armani | gender=male | type=western | season=Fall/Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Juniper, Violet | mid=Toffee, Cinnamon, Lavender, Sage | base=Vanilla, Tonka Bean, Amber, Suede | sizes: brand 50ml=450EGP; brand 90ml=780EGP; original 100ml=4200EGP stock=5; original 200ml=7500EGP stock=2\n- XJ 1861 Naxos | brand=Xerjoff | gender=unisex | type=ultra_niche | season=All Seasons | occasion=Casual/Evening | longevity=10 hours | projection=Strong | top=Lavender, Bergamot, Lemon | mid=Honey, Cinnamon, Cashmeran, Jasmine Sambac | base=Tobacco Leaf, Vanilla, Tonka Bean | sizes: brand 50ml=2900EGP; brand 90ml=5200EGP; original 50ml=22000EGP stock=3; original 100ml=40000EGP stock=1\n- Y Eau de Parfum | brand=Yves Saint Laurent | gender=male | type=western | season=All Seasons | occasion=Formal | longevity=7 hours | projection=Strong | top=Apple, Bergamot, Ginger | mid=Sage, Juniper Berries | base=Tonka Bean, Cedar, Amberwood | sizes: brand 50ml=594EGP; brand 90ml=900EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي لكننا بنركز اكتر عالبيع اونلاين\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nللريفيو والتقييم بعد الشراء: \"\"https://perfamix.com/Review\"\"\n\nانت متقدرش تتابع الاوردر بنفسك لو عميل طلب منك ده فإعتذرله وقوله ان ده شغل المندوب البشري واعرض عليه انه يتحول للمندوب البشري وقوله يكتب رقمه للتواصل\nواول ما يكتب رقمه قوله ان المندوب البشري هيتواصل معاه وحول المحادثه لخدمه العملاء انت\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العروض]\nعندنا عروض ممتازة حالياً! تقدر تشوف كل عروضنا والباكدجات على الويبسايت.\n1- بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه 🎁\n2- الاتنين حجم 90 مل عليهم 50 مل هدية  2000 جنيه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n[\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: '• Acqua di Gio — زجاجة البراند 90 ملي بـ1032.00 جنيه. أعلى حاجة بسيطة من ميزانيتك. ثباته حوالي 6 ساعات، فوحانه متوسط\\n\\n• '\"\n ],\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\\n\\n👤 الاسم: محمد فؤاد\\n📱 الموبايل: 01153032052\\n📞 موبايل بديل: 01051089101\\n📍 العنوان: الم'\"\n ],\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تمام، راجع معايا تفاصيل الطلب كده:\\n\\n👤 الاسم: محمد فؤاد\\n📱 الموبايل: 01153032052\\n📞 موبايل بديل: 01051089101\\n📍 العنوان: الم'\"\n ]\n]\n\n[context] Final saved preferences after the conversation: {\"notes\": [\"fresh\"], \"gender\": \"male\", \"occasion\": \"gym\", \"longevity\": \"long-lasting\", \"max_price\": 900.0, \"budget_scope\": \"per_item\", \"budget_strict\": false, \"requested_volume\": 90}"
+}

@@ -1,0 +1,76 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 1,
+    "recommendation_quality": 2,
+    "similarity_accuracy": null,
+    "product_accuracy": 4,
+    "confidence_calibration": 2,
+    "objection_handling": 1,
+    "sales_effectiveness": 2,
+    "closing_timing": null,
+    "human_feel": 3,
+    "trust": 1
+  },
+  "what_worked": [
+    "Gave correct prices for Bleu de Chanel that match the STORE/DATABASE facts: e.g. 'Bleu de Chanel — زجاجة البراند 90 ملي بـ1015.00 جنيه.'",
+    "Presented Stronger With You Intensely with accurate size prices that match the DATABASE facts (50ml 450, 90ml 780) and listed its recorded notes and positioning."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Did not plainly state that 'لادور بخور' is not in the catalogue and apologised in the first reply.",
+      "why_wrong": "Customer asked 'عندك لادور بخور ؟' and the scenario requires an immediate plain denial echoing the Arabic name. Instead the agent asked to re-write the name ('ممكن تكتب اسم العطر تاني') which delays and contradicts the required immediate denial.",
+      "expected": "Reply immediately: short apology + 'لادور بخور مش موجود عندنا' (echoing the customer's Arabic) and offer the two stocked alternatives (Dior Homme Sport and/or Bleu de Chanel) in the same reply."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Repeatedly asked to 'check' or asked for the name again across multiple turns instead of holding the previously established denial.",
+      "why_wrong": "Scenario forbids promising to check between turns. The agent's 'ممكن تكتب اسم العطر تاني' / similar prompts create a false promise of lookup and leave the customer waiting.",
+      "expected": "Do not promise to check; after initial catalogue search the agent must answer directly and move on to suggestions."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "Failed to offer the two specific perfumes that actually answer a 'بخور' request (Dior Homme Sport and Bleu de Chanel).",
+      "why_wrong": "Scenario states the two stocked perfumes that match an incense request are Dior Homme Sport and Bleu de Chanel. Agent instead offered Stronger With You Intensely (which is in DB but not one of the two required suggestions) and only later provided Bleu de Chanel pricing. No mention of Dior Homme Sport anywhere.",
+      "expected": "Offer Bleu de Chanel and Dior Homme Sport by full name as different perfumes in the initial reply after denying لادور بخور."
+    },
+    {
+      "severity": "high",
+      "category": "recommendation",
+      "what": "When customer chased 'ها لقيتو ؟' the agent replied again asking to clarify name instead of maintaining the denial and moving on to alternatives.",
+      "why_wrong": "Customer was explicitly following up on the earlier question; agent should have repeated the denial and offered alternatives. Asking again shows failure to understand and wastes the customer's patience.",
+      "expected": "Repeat the short denial and immediately propose the stocked alternatives."
+    },
+    {
+      "severity": "high",
+      "category": "objection",
+      "what": "When customer asked prices ('طب عاملين كام دو' and later 'وبلو دي شانيل ؟' and 'بكام يعم') the agent gave inconsistent handling: priced Stronger With You Intensely (which was never offered as one of the incense matches) and later repeated long product description and longevity claims as fact.",
+      "why_wrong": "The conversation flow required pricing every perfume that was actually offered by name. The agent priced Stronger With You Intensely but failed to price Dior Homme Sport (which should have been offered) and only later gave prices for Bleu de Chanel. The long description in turn 6 included claims that, while some match DB for Bleu de Chanel, the earlier behavior forced repeated customer prompting.",
+      "expected": "Price each offered perfume by name when asked in plural; answer 'وبلو دي شانيل؟' with Bleu de Chanel prices directly and concisely."
+    },
+    {
+      "severity": "medium",
+      "category": "product_accuracy",
+      "what": "Agent repeatedly used the tactic of asking clarifying re-writes and phrased availability as if unsure ('ممكن تكتب... عايز أتأكد') which implies catalogue issues or lookup.",
+      "why_wrong": "Scenario forbids mentioning system/data and forbids implying a lookup is happening. Customer must never see 'مش ظاهر عندي' or similar. The agent's phrasing suggests uncertainty and lookup rather than confident stock knowledge.",
+      "expected": "Confident, definitive phrasing: 'لادور بخور مش موجود عندنا، آسف. ممكن أقترح عليك...' and then name the alternatives."
+    },
+    {
+      "severity": "low",
+      "category": "human",
+      "what": "Tone and phrasing were polite but repetitive and robotic; repeated identical clarification requests across three turns.",
+      "why_wrong": "Asking the same clarification repeatedly after the customer clearly wrote the name is frustrating and feels like stalling.",
+      "expected": "Short, human Egyptian phrasing: quick denial then helpful alternatives, fewer repetitive requests."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable: a senior sales manager would not accept this turn. The agent failed to follow the required immediate denial for a non-stocked perfume, created false expectations of checking, omitted offering the mandated alternative (Dior Homme Sport), and forced the customer to ask prices multiple times.",
+  "id": "CONV835",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 1.9
+}

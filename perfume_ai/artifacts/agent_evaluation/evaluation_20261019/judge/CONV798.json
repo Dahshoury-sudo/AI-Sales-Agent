@@ -1,0 +1,62 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 1,
+    "recommendation_quality": 0,
+    "similarity_accuracy": null,
+    "product_accuracy": 2,
+    "confidence_calibration": 2,
+    "objection_handling": null,
+    "sales_effectiveness": 1,
+    "closing_timing": null,
+    "human_feel": 2,
+    "trust": 1
+  },
+  "what_worked": [
+    "agent used polite Egyptian register: 'يا فندم' and 'عايز أتأكد' which is customer-friendly",
+    "agent consistently asked for clarification instead of assuming, avoiding a wrong-match recommendation"
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Ignored the customer's explicit answer and repeated the same clarification question",
+      "why_wrong": "Customer replied 'بقول لادور بخور' but agent again asked 'ممكن توضح...' — this violates rule 7 (asking a question the customer already answered) and frustrates the buyer",
+      "expected": "A senior salesperson would accept the named perfume and respond (deny if not in catalogue) or offer alternatives; do not re-ask the exact same clarification."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "Failed to deny the named perfume and offer stocked alternatives in the same reply",
+      "why_wrong": "Store-configured handling requires: on first contact explicitly state 'مش عندنا لادور بخور' with an apology and immediately offer one or two stocked incense-capable perfumes by full name (e.g., Dior Homme Sport, Bleu de Chanel). Agent never did this.",
+      "expected": "Say plainly the perfume is not carried, apologize, echo customer's Arabic name, and offer 1–2 stocked alternatives with brief reasons."
+    },
+    {
+      "severity": "high",
+      "category": "memory",
+      "what": "Did not retain customer's latest preference/name across turns",
+      "why_wrong": "The customer's freshest input 'لادور بخور' should override earlier ambiguity; agent failed to use it and kept asking the same question, scoring 0–2 under rule 5.",
+      "expected": "Use the latest explicit customer input and proceed accordingly (deny/offer alternatives or confirm stock)."
+    },
+    {
+      "severity": "medium",
+      "category": "trust",
+      "what": "Repetitive robotic phrasing and no helpful content diminished trust",
+      "why_wrong": "Repeating the same sentence three times signals either system failure or inattentiveness; customers interpret this as low competence/trustworthiness per rule 10.",
+      "expected": "Respond naturally in Egyptian Arabic, avoid word-for-word repetition, and provide a useful next step."
+    },
+    {
+      "severity": "medium",
+      "category": "product",
+      "what": "No recommendation or citation of supported store-configured facts",
+      "why_wrong": "The agent missed the opportunity to use allowed store facts (e.g., offering incense-capable stocked perfumes) and so gave nothing the customer can act on.",
+      "expected": "Offer Dior Homme Sport and/or Bleu de Chanel (both stocked) with short justification referencing their olibanum/incense base as allowed by the scenario."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable. This turn fails core requirements: the agent ignored the customer's explicit answer, repeated the same request for clarification, and did not deny the named perfume or offer stocked alternatives — a senior sales manager would require retraining and a scripted correct reply immediately.",
+  "id": "CONV798",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 1.3333333333333333
+}

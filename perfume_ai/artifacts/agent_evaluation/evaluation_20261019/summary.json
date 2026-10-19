@@ -1,0 +1,409 @@
+{
+  "completed_utc": "2026-10-19T11:48:07.910273+00:00",
+  "commit": "3fd7b326056c5ea74d439612c6da8ee92d7cb52a",
+  "score_out_of_10": 6.65321468654802,
+  "rounded_score": 6.7,
+  "baseline_score_out_of_10": 6.5903158569825235,
+  "score_delta": 0.06289882956549686,
+  "score_method": "Mean applicable rubric dimensions per scenario, then equal-weight mean across all 63 scenarios; 24 updated and 39 retained.",
+  "baseline": "F:\\Programming\\Projects\\Ai_Agent\\perfume_ai\\artifacts\\agent_evaluation\\evaluation_20261018",
+  "baseline_files_unchanged": true,
+  "incremental": {
+    "rerun_ids": [
+      "C2",
+      "CONV1005",
+      "CONV1069",
+      "CONV1075",
+      "CONV1105",
+      "CONV726",
+      "CONV738",
+      "CONV768",
+      "CONV772",
+      "CONV795",
+      "CONV798",
+      "CONV799",
+      "CONV816",
+      "CONV817",
+      "CONV835",
+      "CONV836",
+      "CONV841",
+      "CONV931",
+      "CONV932",
+      "CONV973",
+      "CONV997",
+      "G1",
+      "M3",
+      "P2"
+    ],
+    "retained_ids": [
+      "C1",
+      "C3",
+      "CONV1021",
+      "CONV842",
+      "CONV990",
+      "CS1",
+      "CS2",
+      "D1",
+      "D2",
+      "D3",
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "G2",
+      "M1",
+      "M2",
+      "M4",
+      "O1",
+      "O2",
+      "O3",
+      "O4",
+      "O5",
+      "P1",
+      "P3",
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5",
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "X1",
+      "X2",
+      "X3",
+      "X4",
+      "X5"
+    ],
+    "rerun_scenarios": 24,
+    "retained_scenarios": 39,
+    "rerun_turns": 113,
+    "transcripts_and_grades_preserved": true,
+    "selected_previous_score": 4.647222222222222,
+    "selected_current_score": 4.812331649831649
+  },
+  "live": {
+    "scenarios": 63,
+    "turns": 185,
+    "new_api_calls": 339,
+    "skipped": 0,
+    "unhandled_scenario_errors": 0,
+    "raw_findings": {
+      "repeated_reply": 12,
+      "too_long": 2,
+      "filler_question": 1,
+      "wrong_variant_price": 2
+    }
+  },
+  "grading": {
+    "scenarios": 63,
+    "new_api_calls": 24,
+    "retained_grades": 39,
+    "model": "gpt-5-mini",
+    "reasoning_effort": "low",
+    "checker_corrections": {
+      "CONV931": "Manual verification of the UPDATED transcript: both wrong_variant_price flags are false positives. At turn 5, 1185 is explicitly the CART TOTAL: 578 for Jasmino 50 ml + 607 for Vanilo 50 ml = 1185. At turn 7, 1985 is explicitly the CART TOTAL: 578 + 607 + (2 * 400 for Stronger With You 50 ml) = 1985. The Stronger With You line amount 800 is correct for two bottles. These line prices match the saved catalogue evidence. Do not count either cart total as an incorrect item price. Assess the customer's budget, timing and context of that budget, repetitions and other issues independently; this correction excuses no budget or dialogue failure. The original checker flags remain in the saved results."
+    }
+  },
+  "cost": {
+    "budget_usd": "1.50",
+    "baseline_total_usd": "0.85287455",
+    "incremental_live_usd": "0.39862390",
+    "incremental_grading_usd": "0.10134740",
+    "incremental_total_usd": "0.49997130",
+    "total_usd": "1.35284585",
+    "remaining_usd": "0.14715415"
+  },
+  "dimensions": {
+    "closing_timing": {
+      "score": 6.076923076923077,
+      "n": 13
+    },
+    "confidence_calibration": {
+      "score": 6.920634920634921,
+      "n": 63
+    },
+    "constraint_extraction": {
+      "score": 6.285714285714286,
+      "n": 63
+    },
+    "human_feel": {
+      "score": 7.238095238095238,
+      "n": 63
+    },
+    "intent_understanding": {
+      "score": 6.904761904761905,
+      "n": 63
+    },
+    "memory": {
+      "score": 6.809523809523809,
+      "n": 63
+    },
+    "objection_handling": {
+      "score": 5.428571428571429,
+      "n": 21
+    },
+    "product_accuracy": {
+      "score": 8.253968253968255,
+      "n": 63
+    },
+    "recommendation_quality": {
+      "score": 5.984126984126984,
+      "n": 63
+    },
+    "sales_effectiveness": {
+      "score": 5.619047619047619,
+      "n": 63
+    },
+    "similarity_accuracy": {
+      "score": 7.4,
+      "n": 5
+    },
+    "trust": {
+      "score": 6.476190476190476,
+      "n": 63
+    }
+  },
+  "categories": {
+    "adversarial": {
+      "score": 7.2372615039281705,
+      "n": 9
+    },
+    "comparison": {
+      "score": 8.222222222222223,
+      "n": 3
+    },
+    "customer_service": {
+      "score": 7.65,
+      "n": 2
+    },
+    "discovery": {
+      "score": 8.494949494949495,
+      "n": 3
+    },
+    "gift": {
+      "score": 5.644444444444445,
+      "n": 2
+    },
+    "memory": {
+      "score": 7.172727272727273,
+      "n": 4
+    },
+    "objection": {
+      "score": 8.1,
+      "n": 5
+    },
+    "purchase": {
+      "score": 4.624848484848485,
+      "n": 5
+    },
+    "recommendation": {
+      "score": 8.73111111111111,
+      "n": 5
+    },
+    "regression": {
+      "score": 5.1177489177489175,
+      "n": 21
+    },
+    "similarity": {
+      "score": 8.458333333333334,
+      "n": 4
+    }
+  },
+  "suites": {
+    "core": {
+      "score": 7.420947570947571,
+      "n": 42
+    },
+    "replays": {
+      "score": 5.1177489177489175,
+      "n": 21
+    }
+  },
+  "changes": [
+    {
+      "id": "C2",
+      "previous": 4.111111111111111,
+      "current": 8.88888888888889,
+      "delta": 4.777777777777779
+    },
+    {
+      "id": "CONV1005",
+      "previous": 6.363636363636363,
+      "current": 4.909090909090909,
+      "delta": -1.4545454545454541
+    },
+    {
+      "id": "CONV1069",
+      "previous": 7.454545454545454,
+      "current": 6.545454545454546,
+      "delta": -0.9090909090909083
+    },
+    {
+      "id": "CONV1075",
+      "previous": 4.5,
+      "current": 3.6666666666666665,
+      "delta": -0.8333333333333335
+    },
+    {
+      "id": "CONV1105",
+      "previous": 9.11111111111111,
+      "current": 9.666666666666666,
+      "delta": 0.5555555555555554
+    },
+    {
+      "id": "CONV726",
+      "previous": 4.2,
+      "current": 6.3,
+      "delta": 2.0999999999999996
+    },
+    {
+      "id": "CONV738",
+      "previous": 7.7,
+      "current": 9.11111111111111,
+      "delta": 1.4111111111111105
+    },
+    {
+      "id": "CONV768",
+      "previous": 7.6,
+      "current": 4.5,
+      "delta": -3.0999999999999996
+    },
+    {
+      "id": "CONV772",
+      "previous": 6.7,
+      "current": 6.333333333333333,
+      "delta": -0.36666666666666714
+    },
+    {
+      "id": "CONV795",
+      "previous": 1.1111111111111112,
+      "current": 2.0,
+      "delta": 0.8888888888888888
+    },
+    {
+      "id": "CONV798",
+      "previous": 1.4444444444444444,
+      "current": 1.3333333333333333,
+      "delta": -0.11111111111111116
+    },
+    {
+      "id": "CONV799",
+      "previous": 2.6666666666666665,
+      "current": 2.111111111111111,
+      "delta": -0.5555555555555554
+    },
+    {
+      "id": "CONV816",
+      "previous": 2.111111111111111,
+      "current": 2.111111111111111,
+      "delta": 0.0
+    },
+    {
+      "id": "CONV817",
+      "previous": 2.7777777777777777,
+      "current": 2.6666666666666665,
+      "delta": -0.11111111111111116
+    },
+    {
+      "id": "CONV835",
+      "previous": 3.090909090909091,
+      "current": 1.9,
+      "delta": -1.190909090909091
+    },
+    {
+      "id": "CONV836",
+      "previous": 2.5555555555555554,
+      "current": 3.5555555555555554,
+      "delta": 1.0
+    },
+    {
+      "id": "CONV841",
+      "previous": 3.5555555555555554,
+      "current": 3.4444444444444446,
+      "delta": -0.11111111111111072
+    },
+    {
+      "id": "CONV931",
+      "previous": 5.5,
+      "current": 4.7,
+      "delta": -0.7999999999999998
+    },
+    {
+      "id": "CONV932",
+      "previous": 5.1,
+      "current": 6.4,
+      "delta": 1.3000000000000007
+    },
+    {
+      "id": "CONV973",
+      "previous": 4.3,
+      "current": 4.363636363636363,
+      "delta": 0.06363636363636349
+    },
+    {
+      "id": "CONV997",
+      "previous": 6.6,
+      "current": 8.0,
+      "delta": 1.4000000000000004
+    },
+    {
+      "id": "G1",
+      "previous": 2.6666666666666665,
+      "current": 2.888888888888889,
+      "delta": 0.22222222222222232
+    },
+    {
+      "id": "M3",
+      "previous": 7.090909090909091,
+      "current": 7.4,
+      "delta": 0.3090909090909095
+    },
+    {
+      "id": "P2",
+      "previous": 3.2222222222222223,
+      "current": 2.7,
+      "delta": -0.5222222222222221
+    }
+  ],
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "catalogue_products": 46,
+  "database_cleanup_verified": true,
+  "runtime_findings": {
+    "handled_name_confirmation_exceptions": 23,
+    "unhandled_scenario_errors": [],
+    "catalogue_ground_truth_matches_baseline": true,
+    "rubric_matches_baseline": true
+  },
+  "offline": {
+    "rerun": false,
+    "baseline_results": {
+      "tests": 1448,
+      "passed": 1448,
+      "seconds": 30.942,
+      "unexpected_http": 0
+    }
+  },
+  "backtests": {
+    "rerun": false,
+    "baseline_results": [
+      {
+        "backtest": "backtest_placement",
+        "exit_code": 0
+      },
+      {
+        "backtest": "backtest_name_routing",
+        "exit_code": 1
+      },
+      {
+        "backtest": "backtest_praise",
+        "exit_code": 0
+      }
+    ]
+  }
+}

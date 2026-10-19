@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "intent_understanding": 6,
+    "constraint_extraction": 5,
+    "memory": 2,
+    "recommendation_quality": 6,
+    "similarity_accuracy": null,
+    "product_accuracy": 8,
+    "confidence_calibration": 4,
+    "objection_handling": 1,
+    "sales_effectiveness": 4,
+    "closing_timing": null,
+    "human_feel": 8,
+    "trust": 3
+  },
+  "what_worked": [
+    "Agent found the correct perfume Eros and quoted a supported price for the 50ml: 'Eros — زجاجة البراند 50 ملي بـ666.00 جنيه.' (this matches DATABASE FACTS).",
+    "Agent gave supported longevity and projection: 'ثباته حوالي 7 ساعات، فوحانه قوي' (matches DATABASE FACTS longevity=7 and projection=Strong).",
+    "Tone and language felt natural Egyptian and conversational rather than robotic."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Did not state both available Eros sizes and did not acknowledge that they are within the customer's per-bottle budget.",
+      "why_wrong": "DATABASE FACTS show Eros sizes: 50ml=666EGP and 90ml=1019EGP, both under the customer's stated 1200EGP budget. The scenario requires naming both sizes and saying they are داخل ميزانيتك. The agent only listed the 50ml and did not state the sizes are within budget.",
+      "expected": "Name both Eros sizes with their exact prices and explicitly confirm they are inside the 1200ج ميزانية, and note Eros is a men's perfume since the customer said 'لجوزي'."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Failed to retract a factual error when challenged and repeated the same incorrect/insufficient reply.",
+      "why_wrong": "Customer said 'ازاي اعلي من ميزانيتي' and then 'انا ميزانيتي 1200'. The correct response demanded a plain retraction: 'معاك حق، الاتنين داخل ميزانيتك' and repeat both prices. Instead the agent asked an irrelevant clarification ('تقصد أنهي عطر وحجم؟') and then repeated the identical 50ml-only reply, which the deterministic findings flag as a repeated reply.",
+      "expected": "Immediately acknowledge the mistake ('معاك حق، الاتنين داخل ميزانيتك') and restate both Eros prices (50ml=666 و90ml=1019). Do not change subject or repeat the same insufficient answer."
+    },
+    {
+      "severity": "high",
+      "category": "memory",
+      "what": "Repetition of the exact same message across turns and failure to let the customer's correction override previous content.",
+      "why_wrong": "After the customer corrected the budget the agent should have updated the reply to reflect that the customer's budget covers both sizes; repeating the earlier line shows memory/flow failure and makes the conversation loop.",
+      "expected": "Update the state and reply according to the customer's latest explicit preference (1200 budget for a men's Versace)."
+    },
+    {
+      "severity": "medium",
+      "category": "sales",
+      "what": "Missed an opportunity to propose options or next steps after confirming availability.",
+      "why_wrong": "Having Eros in-budget and the customer indicating it's for her husband were chances to offer both sizes, suggest which size is better for gifting, ask if he prefers fresh vs sweet, or offer to add to the cart—none were offered.",
+      "expected": "After confirming both sizes and budget, ask if they want to add the 50 or 90 to the cart, offer to reserve, or suggest a complementary sample or gift-wrapping."
+    },
+    {
+      "severity": "low",
+      "category": "product",
+      "what": "Only quoted the 50ml price although the store catalog includes both sizes.",
+      "why_wrong": "Database lists two supported sizes; quoting only one leaves the customer uninformed about the 90ml option which is relevant under the budget.",
+      "expected": "Always quote every available size when the customer asks about a brand and gives a per-bottle budget."
+    }
+  ],
+  "salesperson_verdict": "Not acceptable as-is. The agent found the correct product and used natural language, but failed critically by not naming both Eros sizes and by not retracting/correcting after the customer challenged the budget — a sales manager would require an immediate correction and a clear next-step offer before accepting this turn.",
+  "id": "CONV931",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 4.7
+}

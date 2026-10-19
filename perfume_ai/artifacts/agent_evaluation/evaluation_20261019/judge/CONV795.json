@@ -1,0 +1,69 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 2,
+    "recommendation_quality": 1,
+    "similarity_accuracy": null,
+    "product_accuracy": 2,
+    "confidence_calibration": 2,
+    "objection_handling": null,
+    "sales_effectiveness": 1,
+    "closing_timing": null,
+    "human_feel": 5,
+    "trust": 2
+  },
+  "what_worked": [
+    "Agent used polite Egyptian phrasing: 'عايز أتأكد قصد حضرتك أنهي بالظبط' — polite tone and attempt to be accurate.",
+    "Agent consistently tried to confirm the customer's request rather than guessing."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "data",
+      "what": "Failed to state plainly that the requested perfumes are not in the catalogue and instead repeatedly asked for clarification.",
+      "why_wrong": "The scenario requires a clear denial for 'لادور بخور' and 'الكساندريا 2' (they are not in catalogue). Repeated clarification deprived the customer of a verified answer and wasted turns.",
+      "expected": "Say plainly 'مش موجود عندنا لادور بخور' and 'مش موجود عندنا الكساندريا 2' (echoing their Arabic spelling), apologize briefly, and in the SAME reply offer one or two stocked alternatives by full name."
+    },
+    {
+      "severity": "critical",
+      "category": "sales",
+      "what": "Offered no alternatives or recommendations after denying (or failing to deny) availability.",
+      "why_wrong": "Customer came to buy; a bare denial or endless clarification ends the sale. The store has suitable alternatives (Dior Homme Sport and Bleu de Chanel) that should have been offered as DIFFERENT perfumes.",
+      "expected": "Offer 'Dior Homme Sport' and/or 'Bleu de Chanel' as different perfumes and cite the incense/olibanum/notes that make them fit the customer's 'بخور' request."
+    },
+    {
+      "severity": "high",
+      "category": "intent",
+      "what": "Ignored the clear, repeated simple question of availability and treated it as unclear.",
+      "why_wrong": "Customer literally asked 'عندكو لادور بخور ؟' and repeated it; asking again for spelling was unnecessary and indicates poor intent understanding.",
+      "expected": "Treat the initial availability question as definitive, reply with catalogue-verified availability (here: deny and propose alternatives)."
+    },
+    {
+      "severity": "medium",
+      "category": "memory",
+      "what": "Did not carry forward earlier confirmations; each agent reply behaved as if no prior clarification attempts existed.",
+      "why_wrong": "Customer repeated the same query; agent should have escalated from 'need clarification' to 'we don't have it' after checking the catalogue, or provided alternatives immediately.",
+      "expected": "Retain that the customer asked about the same perfume and advance the conversation (deny + alternatives) instead of repeating the same question."
+    },
+    {
+      "severity": "medium",
+      "category": "trust",
+      "what": "Wasted customer's time and created uncertainty without adding value.",
+      "why_wrong": "By failing to provide the definitive answer or alternatives, the agent reduced customer's trust and increased friction.",
+      "expected": "Be decisive: deny if not stocked, offer stocked alternatives, give short rationale (e.g. 'مش عندنا بالاسم ده، عندنا برضه عطور بخور زي...')."
+    },
+    {
+      "severity": "low",
+      "category": "confidence_calibration",
+      "what": "Asked for more detail that customer had already given instead of signalling unknown/not-in-catalogue.",
+      "why_wrong": "This presents ignorance as uncertainty rather than a known absence in catalogue; it leaves the customer waiting for an answer that should be immediate.",
+      "expected": "If perfume not found, state that fact confidently and offer supported alternatives from store-configured facts."
+    }
+  ],
+  "salesperson_verdict": "Unacceptable as-is: a senior sales manager would not accept repeating clarification requests without denying unavailable SKUs and offering the stocked incense alternatives (Dior Homme Sport or Bleu de Chanel) in the same reply. This turn needs correction before continuing the sale.",
+  "id": "CONV795",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 2.0
+}

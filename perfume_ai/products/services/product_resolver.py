@@ -718,7 +718,7 @@ Our full catalogue:
 
 Could the customer's words be one of the names above? Look for:
 • An Arabic phonetic spelling of a Latin name — "لامال" is Le Male, "سوفاج" is Sauvage, "زار كولد" is ZARA GOLD.
-• 🔴 A HOUSE is not a perfume: "امبيرو" is Emporio Armani, "ديور" is Dior. These words name a brand, not any single row — answer {"house": true}, never one of that house's products.
+• 🔴 A HOUSE is not a perfume: "امبيرو" is Emporio Armani, "ديور" is Dior. These words name a brand, not any single row — answer {{"house": true}}, never one of that house's products.
 • The house and the perfume said together, where we list the perfume alone — "ڤيرزاتشي ايروس" is "Eros", "ديور سوفاج" is "Sauvage".
 • A line's base plus a flanker word, per the "Perfume lines" block — "لامال لكريز" is Le Male + Elixir, so the answer is "Le Male Elixir".
 • Ordinary typos and letter swaps (ڤ/ف, ب/پ, ج/چ), and letters the customer spelled out one by one.

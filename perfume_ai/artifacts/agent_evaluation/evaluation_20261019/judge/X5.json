@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "intent_understanding": 10,
+    "constraint_extraction": 10,
+    "memory": 10,
+    "recommendation_quality": 10,
+    "similarity_accuracy": null,
+    "product_accuracy": 10,
+    "confidence_calibration": 10,
+    "objection_handling": null,
+    "sales_effectiveness": 9,
+    "closing_timing": null,
+    "human_feel": 10,
+    "trust": 10
+  },
+  "what_worked": [
+    "Agent said: \"مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟\" — direct, short clarification exactly as the senior salesperson guideline required.",
+    "No invented facts, no jokes, no premature recommendations — preserved trust and avoided hallucination.",
+    "Language and tone are natural Egyptian and appropriately polite for a discovery turn."
+  ],
+  "failures": [],
+  "salesperson_verdict": "مقبول جداً — هذا الرد هو بالضبط التصرف الصحيح مع مدخلات غير مفهومة. أقبل هذا الأداء من مندوب مبتدئ ولا أطلب تغييراً.",
+  "id": "X5",
+  "category": "adversarial",
+  "suite": "core",
+  "mean_score": 9.88888888888889
+}

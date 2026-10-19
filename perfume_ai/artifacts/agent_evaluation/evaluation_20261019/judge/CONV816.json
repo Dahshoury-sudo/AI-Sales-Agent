@@ -1,0 +1,69 @@
+{
+  "scores": {
+    "intent_understanding": 2,
+    "constraint_extraction": 1,
+    "memory": 1,
+    "recommendation_quality": 0,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 2,
+    "objection_handling": null,
+    "sales_effectiveness": 1,
+    "closing_timing": null,
+    "human_feel": 2,
+    "trust": 1
+  },
+  "what_worked": [
+    "Agent used polite Egyptian Arabic phrasing such as 'ممكن تكتب لي اسم العطر تاني بطريقة مختلفة يا فندم؟' which is courteous.",
+    "Agent stayed short and did not invent facts or quote prices (no fabricated product claims)."
+  ],
+  "failures": [
+    {
+      "severity": "critical",
+      "category": "intent",
+      "what": "Did not acknowledge or answer the direct question 'عندك الكساندريا 2؟' on first turn.",
+      "why_wrong": "The customer explicitly asked about availability of 'الكساندريا 2' and the required handling is a short apology + direct statement that the named perfume is not available followed by one or two stocked alternatives. Instead the agent asked the customer to re-write the name, leaving the customer's intent unserved.",
+      "expected": "Apologize briefly, state 'الكساندريا 2 مش موجود عندنا' and immediately offer one or two different stocked perfumes by full name."
+    },
+    {
+      "severity": "critical",
+      "category": "ux",
+      "what": "Repeated unnecessary requests for the same information the customer already gave.",
+      "why_wrong": "Customer wrote the name multiple times; asking again across turns (turns 1–4) ignored the customer's explicit clarifications and created friction. Per rules, asking for information already provided is a real failure.",
+      "expected": "Use the customer's Arabic spelling and proceed; if product absent, move directly to alternatives and next steps."
+    },
+    {
+      "severity": "critical",
+      "category": "trust",
+      "what": "Left the customer waiting and looping without resolving the request or offering alternatives.",
+      "why_wrong": "By not giving the required denial+alternatives on the first turn, subsequent customer prompts ('ماشي شوفو', 'بتكلم علي الكساندريا 2؟', 'اتأكد') should have been answered with the known response. Instead the agent repeated the clarification request and produced no forward progress — this damages trust and wastes the customer's time.",
+      "expected": "After initial denial offer stocked alternatives and move the sale forward; do not promise to 'check' or imply unseen lookups."
+    },
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "No alternatives or offers were provided despite a sales opportunity.",
+      "why_wrong": "Customer came to buy; the agent never named any stocked perfumes to try instead. The store-configured required behaviour is to give one or two stocked alternatives immediately when a perfume is not in the catalogue.",
+      "expected": "Name one or two stocked perfumes (using their full names as in catalogue) labelled clearly as different options to keep the sale alive."
+    },
+    {
+      "severity": "medium",
+      "category": "memory",
+      "what": "Did not treat later customer messages as re-asks to be answered with the same resolved response.",
+      "why_wrong": "Once the agent had a chance to answer 'not available' it should have applied that answer to the follow-ups and progressed. Repeating the same clarification request shows failure to retain the customer's prior words within the short conversation.",
+      "expected": "Apply the correct answer once and carry it forward; if customer persists, move the conversation forward rather than re-asking the same thing."
+    },
+    {
+      "severity": "low",
+      "category": "prompt",
+      "what": "Used open-ended clarification where a brief definitive reply was required.",
+      "why_wrong": "Asking for alternate spellings invites unnecessary delay and risks the customer perceiving incompetence; the rules require mirroring the customer's Arabic spelling and answering directly.",
+      "expected": "Echo the customer's provided Arabic name and reply directly instead of asking for spelling variations."
+    }
+  ],
+  "salesperson_verdict": "No — this turn would not be accepted. The agent failed to answer the customer's direct availability question, repeatedly re‑asked for information already given, and missed the required denial + immediate alternatives that would have moved the sale forward.",
+  "id": "CONV816",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 2.111111111111111
+}

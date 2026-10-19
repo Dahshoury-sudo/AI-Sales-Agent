@@ -1,0 +1,50 @@
+{
+  "scores": {
+    "intent_understanding": 9,
+    "constraint_extraction": 8,
+    "memory": 8,
+    "recommendation_quality": 8,
+    "similarity_accuracy": null,
+    "product_accuracy": 9,
+    "confidence_calibration": 9,
+    "objection_handling": null,
+    "sales_effectiveness": 7,
+    "closing_timing": 8,
+    "human_feel": 9,
+    "trust": 9
+  },
+  "what_worked": [
+    "Turn 1 correctly recognised the shorthand 'سترونجر انتنس' as Stronger With You Intensely and asked about size: \"عطر Stronger With You Intensely متوفر عندنا يا فندم، تحب تعرف عن حجم معين أو سعره؟\" — required and correct.",
+    "Turn 2 offered the correct Jean Paul Gaultier product by name (Le Male) and asked clarifying gender: \"Le Male من Jean Paul Gaultier... رجالي ولا حريمي عشان أظبطلك الاختيار؟\" — matches DB (Le Male is male, all seasons, casual).",
+    "Turn 3 denied BMW plainly and offered two stocked alternatives with appropriate short descriptors (Le Male and Stronger With You Intensely): \"عطر BMW مش متوفر عندنا... لكن ممكن أشيرلك على... Le Male ... أو Stronger With You Intensely... دافي وقوي للشتا والسهرات.\" — correct denial plus helpful alternatives.",
+    "Turn 4 repeated clear denial for the spaced spelling and again offered the same stocked alternatives rather than inventing a match: \"للأسف عطر B m w مش متوفر عندنا... بدائل...\" — consistent and correct."
+  ],
+  "failures": [
+    {
+      "severity": "high",
+      "category": "sales",
+      "what": "Asked the customer to rewrite 'برفيوم جوب' instead of answering directly and offering stocked alternatives.",
+      "why_wrong": "The customer explicitly asked if 'برفيوم جوب' is available; per store rules the agent must plainly say it's not in the catalogue (جوب/Joop! is not stocked) and offer one or two stocked perfumes in the same reply. Asking to retype wastes the customer's time and misses a selling opportunity.",
+      "expected": "Echo the customer's Arabic name, apologize, deny availability clearly (e.g. 'للأسف برفيوم جوب مش متوفر عندنا يا فندم') and immediately offer 1–2 stocked alternatives (e.g. Le Male أو Stronger With You Intensely) with a short line about each and a question about which they'd like to hear more about."
+    },
+    {
+      "severity": "medium",
+      "category": "ux",
+      "what": "Minor missed opportunity to surface exact sizes/prices when customer showed clear product interest earlier.",
+      "why_wrong": "Customer asked about Stronger With You Intensely; agent asked which size but didn't proactively offer the known price points (50ml=450, 90ml=780, originals available). Giving prices would move sale forward.",
+      "expected": "When customer shows product intent, offer the available sizes and their prices from the DB right away (or ask size then give price)."
+    },
+    {
+      "severity": "low",
+      "category": "prompt",
+      "what": "Slightly repetitive wording across turns when offering alternatives.",
+      "why_wrong": "Repeated phrasing is fine but a more tailored suggestion based on the customer's earlier interest (e.g., emphasising Stronger With You Intensely if they asked that initially) would be more effective.",
+      "expected": "Refer back to customer's initial mention explicitly ('إنت سألت عن سترونجر انتنس، هو ده اللي أقترحه...') to show attention and push toward next step."
+    }
+  ],
+  "salesperson_verdict": "Acceptable overall — the agent handled the stocked items correctly and denied unknown brands consistently, offered relevant alternatives, and stayed truthful. However, asking the customer to retype 'جوب' instead of plainly denying it and recommending alternatives is a notable sales/UX failure that should be corrected.",
+  "id": "CONV1021",
+  "category": "regression",
+  "suite": "replays",
+  "mean_score": 8.4
+}
