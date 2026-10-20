@@ -422,9 +422,6 @@
                         conversationId = data.conversation_id;
                         localStorage.setItem('perfume_demo_conv_id', conversationId);
                     }
-                    if (data.needs_human && !data.reply) {
-                        appendMessage('ai', "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء."));
-                    }
                 } else {
                     appendMessage('ai', "❌ خطأ: " + (data.error || "حدث خطأ غير متوقع."));
                 }

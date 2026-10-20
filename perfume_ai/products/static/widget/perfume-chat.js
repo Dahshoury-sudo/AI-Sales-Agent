@@ -839,12 +839,9 @@
         }
 
         if (data.reply) appendMessage("ai", data.reply, data.image_url);
-        if (data.needs_human && !data.reply) {
-          appendMessage("ai", "⚠️ " + (data.info || "تم تحويل المحادثة لخدمة العملاء. سيتم الرد عليك في أقرب وقت."));
-        }
 
         // Badge for unread if window is closed
-        if (!isOpen) {
+        if (data.reply && !isOpen) {
           updateBadge(unreadCount + 1);
         }
       } else {
