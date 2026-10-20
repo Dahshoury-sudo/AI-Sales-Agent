@@ -12,6 +12,7 @@ from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
 from .notification_service import create_notification, notify_handoff
+from .handoff import handoff_offer_reply, has_handoff_offer
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
@@ -492,6 +493,26 @@ def _was_already_handed_off(history):
     return False
 
 
+def _handoff(message, history, store, conversation):
+    """Activate once, including a fresh offer after an earlier resolved handoff."""
+    if conversation:
+        from products.models import Conversation
+
+        activated = Conversation.objects.filter(pk=conversation.pk, needs_human=False).update(needs_human=True)
+        conversation.needs_human = True
+        if activated:
+            notify_handoff(conversation)
+    return handle_general(
+        f"""العميل بعتلي الرسالة دي: "{message}"
+
+العميل طلب أو وافق دلوقتي على التحويل لمندوب بشري، وتم تحويل المحادثة لفريق خدمة العملاء.
+أكدله التحويل باختصار وإن الفريق هيتابع معاه. لو أضاف سؤال، سيبه للفريق مع رسالته.
+ممنوع تطلب تأكيد التحويل تاني أو تسأله يختار عطر أو يبدأ طلب.
+ده تحويل جديد حتى لو كان فيه تحويل قديم في المحادثة. نوّع في أسلوبك.""",
+        history, store
+    )
+
+
 def _is_goodbye_loop(history):
     """
     Detect if the user is repeating 'سلام' or goodbye messages.
@@ -517,6 +538,22 @@ def _is_goodbye_loop(history):
 def route(message, history=None, store=None, conversation=None):
     if history is None:
         history = []
+
+    # An answer to our transfer offer takes priority over checkout and FAQs.
+    # In 1122 the classifier sent "ماشي" to order before promotion could see it.
+    offer_history = history
+    if conversation and has_handoff_offer(history):
+        # LLM history omits staff messages. After staff resolve a conversation,
+        # their last question must not expose an older bot offer as still open.
+        latest_reply = conversation.messages.filter(
+            role__in=("assistant", "agent"), delivery_status="sent"
+        ).order_by("-created_at", "-id").first()
+        if latest_reply and latest_reply.role == "agent":
+            offer_history = []
+    handoff_reply = handoff_offer_reply(message, offer_history)
+    if handoff_reply is True:
+        record_llm_message(store)
+        return _handoff(message, history, store, conversation)
 
     # --- Static FAQ check (before AI — saves tokens) ---
     from .static_faq_service import match_static_faq, normalize_arabic
@@ -584,6 +621,13 @@ def route(message, history=None, store=None, conversation=None):
     # anything, and classify() is the first model call on every path that remains.
     record_llm_message(store)
     request_type = classify(message, history)
+    if request_type == "handoff":
+        if handoff_reply is False:
+            request_type = "faq"
+        elif has_handoff_offer(offer_history):
+            # The classifier resolves longer acceptances. An older handoff in
+            # history must not suppress this fresh invitation and acceptance.
+            return _handoff(message, history, store, conversation)
     if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff"):
         request_type = "product_info"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message) and history:
@@ -990,32 +1034,6 @@ def route(message, history=None, store=None, conversation=None):
         return handle_general(message, history, store)
 
     elif request_type == "musk_mix_product":
-        msg_clean = message.strip().lower()
-
-        # Check if user is accepting a previous handoff offer
-        acceptance_words = ["آه", "اه", "ايوه", "ايوا", "أيوه", "تمام", "اوك", "ok", "يلا", "ماشي", "حوّلني", "حولني", "اتصل بيا", "اتصلوا بيا"]
-        last_bot_was_musk = False
-        if history:
-            for msg in reversed(history):
-                if msg.get("role") == "assistant":
-                    content = msg.get("content", "")
-                    if any(w in content for w in ["تخصص المندوب", "مندوب بشري", "تحولك لمندوب", "مش في تخصصي"]):
-                        last_bot_was_musk = True
-                    break
-
-        if last_bot_was_musk and any(w in msg_clean for w in acceptance_words):
-            # Customer accepted handoff
-            if conversation:
-                conversation.needs_human = True
-                conversation.save()
-                notify_handoff(conversation)
-            return handle_general(
-                """العميل وافق على التحويل لمندوب عشان يتابع معاه طلب المسك أو الميكس.
-اعتذرله بلطف وقوله إنك حولت المحادثة لفريق المبيعات وإنهم هيتواصلوا معاه في أقرب وقت.
-ممنوع تكرر نفس الصيغة — نوّع في أسلوبك.""",
-                history, store
-            )
-
         return handle_general(
             f"""العميل بعتلي: "{message}"
 
@@ -1039,32 +1057,6 @@ def route(message, history=None, store=None, conversation=None):
             "لا انا عايزك", "انا عايزك انت", "بس انت", "مش عايز مندوب", "مش محتاج مندوب"
         ]
         is_insisting = any(kw in msg_clean for kw in insistence_keywords)
-
-        # Also detect insistence from context: last bot message was about promotions, user is pushing back
-        last_bot_was_promotion = False
-        if history:
-            for msg in reversed(history):
-                if msg.get("role") == "assistant":
-                    content = msg.get("content", "")
-                    if any(w in content for w in ["تحب أحولك لمندوب", "مندوب من فريقنا", "مش بتقدر تطبق", "المندوب البشري"]):
-                        last_bot_was_promotion = True
-                    break
-
-        # Check if the user is accepting the handoff offer
-        acceptance_words = ["آه", "اه", "ايوه", "ايوا", "أيوه", "تمام", "اوك", "ok", "يلا", "ماشي", "حوّلني", "حولني", "اتصل بيا", "اتصلوا بيا"]
-
-        if last_bot_was_promotion and any(w in msg_clean for w in acceptance_words) and not is_insisting:
-            # Customer accepted handoff for promotion — treat as handoff
-            if conversation:
-                conversation.needs_human = True
-                conversation.save()
-                notify_handoff(conversation)
-            return handle_general(
-                f"""العميل وافق على التحويل لمندوب عشان يتابع عرض معاه.
-اعتذرله بلطف وقوله إنك حولت المحادثة لفريق المبيعات وإنهم هيتواصلوا معاه في أقرب وقت.
-ممنوع تكرر نفس الصيغة — نوّع في أسلوبك.""",
-                history, store
-            )
 
         if is_insisting:
             # Customer is insisting the bot execute the offer — firm, clear refusal
@@ -1156,19 +1148,7 @@ def route(message, history=None, store=None, conversation=None):
                 history, store
             )
         else:
-            # First time handoff
-            if conversation:
-                conversation.needs_human = True
-                conversation.save()
-                notify_handoff(conversation)  # Notify store owner in dashboard
-            return handle_general(
-                f"""العميل بعتلي الرسالة دي: "{message}"
-
-العميل ده محتاج يتكلم مع حد بشري. اعتذرله بلطف وقوله إنك حولت المحادثة لفريق خدمة العملاء وإنهم هيتواصلوا معاه في أقرب وقت. 
-كمان اسأله لو في أي حاجة تانية تقدر تساعده فيها في الأثناء.
-ممنوع تستخدم نفس الصيغة كل مرة — نوع في أسلوبك.""",
-                history, store
-            )
+            return _handoff(message, history, store, conversation)
         
     elif request_type == "out_of_domain":
         # Smart out-of-domain response via AI instead of hardcoded
