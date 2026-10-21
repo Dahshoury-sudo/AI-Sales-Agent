@@ -116,6 +116,37 @@ class PromotionRoutingTests(TestCase):
         self.facts_model.assert_not_called()
         self.assertFalse(Cart.objects.exists())
 
+    def test_website_ordering_requires_an_explicit_store_setting(self):
+        self.configure("يمكن طلب العروض من موقعنا.", field="business_facts")
+        reply, _ = route("عايز أطلب الباندل", [], self.store, self.conversation)
+        self.assertNotIn(promotions.WEBSITE_ORDERING, reply)
+        self.assert_boundary(reply)
+        self.settings.website_ordering_enabled = True
+        self.settings.save(update_fields=["website_ordering_enabled"])
+        reply, _ = route("عايز أطلب الباندل", [], self.store, self.conversation)
+        self.assertIn(promotions.WEBSITE_ORDERING, reply)
+        self.assertTrue(reply.endswith(promotions.INVITATION))
+        self.assert_boundary(reply)
+
+    def test_website_ordering_is_store_specific_and_missing_settings_mean_no_website(self):
+        self.settings.website_ordering_enabled = True
+        self.settings.save(update_fields=["website_ordering_enabled"])
+        other = Store.objects.create(name="No website")
+        for store in (None, other):
+            self.assertEqual(promotions.website_ordering_reply(store), "")
+        StoreSettings.objects.create(store=other)
+        reply, _ = promotions.reply("Order the bundle", store=other, explain=False)
+        self.assertNotIn(promotions.WEBSITE_ORDERING, reply)
+        self.assertTrue(has_handoff_offer([bot(reply)]))
+
+    def test_website_alternative_after_declining_respects_store_setting(self):
+        for enabled in (False, True):
+            self.settings.website_ordering_enabled = enabled
+            self.settings.save(update_fields=["website_ordering_enabled"])
+            reply, _ = route("مش عايز مندوب", [bot(OFFER)], self.store, self.conversation)
+            self.assertEqual(promotions.WEBSITE_ORDERING in reply, enabled)
+            self.assertNotIn(promotions.INVITATION, reply)
+
     def test_existing_cart_phone_faq_and_price_dispute_cannot_bypass(self):
         self.make_cart()
         StaticFAQ.objects.create(store=self.store, question="offer", keywords="باندل", answer="wrong")

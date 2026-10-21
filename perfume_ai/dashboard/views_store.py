@@ -34,10 +34,13 @@ class StoreSettingsView(APIView):
             "payment_instructions": settings.payment_instructions,
             "bottle_image_url": settings.bottle_image_url,
             "business_facts": settings.business_facts,
+            "website_ordering_enabled": settings.website_ordering_enabled,
         })
 
     def put(self, request):
         store = request.store
+        if "website_ordering_enabled" in request.data and type(request.data["website_ordering_enabled"]) is not bool:
+            return Response({"website_ordering_enabled": "Must be true or false."}, status=400)
         try:
             settings = store.settings
         except StoreSettings.DoesNotExist:
@@ -49,6 +52,7 @@ class StoreSettingsView(APIView):
             "facebook_page_id", "instagram_account_id", "whatsapp_phone_number_id",
             "comment_reply_messages", "payment_instructions",
             "bottle_image_url", "business_facts",
+            "website_ordering_enabled",
         ]
 
         for field in updatable_fields:

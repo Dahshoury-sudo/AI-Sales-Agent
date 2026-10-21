@@ -19,6 +19,10 @@ class Store(models.Model):
 class StoreSettings(models.Model):
     store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name="settings")
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
+    website_ordering_enabled = models.BooleanField(
+        default=False,
+        help_text="هل يمكن للعميل طلب العروض والباندلز من موقع المتجر؟ فعّله فقط لو الخدمة متاحة.",
+    )
     whatsapp_number = models.CharField(max_length=50, blank=True)
     
     # Meta Integration Credentials (encrypted at rest)
