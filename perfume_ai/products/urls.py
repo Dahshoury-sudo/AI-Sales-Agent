@@ -4,7 +4,7 @@ from .views import (
     PublicChatDemoView, OrdersDashboardView, OrdersDashboardAPIView, OrderStatusUpdateView,
     BulkImportView, BulkImportAPIView, BulkImportTemplateView,
     AnalyticsDashboardView, HandoffDashboardView, HandoffConversationsAPIView,
-    HandoffMessagesAPIView, HandoffReplyAPIView, HandoffResolveAPIView,
+    HandoffMessagesAPIView, HandoffReplyAPIView, HandoffResolveAPIView, HandoffReadAPIView,
     ChatHistoryDashboardView, ChatHistoryConversationsAPIView,
 )
 from .views_meta import MetaWebhookView
@@ -26,6 +26,7 @@ urlpatterns = [
     path("handoff/", HandoffDashboardView.as_view(), name="handoff-dashboard"),
     path("handoff/conversations/", HandoffConversationsAPIView.as_view(), name="handoff-conversations"),
     path("handoff/conversations/<int:conversation_id>/messages/", HandoffMessagesAPIView.as_view(), name="handoff-messages"),
+    path("handoff/conversations/<int:conversation_id>/read/", HandoffReadAPIView.as_view(), name="handoff-read"),
     path("handoff/conversations/<int:conversation_id>/reply/", HandoffReplyAPIView.as_view(), name="handoff-reply"),
     path("handoff/conversations/<int:conversation_id>/resolve/", HandoffResolveAPIView.as_view(), name="handoff-resolve"),
     path("history/", ChatHistoryDashboardView.as_view(), name="chat-history-dashboard"),

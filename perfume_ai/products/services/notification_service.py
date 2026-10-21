@@ -28,6 +28,22 @@ def notify_handoff(conversation):
     )
 
 
+def notify_handoff_message(message):
+    """One durable alert per inbound message, including attachment-only messages."""
+    conversation = message.conversation
+    Notification.objects.get_or_create(
+        dedupe_key=f"handoff_message:{message.pk}",
+        defaults=dict(
+            store=conversation.store,
+            source_message=message,
+            type="handoff_message",
+            title="رسالة جديدة في محادثة خدمة العملاء",
+            message=f"محادثة #{conversation.pk} على {conversation.get_platform_display()}: "
+                    f"{message.content[:200] or '📎 مرفق من العميل'}",
+        ),
+    )
+
+
 def notify_new_order(order):
     """Trigger a notification when a new order is placed."""
     Notification.objects.get_or_create(

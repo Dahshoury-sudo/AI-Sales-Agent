@@ -15,6 +15,7 @@ Run the checks in another terminal:
 ```powershell
 node scripts/dashboard_ui/check_layout.cjs
 node scripts/dashboard_ui/check_workflows.cjs
+node scripts/dashboard_ui/check_handoff.cjs
 node scripts/dashboard_ui/check_accessibility.cjs
 node scripts/verify_chat_clients.js
 ```
@@ -23,4 +24,6 @@ The server binds only to `127.0.0.1:8766`. It serves templates and local assets;
 
 Screenshots and reports go to the system temporary directory under `webvitas-dashboard-review`, or to `DASHBOARD_UI_ARTIFACTS` if set. The layout check covers and captures all 13 dashboard sections at 375, 768, 1024 and 1440px, plus account pages at 375 and 1440px. The workflow check covers forms, dialogs, authentication, token refresh, errors, empty states, orders, conversations, imports, and mobile navigation.
 
-For Django checks and regressions, use `perfume_ai.settings_test` with `TEST_DATABASE_URL` unset to select isolated in-memory SQLite. Static-asset collection should use a temporary `STATIC_ROOT` when verifying locally.
+The handoff check covers unread persistence, new-message ordering and sound, embedded and standalone views, mobile navigation, visibility, and stale responses. It drives polling explicitly; hidden-tab signals are simulated because headless Chrome reports every tab as visible.
+
+For Django checks and regressions, use `perfume_ai.settings_test` with `TEST_DATABASE_URL=sqlite:///:memory:` to select isolated in-memory SQLite (an unset variable can be loaded from `.env`). Static-asset collection should use a temporary `STATIC_ROOT` when verifying locally.

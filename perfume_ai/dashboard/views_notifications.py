@@ -12,7 +12,7 @@ class NotificationListView(APIView):
 
     def get(self, request):
         store = request.store
-        notifications = Notification.objects.filter(store=store)[:50]
+        notifications = Notification.objects.filter(store=store).select_related("source_message").order_by("-id")[:50]
 
         unread_count = Notification.objects.filter(store=store, is_read=False).count()
 
@@ -24,6 +24,8 @@ class NotificationListView(APIView):
                 "message": n.message,
                 "is_read": n.is_read,
                 "created_at": n.created_at.isoformat(),
+                "conversation_id": n.source_message.conversation_id if n.source_message_id else None,
+                "source_message_id": n.source_message_id,
             }
             for n in notifications
         ]

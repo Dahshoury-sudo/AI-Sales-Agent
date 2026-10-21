@@ -1,4 +1,12 @@
 /* Theme tokens are shared in theme.css. */
+.conv-item.unread { border-inline-start: 3px solid var(--accent-text, #234c3a); }
+.conv-item.unread .conv-preview { font-weight: 700; }
+.conv-summary { display: flex; align-items: center; gap: 8px; }
+.conv-summary .conv-preview { flex: 1; min-width: 0; }
+.unread-badge { background: var(--accent-text, #234c3a); color: white; border-radius: 20px; padding: 2px 8px; font-size: 12px; flex-shrink: 0; }
+.conv-sender { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+.message-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-attachment { max-width: min(250px, 100%); max-height: 300px; border-radius: 8px; margin-top: 8px; }
 
         body {
             font-family: var(--font-body);

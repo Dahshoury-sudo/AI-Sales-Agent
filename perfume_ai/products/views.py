@@ -9,8 +9,9 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-from django.db.models import Avg, Count
-from .models import Product, ConversationEvaluation, Order, Conversation
+from django.db.models import Avg, Count, OuterRef, Subquery, Q, F
+from django.db.models.functions import Coalesce
+from .models import Product, ConversationEvaluation, Order, Conversation, Message
 from .serializers import ProductSerializer
 from .auth import StoreAPIKeyAuthentication
 from dashboard.auth_backend import StoreOwnerAuthentication
@@ -331,18 +332,25 @@ class HandoffConversationsAPIView(APIView):
 
     def get(self, request):
         store = request.store
-        convs = Conversation.objects.filter(store=store, needs_human=True).prefetch_related('messages').order_by('-created_at')
+        latest = Message.objects.filter(conversation_id=OuterRef("pk")).order_by("-created_at", "-id")
+        convs = Conversation.objects.filter(store=store, needs_human=True).annotate(
+            last_message_at=Coalesce(Subquery(latest.values("created_at")[:1]), F("created_at")),
+            latest_message_id=Subquery(latest.values("id")[:1]),
+            latest_content=Subquery(latest.values("content")[:1]),
+            latest_attachment=Subquery(latest.values("attachment_url")[:1]),
+            unread_count=Count("messages", filter=Q(messages__role="user", messages__handoff_unread=True)),
+        ).order_by("-last_message_at", F("latest_message_id").desc(nulls_last=True), "-id")
         
         data = []
         for c in convs:
-            msgs = list(c.messages.all())
-            last_msg = sorted(msgs, key=lambda m: m.created_at, reverse=True)[0] if msgs else None
             data.append({
                 "id": c.id,
                 "platform": c.platform,
                 "platform_sender_id": c.platform_sender_id,
                 "created_at": c.created_at.isoformat(),
-                "last_message": last_msg.content if last_msg else "No messages"
+                "last_message_at": c.last_message_at.isoformat(),
+                "unread_count": c.unread_count,
+                "last_message": c.latest_content or ("📎 مرفق من العميل" if c.latest_attachment else "No messages"),
             })
             
         return Response({"conversations": data})
@@ -359,10 +367,11 @@ class HandoffMessagesAPIView(APIView):
         except Conversation.DoesNotExist:
             return Response({"error": "Conversation not found"}, status=404)
             
-        msgs = conv.messages.order_by('created_at')
+        msgs = conv.messages.order_by('created_at', 'id')
         data = []
         for m in msgs:
             data.append({
+                "id": m.id,
                 "role": m.role,
                 "content": m.content,
                 "attachment_url": m.attachment_url or "",
@@ -374,6 +383,26 @@ class HandoffMessagesAPIView(APIView):
             "needs_human": conv.needs_human,
             "messages": data
         })
+
+class HandoffReadAPIView(APIView):
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [StoreKeyThrottle]
+
+    def post(self, request, conversation_id):
+        from .services.conversation_service import conversation_lock, acknowledge_handoff
+        through = request.data.get("through_message_id")
+        if type(through) is not int or not 0 < through <= 9223372036854775807:
+            return Response({"error": "Invalid through_message_id"}, status=400)
+        with conversation_lock(f"conversation:{conversation_id}"), transaction.atomic():
+            conv = Conversation.objects.filter(pk=conversation_id, store=request.store).first()
+            if conv is None:
+                return Response({"error": "Conversation not found"}, status=404)
+            if not conv.messages.filter(pk=through).exists():
+                return Response({"error": "Message does not belong to this conversation"}, status=400)
+            acknowledge_handoff(conv, through)
+            return Response({"unread_count": conv.messages.filter(role="user", handoff_unread=True).count()})
+
 
 class HandoffReplyAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
@@ -416,14 +445,15 @@ class HandoffResolveAPIView(APIView):
     throttle_classes = [StoreKeyThrottle]
 
     def post(self, request, conversation_id):
-        store = request.store
-        try:
-            conv = Conversation.objects.get(id=conversation_id, store=store)
-        except Conversation.DoesNotExist:
-            return Response({"error": "Conversation not found"}, status=404)
-            
-        conv.needs_human = False
-        conv.save()
+        from .services.conversation_service import conversation_lock, acknowledge_handoff
+        with conversation_lock(f"conversation:{conversation_id}"), transaction.atomic():
+            try:
+                conv = Conversation.objects.get(id=conversation_id, store=request.store)
+            except Conversation.DoesNotExist:
+                return Response({"error": "Conversation not found"}, status=404)
+            conv.needs_human = False
+            conv.save(update_fields=["needs_human"])
+            acknowledge_handoff(conv)
         
         return Response({"status": "Conversation resolved"})
 

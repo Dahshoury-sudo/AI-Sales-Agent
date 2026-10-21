@@ -84,6 +84,10 @@ def generate_event(event, route_func, sanitize_func):
         user = save_message(conversation, "user", event.text, attachment_url=event.attachment_url)
         event.user_message = user
         if conversation.needs_human:
+            from .notification_service import notify_handoff_message
+            user.handoff_unread = True
+            user.save(update_fields=["handoff_unread"])
+            notify_handoff_message(user)
             event.result = {"reply": "", "needs_human": True, "user_message_id": user.pk}
             event.status = "complete"
             event.save()
@@ -100,6 +104,9 @@ def generate_event(event, route_func, sanitize_func):
         assistant = save_message(conversation, "assistant", reply, internal_context=context,
             attachment_url=image_url or "", delivery_status="sent" if event.platform == "web" else "pending")
         conversation.refresh_from_db(fields=["needs_human"])
+        if conversation.needs_human:
+            user.handoff_unread = True
+            user.save(update_fields=["handoff_unread"])
         event.reply_message = assistant
         event.result = {"reply": reply, "image_url": image_url, "message_id": assistant.pk,
                         "user_message_id": user.pk, "needs_human": conversation.needs_human}
@@ -113,12 +120,16 @@ def pending_through(event):
         status="complete").select_related("store", "conversation", "reply_message").order_by("id")
 
 def get_or_create_platform_conversation(store, platform, sender_id):
-    # Get the latest conversation for this user
-    conversation = Conversation.objects.filter(
+    conversations = Conversation.objects.filter(
         store=store,
         platform=platform,
         platform_sender_id=sender_id
-    ).order_by('-created_at').first()
+    ).order_by('-created_at', '-id')
+    # A human handoff ends explicitly, never just because the customer went quiet.
+    conversation = conversations.filter(needs_human=True).first()
+    if conversation:
+        return conversation, False
+    conversation = conversations.first()
 
     now = timezone.now()
     created = False
@@ -138,6 +149,21 @@ def get_or_create_platform_conversation(store, platform, sender_id):
         created = True
 
     return conversation, created
+
+
+def acknowledge_handoff(conversation, through_message_id=None):
+    """Called under the conversation lock and transaction, bounded by rendered IDs."""
+    from products.models import Notification
+    messages = conversation.messages.filter(role="user")
+    notifications = Notification.objects.filter(
+        store_id=conversation.store_id, type="handoff_message",
+        source_message__conversation=conversation, is_read=False,
+    )
+    if through_message_id is not None:
+        messages = messages.filter(id__lte=through_message_id)
+        notifications = notifications.filter(source_message_id__lte=through_message_id)
+    messages.filter(handoff_unread=True).update(handoff_unread=False)
+    notifications.update(is_read=True)
 
 
 def get_conversation(conversation_id, store=None):

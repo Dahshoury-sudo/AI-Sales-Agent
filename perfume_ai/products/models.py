@@ -248,6 +248,8 @@ class Message(models.Model):
     )
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    # Shared staff read state, set only for customer messages needing human attention.
+    handoff_unread = models.BooleanField(default=False)
 
     content = models.TextField()
     internal_context = models.TextField(blank=True)
@@ -266,6 +268,7 @@ class Message(models.Model):
             # get_conversation_messages orders by -created_at within one
             # conversation and slices — the history fetch on every single turn.
             models.Index(fields=["conversation", "-created_at"], name="msg_history_idx"),
+            models.Index(fields=["conversation", "handoff_unread"], name="msg_handoff_unread_idx"),
         ]
 
     def __str__(self):
@@ -421,6 +424,7 @@ class Notification(models.Model):
     dedupe_key = models.CharField(max_length=100, unique=True, null=True, blank=True)
     TYPE_CHOICES = (
         ("handoff", "Human Handoff Required"),
+        ("handoff_message", "New Message During Handoff"),
         ("new_order", "New Order"),
         ("low_stock", "Low Stock"),
         ("delivery_failed", "Reply Not Delivered"),
@@ -428,6 +432,9 @@ class Notification(models.Model):
     )
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="notifications")
+    source_message = models.ForeignKey(
+        Message, on_delete=models.SET_NULL, null=True, blank=True, related_name="notifications"
+    )
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     title = models.CharField(max_length=200)
     message = models.TextField()
