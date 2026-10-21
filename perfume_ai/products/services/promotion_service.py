@@ -15,6 +15,7 @@ LIMITATION = (
     "والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء."
 )
 INVITATION = "تحب أحولك لمندوب يساعدك؟"
+WEBSITE_ORDERING = "وتقدر كمان تطلب الباندلز والعروض مباشرة من موقعنا."
 DECLINED = "لو حابب تشتري عطور بالسعر العادي من غير العرض، قولي."
 UNKNOWN_DETAILS = "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء."
 
@@ -264,4 +265,4 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
                 pass
         details = ("تفاصيل العرض:\n" + "\n".join(quotes)) if quotes else UNKNOWN_DETAILS
     closing = DECLINED if declined else INVITATION
-    return "\n\n".join(filter(None, (details, LIMITATION, closing))), PROMOTION_CONTEXT
+    return "\n\n".join(filter(None, (details, LIMITATION, WEBSITE_ORDERING, closing))), PROMOTION_CONTEXT
