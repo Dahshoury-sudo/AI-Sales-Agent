@@ -119,7 +119,7 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
 
 
 
-def _rephrased(reply, context, history, store, regenerate):
+def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None):
     """One targeted regeneration when a draft repeats a sentence we already said.
 
     `_is_repetitive` above compares whole replies at 0.7 and is the right guard for a branch that
@@ -197,7 +197,18 @@ def _rephrased(reply, context, history, store, regenerate):
             if variant_ids:
                 quotes = [q for q in quotes if q.variant_id in variant_ids]
             if quotes:
-                return render_quotes(quotes), quote_context(context, quotes), repeats
+                from .sales.value import as_budget
+                budget = as_budget(evidence.get("budget"))
+                fallback = render_quotes(quotes, max_price=budget)
+                if recommendation_intent is not None:
+                    from .ai.recommendation import recommendation_fit
+                    quoted_ids = {q.product_id for q in quotes}
+                    explanation = recommendation_fit(
+                        [p for p in selected if p.pk in quoted_ids], recommendation_intent,
+                    )
+                    if explanation:
+                        fallback = explanation + "\n\n" + fallback
+                return fallback, quote_context(context, quotes, max_price=budget), repeats
             return "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟", context, repeats
         if any(i.startswith("authenticity:") for i in remaining or issues):
             return sales_constraints.formulation_reply(), context, repeats
@@ -965,6 +976,7 @@ def route(message, history=None, store=None, conversation=None):
         # test without failing the other, so both run.
         response, context, _ = _rephrased(
             response, context, history, store, _recommend_again,
+            recommendation_intent=intent,
         )
 
         # A customer being shown options for the first time has not chosen anything yet, so

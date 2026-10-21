@@ -298,6 +298,71 @@ class Conversation1069Tests(BugFixture):
         self.assertIn("تقصد", reply)
 
 
+class Conversation1163RecommendationTests(BugFixture):
+    def setUp(self):
+        super().setUp()
+        for product in (self.a, self.b):
+            product.season = "Fall/Winter"
+            product.projection = "Strong"
+            product.save()
+        self.av.price = 450
+        self.av.save()
+        self.bv.price = 592
+        self.bv.save()
+        self.intent = {"season": "winter", "projection": "strong", "max_price": 600}
+
+    def test_price_recovery_keeps_the_recommendation_reason_and_budget_warning(self):
+        from products.services.router import route
+        from products.services.product_formatting import quote_evidence, product_price_issues
+        from products.services.reply_sanitizer import sanitize_reply
+
+        draft = "Vanilo 50 ملي بـ999 جنيه. Leatherio 50 ملي بـ999 جنيه."
+        with patch("products.services.router.classify", return_value="recommendation"), patch(
+            "products.services.router.extract_intent", return_value=self.intent
+        ), patch("products.services.ai.recommendation.chat", return_value=draft):
+            reply, context = route("عاوز حاجة بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
+        self.conv.refresh_from_db()
+        reply = sanitize_reply(reply, self.conv)
+        for expected in ("Vanilo ممكن يناسبك", "Leatherio ممكن يناسبك", "للشتا", "فواح", "450", "592"):
+            self.assertIn(expected, reply)
+        self.assertIn("700", reply)
+        self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
+        self.assertNotIn("999", reply)
+        self.assertNotIn("944", reply)
+        self.assertFalse(product_price_issues(reply, [self.a, self.b], evidence=quote_evidence(context)))
+        self.assertFalse(Cart.objects.filter(conversation=self.conv).exists())
+
+    def test_partial_match_does_not_promise_the_requested_projection(self):
+        from products.services.ai.recommendation import recommendation_fit
+
+        self.b.projection = "Moderate"
+        explanation = recommendation_fit([self.b], self.intent)
+        self.assertIn("للشتا", explanation)
+        self.assertIn("مش بيحقق كل شروطك", explanation)
+        self.assertNotIn("فواح", explanation)
+
+    def test_missing_facts_do_not_become_claims_of_suitability(self):
+        from products.services.ai.recommendation import recommendation_fit
+
+        self.b.season = self.b.occasion = self.b.projection = self.b.longevity = ""
+        self.assertEqual(recommendation_fit([self.b], self.intent), "")
+
+    def test_valid_personal_explanation_is_preserved_without_a_retry(self):
+        from products.services.ai.recommendation import recommend
+        from products.services.router import _rephrased
+
+        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه قوي."
+        with patch("products.services.ai.recommendation.chat", return_value=draft):
+            reply, context = recommend("عاوز حاجة للشتا", Product.objects.filter(pk=self.a.pk),
+                                       store=self.store, intent=self.intent)
+        retry = Mock()
+        final, _, _ = _rephrased(reply, context, [], self.store, retry,
+                                 recommendation_intent=self.intent)
+        self.assertIn(draft, final)
+        self.assertEqual(final.count("مناسب لطلبك"), 1)
+        retry.assert_not_called()
+
+
 class HouseOnlyOrderTests(BugFixture):
     """Conversations 1093/1094/1096: "امبيرو" is the house Emporio Armani, not a perfume."""
 

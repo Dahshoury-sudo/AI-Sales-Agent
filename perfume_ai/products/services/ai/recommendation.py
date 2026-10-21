@@ -13,6 +13,38 @@ from itertools import combinations
 from ..search_service import MAX_PRODUCTS_IN_CONTEXT
 
 
+def recommendation_fit(products, intent):
+    """A short, grounded explanation when a generated recommendation fails validation."""
+    from ..sales.constraints import describe
+    from ..sales.ranking import rank
+
+    products = list(products)
+    ranked = {entry.product.pk: entry for entry in rank(products, intent)}
+    lines = []
+    for product in products[:2]:
+        entry = ranked[product.pk]
+        reasons = []
+        for key, evidence in (
+            ("season", "مناسب للموسم"),
+            ("occasion", "مناسب للمناسبة اللي قالها"),
+            ("projection", "فوحانه بيطابق طلبه"),
+            ("longevity", "ثباته بيطابق طلبه"),
+        ):
+            if any(reason.startswith(evidence) for reason in entry.reasons):
+                words = describe({key: intent.get(key)})
+                if words:
+                    reason = words[0]
+                    if key in ("season", "occasion"):
+                        reason = "مناسب " + reason
+                    reasons.append(reason)
+        if reasons:
+            qualification = "، بس مش بيحقق كل شروطك" if entry.mismatches else ""
+            lines.append(f"{product.name} مناسب {' و'.join(reasons[:2])}{qualification}.")
+        elif facts := factual_description(product):
+            lines.append(f"{product.name}: {facts}.")
+    return "\n".join(lines)
+
+
 def _constrained_recommendation(products, intent, message="", search=None):
     """Render hard requirements from eligible variants, never model arithmetic."""
     choices = []
@@ -684,7 +716,12 @@ def recommend(
         "سمعه خلاص. وسطر \"⚠️ مش مطابق في\" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة "
         "مكتوب جانبها إنه مش مطابق فيها."
         if follow_up else
-        "سطر \"✅ ليه مناسب\" في بيانات كل عطر هو الدليل اللي بنيت عليه الترشيح — اعتمد عليه في سبب الترشيح بدل كلام عام. وسطر \"⚠️ مش مطابق في\" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة مكتوب جانبها إنه مش مطابق فيها."
+        "مع كل ترشيح جديد، ضيف جملة قصيرة توضح للعميل ليه العطر مناسب لطلبه، مش أسماء وأسعار بس. "
+        "اربط صفة أو اتنين من بيانات العطر بتفضيل قاله فعلاً؛ ولو السبب مشترك بين العطرين ممكن جملة واحدة ليهم. "
+        "مثال لو البيانات بتأكد الشتا والفوحان القوي: \"دول مناسبين لطلبك عشان شتويين وفوحانهم قوي.\" "
+        "نوّع الصياغة حسب الطلب، ومتضمنش إنه هيعجبه أو هيلفت أنظار الناس. "
+        "سطر \"✅ ليه مناسب\" هو دليلك، وسطر \"⚠️ مش مطابق في\" لازم تحترمه: "
+        "ممنوع تقول إن العطر بيطابق شرط مش متحقق أو صفة مش مسجلة."
     )
 
     # Case 1: Exact matches found
@@ -744,6 +781,7 @@ def recommend(
 5. 🔴 لو رشحت عطرين، قارن بينهم في جملة واحدة سريعة تساعده يختار.
 6. {price_instruction_alt}
 7. 🔴 تجاهل أي منتج Stock Status = ❌ ورشّح المتوفر بس.
+8. {reasons_instruction}
 """
 
     else:
