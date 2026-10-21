@@ -1,4 +1,4 @@
-"""Conversation 1122: accepting a human offer must not start checkout."""
+"""Human transfers close clearly, preserve follow-ups, and never start checkout."""
 from unittest.mock import patch
 
 from django.test import SimpleTestCase, TestCase
@@ -116,7 +116,8 @@ class HandoffRoutingTests(TestCase):
     def test_conversation_1122_transfers_without_classification_or_order(self):
         self.assertEqual(self.accept(), (ACKNOWLEDGMENT, ""))
         self.assert_handed_off()
-        self.usage.assert_called_once_with(self.store)
+        self.general.assert_not_called()
+        self.usage.assert_not_called()
 
     def test_active_cart_faq_and_original_preference_cannot_intercept(self):
         cart = Cart.objects.create(conversation=self.conversation, customer_name="Original")
@@ -124,12 +125,12 @@ class HandoffRoutingTests(TestCase):
         self.conversation.save(update_fields=["preferences"])
         StaticFAQ.objects.create(store=self.store, question="ack", keywords="ماشي", answer="FAQ")
         reply = "ماشي خلي المندوب يقولي الشحن بكام"
-        self.accept(reply)
+        self.assertEqual(self.accept(reply), (ACKNOWLEDGMENT, ""))
         self.conversation.refresh_from_db()
         cart.refresh_from_db()
         self.assertTrue(self.conversation.needs_human)
         self.assertEqual(cart.customer_name, "Original")
-        self.assertIn(reply, self.general.call_args.args[0])
+        self.general.assert_not_called()
 
     def test_short_faq_match_cannot_intercept(self):
         StaticFAQ.objects.create(store=self.store, question="ack", keywords="yes", answer="FAQ")
@@ -174,13 +175,19 @@ class HandoffRoutingTests(TestCase):
 
     def test_longer_classified_acceptance_can_reopen_handoff(self):
         with patch("products.services.router.classify", return_value="handoff"):
-            route("That would be helpful, I'd appreciate speaking with them",
-                  [bot(ACKNOWLEDGMENT), bot(OFFER_1122)], self.store, self.conversation)
+            reply = route("That would be helpful, I'd appreciate speaking with them",
+                          [bot(ACKNOWLEDGMENT), bot(OFFER_1122)], self.store, self.conversation)
+        self.assertEqual(reply, (ACKNOWLEDGMENT, ""))
+        self.general.assert_not_called()
+        self.usage.assert_called_once_with(self.store)
         self.assert_handed_off()
 
     def test_explicit_request_still_activates_handoff(self):
         with patch("products.services.router.classify", return_value="handoff"):
-            route("حولني لمندوب بشري", [], self.store, self.conversation)
+            reply = route("حولني لمندوب بشري", [], self.store, self.conversation)
+        self.assertEqual(reply, (ACKNOWLEDGMENT, ""))
+        self.general.assert_not_called()
+        self.usage.assert_called_once_with(self.store)
         self.assert_handed_off()
 
     def test_unsent_offer_is_not_used_as_context(self):
@@ -206,7 +213,7 @@ class HandoffRoutingTests(TestCase):
 
         save_message(self.conversation, "assistant", OFFER_1122)
         payload = {"conversation_id": signer.sign_object(self.conversation.pk),
-                   "message": "ماشي", "client_message_id": "consent-1122"}
+                   "message": "ماشي، وسعر العرض كام؟", "client_message_id": "consent-1122"}
         with patch("products.services.router.classify", side_effect=AssertionError("No classification")):
             first = self.client.post("/api/chat/", payload)
             retry = self.client.post("/api/chat/", payload)
@@ -218,8 +225,50 @@ class HandoffRoutingTests(TestCase):
         self.assertEqual(followup.data["reply"], "")
         self.assertTrue(followup.data["needs_human"])
         self.assertEqual(Message.objects.filter(conversation=self.conversation, role="user").count(), 2)
-        self.general.assert_called_once()
+        self.assertEqual(Message.objects.get(pk=first.data["user_message_id"]).content, payload["message"])
+        self.assertEqual(Message.objects.get(pk=first.data["message_id"]).content, ACKNOWLEDGMENT)
+        self.general.assert_not_called()
+        self.usage.assert_not_called()
         self.assert_handed_off()
+
+    def test_conversations_1062_and_1071_end_with_only_the_transfer_confirmation(self):
+        from products.views import signer
+
+        cases = (
+            ("1062", "تحب أحولك لمندوب يتابع معاك الموضوع؟", "ياريت",
+             ("في رقم وتس للتواصل", "في رقم تواصل")),
+            ("1071", None, "وصلني بحد من خدمة العملاء", ("تمام شكرا",)),
+        )
+        for number, (label, offer, request, followups) in enumerate(cases, 1):
+            with self.subTest(conversation=label):
+                conversation = Conversation.objects.create(store=self.store)
+                if offer:
+                    save_message(conversation, "assistant", offer)
+                payload = {"conversation_id": signer.sign_object(conversation.pk),
+                           "message": request, "client_message_id": label}
+                self.usage.reset_mock()
+                with patch("products.services.router.classify", return_value="handoff") as classify:
+                    first = self.client.post("/api/chat/", payload)
+                    retry = self.client.post("/api/chat/", payload)
+                    for index, followup in enumerate(followups):
+                        response = self.client.post("/api/chat/", {
+                            **payload, "message": followup, "client_message_id": f"{label}-{index}",
+                        })
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(response.data["reply"], "")
+                        self.assertTrue(response.data["needs_human"])
+                self.assertEqual(first.status_code, 200)
+                self.assertEqual(retry.data, first.data)
+                self.assertTrue(first.data["needs_human"])
+                self.assertEqual(first.data["reply"], ACKNOWLEDGMENT)
+                self.assertEqual(Message.objects.get(pk=first.data["message_id"]).content, ACKNOWLEDGMENT)
+                self.assertEqual(list(conversation.messages.filter(role="user").order_by("id")
+                                      .values_list("content", flat=True)), [request, *followups])
+                self.assertEqual(conversation.messages.filter(role="assistant").count(), 1 + bool(offer))
+                self.assertEqual(Notification.objects.filter(store=self.store, type="handoff").count(), number)
+                classify.assert_called_once()
+                self.usage.assert_called_once_with(self.store)
+                self.general.assert_not_called()
 
     def test_messenger_transfer_and_delivery_retry(self):
         from products.tasks import process_incoming_message
@@ -238,17 +287,28 @@ class HandoffRoutingTests(TestCase):
         self.assertEqual(event.status, "complete")
         self.assertEqual(event.reply_message.content, ACKNOWLEDGMENT)
         send.assert_called_once()
+        self.assertEqual(send.call_args.args[1], ACKNOWLEDGMENT)
+        self.general.assert_not_called()
+        self.usage.assert_not_called()
         self.assert_handed_off()
 
-    def test_failed_generation_rolls_back_activation_and_notification(self):
+    def test_failed_reply_processing_rolls_back_activation_and_notification(self):
         from products.services.conversation_service import generate_event
 
         save_message(self.conversation, "assistant", OFFER_1122)
         event = receive_event(self.store, "web", "", "yes", "failed-consent", conversation=self.conversation)
-        self.general.side_effect = RuntimeError("generation failed")
-        with self.assertRaises(RuntimeError):
-            generate_event(event, route, lambda reply, _: reply)
+        def fail_processing(reply, conversation):
+            self.assertEqual(reply, ACKNOWLEDGMENT)
+            self.assertTrue(conversation.needs_human)
+            self.assertTrue(Notification.objects.filter(store=self.store, type="handoff").exists())
+            raise RuntimeError("reply processing failed")
+
+        with self.assertRaisesRegex(RuntimeError, "reply processing failed"):
+            generate_event(event, route, fail_processing)
         self.conversation.refresh_from_db()
+        event.refresh_from_db()
+        self.assertEqual(event.status, "pending")
+        self.assertIsNone(event.reply_message_id)
         self.assertFalse(self.conversation.needs_human)
         self.assertFalse(Notification.objects.exists())
         self.assertFalse(Message.objects.filter(role="user").exists())

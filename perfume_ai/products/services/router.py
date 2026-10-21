@@ -12,7 +12,7 @@ from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
 from .notification_service import create_notification, notify_handoff
-from .handoff import handoff_offer_reply, has_handoff_offer
+from .handoff import HANDOFF_CONFIRMATION, handoff_offer_reply, has_handoff_offer
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
@@ -502,15 +502,7 @@ def _handoff(message, history, store, conversation):
         conversation.needs_human = True
         if activated:
             notify_handoff(conversation)
-    return handle_general(
-        f"""العميل بعتلي الرسالة دي: "{message}"
-
-العميل طلب أو وافق دلوقتي على التحويل لمندوب بشري، وتم تحويل المحادثة لفريق خدمة العملاء.
-أكدله التحويل باختصار وإن الفريق هيتابع معاه. لو أضاف سؤال، سيبه للفريق مع رسالته.
-ممنوع تطلب تأكيد التحويل تاني أو تسأله يختار عطر أو يبدأ طلب.
-ده تحويل جديد حتى لو كان فيه تحويل قديم في المحادثة. نوّع في أسلوبك.""",
-        history, store
-    )
+    return HANDOFF_CONFIRMATION, ""
 
 
 def _is_goodbye_loop(history):
@@ -552,7 +544,6 @@ def route(message, history=None, store=None, conversation=None):
             offer_history = []
     handoff_reply = handoff_offer_reply(message, offer_history)
     if handoff_reply is True:
-        record_llm_message(store)
         return _handoff(message, history, store, conversation)
 
     # --- Static FAQ check (before AI — saves tokens) ---

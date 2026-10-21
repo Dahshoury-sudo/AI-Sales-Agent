@@ -9,6 +9,11 @@ import re
 from .static_faq_service import normalize_arabic
 
 
+# The bot stops replying after transfer. A generated closing offered more bot
+# help in conversations 1062 and 1071, leaving follow-up questions unanswered.
+HANDOFF_CONFIRMATION = "حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك."
+
+
 _HUMAN = re.compile(
     r"مندوب|موظف|بشري|انسان|حد حقيقي|حد من (?:الفريق|فريقنا)|"
     r"خدمه العملاء|فريق(?:نا| المبيعات| الدعم)|"
