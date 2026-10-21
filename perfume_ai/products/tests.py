@@ -4131,18 +4131,20 @@ class RouterBranchPromptTests(TestCase):
         return "\n".join(m["content"] for m in chat_mock.call_args[0][0])
 
     def test_promotion_can_still_quote_the_stores_configured_offers(self):
-        """The regression I nearly shipped: the guard must ban invented prices only."""
-        prompt = self._prompt_for("promotion", "عندكم عروض؟")
-
-        self.assertIn("بوكس الصيف", prompt, "the store's own offer text was withheld")
-        self.assertIn("مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً", prompt)
-        self.assertIn("مش بتقدر تطبق", prompt)
+        from products.services.promotion_service import LIMITATION
+        fact = "بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه"
+        with mock.patch("products.services.promotion_service.chat", return_value=json.dumps({"quotes": [fact]})):
+            reply, _ = route("عندكم عروض؟", [], self.store, self.conversation)
+        self.assertIn(fact, reply)
+        self.assertIn(LIMITATION, reply)
 
     def test_promotion_insistence_refuses_firmly(self):
-        prompt = self._prompt_for("promotion", "لا انا عايزك انت تنفذه")
-
-        self.assertIn("مش في إمكانياتك", prompt)
-        self.assertIn("ممنوع توهمه", prompt)
+        from products.services.promotion_service import LIMITATION, INVITATION
+        history = [{"role": "assistant", "content": LIMITATION + " " + INVITATION}]
+        with mock.patch("products.services.promotion_service.chat", side_effect=AssertionError("No generation needed")):
+            reply, _ = route("لا انا عايزك انت تنفذه", history, self.store, self.conversation)
+        self.assertIn(LIMITATION, reply)
+        self.assertNotIn(INVITATION, reply)
 
     def test_musk_and_mix_defers_to_a_human_rep(self):
         prompt = self._prompt_for("musk_mix_product", "عندكم مسكات؟")
@@ -4166,7 +4168,6 @@ class RouterBranchPromptTests(TestCase):
         for classification, message in (
             ("greeting", "هاي"),
             ("faq", "انت مين"),
-            ("promotion", "عندكم عروض؟"),
             ("musk_mix_product", "عندكم مسكات؟"),
         ):
             with self.subTest(classification=classification):

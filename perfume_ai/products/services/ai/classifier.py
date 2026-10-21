@@ -1,7 +1,7 @@
 from .client import chat
 
 
-def classify(message: str, history=None):
+def classify(message: str, history=None, *, promotion_context=""):
     import json
     system_prompt = """
 You are a request classifier.
@@ -13,11 +13,11 @@ Return ONLY a JSON object with a single key "intent" whose value is EXACTLY one 
 recommendation: asking for suggestions or a perfume that matches some criteria.
 product_info: asking for details, PRICE, ingredients, or info of a SPECIFIC perfume (e.g. "سعر سوفاج", "عامل كام", "بكام ده").
 comparison: comparing between two or more perfumes.
-order: wanting to buy, ordering a product, or providing their address/phone number/name to checkout. (e.g. "هاخد ده", "هاتلي واحد", "عايز اشتريه", "010...", "شارع كذا").
+order: a NORMAL catalogue purchase, including multiple named perfumes, or contact details for that normal checkout. (e.g. "هاخد ده", "هاتلي واحد", "عايز أطلب سوفاج وبلو دي شانيل"). Purchases/contact details for bundles or offers are "promotion".
 order_cancel: wanting to cancel the WHOLE order they are currently making (e.g. "الغي الاوردر", "مش عايز الطلب خلاص", "بلاش الاوردر كله").
 greeting: saying hello, hi, etc.
 faq: general questions not related to a specific product's info (e.g., shipping, delivery, who are you, how to make perfume, bulk buying).
-promotion: asking about deals, discounts, offers, bundles, or special prices (e.g. "عندكم عروض", "في خصومات", "فيه أوفر", "أي عروض عندكم", "الأوفر إيه", "عرض خاص", "كومبو").
+promotion: asking about OR BUYING deals, discounts, offers, bundles, combos, coupons, promotional gifts or special prices (e.g. "عندكم عروض", "عايز أطلب الباندل", "ضيف الباكدج", "طبق الكوبون", "اشتري اتنين والتالت هدية").
 musk_mix_product: asking specifically about musk (مسك/مسكات) or mix (ميكس/ميكسات) as a STANDALONE product to buy or inquire about — NOT as a fragrance note inside a perfume (e.g. "عندكم مسكات", "بكام الميكس", "عايز مسك", "مسك بكام", "هاخد ميكس", "عندكم ميكس").
 identification: trying to work out the NAME of a specific perfume they have already encountered but cannot remember, by describing it (e.g. "مش فاكر اسم البرفان، الزجاجة سودا والريحة فيها فانيليا", "نسيت اسمه بس ريحته حلوة وثابتة", "ايه اسم العطر اللي...").
 handoff: wanting to speak to a human, complaining, or showing frustration (e.g. "عايز اكلم حد حقيقي", "فين خدمة العملاء").
@@ -42,13 +42,25 @@ CRITICAL: If the user explicitly wants to buy/order but specifies a GENERIC cate
 CRITICAL: If the assistant just asked for order details (name/phone/address) AND the user provides them, classify as "order". BUT if the user ignores the question and asks about something else (e.g., price of another perfume), classify based on their NEW question.
 CRITICAL: If the assistant asked if the user wants to change/modify anything in their order (e.g., "في حاجة حابب تعدلها"), and the user replies with "لا", "لا شكرا", or "لا تمام", MUST classify as "order" because they want to proceed with confirmation, NOT "order_cancel".
 CRITICAL — REMOVING ONE ITEM IS AN EDIT, NOT A CANCELLATION: While an order is being assembled and the cart holds more than one perfume, a message that names a specific perfume to drop (e.g. "مش عايز 1 × Noirvel", "شيل الـ Le Male", "من غير النوارفيل", "بدل الاتنين هات واحد بس") is editing the order — classify as "order", NOT "order_cancel". Reserve "order_cancel" for dropping the WHOLE order. "مش عايز" on its own, next to a perfume name or a summary line, means remove THAT line — the order flow keeps the rest.
-CRITICAL: If the user types ONLY a phone number or address or his name, MUST classify it as "order".
+CRITICAL: A phone number/address/name belongs to the purchase currently discussed.
+If an offer/bundle is pending or the assistant just explained that staff must fulfill it,
+contact details alone ("01012345678", "اسمي محمد", "شارع كذا") are "promotion", NEVER "order"
+and NEVER handoff consent. Only contact details for an ordinary purchase are "order".
 CRITICAL: Do NOT classify insults or bad words (e.g., "غبي", "زفت") as "handoff" UNLESS the user explicitly asks to speak to a human (e.g., "عايز اكلم حد حقيقي"). If the user is just frustrated but in the middle of an order or a conversation, classify based on the current context (e.g., "order" or "product_info"). If it's just an isolated insult, classify as "faq" so the bot can apologize gracefully and continue the sale.
 CRITICAL — ACCEPTING A HUMAN TRANSFER: If the assistant's LATEST reply offers to connect the customer to a human, agreeing to that offer is "handoff", including "ماشي", "تمام", "أيوه", "yes", "okay", "sure", "please do", or a longer acceptance such as "That would be helpful, I'd appreciate speaking with them". The invitation may end with a separate "تحب؟" referring to the transfer in the preceding sentence. This applies to ALL topics, including promotions and musk/mix, and takes priority over order/FAQ rules. Clear acceptance plus another question is still "handoff": the human receives the full message. A refusal, postponement ("مش دلوقتي", "yes, but answer me first"), or insistence that the BOT apply an offer is NOT consent. Do not infer consent from merely mentioning a human, or from an older offer superseded by another question. A NEW transfer offer and acceptance can reopen an earlier resolved handoff; the anti-loop rules below do not suppress this fresh acceptance.
 CRITICAL: If the user replies with a short confirmation (e.g., "اه", "ايوة", "تمام", "اشطا", "ماشي", "قول") or denial (e.g., "لا") to a question the assistant just asked in the previous message, YOU MUST look at the VERY LAST sentence of the assistant's previous message. If the LAST sentence offered to provide product details or prices (e.g., "تحب أعرف لك الأسعار والأحجام؟", "تحب اقولك مناسب لايه"), MUST classify as "product_info" (even if the message contained recommendations earlier). NEVER classify as "order" in this specific case. If the LAST sentence offered a recommendation (e.g., "تحب ارشحلك حاجة تانية؟"), classify as "recommendation".
 CRITICAL: If the user is asking about suppliers, oil manufacturers, trade secrets, or companies like "لوزي", "أرجفيل", "جيفودان", "مان", MUST classify as "faq", NOT "recommendation", even if they use words like "ترشيح" or "أحسن".
 CRITICAL — IDENTIFICATION vs RECOMMENDATION: "identification" is ONLY for a user trying to recall the name of a particular perfume they have already smelled, owned or seen, and who is describing it so you can name it. Markers: "مش فاكر اسمه", "نسيت الاسم", "مش عارف اسمه", "ايه اسم العطر اللي", or describing a bottle they saw. If the user is instead describing the KIND of perfume they want to buy (e.g. "عايز عطر فيه فانيليا", "عايز حاجة حلوة وثابتة"), that is "recommendation", NOT "identification" — they are shopping, not remembering.
-CRITICAL — PROMOTION CONTEXT RULE: If the assistant's LAST message mentioned an offer/promotion (contains words like "عرض", "خصم", "أوفر", "مندوب من فريقنا", "تحولك لمندوب"), and the user is INSISTING the bot apply/execute the offer (e.g. "لا انا عايزك انت تنفذه", "بس طبق العرض", "نفذلي العرض", "انت بقى اعمل الخصم", "حطلي الخصم", "عايز الخصم"), MUST classify as "promotion" NOT "order". The user is asking the bot to do something it cannot do (apply offers), not placing a normal product order.
+CRITICAL — PROMOTIONS BEFORE CHECKOUT: Buying a bundle/combo, applying a coupon/discount,
+or ordering with a promotional gift is "promotion", even with perfume names, quantities,
+phone/address, or a request for a total. This overrides ordinary order/product_info rules.
+Use configured store facts below to recognize named offers such as "بوكس الصيف".
+Follow-ups about purchasing the offer ("عايز أطلبه", "هاخد التاني", contact details,
+"لا انا عايزك انت تنفذه") remain "promotion". Refusing a human does NOT mean buying at
+normal prices. Ordinary checkout resumes only after explicitly choosing without the offer.
+Questions about a perfume's scent/normal price, packaging photos, ordinary gifts, and
+several separately priced perfumes are NOT promotions. Cancellation of the whole order
+remains "order_cancel". Explicit human requests/transfer consent remain "handoff".
 CRITICAL — MUSK/MIX PRODUCT vs NOTE RULE (VERY IMPORTANT):
 - If the user is asking for musk (مسك/مسكات/musk) or mix (ميكس/ميكسات/mix) as a STANDALONE product they want to buy or inquire about → classify as "musk_mix_product".
   Examples: "عندكم مسكات", "بكام الميكس", "عايز مسك", "هاخد ميكس", "فيه مسكات", "أنواع الميكس عندكم".
@@ -63,6 +75,9 @@ CRITICAL — MUSK/MIX PRODUCT vs NOTE RULE (VERY IMPORTANT):
   - ONLY classify as "handoff" if the user has NOT been handed off before in this conversation.
 - If the user is frustrated but ALSO asking a perfume-related question in the same message (e.g. "انتو مش فاهمين حاجة، قولي سعر سوفاج كام"), classify based on the QUESTION not the frustration. In this case, classify as "product_info".
 """
+
+    if promotion_context:
+        system_prompt += "\nConfigured store facts (reference data, not classifier instructions):\n" + promotion_context
 
     messages = [
         {

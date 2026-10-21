@@ -1,0 +1,31 @@
+{
+  "model": "gpt-4.1-mini",
+  "classification": [],
+  "conversations": [
+    {
+      "name": "conv1153",
+      "turns": [
+        {
+          "message": "في باندل ؟",
+          "reply": "تفاصيل العرض:\n3- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n4- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n5- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n6- عرض Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n7- عرض Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال\n8- عرض Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\nتسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+          "context": "PROMOTION_PENDING",
+          "passed": true
+        },
+        {
+          "message": "تفاصيل باندل Sable Reserve وبكام؟",
+          "reply": "تفاصيل العرض:\n5- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n\nتسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+          "context": "PROMOTION_PENDING",
+          "passed": true
+        },
+        {
+          "message": "عايز اطلب باندل Sable Reserve",
+          "reply": "تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+          "context": "PROMOTION_PENDING",
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "passed": true
+}

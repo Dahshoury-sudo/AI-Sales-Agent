@@ -12,7 +12,8 @@ from .order_service import handle_order, restore_stock, clear_cart
 from .general_service import handle_general as _handle_general_raw
 from .conversation_service import merge_preferences
 from .notification_service import create_notification, notify_handoff
-from .handoff import HANDOFF_CONFIRMATION, handoff_offer_reply, has_handoff_offer
+from .handoff import HANDOFF_CONFIRMATION, handoff_offer_reply, has_handoff_offer, requests_human
+from . import promotion_service
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
@@ -85,7 +86,7 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
 
     Wraps general_service.handle_general because `route` returns through it in sixteen
     places and `_finalize` was only reached in five. Everything on those sixteen paths —
-    every greeting, FAQ answer, out-of-domain redirect, promotion and musk deferral, and
+    every greeting, FAQ answer, out-of-domain redirect, musk deferral, and
     every one of the discovery gates — returned raw model output: neither
     soften_marketing_language nor strip_premature_closing ever ran on it. So a greeting
     could close the sale and nothing removed the close, which is most of why premature
@@ -546,6 +547,31 @@ def route(message, history=None, store=None, conversation=None):
     if handoff_reply is True:
         return _handoff(message, history, store, conversation)
 
+    # Offers must be checked before phone/address edits, FAQs, catalogue lookup,
+    # and price objections. Those paths cannot fulfill promotional purchases.
+    promotion_history = promotion_service.context_history(history, conversation)
+    promotion_pending = promotion_service.has_promotion_context(promotion_history)
+    promotion_facts = promotion_service.configured_promotions(store)
+    promotion_request = promotion_service.blocks_checkout(message, promotion_history, store)
+    regular_purchase = promotion_service.ordinary_purchase(message)
+    if requests_human(message) and (promotion_pending or promotion_request):
+        return _handoff(message, history, store, conversation)
+    if promotion_request or (promotion_pending and not regular_purchase
+                             and promotion_service.declined_transfer(message, promotion_history)
+                             and not promotion_service.information_requested(message)):
+        return promotion_service.reply(message, promotion_history, store)
+
+    # Classify ambiguous offer names/context before the active-cart shortcut.
+    # Reuse the result below and bill a message once, regardless of the path.
+    request_type = None
+    if not regular_purchase and not promotion_service.cancelling_order(message) and (promotion_pending or promotion_facts):
+        record_llm_message(store)
+        request_type = classify(message, promotion_history, promotion_context=promotion_facts)
+        if request_type == "promotion" or (request_type == "order" and promotion_pending):
+            return promotion_service.reply(message, promotion_history, store, usage_recorded=True)
+        if request_type == "handoff" and handoff_reply is not False and has_handoff_offer(offer_history):
+            return _handoff(message, history, store, conversation)
+
     # --- Static FAQ check (before AI — saves tokens) ---
     from .static_faq_service import match_static_faq, normalize_arabic
     import re
@@ -570,8 +596,9 @@ def route(message, history=None, store=None, conversation=None):
         return handle_price_dispute(message, store, conversation)
     checkout_update = active_cart and re.search(
         r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message)
-    if checkout_update:
-        record_llm_message(store)
+    if checkout_update and request_type in (None, "order"):
+        if request_type is None:
+            record_llm_message(store)
         reply, context = handle_order(message, history, store, conversation)
         order_reply = reply
         for fragment in re.split(r"[.؟?\n]", message):
@@ -590,7 +617,7 @@ def route(message, history=None, store=None, conversation=None):
                 cart.save(update_fields=["quote"])
         return reply, context
     faq_match = match_static_faq(message, store)
-    if faq_match:
+    if faq_match and request_type in (None, "faq", "greeting"):
         return faq_match["answer"], ""
 
     # --- Goodbye loop detection ---
@@ -607,11 +634,14 @@ def route(message, history=None, store=None, conversation=None):
     # `with` block exits via shutdown(wait=True), so it blocked on both calls
     # anyway.
     #
-    # Billing starts on this line, so the counter goes immediately above it: the
-    # StaticFAQ match and the goodbye shortcut both returned earlier without spending
-    # anything, and classify() is the first model call on every path that remains.
-    record_llm_message(store)
-    request_type = classify(message, history)
+    # Ordinary FAQs can return before billing. When promotion context required
+    # early classification, reuse that result without counting the message twice.
+    if request_type is None:
+        record_llm_message(store)
+        request_type = classify(message, history, promotion_context=promotion_facts)
+    if request_type == "promotion" and regular_purchase:
+        # A classifier must not trap an explicit switch to normal prices.
+        request_type = "order" if promotion_service.checkout_requested(message) else "faq"
     if request_type == "handoff":
         if handoff_reply is False:
             request_type = "faq"
@@ -619,7 +649,7 @@ def route(message, history=None, store=None, conversation=None):
             # The classifier resolves longer acceptances. An older handoff in
             # history must not suppress this fresh invitation and acceptance.
             return _handoff(message, history, store, conversation)
-    if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff"):
+    if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff", "promotion"):
         request_type = "product_info"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message) and history:
         request_type = "recommendation"
@@ -1039,47 +1069,7 @@ def route(message, history=None, store=None, conversation=None):
         )
 
     elif request_type == "promotion":
-        msg_clean = message.strip().lower()
-
-        # Detect if user is insisting the bot execute the offer
-        insistence_keywords = [
-            "انت تنفذ", "انت نفذ", "نفذلي", "نفذه", "طبق العرض", "طبقلي", "حطلي الخصم",
-            "اضف الخصم", "ضيف الخصم", "عايزك تعمل الخصم", "اعمل الخصم", "انت بقى اعمل",
-            "لا انا عايزك", "انا عايزك انت", "بس انت", "مش عايز مندوب", "مش محتاج مندوب"
-        ]
-        is_insisting = any(kw in msg_clean for kw in insistence_keywords)
-
-        if is_insisting:
-            # Customer is insisting the bot execute the offer — firm, clear refusal
-            return handle_general(
-                f"""العميل بعتلي: "{message}"
-
-العميل ده بيصرّ إن أنا (كبوت) أطبقله العرض أو الخصم بنفسي.
-
-ردك لازم يكون واضح وحازم بأسلوب محترم:
-1. وضّح بشكل قاطع إنك كمساعد آلي **مش في إمكانياتك** تطبق أو تنفذ أي عرض أو خصم — ده مش خيار، ده حقيقة تقنية.
-2. اعتذر بلطف على عدم قدرتك على تنفيذ هذا الطلب.
-3. اعرض عليه مرة تانية التحويل لمندوب بشري هو الوحيد القادر يطبق العرض فعلاً.
-❌ ممنوع توهمه إنك هتطبق الخصم أو إنك ممكن تعمله في الطلب.
-❌ ممنوع تعتذر وتسيب الموضوع — لازم تعرضله المندوب كحل بديل فعلي.""",
-                history, store
-            )
-
-
-        # First-time promotion inquiry — show offers + disclaimer
-        return handle_general(
-            f"""العميل بعتلي: "{message}"
-
-العميل ده سأل عن عروض أو خصومات أو أوفر.
-
-تعليماتك:
-1. اعرض عليه العروض الموجودة في الـ Store Custom Instructions بشكل واضح ومنظم. لو مفيش عروض في التعليمات، قوله: "مفيش عروض حالياً يا فندم."
-2. وضّح بوضوح وبشكل صريح في ردك إنك كمساعد آلي **مش بتقدر تطبق أو تنفذ** أي عرض بنفسك — ده بيعمله المندوب البشري بس.
-3. اعرض عليه إنك تحوله لمندوب بشري عشان يتابع العرض معاه ويطبقه فعلاً.
-❌ ممنوع تقول إنك هتطبق الخصم أو هتضيفه للطلب.""",
-            history, store
-        )
-
+        return promotion_service.reply(message, promotion_history, store, usage_recorded=True)
 
     elif request_type == "order":
         if not conversation:

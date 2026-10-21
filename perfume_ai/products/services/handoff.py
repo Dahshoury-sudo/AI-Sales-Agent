@@ -67,6 +67,26 @@ def _words(text):
     return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", text)).strip()
 
 
+def requests_human(message):
+    """Explicit transfer requests, excluding refusals that mention a human."""
+    text = _words(message)
+    if _REFUSAL.search(text) or _DEFER.search(text):
+        return False
+    # "please do" / "go ahead" need an invitation; they are not an explicit
+    # request for a person when the last invitation was declined.
+    return bool(re.search(r"\b(?:حولني|حوليني|(?:please )?(?:connect|transfer) me)\b", text) or re.search(
+        r"حولني|حوليني|وصلني|عايز (?:اكلم|اتكلم مع)|عاوزه (?:اكلم|اتكلم مع)|"
+        r"ممكن (?:اكلم|مندوب|موظف)|عايز (?:مندوب|موظف|حد حقيقي)|"
+        r"\b(?:speak to|talk to|connect me|transfer me)\b", text
+    ) and _HUMAN.search(text))
+
+
+def declines_human(message):
+    """An explicit refusal/delay also applies before we have offered a transfer."""
+    text = _words(message)
+    return bool(_REFUSAL.search(text) or _DEFER.search(text))
+
+
 def has_handoff_offer(history):
     """Only the latest assistant invitation can make a bare approval a transfer.
 

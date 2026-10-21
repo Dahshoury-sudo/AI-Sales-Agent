@@ -596,6 +596,15 @@ def handle_order(message, history, store, conversation):
     """
     Handles the order collection flow. Extracts Name, Phone, Address, Products, Quantities, and Confirmation.
     """
+    from . import promotion_service
+    promotion_history = promotion_service.context_history(history, conversation)
+    if promotion_service.blocks_checkout(message, promotion_history, store) or (
+        promotion_service.has_promotion_context(promotion_history)
+        and not promotion_service.ordinary_purchase(message)
+        and not promotion_service.cancelling_order(message)
+    ):
+        return promotion_service.reply(message, promotion_history, store, explain=False)
+
     from .static_faq_service import normalize_arabic
     from .sales.constraints import original_liquid_update, formulation_reply
     from .conversation_service import merge_preferences
