@@ -15,6 +15,11 @@ OFFER_1122 = (
     "أنا كمساعد آلي مش بقدر أطبق أو أنفذ العروض بنفسي، ده شغل المندوب البشري. "
     "لو تحب، أقدر أحولك لمندوب بشري يتابع معاك التفاصيل ويطبق العرض. تحب؟"
 )
+CARD_QUESTION_1141 = "لو الكارت البنكي ال معايا من امريكا و هدفع بيه كيف هتكون ؟"
+OFFER_1141 = (
+    "أنا بساعدك تختار عطور وتطلب يا فندم، بس تفاصيل الدفع بطرق مختلفة زي الكروت الأجنبية "
+    "بيتابعها فريق المبيعات. تحب أحولك ليهم؟"
+)
 ACKNOWLEDGMENT = "حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك."
 
 
@@ -52,6 +57,54 @@ class HandoffConsentTests(SimpleTestCase):
                       "حولني", "حوّلني لمندوب", "please do", "go ahead"):
             with self.subTest(reply=reply):
                 self.assertIs(handoff_offer_reply(reply, [bot(OFFER_1122)]), True)
+
+    def test_pronoun_transfer_refers_to_the_preceding_sentence(self):
+        offers = (
+            OFFER_1141,
+            "تفاصيل الدفع بيتابعها فريق المبيعات. تحب أحولك لهم؟",
+            "تفاصيل الدفع بيتابعها فريق المبيعات. تحب تتكلم معاهم؟",
+            "تفاصيل الدفع بيتابعها فريق المبيعات. تحب تتواصل معهم؟",
+            "تفاصيل الدفع بيتابعها فريق المبيعات. أقدر أوصلك ليهم. تحب؟",
+            "Our sales team handles foreign cards. Would you like me to connect you to them?",
+            "Our support team handles payments. Would you like to speak with them?",
+            "Our sales team handles payments. I can connect you to them. Would you like that?",
+        )
+        for offer in offers:
+            for reply in ("نعم", "تمام", "yes", "نعم، وهل فيه رسوم إضافية؟"):
+                with self.subTest(offer=offer, reply=reply):
+                    self.assertIs(handoff_offer_reply(reply, [bot(offer)]), True)
+
+    def test_pronoun_transfer_punctuation_and_newlines(self):
+        for separator in (". ", ".\n\n", "\n", "! "):
+            for ending in ("؟", "?", "", "؟\nهيساعدوك في تفاصيل الدفع."):
+                offer = "تفاصيل الدفع بيتابعها فريق المبيعات" + separator + "تحب أحولك ليهم" + ending
+                with self.subTest(offer=offer):
+                    self.assertIs(handoff_offer_reply("نعم", [bot(offer)]), True)
+
+    def test_pronoun_transfer_requires_a_current_human_antecedent_and_invitation(self):
+        histories = (
+            [bot("تحب أحولك ليهم؟")],
+            [bot("تفاصيل الدفع موجودة على الموقع. تحب أحولك ليهم؟")],
+            [bot("فريق المبيعات بيتابع الدفع. العطور متاحة على الموقع. تحب أحولك ليهم؟")],
+            [bot("فريق المبيعات بيتابع الدفع."), bot("تحب أحولك ليهم؟")],
+            [{"role": "user", "content": "فريق المبيعات بيتابع الدفع."}, bot("تحب أحولك ليهم؟")],
+            [bot("فريق المبيعات بيتابع الدفع. تحب أحولك؟")],
+            [bot("فريق المبيعات بيتابع الدفع. تحب تعرف مواعيدهم؟")],
+            [bot("فريق المبيعات بيتابع الدفع. تحب أحولك ليهم ولا أقولك الأسعار؟")],
+            [bot("فريق المبيعات بيتابع الدفع. تحب تعرف ليه ماقدرش أحولك ليهم؟")],
+            [bot("I can't connect you to our sales team. Would you like me to connect you to them?")],
+            [bot(OFFER_1141 + " تحب أقولك الأسعار؟")],
+            [bot(OFFER_1141), bot("تحب أقولك الأسعار؟")],
+        )
+        for history in histories:
+            with self.subTest(history=history):
+                self.assertIs(handoff_offer_reply("نعم", history), False)
+
+    def test_pronoun_transfer_still_respects_refusal_and_postponement(self):
+        for reply in ("لا", "مش دلوقتي", "نعم بس استنى", "نعم بس متحولنيش",
+                      "نعم بس جاوبني عن الرسوم الاول", "yes but not now"):
+            with self.subTest(reply=reply):
+                self.assertIs(handoff_offer_reply(reply, [bot(OFFER_1141)]), False)
 
     def test_refusals_postponements_and_bot_insistence_are_not_consent(self):
         for reply in ("لا", "لأ شكرا", "no thanks", "مش دلوقتي", "yes but not now",
@@ -115,6 +168,13 @@ class HandoffRoutingTests(TestCase):
 
     def test_conversation_1122_transfers_without_classification_or_order(self):
         self.assertEqual(self.accept(), (ACKNOWLEDGMENT, ""))
+        self.assert_handed_off()
+        self.general.assert_not_called()
+        self.usage.assert_not_called()
+
+    def test_conversation_1141_transfers_without_classification_or_order(self):
+        history = [{"role": "user", "content": CARD_QUESTION_1141}, bot(OFFER_1141)]
+        self.assertEqual(self.accept("نعم", history), (ACKNOWLEDGMENT, ""))
         self.assert_handed_off()
         self.general.assert_not_called()
         self.usage.assert_not_called()
@@ -192,21 +252,58 @@ class HandoffRoutingTests(TestCase):
 
     def test_unsent_offer_is_not_used_as_context(self):
         save_message(self.conversation, "assistant", "تحب أقولك الأسعار؟")
-        save_message(self.conversation, "assistant", OFFER_1122, delivery_status="failed")
-        with patch("products.services.router.classify", return_value="faq"):
-            route("yes", build_llm_history(self.conversation), self.store, self.conversation)
-        self.assertFalse(Notification.objects.exists())
+        for offer in (OFFER_1122, OFFER_1141):
+            with self.subTest(offer=offer):
+                save_message(self.conversation, "assistant", offer, delivery_status="failed")
+                with patch("products.services.router.classify", return_value="handoff"):
+                    route("نعم", build_llm_history(self.conversation), self.store, self.conversation)
+                self.conversation.refresh_from_db()
+                self.assertFalse(self.conversation.needs_human)
+                self.assertFalse(Notification.objects.exists())
 
     def test_staff_reply_supersedes_offer_even_when_filtered_from_llm_history(self):
-        save_message(self.conversation, "assistant", OFFER_1122)
-        save_message(self.conversation, "agent", "تحب حجم 50 مل؟")
-        history = build_llm_history(self.conversation)
-        self.assertEqual(history, [bot(OFFER_1122)])
-        with patch("products.services.router.classify", return_value="handoff"):
-            route("yes", history, self.store, self.conversation)
-        self.conversation.refresh_from_db()
-        self.assertFalse(self.conversation.needs_human)
-        self.assertFalse(Notification.objects.exists())
+        for offer in (OFFER_1122, OFFER_1141):
+            with self.subTest(offer=offer):
+                save_message(self.conversation, "assistant", offer)
+                save_message(self.conversation, "agent", "تحب حجم 50 مل؟")
+                history = build_llm_history(self.conversation)
+                self.assertEqual(history[-1], bot(offer))
+                with patch("products.services.router.classify", return_value="handoff"):
+                    route("نعم", history, self.store, self.conversation)
+                self.conversation.refresh_from_db()
+                self.assertFalse(self.conversation.needs_human)
+                self.assertFalse(Notification.objects.exists())
+
+    def test_conversation_1141_retry_and_followup_preserve_human_workflow(self):
+        from products.views import signer
+
+        save_message(self.conversation, "user", CARD_QUESTION_1141)
+        save_message(self.conversation, "assistant", OFFER_1141)
+        payload = {"conversation_id": signer.sign_object(self.conversation.pk),
+                   "message": "نعم", "client_message_id": "consent-1141"}
+        followup_text = "وهحتاج رسوم إضافية؟"
+        with patch("products.services.router.classify", side_effect=AssertionError("No classification")), \
+             patch("products.services.router.handle_order", side_effect=AssertionError("No checkout")):
+            first = self.client.post("/api/chat/", payload)
+            retry = self.client.post("/api/chat/", payload)
+            followup = self.client.post("/api/chat/", {
+                **payload, "message": followup_text, "client_message_id": "after-consent-1141",
+            })
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(retry.status_code, 200)
+        self.assertEqual(retry.data, first.data)
+        self.assertTrue(first.data["needs_human"])
+        self.assertEqual(first.data["reply"], ACKNOWLEDGMENT)
+        self.assertEqual(followup.status_code, 200)
+        self.assertEqual(followup.data["reply"], "")
+        self.assertTrue(followup.data["needs_human"])
+        self.assertEqual(list(self.conversation.messages.filter(role="user").order_by("id")
+                              .values_list("content", flat=True)), [CARD_QUESTION_1141, "نعم", followup_text])
+        self.assertEqual(self.conversation.messages.filter(role="assistant").count(), 2)
+        self.assertEqual(Message.objects.get(pk=first.data["message_id"]).content, ACKNOWLEDGMENT)
+        self.general.assert_not_called()
+        self.usage.assert_not_called()
+        self.assert_handed_off()
 
     def test_web_retry_and_followup_preserve_human_workflow(self):
         from products.views import signer

@@ -19,6 +19,7 @@ _HUMAN = re.compile(
     r"خدمه العملاء|فريق(?:نا| المبيعات| الدعم)|"
     r"\b(?:human|real person|agent|support team|sales team|customer service)\b"
 )
+_HUMAN_REFERENCE = re.compile(r"\b(?:ليهم|لهم|معاهم|معهم|(?:to|with) them)\b")
 _TRANSFER = re.compile(
     r"احولك|نحولك|تحويلك|اوصلك|نوصلك|تتكلم|تتكلمي|تكلم|اكلم|تتواصل|يكلمك|يتواصل معاك|"
     r"\b(?:transfer|connect|speak|talk|put you in touch)\b"
@@ -87,11 +88,19 @@ def has_handoff_offer(history):
                 # what yes answers. A newer question in this reply does.
                 continue
             if _FOLLOWUP.fullmatch(_words(invitation)) and index > 0:
-                invitation = parts[index - 1][0]
+                index -= 1
+                invitation = parts[index][0]
+            human = bool(_HUMAN.search(invitation))
+            if not human and index > 0 and _HUMAN_REFERENCE.search(invitation):
+                # In 1141, "تحب أحولك ليهم؟" referred to فريق المبيعات in
+                # the preceding sentence. Only borrow that human reference;
+                # the current invitation must still pass the transfer checks.
+                antecedent = parts[index - 1][0]
+                human = bool(_HUMAN.search(antecedent) and not _UNAVAILABLE.search(antecedent))
             return bool(
                 _INVITATION.search(invitation)
                 and _TRANSFER.search(invitation)
-                and _HUMAN.search(invitation)
+                and human
                 and not _UNAVAILABLE.search(invitation)
                 and not _ALTERNATIVE.search(invitation)
             )
