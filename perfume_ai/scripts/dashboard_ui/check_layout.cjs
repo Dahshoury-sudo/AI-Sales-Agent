@@ -29,7 +29,9 @@ async function intercept(route) {
   data=p.includes('token/refresh')?{access:'preview-token-new'}:p.includes('/chat/')?{reply:'أهلاً بيك!',conversation_id:'preview-conversation'}:p.includes('/import/')?{created:2,updated:0,errors:[],warnings:[]}:{success:true,...profile,access:'preview-token',refresh:'preview-refresh'};
  } else if(p.endsWith('/profile/')) data=profile;
  else if(p.endsWith('/overview/')) data={total_conversations:320,total_orders:82,revenue:48500,pending_orders:12,pending_handoffs:3,platform_breakdown:analytics.platform_breakdown};
- else if(p.endsWith('/analytics/')) data=analytics;
+ else if(p.endsWith('/analytics/')) data=url.searchParams.get('version')==='2'?require('./analytics_fixture.cjs').fixture(url.href,empty):analytics;
+ else if(p.endsWith('/analytics/products/')) data=require('./analytics_fixture.cjs').fixture(url.href,empty).products;
+ else if(p.endsWith('/analytics/export/')) return route.fulfill({contentType:'text/csv; charset=utf-8',headers:{'Content-Disposition':'attachment; filename="analytics.csv"'},body:'\ufeffreport,revenue\nproducts,3000\n'});
  else if(p.endsWith('/products/')) data={products:empty?[]:products,total:2,page:1,total_pages:1};
  else if(/\/products\/\d+\/$/.test(p)) data=products[0];
  else if(p.endsWith('/settings/')) data=settings;
@@ -65,7 +67,7 @@ if (require.main === module) (async()=>{
     await page.evaluate(s=>showSection(s),section);
     await ready(page);
     if(section==='analytics'){
-     await page.waitForFunction(()=>document.querySelectorAll('.chart-frame canvas').length===4 && [...document.querySelectorAll('.chart-frame canvas')].every(c=>c.getBoundingClientRect().height>=230));
+     await page.waitForFunction(()=>document.querySelectorAll('.chart-frame canvas').length===6 && [...document.querySelectorAll('.chart-frame canvas')].every(c=>c.getBoundingClientRect().height>=230));
      for(const canvas of await page.locator('.chart-frame canvas').all()){
       const bounds=await canvas.boundingBox();assert.ok(bounds.width>=180 && bounds.height>=230,'Chart collapsed after showing analytics');
      }

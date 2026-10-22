@@ -1,13 +1,19 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Case, When, F, Value, CharField
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
 
 from products.models import Conversation, Order, OrderItem
 from products.services.usage_service import messages_used_this_month, monthly_cap
 from .auth_backend import StoreOwnerAuthentication
+from .analytics import Filters, Report, serialize
+from rest_framework.exceptions import ValidationError
+from django.http import HttpResponse
+import csv
+import io
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -22,7 +28,7 @@ def _revenue_for_period(store, start, end):
         created_at__gte=start,
         created_at__lt=end,
     ).aggregate(total=Sum("total_price"))
-    return float(result["total"] or 0)
+    return result["total"] or Decimal("0")
 
 
 def _orders_for_period(store, start, end):
@@ -139,6 +145,10 @@ class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if request.query_params.get("version") == "2":
+            return Response(Report(request.store, Filters.parse(request.query_params)).overview())
+        if "version" in request.query_params:
+            raise ValidationError({"version": "نسخة التقرير غير مدعومة."})
         store = request.store
         now   = timezone.now()
 
@@ -190,21 +200,26 @@ class AnalyticsView(APIView):
         # ── Top-5 products by units sold ─────────────────────────────────────
         top_products_qs = (
             OrderItem.objects.filter(order__store=store)
-            .values("variant__product__name")
+            .annotate(product_name=Case(
+                When(variant__product__store=store, then=F("variant__product__name")),
+                When(variant__isnull=True, then=F("product_snapshot_name")),
+                default=Value("منتج غير متاح"), output_field=CharField(),
+            ))
+            .values("product_name")
             .annotate(total_qty=Sum("quantity"))
             .order_by("-total_qty")[:5]
         )
         top_products = [
-            {"name": row["variant__product__name"], "qty": row["total_qty"]}
+            {"name": row["product_name"] or "منتج غير متاح", "qty": row["total_qty"]}
             for row in top_products_qs
         ]
 
         # ── Global KPIs ──────────────────────────────────────────────────────
         total_orders        = Order.objects.filter(store=store).count()
         total_conversations = Conversation.objects.filter(store=store).count()
-        total_revenue       = float(
+        total_revenue       = (
             Order.objects.filter(store=store, status__in=["confirmed", "delivered"])
-            .aggregate(total=Sum("total_price"))["total"] or 0
+            .aggregate(total=Sum("total_price"))["total"] or Decimal("0")
         )
         delivered_orders = Order.objects.filter(
             store=store, status__in=["confirmed", "delivered"]
@@ -251,4 +266,59 @@ class AnalyticsView(APIView):
                 "monthly_message_cap": cap,
             },
         })
+
+
+class AnalyticsProductsView(APIView):
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        filters = Filters.parse(request.query_params)
+        return Response(serialize({"meta": filters.meta(), **Report(request.store, filters).products()}))
+
+
+def _csv_cell(value):
+    # Only text needs spreadsheet formula protection; preserve signed numbers.
+    if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@", "\t", "\r")):
+        return "'" + value
+    return "" if value is None else value
+
+
+class AnalyticsExportView(APIView):
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        filters = Filters.parse(request.query_params)
+        service = Report(request.store, filters)
+        report = filters.data["report"]
+        if report == "products":
+            rows = service.products(export=True)
+            columns = ["product_key", "name", "units", "orders", "revenue"]
+        elif report == "trends":
+            rows = service.trends()
+            columns = ["start", "end", "previous_start", "previous_end", "revenue", "previous_revenue", "orders", "previous_orders"]
+        elif report == "statuses":
+            rows, columns = service.statuses(), ["status", "orders"]
+        elif report == "channels":
+            rows, columns = service.channels(), ["platform", "conversations", "orders", "revenue"]
+        else:
+            from .analytics import change
+            current = service.kpis(filters.start, filters.end)
+            previous = service.kpis(filters.previous_start, filters.previous_end)
+            rows = [{"metric": key, "current": value, "previous": previous[key], "change_percent": change(value, previous[key])} for key, value in current.items()]
+            columns = ["metric", "current", "previous", "change_percent"]
+        meta = {"report": report, **filters.meta(), "currency": "EGP"}
+        # Keep selected-period metadata distinct from each trend bucket's dates.
+        for key in ("start", "end", "previous_start", "previous_end"):
+            meta["filter_" + key] = meta.pop(key)
+        output = io.StringIO(newline="")
+        writer = csv.writer(output)
+        writer.writerow([*meta, *columns])
+        for row in rows or [{}]:
+            writer.writerow([*[_csv_cell(v) for v in meta.values()], *[_csv_cell(row.get(key)) for key in columns]])
+        response = HttpResponse("\ufeff" + output.getvalue(), content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="analytics-{report}-{meta["filter_start"]}-{meta["filter_end"]}.csv"'
+        response["Cache-Control"] = "private, no-store"
+        return response
 

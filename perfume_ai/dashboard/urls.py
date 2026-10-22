@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views_auth import RegisterView, LoginView, ProfileView, ForgotPasswordView, ResetPasswordView
 from .views_store import StoreSettingsView, StoreAPIKeyView
 from .views_products import ProductListView, ProductDetailView, ProductCreateView
-from .views_analytics import DashboardOverviewView, AnalyticsView
+from .views_analytics import DashboardOverviewView, AnalyticsView, AnalyticsProductsView, AnalyticsExportView
 from .views_notifications import NotificationListView, NotificationMarkReadView
 from .views_faq import FAQListCreateView, FAQDetailView
 from .views_post_rules import PostRuleListCreateView, PostRuleDetailView
@@ -38,6 +38,8 @@ urlpatterns = [
     # --- Dashboard Overview API ---
     path("api/overview/",   DashboardOverviewView.as_view(), name="dashboard-api-overview"),
     path("api/analytics/",  AnalyticsView.as_view(),         name="dashboard-api-analytics"),
+    path("api/analytics/products/", AnalyticsProductsView.as_view(), name="dashboard-api-analytics-products"),
+    path("api/analytics/export/", AnalyticsExportView.as_view(), name="dashboard-api-analytics-export"),
 
     # --- Notifications API ---
     path("api/notifications/", NotificationListView.as_view(), name="dashboard-api-notifications"),

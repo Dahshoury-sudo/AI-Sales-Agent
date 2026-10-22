@@ -1,0 +1,9 @@
+{
+  "passed": [
+    "Default range, product search/sort/pagination, filtered CSV download",
+    "Every preset/aggregation, custom apply, refresh, URL reload and browser history",
+    "Superseded report and product responses cannot overwrite newer selections",
+    "Failure/retry, stale export protection, empty data, keyboard table alternatives and Chart.js failure",
+    "Responsive screenshots, mobile WCAG checks and no runtime errors"
+  ]
+}

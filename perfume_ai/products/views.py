@@ -192,8 +192,8 @@ class OrdersDashboardAPIView(APIView):
             items = []
             for item in order.items.all():
                 items.append({
-                    "product_name": item.variant.product.name,
-                    "volume": item.variant.volume,
+                    "product_name": item.display_name,
+                    "volume": item.display_volume,
                     "quantity": item.quantity,
                     "unit_price": str(item.price_at_time_of_order),
                     "line_total": str(item.price_at_time_of_order * item.quantity),

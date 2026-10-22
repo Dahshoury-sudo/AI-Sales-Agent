@@ -1,0 +1,6 @@
+{
+  "passed": [
+    "Actual login, real database aggregation, rendered metrics, weekly charts, CSV download, responsive layout and two-store isolation"
+  ],
+  "errors": []
+}

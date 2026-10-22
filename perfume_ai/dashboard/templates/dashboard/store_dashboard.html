@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
+    <link rel="stylesheet" href="{% static 'dashboard/pages/analytics.css' %}?v=20261022">
+    <script src="{% static 'dashboard/analytics.js' %}?v=20261022" defer></script>
 </head>
 <body data-page="store_dashboard" data-layout="app">
     <!-- Mobile Header -->
@@ -92,55 +94,7 @@
             <div class="workspace-tools"><span id="workspace-store-name">متجرك</span><button type="button" class="notification-shortcut" onclick="showSection('notifications')" aria-label="عرض الإشعارات"><i class="far fa-bell" aria-hidden="true"></i></button></div>
         </header>
 
-        <!-- Analytics Section -->
-        <div class="section" id="section-analytics">
-            <div class="page-header">
-                <h1> التحليلات والإحصائيات</h1>
-                <p>لوحة شاملة لمراقبة أداء متجرك</p>
-            </div>
-
-            <!-- ── Global KPI Cards ── -->
-            <div class="analytics-kpis" id="analytics-kpis-grid">
-                <!-- filled by JS -->
-            </div>
-
-            <!-- ── Period Comparison Tabs ── -->
-            <div class="settings-card" style="margin-bottom:20px;">
-                <h3><i class="fas fa-calendar-alt"></i> مقارنة الفترات</h3>
-                <div class="period-tabs">
-                    <button class="period-tab active" onclick="showPeriod(0, this)">اليوم vs امبارح</button>
-                    <button class="period-tab" onclick="showPeriod(1, this)">الأسبوع ده vs اللي فات</button>
-                    <button class="period-tab" onclick="showPeriod(2, this)">الشهر ده vs اللي فات</button>
-                </div>
-                <div class="comparison-row" id="comparison-cards">
-                    <!-- filled by JS -->
-                </div>
-            </div>
-
-            <!-- ── Charts Row 1: Bar comparison + Order Status Donut ── -->
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h3><i class="fas fa-chart-bar" style="color:var(--primary);"></i> مقارنة الإيرادات والطلبات</h3>
-                    <div class="chart-frame"><canvas id="chart-comparison"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <h3><i class="fas fa-circle-dot" style="color:var(--warning);"></i> توزيع حالات الطلبات</h3>
-                    <div class="chart-frame"><canvas id="chart-order-status"></canvas></div>
-                </div>
-            </div>
-
-            <!-- ── Charts Row 2: Platform Donut + Top Products Bar ── -->
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h3><i class="fas fa-signal" style="color:var(--success);"></i> توزيع المنصات</h3>
-                    <div class="chart-frame"><canvas id="chart-platforms"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <h3><i class="fas fa-trophy" style="color:var(--warning);"></i> أكثر 5 منتجات مبيعاً</h3>
-                    <div class="chart-frame"><canvas id="chart-top-products"></canvas></div>
-                </div>
-            </div>
-        </div>
+        {% include 'dashboard/includes/analytics.html' %}
 
         <!-- Overview Section -->
         <div class="section active" id="section-overview">
@@ -154,7 +108,7 @@
                     <div class="revenue-heading"><h2 id="revenue-heading">إجمالي الإيرادات</h2><i class="fas fa-arrow-trend-up" aria-hidden="true"></i></div>
                     <div class="revenue-amount"><span id="stat-revenue">—</span><span class="revenue-currency">ج.م</span></div>
                     <p>قيمة الطلبات المؤكدة والمسلّمة</p>
-                    <div class="revenue-footer"><span>إجمالي نشاط المتجر</span><button type="button" onclick="showSection('analytics')">التفاصيل <i class="fas fa-arrow-left" aria-hidden="true"></i></button></div>
+                    <div class="revenue-footer"><span>إجمالي نشاط المتجر منذ البداية</span><button type="button" onclick="showSection('analytics')">التفاصيل <i class="fas fa-arrow-left" aria-hidden="true"></i></button></div>
                 </article>
                 <div class="stats-grid">
                     <article class="stat-card"><div class="stat-heading"><span class="stat-label">إجمالي المحادثات</span><i class="far fa-comments" aria-hidden="true"></i></div><div class="stat-value" id="stat-conversations">—</div><button class="metric-link" type="button" onclick="showSection('chat_history')">سجل المحادثات <span aria-hidden="true">←</span></button></article>
@@ -576,6 +530,8 @@ Check your DM, we replied!
 
         // Authenticated fetch wrapper with token refresh
         async function authFetch(url, options = {}) {
+            const suppressError = options.suppressError;
+            delete options.suppressError;
             if (!options.headers) options.headers = {};
             options.headers['Authorization'] = `Bearer ${accessToken}`;
             if (!(options.body instanceof FormData)) {
@@ -604,7 +560,7 @@ Check your DM, we replied!
                 }
             }
 
-            if (!res.ok) window.WebVitasUI?.showError();
+            if (!res.ok && !suppressError) window.WebVitasUI?.showError();
             return res;
         }
 
@@ -623,11 +579,11 @@ Check your DM, we replied!
             
             document.body.dataset.section = name;
             window.WebVitasUI?.sectionChanged(name);
+            window.StoreAnalytics?.sectionChanged(name);
 
             if (name === 'overview')   loadOverview();
             if (name === 'analytics') {
-                loadAnalytics();
-                requestAnimationFrame(() => Object.values(_charts).forEach(chart => chart.resize()));
+                window.StoreAnalytics?.show();
             }
             if (name === 'products')   loadProducts();
             if (name === 'settings')   loadSettings();
@@ -989,273 +945,6 @@ Check your DM, we replied!
         // ANALYTICS
         // ═══════════════════════════════════════════════════════════════════
 
-        // Chart instances registry (kept so we can destroy before re-drawing)
-        const _charts = {};
-
-        // Cached server data
-        let _analyticsData = null;
-
-        // Currently displayed period index (0=today, 1=week, 2=month)
-        let _activePeriodIdx = 0;
-
-        // ── Chart.js defaults ───────────────────────────────────────────────
-        // Canvas colors must be resolved from the same tokens as the workspace.
-        const _chartStyle = getComputedStyle(document.body);
-        const _chartColor = name => _chartStyle.getPropertyValue(name).trim();
-        Chart.defaults.color = _chartColor('--muted');
-        Chart.defaults.borderColor = _chartColor('--line');
-        Chart.defaults.animation = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        Chart.defaults.font.size = 12;
-        Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
-        Chart.defaults.plugins.legend.labels.usePointStyle = true;
-        Chart.defaults.plugins.legend.labels.pointStyle = 'rectRounded';
-        Chart.defaults.plugins.tooltip.backgroundColor = _chartColor('--primary');
-        Chart.defaults.plugins.tooltip.titleColor = _chartColor('--on-dark');
-        Chart.defaults.plugins.tooltip.bodyColor = _chartColor('--on-dark');
-        Chart.defaults.plugins.tooltip.borderColor = _chartColor('--navigation-line');
-        Chart.defaults.plugins.tooltip.borderWidth = 1;
-        Chart.defaults.plugins.tooltip.cornerRadius = 8;
-        Chart.defaults.plugins.tooltip.padding = 12;
-
-        // ── Helper: destroy & recreate chart ───────────────────────────────
-        function _makeChart(id, config) {
-            if (_charts[id]) _charts[id].destroy();
-            const ctx = document.getElementById(id);
-            if (!ctx) return;
-            config.options = { ...config.options, maintainAspectRatio: false };
-            _charts[id] = new Chart(ctx, config);
-        }
-
-        // ── Helper: format number ──────────────────────────────────────────
-        function _fmt(n, decimals = 0) {
-            return Number(n).toLocaleString('ar-EG', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-        }
-
-        // ── Helper: change badge ───────────────────────────────────────────
-        function _badge(pct) {
-            if (pct === null || pct === undefined) {
-                return '<span class="kpi-badge flat">— لا يوجد بيانات سابقة</span>';
-            }
-            const cls  = pct >= 0 ? 'up' : 'down';
-            const icon = pct >= 0 ? '↑' : '↓';
-            return `<span class="kpi-badge ${cls}">${icon} ${Math.abs(pct)}%</span>`;
-        }
-
-        // ── Load analytics data then render everything ──────────────────────
-        async function loadAnalytics() {
-            try {
-                const res = await authFetch(`${API_BASE}/analytics/`);
-                if (!res || !res.ok) return;
-                _analyticsData = await res.json();
-
-                _renderKPIs(_analyticsData.kpis);
-                _renderPeriodCards(_analyticsData.period_comparisons, _activePeriodIdx);
-                _renderComparisonBarChart(_analyticsData.period_comparisons, _activePeriodIdx);
-                _renderOrderStatusChart(_analyticsData.order_status_breakdown);
-                _renderPlatformChart(_analyticsData.platform_breakdown);
-                _renderTopProductsChart(_analyticsData.top_products);
-            } catch (e) {
-                console.error('Analytics load error:', e);
-            }
-        }
-
-        // ── Switch active period tab ────────────────────────────────────────
-        function showPeriod(idx, btnEl) {
-            _activePeriodIdx = idx;
-            document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
-            btnEl.classList.add('active');
-            if (!_analyticsData) return;
-            _renderPeriodCards(_analyticsData.period_comparisons, idx);
-            _renderComparisonBarChart(_analyticsData.period_comparisons, idx);
-        }
-
-        // ── KPI cards ──────────────────────────────────────────────────────
-        function _renderKPIs(kpis) {
-            const grid = document.getElementById('analytics-kpis-grid');
-            if (!grid) return;
-
-            const items = [
-                { icon: 'fas fa-coins',           color: 'purple', label: 'إجمالي الإيرادات',  value: `${_fmt(kpis.total_revenue, 2)} ج.م` },
-                { icon: 'fas fa-shopping-cart',   color: 'green',  label: 'إجمالي الطلبات',    value: _fmt(kpis.total_orders) },
-                { icon: 'fas fa-comments',         color: 'blue',   label: 'إجمالي المحادثات',  value: _fmt(kpis.total_conversations) },
-                { icon: 'fas fa-users',            color: 'orange', label: 'عملاء فريدين',      value: _fmt(kpis.unique_customers) },
-                { icon: 'fas fa-percent',          color: 'red',    label: 'معدل التحويل',      value: `${kpis.conversion_rate}%` },
-                { icon: 'fas fa-tag',              color: 'blue',   label: 'متوسط قيمة الطلب',  value: `${_fmt(kpis.avg_order_value, 2)} ج.م` },
-            ];
-
-            grid.innerHTML = items.map(item => `
-                <div class="kpi-card">
-                    <div class="stat-icon ${item.color}" style="margin-bottom:10px;">
-                        <i class="${item.icon}"></i>
-                    </div>
-                    <div class="kpi-label">${item.label}</div>
-                    <div class="kpi-value">${item.value}</div>
-                </div>
-            `).join('');
-        }
-
-        // ── Period comparison mini-cards ────────────────────────────────────
-        function _renderPeriodCards(periods, idx) {
-            const p = periods[idx];
-            if (!p) return;
-            const container = document.getElementById('comparison-cards');
-            if (!container) return;
-
-            const metrics = [
-                { key: 'revenue',       label: 'الإيرادات',   fmt: v => `${_fmt(v, 2)} ج.م` },
-                { key: 'orders',        label: 'الطلبات',     fmt: v => _fmt(v) },
-                { key: 'conversations', label: 'المحادثات',   fmt: v => _fmt(v) },
-            ];
-
-            container.innerHTML = metrics.map(m => `
-                <div class="cmp-card">
-                    <div class="cmp-title"> ${m.label}</div>
-                    <div class="cmp-metric">
-                        <span class="cmp-name">الفترة الحالية</span>
-                        <span class="cmp-val">${m.fmt(p.current[m.key])}</span>
-                    </div>
-                    <div class="cmp-metric">
-                        <span class="cmp-name">الفترة السابقة</span>
-                        <span class="cmp-val" style="color:var(--text-muted);">${m.fmt(p.previous[m.key])}</span>
-                    </div>
-                    <div style="margin-top:8px;">${_badge(p.change[m.key])}</div>
-                </div>
-            `).join('');
-        }
-
-        // ── Bar Chart: revenue & orders comparison ─────────────────────────
-        function _renderComparisonBarChart(periods, idx) {
-            const p = periods[idx];
-            if (!p) return;
-
-            const labelCurrent  = 'الفترة الحالية';
-            const labelPrevious = 'الفترة السابقة';
-
-            _makeChart('chart-comparison', {
-                type: 'bar',
-                data: {
-                    labels: ['الإيرادات (ج.م)', 'الطلبات', 'المحادثات'],
-                    datasets: [
-                        {
-                            label: labelCurrent,
-                            data: [p.current.revenue, p.current.orders, p.current.conversations],
-                            backgroundColor: _chartColor('--primary'),
-                            borderRadius: 8,
-                        },
-                        {
-                            label: labelPrevious,
-                            data: [p.previous.revenue, p.previous.orders, p.previous.conversations],
-                            backgroundColor: _chartColor('--chart-bronze'),
-                            borderRadius: 8,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: _chartColor('--line') }, beginAtZero: true },
-                    },
-                },
-            });
-        }
-
-        // ── Donut Chart: order status breakdown ────────────────────────────
-        function _renderOrderStatusChart(statusData) {
-            const labelMap = {
-                pending:   'معلق',
-                confirmed: 'مؤكد',
-                delivered: 'تم التسليم',
-                cancelled: 'ملغي',
-            };
-            const colorMap = {
-                pending:   _chartColor('--warning'),
-                confirmed: _chartColor('--primary'),
-                delivered: _chartColor('--success'),
-                cancelled: _chartColor('--danger'),
-            };
-
-            const keys    = Object.keys(statusData);
-            const labels  = keys.map(k => labelMap[k] || k);
-            const values  = keys.map(k => statusData[k]);
-            const colors  = keys.map(k => colorMap[k] || _chartColor('--muted'));
-
-            _makeChart('chart-order-status', {
-                type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: _chartColor('--paper') }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 16 } },
-                    },
-                    cutout: '65%',
-                },
-            });
-        }
-
-        // ── Donut Chart: platform breakdown ────────────────────────────────
-        function _renderPlatformChart(platformData) {
-            const labelMap = { whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'انستجرام', web: 'ويب' };
-            const colorMap = {
-                whatsapp: _chartColor('--primary'), messenger: _chartColor('--chart-bronze'),
-                instagram: _chartColor('--chart-plum'), web: _chartColor('--chart-slate'),
-            };
-
-            const keys   = Object.keys(platformData);
-            const labels = keys.map(k => labelMap[k] || k);
-            const values = keys.map(k => platformData[k]);
-            const colors = keys.map(k => colorMap[k] || _chartColor('--muted'));
-
-            _makeChart('chart-platforms', {
-                type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 3, borderColor: _chartColor('--paper') }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 16 } },
-                    },
-                    cutout: '65%',
-                },
-            });
-        }
-
-        // ── Bar Chart: top-5 products ──────────────────────────────────────
-        function _renderTopProductsChart(topProducts) {
-            if (!topProducts || topProducts.length === 0) return;
-
-            const labels = topProducts.map(p => p.name);
-            const values = topProducts.map(p => p.qty);
-
-            _makeChart('chart-top-products', {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'الكميات المباعة',
-                        data: values,
-                        backgroundColor: _chartColor('--chart-bronze'),
-                        borderRadius: 8,
-                    }],
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: _chartColor('--line') }, beginAtZero: true },
-                        y: { grid: { display: false } },
-                    },
-                },
-            });
-        }
-    
         function openEditModal(id) {
             const p = window.PRODUCTS_DATA[id];
             document.getElementById('edit-product-id').value = id;

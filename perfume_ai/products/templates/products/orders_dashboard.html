@@ -247,7 +247,7 @@
             <div class="product-item">
                 <div>
                     <div class="product-name">${item.product_name}</div>
-                    <div class="product-meta">${item.volume}ml × ${item.quantity}</div>
+                    <div class="product-meta">${item.volume == null ? 'حجم غير متاح' : item.volume + 'ml'} × ${item.quantity}</div>
                 </div>
                 <div class="product-price">${parseFloat(item.line_total).toLocaleString()} EGP</div>
             </div>

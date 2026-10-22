@@ -215,6 +215,7 @@ class Conversation(models.Model):
 
     class Meta:
         indexes = [
+            models.Index(fields=["store", "created_at"], name="conv_analytics_date_idx"),
             # get_or_create_platform_conversation filters on exactly these three
             # and takes the newest — once per inbound message on every platform.
             models.Index(
@@ -367,6 +368,9 @@ class Order(models.Model):
     notification_pending = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [models.Index(fields=["store", "created_at"], name="order_analytics_date_idx")]
+
     def save(self, *args, **kwargs):
         # Kept in step with customer_phone on every write, including the backfill
         # command, so the hash can never drift from the value it indexes.
@@ -387,13 +391,36 @@ class OrderItem(models.Model):
         ("original", "أوريجينال"),
     )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True)
+    product_snapshot_id = models.PositiveBigIntegerField(null=True, editable=False)
+    product_snapshot_name = models.CharField(max_length=200, blank=True, editable=False)
+    volume_snapshot = models.PositiveIntegerField(null=True, editable=False)
     quantity = models.PositiveIntegerField(default=1)
     bottle_type = models.CharField(max_length=20, choices=BOTTLE_CHOICES, default="normal")
     price_at_time_of_order = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def save(self, *args, **kwargs):
+        # Capture once, using the already selected variant in checkout. Never
+        # rewrite a historical identity when the catalogue changes.
+        if self._state.adding and self.variant_id:
+            product = self.variant.product
+            if product.store_id != self.order.store_id:
+                raise ValueError("Order item product must belong to the order's store")
+            self.product_snapshot_id = product.pk
+            self.product_snapshot_name = product.name
+            self.volume_snapshot = self.variant.volume
+        super().save(*args, **kwargs)
+
+    @property
+    def display_name(self):
+        return self.product_snapshot_name or "منتج غير متاح"
+
+    @property
+    def display_volume(self):
+        return self.volume_snapshot
+
     def __str__(self):
-        return f"{self.quantity} x {self.variant.product.name} ({self.variant.volume}ml) (Order #{self.order.id})"
+        return f"{self.quantity} x {self.display_name} ({self.display_volume or '—'}ml) (Order #{self.order_id})"
 
 class ConversationEvaluation(models.Model):
     conversation = models.OneToOneField(Conversation, on_delete=models.CASCADE, related_name="evaluation")

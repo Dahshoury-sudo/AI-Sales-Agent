@@ -17,6 +17,7 @@ node scripts/dashboard_ui/check_layout.cjs
 node scripts/dashboard_ui/check_workflows.cjs
 node scripts/dashboard_ui/check_handoff.cjs
 node scripts/dashboard_ui/check_accessibility.cjs
+node scripts/dashboard_ui/check_analytics.cjs
 node scripts/verify_chat_clients.js
 ```
 
@@ -27,3 +28,24 @@ Screenshots and reports go to the system temporary directory under `webvitas-das
 The handoff check covers unread persistence, new-message ordering and sound, embedded and standalone views, mobile navigation, visibility, and stale responses. It drives polling explicitly; hidden-tab signals are simulated because headless Chrome reports every tab as visible.
 
 For Django checks and regressions, use `perfume_ai.settings_test` with `TEST_DATABASE_URL=sqlite:///:memory:` to select isolated in-memory SQLite (an unset variable can be loaded from `.env`). Static-asset collection should use a temporary `STATIC_ROOT` when verifying locally.
+
+The analytics check exercises all presets, custom dates, aggregation controls,
+search, sorting, pagination, CSV download, URL history, refresh/error/retry states,
+stale responses, chart-library failure, keyboard table alternatives and mobile
+accessibility. `analytics_fixture.cjs` supplies synthetic responses only to these
+isolated previews. Layout checks now cover six analytics charts.
+
+To verify actual Django API responses and database aggregation end to end:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/dashboard_ui/check_analytics_live.py
+```
+
+This command starts a test-only WSGI server on `127.0.0.1:8767`, runs the browser
+smoke test, then stops the server and removes its temporary SQLite database. It
+seeds two isolated test stores, verifies login, displayed totals, CSV downloads,
+responsive screenshots and store isolation, and blocks server-side external HTTP.
+The browser permits the existing static/font CDNs. It does not use or alter the
+application database. Screenshots and `analytics-real-api-report.json` use the same
+artifact directory as the preview checks. See `dashboard/ANALYTICS.md` for metric
+definitions, API parameters and deployment migration requirements.
