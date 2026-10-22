@@ -13017,6 +13017,31 @@ class PartiallyResolvedQuestionTests(TestCase):
         self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندكو لادور بخور صح ؟")
 
     # ── the safety net on what the resolver claims it could not place ─────
+    def test_original_bottle_words_do_not_create_a_false_denial(self):
+        """Conversation 1177: packaging was mistaken for a second, unavailable perfume."""
+        for volume, price, stock in ((100, 815, 2), (200, 1623, 10)):
+            ProductVariant.objects.create(
+                product=self.sauvage, volume=volume, price=price,
+                bottle_type="original", stock=stock,
+            )
+
+        with mock.patch(
+            "products.services.product_resolver.chat",
+            return_value=json.dumps({
+                "perfumes": ["Dior Sauvage"],
+                "unplaced": ["الازايز الاوريجنال"],
+            }),
+        ), mock.patch("products.services.product_info.chat", return_value="ok"):
+            _, context = get_product_info(
+                "بكام الازايز الاوريجنال سوفاج", [], self.store, self.conversation,
+            )
+
+        self.assertIn("Dior Sauvage", context)
+        self.assertIn("زجاجة أوريجينال 100 ملي: 815.00 EGP", context)
+        self.assertIn("زجاجة أوريجينال 200 ملي: 1623.00 EGP", context)
+        self.assertNotIn(sales_described.PENDING_LOOKUP_MARKER, context)
+        self.assertNotIn("ABSENCE_DENIED", context)
+
     def test_a_stocked_name_is_never_recorded_as_unplaced(self):
         """A model that lists a perfume we carry under `unplaced` would have us deny it by name
         one turn later. `_unplaced_names` drops anything `match_product` can place."""
