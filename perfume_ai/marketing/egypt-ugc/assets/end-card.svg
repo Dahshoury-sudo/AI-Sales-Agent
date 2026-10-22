@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-labelledby="title desc">
+  <title id="title">WebVitas AI — ابعت كلمة ديمو</title>
+  <desc id="desc">مساعد مبيعات متخصص في البرفانات. ابعت كلمة ديمو في رسالة وشوفه على منتجات محلك.</desc>
+  <rect width="1080" height="1920" fill="#1c1a17"/>
+  <path d="M100 210H980M100 1490H980" stroke="#4b4337" stroke-width="2"/>
+  <g transform="translate(370 315) scale(1.35)">
+    <path d="M1 2h11l10 27L31 2h10l9 27L59 2h11L55 43H45L36 19 27 43H16L1 2Z" fill="#fffefb"/>
+    <path d="m31 2 14 41h10L41 2H31Z" fill="#d8be8a"/>
+  </g>
+  <text x="485" y="364" fill="#fffefb" font-family="Arial, sans-serif" font-weight="700" font-size="50">webvitas</text>
+  <rect x="710" y="326" width="52" height="42" rx="8" fill="none" stroke="#d8be8a"/>
+  <text x="736" y="355" fill="#d8be8a" text-anchor="middle" font-family="Arial, sans-serif" font-size="23">AI</text>
+  <g font-family="Tahoma, Arial, sans-serif" text-anchor="middle" direction="rtl">
+    <text x="540" y="530" fill="#d8be8a" font-size="42">لأصحاب محلات البرفانات</text>
+    <text x="540" y="720" fill="#fffefb" font-size="88" font-weight="700">مساعد مبيعات</text>
+    <text x="540" y="838" fill="#fffefb" font-size="82" font-weight="700">فاهم في البرفانات.</text>
+    <text x="540" y="960" fill="#c4baaa" font-size="43">يرشّح · يجاوب · يسجّل الطلب</text>
+    <rect x="145" y="1100" width="790" height="254" rx="28" fill="#d8be8a"/>
+    <text x="540" y="1200" fill="#1c1a17" font-size="66" font-weight="700">ابعت كلمة ديمو</text>
+    <text x="540" y="1280" fill="#1c1a17" font-size="34">في رسالة وشوفه على منتجات محلك</text>
+  </g>
+</svg>

@@ -1,0 +1,63 @@
+{
+  "brand": "WebVitas AI",
+  "campaign": "Egypt perfume-store demo",
+  "language": "Egyptian Arabic",
+  "duration_seconds": 32,
+  "format": "1080 × 1920 · 9:16 · 30 fps",
+  "cta": "ابعت كلمة ديمو في رسالة",
+  "positioning": "مساعد مبيعات متخصص في البرفانات، يرشّح من منتجات محلك، يجاوب على أسئلة العميل، ويسجّل الطلب.",
+  "variants": [
+    {
+      "id": "A",
+      "slug": "repeated-questions",
+      "name": "Repeated questions",
+      "hook": "عندك محل برفانات وبتقضي يومك ترد على نفس الأسئلة؟",
+      "hook_cues": [
+        {"start": 0, "end": 2.5, "text": "عندك محل برفانات؟"},
+        {"start": 2.5, "end": 6, "text": "وبتقضي يومك ترد\nعلى نفس الأسئلة؟"}
+      ],
+      "post": "عندك محل برفانات؟ شوف مساعد مبيعات متخصص يرشّح من منتجات محلك حسب ذوق العميل وميزانيته، يناقش معاه البدائل، ويسجّل الطلب بعد التأكيد.\n\nابعت كلمة «ديمو» في رسالة وشوفه شغال على منتجات محلك.\n\nالمقدّم في بداية الفيديو مولّد بالذكاء الاصطناعي.\n#محلات_العطور #تجارة_العطور #WebVitas"
+    },
+    {
+      "id": "B",
+      "slug": "recommendations",
+      "name": "Perfume recommendations",
+      "hook": "عندك محل برفانات؟ بترشّح إزاي لكل ذوق وميزانية؟",
+      "hook_cues": [
+        {"start": 0, "end": 2.5, "text": "عندك محل برفانات؟"},
+        {"start": 2.5, "end": 6, "text": "بترشّح إزاي\nلكل ذوق وميزانية؟"}
+      ],
+      "post": "كل عميل له ذوق وميزانية. شوف مساعد مبيعات متخصص في البرفانات بيساعده يختار من منتجات محلك، ويكمّل معاه لحد تسجيل الطلب بعد التأكيد.\n\nابعت كلمة «ديمو» في رسالة وشوفه شغال على منتجات محلك.\n\nالمقدّم في بداية الفيديو مولّد بالذكاء الاصطناعي.\n#محلات_العطور #تجارة_العطور #WebVitas"
+    },
+    {
+      "id": "C",
+      "slug": "price-objections",
+      "name": "Price objections",
+      "hook": "بتبيع برفانات والعميل قال غالي؟ مساعدك هيرد عليه بإيه؟",
+      "hook_cues": [
+        {"start": 0, "end": 3, "text": "بتبيع برفانات\nوالعميل قال غالي؟"},
+        {"start": 3, "end": 6, "text": "مساعدك هيرد عليه بإيه؟"}
+      ],
+      "post": "«غالي» مش لازم تكون آخر المحادثة. شوف مساعد مبيعات البرفانات بيناقش مع العميل الاختيارات والبدائل المتاحة من منتجات محلك.\n\nابعت كلمة «ديمو» في رسالة وشوف الترشيح والتعامل مع السعر وتسجيل الطلب في تجربة واحدة.\n\nالمقدّم في بداية الفيديو مولّد بالذكاء الاصطناعي.\n#محلات_العطور #تجارة_العطور #WebVitas"
+    }
+  ],
+  "body_cues": [
+    {"start": 6, "end": 9, "text": "ده مساعد مبيعات\nمتخصص في البرفانات."},
+    {"start": 9, "end": 12, "text": "العميل يقوله\nذوقه وميزانيته،"},
+    {"start": 12, "end": 15.5, "text": "وهو يرشّحله من منتجات محلك\nويشرحله الاختيارات."},
+    {"start": 15.5, "end": 19, "text": "ولو السعر مش مناسب،\nيناقش معاه البدائل."},
+    {"start": 19, "end": 22, "text": "ياخد بيانات الطلب،"},
+    {"start": 22, "end": 25, "text": "ويسجّله بعد تأكيد العميل."},
+    {"start": 25, "end": 28.5, "text": "عايز تشوفه شغال\nعلى منتجات محلك؟"},
+    {"start": 28.5, "end": 32, "text": "ابعتلي كلمة ديمو في رسالة."}
+  ],
+  "scenes": [
+    {"start": 0, "end": 6, "name": "AI presenter", "arabic": "عندك محل برفانات؟", "detail": "Generate the opening clip in Google Flow. A casual presenter addresses the camera inside a modest perfume shop. This preview contains no generated footage."},
+    {"start": 6, "end": 15.5, "name": "Real recommendation", "arabic": "من ذوق العميل… للاختيار المناسب", "detail": "Insert your real agent recording: customer preference and budget, then a catalog recommendation with its explanation. Keep the customer question and the important part of the reply readable."},
+    {"start": 15.5, "end": 19, "name": "Real price objection", "arabic": "طيب… فيه اختيار أوفر؟", "detail": "Show the customer's price objection and the agent's actual alternative. Hold a concise reply on screen. If it is too long to read, lengthen the edit rather than inventing a shorter reply."},
+    {"start": 19, "end": 25, "name": "Real order flow", "arabic": "اختيار ← بيانات ← تأكيد", "detail": "Show the genuine order summary, explicit customer confirmation, and saved test order. Use a test store and keep personal fields outside the crop. Mark jump cuts as an abbreviated conversation."},
+    {"start": 25, "end": 32, "name": "Demo invitation", "arabic": "ابعت كلمة ديمو في رسالة", "detail": "Use the supplied end card and your own recorded CTA. Keep all three versions on the same offer: message the publishing page for a demo."}
+  ],
+  "presenter_prompt": "Create a vertical 9:16, six-second realistic smartphone video. One fictional Egyptian male presenter around 30 stands inside a modest modern perfume shop with softly blurred, unbranded perfume bottles behind him. Casual plain clothes, natural daylight, medium close-up, subtle handheld movement. He speaks directly to an Egyptian perfume-store owner, warmly and matter-of-factly, in conversational Egyptian Arabic, not Modern Standard Arabic. He says exactly: \"{{HOOK}}\". Natural Egyptian pronunciation, synchronized lips, a short pause at the end. No additional dialogue. Quiet room tone, no background music, no captions, no logos, no text overlays, no customer testimonial, no claims of personal results. Keep the presenter centered with room above and below for editing. Use the attached presenter reference, if available, to preserve the same face, clothing and shop across variants.",
+  "silent_prompt": "Create a vertical 9:16, six-second realistic smartphone video of a fictional Egyptian male presenter around 30 in a modest modern perfume shop. Casual plain clothes, natural daylight, medium close-up, softly blurred unbranded perfume bottles. He looks at the camera, gives a small welcoming nod, then gestures toward the space beside him. His mouth stays naturally closed; he does not speak. Subtle handheld movement. No music, captions, logos, text overlays or visible phone screen. This is silent B-roll for a separately recorded Egyptian Arabic voiceover. Use the same reference person, clothing and shop as the other variants."
+}
