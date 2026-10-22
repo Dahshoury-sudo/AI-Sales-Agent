@@ -157,12 +157,13 @@ def product_quotes(products, message="", max_price=None, *, filter_budget=True):
     return quotes
 
 
-def render_quotes(quotes, max_price=None):
+def render_quotes(quotes, max_price=None, *, include_name=True):
     lines = []
     for quote in quotes:
         bottle = "زجاجة البراند" if quote.bottle_type == "normal" else "زجاجة أوريجينال"
         quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
-        line = f"{quote.name} — {bottle} {quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه."
+        prefix = f"{quote.name} — " if include_name else ""
+        line = f"{prefix}{bottle} {quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه."
         if max_price is not None and budget_tier(quote.price, max_price) == "near":
             line += " أعلى حاجة بسيطة من ميزانيتك."
         lines.append(line)

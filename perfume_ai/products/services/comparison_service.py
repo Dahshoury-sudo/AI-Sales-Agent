@@ -39,7 +39,7 @@ def requested_facts(message, products):
             for v in variants:
                 bottle = "زجاجة البراند" if v.bottle_type == "normal" else "زجاجة أوريجينال"
                 quote = next(q for q in current_quotes if q.variant_id == v.pk)
-                facts.append(render_quotes([quote]))
+                facts.append(render_quotes([quote], include_name=False))
                 if "value" in dims and v.volume > 0:
                     unit = price_per_ml(v).quantize(Decimal(".01"))
                     facts.append(f"سعر المل: {unit} جنيه")
@@ -47,7 +47,7 @@ def requested_facts(message, products):
         for key, label in (("longevity", "الثبات"), ("projection", "الفوحان")):
             if key in dims:
                 facts.append(f"{label}: {getattr(product, key) or 'مش متأكد منه حالياً'}")
-        lines.append(f"{product.name}: " + "؛ ".join(facts) if facts else product.name)
+        lines.append(f"{product.name}:\n" + "\n".join(facts) if facts else product.name)
     if "value" in dims and len(values) >= 2:
         best = min(values)
         lines.append(f"الأوفر في سعر المل بين الأحجام دي: {best[1]} ({best[2]} مل، {best[3]}).")
