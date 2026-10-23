@@ -63,6 +63,18 @@ class ChatThrottle(StoreScopedThrottle):
     scope = "chat"
 
 
+class ChatPollingThrottle(StoreScopedThrottle):
+    """Website message reads have their own budget, independent of staff activity."""
+
+    scope = "chat_poll"
+
+
+class DashboardPollingThrottle(StoreScopedThrottle):
+    """Shared budget for the owner's dashboard polling endpoints."""
+
+    scope = "dashboard_poll"
+
+
 class LoginThrottle(SimpleRateThrottle):
     """Brute-force limit on credential submission.
 

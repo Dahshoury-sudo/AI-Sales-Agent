@@ -774,16 +774,29 @@
 
   let sending = false;
   let polling = false;
+  let pollRetryAt = 0;
+  let pollFailures = 0;
+  function delayPolling(response) {
+    pollFailures++;
+    const value = response?.headers.get('Retry-After');
+    const retry = value && (/^\d+(\.\d+)?$/.test(value.trim())
+      ? Number(value) * 1000 : Date.parse(value) - Date.now());
+    const delay = value && Number.isFinite(retry) && retry >= 0
+      ? Math.max(1000, retry) : Math.min(60000, 5000 * 2 ** Math.min(pollFailures - 1, 4));
+    pollRetryAt = Date.now() + delay;
+  }
   let afterMessageId = 0;
   const seenMessageIds = new Set();
   async function pollMessages() {
-    if (!conversationId || !isOpen || document.hidden || sending || polling) return;
+    if (!conversationId || !isOpen || document.hidden || sending || polling || Date.now() < pollRetryAt) return;
     polling = true;
     const token = conversationId;
     try {
       const response = await fetch(`${API_BASE}/api/chat/messages/?conversation_id=${encodeURIComponent(token)}&after_id=${afterMessageId}`, {headers: {'X-API-Key': API_KEY}});
-      if (!response.ok) return;
+      if (!response.ok) { delayPolling(response); return; }
       const data = await response.json();
+      pollFailures = 0;
+      pollRetryAt = 0;
       if (token !== conversationId || sending) return;
       for (const message of data.messages) {
         if (!seenMessageIds.has(message.id)) {
@@ -792,7 +805,7 @@
         }
       }
       afterMessageId = data.after_id;
-    } catch (_) { /* Resume polling when the connection returns. */ }
+    } catch (_) { delayPolling(); }
     finally { polling = false; }
   }
   setInterval(pollMessages, 3000);

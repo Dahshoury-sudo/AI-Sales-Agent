@@ -66,6 +66,9 @@ CORS_ALLOW_HEADERS = [
     'x-api-key',
 ]
 
+# Embedded widgets need the server's retry deadline when polling is throttled.
+CORS_EXPOSE_HEADERS = ['Retry-After']
+
 
 # Application definition
 
@@ -206,6 +209,9 @@ REST_FRAMEWORK = {
         'anon': '30/minute',
         'store': '60/minute',
         'chat': '30/minute',
+        # Fifty open website chats poll ~1,000 times/minute. Keep staff reads separate.
+        'chat_poll': '1200/minute',
+        'dashboard_poll': '300/minute',
         # Credential endpoints. Per-IP by necessity, so these only mean anything because
         # NUM_PROXIES is set above. Deliberately far tighter than 'anon'.
         'login': '10/minute',

@@ -10,6 +10,7 @@
     {% include 'dashboard/includes/theme_head.html' %}
     <link rel="stylesheet" href="{% static 'dashboard/pages/analytics.css' %}?v=20261022">
     <script src="{% static 'dashboard/analytics.js' %}?v=20261022" defer></script>
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="store_dashboard" data-layout="app">
     <!-- Mobile Header -->
@@ -495,10 +496,9 @@ Check your DM, we replied!
 
     <div class="toast" role="status" aria-live="polite" id="toast"></div>
 
-    <script src="{% static 'dashboard/notifications.js' %}?v=handoff-20261022"></script>
+    <script src="{% static 'dashboard/notifications.js' %}?v=requests-20261023"></script>
     <script>
         const API_BASE = '/dashboard/api';
-        let accessToken = localStorage.getItem('access_token');
         let currentProductPage = 1;
         window.PRODUCTS_DATA = {};
         window.STORE_API_KEY = localStorage.getItem('store_api_key') || ''; // pre-populate from cache
@@ -509,8 +509,8 @@ Check your DM, we replied!
 
 
         // Auth guard
-        if (!accessToken) {
-            window.location.href = '/dashboard/login/';
+        if (!localStorage.getItem('access_token') && !localStorage.getItem('refresh_token')) {
+            window.WebVitasAuth.logout();
         }
 
         // Fetch API key early so iframes can open without prompting
@@ -528,40 +528,8 @@ Check your DM, we replied!
             }
         }
 
-        // Authenticated fetch wrapper with token refresh
-        async function authFetch(url, options = {}) {
-            const suppressError = options.suppressError;
-            delete options.suppressError;
-            if (!options.headers) options.headers = {};
-            options.headers['Authorization'] = `Bearer ${accessToken}`;
-            if (!(options.body instanceof FormData)) {
-                options.headers['Content-Type'] = 'application/json';
-            }
-
-            let res = await fetch(url, options);
-
-            if (res.status === 401) {
-                // Try refresh
-                const refreshRes = await fetch(`${API_BASE}/token/refresh/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
-                });
-
-                if (refreshRes.ok) {
-                    const data = await refreshRes.json();
-                    accessToken = data.access;
-                    localStorage.setItem('access_token', data.access);
-                    options.headers['Authorization'] = `Bearer ${accessToken}`;
-                    res = await fetch(url, options);
-                } else {
-                    logout();
-                    return null;
-                }
-            }
-
-            if (!res.ok && !suppressError) window.WebVitasUI?.showError();
-            return res;
+        function authFetch(url, options = {}) {
+            return window.WebVitasAuth.fetch(url, options);
         }
 
         function showToast(msg) {
@@ -612,11 +580,13 @@ Check your DM, we replied!
             if(name === 'bulk_import' && !document.getElementById('iframe-bulk_import').getAttribute('src')) {
                 document.getElementById('iframe-bulk_import').src = `/api/import/`;
             }
+            document.querySelectorAll('iframe').forEach(frame => {
+                frame.contentWindow?.dispatchEvent(new Event('webvitas:section'));
+            });
         }
 
         function logout() {
-            localStorage.clear();
-            window.location.href = '/dashboard/login/';
+            window.WebVitasAuth.logout();
         }
 
         // ===== OVERVIEW =====
@@ -923,9 +893,7 @@ Check your DM, we replied!
 
         // One poller owns sound for both the dashboard and its embedded handoff.
         function _startNotifPolling() {
-            // Run once immediately on page load
-            _pollNotifications();
-            setInterval(_pollNotifications, 10_000);
+            WebVitasPolling.watch(_pollNotifications, 10000, {background: true});
         }
 
         // Track when user leaves the notifications section
@@ -934,7 +902,6 @@ Check your DM, we replied!
         showSection = function(name) {
             _notifSectionOpen = (name === 'notifications');
             _origShowSection(name);
-            if (name === 'handoff') document.getElementById('iframe-handoff')?.contentWindow?.handoffAttention?.refresh();
         };
 
         // Initial load
@@ -1004,11 +971,10 @@ Check your DM, we replied!
             });
 
             try {
-                const res = await fetch(`/dashboard/api/products/${id}/`, {
+                const res = await authFetch(`/dashboard/api/products/${id}/`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
                     },
                     body: JSON.stringify({
                         name: name,
@@ -1041,10 +1007,9 @@ Check your DM, we replied!
         async function deleteProduct(id) {
             if(!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
             try {
-                const res = await fetch(`/dashboard/api/products/${id}/`, {
+                const res = await authFetch(`/dashboard/api/products/${id}/`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${accessToken}`
                     }
                 });
                 if(res.ok) {

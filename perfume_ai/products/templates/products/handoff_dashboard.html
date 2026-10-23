@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>خدمة العملاء - WebVitas AI</title>
-    <link rel="stylesheet" href="{% static 'dashboard/pages/handoff_dashboard.css' %}?v=handoff-20261022">
+    <link rel="stylesheet" href="{% static 'dashboard/pages/handoff_dashboard.css' %}?v=requests-20261023">
     {% include 'dashboard/includes/theme_head.html' %}
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="handoff_dashboard" data-layout="app">
 
@@ -51,8 +52,8 @@
         </div>
     </main>
 
-    <script src="{% static 'dashboard/notifications.js' %}?v=handoff-20261022"></script>
-    <script src="{% static 'dashboard/handoff.js' %}?v=handoff-20261022"
+    <script src="{% static 'dashboard/notifications.js' %}?v=requests-20261023"></script>
+    <script src="{% static 'dashboard/handoff.js' %}?v=requests-20261023"
             data-sound-url="{% static 'dashboard/sounds/skyline.mp3' %}"></script>
 </body>
 </html>

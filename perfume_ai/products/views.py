@@ -18,7 +18,7 @@ from dashboard.auth_backend import StoreOwnerAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .services.router import route
 from .services.reply_sanitizer import sanitize_reply
-from .throttles import ChatThrottle, StoreKeyThrottle
+from .throttles import ChatThrottle, StoreKeyThrottle, ChatPollingThrottle, DashboardPollingThrottle
 
 from .services.conversation_service import (
     create_conversation,
@@ -91,7 +91,7 @@ class ChatAPIView(APIView):
 
 class ChatMessagesAPIView(APIView):
     authentication_classes = [StoreAPIKeyAuthentication]
-    throttle_classes = [StoreKeyThrottle]
+    throttle_classes = [ChatPollingThrottle]
 
     def get(self, request):
         try:
@@ -180,6 +180,7 @@ class OrdersDashboardView(TemplateView):
 class OrdersDashboardAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
+    throttle_classes = [DashboardPollingThrottle]
 
     def get(self, request):
         store = request.store
@@ -328,7 +329,7 @@ class HandoffDashboardView(TemplateView):
 class HandoffConversationsAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
-    throttle_classes = [StoreKeyThrottle]
+    throttle_classes = [DashboardPollingThrottle]
 
     def get(self, request):
         store = request.store
@@ -358,7 +359,7 @@ class HandoffConversationsAPIView(APIView):
 class HandoffMessagesAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
-    throttle_classes = [StoreKeyThrottle]
+    throttle_classes = [DashboardPollingThrottle]
 
     def get(self, request, conversation_id):
         store = request.store
@@ -463,7 +464,7 @@ class ChatHistoryDashboardView(TemplateView):
 class ChatHistoryConversationsAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
-    throttle_classes = [StoreKeyThrottle]
+    throttle_classes = [DashboardPollingThrottle]
 
     def get(self, request):
         store = request.store

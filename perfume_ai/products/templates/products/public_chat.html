@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -240,6 +241,7 @@
             }
         }
     </style>
+    <script src="{% static 'dashboard/polling.js' %}?v=requests-20261023"></script>
 </head>
 <body>
 
@@ -359,11 +361,11 @@
         let sending = false, polling = false, afterMessageId = 0;
         const seenMessageIds = new Set();
         async function pollMessages() {
-            if (!conversationId || !apiKey || document.hidden || sending || polling) return;
+            if (!conversationId || !apiKey || !WebVitasPolling.visible() || sending || polling) return;
             polling = true;
             const token = conversationId;
             try {
-                const response = await fetch(`/api/chat/messages/?conversation_id=${encodeURIComponent(token)}&after_id=${afterMessageId}`, {headers: {'X-API-Key': apiKey}});
+                const response = await WebVitasPolling.request('chat_poll', `/api/chat/messages/?conversation_id=${encodeURIComponent(token)}&after_id=${afterMessageId}`, {headers: {'X-API-Key': apiKey}});
                 if (!response.ok) return;
                 const data = await response.json();
                 if (token !== conversationId || sending) return;

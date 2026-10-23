@@ -300,6 +300,7 @@
             .metrics-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body>
     <div class="container">
@@ -414,8 +415,6 @@
         const loading = document.getElementById('loading');
         const dashboard = document.getElementById('dashboard');
         const errorMsg = document.getElementById('errorMsg');
-        // Use JWT token from dashboard localStorage (no API key needed)
-        const ACCESS_TOKEN = localStorage.getItem('access_token');
 
         function scoreColor(val) {
             if (val >= 80) return 'score-good';
@@ -435,11 +434,11 @@
             errorMsg.style.display = 'none';
 
             try {
-                const res = await fetch('/api/analytics/data/', {
-                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+                const res = await authFetch('/api/analytics/data/', {
+                    headers: {}
                 });
 
-                if (!res.ok) {
+                if (!res?.ok) {
                     throw new Error('حصل خطأ في تحميل البيانات');
                 }
 

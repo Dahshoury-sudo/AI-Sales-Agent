@@ -8,6 +8,7 @@
     <meta name="description" content="لوحة تحكم الطلبات لأصحاب المتاجر - عرض وإدارة جميع الأوردرات">
     <link rel="stylesheet" href="{% static 'dashboard/pages/orders_dashboard.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="orders_dashboard" data-layout="app">
 
@@ -113,24 +114,22 @@
 </div>
 
 <script>
-    // Use JWT token from dashboard localStorage (no API key needed)
-    const ACCESS_TOKEN = localStorage.getItem('access_token');
     let STORE_NAME = '';
     let ALL_ORDERS = [];
     let currentFilter = 'all';
 
     // Auto-load orders using JWT on page load
     async function autoLogin() {
-        if (!ACCESS_TOKEN) {
+        if (!localStorage.getItem('access_token') && !localStorage.getItem('refresh_token')) {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
             return;
         }
         try {
-            const res = await fetch('/api/orders/dashboard/', {
-                headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+            const res = await authFetch('/api/orders/dashboard/', {
+                headers: {}
             });
-            if (res.ok) {
+            if (res?.ok) {
                 const data = await res.json();
                 STORE_NAME = data.store_name;
                 ALL_ORDERS = data.orders;
@@ -150,9 +149,7 @@
     autoLogin();
 
     function logout() {
-        ALL_ORDERS = [];
-        document.getElementById('dashboard').style.display = 'none';
-        document.getElementById('login-screen').style.display = 'flex';
+        window.WebVitasAuth.logout();
     }
 
     // ═══ Stats ═══
@@ -345,16 +342,15 @@
     // ═══ Change Status ═══
     async function changeStatus(orderId, newStatus) {
         try {
-            const res = await fetch(`/api/orders/${orderId}/status/`, {
+            const res = await authFetch(`/api/orders/${orderId}/status/`, {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${ACCESS_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ status: newStatus })
             });
 
-            if (res.ok) {
+            if (res?.ok) {
                 const data = await res.json();
                 const order = ALL_ORDERS.find(o => o.id === orderId);
                 if (order) {
@@ -388,12 +384,11 @@
 
     // Silent fetch: pull fresh orders from server & merge
     async function _fetchOrders() {
-        if (!ACCESS_TOKEN) return;
         try {
-            const res = await fetch('/api/orders/dashboard/', {
-                headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+            const res = await authFetch('/api/orders/dashboard/', {
+                headers: {}
             });
-            if (!res.ok) return;
+            if (!res?.ok) return;
             const data = await res.json();
 
             const newOrders = data.orders || [];
@@ -422,22 +417,7 @@
         }
     }
 
-    // Start polling every 30 seconds (same interval as notifications)
-    function _startOrdersPolling() {
-        setInterval(_fetchOrders, 30_000);
-    }
-
-    // Patch renderOrders to start polling after first load
-    const _origRenderOrders = renderOrders;
-    let _pollingStarted = false;
-    renderOrders = function(orders) {
-        _origRenderOrders(orders);
-        if (!_pollingStarted) {
-            _pollingStarted = true;
-            setInterval(_fetchOrders, 30_000);
-            _setLastUpdated();
-        }
-    };
+    WebVitasPolling.watch(_fetchOrders, 30000);
 </script>
 
 </body>

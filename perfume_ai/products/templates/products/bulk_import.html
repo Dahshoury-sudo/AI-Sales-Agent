@@ -7,6 +7,7 @@
     <title>إضافة منتجات جماعية</title>
     <link rel="stylesheet" href="{% static 'dashboard/pages/bulk_import.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="bulk_import" data-layout="app">
     <div class="container">
@@ -104,8 +105,6 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const spinner = document.getElementById('spinner');
         const resultsDiv = document.getElementById('results');
-        // Use JWT token from dashboard localStorage (no API key needed)
-        const ACCESS_TOKEN = localStorage.getItem('access_token');
         let selectedFile = null;
 
         // Click to open file picker
@@ -152,11 +151,12 @@
             formData.append('file', selectedFile);
 
             try {
-                const res = await fetch('/api/import/upload/', {
+                const res = await authFetch('/api/import/upload/', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` },
+                    headers: {},
                     body: formData,
                 });
+                if (!res) return;
                 const data = await res.json();
 
                 spinner.style.display = 'none';

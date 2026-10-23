@@ -3,12 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from products.models import Notification
+from products.throttles import DashboardPollingThrottle
 from .auth_backend import StoreOwnerAuthentication
 
 
 class NotificationListView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
+    throttle_classes = [DashboardPollingThrottle]
 
     def get(self, request):
         store = request.store

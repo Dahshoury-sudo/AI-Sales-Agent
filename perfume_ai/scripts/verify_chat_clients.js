@@ -38,14 +38,19 @@ function environment() {
     createElement: node, getElementById: get, addEventListener() {},
   };
   const context = vm.createContext({
-    document, window: { innerWidth: 1200 }, console,
+    document, innerWidth: 1200, console, Response, Headers,
+    addEventListener() {}, removeEventListener() {},
     localStorage: { getItem: key => storage.get(key) || null,
       setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
     crypto: { randomUUID }, setInterval: handler => intervals.push(handler),
     setTimeout() {}, requestAnimationFrame: handler => handler(),
     fetch: () => { throw new Error('Unexpected network request'); },
   });
-  return { context, get, intervals, storage };
+  vm.runInContext('window = globalThis; parent = window;', context);
+  vm.runInContext('let testTime = Date.now(); Date.now = () => testTime;', context);
+  new vm.Script(fs.readFileSync(path.join(root, 'dashboard/static/dashboard/polling.js'), 'utf8')).runInContext(context);
+  return { context, get, intervals, storage,
+    advance: milliseconds => vm.runInContext(`testTime += ${milliseconds}`, context) };
 }
 
 async function check(filename, widget, storageKey) {
@@ -89,11 +94,11 @@ async function check(filename, widget, storageKey) {
   const urls = [];
   env.context.fetch = async url => {
     urls.push(url);
-    return { ok: true, json: async () => ({ after_id: 3, needs_human: true, messages: [
+    return Response.json({ after_id: 3, needs_human: true, messages: [
       { id: 1, role: 'user', content: 'hello' },
       { id: 2, role: 'assistant', content: 'assistant reply' },
       { id: 3, role: 'agent', content: 'staff reply', attachment_url: 'https://example.test/item.png' },
-    ] }) };
+    ] });
   };
   await poll();
   await poll();
@@ -103,11 +108,35 @@ async function check(filename, widget, storageKey) {
   }
   assert.equal(messages.children.find(m => m.textContent === 'staff reply').children[0].src, 'https://example.test/item.png');
 
+  let attempts = 0;
+  env.context.fetch = async () => {
+    attempts++;
+    if (attempts === 1) return Response.json({}, {status: 429, headers: {'Retry-After': '30'}});
+    if (attempts === 2 || attempts === 4) return Response.json({}, {status: 503});
+    return Response.json({after_id: 3, messages: []});
+  };
+  await poll(); await poll();
+  assert.equal(attempts, 1, 'No immediate retry after 429');
+  env.advance(29000); await poll();
+  assert.equal(attempts, 1, 'Retry-After is respected');
+  env.advance(1000); await poll();
+  assert.equal(attempts, 2);
+  env.advance(9999); await poll();
+  assert.equal(attempts, 2, 'Second failure backs off for 10 seconds');
+  env.advance(1); await poll();
+  assert.equal(attempts, 3);
+  await poll();
+  assert.equal(attempts, 4);
+  env.advance(4999); await poll();
+  assert.equal(attempts, 4, 'Successful recovery resets backoff to five seconds');
+  env.advance(1); await poll();
+  assert.equal(attempts, 5);
+
   let finishPoll;
   env.context.fetch = () => new Promise(resolve => { finishPoll = resolve; });
   const stale = poll();
   reset();
-  finishPoll({ ok: true, json: async () => ({ after_id: 4, messages: [{ id: 4, role: 'agent', content: 'stale reply' }] }) });
+  finishPoll(Response.json({ after_id: 4, messages: [{ id: 4, role: 'agent', content: 'stale reply' }] }));
   await stale;
   assert.equal(messages.children.filter(m => m.textContent === 'stale reply').length, 0);
   assert.equal(env.storage.get(storageKey), undefined);

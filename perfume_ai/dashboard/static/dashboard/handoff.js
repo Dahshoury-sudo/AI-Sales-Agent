@@ -20,12 +20,7 @@ const platformConfig = {
 };
 
 function handoffFetch(url, options = {}) {
-    if (window.parent !== window && window.parent.authFetch) return window.parent.authFetch(url, options);
-    return fetch(url, {...options, headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        ...options.headers,
-    }});
+    return window.authFetch(url, options);
 }
 
 function viewedConversationId() {
@@ -261,15 +256,10 @@ async function resolveConversation() {
     } catch (_) { window.WebVitasUI?.showError(); }
 }
 
-async function refreshHandoff() {
-    await Promise.allSettled([fetchConversations(), fetchMessages()]);
-}
+const handoffPoller = WebVitasPolling.watch(
+    () => Promise.allSettled([fetchConversations(), fetchMessages()]), 10000);
+function refreshHandoff() { return handoffPoller.refresh(); }
 window.handoffAttention = {viewedConversationId, refresh: refreshHandoff};
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshHandoff(); });
-window.addEventListener('focus', () => refreshHandoff());
-setInterval(refreshHandoff, 10000);
 if (window.parent === window || !window.parent.dashboardNotifications) {
-    handoffNotifier.poll();
-    setInterval(() => handoffNotifier.poll(), 10000);
+    WebVitasPolling.watch(() => handoffNotifier.poll(), 10000, {background: true});
 }
-fetchConversations();

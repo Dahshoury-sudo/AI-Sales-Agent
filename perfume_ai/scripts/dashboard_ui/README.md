@@ -16,10 +16,24 @@ Run the checks in another terminal:
 node scripts/dashboard_ui/check_layout.cjs
 node scripts/dashboard_ui/check_workflows.cjs
 node scripts/dashboard_ui/check_handoff.cjs
+node scripts/dashboard_ui/check_requests.cjs
 node scripts/dashboard_ui/check_accessibility.cjs
 node scripts/dashboard_ui/check_analytics.cjs
 node scripts/verify_chat_clients.js
 ```
+
+The request checks cover token expiry, rotated refresh tokens, concurrent tabs and
+frames, uploads, session expiry, transient failures, polling cooldowns and background
+notifications. The chat-client checks also verify `Retry-After` and exponential backoff
+in the widget and both demos. Backend admission/isolation checks live in
+`products.test_request_limits` and run with `perfume_ai.settings_test`.
+
+Polling budgets are configured in `REST_FRAMEWORK.DEFAULT_THROTTLE_RATES`:
+`chat_poll` allows 1,200 reads/minute per store (50 chats at three-second intervals
+use about 1,000), and `dashboard_poll` allows 300 reads/minute per store. Chat
+submissions retain their separate 30/minute allowance. These are admission budgets,
+not a measurement of production database or AI throughput. Deploy templates and
+static assets together with the backend; the widget's fixed URL remains uncached.
 
 The server binds only to `127.0.0.1:8766`. It serves templates and local assets; interactive API responses exist only inside the browser tests. Do not use it as an application server.
 

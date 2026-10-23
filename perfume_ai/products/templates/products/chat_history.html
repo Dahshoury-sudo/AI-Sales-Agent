@@ -7,6 +7,7 @@
     <title>سجل المحادثات - WebVitas AI</title>
     <link rel="stylesheet" href="{% static 'dashboard/pages/chat_history.css' %}?v=premium-20261012">
     {% include 'dashboard/includes/theme_head.html' %}
+    {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="chat_history" data-layout="app">
 
@@ -49,8 +50,6 @@
     </main>
 
     <script>
-        // Use JWT token from dashboard localStorage (no API key needed)
-        const ACCESS_TOKEN = localStorage.getItem('access_token');
 
         let activeConversationId = null;
         let activeConversationPlatform = null;
@@ -76,10 +75,10 @@
 
         async function fetchConversations() {
             try {
-                const res = await fetch('/api/history/conversations/', {
-                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+                const res = await authFetch('/api/history/conversations/', {
+                    headers: {}
                 });
-                if(!res.ok) { window.WebVitasUI?.showError(); return; }
+                if(!res?.ok) { window.WebVitasUI?.showError(); return; }
                 const data = await res.json();
                 
                 const currentJSON = JSON.stringify(data.conversations);
@@ -175,15 +174,17 @@
         }
 
         async function fetchMessages() {
-            if (!activeConversationId) return;
+            const id = activeConversationId;
+            if (!id) return;
             
             try {
-                const res = await fetch(`/api/handoff/conversations/${activeConversationId}/messages/`, {
-                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+                const res = await authFetch(`/api/handoff/conversations/${id}/messages/`, {
+                    headers: {}
                 });
-                if(!res.ok) { window.WebVitasUI?.showError(); return; }
+                if(!res?.ok) { window.WebVitasUI?.showError(); return; }
                 const data = await res.json();
                 
+                if (activeConversationId !== id) return;
                 const currentJSON = JSON.stringify(data.messages);
                 if (currentJSON === lastMessagesJSON) return;
                 lastMessagesJSON = currentJSON;
@@ -244,11 +245,10 @@
             msgContainer.scrollTop = msgContainer.scrollHeight;
 
             try {
-                await fetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
+                await authFetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ACCESS_TOKEN}`
                     },
                     body: JSON.stringify({ message: text })
                 });
@@ -270,14 +270,7 @@
             }
         }
 
-        // Poll every 10 seconds
-        setInterval(() => {
-            fetchConversations();
-            fetchMessages();
-        }, 10000);
-
-        // Initial load
-        fetchConversations();
+        WebVitasPolling.watch(() => Promise.allSettled([fetchConversations(), fetchMessages()]), 10000);
     </script>
 </body>
 </html>
