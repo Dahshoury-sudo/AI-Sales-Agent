@@ -4,99 +4,153 @@ from decimal import Decimal, InvalidOperation
 from products.models import Store, Brand, Category, Product, ProductVariant
 
 
+# Valid choices (must match model field choices exactly)
+VALID_GENDERS = {"male", "female", "unisex"}
+VALID_PERFUME_TYPES = {"oriental", "western", "niche", "ultra_niche", "store_own_made"}
+
+# Normal variant column pairs: (volume_col_name, price_col_name)
+NORM_VARIANT_COLS = [
+    ("norm_vol_1", "norm_price_1"),
+    ("norm_vol_2", "norm_price_2"),
+    ("norm_vol_3", "norm_price_3"),
+]
+
+# Original variant column triplets: (volume, price, stock)
+ORIG_VARIANT_COLS = [
+    ("orig_vol_1", "orig_price_1", "orig_stock_1"),
+    ("orig_vol_2", "orig_price_2", "orig_stock_2"),
+]
+
+
+def _build_col_map(header_row):
+    """Return a dict mapping lowercase column name -> 0-based index."""
+    return {
+        str(cell).strip().lower(): idx
+        for idx, cell in enumerate(header_row)
+        if cell is not None
+    }
+
+
+def _get(row, col_map, col_name, default=None):
+    """Safely fetch a cell value by column name."""
+    idx = col_map.get(col_name.lower())
+    if idx is None or idx >= len(row):
+        return default
+    return row[idx]
+
+
 def parse_excel(file_bytes, store):
     """
     Parse an Excel file and bulk-create products for a given store.
     Returns a dict with 'created' count, 'errors' list, and 'skipped' count.
-    
-    Expected Excel columns (row 1 = headers):
-    A: name (required)
-    B: brand (required - will be created if not found)
-    C: category (optional)
-    D: gender (male/female/unisex - default: unisex)
-    E: perfume_type (oriental/western/niche/ultra_niche)
-    F: season
-    G: occasion
-    H: longevity
-    I: projection
-    J: concentration
-    K: top_notes
-    L: middle_notes
-    M: base_notes
-    N: description
-    O: norm_vol_1 (ml)
-    P: norm_price_1
-    Q: norm_vol_2 (ml)
-    R: norm_price_2
-    S: norm_vol_3 (ml)
-    T: norm_price_3
-    U: orig_vol_1 (ml)
-    V: orig_price_1
-    W: orig_stock_1
-    X: orig_vol_2 (ml)
-    Y: orig_price_2
-    Z: orig_stock_2
+
+    Columns are resolved by **header name** (row 1), so the order/count of
+    variant columns does not need to be fixed — the file can have 2 or 3
+    normal-size columns and the importer adapts automatically.
+
+    Required headers:  name, brand
+    Optional headers:  category, gender, perfume_type, season, occasion,
+                       longevity, projection, concentration,
+                       top_notes, middle_notes, base_notes, description,
+                       norm_vol_1, norm_price_1,
+                       norm_vol_2, norm_price_2,
+                       norm_vol_3, norm_price_3,   (optional — skipped if absent)
+                       orig_vol_1, orig_price_1, orig_stock_1,
+                       orig_vol_2, orig_price_2, orig_stock_2
+
+    Valid values:
+        gender       -> male / female / unisex          (default: unisex)
+        perfume_type -> oriental / western / niche / ultra_niche
     """
-    
+
     results = {"created": 0, "errors": [], "skipped": 0}
-    
+
     try:
         wb = openpyxl.load_workbook(BytesIO(file_bytes), read_only=True)
         ws = wb.active
     except Exception as e:
         results["errors"].append(f"فشل قراءة ملف الإكسل: {e}")
         return results
-    
-    rows = list(ws.iter_rows(min_row=2, values_only=True))  # Skip header row
-    
-    if not rows:
+
+    all_rows = list(ws.iter_rows(min_row=1, values_only=True))
+
+    if not all_rows:
+        results["errors"].append("الملف فاضي تمامًا.")
+        return results
+
+    # Build header -> index map from row 1
+    col_map = _build_col_map(all_rows[0])
+
+    if "name" not in col_map or "brand" not in col_map:
+        results["errors"].append(
+            "مفيش عمود 'name' أو 'brand' في سطر العناوين - تأكد من الهيدر."
+        )
+        return results
+
+    data_rows = all_rows[1:]
+
+    if not data_rows:
         results["errors"].append("الملف فاضي - مفيش بيانات بعد سطر العناوين.")
         return results
-    
-    for row_idx, row in enumerate(rows, start=2):
-        # Pad row to at least 26 columns
-        row = list(row) + [None] * (26 - len(row)) if len(row) < 26 else list(row)
-        
-        name = str(row[0]).strip() if row[0] else ""
-        brand_name = str(row[1]).strip() if row[1] else ""
-        
-        # Validate required fields
+
+    for row_idx, row in enumerate(data_rows, start=2):
+        row = list(row)  # make mutable
+
+        name = str(_get(row, col_map, "name", "")).strip()
+        brand_name = str(_get(row, col_map, "brand", "")).strip()
+
+        # -- Required fields --------------------------------------------------
         if not name or not brand_name:
-            results["errors"].append(f"سطر {row_idx}: اسم المنتج أو البراند ناقص - تم تخطيه.")
+            results["errors"].append(
+                f"سطر {row_idx}: اسم المنتج أو البراند ناقص - تم تخطيه."
+            )
             results["skipped"] += 1
             continue
-        
-        # Check for duplicate product name in this store
+
+        # -- Duplicate check --------------------------------------------------
         if Product.objects.filter(store=store, name__iexact=name).exists():
-            results["errors"].append(f"سطر {row_idx}: المنتج '{name}' موجود بالفعل - تم تخطيه.")
+            results["errors"].append(
+                f"سطر {row_idx}: المنتج '{name}' موجود بالفعل - تم تخطيه."
+            )
             results["skipped"] += 1
             continue
-        
-        # Get or create Brand
+
+        # -- Brand ------------------------------------------------------------
         brand, _ = Brand.objects.get_or_create(
-            store=store, name__iexact=brand_name,
-            defaults={"name": brand_name, "store": store}
+            store=store,
+            name__iexact=brand_name,
+            defaults={"name": brand_name, "store": store},
         )
-        
-        # Get or create Category (optional)
+
+        # -- Category (optional) ----------------------------------------------
         category = None
-        category_name = str(row[2]).strip() if row[2] else ""
+        category_name = str(_get(row, col_map, "category", "")).strip()
         if category_name:
             category, _ = Category.objects.get_or_create(
-                store=store, name__iexact=category_name,
-                defaults={"name": category_name, "store": store}
+                store=store,
+                name__iexact=category_name,
+                defaults={"name": category_name, "store": store},
             )
-        
-        # Gender validation
-        gender = str(row[3]).strip().lower() if row[3] else "unisex"
-        if gender not in ("male", "female", "unisex"):
-            gender = "unisex"
-        
-        # Perfume Type validation
-        perfume_type = str(row[4]).strip().lower() if row[4] else None
-        if perfume_type and perfume_type not in ("oriental", "western", "niche", "ultra_niche"):
-            perfume_type = None
 
+        # -- Gender -----------------------------------------------------------
+        raw_gender = str(_get(row, col_map, "gender", "")).strip().lower()
+        gender = raw_gender if raw_gender in VALID_GENDERS else "unisex"
+
+        # -- Perfume type -----------------------------------------------------
+        raw_type = str(_get(row, col_map, "perfume_type", "")).strip().lower()
+        if not raw_type:
+            perfume_type = None
+        elif raw_type in VALID_PERFUME_TYPES:
+            perfume_type = raw_type
+        else:
+            perfume_type = None
+            results["errors"].append(
+                f"سطر {row_idx}: نوع العطر '{raw_type}' مش متعرف - "
+                f"القيم المقبولة: oriental / western / niche / ultra_niche. "
+                f"اتضاف المنتج '{name}' من غير نوع."
+            )
+
+        # -- Create product ---------------------------------------------------
         try:
             product = Product.objects.create(
                 store=store,
@@ -105,69 +159,78 @@ def parse_excel(file_bytes, store):
                 category=category,
                 gender=gender,
                 perfume_type=perfume_type,
-                season=str(row[5]).strip() if row[5] else "",
-                occasion=str(row[6]).strip() if row[6] else "",
-                longevity=str(row[7]).strip() if row[7] else "",
-                projection=str(row[8]).strip() if row[8] else "",
-                concentration=str(row[9]).strip() if row[9] else "",
-                top_notes=str(row[10]).strip() if row[10] else "",
-                middle_notes=str(row[11]).strip() if row[11] else "",
-                base_notes=str(row[12]).strip() if row[12] else "",
-                description=str(row[13]).strip() if row[13] else "",
+                season=str(_get(row, col_map, "season", "")).strip(),
+                occasion=str(_get(row, col_map, "occasion", "")).strip(),
+                longevity=str(_get(row, col_map, "longevity", "")).strip(),
+                projection=str(_get(row, col_map, "projection", "")).strip(),
+                concentration=str(_get(row, col_map, "concentration", "")).strip(),
+                top_notes=str(_get(row, col_map, "top_notes", "")).strip(),
+                middle_notes=str(_get(row, col_map, "middle_notes", "")).strip(),
+                base_notes=str(_get(row, col_map, "base_notes", "")).strip(),
+                description=str(_get(row, col_map, "description", "")).strip(),
             )
-            
-            # Create normal variants (up to 3)
+
             variant_count = 0
-            for i in range(3):
-                vol_idx = 14 + (i * 2)   # columns O, Q, S (14, 16, 18)
-                price_idx = 15 + (i * 2)  # columns P, R, T (15, 17, 19)
-                
-                volume = row[vol_idx] if vol_idx < len(row) else None
-                price = row[price_idx] if price_idx < len(row) else None
-                
-                if volume and price:
-                    try:
-                        ProductVariant.objects.create(
-                            product=product,
-                            volume=int(float(str(volume))),
-                            price=Decimal(str(price)),
-                            bottle_type='normal'
-                        )
-                        variant_count += 1
-                    except (ValueError, InvalidOperation) as e:
-                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات التركيب {i+1} للمنتج '{name}': {e}")
-            
-            # Create original variants (up to 2)
-            for i in range(2):
-                vol_idx = 20 + (i * 3)   # columns U, X (20, 23)
-                price_idx = 21 + (i * 3)  # columns V, Y (21, 24)
-                stock_idx = 22 + (i * 3)  # columns W, Z (22, 25)
-                
-                volume = row[vol_idx] if vol_idx < len(row) else None
-                price = row[price_idx] if price_idx < len(row) else None
-                stock = row[stock_idx] if stock_idx < len(row) else None
-                
-                if volume and price:
-                    try:
-                        ProductVariant.objects.create(
-                            product=product,
-                            volume=int(float(str(volume))),
-                            price=Decimal(str(price)),
-                            stock=int(float(str(stock))) if stock else 0,
-                            bottle_type='original'
-                        )
-                        variant_count += 1
-                    except (ValueError, InvalidOperation) as e:
-                        results["errors"].append(f"سطر {row_idx}: خطأ في بيانات الأوريجينال {i+1} للمنتج '{name}': {e}")
-            
+
+            # -- Normal variants (2 or 3 — depends on headers present) --------
+            for vol_col, price_col in NORM_VARIANT_COLS:
+                volume = _get(row, col_map, vol_col)
+                price = _get(row, col_map, price_col)
+                # Column absent in this file — skip silently
+                if volume is None or price is None:
+                    continue
+                # Cell is empty — skip
+                if not volume or not price:
+                    continue
+                try:
+                    ProductVariant.objects.create(
+                        product=product,
+                        volume=int(float(str(volume))),
+                        price=Decimal(str(price)),
+                        bottle_type="normal",
+                    )
+                    variant_count += 1
+                except (ValueError, InvalidOperation) as e:
+                    results["errors"].append(
+                        f"سطر {row_idx}: خطأ في بيانات '{vol_col}'/'{price_col}' "
+                        f"للمنتج '{name}': {e}"
+                    )
+
+            # -- Original variants (up to 2) ----------------------------------
+            for vol_col, price_col, stock_col in ORIG_VARIANT_COLS:
+                volume = _get(row, col_map, vol_col)
+                price = _get(row, col_map, price_col)
+                stock = _get(row, col_map, stock_col)
+                # Column absent — skip
+                if volume is None or price is None:
+                    continue
+                # Cell empty — skip
+                if not volume or not price:
+                    continue
+                try:
+                    ProductVariant.objects.create(
+                        product=product,
+                        volume=int(float(str(volume))),
+                        price=Decimal(str(price)),
+                        stock=int(float(str(stock))) if stock else 0,
+                        bottle_type="original",
+                    )
+                    variant_count += 1
+                except (ValueError, InvalidOperation) as e:
+                    results["errors"].append(
+                        f"سطر {row_idx}: خطأ في بيانات '{vol_col}'/'{price_col}' "
+                        f"للمنتج '{name}': {e}"
+                    )
+
             if variant_count == 0:
                 results["errors"].append(
-                    f"سطر {row_idx}: المنتج '{name}' اتضاف بس من غير أي أحجام! ضيف أحجام يدوي."
+                    f"سطر {row_idx}: المنتج '{name}' اتضاف بس من غير أي أحجام! "
+                    f"ضيف أحجام يدوي."
                 )
-            
+
             results["created"] += 1
-            
+
         except Exception as e:
             results["errors"].append(f"سطر {row_idx}: فشل إضافة '{name}': {e}")
-    
+
     return results

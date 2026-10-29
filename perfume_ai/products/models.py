@@ -122,6 +122,7 @@ class Product(models.Model):
         ("western", "عطور غربية"),
         ("niche", "نيش"),
         ("ultra_niche", "الترا نيش (بريميوم)"),
+        ("store_own_made", "من صنع المتجر"),
     ]
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
