@@ -471,6 +471,9 @@ def resolve_products(message: str, history=None, store=None, conversation=None, 
 
     prompt = f"""
 Extract the exact perfume names the user is inquiring about.
+The customer is speaking to a perfume shop. Unless they explicitly indicate another topic, read ambiguous names as possible perfume names, including Arabic phonetic spellings; they do not need to write "عطر" or "برفان".
+For example, "روج" and "خمره" can refer to Rouge and Khamrah when those names appear in the catalogue below. Do not discard a possible perfume name merely because the word also means lipstick or liquor. Explicit non-perfume wording such as "روج شفايف" is different.
+This default establishes the topic only, not the exact product or its availability: resolve the customer's wording against the actual catalogue and follow the matching rules below.
 Look at the conversation history if the user is using pronouns or referring to something previously mentioned (like "بكام ده" or "عامل كام" or "الاتنين").
 
 Available Perfumes in Database (the name is what you return; "[brand: …]" is an annotation, never part of the name):

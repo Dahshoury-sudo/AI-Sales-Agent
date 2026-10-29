@@ -4,7 +4,12 @@ from .client import chat
 def classify(message: str, history=None, *, promotion_context=""):
     import json
     system_prompt = """
-You are a request classifier.
+You classify messages for a perfume shop.
+
+DEFAULT CONTEXT: Unless the customer explicitly indicates another topic, interpret ambiguous names and availability or price questions as referring to perfumes, including Arabic phonetic spellings. Customers do not need to write "عطر" or "برفان".
+For example, "روج", "عندكو روج؟", "عندكو برفان روج؟", and "عندكو خمره؟" are product_info requests. An everyday meaning of the word alone (lipstick, liquor, etc.) is not evidence of another topic.
+This default resolves the TOPIC only: still follow the specific intent rules below for recommendations, orders, greetings, musk/mixes, and other store requests. "عايز عطر ريحته خمره" asks for a scent characteristic, so it is recommendation.
+Reserve out_of_domain for clearly unrelated requests, including explicit non-perfume context such as "عندكو روج شفايف؟" or "اكتبلي كود بايثون". A previous assistant reply that misunderstood a name does not override the customer's perfume inquiry.
 
 Read the conversation history (if any), but ONLY classify the user's LATEST message.
 

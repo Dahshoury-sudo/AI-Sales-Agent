@@ -1,0 +1,313 @@
+{
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "total": 23,
+  "passed": 23,
+  "results": [
+    {
+      "message": "روج",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 2,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "روج",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 3,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "روج",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 2,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو برفان روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 3,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو برفان روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 2,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو برفان روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 3,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو خمره؟",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو خمره؟",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 2,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عندكو خمره؟",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 3,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "عايز عطر ريحته خمره",
+      "expected_intent": "recommendation",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "recommendation",
+      "passed": true
+    },
+    {
+      "message": "عندكو روج شفايف؟",
+      "expected_intent": "out_of_domain",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "out_of_domain",
+      "passed": true
+    },
+    {
+      "message": "khamrah",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 3,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "khamrah",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 2,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "khamrah",
+      "expected_intent": "product_info",
+      "expected_product": "Khamrah",
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Khamrah"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    },
+    {
+      "message": "السلام عليكم",
+      "expected_intent": "greeting",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "greeting",
+      "passed": true
+    },
+    {
+      "message": "اكتبلي كود بايثون",
+      "expected_intent": "out_of_domain",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "out_of_domain",
+      "passed": true
+    },
+    {
+      "message": "عندكم مسك؟",
+      "expected_intent": "musk_mix_product",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "musk_mix_product",
+      "passed": true
+    },
+    {
+      "message": "عايز أطلب سوفاج",
+      "expected_intent": "order",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "order",
+      "passed": true
+    },
+    {
+      "message": "عندك حاجة من ديور",
+      "expected_intent": "recommendation",
+      "expected_product": null,
+      "repeat": 1,
+      "prior_misinterpretation": false,
+      "classification": "recommendation",
+      "passed": true
+    },
+    {
+      "message": "عندكو روج؟",
+      "expected_intent": "product_info",
+      "expected_product": "Rouge",
+      "repeat": 1,
+      "prior_misinterpretation": true,
+      "classification": "product_info",
+      "passed": true,
+      "products": [
+        "Rouge"
+      ],
+      "unplaced": [],
+      "ambiguous": [],
+      "failed": false
+    }
+  ]
+}
