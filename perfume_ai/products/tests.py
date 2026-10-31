@@ -10491,14 +10491,15 @@ class NamedPerfumeSurvivesTheShortlistTests(TestCase):
 
         self.assertIn("_named_but_missing_block(message, store, products", case_one)
 
-    def test_the_extractor_is_told_never_to_drop_a_named_perfume(self):
+    def test_the_extractor_separates_product_interest_from_similarity(self):
         import inspect
 
         from products.services.ai import intent as intent_module
 
         source = inspect.getsource(intent_module.extract_intent)
 
-        self.assertIn("A PERFUME NAMED IN THE LATEST MESSAGE IS NEVER DROPPED", source)
+        self.assertIn("PRODUCT INTEREST IS NOT A SIMILARITY REQUEST", source)
+        self.assertIn("does NOT set 'similar_to' or 'similar_to_notes'", source)
         self.assertIn("ليه مرشحتش", source)
 
 

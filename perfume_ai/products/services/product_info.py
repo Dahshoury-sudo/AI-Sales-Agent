@@ -10,6 +10,7 @@ from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
 from .sales import value as sales_value
 from .sales import appreciation
+from .sales.followups import accepts_price_offer, numeric_reference
 
 logger = logging.getLogger(__name__)
 
@@ -682,7 +683,13 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     from .sales import naming
 
     # An explicit name in this message beats anything inferred from earlier turns.
-    products = _named_in_message(message, store)
+    numeric = numeric_reference(message, store, conversation, history)
+    if numeric.status == "ambiguous":
+        choices = "، ".join(product.name for product in numeric.candidates[:6])
+        return f"تقصد أنهي عطر: {choices}؟", "NUMERIC_NAME_UNRESOLVED"
+    if numeric.product is not None and not numeric.product.is_active:
+        return f"{numeric.product.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
+    products = [numeric.product] if numeric.product is not None else _named_in_message(message, store)
     if not products and "9pm" in naming.tokens(message):
         from .product_resolver import resolve_order_name
         unavailable = resolve_order_name(message, store)
@@ -1099,7 +1106,9 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     rows_are_not_the_subject = deferring or (not products_from_message and named_but_unresolved)
     from .product_formatting import (price_question, product_quotes, quote_context,
         append_quotation, QUOTE_PROSE_INSTRUCTION)
-    quoting = bool(products) and not rows_are_not_the_subject and price_question(message, history, conversation)
+    quoting = bool(products) and not rows_are_not_the_subject and (
+        numeric.product is not None or price_question(message, history, conversation)
+    )
     quotes = product_quotes(products, message, budget, filter_budget=False) if quoting else []
     if quoting and not quotes:
         return "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً.", format_products(products)
@@ -1122,7 +1131,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     answer_every_row = (
         len(products) > 1
         and not rows_are_not_the_subject
-        and (products_from_message or naming.refers_to_several(message))
+        and (products_from_message or naming.refers_to_several(message)
+             or accepts_price_offer(message, history, conversation))
     )
 
     if products:

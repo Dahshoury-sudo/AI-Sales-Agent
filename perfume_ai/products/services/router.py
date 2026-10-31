@@ -25,6 +25,7 @@ from .sales import gender as sales_gender
 from .sales import naming as sales_naming
 from .sales import objection as sales_objection
 from .sales import repetition
+from .sales.followups import accepts_price_offer, numeric_reference
 from .sales import stage as sales_stage
 from products.models import Order
 from django.db import transaction
@@ -587,6 +588,7 @@ def route(message, history=None, store=None, conversation=None):
     from .static_faq_service import match_static_faq, normalize_arabic
     import re
     normalized = normalize_arabic(message)
+    accepted_prices = accepts_price_offer(message, history, conversation)
     original = sales_constraints.original_liquid_update(message)
     if original is not None or sales_constraints.explicit_updates(message).get("reset_preferences"):
         merge_preferences(conversation, sales_constraints.explicit_updates(message), message)
@@ -628,7 +630,7 @@ def route(message, history=None, store=None, conversation=None):
                 cart.save(update_fields=["quote"])
         return reply, context
     faq_match = match_static_faq(message, store)
-    if faq_match and request_type in (None, "faq", "greeting"):
+    if faq_match and request_type in (None, "faq", "greeting") and not accepted_prices:
         return faq_match["answer"], ""
 
     # --- Goodbye loop detection ---
@@ -662,8 +664,14 @@ def route(message, history=None, store=None, conversation=None):
             return _handoff(message, history, store, conversation)
     if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff", "promotion"):
         request_type = "product_info"
-    if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message) and history:
-        request_type = "recommendation"
+    if accepted_prices and request_type not in ("order_cancel", "handoff", "promotion"):
+        request_type = "product_info"
+    if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message):
+        reference = numeric_reference(message, store, conversation, history)
+        if reference.status != "no_match":
+            request_type = "product_info"
+        elif history:
+            request_type = "recommendation"
     if requires_original and request_type not in ("recommendation", "handoff", "order_cancel") and not _wants_a_human(message):
         return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
 
@@ -796,6 +804,8 @@ def route(message, history=None, store=None, conversation=None):
         intent = merge_preferences(
             conversation, intent, message,
             pending=sales_described.pending_relaxations(conversation),
+            history=history,
+            store=store,
         )
         if intent.get("requires_original_liquid"):
             return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"

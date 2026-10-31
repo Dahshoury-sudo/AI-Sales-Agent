@@ -37,14 +37,14 @@ def create_conversation(store=None, platform="web", platform_sender_id=""):
 
 
 def remember_offered(conversation, message):
-    if not message.internal_context or message.delivery_status != "sent":
+    if (not message.internal_context or message.delivery_status != "sent"
+            or message.role != "assistant" or message.conversation_id != conversation.pk):
         return
     from products.models import Product
-    from .sales.naming import names_in
+    from .sales.described import supported_offered_names
     products = list(Product.objects.filter(store=conversation.store, is_active=True))
     names = [p.name for p in products]
-    supported = set(names_in(message.internal_context, names))
-    ordered = [n for n in names_in(message.content, names) if n in supported]
+    ordered = supported_offered_names(message.content, message.internal_context, names)
     if not ordered:
         return
     ids = {p.name: p.pk for p in products}
@@ -457,7 +457,7 @@ def _is_set(value):
     return value not in (None, "", [], {})
 
 
-def merge_preferences(conversation, intent, message=None, pending=None):
+def merge_preferences(conversation, intent, message=None, pending=None, history=None, store=None):
     """Fill gaps in a freshly extracted intent from what the customer said earlier.
 
     extract_intent re-derives every criterion from the last 8 messages alone, so a
@@ -479,14 +479,15 @@ def merge_preferences(conversation, intent, message=None, pending=None):
     merged = dict(intent or {})
     from .sales.constraints import explicit_updates
     merged.update(explicit_updates(message))
+    from .sales.reference import prepare_similarity, STATE_KEY
+    prepared = prepare_similarity(conversation, merged, message, history, store)
+    merged, saved = prepared.intent, prepared.preferences
     if conversation is None:
         return merged
 
-    saved = conversation.preferences or {}
     if merged.get("reset_preferences") is True:
-        saved = {}
-        conversation.sales_state = {}
-        conversation.save(update_fields=["sales_state"])
+        # prepare_similarity also retains a new explicit reference after a reset.
+        saved = {key: value for key, value in saved.items() if key in ("similar_to", "similar_to_notes")}
     cleared = set(merged.get("clear_preferences") or ()) & set(PERSISTED_PREFERENCE_KEYS)
     for key in cleared:
         if merged.get(key) is False:
@@ -550,8 +551,16 @@ def merge_preferences(conversation, intent, message=None, pending=None):
     if to_save.get("gender") == _TRANSIENT_GENDER:
         to_save.pop("gender")
 
+    if not to_save.get("similar_to"):
+        prepared.sales_state.pop(STATE_KEY, None)
+    update_fields = []
     if to_save != (conversation.preferences or {}):
         conversation.preferences = to_save
-        conversation.save(update_fields=["preferences"])
+        update_fields.append("preferences")
+    if prepared.sales_state != (conversation.sales_state or {}):
+        conversation.sales_state = prepared.sales_state
+        update_fields.append("sales_state")
+    if update_fields:
+        conversation.save(update_fields=update_fields)
 
     return merged

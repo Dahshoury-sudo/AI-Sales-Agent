@@ -153,6 +153,57 @@ def _is_cart_context(context):
     return bool(text) and (text == "No products found" or bool(_CART_LINE.search(text)))
 
 
+# Keep recognizing the original heading in saved conversations. The reference row
+# establishes facts about a comparison target; it is not an offered alternative.
+SIMILARITY_REFERENCE_HEADER = "═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══"
+_PRODUCT_ROW = re.compile(r"^\s*Name(?:\s*\(الاسم الصحيح\))?\s*:\s*([^\r\n]+)", re.MULTILINE)
+
+
+def _row_names(context, names):
+    known = {name.strip().casefold(): name for name in names}
+    return {known[row.strip().casefold()] for row in _PRODUCT_ROW.findall(context)
+            if row.strip().casefold() in known}
+
+
+def _context_offered_names(context, names):
+    from .naming import names_in
+
+    candidate_context, reference_heading, _ = (context or "").partition(SIMILARITY_REFERENCE_HEADER)
+    rows = _PRODUCT_ROW.findall(candidate_context)
+    if rows:
+        return _row_names(candidate_context, names)
+    # Old contexts and quote-only records did not always have row headings. This
+    # fallback must not turn comparison explanations into candidate evidence.
+    return set(names_in(candidate_context, names)) if not reference_heading else set()
+
+
+def supported_offered_names(content, context, names):
+    """Catalogue names actually offered, in spoken order, with supporting rows.
+
+    Ranking explanations and family notes can mention other catalogue products.
+    Reading row headings, rather than every name in the context, keeps those and
+    the trailing similarity reference out of selections such as "212" or "التاني".
+    """
+    from .naming import names_in
+
+    names = tuple(names)
+    said = names_in(content, names)
+    if _is_cart_context(context):
+        return said
+    supported = _context_offered_names(context, names)
+    return [name for name in said if name in supported]
+
+
+def _withdrawn_names(content, context, names):
+    """Names mentioned without candidate data, except a promised lookup."""
+    from .naming import names_in
+
+    if _is_cart_context(context):
+        return set()
+    gone = set(names_in(content, names)) - _context_offered_names(context, names)
+    return gone - _deferred_in(content, names)
+
+
 # "I will check and come back to you" is not "we do not have it". prompts.py rules 2 and 3
 # dictate these phrasings whenever the bot does not know something — rule 3 specifically for a
 # perfume the customer named that is missing from the injected data — so they are both common
@@ -260,16 +311,14 @@ def under_discussion(conversation, store, turns=2):
     price question about the same perfumes, without pinning the conversation to perfumes the
     customer has moved past.
     """
-    if conversation is None or store is None:
+    if conversation is None or store is None or conversation.store_id != store.pk:
         return frozenset()
 
     from products.models import Product
 
-    from .naming import names_in
-
     recent = list(
         conversation.messages.filter(role="assistant", delivery_status="sent")
-        .order_by("-created_at")
+        .order_by("-created_at", "-pk")
         .values_list("content", "internal_context")[:turns]
     )
     if not recent:
@@ -277,35 +326,18 @@ def under_discussion(conversation, store, turns=2):
 
     names = list(Product.objects.filter(store=store).values_list("name", flat=True))
 
-    def shown_in(content, context):
-        said = set(names_in(content, names))
-        # On an order turn the prose is the record and the cart is not — see the docstring.
-        if _is_cart_context(context):
-            return said
-        return said & set(names_in(context, names))
-
-    def withdrawn_in(content, context):
-        """Named to the customer with no data behind it — i.e. we said it is gone."""
-        # Nothing is withdrawn on an order turn: a perfume we are asking a question about is
-        # the opposite of one we have dropped.
-        if _is_cart_context(context):
-            return set()
-        gone = set(names_in(content, names)) - set(names_in(context, names))
-        # Nor is one we promised to go and check on.
-        return gone - _deferred_in(content, names)
-
     found = set()
     for content, context in recent:
-        # A perfume we promised to check on has no data behind it by definition, so `shown_in`
+        # A perfume we promised to check on has no data behind it, so the offered-row check
         # cannot see it — yet it is precisely what the customer is waiting to hear about.
-        found |= shown_in(content, context) | _deferred_in(content, names)
+        found |= set(supported_offered_names(content, context, names)) | _deferred_in(content, names)
 
     # A withdrawal announced in our most recent reply settles the matter. Without this the
     # perfume stayed "under discussion" from the earlier reply that recommended it — still
     # inside the two-reply window — so the same withdrawal was announced on the next turn too.
     # Conversation 1012 told the customer Ambero was out twice over.
     latest_content, latest_context = recent[0]
-    return frozenset(found - withdrawn_in(latest_content, latest_context))
+    return frozenset(found - _withdrawn_names(latest_content, latest_context, names))
 
 
 def offered_ever(conversation, store):
@@ -346,12 +378,10 @@ def offered_ever(conversation, store):
     a perfume we showed and then dropped is still one they have seen — re-offering it is the defect
     either way.
     """
-    if conversation is None or store is None:
+    if conversation is None or store is None or conversation.store_id != store.pk:
         return frozenset()
 
     from products.models import Product
-
-    from .naming import names_in
 
     rows = list(
         conversation.messages.filter(role="assistant", delivery_status="sent")
@@ -365,13 +395,7 @@ def offered_ever(conversation, store):
 
     found = set()
     for content, context in rows:
-        said = set(names_in(content, names))
-        if not said:
-            continue
-        if _is_cart_context(context):
-            found |= said
-        else:
-            found |= said & set(names_in(context, names))
+        found.update(supported_offered_names(content, context, names))
 
     return frozenset(found)
 
@@ -403,8 +427,12 @@ def ordinal_products(conversation, store, turns=8):
         if _is_cart_context(context):
             continue
         said = names_in(content, names)
-        supported = set(names_in(context, names))
-        ordered = [name for name in said if name in supported]
+        ordered = supported_offered_names(content, context, names)
+        _, reference_heading, reference_context = (context or "").partition(SIMILARITY_REFERENCE_HEADER)
+        if reference_heading:
+            references = _row_names(reference_context, names)
+            said = [name for name in said if name not in references or name in ordered]
+            current = [name for name in current if name not in references or name in ordered]
         if len(ordered) > 1:
             current = ordered
         elif said and (not current or not set(said).issubset(current)):
@@ -451,15 +479,30 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
     list when the latest reply named nothing at all, which is the case a withdrawal-only or
     FAQ reply produces and where the older turn is genuinely the best anchor available.
     """
+    if conversation is None or store is None or conversation.store_id != store.pk:
+        return []
     names = under_discussion(conversation, store, turns=turns)
     if not names:
-        if conversation is not None:
-            from products.models import Conversation, Product, Message
-            state = Conversation.objects.values_list("sales_state", flat=True).get(pk=conversation.pk) or {}
-            offered = state.get("offered") or {}
-            if Message.objects.filter(pk=offered.get("message_id"), delivery_status="sent").exists():
-                rows = {p.pk: p.name for p in Product.objects.filter(store=store, pk__in=offered.get("product_ids", []))}
-                return [rows[pk] for pk in offered.get("product_ids", []) if pk in rows]
+        from products.models import Conversation, Product, Message
+        state = Conversation.objects.values_list("sales_state", flat=True).get(pk=conversation.pk) or {}
+        offered = state.get("offered") or {}
+        source = Message.objects.filter(
+            pk=offered.get("message_id"), conversation=conversation,
+            role="assistant", delivery_status="sent",
+        ).first()
+        if source is not None:
+            catalogue = list(Product.objects.filter(store=store).values_list("name", flat=True))
+            ordered = supported_offered_names(source.content, source.internal_context, catalogue)
+            # Older state may include a reference product. Recompute from its
+            # source and do not resurrect anything later withdrawn or used only
+            # as a comparison reference while no new offer replaced that state.
+            later = conversation.messages.filter(
+                role="assistant", delivery_status="sent", pk__gt=source.pk,
+            ).values_list("content", "internal_context")
+            for content, context in later:
+                withdrawn = _withdrawn_names(content, context, catalogue)
+                ordered = [name for name in ordered if name not in withdrawn]
+            return ordered
         return []
 
     latest = (

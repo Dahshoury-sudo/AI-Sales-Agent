@@ -200,6 +200,9 @@ def append_quotation(reply, context):
 
 
 def price_question(message, history=None, conversation=None):
+    from .sales.followups import accepts_price_offer
+    if accepts_price_offer(message, history, conversation):
+        return True
     text = naming.normalize_product_name(message)
     if re.search(r"بكام|سعر|اسعار|ثمن|احجام|حجم|\d+\s*(?:ملي|مل|ml)\b", text):
         return True

@@ -1018,7 +1018,7 @@ class AgentEvaluationFixTests(BugFixture):
     def test_unknown_reference_answer_supplies_a_profile(self):
         from products.services.router import route
         from products.services.search_service import search_products
-        merge_preferences(self.conv, {"similar_to": "Mystery Perfume"})
+        merge_preferences(self.conv, {"similar_to": "Mystery Perfume"}, "عايز حاجة شبه Mystery Perfume")
         history = [{"role": "assistant", "content": "إيه أكتر حاجة بتحبها في Mystery Perfume، الحلاوة ولا التوابل ولا طابع تاني؟"}]
         self.a.base_notes = "Vanilla, Tonka Bean"
         self.a.save()

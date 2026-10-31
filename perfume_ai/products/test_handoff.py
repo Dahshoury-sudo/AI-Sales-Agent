@@ -205,8 +205,11 @@ class HandoffRoutingTests(TestCase):
         self.assertFalse(Notification.objects.exists())
 
     def test_ordinary_agreement_does_not_revive_an_old_offer(self):
-        with patch("products.services.router.classify", return_value="handoff"):
+        with patch("products.services.router.classify", return_value="handoff"), patch(
+            "products.services.router.get_product_info", return_value=("الأسعار المتاحة", "")
+        ) as info:
             route("ماشي", [bot(OFFER_1122), bot("تحب أقولك الأسعار؟")], self.store, self.conversation)
+        info.assert_called_once()
         self.assertFalse(Notification.objects.exists())
 
     def test_legacy_topic_classifications_cannot_treat_refusal_as_acceptance(self):
@@ -255,8 +258,11 @@ class HandoffRoutingTests(TestCase):
         for offer in (OFFER_1122, OFFER_1141):
             with self.subTest(offer=offer):
                 save_message(self.conversation, "assistant", offer, delivery_status="failed")
-                with patch("products.services.router.classify", return_value="handoff"):
+                with patch("products.services.router.classify", return_value="handoff"), patch(
+                    "products.services.router.get_product_info", return_value=("الأسعار المتاحة", "")
+                ) as info:
                     route("نعم", build_llm_history(self.conversation), self.store, self.conversation)
+                info.assert_called_once()
                 self.conversation.refresh_from_db()
                 self.assertFalse(self.conversation.needs_human)
                 self.assertFalse(Notification.objects.exists())
