@@ -1,4 +1,5 @@
 import logging
+import re
 
 from . import absence
 from .bottle_wording import ORIGINAL_BOTTLE, BOTTLE_DIFFERENCE
@@ -53,6 +54,32 @@ def _named_in_message(message, store):
     return [p for p in found if not any(
         p != other and naming.tokens(p.name) < naming.tokens(other.name) for other in found
     )]
+
+
+def _absent_9pm_name(message, store, catalogue):
+    """Verify one canonical name when the store carries no 9PM edition."""
+    from .sales import naming
+
+    if store is None or any("9pm" in naming.tokens(p.name) for p in catalogue):
+        return ""
+
+    # Check conjunctions before arabic_span drops them. Otherwise "9pm و Dior
+    # Sauvage" could become one absent name, including a perfume we actually sell.
+    source = re.sub(
+        r"(?<=[\u0600-\u06ff])(?=[A-Za-z])|(?<=[A-Za-z])(?=[\u0600-\u06ff])",
+        " ", naming.product_name_span(message),
+    )
+    parts = re.split(r"[,،;/&+\n]|\b(?:and|or|vs|versus|with|و|او|ولا)\b", source)
+    if sum(bool(naming.identifying_tokens(part)) for part in parts) != 1:
+        return ""
+    span = naming.arabic_span(source)
+    if not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", span) or span.split().count("9pm") != 1:
+        return ""
+    if naming.mentioned_in(message, catalogue):
+        return ""
+    # The bounded 9 بي ام alias is known; other Arabic suffixes are not proof of
+    # absence. Only the canonical Latin span can use the existing catalogue check.
+    return span if absence.catalogue_verdict(span, store) == absence.ABSENT else ""
 
 
 def _referent_from_conversation(message, store, conversation):
@@ -691,12 +718,19 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     if numeric.product is not None and not numeric.product.is_active:
         return f"{numeric.product.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
     products = [numeric.product] if numeric.product is not None else _named_in_message(message, store)
+    numeric_absent_name = ""
     if not products and "9pm" in naming.tokens(message):
-        from .product_resolver import resolve_order_name
-        unavailable = resolve_order_name(message, store)
+        from products.models import Product
+        catalogue = list(Product.objects.filter(store=store).select_related("brand"))
+        unavailable = naming.match_product(naming.arabic_span(message), store, products=catalogue)
         if unavailable and not unavailable.is_active:
             return f"{unavailable.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
-        return "تقصد أنهي إصدار من 9PM؟ ممكن تكتب اسم العطر كامل؟", "NUMERIC_NAME_UNRESOLVED"
+        numeric_absent_name = _absent_9pm_name(message, store, catalogue)
+        if not numeric_absent_name:
+            family = [p.name for p in catalogue if "9pm" in naming.tokens(p.name)]
+            question = (f"تقصد أنهي إصدار من 9PM: {'، '.join(family[:6])}؟" if family else
+                        "تقصد أنهي إصدار من 9PM؟ ممكن تكتب اسم العطر كامل؟")
+            return question, "NUMERIC_NAME_UNRESOLVED"
     if not products and sales_described.ordinal_position(message) is not None and not naming.identifying_tokens(message):
         name = sales_described.resolve_ordinal(message, conversation, store)
         products = _products_named([name], store) if name else []
@@ -729,7 +763,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # the customer to retype it; if it places nothing, `named_but_unresolved` below still catches the
     # turn and the retype request is what they get.
     resolver_ran = False
-    if not products and (
+    if not products and not numeric_absent_name and (
         naming.may_name_a_perfume(message) or naming.carries_unreadable_content(message)
     ):
         products = resolve_products(message, history, store, conversation)
@@ -744,7 +778,9 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # The names the resolver read out of this message and could not place. See
     # `product_resolver.Resolution`; `getattr` because a plain list is still a valid return here and
     # every mocked `resolve_products` in the test suite hands back one.
-    unplaced = tuple(getattr(products, "unplaced", ()))
+    # A verified numeric miss already identifies the name. Passing it through the
+    # normal absence flow preserves alternatives and notification/escalation state.
+    unplaced = (numeric_absent_name,) if numeric_absent_name else tuple(getattr(products, "unplaced", ()))
 
     # Spans the resolver *placed* and then withheld, because the customer's own letters point at a
     # different row and the confirming call could not settle which (`product_resolver
@@ -842,7 +878,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # — `named_but_unresolved` is fixed above this line and an empty answer cannot change it — but
     # there is no reason to pay for it.
     praised = appreciation.detect(message, history=history)
-    if not products and not resolver_ran and not praised:
+    if not products and not resolver_ran and not numeric_absent_name and not praised:
         products = resolve_products(message, history, store, conversation)
         resolution = products
 
@@ -1013,10 +1049,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # forbids exactly that. The unplaced span is the only payload here that is not a guess:
         # `product_resolver._unplaced_names` has already proved the catalogue cannot place it, that it
         # carries an identifying token, and that its words are the customer's own.
-        pending_block = _pending_lookup_block(
-            re_asked or (unplaced[0] if partially_resolved else "") or message,
-            verdict,
+        # "9pm night out" refines "9 بي ام" in conversation 1225. Keep the current
+        # wording so the pending record and reply do not discard the supplied edition.
+        question = message if numeric_absent_name else (
+            re_asked or (unplaced[0] if partially_resolved else "") or message
         )
+        pending_block = _pending_lookup_block(question, verdict)
     elif chasing:
         pending_block = _pending_lookup_block(pending_question, verdict)
     else:
