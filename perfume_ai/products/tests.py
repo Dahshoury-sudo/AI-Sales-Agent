@@ -1276,6 +1276,39 @@ class PerStorePromptFactsTests(TestCase):
 
         self.assertIn("اتكلم بالفصحى.", get_system_prompt(self.store))
 
+    def test_legacy_bottle_names_are_normalized_without_changing_saved_settings(self):
+        from products.services.promotion_service import store_facts
+
+        custom = "الصور خاصة بزجاجات البراند بتاعنا بس."
+        facts = "زجاجة البراند الخاصة بينا أو زجاجة أوريجينال. السائل تركيب."
+        config = StoreSettings.objects.create(
+            store=self.store, system_prompt=custom, business_facts=facts,
+            bottle_image_url="https://example.com/bottles.jpg",
+        )
+        for text in (get_system_prompt(self.store), store_facts(self.store)):
+            self.assertIn("زجاجة الستور الخاصة بينا", text)
+            self.assertIn("زجاجة اوريجنال", text)
+            self.assertNotIn("زجاجة البراند", text)
+            self.assertNotIn("زجاجات البراند", text)
+            self.assertNotIn("{ORIGINAL_BOTTLE}", text)
+        config.refresh_from_db()
+        self.assertEqual(config.system_prompt, custom)
+        self.assertEqual(config.business_facts, facts)
+
+    def test_bottle_selection_does_not_become_an_exclusive_perfume_request(self):
+        for field in ("brand", "exclude_brands"):
+            extracted = {field: "STORE_BRAND_EXCLUSIVE" if field == "brand" else ["STORE_BRAND_EXCLUSIVE"]}
+            with self.subTest(field=field), mock.patch(
+                "products.services.ai.intent.chat", return_value=json.dumps(extracted),
+            ):
+                result = extract_intent("عايز زجاجة الستور الخاصة بينا 50 مل", [], self.store)
+            self.assertEqual(result["bottle_type"], "normal")
+            self.assertNotEqual(result.get("brand"), "STORE_BRAND_EXCLUSIVE")
+            self.assertNotIn("STORE_BRAND_EXCLUSIVE", result.get("exclude_brands", []))
+        with mock.patch("products.services.ai.intent.chat", return_value=json.dumps({"brand": "STORE_BRAND_EXCLUSIVE"})):
+            result = extract_intent("عايز عطر من تصميمكم في زجاجة الستور", [], self.store)
+        self.assertEqual(result["brand"], "STORE_BRAND_EXCLUSIVE")
+
 
 class PerStoreBottleImageTests(TestCase):
     """The bottle photo comes from the store, not a single global env var.
@@ -2187,6 +2220,39 @@ class UnifiedProductFormattingTests(TestCase):
         self.assertNotIn("200 ملي", available_block)
         self.assertIn("200 ملي", context.split("Out of Stock Sizes")[1])
 
+    def test_bottle_names_select_and_label_the_right_variant_at_the_same_volume(self):
+        from products.services.product_formatting import product_quotes, render_quotes
+
+        ProductVariant.objects.create(
+            product=self.product, volume=50, price=900, bottle_type="original", stock=2,
+        )
+        for label, kind, price in (
+            ("زجاجة الستور الخاصة بينا", "normal", 400),
+            ("زجاجة البراند", "normal", 400),
+            ("زجاجة الإستور", "normal", 400),
+            ("زجاجة اوريجنال", "original", 900),
+            ("زجاجة أوريجينال", "original", 900),
+        ):
+            with self.subTest(label=label):
+                quotes = product_quotes([self.product], f"Dior Sauvage 50 مل {label}")
+                self.assertEqual(len(quotes), 1)
+                self.assertEqual((quotes[0].bottle_type, quotes[0].price), (kind, Decimal(price)))
+                expected = "زجاجة الستور الخاصة بينا" if kind == "normal" else "زجاجة اوريجنال"
+                self.assertIn(expected, render_quotes(quotes))
+        context = format_products(self.queryset)
+        self.assertIn("زجاجة الستور الخاصة بينا 50 ملي", context)
+        self.assertIn("زجاجة اوريجنال 50 ملي", context.split("Out of Stock Sizes")[0])
+        self.assertIn("زجاجة اوريجنال 200 ملي", context.split("Out of Stock Sizes")[1])
+
+    def test_missing_original_bottle_keeps_global_and_exclusive_explanations_distinct(self):
+        self.product.variants.filter(bottle_type="original").delete()
+        context = format_products(self.queryset)
+        self.assertIn("للاسف مش متوفر منه زجاجة اوريجنال حالياً", context)
+        self.brand.name = self.store.name
+        self.brand.save()
+        context = format_products(self.queryset.all())
+        self.assertIn("من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال", context)
+
     def test_brief_form_drops_the_detail_fields(self):
         """Used for alternatives, where the model only needs to name something."""
         context = format_products(self.queryset, brief=True)
@@ -2848,7 +2914,7 @@ class SalesQualityTests(TestCase):
         block = format_product(self.product)
 
         self.assertNotIn("غير متوفر حالياً بجميع أحجامه", block)
-        self.assertIn("الـ 50 ملي", block)
+        self.assertIn("زجاجة الستور الخاصة بينا 50 ملي", block)
         self.assertNotEqual(value_pick_note(self.product, self._variants()), "")
 
     def test_a_zero_volume_variant_is_not_offered(self):
@@ -2859,8 +2925,8 @@ class SalesQualityTests(TestCase):
         # DO NOT OFFER — what matters is that it is not in the available list.
         available = format_product(self.product).split("Out of Stock Sizes")[0]
 
-        self.assertNotIn("الـ 0 ملي", available)
-        self.assertIn("الـ 90 ملي", available)
+        self.assertNotIn("زجاجة الستور الخاصة بينا 0 ملي", available)
+        self.assertIn("زجاجة الستور الخاصة بينا 90 ملي", available)
 
 
 class PreferenceMemoryTests(TestCase):
@@ -3979,7 +4045,51 @@ class ScriptedRepliesSurviveSanitizingTests(TestCase):
             summary, _ = handle_order("...", [], self.store, self.conversation)
 
         self.assertIn("💰 الإجمالي:", summary)
+        self.assertIn("زجاجة الستور الخاصة بينا", summary)
         self.assertEqual(sanitize_reply(summary), summary)
+        saved = save_message(self.conversation, "assistant", sanitize_reply(summary))
+        cart = Cart.objects.get(conversation=self.conversation)
+        self.assertEqual(cart.quote["message_id"], saved.pk)
+        self.assertEqual(cart.quote["summary_hash"], hashlib.sha256(summary.encode()).hexdigest())
+
+    def test_legacy_faq_uses_new_labels_without_rewriting_saved_answer(self):
+        from products.services.static_faq_service import match_static_faq
+
+        old = "زجاجة البراند الخاصة بينا أو زجاجة أوريجينال. العطر في الاتنين تركيب."
+        faq = StaticFAQ.objects.create(
+            store=self.store, question="أنواع الزجاجات؟", keywords="زجاجات, نوع+الزجاجة", answer=old,
+        )
+        expected = "زجاجة الستور الخاصة بينا أو زجاجة اوريجنال. العطر في الاتنين تركيب."
+        for message in ("أنواع الزجاجات؟", "ممكن أعرف الفرق بين نوع الزجاجة عندكم؟"):
+            self.assertEqual(match_static_faq(message, self.store)["answer"], expected)
+        faq.refresh_from_db()
+        self.assertEqual(faq.answer, old)
+
+    def test_original_label_survives_summary_and_confirmation(self):
+        original = ProductVariant.objects.create(
+            product=self.product, volume=50, price=900, bottle_type="original", stock=2,
+        )
+        payload = {
+            "products": [{"name": self.product.name, "quantity": 1, "volume": 50, "bottle_type": "original"}],
+            "customer_name": "محمد", "customer_phone": "01000000000",
+            "customer_secondary_phone": "01100000000", "shipping_address": "القاهرة",
+            "is_confirmed": False,
+        }
+        with mock.patch("products.services.order_service.chat", return_value=json.dumps(payload)) as chat:
+            summary, _ = handle_order("هاخد Dior Sauvage 50 مل زجاجة اوريجنال", [], self.store, self.conversation)
+        prompt = chat.call_args.args[0][0]["content"]
+        self.assertIn("زجاجة اوريجنال", prompt)
+        self.assertNotIn("{ORIGINAL_BOTTLE}", prompt)
+        self.assertIn("زجاجة اوريجنال", summary)
+        self.assertEqual(sanitize_reply(summary), summary)
+        save_message(self.conversation, "assistant", sanitize_reply(summary))
+        payload["is_confirmed"] = True
+        with mock.patch("products.services.order_service.chat", return_value=json.dumps(payload)), \
+             mock.patch("products.services.order_service.notify_new_order"):
+            handle_order("تمام اكد الطلب", [], self.store, self.conversation)
+        item = OrderItem.objects.get(order__conversation=self.conversation)
+        self.assertEqual((item.variant_id, item.bottle_type, item.price_at_time_of_order),
+                         (original.pk, "original", Decimal("900")))
 
     def test_the_cart_cancellation_reply_is_untouched(self):
         """Contains "تحب تشوف حاجة تانية" — near-miss on the filler pattern."""
@@ -4253,7 +4363,7 @@ class PersonaConsolidationTests(TestCase):
             ("max 2-3 recommendations", "ترشيحين أو تلاتة"),
             ("no (تركيب) label on sizes", '(تركيب)'),
             ("only in-stock sizes offered", "الأحجام المتوفرة بس"),
-            ("brand vs original same juice", "نفس التركيبة بالظبط"),
+            ("brand vs original same juice", "العطر في الاتنين نفس التركيبة من عندنا"),
             ("don't re-ask stated preferences", "ممنوع تسأل عليها تاني"),
             ("stay on the chosen perfume", "خليه الأساس"),
             ("no empty questions", "الأسئلة الفاضية"),
@@ -9564,9 +9674,9 @@ class HarnessFalseDenialCheckTests(TestCase):
         """product_formatting dictates this sentence verbatim for a global brand with no
         original variant, and the persona reproduces it بالحرف — so the *fixed* 1099 reply
         still contains it. Eros genuinely has no original bottle."""
-        reply = "Versace Eros متوفر. للاسف مش متوفر منه زجاجة أوريجينال حالياً."
-
-        self.assertIsNone(self._denied(reply))
+        for label in ("زجاجة أوريجينال", "زجاجة اوريجنال"):
+            with self.subTest(label=label):
+                self.assertIsNone(self._denied(f"Versace Eros متوفر. للاسف مش متوفر منه {label} حالياً."))
 
     def test_a_size_scoped_denial_is_not_a_false_denial(self):
         for reply in (
@@ -9577,9 +9687,9 @@ class HarnessFalseDenialCheckTests(TestCase):
                 self.assertIsNone(self._denied(reply))
 
     def test_a_brand_bottle_denial_is_not_a_false_denial(self):
-        reply = "زجاجات البراند لعطر Eros غير متوفرة حالياً."
-
-        self.assertIsNone(self._denied(reply))
+        for label in ("زجاجات البراند", "زجاجات الستور الخاصة بينا"):
+            with self.subTest(label=label):
+                self.assertIsNone(self._denied(f"{label} لعطر Eros غير متوفرة حالياً."))
 
     def test_denying_a_perfume_we_do_not_stock_is_correct(self):
         """Scenario X1's case — the inverse, where denial is the right answer."""
@@ -13038,8 +13148,8 @@ class PartiallyResolvedQuestionTests(TestCase):
             )
 
         self.assertIn("Dior Sauvage", context)
-        self.assertIn("زجاجة أوريجينال 100 ملي: 815.00 EGP", context)
-        self.assertIn("زجاجة أوريجينال 200 ملي: 1623.00 EGP", context)
+        self.assertIn("زجاجة اوريجنال 100 ملي: 815.00 EGP", context)
+        self.assertIn("زجاجة اوريجنال 200 ملي: 1623.00 EGP", context)
         self.assertNotIn(sales_described.PENDING_LOOKUP_MARKER, context)
         self.assertNotIn("ABSENCE_DENIED", context)
 

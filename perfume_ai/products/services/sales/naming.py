@@ -20,6 +20,7 @@ re-approximated at each site.
 import re
 
 from ..static_faq_service import normalize_arabic
+from ..bottle_wording import strip_bottle_wording
 
 # Words that carry no identifying information, so an overlap on them alone is not a
 # match. Deliberately excludes "homme", "femme", "intense", "extrait" and the like: those
@@ -39,7 +40,7 @@ def normalize_product_name(text):
 
 
 def product_name_span(text):
-    text = normalize_product_name(text)
+    text = strip_bottle_wording(normalize_product_name(text))
     text = re.sub(r"(?<!\w)\d+(?:\.\d+)?\s*(?:ملي|مل|ml)\b", " ", text)
     text = re.sub(r"\b(?:زجاجه|عبوه)\s+(?:البراند|الاستور|المحل)\b", " ", text)
     text = re.sub(r"\b(?:هاخد|هات|خدلي|اطلب|وضيف|ضيف|خليه|عبوه|زجاجه)\b", " ", text)

@@ -3,6 +3,7 @@ import re
 from decimal import Decimal
 
 from .ai.client import chat
+from .bottle_wording import bottle_label
 from .ai.prompts import get_system_prompt
 from .product_formatting import format_products, product_quotes, render_quotes, quote_context
 from .product_info import get_product_info
@@ -37,7 +38,7 @@ def requested_facts(message, products):
             if not variants:
                 facts.append("الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً")
             for v in variants:
-                bottle = "زجاجة البراند" if v.bottle_type == "normal" else "زجاجة أوريجينال"
+                bottle = bottle_label(v.bottle_type)
                 quote = next(q for q in current_quotes if q.variant_id == v.pk)
                 facts.append(render_quotes([quote], include_name=False))
                 if "value" in dims and v.volume > 0:

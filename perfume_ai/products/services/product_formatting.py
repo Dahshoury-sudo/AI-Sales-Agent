@@ -18,6 +18,7 @@ import json
 import re
 
 from .sales import naming
+from .bottle_wording import NORMAL_BOTTLE, ORIGINAL_BOTTLE, bottle_label, explicit_bottle_type
 from .sales.value import (
     BUDGET_TOLERANCE,
     budget_tier,
@@ -129,10 +130,10 @@ class ProductQuote:
 def requested_quote_options(message):
     text = naming.normalize_product_name(message)
     sizes = [int(n) for n in re.findall(r"(?<!\d)(\d+)\s*(?:ملي|مل|ml)\b", text)]
-    bottle = None
-    if re.search(r"اوريجينال|اوريجنال|اورجينال|original", text):
+    bottle = explicit_bottle_type(text)
+    if bottle is None and re.search(r"اوريجينال|اوريجنال|اورجينال|original", text):
         bottle = "original"
-    elif re.search(r"زجاجه (?:البراند|الاستور|المحل)|تركيب", text):
+    elif bottle is None and re.search(r"تركيب", text):
         bottle = "normal"
     return sizes, bottle
 
@@ -160,7 +161,7 @@ def product_quotes(products, message="", max_price=None, *, filter_budget=True):
 def render_quotes(quotes, max_price=None, *, include_name=True):
     lines = []
     for quote in quotes:
-        bottle = "زجاجة البراند" if quote.bottle_type == "normal" else "زجاجة أوريجينال"
+        bottle = bottle_label(quote.bottle_type)
         quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
         prefix = f"{quote.name} — " if include_name else ""
         line = f"{prefix}{bottle} {quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه."
@@ -340,7 +341,7 @@ def _size_lines(product, variants, max_price=None):
         if variant.bottle_type == "normal":
             if variant.volume and variant.volume > 0:
                 available.append(
-                    f"- الـ {variant.volume} ملي: {variant.price} EGP"
+                    f"- {NORMAL_BOTTLE} {variant.volume} ملي: {variant.price} EGP"
                     f"{budget_label(variant.price, max_price)}"
                 )
         elif variant.bottle_type == "original":
@@ -350,11 +351,11 @@ def _size_lines(product, variants, max_price=None):
                     f" ({stock} زجاجة فقط)" if stock <= LOW_BOTTLE_THRESHOLD else ""
                 )
                 available.append(
-                    f"- زجاجة أوريجينال {variant.volume} ملي: {variant.price} EGP{low_stock}"
+                    f"- {ORIGINAL_BOTTLE} {variant.volume} ملي: {variant.price} EGP{low_stock}"
                     f"{budget_label(variant.price, max_price)}"
                 )
             else:
-                out_of_stock.append(f"زجاجة أوريجينال {variant.volume} ملي")
+                out_of_stock.append(f"{ORIGINAL_BOTTLE} {variant.volume} ملي")
     return available, out_of_stock
 
 
@@ -424,11 +425,11 @@ def _original_bottle_status(product, variants):
     if _is_store_exclusive(product):
         return (
             'NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). '
-            'If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة أوريجينال."'
+            f'If asked, say EXACTLY: "ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه {ORIGINAL_BOTTLE}."'
         )
     return (
         f'NOT AVAILABLE — this is a GLOBAL BRAND ({product.brand.name}) perfume, '
-        f'NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه زجاجة أوريجينال حالياً". '
+        f'NOT store-exclusive. If asked, say EXACTLY: "للاسف مش متوفر منه {ORIGINAL_BOTTLE} حالياً". '
         f'❌ DO NOT say it is store-exclusive or حصري.'
     )
 

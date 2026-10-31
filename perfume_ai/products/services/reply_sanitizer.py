@@ -17,6 +17,7 @@ the product data may not support.
 import logging
 import re
 from decimal import Decimal
+from .bottle_wording import normalize_bottle_wording
 
 logger = logging.getLogger(__name__)
 
@@ -591,7 +592,7 @@ def sanitize_reply(reply, conversation=None):
     if not reply:
         return reply
 
-    cleaned = reply
+    cleaned = normalize_bottle_wording(reply)
 
     # Read straight off the conversation rather than importing the model, so this module stays
     # Django-free. merge_preferences (conversation_service) writes max_price *inside* route(),

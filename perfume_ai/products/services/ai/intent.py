@@ -2,6 +2,7 @@ import json
 import re
 
 from .client import chat
+from ..bottle_wording import strip_bottle_wording
 
 # The closed vocabulary the prompt asks for. Enforced here as well as asked for there,
 # because the prompt is advice and this is arithmetic: `avoid_traits` is the only extracted
@@ -174,6 +175,7 @@ Rules:
 - A combined budget for two or more bottles is budget_scope=total and budget_strict=true.
 - Exact ceilings (at most, cannot add one pound, حد أقصى) are strict; "around" is approximate.
 - Requested volume and bottle type are mandatory filters, not optional suggestions.
+- Bottle names: "زجاجة الستور الخاصة بينا", "زجاجة الستور", "زجاجة البراند", "زجاجة الاستور", and "زجاجة المحل" mean bottle_type="normal". "زجاجة اوريجنال", "زجاجة أوريجينال", and "زجاجة بشكل الأوريجينال" mean bottle_type="original". Selecting packaging alone never sets brand or exclude_brands to STORE_BRAND_EXCLUSIVE and never means the liquid is authentic. Preserve separately stated perfume/house preferences.
 - If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT only the store's exclusive creations and ask for designer-inspired blends instead (e.g. "مش عايز حاجة من تصميمكم", "بلاش البراند بتاعكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
@@ -238,6 +240,19 @@ Rules:
         intent = _sanitize(json.loads(response))
         from ..sales.constraints import explicit_updates, original_liquid_update
         intent.update(explicit_updates(message))
+        # Packaging ownership is not a perfume-house preference. Keep a separately
+        # stated request for exclusive creations, but discard this common inference.
+        perfume_request = strip_bottle_wording(message)
+        if perfume_request != message and not re.search(
+            r"براند|تصميم|حصري|خاص|تركيبكم|بتاعك[وم]|عطوركم|من عندك[وم]",
+            perfume_request,
+        ):
+            if intent.get("brand") == STORE_BRAND_EXCLUSIVE:
+                intent["brand"] = None
+            intent["exclude_brands"] = [
+                brand for brand in (intent.get("exclude_brands") or [])
+                if brand != STORE_BRAND_EXCLUSIVE
+            ]
         # A follow-up about the total must not silently change the bottle choice.
         # Packaging changes need evidence in this turn; omission retains saved state.
         from ..static_faq_service import normalize_arabic

@@ -14,6 +14,7 @@ produced the identical budget sentence every time.
 """
 
 from ..static_faq_service import normalize_arabic
+from ..bottle_wording import ORIGINAL_BOTTLE, explicit_bottle_type
 import re
 
 
@@ -32,7 +33,7 @@ def formulation_reply(message="", followup=False):
         if any(term in normalize_arabic(message) for term in ("احسن", "افضل", "اختار")):
             return "مفيش اختيار أصلي يحقق طلبك عندنا؛ كل المتاح تركيب. هل العطر التركيب مناسب ليك؟"
         return "تمام، بس شرطك إن السائل يكون أصلي لسه مش متاح عندنا، حتى مع تغيير البراند. نكمل لو التركيب مناسب ليك."
-    return "العطور عندنا كلها تركيب، حتى اللي في زجاجة بشكل الأوريجينال. مش متوفر عندنا عطر أصلي من تصنيع البراند. لو مناسب ليك التركيب أقدر أساعدك تختار."
+    return f"العطور عندنا كلها تركيب، حتى اللي في {ORIGINAL_BOTTLE}. مش متوفر عندنا عطر أصلي من تصنيع البراند. لو مناسب ليك التركيب أقدر أساعدك تختار."
 
 
 def preference_reversal(message):
@@ -49,8 +50,9 @@ def explicit_updates(message):
     volume = re.search(r"(?<!\d)(\d+)\s*(?:مل(?:ي)?|ml)\b", text)
     if volume:
         updates["requested_volume"] = int(volume[1])
-    if any(x in text for x in ("زجاجه البراند", "زجاجه الاستور", "زجاجه المحل")):
-        updates["bottle_type"] = "normal"
+    bottle = explicit_bottle_type(text)
+    if bottle:
+        updates["bottle_type"] = bottle
     if any(x in text for x in ("حد اقصي", "حد اقصى", "مش هقدر ازود", "مش هقدر ازود", "مش هقدر أزود", "بالظبط", "بالضبط", "at most", "maximum")):
         updates["budget_strict"] = True
     if any(x in text for x in ("للاتنين", "الاتنين مع بعض", "اجمالي", "combined", "total budget")):

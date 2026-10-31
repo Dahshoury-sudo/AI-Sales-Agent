@@ -4,6 +4,7 @@ import re
 from openai import OpenAIError
 
 from .ai.client import chat
+from .bottle_wording import normalize_bottle_wording
 from .handoff import handoff_offer_reply, has_handoff_offer, declines_human
 from .static_faq_service import normalize_arabic
 from .usage_service import record_llm_message
@@ -67,9 +68,9 @@ def store_facts(store):
         settings = store.settings
     except AttributeError:
         return ""
-    return "\n".join(filter(None, (
+    return normalize_bottle_wording("\n".join(filter(None, (
         (settings.system_prompt or "").strip(), (settings.business_facts or "").strip(),
-    )))
+    ))))
 
 
 def configured_promotions(store):

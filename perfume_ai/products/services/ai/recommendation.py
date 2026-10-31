@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from .prompts import get_system_prompt
+from ..bottle_wording import bottle_label
 from ..product_formatting import (format_products, is_variant_available, factual_description,
     ProductQuote, product_quotes, render_quotes, quote_context, append_quotation, QUOTE_PROSE_INSTRUCTION)
 from ..sales import described
@@ -392,9 +393,7 @@ def _in_budget_note(products, max_price):
             # cheapest-overall figure below, or the one number we sanction is unbuyable.
             if not is_variant_available(variant):
                 continue
-            label = (
-                "زجاجة أوريجينال" if variant.bottle_type == "original" else "زجاجة البراند"
-            )
+            label = bottle_label(variant.bottle_type)
             line = f"{product.name} {label} {variant.volume} ملي بـ {variant.price:.0f}"
             if cheapest is None or variant.price < cheapest[0]:
                 cheapest = (variant.price, line)

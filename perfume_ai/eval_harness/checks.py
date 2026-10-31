@@ -151,7 +151,7 @@ _DATA_LEAK = re.compile(r"في\s+البيانات|البيانات\s+اللي\s+
 # موجودة / موجودين the same way.
 #
 #   * A bottle-type-scoped denial. `product_formatting._original_bottle_status` dictates
-#     "للاسف مش متوفر منه زجاجة أوريجينال حالياً" verbatim for any global-brand perfume with no
+#     "للاسف مش متوفر منه زجاجة اوريجنال حالياً" verbatim for any global-brand perfume with no
 #     original variant, and prompts.py tells the model to reproduce it بالحرف — so it appears in
 #     correct replies by design. Versace Eros has no original bottle, so the *fixed* 1099 reply
 #     still contains this sentence.
@@ -159,9 +159,9 @@ _DATA_LEAK = re.compile(r"في\s+البيانات|البيانات\s+اللي\s+
 #     can run out, so these can be true; suppressed rather than validated, because `truth` has
 #     no per-size availability and a conservative miss beats a false alarm.
 _DENIAL_SCOPED = (
-    re.compile(r"[أا]وريجينال"),
-    re.compile(r"زجاج[ةه]\s+(?:ال)?[أا]وريجينال"),
-    re.compile(r"زجاجات\s+(?:ال)?براند"),
+    re.compile(r"[أا]وري?جي?نال"),
+    re.compile(r"زجاج[ةه]\s+(?:ال)?[أا]وري?جي?نال"),
+    re.compile(r"زجاج(?:ات|[ةه])\s+(?:ال)?(?:براند|ستور|استور|محل)"),
     re.compile(r"حجم\s+\d+"),
     re.compile(r"الـ?\s*\d+\s*ملي"),
 )
@@ -524,6 +524,7 @@ def _allowed_numbers(truth, context, customer_text):
 def check_variant_prices(reply, truth, customer_text=""):
     from decimal import Decimal
     from products.services.static_faq_service import normalize_arabic
+    from products.services.bottle_wording import explicit_bottle_type
     text = (reply or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
     records = truth.get("variant_prices", {})
     if not records:
@@ -546,9 +547,10 @@ def check_variant_prices(reply, truth, customer_text=""):
             if volumes:
                 rows = [r for r in rows if r["volume"] == int(volumes[-1])]
             bottle_text = normalize_arabic(before or customer_text)
-            if "اوريجينال" in bottle_text or "original" in bottle_text:
+            bottle_type = explicit_bottle_type(bottle_text)
+            if bottle_type == "original" or (bottle_type is None and re.search(r"اوري?جي?نال|original", bottle_text)):
                 rows = [r for r in rows if r["bottle_type"] == "original"]
-            elif "البراند" in bottle_text:
+            elif bottle_type == "normal" or "البراند" in bottle_text:
                 rows = [r for r in rows if r["bottle_type"] == "normal"]
             expected = {Decimal(r["price"]) for r in rows}
             if "سعر المل" in clause or "per ml" in clause:

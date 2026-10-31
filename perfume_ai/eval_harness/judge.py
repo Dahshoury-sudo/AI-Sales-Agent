@@ -57,7 +57,7 @@ HARD RULES for grading:
    relaying them is correct behaviour. Read BOTH blocks in full before calling anything
    invented; scoring a supported claim as fabricated is as wrong as missing a real one.
 4b. ABSENCE IN THE SIZE LIST IS EVIDENCE, NOT A GAP. The `sizes:` field lists every bottle
-   that exists. If it shows no `original` bottle, then "مش متوفر منه زجاجة أوريجينال" is
+   that exists. If it shows no `original` bottle, then "مش متوفر منه زجاجة اوريجنال" is
    TRUE and is the wording the store dictates verbatim — do NOT score it as an unsupported
    claim. The same holds for a volume that is simply not listed. Only a claim that
    CONTRADICTS the listed sizes is a product_accuracy failure.

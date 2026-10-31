@@ -19,6 +19,7 @@ from .identification_service import identify_perfume
 from .objection_service import handle_objection
 from .product_resolver import confident_catalogue_match
 from .reply_sanitizer import soften_marketing_language, strip_premature_closing
+from .bottle_wording import NORMAL_BOTTLE, ORIGINAL_BOTTLE
 from .sales import constraints as sales_constraints
 from .sales import described as sales_described
 from .sales import gender as sales_gender
@@ -764,12 +765,12 @@ def route(message, history=None, store=None, conversation=None):
                 has_original_bottle = False
                 for v in p.variants.all():
                     if v.bottle_type == 'normal':
-                        available_variants.append(f"{v.volume} ملي بـ {v.price} جنيه")
+                        available_variants.append(f"{NORMAL_BOTTLE} {v.volume} ملي بـ {v.price} جنيه")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
-                        available_variants.append(f"{v.volume} ملي أوريجينال بـ {v.price} جنيه")
+                        available_variants.append(f"{ORIGINAL_BOTTLE} {v.volume} ملي بـ {v.price} جنيه")
                         has_original_bottle = True
                 if available_variants:
-                    original_bottle_status = "" if has_original_bottle else " - (لا يوجد زجاجة أوريجينال)"
+                    original_bottle_status = "" if has_original_bottle else f" - (لا يوجد {ORIGINAL_BOTTLE})"
                     products_list.append(f"• {p.name} ({', '.join(available_variants)}){original_bottle_status}")
             if products_list:
                 products_context = "\n\n═══ منتجات متوفرة يمكنك اقتراحها (ممنوع تذكر أي منتج غيرهم) ═══\n" + "\n".join(products_list)
