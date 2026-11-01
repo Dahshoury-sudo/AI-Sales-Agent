@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import re
+import unicodedata
 
 from ..static_faq_service import normalize_arabic
 
@@ -9,9 +10,9 @@ from ..static_faq_service import normalize_arabic
 REFERENCE_KEYS = ("similar_to", "similar_to_notes")
 STATE_KEY = "similarity_request"
 _SIMILAR = re.compile(
-    r"(?<!\w)(?:شبه(?:ه|ها)?|زي(?:ه|ها)?|بديل|قريب(?:ه)?\s+من(?:ه|ها)?|"
-    r"[يت]شبه(?:ه|ها)?|شبيه(?:ه)?|نفس\s+(?:ال)?(?:جو|ستايل|طابع|نوع|ريحه)|"
-    r"similar\s+to|alternative\s+to|same\s+(?:vibe|style)|something\s+like)(?!\w)"
+    r"(?<!\w)(?:شبه(?:ه|ها|و)?|زي(?:ه|ها|و)?|بديل|قريب(?:ه)?\s+من(?:ه|ها|و)?|"
+    r"[يت]شبه(?:ه|ها|و)?|شبيه(?:ه)?|نفس\s+(?:ال)?(?:جو|ستايل|طابع|نوع|ريحه|نوتات)|"
+    r"similar\s+to|alternative\s+to|same\s+(?:vibe|style|notes(?:\s+as)?)|something\s+like)(?!\w)"
 )
 _NEGATIVE = re.compile(
     r"(?:مش\s+(?:عايز(?:ه)?|طالب|محتاج|لازم)|من\s+غير|بلاش|"
@@ -31,7 +32,9 @@ _RESET = re.compile(
 
 
 def _normalized(text):
-    return normalize_arabic(str(text or "")).translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    text = unicodedata.normalize("NFKD", normalize_arabic(str(text or "")))
+    return "".join(c for c in text if not unicodedata.combining(c)).translate(
+        str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
 
 
 def similarity_requested(message):
@@ -42,9 +45,15 @@ def similarity_requested(message):
 
 def _affirmative_cues(text):
     matches = []
+    negated = None
     for match in _SIMILAR.finditer(text):
-        if _NEGATIVE.search(text[:match.start()]):
+        joined_negative = negated is not None and re.search(
+            r"\b(?:او|or)\s*$", text[negated.end():match.start()],
+        ) and not re.search(r"[.؛;\n]|\b(?:بس|لكن|but)\b", text[negated.end():match.start()])
+        if _NEGATIVE.search(text[:match.start()]) or joined_negative:
+            negated = match
             continue
+        negated = None
         if match.group() == "زي" and (
             re.match(r"\s+ما\b", text[match.end():])
             or re.search(r"(?:براند|ماركه|brand|house)(?:\s+\w+){0,2}\s*$", text[:match.start()])
@@ -65,12 +74,51 @@ def _same_name(left, right):
     return bool(left and right and _normalized(left).strip() == _normalized(right).strip())
 
 
+def _same_spoken_name(span, name):
+    """Validate a translated target against the customer's complete Arabic spelling.
+
+    Vowel letters differ between scripts: تيري هيرمز and Terre d'Hermes share
+    the consonant words ``tr hrms`` but fail the ordinary character matcher.
+    This only validates the already extracted target. It never selects a
+    catalogue candidate, accepts partial names, or discards flanker words.
+    """
+    from . import naming
+
+    if not re.search(r"[\u0621-\u064a]", span or ""):
+        return False
+
+    def words(text):
+        text = "".join(character for character in unicodedata.normalize("NFKD", text)
+                       if not unicodedata.combining(character))
+        keys = []
+        for token in sorted(naming.tokens(text)):
+            key = naming.transliterate(token).replace("z", "s")
+            key = re.sub(r"[aeiouyw]", "", key)
+            key = re.sub(r"(.)\1+", r"\1", key)
+            if key:
+                keys.append(key)
+        return sorted(keys)
+
+    source, target = words(span), words(name)
+    return bool(source == target and sum(map(len, source)) >= 5)
+
+
 def _mentions(text, name, store, history=None):
     """Check a legacy source against its saved target without asking a model."""
     from . import naming
 
     normalized, target = _normalized(text), _normalized(name)
     if target and re.search(r"(?<!\w)" + re.escape(target) + r"(?!\w)", normalized):
+        if store:
+            from products.models import Product
+            # A named edition consumes its full span; its base is not separately named.
+            names = list(Product.objects.filter(store=store).values_list("name", flat=True))
+            mentioned = naming.names_in(normalized, names + [name])
+            if mentioned and name not in mentioned:
+                return False
+        return True
+    span = naming.arabic_span(normalized)
+    if _same_spoken_name(span, name):
         return True
     if not store:
         return False
@@ -81,7 +129,7 @@ def _mentions(text, name, store, history=None):
         from .followups import numeric_reference
         found = numeric_reference(normalized, store, history=history, respect_budget=False).product
     else:
-        found = naming.match_product(naming.arabic_span(normalized), store)
+        found = naming.match_product(span, store)
         if found is None:
             # In mixed-script speech the Latin span can be a shortened catalogue
             # name: "بحب ريحة Sauvage" names Dior Sauvage without its house.
@@ -91,40 +139,112 @@ def _mentions(text, name, store, history=None):
                     return True
     if found is None:
         from ..product_resolver import confident_catalogue_match
-        found = confident_catalogue_match(naming.arabic_span(normalized), store)
+        found = confident_catalogue_match(span, store)
     return found is not None and found.pk == product.pk
+
+
+def _catalogue_targets(text, names):
+    """Exact identities, including accents/Arabic, without collapsing editions."""
+    from . import naming
+
+    normalized = _normalized(text)
+    by_key = {_normalized(name): name for name in names}
+    cues = _affirmative_cues(normalized)
+    spans = []
+    for index, cue in enumerate(cues):
+        end = cues[index + 1].start() if index + 1 < len(cues) else len(normalized)
+        tail = re.sub(r"\s+(?:او|و|or|and)$", "", normalized[cue.end():end].strip())
+        spans.append(re.split(r"\b(?:عشان|لان|because)\b", tail)[0])
+    if not cues:
+        spans.append(normalized)
+    found = [by_key[key] for span in spans for key in naming.names_in(span, by_key)]
+    if found:
+        return list(dict.fromkeys(found))
+    found = [name for name in names if any(_same_spoken_name(naming.arabic_span(span), name) for span in spans)]
+    if not found and cues and _anaphoric_request(text):
+        prefix = normalized[:cues[0].start()]
+        found = [by_key[key] for key in naming.names_in(prefix, by_key)]
+    return found
+
+
+def _recent_targets(previous, store, extra=(), owned=False):
+    from .described import supported_offered_names
+    from products.models import Product
+
+    names = list(Product.objects.filter(store=store).values_list("name", flat=True)) if store else []
+    canonical = {}
+    for name in [*names, *extra]:
+        canonical.setdefault(_normalized(name), name)
+    names = list(canonical.values())
+    rows = [row for row in previous if row.get("role") == "user"
+            or row.get("delivery_status", "sent") == "sent"]
+    # "Something like it, because I own it" refers to the customer's comparison
+    # target, not the alternatives just proposed in response to that comparison.
+    if owned:
+        latest_user = next((row for row in reversed(rows) if row.get("role") in ("user", "agent")), {})
+        if latest_user.get("role") == "user" and similarity_requested(latest_user.get("content")):
+            targets = _catalogue_targets(latest_user["content"], names)
+            if targets:
+                return targets
+    for row in reversed(rows):
+        if row.get("role") == "agent":
+            break
+        content = row.get("content", "")
+        if row.get("role") == "assistant" and row.get("internal_context"):
+            # Canonicalize the evidence, not just the proposed model spelling.
+            def fold(value):
+                return "".join(c for c in unicodedata.normalize("NFKD", value)
+                               if not unicodedata.combining(c))
+            aliases = {fold(name): name for name in names}
+            found = supported_offered_names(fold(content), fold(row["internal_context"]), list(aliases))
+            targets = [aliases[name] for name in found]
+        elif row.get("role") in ("assistant", "user"):
+            targets = _catalogue_targets(content, names)
+        else:
+            continue
+        if targets:
+            return targets
+    return []
+
+
+def _anaphoric_request(message):
+    text = _normalized(message)
+    return any(cue.group().endswith(("ه", "ها", "و"))
+               or cue.group().startswith(("نفس ", "same "))
+               for cue in _affirmative_cues(text))
 
 
 def _source_supports(message, name, store, previous):
     text = _normalized(message)
-    for cue in _affirmative_cues(text):
-        tail = text[cue.end():].strip(" ،,؟?.!")
+    cues = _affirmative_cues(text)
+    named_target = False
+    for index, cue in enumerate(cues):
+        end = cues[index + 1].start() if index + 1 < len(cues) else len(text)
+        # In "نفس نوتات X او قريب منه", the second comparison refers to X;
+        # its cue and connecting particle are not part of the perfume's name.
+        tail = text[cue.end():end].strip(" ،,؟?.!")
+        tail = re.sub(r"\s+(?:او|و|or|and)$", "", tail).strip()
         if _mentions(tail, name, store, previous):
             return True
         anaphoric = (
-            cue.group().endswith(("ه", "ها")) or cue.group().startswith(("نفس ", "same "))
+            cue.group().endswith(("ه", "ها", "و")) or cue.group().startswith(("نفس ", "same "))
             or re.match(r"^(?:اللي|ده|دي|دول|it|that|the one)\b", tail)
         )
         contextual_tail = not tail or re.match(
-            r"^(?:بس|لكن|و\w*|في|لل\w*|جدا|اوي|شويه|اللي|ده|دي|دول|it|that|the one)\b", tail,
+            r"^(?:عشان|لان|because|بس|لكن|و\w*|في|لل\w*|جدا|اوي|شويه|اللي|ده|دي|دول|it|that|the one)\b", tail,
         )
+        if not contextual_tail:
+            named_target = True
         if not anaphoric or not contextual_tail:
             continue
         # A customer can name the perfume and refer back to it in the same
         # message: "بحب ريحة Sauvage بس عايز حاجة شبهه ومش منتشرة".
         if _mentions(text[:cue.start()], name, store, previous):
             return True
-        for row in reversed(previous[-3:]):
-            if row.get("role") == "agent":
-                break
-            if row.get("role") not in ("user", "assistant"):
-                continue
-            if row.get("role") == "assistant" and row.get("internal_context"):
-                from .described import supported_offered_names
-                if name in supported_offered_names(row.get("content", ""), row["internal_context"], [name]):
-                    return True
-            elif _mentions(row.get("content", ""), name, store):
-                return True
+        if named_target:
+            continue
+        targets = _recent_targets(previous, store, [name], owned=bool(re.search(r"عندي|اشتريت|own", text)))
+        return len(targets) == 1 and _same_name(targets[0], name)
     return False
 
 
@@ -170,6 +290,11 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
     saved = dict(getattr(conversation, "preferences", None) or {})
     state = dict(getattr(conversation, "sales_state", None) or {})
     store = store or getattr(conversation, "store", None)
+    if conversation is not None and store is not None and conversation.store_id != store.pk:
+        conversation, history = None, []
+        for key in REFERENCE_KEYS:
+            saved.pop(key, None)
+        state.pop(STATE_KEY, None)
     reset = fresh.get("reset_preferences") is True or bool(_RESET.search(_normalized(message)))
     if reset:
         fresh["reset_preferences"] = True
@@ -186,11 +311,25 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
         fresh["clear_preferences"] = sorted(cleared.union(REFERENCE_KEYS))
 
     candidate = fresh.get("similar_to")
-    previous = _history_rows(conversation, history) if candidate and similarity_requested(message) else []
+    previous = _history_rows(conversation, history) if similarity_requested(message) else []
     if previous and previous[-1].get("role") == "user" and previous[-1].get("content") == message:
         previous = previous[:-1]
     if not previous and origin and _same_name(candidate, origin["reference_name"]):
         previous = [{"role": "user", "content": origin["source_text"]}]
+    if similarity_requested(message):
+        from products.models import Product
+        names = list(Product.objects.filter(store=store).values_list("name", flat=True)) if store else []
+        targets = _catalogue_targets(message, names)
+        if not targets and _anaphoric_request(message):
+            targets = _recent_targets(previous, store, [candidate] if candidate else [],
+                                      owned=bool(re.search(r"عندي|اشتريت|own", _normalized(message))))
+        if len(targets) == 1 and _source_supports(message, targets[0], store, previous):
+            candidate = fresh["similar_to"] = targets[0]
+        elif len(targets) > 1:
+            candidate = None
+            fresh.pop("similar_to", None)
+            fresh["similarity_candidates"] = targets
+            origin = None
     supported = candidate and _source_supports(message, candidate, store, previous)
     if supported:
         # "Forget that comparison; find something like Y" establishes Y.
@@ -217,4 +356,6 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
         for key in REFERENCE_KEYS:
             fresh.pop(key, None)
             saved.pop(key, None)
+        if similarity_requested(message):
+            fresh["similarity_needs_reference"] = True
     return PreparedSimilarity(fresh, saved, state)

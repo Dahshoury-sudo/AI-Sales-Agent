@@ -88,6 +88,11 @@ HARD RULES for grading:
    already given rich information, Intent and Sales score LOW.
 9. If a stated constraint was silently dropped and the reply presents the result as
    though it met the request, Trust scores LOW.
+9b. An ordinary positive brand request is a PREFERENCE, not an exclusive constraint.
+    A better-fitting perfume from another brand should lead if its actual brand and
+    supported advantage are explained. Do not penalize this as disobeying the customer.
+    Explicit brand-only requests (brand_strict=true) and excluded brands remain binding.
+    Offering another brand does not change the customer's saved preferred brand.
 10. Score only what the agent actually did. Do not credit intentions.
 
 Dimensions:
@@ -99,9 +104,11 @@ Dimensions:
 - memory: did it retain useful info, drop stale info, and let new info override old?
 - recommendation_quality: was the recommended perfume genuinely suitable given the
   database rows?
-- similarity_accuracy: if a lookalike was requested, is the offer actually similar in
-  overall character? 10 if honestly admitted no close match exists; 0 if an unrelated
-  perfume was presented as a lookalike. Score null if similarity was not requested.
+- similarity_accuracy: if a lookalike was requested, are similarity claims supported by
+  overall character? Give full credit to direct alternatives with supported qualities
+  and relevant differences, without fabricated similarity. Do not require a no-close-match
+  declaration; lead with one or two useful products. Score 0 if an unrelated perfume was
+  presented as a lookalike. Score null if similarity was not requested.
 - product_accuracy: is every factual claim traceable to the database rows?
 - confidence_calibration: did it distinguish known fact / likely inference / guess /
   unknown? Presenting a guess as fact scores 0-2.

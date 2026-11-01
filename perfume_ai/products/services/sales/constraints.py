@@ -255,9 +255,11 @@ def describe(intent):
             phrases.append(phrase)
 
     if _is_set(intent.get("brand")) and intent.get("brand") != STORE_BRAND_EXCLUSIVE:
-        phrases.append(f"من {intent['brand']}")
+        phrases.append(f"من {intent['brand']} حصرياً" if intent.get("brand_strict") is True
+                       else f"بيفضل {intent['brand']}")
     elif intent.get("brand") == STORE_BRAND_EXCLUSIVE:
-        phrases.append("من تركيباتنا الخاصة")
+        phrases.append("من تركيباتنا الخاصة حصرياً" if intent.get("brand_strict") is True
+                       else "بيفضل تركيباتنا الخاصة")
 
     # Beside the positive brand rather than down with `avoid_notes`, so a reply reads the house
     # constraint as one thing. This is also what lands a refusal in `acknowledgement_hint`'s
@@ -312,6 +314,12 @@ def describe(intent):
 HARD_FILTER_KEYS = ("gender", "perfume_type", "season", "brand", "exclude_brands")
 
 
+def hard_filter_keys(intent):
+    """Applicable hard keys; keep the constant as the allowed legacy marker vocabulary."""
+    return tuple(key for key in HARD_FILTER_KEYS
+                 if key != "brand" or (intent or {}).get("brand_strict") is True)
+
+
 def describe_filters(intent):
     """Arabic phrases for only the constraints that can empty a search on their own.
 
@@ -338,7 +346,7 @@ def describe_filters(intent):
         if phrase:
             phrases.append(phrase)
 
-    brand = intent.get("brand")
+    brand = intent.get("brand") if intent.get("brand_strict") is True else None
     if _is_set(brand) and brand != STORE_BRAND_EXCLUSIVE:
         phrases.append(f"من {brand}")
     elif brand == STORE_BRAND_EXCLUSIVE:

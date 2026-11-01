@@ -48,6 +48,38 @@ STORE_BRAND_EXCLUSIVE = "STORE_BRAND_EXCLUSIVE"
 MAX_EXCLUDED_BRANDS = 5
 
 
+def _explicit_recommendation_updates(message):
+    """Ground clear generic daytime/performance requests even if extraction omits them.
+
+    The bounded vocabulary excludes perfume names, negations, quantities and fact
+    questions. Other messages continue through normal extraction unchanged.
+    """
+    from ..static_faq_service import normalize_arabic
+
+    text = re.sub(r"[،,.!?؟]", " ", normalize_arabic(message or ""))
+    words = text.split()
+    words = [word[1:] if word.startswith("و") and len(word) > 1 else word for word in words]
+    tokens = set(words)
+    request_words = {"رشحلي", "ترشحلي", "رشح", "ترشح", "عايز", "عاوز", "محتاج"}
+    daytime_words = {"نهار", "نهاري", "للنهار", "الصبح", "صباحي", "للصبح", "للصباح"}
+    projection_words = {"فواح", "فواحه"}
+    longevity_words = {"ثابت", "ثابته"}
+    vocabulary = request_words | daytime_words | projection_words | longevity_words | {
+        "طيب", "طب", "ايه", "ممكن", "لي", "ليا", "حاجه", "عطر", "برفان", "برفيوم", "ريحه",
+        "حلو", "حلوه", "كويس", "كويسه", "رجالي", "حريمي", "للجنسين", "و", "يكون", "تكون",
+    }
+    if not (tokens & request_words) or not tokens <= vocabulary:
+        return {}
+    updates = {}
+    if tokens & daytime_words:
+        updates["occasion"] = "daytime"
+    if tokens & projection_words:
+        updates["projection"] = "strong"
+    if tokens & longevity_words:
+        updates["longevity"] = "long-lasting"
+    return updates
+
+
 def _sanitize(intent):
     """Drop extracted values that are outside a closed vocabulary or contradict each other.
 
@@ -140,6 +172,7 @@ Return ONLY valid JSON.
 Schema:
 {{
     "brand": "brand name or null",
+    "brand_strict": true or false or null,
     "exclude_brands": ["brand1", "brand2"] or [] — HOUSES they said they do NOT want,
     "gender": "must be 'male', 'female', 'unisex', 'multiple', or null",
     "perfume_type": "must be 'oriental', 'western', 'niche', 'ultra_niche' or null",
@@ -176,7 +209,8 @@ Rules:
 - Exact ceilings (at most, cannot add one pound, حد أقصى) are strict; "around" is approximate.
 - Requested volume and bottle type are mandatory filters, not optional suggestions.
 - Bottle names: "زجاجة الستور الخاصة بينا", "زجاجة الستور", "زجاجة البراند", "زجاجة الاستور", and "زجاجة المحل" mean bottle_type="normal". "زجاجة اوريجنال", "زجاجة أوريجينال", and "زجاجة بشكل الأوريجينال" mean bottle_type="original". Selecting packaging alone never sets brand or exclude_brands to STORE_BRAND_EXCLUSIVE and never means the liquid is authentic. Preserve separately stated perfume/house preferences.
-- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "من عندكم", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. 🔴 And the mirror: if they REJECT only the store's exclusive creations and ask for designer-inspired blends instead (e.g. "مش عايز حاجة من تصميمكم", "بلاش البراند بتاعكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
+- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. Asking for the store's recommendation ("من اختيار الستور", "اختيار المتجر") or buying from this shop ("من عندكم") alone does NOT request the store's own brand. 🔴 And the mirror: if they REJECT only the store's exclusive creations and ask for designer-inspired blends instead (e.g. "مش عايز حاجة من تصميمكم", "بلاش البراند بتاعكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
+- Ordinary brand requests are preferences. Set brand_strict=true ONLY when they explicitly insist on that brand alone ("من ديور بس", "Perfamix only", "مش عايز غير شانيل"). "ديور بس يكون فريش" means Dior BUT fresh; it does not mean Dior only. Set brand_strict=false only for explicit openness to another brand; otherwise null. Never infer perfume_type='store_own_made' merely from a brand request.
 - If the user mentions a specific budget (e.g. "under 1000"), set max_price.
 - If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
 - If the user mentions a gender in Arabic (e.g. رجالي, حريمي), or uses terms like "bi" or "bisexual", map it exactly to 'male', 'female', or 'unisex' (map "bi" and "bisexual" to 'unisex').
@@ -218,6 +252,9 @@ Rules:
 - CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
 - 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, projection, or avoid_traits unless the user EXPLICITLY mentioned them. 'avoid_traits' is the most damaging field to guess, because it is scored as a penalty rather than a preference — a trait the customer never rejected actively pushes away perfumes that suit them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
 - STATE MANAGEMENT: Return only preference updates expressed in the latest message. The application retains earlier preferences. Use history to resolve references, alternatives, and answers to earlier questions; do not copy old criteria into unspecified fields. Explicit changes replace the previous value; recipient changes discard earlier requirements.
+- A standalone new scent target or purpose starts a new recommendation goal. Do not carry the old scent, occasion, or performance into it. Retain a comparison on a later occasion request only when explicitly connected ("شبهه وينفع للمسجد") or answering a question refining it. "وللمسجد ريحه نظافه ومريحه والخروجات الخفيفه" is a new casual-use request, not a continuation of an earlier Terre comparison.
+- "عايز حاجه شبهو عشان عندي منو" means an alternative resembling the perfume the customer just named/owns, NOT an older recommendation. Resolve the latest reference, including colloquial شبهو/منو. Never confuse an edition with its base.
+- Never emit occasion="multiple". Use a concrete occasion: الخروجات الخفيفة is casual; للمسجد alone is mosque, not daytime. Quiet/light/comfortable use asks for subdued projection (moderate or intimate), not stronger projection. For mosque plus casual use, occasion=casual and projection=moderate; notes contain only the fresh/clean qualities actually requested.
 """
 
     messages = [
@@ -282,9 +319,18 @@ Rules:
                 intent.pop(key)
         if intent.get("bottle_type") not in (None, "normal", "original"):
             intent.pop("bottle_type")
-        for key in ("wants_uncommon", "budget_strict", "reset_preferences"):
+        for key in ("wants_uncommon", "budget_strict", "brand_strict", "reset_preferences"):
             if intent.get(key) is not None and type(intent[key]) is not bool:
                 intent.pop(key)
-        return intent
+        from ..sales.brand_preference import sanitize_brand_intent
+        intent = sanitize_brand_intent(intent, message, store)
+        explicit = _explicit_recommendation_updates(message)
+        intent.update(explicit)
+        if explicit.get("projection"):
+            intent["avoid_traits"] = [trait for trait in (intent.get("avoid_traits") or [])
+                                      if str(trait).lower() not in _PROJECTION_AXIS]
+        from ..sales.request_updates import prepare_updates
+        return prepare_updates(intent, message, history, store)[0]
     except Exception:
-        return {}
+        from ..sales.request_updates import prepare_updates
+        return prepare_updates(_explicit_recommendation_updates(message), message, history, store)[0]

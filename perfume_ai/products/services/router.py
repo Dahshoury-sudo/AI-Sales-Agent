@@ -4,6 +4,7 @@ from .ai.recommendation import recommend
 from .search_service import search_products
 from .product_info import (
     get_product_info,
+    occasion_reference_requested,
     ABSENCE_DENIED_MARKER,
     NAME_UNREADABLE_MARKER,
 )
@@ -121,7 +122,7 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
 
 
 
-def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None):
+def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None, recommendation_candidates=None):
     """One targeted regeneration when a draft repeats a sentence we already said.
 
     `_is_repetitive` above compares whole replies at 0.7 and is the right guard for a branch that
@@ -147,6 +148,8 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     from products.models import Product
     catalogue = list(Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")) if store else []
     rows = [p for p in catalogue if p.name.casefold() in (context or "").casefold()]
+    # Reference rows supply comparison facts, not products to offer in recovery.
+    offer_rows = list(recommendation_candidates) if recommendation_candidates is not None else rows
     facts = product_claim_facts(rows)
     from products.models import StoreSettings, StaticFAQ
     sources = []
@@ -190,10 +193,10 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     if remaining or (issues and not (retried or "").strip()):
         if any(i.startswith("price:") for i in remaining or issues):
             ids = {q.get("product_id") for q in evidence.get("quotes", [])}
-            mentioned = sales_naming.names_in(reply, [p.name for p in rows])
-            selected = [p for p in rows if p.pk in ids or p.name in mentioned]
-            if not selected and len(rows) == 1 and not sales_naming.names_in(reply, [p.name for p in catalogue]):
-                selected = rows
+            mentioned = sales_naming.names_in(reply, [p.name for p in offer_rows])
+            selected = [p for p in offer_rows if p.pk in ids or p.name in mentioned]
+            if not selected and len(offer_rows) == 1 and not sales_naming.names_in(reply, [p.name for p in catalogue]):
+                selected = offer_rows
             quotes = product_quotes(selected)
             variant_ids = {q.get("variant_id") for q in evidence.get("quotes", [])}
             if variant_ids:
@@ -214,9 +217,11 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             return "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟", context, repeats
         if any(i.startswith("authenticity:") for i in remaining or issues):
             return sales_constraints.formulation_reply(), context, repeats
-        mentioned = sales_naming.names_in(reply, [p.name for p in rows])
-        by_name = {p.name: p for p in rows}
+        mentioned = sales_naming.names_in(reply, [p.name for p in offer_rows])
+        by_name = {p.name: p for p in offer_rows}
         selected = [by_name[name] for name in mentioned[:2]]
+        if (recommendation_intent or {}).get("recommendation_mode") == "new_goal":
+            selected = offer_rows[:2]
         fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
         if fallback and any(i.startswith("popularity:") for i in remaining or issues):
             fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
@@ -667,6 +672,14 @@ def route(message, history=None, store=None, conversation=None):
         request_type = "product_info"
     if accepted_prices and request_type not in ("order_cancel", "handoff", "promotion"):
         request_type = "product_info"
+    # A bounded pointer names an earlier offer, even when "give me" makes the
+    # classifier choose checkout. Product/size/quantity requests do not match.
+    if request_type in ("recommendation", "order", "product_info", "faq") and occasion_reference_requested(message):
+        request_type = "product_info"
+    from .sales.request_updates import request_mode
+    recommendation_mode = request_mode(message, history, store)
+    if recommendation_mode and request_type in ("recommendation", "product_info", "faq", "order", "out_of_domain"):
+        request_type = "recommendation"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message):
         reference = numeric_reference(message, store, conversation, history)
         if reference.status != "no_match":
@@ -699,7 +712,7 @@ def route(message, history=None, store=None, conversation=None):
     # Placed above the objection block rather than below it so a corrected turn stays
     # objection-eligible — `product_info` is in `OBJECTION_ELIGIBLE` and `out_of_domain` is not, so a
     # customer grumbling about Khamrah's price reaches the playbook only on this side of it.
-    if request_type in _CATALOGUE_CORRECTABLE and not sales_naming.describes_rather_than_names(message):
+    if not recommendation_mode and request_type in _CATALOGUE_CORRECTABLE and not sales_naming.describes_rather_than_names(message):
         # Deterministic: no model call, and the one query `phonetic_ranking` makes. Abstains on
         # genuine browse requests, on spans carrying Latin characters, and on names we do not stock
         # — measured at 0 false positives over all 2961 stored customer messages
@@ -748,7 +761,7 @@ def route(message, history=None, store=None, conversation=None):
     semantic_rep = _detect_semantic_repetition(history)
     text_rep = _count_recent_repetitions(history)
     
-    if text_rep >= 3 or semantic_rep >= 3:
+    if request_type != "recommendation" and (text_rep >= 3 or semantic_rep >= 3):
         # Bot has been repeating itself — force a conversation redirect
         # Fetch real products from DB to prevent hallucination when suggesting alternatives.
         # Deterministic rather than order_by('?'), so a repeated conversation can be
@@ -810,6 +823,10 @@ def route(message, history=None, store=None, conversation=None):
         )
         if intent.get("requires_original_liquid"):
             return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
+        if intent.get("similarity_needs_reference"):
+            candidates = intent.get("similarity_candidates") or []
+            question = "تقصد عطر شبه أنهي واحد: " + " ولا ".join(candidates) + "؟" if candidates else "تقصد عطر شبه أنهي عطر أو إصدار؟"
+            return question, "SIMILARITY_NEEDS_REFERENCE"
         
         # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":
@@ -948,7 +965,7 @@ def route(message, history=None, store=None, conversation=None):
         # Subtracted here rather than inside `under_discussion`, which `offered_in_order` also reads
         # to resolve a reference: "بكام Bloom؟" after moving past Bloom must still place Bloom.
         keep = keep - sales_described.moved_past(conversation, store)
-        if sales_constraints.preference_reversal(message):
+        if sales_constraints.preference_reversal(message) or intent.get("recommendation_mode") == "new_goal":
             keep = set()
 
         # And what he has already SEEN, over the whole conversation rather than the two-reply
@@ -988,7 +1005,12 @@ def route(message, history=None, store=None, conversation=None):
         response, context, _ = _rephrased(
             response, context, history, store, _recommend_again,
             recommendation_intent=intent,
+            recommendation_candidates=list(results["products"]) or list(results.get("alternatives") or ()),
         )
+        # Price/factual recovery can replace the generated text entirely.
+        from .sales.brand_response import disclose_brands
+        candidates = list(results["products"]) or list(results.get("alternatives") or ())
+        response = disclose_brands(response, candidates, intent, store)
 
         # A customer being shown options for the first time has not chosen anything yet, so
         # this turn has not earned "تحب أساعدك في الطلب؟".

@@ -248,6 +248,7 @@ PERSISTED_PREFERENCE_KEYS = (
     "max_price",
     "perfume_type",
     "brand",
+    "brand_strict",
     "season",
     "occasion",
     "notes",
@@ -376,6 +377,9 @@ def _relaxed_keys(message, pending=None):
     from .static_faq_service import normalize_arabic
 
     normalized = normalize_arabic(message)
+    from .sales.brand_preference import rejects_other_brands
+    if rejects_other_brands(message):
+        return frozenset()
     if any(normalize_arabic(marker) in normalized for marker in _BRAND_OPEN_MARKERS):
         return frozenset({"brand", "exclude_brands"})
     if any(normalize_arabic(marker) in normalized for marker in _BRAND_RELAX_MARKERS):
@@ -477,12 +481,26 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     answer; the unambiguous phrasings need no such help.
     """
     merged = dict(intent or {})
+    from .sales.brand_preference import sanitize_brand_intent, apply_strictness, allows_other_brands
+    merged = sanitize_brand_intent(merged, message, store or getattr(conversation, "store", None))
+    fresh_brand_intent = dict(merged)
     from .sales.constraints import explicit_updates
     merged.update(explicit_updates(message))
+    from .sales.request_updates import prepare_updates
+    merged, replaced = prepare_updates(merged, message, history, store or getattr(conversation, "store", None))
+    if replaced and not merged.get("similar_to"):
+        from .sales.reference import similarity_requested
+        if not similarity_requested(message):
+            merged["clear_preferences"] = sorted(set(merged.get("clear_preferences") or ())
+                                                  | {"similar_to", "similar_to_notes"})
     from .sales.reference import prepare_similarity, STATE_KEY
     prepared = prepare_similarity(conversation, merged, message, history, store)
     merged, saved = prepared.intent, prepared.preferences
+    saved = {key: value for key, value in saved.items() if key not in replaced}
+    if str(saved.get("occasion") or "").lower() == "multiple":
+        saved.pop("occasion", None)
     if conversation is None:
+        apply_strictness(merged, saved, fresh_brand_intent, message, history=history, store=store)
         return merged
 
     if merged.get("reset_preferences") is True:
@@ -503,6 +521,10 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     # value arrives on the fresh intent too, and a fix that only declined to restore it from
     # `saved` would have left 932's loop running exactly as it was.
     relaxed = set(_relaxed_keys(message, pending)) | _withdrawn_by_exclusion(merged, saved)
+    if allows_other_brands(message) and "exclude_brands" not in relaxed:
+        # "ممكن كمان من براند تاني" opens the choice while retaining a soft
+        # preference. A bare switch or "أي براند" still withdraws the old house.
+        relaxed.discard("brand")
     for key in tuple(relaxed):
         # An override is not a withdrawal. "براند تاني زي ديور" both accepts the offer and names
         # the replacement, and the named brand has to survive — so relax only when the extractor
@@ -544,6 +566,8 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
             continue
         if not _is_set(merged.get(key)) and _is_set(saved.get(key)):
             merged[key] = saved[key]
+
+    apply_strictness(merged, saved, fresh_brand_intent, message, conversation, history, store)
 
     to_save = {
         key: merged[key] for key in PERSISTED_PREFERENCE_KEYS if _is_set(merged.get(key))

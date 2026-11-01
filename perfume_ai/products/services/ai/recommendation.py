@@ -6,6 +6,7 @@ from ..bottle_wording import bottle_label
 from ..product_formatting import (format_products, is_variant_available, factual_description,
     ProductQuote, product_quotes, render_quotes, quote_context, append_quotation, QUOTE_PROSE_INSTRUCTION)
 from ..sales import described
+from ..sales import brand_response
 from ..sales.constraints import acknowledgement_hint, describe_filters
 from ..sales.ranking import reasons_note
 from ..sales.value import budget_tier
@@ -40,7 +41,7 @@ def recommendation_fit(products, intent):
                     reasons.append(reason)
         if reasons:
             qualification = "، بس مش بيحقق كل شروطك" if entry.mismatches else ""
-            lines.append(f"{product.name} مناسب {' و'.join(reasons[:2])}{qualification}.")
+            lines.append(f"{product.name} ممكن يناسبك لأنه {' و'.join(reasons[:2])}{qualification}.")
         elif facts := factual_description(product):
             lines.append(f"{product.name}: {facts}.")
     return "\n".join(lines)
@@ -86,6 +87,7 @@ def _constrained_recommendation(products, intent, message="", search=None):
     if total_scope:
         lines.append(f"إجمالي الـ{count} زجاجات: {sum(v.price for _, v in selected):g} جنيه.")
     reply = "\n\n".join(lines)
+    reply = brand_response.disclose_brands(reply, [p for p, _ in selected], intent)
     context = quote_context(reply, [ProductQuote.from_variant(v) for _, v in selected], rendered=reply)
     return reply, context
 
@@ -157,9 +159,8 @@ def _format_products(products, max_price=None, ranked=None, brief_for=(),
 def _similarity_instruction(search):
     """Tell the model how close we actually got, when similarity was asked for.
 
-    This is the honesty path for "عايز حاجة شبه X". Presenting the nearest perfume as a
-    match is exactly what produced Fahrenheit as an answer for Sauvage, so when nothing
-    reaches the close band the reply has to say so.
+    Lead with useful alternatives while keeping scent claims within the evidence.
+    A weak match does not require a no-match announcement to the customer.
     """
     summary = (search or {}).get("similarity")
     if not summary:
@@ -175,13 +176,18 @@ def _similarity_instruction(search):
         )
 
     return (
-        f"\n🔎 العميل طلب حاجة شبه {name}، ومفيش عندنا عطر قريب منه فعلاً.\n"
-        f"- 🔴 قوله كده بصراحة: مفيش حاجة قريبة من {name} بالظبط عندنا.\n"
-        f"- ⚠️ ده استثناء من قاعدة \"ممنوع تقول مفيش\": القاعدة دي عن التوافر، وهنا "
-        f"الكلام عن التشابه. مسموح — بل لازم — تقول إن مفيش حاجة شبهه، وبعدها تكمّل "
-        f"وتعرض المتاح عادي.\n"
-        f"- اعرض أقرب المتاح كـ\"مختلف بس ممكن يعجبك\"، ووضّح الفرق في جملة.\n"
-        f"- ❌ ممنوع تقول عن أي عطر إنه شبهه أو بديله أو نفس ريحته.\n"
+        f"\n🔎 العميل طلب حاجة شبه {name}؛ درجة التشابه المسجلة لا تدعم وصف البدائل كعطور مشابهة.\n"
+        "- ابدأ مباشرة بترشيح أفضل عطر أو عطرين من القائمة يناسبوا طلبه الحالي، "
+        "واشرح الصفات المدعومة والفرق المهم عن المرجع في جملة قصيرة.\n"
+        "- اعرض البدائل فوراً؛ لا تعلن عدم وجود عطر مشابه، ولا تسأل العميل الأول لو يحب بدائل.\n"
+        "- ❌ ممنوع تقول عن أي عطر إنه شبهه أو نفس ريحته أو نفس نوتاته أو بديل مطابق، "
+        "وممنوع تذكر نسبة مئوية للتشابه. اشتراك نوته لوحده مش دليل على نفس الطابع.\n"
+        "- الاشتراك المحدود في النوتات مش ترشيح بالتشابه: متقولش أقرب عطرين في النوتات. "
+        "ابدأ باسم الاختيار وصفاته، ووضح طابعه المختلف عن المرجع من النوتات المسجلة.\n"
+        "- قارن الثبات والفوحان كل واحد لوحده من بيانات الطرفين؛ متقولش أخف أو أقوى "
+        "لو القيم متساوية أو مش مسجلة. اشرح الفرق بكلام طبيعي من غير نسخ عناوين التحذير الداخلية.\n"
+        "- متعممش صفة على الاختيارين لو بياناتهم مختلفة: لو واحد مسائي قوي والتاني نهاري متوسط، "
+        "متقولش الاتنين شتويين أو فوحانهم قوي.\n"
     )
 
 
@@ -345,7 +351,7 @@ def _performance_note(products, intent):
     Computed here rather than asked for in the persona because which product is first is a fact
     about the list we just built, the same reason _in_budget_note exists.
     """
-    axes = [key for key in ("longevity", "projection") if intent.get(key)]
+    axes = [key for key in ("longevity", "projection") if (intent or {}).get(key)]
     if not axes:
         return ""
 
@@ -666,7 +672,14 @@ def recommend(
     # opening identically, because nothing tracked this.
     seen = described.already_described(history, store)
     follow_up = described.is_follow_up(message, history, seen)
-    repeat_note = described.repeat_ban_hint(seen, follow_up)
+    keeping = (search or {}).get("keeping") or ()
+    from ..sales import recommendation_response
+    new_goal = (intent or {}).get("recommendation_mode") == "new_goal"
+    if new_goal or brand_response.leads_outside_discussion(candidates, intent, keeping):
+        follow_up = False
+        keeping = ()
+    repeat_note = recommendation_response.instruction(intent) if new_goal else described.repeat_ban_hint(seen, follow_up)
+    brand_note = brand_response.instruction(candidates, intent, store)
     # Whether an empty search means "used up" or "never matched" — a fact `search_products`
     # computes from the queryset, because `seen` answered a different question and the
     # no-match branch was reading it as though it answered this one. See
@@ -678,7 +691,7 @@ def recommend(
     # stops the model presenting a fresh pair alongside it. `converge` is the same follow_up
     # signal, so on an answer to our own question the reply names exactly one.
     continuity = described.continuity_note(
-        (search or {}).get("keeping") or (),
+        keeping,
         (search or {}).get("dropped") or (),
         converge=follow_up,
     )
@@ -744,7 +757,7 @@ def recommend(
 {context}
 
 ═══ تعليمات الرد ═══
-1. اختر أفضل 1-2 منتج بيطابق شروط العميل كلها مع بعض. لو مفيش منتج بيطابق كل الشروط، ماترشحوش. 🔴 الترتيب اللي فوق مرتّب بالمطابقة لطلب العميل، فابدأ من أوله. **الاختيار بيكون بالمطابقة بس — مش بسطر 💡.** سطر "💡 Value Pick" / "💡 اقتراح حجم" بيقولك أنهي *حجم* تبدأ بيه جوه العطر بعد ما تختاره، وعطر مالوش سطر 💡 مش أقل مناسبة — ده بس معناه إن أحجامه مفيهاش فرق في سعر الملي. ❌ ممنوع تنزل تحت في الترتيب وتختار عطر أقل مطابقة عشان هو اللي عليه سطر 💡.
+1. ابدأ مباشرة بأفضل 1-2 منتج يناسب طلب العميل الحالي، مع توضيح الفروق المسجلة في سطر "⚠️ مش مطابق في". لو طلب النهار، قدّم المناسب للنهار حتى لو فوحانه أهدى، ووضّح فرق الأداء؛ متقدّمش عطر مسائي عليه عشان فوحانه أقوى أو عشان رشحته قبل كده. 🔴 الترتيب اللي فوق مرتّب بالمطابقة لطلب العميل، فابدأ من أوله. **الاختيار بيكون بالمطابقة بس — مش بسطر 💡.** سطر "💡 Value Pick" / "💡 اقتراح حجم" بيقولك أنهي *حجم* تبدأ بيه جوه العطر بعد ما تختاره، وعطر مالوش سطر 💡 مش أقل مناسبة — ده بس معناه إن أحجامه مفيهاش فرق في سعر الملي. ❌ ممنوع تنزل تحت في الترتيب وتختار عطر أقل مطابقة عشان هو اللي عليه سطر 💡.
 2. 🔴 لو رشحت عطرين، لازم تقارن بينهم في جملة واحدة سريعة تساعده يختار، **وترجّح واحد بالاسم** وتقول ليه: "أنا أرشحلك كذا أكتر لطلبك 👌". مثال: "Ambero أنسب لو بتحب التوابل والريحة الدافية، أما Afnan 9PM فهو أحلى ومسَكّر أكتر وفيه طابع فاكهي." ❌ ممنوع تسيبه بين خيارين من غير ترجيح — ده بيرجّع القرار لعميل سألك عشان تساعده يقرر، ومهم بشكل خاص لو الطلب هدية أو لو هو محتار.
 3. {price_instruction}
 4. {gender_instruction}
@@ -766,7 +779,7 @@ def recommend(
         user_content = f"""
 ═══ طلب العميل ═══
 {message}
-{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}
+{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}{_performance_note(alternatives, intent)}
 ═══ ملحوظة مهمة ═══
 لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
 
@@ -774,7 +787,7 @@ def recommend(
 
 ═══ تعليمات الرد ═══
 1. ❌ ممنوع تبدأ بـ"للأسف" أو تسيب العميل بإيد فاضية. البائع الماهر يركز على بيع المتاح.
-2. ادخل في الموضوع فوراً ورشّح أفضل 1-2 من القائمة.
+2. ادخل في الموضوع فوراً ورشّح أفضل 1-2 من القائمة بالترتيب. لو طلب النهار، قدّم المناسب للنهار حتى لو فوحانه أهدى، ووضّح فرق الأداء؛ متقدّمش عطر مسائي عليه عشان فوحانه أقوى أو عشان رشحته قبل كده.
 3. 🔴 لكن ممنوع توهمه إنهم بيطابقوا كل شروطه. سطر "⚠️ مش مطابق في" في بيانات كل عطر بيقولك الشرط اللي مش متحقق — لازم تقول الفرق ده بصراحة في نص جملة (مثال: "ثباته 8 ساعات، أقل من اللي طلبته، بس هو أقرب حاجة عندنا"). ❌ ممنوع تقول إن الثبات أو الفوحان "مناسب لطلبك" لو مكتوب إنه مش مطابق.
 4. 🔴 لو شرط من شروطه مستحيل يتحقق مع الباقي (زي ثبات يومين بميزانية صغيرة)، قوله كده بصراحة وقوله أنهي شرط لازم يتنازل عنه شوية — ده بيبني ثقة أكتر من إنك تبيعه حاجة وهو متوقع حاجة تانية.
 5. 🔴 لو رشحت عطرين، قارن بينهم في جملة واحدة سريعة تساعده يختار.
@@ -852,10 +865,37 @@ def recommend(
 
     messages.append({
         "role": "user",
-        "content": user_content + (QUOTE_PROSE_INSTRUCTION if max_price else "") + (repeat_hint or ""),
+        "content": user_content + brand_note + (QUOTE_PROSE_INSTRUCTION if max_price else "") + (repeat_hint or ""),
     })
 
     response = chat(messages, profile="converse")
+    summary = (search or {}).get("similarity") or {}
+    def recommendation_issues(draft):
+        issues = brand_response.response_issues(draft, candidates, intent, search, store)
+        issues += recommendation_response.response_issues(draft, candidates, intent, search)
+        if summary and not summary.get("has_close_match") and candidates:
+            from ..sales.similarity import alternative_wording_issues
+            issues += alternative_wording_issues(draft)
+        return issues
+
+    issues = recommendation_issues(response)
+    if issues:
+        correction = (
+            "صحح الرد: " + "؛ ".join(issues) + ". ابدأ باسم عطر أو عطرين من القائمة "
+            "وصفاتهم المسجلة. وضح براند البديل المختلف والسبب المدعوم لاختياره؛ "
+            "ممنوع ادعاء تشابه غير مدعوم أو إعلان عدم وجود مشابه."
+        )
+        try:
+            response = chat(messages + [{"role": "assistant", "content": response},
+                                        {"role": "user", "content": correction}], profile="converse")
+        except Exception:
+            response = ""
+        if not (response or "").strip() or recommendation_issues(response):
+            response = "\n".join(
+                f"{product.name}: {factual_description(product) or 'اختيار متاح'}."
+                for product in candidates[:2]
+            )
+    response = brand_response.disclose_brands(response, candidates, intent, store)
 
     # Record which perfumes this turn's message asked us to move past, on whichever of the four
     # branches above answered it. `intent["exclude_names"]` is per-request and `ai/intent.py` only

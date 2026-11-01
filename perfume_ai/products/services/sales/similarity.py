@@ -15,13 +15,50 @@ Two rules this module exists to enforce:
 
   * The numeric score never reaches a prompt. Handing a model 0.62 is how "95% similar
     to the original" gets born. Callers get a band and the literal shared note names.
-  * Below LOOSE there is no close match, and saying so is the correct answer. The
+  * Below CLOSE there is no close match; offer alternatives without claiming similarity. The
     honesty path is a return value, not an afterthought.
 """
 
 from dataclasses import dataclass
+import re
 
 from .notes import families, parse_notes
+
+
+def claims_unsupported_similarity(reply):
+    """Detect lookalike wording, allowing neutral alternatives and shared notes.
+
+    The caller must first establish that the candidate set has no close match.
+    Negation applies to its clause, not to an unrelated disclaimer elsewhere.
+    """
+    from ..static_faq_service import normalize_arabic
+
+    text = normalize_arabic(reply or "")
+    for clause in re.split(r"[.!؟?\n؛;]|،|\b(?:بس|لكن|but)\b", text):
+        claim = re.search(
+            r"شبه|ريحته[ام]?\s+زي\s|نفس\s+(?:الريح|ريح|الجو|النوتات|نوتات)|"
+            r"قريب\s+(?:من(?!\s+(?:ميزان|السعر))|جدا)|بديل\s+(?:مشابه|مطابق)|"
+            r"اقرب[^.!؟?\n]{0,55}(?:طابع|نوتات|ريحه)|"
+            r"same\s+(?:scent|smell|notes)|smells?\s+like", clause, re.I,
+        )
+        if claim and not re.search(
+            r"مفيش|مش\s+(?:لاقي|نفس|قريب|موجود|شبه)|ليس|لا\s+يشبه|"
+            r"\b(?:not|no)\b", clause[:claim.end()], re.I,
+        ):
+            return True
+    return False
+
+
+def alternative_wording_issues(reply):
+    """Reasons to regenerate a weak-match recommendation before it is returned."""
+    from ..static_faq_service import normalize_arabic
+
+    issues = []
+    if claims_unsupported_similarity(reply):
+        issues.append("ادعاء تشابه غير مدعوم بالنوتات")
+    if re.search(r"(?:مفيش|مش\s+(?:لاقي|موجود))[^.!؟?\n]{0,55}(?:شبه|قريب)", normalize_arabic(reply or "")):
+        issues.append("إعلان عدم وجود مشابه بدل عرض البدائل مباشرة")
+    return issues
 
 # Base notes are the drydown — what someone means when they say what a perfume smells
 # like. Top notes are the first ten minutes. Weighting them equally made two perfumes
@@ -296,13 +333,13 @@ def describe(reference, result):
     if reference is None or result.band == "none":
         return ""
 
-    strength = "قريب فعلاً من" if result.is_close else "فيه شبه مع"
+    strength = "قريب فعلاً من" if result.is_close else "اشتراك محدود في النوتات مع"
     parts = [f"{strength} {reference.name}"]
 
     if result.shared_notes:
         parts.append("مشترك في: " + "، ".join(result.shared_notes[:5]))
     elif result.shared_accords:
-        parts.append("نفس عائلة الريحة: " + "، ".join(result.shared_accords[:3]))
+        parts.append("عائلات مشتركة: " + "، ".join(result.shared_accords[:3]))
 
     if result.performance == "stronger":
         parts.append("بس أقوى منه")

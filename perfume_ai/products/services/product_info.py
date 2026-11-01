@@ -180,6 +180,71 @@ def _products_named(names, store):
     return [by_name[name] for name in names if name in by_name]
 
 
+def occasion_reference_requested(message):
+    """The occasion in a bounded pointer such as "واعطيني العطر اليومي".
+
+    A description of an earlier suggestion is not a perfume name. Keep the
+    grammar narrow so a new request ("عايز عطر يومي") or a named question
+    ("Elite ينفع للنهار؟") still follows its normal path.
+    """
+    text = " ".join(re.sub(r"[^\w\s]", " ", normalize_arabic(message or "")).split())
+    arabic_prefix = r"(?:(?:و)?(?:طيب|طب|تمام|عايز|عاوز|محتاج|ممكن|اعطيني|اديني|هات|هاتلي|قولي|بكام|سعر|وريني)\s+)*"
+    arabic_suffix = r"(?:\s+(?:بكام|كام|سعره|ايه|ده|لو سمحت|من فضلك))*"
+    for occasion, arabic, english in (
+        ("daily", r"(?:العطر|البرفان|البرفيوم)\s+(?:اليومي|النهاري|الصباحي)|(?:اللي|الواحد)\s+(?:للنهار|للصباح|للاستخدام اليومي)",
+         r"the (?:daily|daytime|morning) (?:perfume|fragrance|one)"),
+        ("evening", r"(?:العطر|البرفان|البرفيوم)\s+(?:المسائي|الليلي)|(?:اللي|الواحد)\s+(?:للسهره|للسهرات|بالليل)",
+         r"the (?:evening|nighttime) (?:perfume|fragrance|one)"),
+    ):
+        if re.fullmatch(arabic_prefix + "(?:" + arabic + ")" + arabic_suffix, text):
+            return occasion
+        if re.fullmatch(r"(?:(?:and |please )?(?:give me |show me |how much is |what is )?)"
+                        + english + r"(?: please)?", text):
+            return occasion
+    return ""
+
+
+def _occasion_referents(occasion, store, conversation, history):
+    """The newest actual offer containing a perfume suited to the pointer.
+
+    Search past intervening evening offers and price questions, using the
+    recorded occasion rather than the model's description of the perfume.
+    """
+    if store is None or (conversation is not None and conversation.store_id != store.pk):
+        return []
+    from products.models import Product
+    from .product_formatting import is_variant_available
+    from .sales import naming, ranking
+
+    catalogue = list(Product.objects.filter(store=store, is_active=True)
+                     .select_related("brand").prefetch_related("variants"))
+    suitable = {
+        product.name: product for product in catalogue
+        if ranking._occasion_verdict(product.occasion, occasion)[0] == ranking.MATCH
+        and any(is_variant_available(variant) for variant in product.variants.all())
+    }
+    if not suitable:
+        return []
+    names = [product.name for product in catalogue]
+    if conversation is not None:
+        rows = conversation.messages.filter(role="assistant", delivery_status="sent")\
+            .order_by("-created_at", "-pk").values("content", "internal_context").iterator()
+    else:
+        rows = (row for row in reversed(history or ()) if row.get("role") == "assistant"
+                and row.get("delivery_status", "sent") == "sent")
+    for row in rows:
+        if conversation is not None or row.get("internal_context"):
+            offered = sales_described.supported_offered_names(
+                row.get("content", ""), row.get("internal_context", ""), names,
+            )
+        else:
+            offered = naming.names_in(row.get("content", ""), names)
+        matches = [suitable[name] for name in offered if name in suitable]
+        if matches:
+            return matches
+    return []
+
+
 # Vocabulary that makes a message a question about whether we *stock* something, and vocabulary
 # that makes it a question about price or size. A message carrying the first and none of the second
 # is asking one thing only, and answering it with a price list is answering something else.
@@ -718,6 +783,17 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     if numeric.product is not None and not numeric.product.is_active:
         return f"{numeric.product.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
     products = [numeric.product] if numeric.product is not None else _named_in_message(message, store)
+    occasion_reference = occasion_reference_requested(message) if not products else ""
+    if occasion_reference:
+        products = _occasion_referents(occasion_reference, store, conversation, history)
+        occasion_label = "للنهار" if occasion_reference == "daily" else "للسهرة"
+        if not products:
+            return (f"تقصد أنهي عطر {occasion_label}؟ ممكن تكتب اسمه؟",
+                    "OCCASION_REFERENCE_UNRESOLVED")
+        if len(products) > 1:
+            choices = "، ".join(product.name for product in products)
+            return (f"{occasion_label} كنا اتكلمنا عن {choices}. تقصد أنهي واحد؟",
+                    "OCCASION_REFERENCE_UNRESOLVED\n" + format_products(products))
     numeric_absent_name = ""
     if not products and "9pm" in naming.tokens(message):
         from products.models import Product
@@ -1318,6 +1394,12 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # instruction and not a separate branch. Without it the reply to a compliment is a price list.
     if praised:
         instructions += appreciation.RULES
+    if occasion_reference:
+        instructions += (
+            f"\nالعميل بيشير للعطر اللي اتكلمنا عنه {occasion_label}: {products[0].name}. "
+            "ده المتوافق مع المناسبة المسجلة في بياناته. جاوبه عنه، "
+            "ومتبدلوش بعطر اتذكر بعده لمناسبة مختلفة.\n"
+        )
 
     if quoting:
         instructions += QUOTE_PROSE_INSTRUCTION

@@ -97,8 +97,18 @@ def is_follow_up(message, history=None, described=()):
     if not normalized:
         return False
 
+    from .reference import similarity_requested
+    if similarity_requested(message):
+        return False
+    from .request_updates import request_mode
+    if request_mode(message, history) == "new_goal":
+        return False
+
     if any(normalize_arabic(marker) in normalized for marker in _CHOOSE_MARKERS):
         return True
+
+    if re.search(r"(?<!\w)(?:رشح(?:لي)?|ترشح(?:لي)?|recommend|suggest)(?!\w)", normalized):
+        return False
 
     return (
         _asked_a_question(history)
@@ -579,10 +589,10 @@ def relax_offer_block(intent):
 
     Returns "" when no hard filter is set, so the caller can write it unconditionally.
     """
-    from .constraints import HARD_FILTER_KEYS
+    from .constraints import hard_filter_keys
 
     pairs = []
-    for key in HARD_FILTER_KEYS:
+    for key in hard_filter_keys(intent):
         value = (intent or {}).get(key)
         if value in (None, "", [], {}, ()) or value is False:
             continue

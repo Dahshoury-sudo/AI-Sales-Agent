@@ -1,0 +1,1440 @@
+{
+  "database": "isolated in-memory SQLite",
+  "catalogue_products": 251,
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "setup": "Original preceding history and saved public prompt settings. Seeds reconstruct earlier requests and intentionally retain legacy STORE_BRAND_EXCLUSIVE without brand_strict; they are not historical preference snapshots.",
+  "source_message_ids": [
+    7585,
+    7591
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "case": "similarity",
+      "source_message_id": 7585,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Bleu de Chanel",
+          "Wanted by Night",
+          "Black Orchid",
+          "Pi",
+          "Allure Homme Sport",
+          "Black XS",
+          "Euphoria Intense",
+          "Pure XS",
+          "Gentleman",
+          "Bmw",
+          "K By Dolce",
+          "Bad Boy"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          36,
+          17,
+          44,
+          32,
+          22,
+          7,
+          28,
+          11,
+          61,
+          6,
+          2,
+          30
+        ],
+        "brand_strict": false,
+        "keeping": [],
+        "dropped": {
+          "Bonded": "مش قريب كفاية من Terre d'Hermes عشان نرشحه كبديل مشابه"
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "candidate_facts": [
+          {
+            "name": "Bleu de Chanel",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Wanted by Night",
+            "brand": "Azzaro",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Orchid",
+            "brand": "Tom Ford",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "10+ hours"
+          },
+          {
+            "name": "Pi",
+            "brand": "Givenchy",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Allure Homme Sport",
+            "brand": "Chanel",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Euphoria Intense",
+            "brand": "Calvin Klein",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Pure XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Gentleman",
+            "brand": "Givenchy",
+            "occasion": "Formal",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bmw",
+            "brand": "Bmw",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "K By Dolce",
+            "brand": "Dolce & Gabbana",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Bad Boy",
+            "brand": "Carolina Herrera",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "أنسب اختيار ليك هو Bleu de Chanel من Chanel، ريحته فريش وحيوية بنوتات حمضيات وخشب، مناسبة للاستخدام اليومي والمكاتب، وثباته حوالي 8 ساعات وفوحانه متوسط. \nكمان ممكن تجرب Wanted by Night من Azzaro، ريحته أقوى وفواح أكثر، مع طابع توابل وخشب مناسب للسهرات في الخريف والشتا. \n\nأنا أرشحلك Bleu de Chanel أكتر لأنه أنسب للاستخدام النهاري والجو المكتبي، أما Wanted by Night فهو خيار مسائي أقوى.\n\nBleu de Chanel من Chanel، وWanted by Night من Azzaro، براندات تانية غير Perfamix.",
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، cedar، patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Wanted by Night\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Wanted — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Mandarin Orange, Lavender, Lemon\nMiddle Notes: Fruity Notes, Incense, Red Cedar, Cumin\nBase Notes: Tobacco, Vanilla, Cedar, Leather, Benzoin, Iso E Super, Cypress, Patchouli\nDescription: Dark spicy-woody scent, bold and made for evenings.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، benzoin، patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Orchid\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon\nMiddle Notes: Orchid, Lotus Wood, Fruity Notes, Spices\nBase Notes: Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam\nDescription: Dark, rich floral-woody scent with a luxurious feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pi\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Tarragon, Rosemary, Basil\nMiddle Notes: Anise, Neroli, Geranium, Lily of the Valley\nBase Notes: Vanilla, Almond, Tonka Bean, Benzoin, Cedar\nDescription: Fresh woody-aromatic scent with a smooth classic feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، cedar. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Allure Homme Sport\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Sea Notes, Aldehydes, Blood Mandarin\nMiddle Notes: Pepper, Neroli, Cedar\nBase Notes: Tonka Bean, Vanilla, White Musk, Amber, Elemi Resin, Vetiver\nDescription: Fresh citrus-woody scent, sporty and energetic.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، pepper، cedar، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Sage\nMiddle Notes: Praline, Cinnamon, Tolu Balsam, Black Cardamom\nBase Notes: Brazilian Rosewood, Patchouli, Black Amber\nDescription: Sweet spicy-woody scent with a bold, energetic edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Euphoria Intense\nBrand: Calvin Klein\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Calvin Klein) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Euphoria، Euphoria Men — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Ginger, Pepper\nMiddle Notes: Black Basil, Sage, Vetiver, Cedar\nBase Notes: Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh\nDescription: Warm spicy-woody scent with a deep, sensual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver، cedar، pepper. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\nDescription: Fresh spicy-woody scent with a clean modern feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، patchouli، grapefruit — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Gentleman\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Black Pepper, Lavender, Bergamot\nMiddle Notes: Orris, Cloves, Cinnamon\nBase Notes: Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli\nDescription: Smooth woody-iris scent with a refined, elegant character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bad Boy\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, White Pepper, Bergamot\nMiddle Notes: Sage, Cedar\nBase Notes: Tonka Bean, Cocoa, Amber\nDescription: Bold spicy-woody scent with a sweet, powerful edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Terre d'Hermes\n",
+      "selected_products": [
+        {
+          "name": "Bleu de Chanel",
+          "brand": "Chanel",
+          "occasion": "Office",
+          "projection": "Moderate",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Wanted by Night",
+          "brand": "Azzaro",
+          "occasion": "Evening",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      },
+      "claim_issues": []
+    },
+    {
+      "run": 1,
+      "case": "daytime",
+      "source_message_id": 7591,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "occasion": "day",
+        "projection": "moderate"
+      },
+      "errors": [
+        "Requested-brand product leads despite better-fitting other-brand options",
+        "Lead recommendation missed available strong daytime projection"
+      ],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": "male",
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "occasion": "day",
+        "projection": "moderate",
+        "brand_strict": false
+      },
+      "search": {
+        "products": [
+          "Bonded",
+          "Black Code",
+          "Zlatan",
+          "Aqva Pour Homme",
+          "Sport",
+          "K By Dolce",
+          "Bmw",
+          "Acqua di Gio",
+          "For Him",
+          "Tommy",
+          "Pasha de Cartier",
+          "Egosta Platinum"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          69,
+          20,
+          39,
+          2,
+          6,
+          21,
+          8,
+          50,
+          31,
+          41
+        ],
+        "brand_strict": false,
+        "keeping": [
+          "Black Code",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مناسبته المسجلة Evening، مش اللي قاله",
+          "Dark Aura": "مناسبته المسجلة Evening، مش اللي قاله"
+        },
+        "similarity": null,
+        "candidate_facts": [
+          {
+            "name": "Bonded",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Code",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Zlatan",
+            "brand": "Zlatan",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Aqva Pour Homme",
+            "brand": "Bvlgari",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Sport",
+            "brand": "Puma",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "K By Dolce",
+            "brand": "Dolce & Gabbana",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Bmw",
+            "brand": "Bmw",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Acqua di Gio",
+            "brand": "Armani",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "For Him",
+            "brand": "Zara",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Tommy",
+            "brand": "Tommy Hilfiger",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Pasha de Cartier",
+            "brand": "Cartier",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Egosta Platinum",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": null
+      },
+      "reply": "أنسب اختيار ليك النهار هو Bonded من تصميمنا الخاص، فوحانه متوسط (Moderate) وثباته حوالي 8 ساعات، ريحته فريش وخشبية مناسبة للمكتب والاستخدام اليومي. ⚠️ مش مطابق في إنه مش مسجل فيه clean.\n\nلو حابب تجربة براند تاني، Zlatan من Zlatan ريحته فريش ورياضية وفوحانه متوسط برضه، مناسب للخروجات والكاجوال، بس مش مسجل فيه clean.\n\nأنا أرشحلك Bonded أكتر لأنه حصري عندنا وفوحانه ثابت ومناسب لطلبك 👌.",
+      "context": "\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate) | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Zlatan\nBrand: Zlatan\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zlatan) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Green Grass, Pink Pepper\nMiddle Notes: Marine Notes, White Lavender\nBase Notes: Cedar, Vetiver, Leather\nDescription: Fresh woody-spicy scent with a bold, sporty character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Aqva Pour Homme\nBrand: Bvlgari\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bvlgari) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Orange, Petitgrain\nMiddle Notes: Seaweed, Lavender, Cotton Flower\nBase Notes: Virginia Cedar, Woody Notes, Patchouli, Clary Sage, Amber\nDescription: Fresh aquatic scent with a cool marine character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Sport\nBrand: Puma\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Puma) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Bergamot, Mandarin Orange\nMiddle Notes: Cardamom, Juniper Berries, Green Notes\nBase Notes: Cedar, Musk, Amber\nDescription: Fresh citrus scent with a light, sporty energy.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lime, Lemon, Bergamot, Neroli, Mandarin Orange\nMiddle Notes: Sea Notes, Jasmine, Peach, Rosemary\nBase Notes: White Musk, Cedar, Oakmoss, Patchouli, Amber\nDescription: Fresh aquatic-citrus scent with a clean marine feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): For Him\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Cardamom, Lemon\nMiddle Notes: Lavender, Geranium, Sage\nBase Notes: Cedar, Vetiver, Patchouli, Musk\nDescription: Fresh aromatic scent with a clean everyday character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Tommy\nBrand: Tommy Hilfiger\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tommy Hilfiger) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Grapefruit, Bergamot\nMiddle Notes: Cranberry, Rose, Granny Smith Apple\nBase Notes: Amber, Cactus, Cotton Flower\nDescription: Fresh aromatic scent with a clean, casual character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Pasha de Cartier\nBrand: Cartier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cartier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Mint, Caraway, Anise, Mandarin Orange\nMiddle Notes: Coriander, Brazilian Rosewood\nBase Notes: Oakmoss, Sandalwood, Patchouli, Labdanum\nDescription: Fresh woody-aromatic scent with a clean, elegant feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Egosta Platinum\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Rosemary, Neroli, Petitgrain\nMiddle Notes: Geranium, Clary Sage, Galbanum, Jasmine\nBase Notes: Oakmoss, Vetiver, Cedar, Sandalwood, Amber\nDescription: Fresh aromatic-woody scent, clean, crisp and refined.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | فوحانه بيطابق طلبه (Moderate)\n⚠️ مش مطابق في: مش مسجل فيه clean\n",
+      "selected_products": [
+        {
+          "name": "Bonded",
+          "brand": "Perfamix",
+          "occasion": "Office",
+          "projection": "Moderate",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Zlatan",
+          "brand": "Zlatan",
+          "occasion": "Casual",
+          "projection": "Moderate",
+          "longevity": "6 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "occasion": "day",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "projection": "moderate"
+      },
+      "sales_state": {},
+      "claim_issues": []
+    },
+    {
+      "run": 2,
+      "case": "similarity",
+      "source_message_id": 7585,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Bleu de Chanel",
+          "Wanted by Night",
+          "Black Orchid",
+          "Pi",
+          "Allure Homme Sport",
+          "Black XS",
+          "Euphoria Intense",
+          "Pure XS",
+          "Gentleman",
+          "Bmw",
+          "K By Dolce",
+          "Bad Boy"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          36,
+          17,
+          44,
+          32,
+          22,
+          7,
+          28,
+          11,
+          61,
+          6,
+          2,
+          30
+        ],
+        "brand_strict": false,
+        "keeping": [],
+        "dropped": {
+          "Bonded": "مش قريب كفاية من Terre d'Hermes عشان نرشحه كبديل مشابه"
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "candidate_facts": [
+          {
+            "name": "Bleu de Chanel",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Wanted by Night",
+            "brand": "Azzaro",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Orchid",
+            "brand": "Tom Ford",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "10+ hours"
+          },
+          {
+            "name": "Pi",
+            "brand": "Givenchy",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Allure Homme Sport",
+            "brand": "Chanel",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Euphoria Intense",
+            "brand": "Calvin Klein",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Pure XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Gentleman",
+            "brand": "Givenchy",
+            "occasion": "Formal",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bmw",
+            "brand": "Bmw",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "K By Dolce",
+            "brand": "Dolce & Gabbana",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Bad Boy",
+            "brand": "Carolina Herrera",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "🔹 Bleu de Chanel من Chanel ريحته فريش وحيوية بنوتات حمضيات وخشب، مناسبة للاستخدام اليومي والمكاتب، وثباته حوالي 8 ساعات وفوحانه متوسط. ⚠️ مش مطابق في قوة الفوحان وطابع المساء.\n\n🔹 Wanted by Night من Azzaro عطري مسائي دافي وقوي، فيه توابل وخشب مع لمسة فواكه، مناسب للسهرات والشتا، وفوحانه قوي وثباته حوالي 8 ساعات. ⚠️ مش مطابق في الطابع النهاري.\n\nأنا أرشحلك Bleu de Chanel أكتر لأنه أنسب للاستخدام النهاري والمناسبات الرسمية، أما Wanted by Night فهو خيار مسائي أقوى.\n\nBleu de Chanel من Chanel، وWanted by Night من Azzaro، براندات تانية غير Perfamix.",
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، cedar، patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Wanted by Night\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Wanted — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Mandarin Orange, Lavender, Lemon\nMiddle Notes: Fruity Notes, Incense, Red Cedar, Cumin\nBase Notes: Tobacco, Vanilla, Cedar, Leather, Benzoin, Iso E Super, Cypress, Patchouli\nDescription: Dark spicy-woody scent, bold and made for evenings.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، benzoin، patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Orchid\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon\nMiddle Notes: Orchid, Lotus Wood, Fruity Notes, Spices\nBase Notes: Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam\nDescription: Dark, rich floral-woody scent with a luxurious feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pi\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Tarragon, Rosemary, Basil\nMiddle Notes: Anise, Neroli, Geranium, Lily of the Valley\nBase Notes: Vanilla, Almond, Tonka Bean, Benzoin, Cedar\nDescription: Fresh woody-aromatic scent with a smooth classic feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، cedar. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Allure Homme Sport\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Sea Notes, Aldehydes, Blood Mandarin\nMiddle Notes: Pepper, Neroli, Cedar\nBase Notes: Tonka Bean, Vanilla, White Musk, Amber, Elemi Resin, Vetiver\nDescription: Fresh citrus-woody scent, sporty and energetic.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، pepper، cedar، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Sage\nMiddle Notes: Praline, Cinnamon, Tolu Balsam, Black Cardamom\nBase Notes: Brazilian Rosewood, Patchouli, Black Amber\nDescription: Sweet spicy-woody scent with a bold, energetic edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Euphoria Intense\nBrand: Calvin Klein\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Calvin Klein) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Euphoria، Euphoria Men — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Ginger, Pepper\nMiddle Notes: Black Basil, Sage, Vetiver, Cedar\nBase Notes: Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh\nDescription: Warm spicy-woody scent with a deep, sensual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver، cedar، pepper. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\nDescription: Fresh spicy-woody scent with a clean modern feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، patchouli، grapefruit — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Gentleman\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Black Pepper, Lavender, Bergamot\nMiddle Notes: Orris, Cloves, Cinnamon\nBase Notes: Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli\nDescription: Smooth woody-iris scent with a refined, elegant character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bad Boy\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, White Pepper, Bergamot\nMiddle Notes: Sage, Cedar\nBase Notes: Tonka Bean, Cocoa, Amber\nDescription: Bold spicy-woody scent with a sweet, powerful edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Terre d'Hermes\n",
+      "selected_products": [
+        {
+          "name": "Bleu de Chanel",
+          "brand": "Chanel",
+          "occasion": "Office",
+          "projection": "Moderate",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Wanted by Night",
+          "brand": "Azzaro",
+          "occasion": "Evening",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      },
+      "claim_issues": []
+    },
+    {
+      "run": 2,
+      "case": "daytime",
+      "source_message_id": 7591,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "occasion": "day",
+        "projection": "moderate"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": "male",
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": "daytime",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "merged_intent": {
+        "gender": "male",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": "daytime",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false
+      },
+      "search": {
+        "products": [
+          "Invictus Legend",
+          "Paradise Garden",
+          "Sauvage",
+          "Drakkar Noir",
+          "Dylan Blue",
+          "Wanted",
+          "Bonded",
+          "Black Code",
+          "Egosta Platinum",
+          "Legacy",
+          "Bleu de Chanel",
+          "1 Million Lucky"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          26,
+          54,
+          80,
+          64,
+          88,
+          16,
+          41,
+          97,
+          36,
+          109
+        ],
+        "brand_strict": false,
+        "keeping": [
+          "Black Code",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مش لنفس الموسم اللي قاله",
+          "Dark Aura": "مش لنفس الموسم اللي قاله"
+        },
+        "similarity": null,
+        "candidate_facts": [
+          {
+            "name": "Invictus Legend",
+            "brand": "Paco Rabanne",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Paradise Garden",
+            "brand": "Jean Paul Gaultier",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Sauvage",
+            "brand": "Dior",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Drakkar Noir",
+            "brand": "Guy Laroche",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Dylan Blue",
+            "brand": "Versace",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Wanted",
+            "brand": "Azzaro",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bonded",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Code",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Egosta Platinum",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Legacy",
+            "brand": "MAISON ASRAR",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bleu de Chanel",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "1 Million Lucky",
+            "brand": "Paco Rabanne",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": null
+      },
+      "reply": "أنصحك بـ Invictus Legend من Paco Rabanne، عطر نهاري صيفي ثابت 8 ساعات وفواح قوي، مناسب للنهار والجو اللي بتحبه حتى لو مش مسجل فيه clean. كمان Paradise Garden من Jean Paul Gaultier خيار ممتاز، ثابت وفواح بنفس المدة، وفيه fresh واضح بس مش مسجل فيه clean برضه.\n\nأنا أرشحلك Invictus Legend أكتر لأنه فوحانه قوي وثباته ممتاز للنهار والصيف، أما Paradise Garden فريحته فاكهية أكثر وأخف شوية.\n\nInvictus Legend من Paco Rabanne، وParadise Garden من Jean Paul Gaultier، براندات تانية غير Perfamix.",
+      "context": "\nName (الاسم الصحيح): Invictus Legend\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Invictus، Invictus Aqua، Invictus Victory — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sea Notes, Sea Salt, Grapefruit\nMiddle Notes: Bay Leaf, Geranium, Spices\nBase Notes: Red Amber, Guaiac Wood\nDescription: Fresh woody scent with a bold, confident character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Paradise Garden\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 125 ملي: 1475.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Green Notes, Watery Notes, Mint, Ginger\nMiddle Notes: Coconut, Fig, Salt\nBase Notes: Tonka Bean, Sandalwood\nDescription: Fresh fruity-green scent with a juicy, tropical feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\nDescription: Fresh spicy-woody scent, bold, clean and long lasting.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Drakkar Noir\nBrand: Guy Laroche\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Guy Laroche) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Lemon, Bergamot, Rosemary, Mint, Lemon Verbena, Basil, Artemisia\nMiddle Notes: Juniper, Coriander, Cinnamon, Wormwood, Carnation, Angelica, Jasmine\nBase Notes: Oakmoss, Leather, Fir, Pine Tree Needles, Sandalwood, Vetiver, Patchouli, Cedar, Amber, Resins\nDescription: Fresh aromatic-woody scent with a bold classic character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Dylan Blue\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Grapefruit, Fig Leaf, Water Notes\nMiddle Notes: Black Pepper, Violet Leaf, Patchouli, Papyrus, Ambroxan\nBase Notes: Incense, Musk, Tonka Bean, Saffron\nDescription: Fresh aquatic-woody scent with a bold masculine character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Wanted\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Azzaro) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Wanted by Night — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Ginger, Lavender, Mint\nMiddle Notes: Apple, Juniper, Guatemalan Cardamom, Geranium\nBase Notes: Tonka Bean, Amberwood, Haitian Vetiver\nDescription: Spicy citrus scent with a warm, woody finish.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Egosta Platinum\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Rosemary, Neroli, Petitgrain\nMiddle Notes: Geranium, Clary Sage, Galbanum, Jasmine\nBase Notes: Oakmoss, Vetiver, Cedar, Sandalwood, Amber\nDescription: Fresh aromatic-woody scent, clean, crisp and refined.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Legacy\nBrand: MAISON ASRAR\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (MAISON ASRAR) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Bergamot, Grapefruit, Pink Pepper\nMiddle Notes: Lavender, Geranium, Cedar\nBase Notes: Vetiver, Amber, Patchouli, Musk\nDescription: Fresh woody scent with a smooth, confident character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): 1 Million Lucky\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Plum, Ozonic Notes, Grapefruit, Bergamot\nMiddle Notes: Hazelnut, Honey, Cedar, Cashmere Wood, Jasmine, Orange Blossom\nBase Notes: Amberwood, Patchouli, Oakmoss, Vetiver\nDescription: Fresh fruity-woody scent with a sweet, playful touch.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n",
+      "selected_products": [
+        {
+          "name": "Invictus Legend",
+          "brand": "Paco Rabanne",
+          "occasion": "Casual",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Paradise Garden",
+          "brand": "Jean Paul Gaultier",
+          "occasion": "Casual",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "season": "summer",
+        "occasion": "daytime",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "sales_state": {},
+      "claim_issues": []
+    },
+    {
+      "run": 3,
+      "case": "similarity",
+      "source_message_id": 7585,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Terre d'Hermès"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Bleu de Chanel",
+          "Wanted by Night",
+          "Black Orchid",
+          "Pi",
+          "Allure Homme Sport",
+          "Black XS",
+          "Euphoria Intense",
+          "Pure XS",
+          "Gentleman",
+          "Bmw",
+          "K By Dolce",
+          "Bad Boy"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          36,
+          17,
+          44,
+          32,
+          22,
+          7,
+          28,
+          11,
+          61,
+          6,
+          2,
+          30
+        ],
+        "brand_strict": false,
+        "keeping": [],
+        "dropped": {
+          "Bonded": "مش قريب كفاية من Terre d'Hermes عشان نرشحه كبديل مشابه"
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "candidate_facts": [
+          {
+            "name": "Bleu de Chanel",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Wanted by Night",
+            "brand": "Azzaro",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Orchid",
+            "brand": "Tom Ford",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "10+ hours"
+          },
+          {
+            "name": "Pi",
+            "brand": "Givenchy",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Allure Homme Sport",
+            "brand": "Chanel",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Euphoria Intense",
+            "brand": "Calvin Klein",
+            "occasion": "Evening",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Pure XS",
+            "brand": "Paco Rabanne",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Gentleman",
+            "brand": "Givenchy",
+            "occasion": "Formal",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bmw",
+            "brand": "Bmw",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "K By Dolce",
+            "brand": "Dolce & Gabbana",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "6 hours"
+          },
+          {
+            "name": "Bad Boy",
+            "brand": "Carolina Herrera",
+            "occasion": "Evening",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "🔹 Bleu de Chanel من Chanel ريحته فريش حمضية خشبية، مناسبة للاستخدام في المكتب وطوال السنة، ثباته حوالي 8 ساعات وفوحانه متوسط. مناسب لو بتحب ريحة نظيفة وأنيقة مختلفة عن Terre d'Hermes.\n\n🔹 Wanted by Night من Azzaro عطر مسائي دافي وتوابل خشبي، فوحانه قوي وثباته 8 ساعات، مناسب للشتا والسهرات، بيتميز بقوة وجرأة أكتر من Terre d'Hermes.\n\nأنا أرشحلك Bleu de Chanel أكتر لأنه أنسب للاستخدام اليومي والنهار، أما Wanted by Night فهو خيار مسائي قوي وفخم.\n\nBleu de Chanel من Chanel، وWanted by Night من Azzaro، براندات تانية غير Perfamix.",
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، cedar، patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Wanted by Night\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Wanted — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Mandarin Orange, Lavender, Lemon\nMiddle Notes: Fruity Notes, Incense, Red Cedar, Cumin\nBase Notes: Tobacco, Vanilla, Cedar, Leather, Benzoin, Iso E Super, Cypress, Patchouli\nDescription: Dark spicy-woody scent, bold and made for evenings.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، benzoin، patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Orchid\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon\nMiddle Notes: Orchid, Lotus Wood, Fruity Notes, Spices\nBase Notes: Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam\nDescription: Dark, rich floral-woody scent with a luxurious feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pi\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Tarragon, Rosemary, Basil\nMiddle Notes: Anise, Neroli, Geranium, Lily of the Valley\nBase Notes: Vanilla, Almond, Tonka Bean, Benzoin, Cedar\nDescription: Fresh woody-aromatic scent with a smooth classic feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، cedar. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Allure Homme Sport\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange, Sea Notes, Aldehydes, Blood Mandarin\nMiddle Notes: Pepper, Neroli, Cedar\nBase Notes: Tonka Bean, Vanilla, White Musk, Amber, Elemi Resin, Vetiver\nDescription: Fresh citrus-woody scent, sporty and energetic.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver، pepper، cedar، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Sage\nMiddle Notes: Praline, Cinnamon, Tolu Balsam, Black Cardamom\nBase Notes: Brazilian Rosewood, Patchouli, Black Amber\nDescription: Sweet spicy-woody scent with a bold, energetic edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Euphoria Intense\nBrand: Calvin Klein\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Calvin Klein) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Euphoria، Euphoria Men — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Ginger, Pepper\nMiddle Notes: Black Basil, Sage, Vetiver, Cedar\nBase Notes: Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh\nDescription: Warm spicy-woody scent with a deep, sensual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، vetiver، cedar، pepper. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\nDescription: Fresh spicy-woody scent with a clean modern feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، patchouli، grapefruit — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Gentleman\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Black Pepper, Lavender, Bergamot\nMiddle Notes: Orris, Cloves, Cinnamon\nBase Notes: Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli\nDescription: Smooth woody-iris scent with a refined, elegant character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: benzoin، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar، vetiver، patchouli. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bad Boy\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, White Pepper, Bergamot\nMiddle Notes: Sage, Cedar\nBase Notes: Tonka Bean, Cocoa, Amber\nDescription: Bold spicy-woody scent with a sweet, powerful edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: cedar — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Terre d'Hermes\n",
+      "selected_products": [
+        {
+          "name": "Bleu de Chanel",
+          "brand": "Chanel",
+          "occasion": "Office",
+          "projection": "Moderate",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Wanted by Night",
+          "brand": "Azzaro",
+          "occasion": "Evening",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      },
+      "claim_issues": []
+    },
+    {
+      "run": 3,
+      "case": "daytime",
+      "source_message_id": 7591,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "occasion": "day",
+        "projection": "moderate"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": "male",
+        "notes": [],
+        "season": "summer",
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "wants_uncommon": null,
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "perfume_type": null,
+        "max_price": null,
+        "exclude_names": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "season": "summer",
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "wants_uncommon": null,
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "exclude_brands": [],
+        "perfume_type": null,
+        "max_price": null,
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Invictus Legend",
+          "Paradise Garden",
+          "Sauvage",
+          "Drakkar Noir",
+          "Dylan Blue",
+          "Wanted",
+          "Bonded",
+          "Black Code",
+          "Egosta Platinum",
+          "Legacy",
+          "Bleu de Chanel",
+          "1 Million Lucky"
+        ],
+        "alternatives": [],
+        "preferred_brand": "Perfamix",
+        "cross_brand_ids": [
+          26,
+          54,
+          80,
+          64,
+          88,
+          16,
+          41,
+          97,
+          36,
+          109
+        ],
+        "brand_strict": false,
+        "keeping": [
+          "Black Code",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مش لنفس الموسم اللي قاله",
+          "Dark Aura": "مش لنفس الموسم اللي قاله"
+        },
+        "similarity": null,
+        "candidate_facts": [
+          {
+            "name": "Invictus Legend",
+            "brand": "Paco Rabanne",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Paradise Garden",
+            "brand": "Jean Paul Gaultier",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Sauvage",
+            "brand": "Dior",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Drakkar Noir",
+            "brand": "Guy Laroche",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Dylan Blue",
+            "brand": "Versace",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Wanted",
+            "brand": "Azzaro",
+            "occasion": "Casual",
+            "projection": "Strong",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bonded",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Black Code",
+            "brand": "Perfamix",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Egosta Platinum",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Legacy",
+            "brand": "MAISON ASRAR",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "Bleu de Chanel",
+            "brand": "Chanel",
+            "occasion": "Office",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          },
+          {
+            "name": "1 Million Lucky",
+            "brand": "Paco Rabanne",
+            "occasion": "Casual",
+            "projection": "Moderate",
+            "longevity": "8 hours"
+          }
+        ],
+        "reference": null
+      },
+      "reply": "أنسب اختيار لطلبك النهاري هو Invictus Legend من Paco Rabanne، ثابت 8 ساعات وفوحانه قوي، ريحته فريش وخشبية مناسبة للصيف والكاجوال. \nكمان Paradise Garden من Jean Paul Gaultier خيار ممتاز بنفس الثبات والفوحان، ريحته فريش وفاكهية مع لمسة خضراء، مناسبة للصيف والخروجات اليومية. \n⚠️ Elite وDark Aura خرجوا من الاختيارات لأنهم مش مناسبين للصيف والنهار حسب بياناتهم. \n\nأنا أرشحلك Invictus Legend أكتر لأنه فوحانه قوي وثباته ممتاز للنهار، أما Paradise Garden فأنسب لو تحب ريحة فاكهية أخف شوية.\n\nInvictus Legend من Paco Rabanne، وParadise Garden من Jean Paul Gaultier، براندات تانية غير Perfamix.",
+      "context": "\nName (الاسم الصحيح): Invictus Legend\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Invictus، Invictus Aqua، Invictus Victory — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Sea Notes, Sea Salt, Grapefruit\nMiddle Notes: Bay Leaf, Geranium, Spices\nBase Notes: Red Amber, Guaiac Wood\nDescription: Fresh woody scent with a bold, confident character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Paradise Garden\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 125 ملي: 1475.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Green Notes, Watery Notes, Mint, Ginger\nMiddle Notes: Coconut, Fig, Salt\nBase Notes: Tonka Bean, Sandalwood\nDescription: Fresh fruity-green scent with a juicy, tropical feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\nDescription: Fresh spicy-woody scent, bold, clean and long lasting.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Drakkar Noir\nBrand: Guy Laroche\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Guy Laroche) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender, Lemon, Bergamot, Rosemary, Mint, Lemon Verbena, Basil, Artemisia\nMiddle Notes: Juniper, Coriander, Cinnamon, Wormwood, Carnation, Angelica, Jasmine\nBase Notes: Oakmoss, Leather, Fir, Pine Tree Needles, Sandalwood, Vetiver, Patchouli, Cedar, Amber, Resins\nDescription: Fresh aromatic-woody scent with a bold classic character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Dylan Blue\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Grapefruit, Fig Leaf, Water Notes\nMiddle Notes: Black Pepper, Violet Leaf, Patchouli, Papyrus, Ambroxan\nBase Notes: Incense, Musk, Tonka Bean, Saffron\nDescription: Fresh aquatic-woody scent with a bold masculine character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Wanted\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Azzaro) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Wanted by Night — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Ginger, Lavender, Mint\nMiddle Notes: Apple, Juniper, Guatemalan Cardamom, Geranium\nBase Notes: Tonka Bean, Amberwood, Haitian Vetiver\nDescription: Spicy citrus scent with a warm, woody finish.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Egosta Platinum\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Rosemary, Neroli, Petitgrain\nMiddle Notes: Geranium, Clary Sage, Galbanum, Jasmine\nBase Notes: Oakmoss, Vetiver, Cedar, Sandalwood, Amber\nDescription: Fresh aromatic-woody scent, clean, crisp and refined.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Legacy\nBrand: MAISON ASRAR\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (MAISON ASRAR) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Bergamot, Grapefruit, Pink Pepper\nMiddle Notes: Lavender, Geranium, Cedar\nBase Notes: Vetiver, Amber, Patchouli, Musk\nDescription: Fresh woody scent with a smooth, confident character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): 1 Million Lucky\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Plum, Ozonic Notes, Grapefruit, Bergamot\nMiddle Notes: Hazelnut, Honey, Cedar, Cashmere Wood, Jasmine, Orange Blossom\nBase Notes: Amberwood, Patchouli, Oakmoss, Vetiver\nDescription: Fresh fruity-woody scent with a sweet, playful touch.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n",
+      "selected_products": [
+        {
+          "name": "Invictus Legend",
+          "brand": "Paco Rabanne",
+          "occasion": "Casual",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        },
+        {
+          "name": "Paradise Garden",
+          "brand": "Jean Paul Gaultier",
+          "occasion": "Casual",
+          "projection": "Strong",
+          "longevity": "8 hours"
+        }
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "season": "summer",
+        "occasion": "daytime",
+        "notes": [
+          "clean",
+          "fresh"
+        ],
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "sales_state": {},
+      "claim_issues": []
+    }
+  ],
+  "blocked_transport_attempts": []
+}

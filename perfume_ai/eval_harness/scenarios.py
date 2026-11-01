@@ -131,8 +131,8 @@ SCENARIOS = [
         "turns": ["عندك حاجه زي 9pm بتاع افنان؟"],
         "probe": (
             "9PM is in the catalogue (apple/cinnamon/vanilla/tonka/amber — sweet spicy). Correct "
-            "move: a sweet-warm lookalike with named shared notes, or an honest 'nothing really "
-            "close' followed by the nearest option labelled as different."
+            "move: a sweet-warm lookalike with named shared notes, or direct alternatives with "
+            "supported qualities and differences. Do not require a no-close-match declaration."
         ),
     },
     {
@@ -142,8 +142,8 @@ SCENARIOS = [
         "turns": ["عايز حاجه شبه Baccarat Rouge بس مش هي"],
         "probe": (
             "Explicit alternative request, so BR540 itself must be excluded from the answer. "
-            "Correct move: nearest genuine match on scent character with evidence, or honest "
-            "admission that nothing is close."
+            "Correct move: nearest genuine match on scent character with evidence, or direct "
+            "alternatives with supported qualities and differences, without fabricated similarity."
         ),
         "assert_excludes": ["Baccarat Rouge 540"],
     },

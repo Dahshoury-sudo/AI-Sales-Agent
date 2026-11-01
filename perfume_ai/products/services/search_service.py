@@ -3,6 +3,7 @@ from products.models import Brand, Product, ProductVariant
 
 from .product_formatting import is_variant_available
 from .sales import naming, ranking, similarity
+from .sales.brand_preference import matches_brand, preferred_brand_name
 from .sales.notes import expand_request_term
 from .sales.value import budget_ceiling, budget_tier, request_ceiling
 
@@ -254,9 +255,8 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
         return "مش لنفس الموسم اللي قاله"
 
     brand = intent.get("brand")
-    if brand and brand != STORE_BRAND_EXCLUSIVE:
-        if brand.lower() not in (product.brand.name or "").lower():
-            return "مش من البراند اللي طلبه"
+    if brand and intent.get("brand_strict") is True and not matches_brand(product, brand):
+        return "مش من البراند اللي طلبه حصرياً"
 
     # Read off the resolved id set rather than re-matched from `intent`, so this cannot claim an
     # exclusion that `blocked_brand_ids` did not actually apply — the docstring's rule that every
@@ -299,7 +299,7 @@ def search_products(intent, store=None, keep=(), offered=()):
     (`described.offered_ever`). They reach `ranking.rank` as opposite-signed weights, never as
     filters.
     """
-    queryset = Product.objects.filter(is_active=True).prefetch_related('variants')
+    queryset = Product.objects.filter(is_active=True).select_related('brand', 'store').prefetch_related('variants')
     if store:
         queryset = queryset.filter(store=store)
 
@@ -312,6 +312,20 @@ def search_products(intent, store=None, keep=(), offered=()):
     season = intent.get("season")
     max_price = intent.get("max_price")
     brand = intent.get("brand")
+    brand_strict = bool(brand) and intent.get("brand_strict") is True
+    preferred_brand = preferred_brand_name(brand, store)
+
+    def finish(result):
+        # Keep QuerySets and every existing result field intact. These additive
+        # facts let all response branches disclose an alternative's real brand.
+        rows = list(result["products"]) or list(result.get("alternatives") or ())
+        result.update(
+            preferred_brand=preferred_brand,
+            brand_strict=brand_strict,
+            cross_brand_ids=[product.pk for product in rows
+                             if brand and not matches_brand(product, brand, store)],
+        )
+        return result
     exclude_names = intent.get("exclude_names") or []
     # Fallback to single exclude_name if present (backward compatibility)
     old_exclude = intent.get("exclude_name")
@@ -324,8 +338,8 @@ def search_products(intent, store=None, keep=(), offered=()):
 
     notes = intent.get("notes") or []
 
-    # Hard filters: the criteria a customer means literally. gender/brand/type/season
-    # stay filters because a men's perfume is not a near-miss for a woman.
+    # Keep product requirements and explicit exclusions as filters. An ordinary
+    # brand request is a preference; only explicit brand exclusivity narrows SQL.
     #
     # The name exclusions used to be applied here, first. They now run below, after the
     # constraints, so that the queryset *without* them survives as `constrained` — see
@@ -349,7 +363,7 @@ def search_products(intent, store=None, keep=(), offered=()):
         base = base.filter(perfume_type=perfume_type.lower())
     if season:
         base = base.filter(Q(season__icontains=season) | Q(season__icontains="All Seasons"))
-    if brand:
+    if brand_strict:
         if brand == STORE_BRAND_EXCLUSIVE and store:
             base = base.filter(brand__name__iexact=store.name)
         else:
@@ -461,6 +475,7 @@ def search_products(intent, store=None, keep=(), offered=()):
     # a perfume the customer is discussing should not be evicted because a requested accord
     # happens to be absent from it.
     keep = frozenset(keep or ())
+    incompatible = {}
     if keep:
         qualifying = base.filter(name__in=keep)
         if max_price:
@@ -469,7 +484,12 @@ def search_products(intent, store=None, keep=(), offered=()):
                 qualifying = qualifying.filter(
                     variants__price__lte=ceiling
                 ).distinct()
-        surviving = frozenset(qualifying.values_list("name", flat=True))
+        qualifying = list(qualifying)
+        incompatible = {
+            product.name: reason for product in qualifying
+            if (reason := ranking.continuity_conflict(product, intent, reference))
+        }
+        surviving = frozenset(product.name for product in qualifying) - incompatible.keys()
     else:
         surviving = frozenset()
     # Named with the real cause, product by product. A dropped perfume the customer was
@@ -484,7 +504,7 @@ def search_products(intent, store=None, keep=(), offered=()):
         ).prefetch_related("variants").select_related("brand", "store") if store else ():
             dropped[product.name] = _drop_reason(
                 product, intent, max_price, blocked_brands=blocked_brands
-            )
+            ) or incompatible.get(product.name)
         for name in lost:
             dropped.setdefault(name, None)
 
@@ -507,12 +527,12 @@ def search_products(intent, store=None, keep=(), offered=()):
         report = {"keeping": sorted(surviving), "dropped": dropped,
                   "reference_product": reference_product, "exhausted": exhausted}
         if exact.exists():
-            return {"products": _shortlist(exact), "alternatives": None,
-                    "similarity": None, **report}
+            return finish({"products": _shortlist(exact), "alternatives": None,
+                           "similarity": None, **report})
         if base.exists():
-            return {"products": base.none(), "alternatives": _shortlist(base),
-                    "similarity": None, **report}
-        return {"products": base.none(), "alternatives": None, "similarity": None, **report}
+            return finish({"products": base.none(), "alternatives": _shortlist(base),
+                           "similarity": None, **report})
+        return finish({"products": base.none(), "alternatives": None, "similarity": None, **report})
 
     # The exact-versus-alternatives decision stays exactly what it was: did anything match
     # the literal criteria? Ranking only decides the *order* within whichever set wins.
@@ -522,11 +542,18 @@ def search_products(intent, store=None, keep=(), offered=()):
     matched = exact.exists()
     pool = exact if matched else base
     if not pool.exists():
-        return {"products": base.none(), "alternatives": None, "similarity": None,
-                "keeping": sorted(surviving), "dropped": dropped,
-                "reference_product": reference_product, "exhausted": exhausted}
+        return finish({"products": base.none(), "alternatives": None, "similarity": None,
+                       "keeping": sorted(surviving), "dropped": dropped,
+                       "reference_product": reference_product, "exhausted": exhausted})
 
     candidates = list(_by_value(pool)[:MAX_CANDIDATES_TO_SCORE])
+    if brand and not brand_strict:
+        # Broadening the pool must not push every preferred-brand option outside
+        # the bounded scoring window before the brand tie-break can see it.
+        brand_pool = pool.filter(brand__name__iexact=store.name) if brand == STORE_BRAND_EXCLUSIVE and store else pool.filter(brand__name__icontains=brand)
+        seen = {product.pk for product in candidates}
+        candidates += [product for product in _by_value(brand_pool)[:MAX_CANDIDATES_TO_SCORE]
+                       if product.pk not in seen]
     if surviving:
         # The cap is ordered cheapest-first, so an expensive perfume under discussion could
         # fall outside it and never be scored at all — the continuity weight cannot lift a
@@ -547,7 +574,7 @@ def search_products(intent, store=None, keep=(), offered=()):
     top = ranked[:MAX_PRODUCTS_IN_CONTEXT]
     ordered = _ordered_by_ids(pool, [entry.product.id for entry in top])
 
-    return {
+    return finish({
         "products": ordered if matched else pool.none(),
         "alternatives": None if matched else ordered,
         "similarity": _similarity_summary(reference, ranked),
@@ -557,7 +584,7 @@ def search_products(intent, store=None, keep=(), offered=()):
         "dropped": dropped,
         "reference_product": reference_product,
         "exhausted": exhausted,
-    }
+    })
 
 
 def _similarity_summary(reference, ranked):

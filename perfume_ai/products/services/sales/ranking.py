@@ -35,9 +35,11 @@ that do not.
 """
 
 from dataclasses import dataclass, field
+import re
 from decimal import Decimal, InvalidOperation
 
 from . import similarity
+from .brand_preference import matches_brand
 from .notes import (
     HEAVY_FAMILIES,
     HEAVY_NOTES,
@@ -170,11 +172,29 @@ class Ranked:
     reasons: list = field(default_factory=list)
     mismatches: list = field(default_factory=list)
     result: object = None
+    occasion_conflict: bool = False
+    projection_conflict: bool = False
+    context_score: float = 0.0
+
+    @property
+    def fit_score(self):
+        """Suitability independent of earlier offers, rounded only for float noise."""
+        return round(self.score - self.context_score, 12)
 
     @property
     def matched_something(self):
         """Whether any positive signal fired, as opposed to baseline points only."""
         return bool(self.reasons)
+
+
+def preference_fit_key(entry):
+    """Lower is a better preference match, without brand or conversation bonuses."""
+    return (
+        entry.occasion_conflict or entry.projection_conflict,
+        any(m.startswith("مش مسجل فيه ") for m in entry.mismatches),
+        {"close": 0, "loose": 1, "none": 2}.get(entry.result.band, 2) if entry.result else 0,
+        -entry.fit_score,
+    )
 
 
 def _as_decimal(value):
@@ -205,6 +225,8 @@ def has_signal(intent, reference=None):
         return True
     if not intent:
         return False
+    if intent.get("brand") and intent.get("brand_strict") is not True:
+        return True
     # Checked before the key sweep, not folded into it, because it is the *absence* of a
     # value that discriminates here — `any()` over present keys cannot express that.
     if not intent.get("gender"):
@@ -272,6 +294,8 @@ def _ordinal_hit(field_value, wanted, vocabulary, words):
 
     actual = similarity._ordinal(field_value, words)
     if actual is None:
+        return 0.0
+    if vocabulary is _WANTED_PROJECTION and target <= 2 and actual > target:
         return 0.0
     if actual >= target:
         return 1.0
@@ -525,6 +549,8 @@ def rank(products, intent, reference=None, keep=(), offered=()):
                 # correctly called it an evening scent. The recorded value is named so the
                 # reply can state the truth and pivot, rather than only stay quiet.
                 entry.mismatches.append(mismatch_template.format(recorded=recorded))
+                if key == "occasion":
+                    entry.occasion_conflict = True
 
         # What the occasion implies about season, when the customer named no season.
         #
@@ -565,6 +591,10 @@ def rank(products, intent, reference=None, keep=(), offered=()):
             if not wanted:
                 continue
             recorded = getattr(product, attribute, "")
+            if key == "projection" and excessive_projection(recorded, wanted):
+                entry.projection_conflict = True
+                entry.mismatches.append(f"فوحانه المسجل {recorded} أعلى من الهدوء اللي طلبه")
+                continue
             hit = _ordinal_hit(recorded, wanted, vocabulary, words)
             if hit <= 0:
                 entry.mismatches.append(
@@ -600,8 +630,9 @@ def rank(products, intent, reference=None, keep=(), offered=()):
             entry.score += WEIGHTS["gender_safe"]
             entry.reasons.append("ينفع للراجل وللست")
 
-        if product.name in keep:
+        if product.name in keep and not continuity_conflict(product, intent, reference, entry.result):
             entry.score += WEIGHTS["continuity"]
+            entry.context_score += WEIGHTS["continuity"]
             entry.reasons.append("العميل بيتكلم عنه بالفعل")
 
         # No `reasons` entry and no `mismatches` entry, unlike every other signal in this loop.
@@ -610,6 +641,7 @@ def rank(products, intent, reference=None, keep=(), offered=()):
         # offered before is not one. This weight is for the ordering only.
         if product.name in offered:
             entry.score += WEIGHTS["repeat"]
+            entry.context_score += WEIGHTS["repeat"]
 
         if intent.get("wants_uncommon"):
             from .value import is_store_exclusive
@@ -635,9 +667,18 @@ def rank(products, intent, reference=None, keep=(), offered=()):
     # `-oil_stock_grams` term that used to sit here went with oil tracking; there is
     # deliberately no replacement, because re-sorting on a second criterion here would
     # override the caller's ordering rather than defer to it.
-    ranked.sort(key=lambda entry: (
-        any(m.startswith("مش مسجل فيه ") for m in entry.mismatches), -entry.score
-    ))
+    # Known occasion conflicts and weaker scent matches cannot be rescued by
+    # continuity or performance points. Keep those rows for honest alternatives.
+    soft_brand = intent.get("brand") and intent.get("brand_strict") is not True
+
+    def sort_key(entry):
+        fit = preference_fit_key(entry)
+        if soft_brand or intent.get("recommendation_mode") == "new_goal":
+            return (*fit, not matches_brand(entry.product, intent["brand"]) if soft_brand else False, -entry.score)
+        # Existing behavior for unrestricted browsing and strict-brand requests.
+        return (*fit[:-1], -entry.score)
+
+    ranked.sort(key=sort_key)
     return ranked
 
 
@@ -650,8 +691,15 @@ def rank(products, intent, reference=None, keep=(), offered=()):
 # So only the time-of-day axis is judged, and only a genuine conflict on it is a warning.
 # Anything else — a vocabulary that simply does not line up — stays silent, on the same
 # principle as a blank field: unknown is not a mismatch.
-_DAYTIME_TERMS = ("daily", "casual", "everyday", "office", "work", "business", "sport", "gym")
-_EVENING_TERMS = ("evening", "night", "dinner", "party", "parties", "club")
+_DAYTIME_TERMS = (
+    "daily", "daytime", "morning", "day", "casual", "everyday", "office", "work",
+    "business", "sport", "gym", "نهار", "نهاري", "بالنهار", "للنهار", "صباح",
+    "صباحي", "الصبح", "للصبح", "يومي",
+)
+_EVENING_TERMS = (
+    "evening", "night", "dinner", "party", "parties", "club",
+    "ليل", "ليلي", "بالليل", "لليل", "مساء", "مسائي", "سهره", "سهرة",
+)
 
 # Working out and going to the office are not the same errand, and collapsing them into one
 # bucket is the second half of conversation 736. `_occasion_verdict("Casual/Evening", "gym")`
@@ -731,6 +779,28 @@ def _occasion_season_lean(wanted, recorded):
 MATCH, CONFLICT, UNKNOWN = "match", "conflict", "unknown"
 
 
+def continuity_conflict(product, intent, reference=None, result=None):
+    """Why a previous suggestion cannot remain the recommendation anchor."""
+    occasion = intent.get("occasion")
+    recorded = (getattr(product, "occasion", "") or "").strip()
+    if occasion and recorded and _occasion_verdict(recorded, occasion)[0] == CONFLICT:
+        return f"مناسبته المسجلة {recorded}، مش اللي قاله"
+    if excessive_projection(getattr(product, "projection", ""), intent.get("projection")):
+        return f"فوحانه المسجل {product.projection} أعلى من الهدوء اللي طلبه"
+    if reference is not None and reference.is_usable:
+        result = result or similarity.compare(reference, product)
+        if not result.is_close:
+            return f"مش قريب كفاية من {reference.name} عشان نرشحه كبديل مشابه"
+    return None
+
+
+def excessive_projection(recorded, wanted):
+    """A subdued request is an upper limit, unlike a longevity minimum."""
+    target = _WANTED_PROJECTION.get(str(wanted or "").strip().lower())
+    actual = similarity._ordinal(recorded, similarity._PROJECTION_WORDS) if recorded else None
+    return target in (1, 2) and actual is not None and actual > target
+
+
 def _occasion_verdict(recorded, wanted):
     """(verdict, credit) for a recorded occasion against a requested one.
 
@@ -743,11 +813,14 @@ def _occasion_verdict(recorded, wanted):
     # First, always: a store that typed the customer's own word has already answered, and no
     # vocabulary table should get to second-guess it. "للجيم" against "للجيم والرياضة" is
     # decided here and never reaches the axis logic below.
-    if _text_hit(lowered, asked):
+    if _text_hit(lowered, asked) and (asked != "day" or re.search(r"\bday\b", lowered)):
         return MATCH, 1.0
 
     recorded_sport = any(term in lowered for term in _SPORT_TERMS)
-    recorded_daytime = any(term in lowered for term in _DAYTIME_TERMS)
+    recorded_daytime = any(
+        re.search(r"\bday\b", lowered) if term == "day" else term in lowered
+        for term in _DAYTIME_TERMS
+    )
     recorded_evening = any(term in lowered for term in _EVENING_TERMS)
     asked_sport = asked in _SPORT_TERMS
     asked_daytime = asked in _ASKED_DAYTIME_TERMS

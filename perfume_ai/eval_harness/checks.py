@@ -565,6 +565,12 @@ def check_variant_prices(reply, truth, customer_text=""):
     return findings
 
 
+def claims_unsupported_similarity(reply):
+    """Use the response guard's wording rule; the model judge assesses meaning."""
+    from products.services.sales.similarity import claims_unsupported_similarity as claims
+    return claims(reply)
+
+
 def check_reply(reply, *, truth, context, customer_text, turn_state, history_text=""):
     """Findings for one bot reply. Each finding is (code, severity, detail).
 
@@ -779,14 +785,12 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
     # ── Similarity band vs the claim made ─────────────────────────────────
     similarity = turn_state.get("similarity")
     if similarity and not similarity.get("has_close_match"):
-        claimed = re.search(r"(شبه|زي\s|بديل|نفس\s+الريح|نفس\s+الجو)", reply)
-        admitted = re.search(r"(مفيش|مش\s+لاقي|مختلف|مش\s+نفس)", reply)
-        if claimed and not admitted:
+        if claims_unsupported_similarity(reply):
             findings.append((
                 "similarity_overclaim", "critical",
                 f"best similarity band was '{similarity.get('best_band')}' (not close) for "
                 f"'{similarity.get('reference_name')}', yet the reply asserts a lookalike "
-                f"without admitting the gap",
+                f"without supporting scent evidence",
             ))
 
     return findings

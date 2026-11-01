@@ -206,14 +206,7 @@ def rescore(record, truth, scenario_budget=None):
         # ── similarity overclaim ──
         similarity = (turn.get("search") or {}).get("similarity")
         if similarity and not similarity.get("has_close_match"):
-            claimed = re.search(r"(شبه|بديل|نفس\s+الريح|نفس\s+الجو)", reply)
-            # "مش موجود عندنا حاجة شبهه" is the agent admitting the gap in as many words, but
-            # the marker list did not carry "مش موجود" — so an honest admission that happened
-            # to contain the word "شبه" was scored as an overclaim.
-            admitted = re.search(
-                r"(مفيش|مش\s+لاقي|مختلف|مش\s+نفس|مش\s+قريب|مش\s+موجود)", reply
-            )
-            if claimed and not admitted:
+            if checks.claims_unsupported_similarity(reply):
                 add("similarity_overclaim", "critical",
                     f"band '{similarity.get('best_band')}' for "
                     f"'{similarity.get('reference_name')}' but the reply asserts a lookalike")

@@ -70,6 +70,11 @@ FRESH_NOTE_EXPANSION = (
     "green tea", "lavender", "petitgrain",
 )
 
+# A clean accord is not a literal ingredient named 'clean'. These are recorded
+# notes that support that preference, not a guarantee of comfort or low projection.
+CLEAN_REQUEST_TERMS = ("clean", "نظافه", "نظافة", "نضيف", "نظيف")
+CLEAN_NOTE_EXPANSION = ("aldehyde", "white musk", "musk", "neroli", "lavender", "green tea", "iris")
+
 # Incense, and every word a customer or a store uses for it. Conversation 795's customer asked
 # for بخور; this catalogue types its notes in English; `expand_request_term` matches literally —
 # so the request scored 0.0 against every perfume in the store, including the two built on
@@ -95,6 +100,7 @@ INCENSE_NOTE_EXPANSION = (
 _REQUEST_EXPANSIONS = (
     (SWEET_REQUEST_TERMS, SWEET_NOTE_EXPANSION),
     (FRESH_REQUEST_TERMS, FRESH_NOTE_EXPANSION),
+    (CLEAN_REQUEST_TERMS, CLEAN_NOTE_EXPANSION),
     (INCENSE_REQUEST_TERMS, INCENSE_NOTE_EXPANSION),
 )
 
@@ -333,6 +339,7 @@ def terms_in(text):
                 candidate in NOTE_FAMILIES
                 or candidate in SWEET_REQUEST_TERMS
                 or candidate in FRESH_REQUEST_TERMS
+                or candidate in CLEAN_REQUEST_TERMS
             ):
                 if candidate not in found:
                     found.append(candidate)
@@ -367,6 +374,7 @@ LIGHT_FAMILIES = frozenset({"citrus", "aquatic", "green", "aromatic"})
 # families *are* what "منعش" describes, and the heaviness penalty already reads them that way.
 REQUEST_FAMILIES = (
     (FRESH_REQUEST_TERMS, LIGHT_FAMILIES),
+    (CLEAN_REQUEST_TERMS, frozenset({"aromatic", "musk", "green", "citrus"})),
     (SWEET_REQUEST_TERMS, frozenset({"gourmand"})),
 )
 

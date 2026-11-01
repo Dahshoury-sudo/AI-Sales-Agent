@@ -1,0 +1,807 @@
+{
+  "database": "isolated in-memory SQLite",
+  "catalogue_products": 251,
+  "models": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "OPENAI_SMART_MODEL": "gpt-5-mini",
+    "OPENAI_RESOLVER_MODEL": "gpt-5-mini"
+  },
+  "setup": "Original history before each target; explicit preference seeds reconstructed from preceding customer requests. Default store prompt; no saved custom store-settings snapshot available.",
+  "runs": [
+    {
+      "run": 1,
+      "case": "similarity",
+      "source_message_id": 7712,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Dark Aura",
+          "Showmix",
+          "Elite",
+          "Black Code",
+          "Fresh Vibe",
+          "Bonded",
+          "Scent Aura",
+          "Spicy Oud"
+        ],
+        "alternatives": [],
+        "keeping": [],
+        "dropped": {
+          "Elite": "مش قريب كفاية من Terre d'Hermes عشان نرشحه كبديل مشابه"
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "🔹 Dark Aura من تصميمنا، عطر مسائي دافي بتوابل وقاعدة غنية من التبغ والفانيليا والجلد، مناسب للخريف والشتا وفوحانه قوي. \n🔹 Showmix مناسب للنهار في الربيع والصيف، ريحته فاكهية منعشة مع لمسة خشبية دافئة وفوحانه متوسط.\n\nأنا أرشحلك Dark Aura أكتر لو بتحب العطور الدافية والتوابل، أما Showmix فهو خيار أخف وأنسب للنهار.",
+      "context": "\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Elite\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mint\nMiddle Notes: Cardamom, Lavender, Cinnamon\nBase Notes: Amber, Sandalwood\nDescription: Elite is a sophisticated aromatic-spicy fragrance created for a confident and distinguished presence. Fresh grapefruit and cool mint open the scent, followed by cardamom, lavender and warm cinnamon. Amber and sandalwood form a rich, smooth base that leaves an elegant and memorable impression.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: grapefruit — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\n",
+      "selected_products": [
+        "Dark Aura",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      }
+    },
+    {
+      "run": 1,
+      "case": "morning",
+      "source_message_id": 7718,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daily",
+        "projection": "moderate"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": "day",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "notes": [],
+        "brand": null,
+        "exclude_brands": [],
+        "exclude_names": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": "day",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "notes": [
+          "clean"
+        ],
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [],
+        "alternatives": [
+          "Bonded",
+          "Showmix",
+          "Black Code",
+          "Fresh Vibe",
+          "Scent Aura",
+          "Elite",
+          "Dark Aura",
+          "Spicy Oud"
+        ],
+        "keeping": [
+          "Bonded",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مناسبته المسجلة Evening، مش اللي قاله",
+          "Dark Aura": "مناسبته المسجلة Evening، مش اللي قاله"
+        },
+        "similarity": null,
+        "reference": null
+      },
+      "reply": "Bonded هو الأنسب للنهار مع ثبات حوالي 8 ساعات وفوحان متوسط، بس مش مسجل فيه الريحة النظيفة اللي طلبتها. Showmix برضه ثباته 8 ساعات وفوحانه متوسط، ومناسب للخروجات الكاجوال في الربيع والصيف، لكنه برضه مش مسجل فيه الريحة النظيفة. الاثنين دول أقرب حاجة عندنا للطلب بتاعك، مع ثبات كويس وفوحان معتدل. تحب أشرحلك أكتر عن واحد فيهم؟",
+      "context": "\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Elite\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mint\nMiddle Notes: Cardamom, Lavender, Cinnamon\nBase Notes: Amber, Sandalwood\nDescription: Elite is a sophisticated aromatic-spicy fragrance created for a confident and distinguished presence. Fresh grapefruit and cool mint open the scent, followed by cardamom, lavender and warm cinnamon. Amber and sandalwood form a rich, smooth base that leaves an elegant and memorable impression.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (10+ hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "occasion": "day",
+        "notes": [
+          "clean"
+        ],
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "sales_state": {}
+    },
+    {
+      "run": 1,
+      "case": "daily",
+      "source_message_id": 7724,
+      "message": "واعطيني العطر اليومي",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "errors": [],
+      "classification": "product_info",
+      "reply": "للنهار كنا اتكلمنا عن Bonded، Showmix. تقصد أنهي واحد؟",
+      "context": "OCCASION_REFERENCE_UNRESOLVED\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "sales_state": {}
+    },
+    {
+      "run": 2,
+      "case": "similarity",
+      "source_message_id": 7712,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Black Code",
+          "Elite"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [
+          "Black Code",
+          "Elite"
+        ],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Dark Aura",
+          "Showmix",
+          "Fresh Vibe",
+          "Bonded",
+          "Scent Aura",
+          "Spicy Oud"
+        ],
+        "alternatives": [],
+        "keeping": [],
+        "dropped": {
+          "Elite": null
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "لو بتدور على عطر رجالي دافي وقوي للسهرات، Dark Aura خيار ممتاز لأنه بيجمع بين التوابل والروائح الخشبية الغنية. أما لو حابب حاجة أخف وأنسب للاستخدام اليومي في النهار، Showmix بيقدم مزيج فاكهي منعش مع لمسة عطرية هادية.\n\nأنا أرشحلك Dark Aura أكتر لأنه مناسب للسهرات والشتا وفوحانه قوي، أما Showmix فهو أهدى وفوحانه متوسط وأفضل لفصل الربيع والصيف.",
+      "context": "\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Black Code,Elite\n",
+      "selected_products": [
+        "Dark Aura",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      }
+    },
+    {
+      "run": 2,
+      "case": "morning",
+      "source_message_id": 7718,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daily",
+        "projection": "moderate"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "occasion": "day",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "notes": [],
+        "brand": null,
+        "exclude_brands": [],
+        "exclude_names": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": "day",
+        "projection": "strong",
+        "longevity": "long-lasting",
+        "notes": [
+          "clean"
+        ],
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "exclude_names": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [],
+        "alternatives": [
+          "Bonded",
+          "Showmix",
+          "Black Code",
+          "Fresh Vibe",
+          "Scent Aura",
+          "Elite",
+          "Dark Aura",
+          "Spicy Oud"
+        ],
+        "keeping": [
+          "Bonded",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مناسبته المسجلة Evening، مش اللي قاله",
+          "Dark Aura": "مناسبته المسجلة Evening، مش اللي قاله"
+        },
+        "similarity": null,
+        "reference": null
+      },
+      "reply": "Bonded هو الأفضل للنهار مع ثبات حوالي 8 ساعات وفوحان متوسط، لكنه مش مسجل فيه الريحة النظيفة اللي طلبتها. Showmix برضه مناسب للنهار وثباته 8 ساعات وفوحانه متوسط، لكنه برضه مش مسجل فيه clean. الاثنين من تصميمنا حصريين ومناسبين للخروجات اليومية. لو عايز حاجة فوحانها أقوى أو ريحة نظيفة بالضبط، ممكن تحتاج تنازل في حاجة من طلبك.",
+      "context": "\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Elite\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mint\nMiddle Notes: Cardamom, Lavender, Cinnamon\nBase Notes: Amber, Sandalwood\nDescription: Elite is a sophisticated aromatic-spicy fragrance created for a confident and distinguished presence. Fresh grapefruit and cool mint open the scent, followed by cardamom, lavender and warm cinnamon. Amber and sandalwood form a rich, smooth base that leaves an elegant and memorable impression.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (10+ hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "occasion": "day",
+        "notes": [
+          "clean"
+        ],
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "sales_state": {}
+    },
+    {
+      "run": 2,
+      "case": "daily",
+      "source_message_id": 7724,
+      "message": "واعطيني العطر اليومي",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "errors": [],
+      "classification": "product_info",
+      "reply": "للنهار كنا اتكلمنا عن Bonded، Showmix. تقصد أنهي واحد؟",
+      "context": "OCCASION_REFERENCE_UNRESOLVED\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "sales_state": {}
+    },
+    {
+      "run": 3,
+      "case": "similarity",
+      "source_message_id": 7712,
+      "message": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [
+          "Dark Aura",
+          "Showmix",
+          "Elite",
+          "Black Code",
+          "Fresh Vibe",
+          "Bonded",
+          "Scent Aura",
+          "Spicy Oud"
+        ],
+        "alternatives": [],
+        "keeping": [],
+        "dropped": {
+          "Elite": "مش قريب كفاية من Terre d'Hermes عشان نرشحه كبديل مشابه"
+        },
+        "similarity": {
+          "reference_name": "Terre d'Hermes",
+          "reference_source": "catalogue",
+          "best_band": "loose",
+          "has_close_match": false
+        },
+        "reference": {
+          "name": "Terre d'Hermes",
+          "top_notes": "Orange, Grapefruit",
+          "middle_notes": "Pepper, Pelargonium, Flint",
+          "base_notes": "Vetiver, Cedar, Patchouli, Benzoin"
+        }
+      },
+      "reply": "🔹 Dark Aura عطر مسائي شتوي، فيه توابل وتبغ وفانيليا مع لمسة خشبية، مناسب لو بتحب ريحة أقوى من Terre d'Hermes.\n\n🔹 Showmix عطر نهاري منعش بفاكهة وخشب، مناسب للربيع والصيف، وطابعه مختلف عن Terre d'Hermes لكنه فيه نوتات مشتركة.\n\nأنا أرشحلك Dark Aura أكتر لو عايز ريحة دافية وقوية للسهرات، أما Showmix فهو خيار خفيف ومنعش للنهار.",
+      "context": "\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، orange. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Elite\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mint\nMiddle Notes: Cardamom, Lavender, Cinnamon\nBase Notes: Amber, Sandalwood\nDescription: Elite is a sophisticated aromatic-spicy fragrance created for a confident and distinguished presence. Fresh grapefruit and cool mint open the scent, followed by cardamom, lavender and warm cinnamon. Amber and sandalwood form a rich, smooth base that leaves an elegant and memorable impression.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: grapefruit — بس أقوى منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: vetiver. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Terre d'Hermes — مشترك في: patchouli، grapefruit. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n⚠️ مش مطابق في: مش قريب من Terre d'Hermes\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Terre d'Hermes\nBrand: Hermes\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Hermes) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Fall\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Grapefruit\nMiddle Notes: Pepper, Pelargonium, Flint\nBase Notes: Vetiver, Cedar, Patchouli, Benzoin\nDescription: Earthy citrus-woody scent with a mineral, elegant touch.\n\n-------------------------\n🔴 Terre d'Hermes متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\n",
+      "selected_products": [
+        "Dark Aura",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "similar_to": "Terre d'Hermès",
+        "similar_to_notes": [
+          "orange",
+          "grapefruit",
+          "pepper",
+          "vetiver",
+          "cedar"
+        ]
+      },
+      "sales_state": {
+        "similarity_request": {
+          "reference_name": "Terre d'Hermès",
+          "source_text": "طيب عندك عطر نفس نوتات تيري هيرمز او قريب منه"
+        }
+      }
+    },
+    {
+      "run": 3,
+      "case": "morning",
+      "source_message_id": 7718,
+      "message": "طيب ايه ترشحلي نهار حاجه حلوه وفواحه وثابته",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daily",
+        "projection": "moderate"
+      },
+      "errors": [],
+      "classification": "recommendation",
+      "extracted_intent": {
+        "gender": null,
+        "brand": null,
+        "exclude_brands": [],
+        "perfume_type": null,
+        "season": null,
+        "occasion": "daytime",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": [],
+        "perfume_type": null,
+        "season": null,
+        "occasion": "daytime",
+        "max_price": null,
+        "longevity": "long-lasting",
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [
+          "clean"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "search": {
+        "products": [],
+        "alternatives": [
+          "Bonded",
+          "Showmix",
+          "Black Code",
+          "Fresh Vibe",
+          "Scent Aura",
+          "Elite",
+          "Dark Aura",
+          "Spicy Oud"
+        ],
+        "keeping": [
+          "Bonded",
+          "Showmix"
+        ],
+        "dropped": {
+          "Elite": "مناسبته المسجلة Evening، مش اللي قاله",
+          "Dark Aura": "مناسبته المسجلة Evening، مش اللي قاله"
+        },
+        "similarity": null,
+        "reference": null
+      },
+      "reply": "Bonded هو أفضل اختيار لنهارك، ثباته حوالي 8 ساعات وفوحانه متوسط، مناسب للنهار رغم إنه فوحانه أقل شوية من اللي طلبته. Showmix برضه خيار جيد للنهار، ثابت 8 ساعات وفوحانه متوسط، لكنه مش مسجل فيه ريحة نظيفة (clean) زي ما طلبت. الاثنين من تصميمنا الخاص ومناسبين للخروجات اليومية. تحب أقولك عن الأسعار والأحجام؟",
+      "context": "\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية | العميل بيتكلم عنه بالفعل\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Fresh Vibe\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Sweet Orange\nMiddle Notes: Bergamot, Grapefruit, Ginger\nBase Notes: Aquatic Notes, Musk, Patchouli\nDescription: FreshVibe is an energising citrus-aquatic fragrance created for a clean, vibrant and effortlessly attractive presence. Juicy mandarin and sweet orange open the scent, followed by bergamot, grapefruit and warm ginger. Aquatic notes, smooth musk and earthy patchouli create a fresh, refined and lasting finish.\n\n-------------------------\n✅ ليه مناسب: مناسب للمناسبة اللي قالها | ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Scent Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange\nMiddle Notes: Ginger, Lavender, Rose\nBase Notes: Leather, Woody Notes, Amber\nDescription: Scent Aura is a refined aromatic-woody fragrance created for a bold, elegant and captivating presence. Bright mandarin orange opens the scent, followed by spicy ginger, calming lavender and a soft touch of rose. Leather, woody notes and amber create a warm, sophisticated and memorable finish.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه أقل من اللي طلبه شوية\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله | فوحانه أقل من اللي طلبه شوية\n\nName (الاسم الصحيح): Elite\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mint\nMiddle Notes: Cardamom, Lavender, Cinnamon\nBase Notes: Amber, Sandalwood\nDescription: Elite is a sophisticated aromatic-spicy fragrance created for a confident and distinguished presence. Fresh grapefruit and cool mint open the scent, followed by cardamom, lavender and warm cinnamon. Amber and sandalwood form a rich, smooth base that leaves an elegant and memorable impression.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Dark Aura\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cinnamon, Citruses\nMiddle Notes: Praline, Black Cardamom, Incense\nBase Notes: Tobacco, Vanilla, Black Amber, Leather, Patchouli\nDescription: Dark Aura is a dark woody-spicy fragrance blending warm cinnamon and citrus with praline, black cardamom and incense. Tobacco, vanilla, black amber, leather and patchouli create a rich, addictive and seductive finish made for the night.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (8 hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n\nName (الاسم الصحيح): Spicy Oud\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: من صنع المتجر\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Rose, Jasmine, Lily of the Valley\nMiddle Notes: Saffron, Agarwood (Oud)\nBase Notes: Musk, Amber, Agarwood (Oud)\nDescription: The combination of rose, jasmine and lily-of-the-valley adds floral elegance, while saffron, oud, musk and amber provide warmth and intensity. The result is balanced for both men and women, although its deep oud base gives it a slightly masculine character.\n\n-------------------------\n✅ ليه مناسب: ثباته بيطابق طلبه (10+ hours) | فوحانه بيطابق طلبه (Strong)\n⚠️ مش مطابق في: مش مسجل فيه clean | مناسبته المسجلة Evening، مش اللي قاله\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "occasion": "daytime",
+        "notes": [
+          "clean"
+        ],
+        "longevity": "long-lasting",
+        "projection": "strong"
+      },
+      "sales_state": {}
+    },
+    {
+      "run": 3,
+      "case": "daily",
+      "source_message_id": 7724,
+      "message": "واعطيني العطر اليومي",
+      "seed_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "errors": [],
+      "classification": "product_info",
+      "reply": "للنهار كنا اتكلمنا عن Bonded، Showmix. تقصد أنهي واحد؟",
+      "context": "OCCASION_REFERENCE_UNRESOLVED\n\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n\nName (الاسم الصحيح): Showmix\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Melon, Pineapple, Orange, Lavender\nMiddle Notes: Pink Pepper, Geranium\nBase Notes: Patchouli, Amber, Woody Notes\nDescription: ShowMix is a vibrant fruity-aromatic fragrance created for a confident and modern presence. Juicy melon, pineapple and orange blend with aromatic lavender, followed by spicy pink pepper and fresh geranium. Patchouli, amber and woody notes create a warm, refined and memorable finish.\n\n-------------------------\n",
+      "selected_products": [
+        "Bonded",
+        "Showmix"
+      ],
+      "merged_preferences": {
+        "gender": "male",
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "notes": [
+          "clean"
+        ],
+        "occasion": "daytime",
+        "projection": "strong",
+        "longevity": "long-lasting"
+      },
+      "sales_state": {}
+    }
+  ]
+}

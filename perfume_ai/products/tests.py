@@ -5118,11 +5118,12 @@ class UnresolvedGenderLeansUnisexTests(TestCase):
         "عايز حاجة من ديور" with no gender reached the recommend-and-ask path and came back in
         legacy cheapest-first order, never scored at all.
 
-        The second assertion is the boundary: gender alone still cannot order anything once it
-        is *resolved*, because then it is a hard filter and every survivor scores the same.
+        A soft brand now breaks equal-fit ties even with a resolved gender. A strict brand
+        and resolved gender remain only filters, so every survivor still scores the same.
         """
         self.assertTrue(sales_ranking.has_signal({"brand": "Dior"}))
-        self.assertFalse(sales_ranking.has_signal({"brand": "Dior", "gender": "male"}))
+        self.assertTrue(sales_ranking.has_signal({"brand": "Dior", "gender": "male"}))
+        self.assertFalse(sales_ranking.has_signal({"brand": "Dior", "gender": "male", "brand_strict": True}))
 
     def test_the_hedge_is_the_smallest_weight_in_the_table(self):
         """The specification, not a restatement of the constant.
@@ -6295,7 +6296,7 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
     def test_a_first_request_names_the_constraints_that_ruled_everything_out(self):
         """Not "دي كل الخيارات" — there was no list — and not the budget either. The reply owes
         the customer the one true reason: حريمي and Versace do not coexist in this catalogue."""
-        prompt = self._empty_turn(self.CONV931)
+        prompt = self._empty_turn({**self.CONV931, "brand_strict": True})
 
         self.assertIn("حريمي + من Versace", prompt)
         self.assertIn("مجموع", prompt)
@@ -6366,7 +6367,7 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
     def test_it_still_names_the_constraints_when_something_was_shown_earlier(self):
         """Having shown perfumes under other constraints changes who is owed what, not the
         reason. The customer still gets حريمي + Versace, and still not the budget."""
-        prompt = self._empty_turn(self.CONV931, history=self._shown())
+        prompt = self._empty_turn({**self.CONV931, "brand_strict": True}, history=self._shown())
 
         self.assertIn("حريمي + من Versace", prompt)
         self.assertIn("مجموع", prompt)
@@ -6417,6 +6418,7 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
         reaches this branch at all."""
         phrases = sales_constraints.describe_filters({
             "gender": "female", "brand": "Versace", "perfume_type": "niche",
+            "brand_strict": True,
             "season": "summer", "notes": ["vanilla"], "max_price": 1200,
             "occasion": "evening", "longevity": "long-lasting",
         })
@@ -6425,7 +6427,7 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
 
     def test_the_store_own_blend_marker_is_rendered_as_words(self):
         self.assertEqual(
-            sales_constraints.describe_filters({"brand": "STORE_BRAND_EXCLUSIVE"}), ["من تركيباتنا الخاصة"]
+            sales_constraints.describe_filters({"brand": "STORE_BRAND_EXCLUSIVE", "brand_strict": True}), ["من تركيباتنا الخاصة"]
         )
 
     def test_a_routing_gender_is_not_a_constraint_to_relax(self):
@@ -6446,7 +6448,7 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
         self.assertEqual(set(values), set(HARD_FILTER_KEYS))
         for key in HARD_FILTER_KEYS:
             with self.subTest(key=key):
-                self.assertTrue(sales_constraints.describe_filters({key: values[key]}))
+                self.assertTrue(sales_constraints.describe_filters({key: values[key], "brand_strict": True}))
 
     # ── the premise the whole fix rests on ────────────────────────────────
     def test_a_completely_empty_search_is_never_the_budgets_fault(self):
@@ -6703,11 +6705,11 @@ class AcceptedRelaxationClearsTheConstraintTests(TestCase):
 
         with mock.patch.object(recommendation, "chat", return_value="ok"):
             _, context = recommendation.recommend(
-                "عايز حاجه حريمي من فيرزاتشي",
+                "عايز حاجه حريمي من فيرزاتشي فقط",
                 Product.objects.none(),
                 alternatives=Product.objects.none(),
                 store=self.store,
-                intent=dict(self.CONV932),
+                intent={**self.CONV932, "brand_strict": True},
             )
 
         self.assertIn(sales_described.PENDING_RELAX_MARKER, context)
@@ -6721,11 +6723,11 @@ class AcceptedRelaxationClearsTheConstraintTests(TestCase):
 
         with mock.patch.object(recommendation, "chat", return_value="ok"):
             _, context = recommendation.recommend(
-                "عايز حاجه حريمي من توم فورد",
+                "عايز حاجه حريمي من توم فورد فقط",
                 Product.objects.none(),
                 alternatives=Product.objects.none(),
                 store=self.store,
-                intent={"brand": "Tom Ford", "gender": "female"},
+                intent={"brand": "Tom Ford", "brand_strict": True, "gender": "female"},
             )
         save_message(self.conversation, "assistant", "ok", internal_context=context)
 
@@ -7239,14 +7241,15 @@ class SalesScenarioTests(TestCase):
 
         self.assertIn("ممنوع تذكر نسبة مئوية للتشابه", recommend_prompt)
 
-    def test_b_no_close_match_is_admitted_rather_than_faked(self):
+    def test_b_no_close_match_leads_with_grounded_alternatives(self):
         recommend_prompt, _ = self._route_recommendation(
             "عايز حاجة شبه Creed Aventus",
             {"gender": "male", "similar_to": "Creed Aventus",
              "similar_to_notes": ["pineapple", "birch", "ambergris"]},
         )
 
-        self.assertIn("مفيش حاجة قريبة", recommend_prompt)
+        self.assertIn("ابدأ مباشرة بترشيح أفضل عطر أو عطرين", recommend_prompt)
+        self.assertNotIn("مفيش حاجة قريبة", recommend_prompt)
         self.assertIn("ممنوع تقول عن أي عطر إنه شبهه", recommend_prompt)
 
     # ---- C: identification from clues ----
@@ -18474,7 +18477,7 @@ class Conv973SaidItTwiceTests(TestCase):
         """Both markers on one turn: the no-match branch writes `relax_offer_block` and this one
         appends, so a turn that offers to drop a filter and records a move-past writes both."""
         context = sales_described.relax_offer_block(
-            {"brand": "Gucci"}
+            {"brand": "Gucci", "brand_strict": True}
         ) + sales_described.moved_past_block({"exclude_names": ["Bloom"]}, self.store)
         self._reply("مفيش حاجة تانية، تحب أشيل شرط البراند؟", context=context)
 
