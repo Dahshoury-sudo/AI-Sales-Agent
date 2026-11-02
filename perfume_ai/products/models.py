@@ -18,6 +18,8 @@ class Store(models.Model):
 
 class StoreSettings(models.Model):
     store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name="settings")
+    message_replies_enabled = models.BooleanField(default=True)
+    comment_replies_enabled = models.BooleanField(default=True)
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
     website_ordering_enabled = models.BooleanField(
         default=False,

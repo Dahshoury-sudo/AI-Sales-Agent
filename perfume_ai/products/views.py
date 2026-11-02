@@ -105,7 +105,7 @@ class ChatMessagesAPIView(APIView):
         if conversation is None or conversation.platform != "web":
             return Response({"error": "Conversation not found"}, status=404)
         rows = list(conversation.messages.filter(id__gt=after, role__in=["user", "assistant", "agent"])
-            .exclude(delivery_status__in=["pending", "sending", "failed", "uncertain"]).order_by("id")[:100])
+            .exclude(delivery_status__in=["pending", "sending", "failed", "uncertain", "suppressed"]).order_by("id")[:100])
         return Response({"messages": [{"id": m.pk, "role": m.role, "content": m.content,
             "attachment_url": m.attachment_url, "created_at": m.created_at.isoformat()} for m in rows],
             "after_id": rows[-1].pk if rows else after, "needs_human": conversation.needs_human})
@@ -333,7 +333,7 @@ class HandoffConversationsAPIView(APIView):
 
     def get(self, request):
         store = request.store
-        latest = Message.objects.filter(conversation_id=OuterRef("pk")).order_by("-created_at", "-id")
+        latest = Message.objects.filter(conversation_id=OuterRef("pk")).exclude(delivery_status="suppressed").order_by("-created_at", "-id")
         convs = Conversation.objects.filter(store=store, needs_human=True).annotate(
             last_message_at=Coalesce(Subquery(latest.values("created_at")[:1]), F("created_at")),
             latest_message_id=Subquery(latest.values("id")[:1]),
@@ -368,7 +368,7 @@ class HandoffMessagesAPIView(APIView):
         except Conversation.DoesNotExist:
             return Response({"error": "Conversation not found"}, status=404)
             
-        msgs = conv.messages.order_by('created_at', 'id')
+        msgs = conv.messages.exclude(delivery_status="suppressed").order_by('created_at', 'id')
         data = []
         for m in msgs:
             data.append({
@@ -473,7 +473,7 @@ class ChatHistoryConversationsAPIView(APIView):
         
         data = []
         for c in convs:
-            msgs = list(c.messages.all())
+            msgs = [m for m in c.messages.all() if m.delivery_status != "suppressed"]
             last_msg = sorted(msgs, key=lambda m: m.created_at, reverse=True)[0] if msgs else None
             data.append({
                 "id": c.id,

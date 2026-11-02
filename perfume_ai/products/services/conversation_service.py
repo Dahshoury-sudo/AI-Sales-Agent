@@ -74,6 +74,43 @@ def receive_event(store, platform, sender_id, text, source_id=None, conversation
             sender_id=sender_id, text=text, conversation=conversation, attachment_url=attachment_url)
 
 
+def suppress_message_event(event):
+    """Save an inbound message without a reply; caller holds its conversation lock.
+
+    Completed receipts cannot be replayed after re-enabling. Only drafts that
+    never entered delivery are suppressed; uncertain/sent replies retain their
+    delivery evidence for the task's normal reconciliation.
+    """
+    with transaction.atomic():
+        event.refresh_from_db()
+        if event.status == "complete":
+            return True
+        if event.reply_message_id:
+            reply = Message.objects.get(pk=event.reply_message_id)
+            if reply.delivery_status == "pending" and reply.delivery_parts:
+                reply.delivery_status = "uncertain"
+                reply.save(update_fields=["delivery_status"])
+            if reply.delivery_status != "pending" or reply.delivery_parts:
+                return False
+            reply.delivery_status = "suppressed"
+            reply.save(update_fields=["delivery_status"])
+        conversation = Conversation.objects.get(pk=event.conversation_id)
+        if not event.user_message_id:
+            event.user_message = save_message(
+                conversation, "user", event.text, attachment_url=event.attachment_url)
+            if conversation.needs_human:
+                from .notification_service import notify_handoff_message
+                event.user_message.handoff_unread = True
+                event.user_message.save(update_fields=["handoff_unread"])
+                notify_handoff_message(event.user_message)
+        event.status = "complete"
+        event.result = {"reply": "", "needs_human": conversation.needs_human,
+                        "user_message_id": event.user_message_id,
+                        "reason": "message_replies_disabled"}
+        event.save()
+        return True
+
+
 def generate_event(event, route_func, sanitize_func):
     """Commit the state changes and their saved reply together; delivery follows commit."""
     if event.status != "pending":
@@ -195,7 +232,7 @@ def save_message(conversation, role, content, internal_context="", attachment_ur
 
 
 def get_conversation_messages(conversation, limit=8):
-    messages = conversation.messages.exclude(role="assistant", delivery_status__in=["pending", "sending", "failed", "uncertain"]).order_by("-created_at", "-id")[:limit]
+    messages = conversation.messages.exclude(role="assistant", delivery_status__in=["pending", "sending", "failed", "uncertain", "suppressed"]).order_by("-created_at", "-id")[:limit]
     return reversed(messages)
 
 

@@ -10,6 +10,7 @@ from products.services.conversation_service import (
     build_llm_history,
     save_message,
     conversation_lock, receive_event, generate_event, pending_through, remember_offered,
+    suppress_message_event,
 )
 from products.services.router import route
 from products.services.reply_sanitizer import sanitize_reply
@@ -23,6 +24,8 @@ from products.services.meta_service import (
 )
 from products.services.notification_service import notify_delivery_failure
 from products.services import rate_limit
+from products.services.response_policy import message_replies_enabled, comment_replies_enabled
+from products.services.comment_filter import should_reply_to_post
 
 logger = logging.getLogger(__name__)
 
@@ -112,24 +115,24 @@ def _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, 
     acks_late=True,                   # only ack after the task succeeds
 )
 def process_incoming_message(self, store_id, platform, sender_id, text, deferrals=0, event_id=None, source_id=None):
-    buckets = _rate_limit_buckets(store_id, platform, sender_id)
-    if deferrals:
-        allowed, retry_after = rate_limit.peek(buckets)
-        exhausted = None if allowed else "still over limit"
-    else:
-        allowed, retry_after, exhausted = rate_limit.hit_all(buckets)
-    if not allowed:
-        _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted,
-                       event_id, source_id or self.request.id)
-        return
     try:
+        if message_replies_enabled(store_id, platform):
+            buckets = _rate_limit_buckets(store_id, platform, sender_id)
+            if deferrals:
+                allowed, retry_after = rate_limit.peek(buckets)
+                exhausted = None if allowed else "still over limit"
+            else:
+                allowed, retry_after, exhausted = rate_limit.hit_all(buckets)
+            if not allowed:
+                _defer_or_drop(store_id, platform, sender_id, text, deferrals, retry_after, exhausted,
+                               event_id, source_id or self.request.id)
+                return
         store = Store.objects.get(id=store_id)
         event = InboundEvent.objects.get(pk=event_id, store=store) if event_id else receive_event(
             store, platform, sender_id, text, source_id or self.request.id)
         with conversation_lock(f"conversation:{event.conversation_id}"):
             for waiting in pending_through(event):
-                generate_event(waiting, _attachment_route if waiting.attachment_url else route, sanitize_reply)
-                _deliver_event(waiting)
+                _process_message_event(waiting)
     except Exception as exc:
         logger.exception("Message processing failed for store %s", store_id)
         raise self.retry(exc=exc)
@@ -137,12 +140,33 @@ def process_incoming_message(self, store_id, platform, sender_id, text, deferral
 
 
 def process_message_async(store_id, platform, sender_id, text, source_id=None):
-    if source_id:
-        store = Store.objects.get(pk=store_id)
+    store = Store.objects.get(pk=store_id)
+    enabled = message_replies_enabled(store_id, platform)
+    if source_id or not enabled:
         event = receive_event(store, platform, sender_id, text, source_id)
+        if not enabled:
+            _record_silent_event(event)
+            return
         process_incoming_message.delay(store_id, platform, sender_id, text, event_id=event.pk)
     else:
         process_incoming_message.delay(store_id, platform, sender_id, text)
+
+
+def _record_silent_event(event):
+    with conversation_lock(f"conversation:{event.conversation_id}"):
+        if not suppress_message_event(event):
+            _deliver_event(event)
+
+
+def _process_message_event(event):
+    # Check every queued event, including older turns drained by pending_through.
+    # Once generation starts this turn may finish even if the switch changes.
+    if not message_replies_enabled(event.store_id, event.platform):
+        if not suppress_message_event(event):
+            _deliver_event(event)
+        return
+    generate_event(event, _attachment_route if event.attachment_url else route, sanitize_reply)
+    _deliver_event(event)
 
 
 def _deliver_event(event):
@@ -200,17 +224,20 @@ def process_incoming_attachment(self, store_id, platform, sender_id, image_url, 
             store, platform, sender_id, caption or "📎 أرسل صورة", source_id or self.request.id, attachment_url=image_url)
         with conversation_lock(f"conversation:{event.conversation_id}"):
             for waiting in pending_through(event):
-                generate_event(waiting, _attachment_route if waiting.attachment_url else route, sanitize_reply)
-                _deliver_event(waiting)
+                _process_message_event(waiting)
     except Exception as exc:
         raise self.retry(exc=exc)
 
 
 
 def process_attachment_async(store_id, platform, sender_id, image_url, caption="", source_id=None):
-    if source_id:
-        store = Store.objects.get(pk=store_id)
+    store = Store.objects.get(pk=store_id)
+    enabled = message_replies_enabled(store_id, platform)
+    if source_id or not enabled:
         event = receive_event(store, platform, sender_id, caption or "📎 أرسل صورة", source_id, attachment_url=image_url)
+        if not enabled:
+            _record_silent_event(event)
+            return
         process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption, event_id=event.pk)
     else:
         process_incoming_attachment.delay(store_id, platform, sender_id, image_url, caption)
@@ -256,8 +283,12 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
     """
     try:
         # ── 1. Load store + settings ────────────────────────────────────────
+        if not comment_replies_enabled(store_id):
+            return
         store = Store.objects.get(id=store_id)
         store_settings = store.settings
+        if not should_reply_to_post(store, platform, post_id):
+            return
         token = store_settings.messenger_access_token or store_settings.meta_access_token
 
         if not token:
@@ -329,6 +360,8 @@ def process_comment_async(store_id, platform, comment_id, commenter_id, comment_
     and WhatsApp messages: a sleeping task held a slot outright, and a couple of
     comments could stall live conversations.
     """
+    if not comment_replies_enabled(store_id):
+        return
     countdown = random.randint(*COMMENT_REPLY_DELAY_RANGE)
     logger.info(
         f"Comment {comment_id}: replying in {countdown}s "

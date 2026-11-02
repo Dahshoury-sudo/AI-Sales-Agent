@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - WebVitas AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}?v=premium-20261012">
+    <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}?v=replies-20261102">
     {% include 'dashboard/includes/theme_head.html' %}
     <link rel="stylesheet" href="{% static 'dashboard/pages/analytics.css' %}?v=20261022">
     <script src="{% static 'dashboard/analytics.js' %}?v=20261022" defer></script>
@@ -275,6 +275,27 @@
                 <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
             </div>
 
+            <section class="settings-card settings-panel" aria-labelledby="reply-controls-heading">
+                <div class="settings-intro">
+                    <h3 id="reply-controls-heading"><i class="fas fa-robot" aria-hidden="true"></i> الردود التلقائية</h3>
+                    <p>اختر أين يرد المساعد. يتم حفظ كل تغيير فوراً. الرد الجاري تجهيزه قد يكتمل بعد الإيقاف.</p>
+                </div>
+                <div class="settings-fields" id="reply-controls" aria-busy="true">
+                    <div class="reply-control">
+                        <label for="message-replies-enabled">الرد على الرسائل</label>
+                        <input id="message-replies-enabled" type="checkbox" role="switch" data-reply-field="message_replies_enabled" aria-describedby="message-replies-help" disabled>
+                    </div>
+                    <p class="reply-control-help" id="message-replies-help">ماسنجر وإنستجرام وواتساب. عند الإيقاف، تُحفظ الرسائل والصور في السجل بدون رد تلقائي. شات الموقع والردود اليدوية يظلان متاحين.</p>
+                    <div class="reply-control">
+                        <label for="comment-replies-enabled">الرد على التعليقات</label>
+                        <input id="comment-replies-enabled" type="checkbox" role="switch" data-reply-field="comment_replies_enabled" aria-describedby="comment-replies-help" disabled>
+                    </div>
+                    <p class="reply-control-help" id="comment-replies-help">تعليقات فيسبوك وإنستجرام. يرسل المساعد الرد العلني والإجابة في الخاص، حتى لو كان الرد على الرسائل متوقفاً.</p>
+                    <p id="reply-controls-status" role="status" aria-live="polite">جاري تحميل إعدادات الرد…</p>
+                    <button type="button" class="btn btn-secondary btn-sm" id="reply-controls-retry" hidden>إعادة تحميل الإعدادات</button>
+                </div>
+            </section>
+
             <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fab fa-whatsapp"></i> واتساب</h3><p>اربط رقم متجرك لاستقبال المحادثات على واتساب.</p></div><div class="settings-fields"><div class="form-group">
                     <label>WhatsApp Phone Number ID</label>
                     <input type="text" id="meta-wa-phone-id" placeholder="مثال: 1234567890">
@@ -497,6 +518,7 @@ Check your DM, we replied!
     <div class="toast" role="status" aria-live="polite" id="toast"></div>
 
     <script src="{% static 'dashboard/notifications.js' %}?v=requests-20261023"></script>
+    <script src="{% static 'dashboard/reply_controls.js' %}?v=20261102"></script>
     <script>
         const API_BASE = '/dashboard/api';
         let currentProductPage = 1;
@@ -555,7 +577,10 @@ Check your DM, we replied!
             }
             if (name === 'products')   loadProducts();
             if (name === 'settings')   loadSettings();
-            if (name === 'meta')       loadMetaSettings();
+            if (name === 'meta') {
+                loadMetaSettings();
+                window.ReplyControls.load();
+            }
             if (name === 'notifications') loadNotifications();
             if (name === 'faq')        loadFaqs();
             if (name === 'post_rules') loadPostRules();

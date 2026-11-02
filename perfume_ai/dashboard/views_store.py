@@ -18,7 +18,7 @@ class StoreSettingsView(APIView):
         try:
             settings = store.settings
         except StoreSettings.DoesNotExist:
-            settings = StoreSettings.objects.create(store=store)
+            settings, _ = StoreSettings.objects.get_or_create(store=store)
 
         return Response({
             "system_prompt": settings.system_prompt,
@@ -35,16 +35,19 @@ class StoreSettingsView(APIView):
             "bottle_image_url": settings.bottle_image_url,
             "business_facts": settings.business_facts,
             "website_ordering_enabled": settings.website_ordering_enabled,
+            "message_replies_enabled": settings.message_replies_enabled,
+            "comment_replies_enabled": settings.comment_replies_enabled,
         })
 
     def put(self, request):
         store = request.store
-        if "website_ordering_enabled" in request.data and type(request.data["website_ordering_enabled"]) is not bool:
-            return Response({"website_ordering_enabled": "Must be true or false."}, status=400)
+        for field in ("website_ordering_enabled", "message_replies_enabled", "comment_replies_enabled"):
+            if field in request.data and type(request.data[field]) is not bool:
+                return Response({field: "Must be true or false."}, status=400)
         try:
             settings = store.settings
         except StoreSettings.DoesNotExist:
-            settings = StoreSettings.objects.create(store=store)
+            settings, _ = StoreSettings.objects.get_or_create(store=store)
 
         updatable_fields = [
             "system_prompt", "whatsapp_number", "meta_verify_token",
@@ -53,8 +56,10 @@ class StoreSettingsView(APIView):
             "comment_reply_messages", "payment_instructions",
             "bottle_image_url", "business_facts",
             "website_ordering_enabled",
+            "message_replies_enabled", "comment_replies_enabled",
         ]
 
+        updated_fields = []
         for field in updatable_fields:
             value = request.data.get(field)
             if value is not None:
@@ -62,8 +67,9 @@ class StoreSettingsView(APIView):
                 if value == "••••••••":
                     continue
                 setattr(settings, field, value)
+                updated_fields.append(field)
 
-        settings.save()
+        settings.save(update_fields=updated_fields)
         return Response({"message": "Settings updated successfully."})
 
 
