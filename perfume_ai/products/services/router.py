@@ -147,7 +147,12 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     from .reply_sanitizer import product_claim_issues
     from products.models import Product
     catalogue = list(Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")) if store else []
-    rows = [p for p in catalogue if p.name.casefold() in (context or "").casefold()]
+    evidence = quote_evidence(context)
+    # Only actual product rows and quotations supply evidence; names in notes,
+    # labels (e.g. Pi in "Value Pick") and flanker warnings do not.
+    row_names = sales_described._row_names(context or "", [p.name for p in catalogue])
+    quoted_ids = {q.get("product_id") for q in evidence.get("quotes", [])}
+    rows = [p for p in catalogue if p.name in row_names or p.pk in quoted_ids]
     # Reference rows supply comparison facts, not products to offer in recovery.
     offer_rows = list(recommendation_candidates) if recommendation_candidates is not None else rows
     facts = product_claim_facts(rows)
@@ -159,7 +164,6 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             sources += [config.business_facts or "", config.payment_instructions or ""]
         sources += list(StaticFAQ.objects.filter(store=store, is_active=True).values_list("answer", flat=True))
     sources += [m.get("content", "") for m in history or [] if m.get("role") == "user"]
-    evidence = quote_evidence(context)
     if evidence.get("budget") is not None:
         sources.append("ميزانية " + evidence["budget"] + " جنيه")
     if evidence and not evidence.get("append"):

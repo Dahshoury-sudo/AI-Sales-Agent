@@ -298,6 +298,96 @@ class Conversation1069Tests(BugFixture):
         self.assertIn("تقصد", reply)
 
 
+class Conversation1241PriceValidationTests(BugFixture):
+    def setUp(self):
+        super().setUp()
+        from products.services.product_formatting import format_products
+
+        brand = Brand.objects.create(store=self.store, name="Jean Paul Gaultier")
+        self.lover = Product.objects.create(
+            store=self.store, brand=brand, name="Le male Lover", top_notes="White Pepper",
+        )
+        self.lover50 = ProductVariant.objects.create(product=self.lover, volume=50, price=750)
+        ProductVariant.objects.create(product=self.lover, volume=90, price=1000)
+        self.decoys = []
+        for name in ("Pi", "Si", "White", "Le male Elixir", "Le male la perfume", "Ultra Male"):
+            product = Product.objects.create(store=self.store, brand=brand, name=name)
+            ProductVariant.objects.create(product=product, volume=50, price=999)
+            self.decoys.append(product)
+        self.context = format_products([self.lover])
+
+    def test_correct_prices_without_english_name_do_not_ask_to_identify_again(self):
+        from products.services.router import _rephrased
+
+        for name in ("", "لاميل لوفير "):
+            draft = (name + "للأسف مش متوفر منه زجاجة اوريجنال حالياً. "
+                     "المتاح زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه و50 ملي بـ750 جنيه.")
+            with self.subTest(name=name):
+                retry = Mock(return_value=(draft, self.context))
+                reply, _, _ = _rephrased(draft, self.context, [], self.store, retry)
+                self.assertEqual(reply, draft)
+                retry.assert_not_called()
+
+    def test_1242_availability_reply_still_passes(self):
+        from products.services.router import _rephrased
+
+        draft = "عطر Le male Lover متوفر عندنا يا فندم، تحب تعرف إذا فيه حجم معين حابب تعرف سعره؟"
+        retry = Mock(return_value=(draft, self.context))
+        reply, _, _ = _rephrased(draft, self.context, [], self.store, retry)
+        self.assertEqual(reply, draft)
+        retry.assert_not_called()
+
+    def test_names_in_notes_labels_and_warnings_cannot_support_prices(self):
+        from products.services.router import _rephrased
+
+        for product in self.decoys:
+            with self.subTest(name=product.name):
+                self.assertIn(product.name.casefold(), self.context.casefold())
+                draft = f"{product.name} 50 ملي بـ999 جنيه."
+                retry = Mock(return_value=(draft, self.context))
+                reply, _, _ = _rephrased(draft, self.context, [], self.store, retry)
+                retry.assert_called_once()
+                self.assertNotIn("999", reply)
+
+    def test_wrong_size_price_still_gets_corrected(self):
+        from products.services.router import _rephrased
+        from products.services.product_formatting import product_price_issues, quote_evidence
+
+        draft = "Le male Lover 50 ملي بـ1000 جنيه."
+        retry = Mock(return_value=(draft, self.context))
+        reply, context, _ = _rephrased(draft, self.context, [], self.store, retry)
+        retry.assert_called_once()
+        self.assertNotIn(draft, reply)
+        self.assertIn("750", reply)
+        self.assertFalse(product_price_issues(reply, [self.lover], evidence=quote_evidence(context)))
+
+    def test_multiple_actual_product_rows_still_support_their_prices(self):
+        from products.services.router import _rephrased
+        from products.services.product_formatting import format_products
+
+        context = format_products([self.lover, self.a])
+        draft = "Le male Lover 50 ملي بـ750 جنيه. Vanilo 50 ملي بـ607 جنيه."
+        for heading in ("Name (الاسم الصحيح):", "Name:"):
+            with self.subTest(heading=heading):
+                current = context.replace("Name (الاسم الصحيح):", heading)
+                retry = Mock(return_value=(draft, current))
+                reply, _, _ = _rephrased(draft, current, [], self.store, retry)
+                self.assertEqual(reply, draft)
+                retry.assert_not_called()
+
+    def test_quotation_ids_support_replies_without_product_headings(self):
+        from products.services.router import _rephrased
+        from products.services.product_formatting import ProductQuote, quote_context, render_quotes
+
+        quotes = [ProductQuote.from_variant(self.lover50)]
+        draft = render_quotes(quotes, include_name=False)
+        context = quote_context("", quotes, rendered=draft)
+        retry = Mock(return_value=(draft, context))
+        reply, _, _ = _rephrased(draft, context, [], self.store, retry)
+        self.assertEqual(reply, draft)
+        retry.assert_not_called()
+
+
 class Conversation1163RecommendationTests(BugFixture):
     def setUp(self):
         super().setUp()
