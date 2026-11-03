@@ -594,6 +594,25 @@ def _cart_recap(conversation, items_to_create, total_price):
     return recap + "\n"
 
 
+def _missing_product_fields(products_data):
+    fields = []
+    for product in products_data:
+        if not isinstance(product, dict):
+            continue
+        missing = []
+        if "product_obj" in product:
+            if "available_volumes_display" in product:
+                volumes = "، ".join(product["available_volumes_display"])
+                missing.append(f"الحجم المطلوب (متاح: {volumes})")
+            if product.get("missing_bottle_type"):
+                missing.append(f"نوع الزجاجة ({ORIGINAL_BOTTLE} أم {NORMAL_BOTTLE}؟)")
+        if not product.get("quantity"):
+            product["quantity"] = 1
+        if missing:
+            fields.append(f"{' و '.join(missing)} من عطر {product.get('name')}")
+    return fields
+
+
 @_serialized
 def handle_order(message, history, store, conversation):
     """
@@ -621,6 +640,8 @@ def handle_order(message, history, store, conversation):
         if previous:
             return _order_success(previous), ""
     cart = get_cart(conversation)
+    previous_quantities = {line["name"].casefold(): line.get("quantity", 1)
+                           for line in _saved_lines(cart) if isinstance(line.get("name"), str)}
 
     from .sales.constraints import explicit_updates
     from .conversation_service import merge_preferences
@@ -638,10 +659,14 @@ customer's LATEST message to it.
 
 Rules:
 1. "customer_name": The customer's name. Use the saved value unless the latest message gives a new one.
+   Copy an explicitly supplied name (for example after "اسمي") verbatim, even if it is unusual
+   or a nickname. Do not judge whether it looks like a real name, discard it, or invent a replacement.
 2. "customer_phone": The customer's primary phone. Use the saved value unless the latest message gives a new one.
 3. "shipping_address": The customer's full delivery address. Use the saved value unless the latest message gives a new one.
 4. "customer_secondary_phone": The alternative phone. Use the saved value unless the latest message gives a new one.
 5. "products": The FULL list of products in the cart AFTER applying the latest message:
+   - Never add an edition/flanker word that the customer did not supply or already choose.
+     An underspecified perfume name stays underspecified; do not pick a stocked edition for them.
    - Customer adds a perfume → the saved items PLUS the new one.
    - Customer changes the size or bottle type of something already saved → return that perfume ONCE with the new size/type, do NOT duplicate it.
    - Customer removes a perfume → the saved items WITHOUT it.
@@ -790,6 +815,12 @@ Return valid JSON in this exact format:
             # "عايز اطلب امبيرو 90 ملي" was answered with Stronger With You Intensely at 780 and
             # confirmed with the customer's real name, phones and address.
             if not product and not Product.objects.filter(store=store, name__iexact=p_name).exists():
+                exact, partial = naming.candidates(p_name, store)
+                candidates = exact or partial
+                if len(candidates) > 1:
+                    p_data["ambiguous_name"] = True
+                    options = "، ".join(candidate.name for candidate in candidates)
+                    raise _LineProblem((f"اسم {p_name} ينطبق على أكتر من إصدار. تقصد أنهي واحد: {options}؟", ""))
                 product = resolve_product(message=p_name, store=store)
             # The extractor may name a perfume the customer never typed, having resolved a
             # demonstrative against an earlier turn. That is usually right, and it stays right here —
@@ -1000,7 +1031,9 @@ Return valid JSON in this exact format:
         cart.pending_items = pending_lines
         cart.save(update_fields=["pending_items"])
     unknown = [p for p in products_data
-               if not p.get("_resolved") and not p.get("product_obj") and not p.get("house_choice")]
+               if not p.get("_resolved") and not p.get("product_obj")
+               and not p.get("house_choice") and not p.get("ambiguous_name")]
+    product_missing_fields = _missing_product_fields(products_data)
     # One question per house, whatever the cart looks like otherwise. A house line can never be
     # carted and never blocks confirmation, because it is not a product the customer chose — the
     # next turn replaces it with the name they pick.
@@ -1015,13 +1048,8 @@ Return valid JSON in this exact format:
         # follows it instead of being swallowed by the early return.
         details = [_house_choice_question(brand, store) for brand in house_questions]
         details.extend(issue[0] for issue in issues)
-        bottle_questions = [
-            f"نوع الزجاجة ({ORIGINAL_BOTTLE} أم {NORMAL_BOTTLE}؟) من عطر {p.get('name')}"
-            for p in products_data
-            if isinstance(p, dict) and p.get("missing_bottle_type")
-        ]
-        if bottle_questions:
-            details.append("تمام 👌 بس محتاج أعرف " + " و ".join(bottle_questions) + "؟")
+        if product_missing_fields:
+            details.append("تمام 👌 بس محتاج أعرف " + " و ".join(product_missing_fields) + "؟")
         return "\n".join(details), context_str
     if issues or unknown:
         details = [issue[0] for issue in issues]
@@ -1037,35 +1065,21 @@ Return valid JSON in this exact format:
                 details.append(f"{p['name']} مش متاح حالياً. تحب نشوف بديل مناسب ليك؟")
             unrecognised = [p for p in unknown if p not in unavailable]
             if unrecognised:
-                details.append("لسه محتاج أتأكد من: " + "، ".join(p["name"] for p in unrecognised) + ". الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.")
+                changed = [p for p in unrecognised if p["name"].casefold() in previous_quantities
+                           and previous_quantities[p["name"].casefold()] != p.get("quantity", 1)]
+                if changed:
+                    details.append("تمام، عدلت الكمية لـ " + "، ".join(
+                        f"{p['quantity']} × {p['name']}" for p in changed) + ".")
+                labels = [f"{p.get('quantity') or 1} × {p['name']}" +
+                          (f" ({p['volume']} ملي)" if p.get("volume") else "") for p in unrecognised]
+                details.append("لسه محتاج أتأكد من: " + "، ".join(labels) +
+                               ". ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟")
+        if product_missing_fields:
+            details.append("وبالنسبة لباقي الاختيارات، محتاج أعرف " +
+                           " و ".join(product_missing_fields) + "؟")
         return _cart_recap(conversation, items_to_create, total_price) + "\n".join(details), context_str
 
     # 2. Check for missing product details FIRST (size, bottle type, quantity)
-    product_missing_fields = []
-    for p in products_data:
-        if not isinstance(p, dict): continue
-        
-        missing_for_this_product = []
-        if "product_obj" in p:
-            if "available_volumes_display" in p:
-                vols = "، ".join(p["available_volumes_display"])
-                missing_for_this_product.append(f"الحجم المطلوب (متاح: {vols})")
-            if p.get("missing_bottle_type"):
-                missing_for_this_product.append(f"نوع الزجاجة ({ORIGINAL_BOTTLE} أم {NORMAL_BOTTLE}؟)")
-            
-        # Check quantities for products
-        # A missing quantity defaults to one bottle rather than blocking the turn.
-        # "عايز اطلب امبيرو 90 ملي" plainly means one, and answering it with "محتاج أعرف
-        # كمية الزجاجات المطلوبة" is friction a salesperson would never add. Only an
-        # explicit larger quantity changes it, and the summary shows the count before
-        # anything is confirmed, so a customer who meant two can still correct it.
-        if not p.get("quantity"):
-            p["quantity"] = 1
-            
-        if missing_for_this_product:
-            joined_missing = " و ".join(missing_for_this_product)
-            product_missing_fields.append(f"{joined_missing} من عطر {p.get('name')}")
-
     if product_missing_fields:
         recap = _cart_recap(conversation, items_to_create, total_price)
         missing_text = " ولا ".join(product_missing_fields) if len(product_missing_fields) == 1 else " و ".join(product_missing_fields)
@@ -1117,6 +1131,9 @@ Return valid JSON in this exact format:
         # instruction is not what a customer who just answered something else needs.
         if _already_asked_for_details(conversation):
             ask = f"ولسه ناقص {_short_missing(name, phone, secondary_phone, address)}."
+        if any(word in normalize_arabic(message).split() for word in ("قلت", "قولت", "قلتلك", "قولتلك")):
+            ask = ("الاختيارات والكمية متسجلة زي ما طلبت. باقي بس "
+                   + _short_missing(name, phone, secondary_phone, address) + ".")
         return _cart_recap(conversation, items_to_create, total_price) + ask, context_str
 
     # A true is_confirmed only counts if the customer was actually shown the total

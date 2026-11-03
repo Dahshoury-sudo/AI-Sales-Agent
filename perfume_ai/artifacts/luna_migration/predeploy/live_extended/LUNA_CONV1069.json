@@ -1,0 +1,158 @@
+{
+  "id": "LUNA_CONV1069",
+  "category": "adversarial",
+  "persona": "hard_budget",
+  "probe": "Keep the delivered recommendation order through the first-product price follow-up; the second ordinal must select the other product and retain price intent. Resolve 9 بي ام to the current store's Afnan 9PM and its 90 ml brand bottle immediately. Every quoted product, size and price must match the current catalogue. The incident fixture prices are 508 (50 ml), 1077 (90 ml), and 881 (original 100 ml) EGP; 642 and 990 must never be presented as current 9PM prices. On the disputed price, acknowledge an earlier error only when the saved reply and its catalogue evidence prove one. Do not invent a discount or reason for a price change, and do not confirm checkout without the existing confirmation safeguards.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز عطر رجالي سويت للسهر، Ambero ولا Afnan 9PM؟",
+      "reply": "لو بتحب ريحة دافية فيها فانيليا وتوابل وخشب، **Ambero** أنسب للسهر؛ أما **Afnan 9PM** فمش قادر أقارنه بدقة من غير بيانات ريحته. بتفضّل السويت الدافي ولا السويت الفريش؟",
+      "classification": "comparison",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "comparison",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 8312,
+      "context": "\nName (الاسم الصحيح): Code Ultimate\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\n⚠️ عطر مختلف عن: Code Parfum — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Grapefruit, Mandarin Orange, Star Anise\nMiddle Notes: Cedar, Olive Blossom, Cypress, Heliotrope\nBase Notes: Tonka Bean, Vanilla, Guaiac Wood, Leather, Amber\nDescription: Warm spicy-woody scent, smooth, sensual and long lasting.\n\n-------------------------\n\nName (الاسم الصحيح): Code Parfum\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\n⚠️ عطر مختلف عن: Code Ultimate — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Bergamot Leaf\nMiddle Notes: Iris, Clary Sage, Aldehydes\nBase Notes: Tonka Bean, Cedar\nDescription: Rich amber-woody scent with a refined, seductive touch.\n\n-------------------------\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lime, Lemon, Bergamot, Neroli, Mandarin Orange\nMiddle Notes: Sea Notes, Jasmine, Peach, Rosemary\nBase Notes: White Musk, Cedar, Oakmoss, Patchouli, Amber\nDescription: Fresh aquatic-citrus scent with a clean marine feel.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Absolutely\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Rum, Elemi, Bergamot\nMiddle Notes: Lavender, Davana\nBase Notes: Chestnut, Madagascar Vanilla, Cedar, Patchouli\nDescription: Rich warm scent with sweet, boozy and woody depth.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Date Night\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: Sweet warm scent with vanilla, spice and amber.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Oud\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Lavender\nMiddle Notes: Agarwood (Oud)\nBase Notes: Vanilla\nDescription: Warm woody oud scent with a sweet spicy touch.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Tobacco\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Black Pepper, Cardamom, Elemi, Sage\nMiddle Notes: Tobacco, Cinnamon Leaf, Chestnut, Chili Pepper\nBase Notes: Bourbon Vanilla, Amber, Guaiac Wood, Benzoin\nDescription: Warm tobacco scent with sweet spicy undertones.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Sandalwood\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Saffron\nMiddle Notes: Lavender, Chestnut\nBase Notes: Sandalwood, Vanilla, Cedar\nDescription: Smooth creamy sandalwood scent with a warm spicy touch.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Amber\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lavender\nMiddle Notes: Amber\nBase Notes: Vanilla\nDescription: Warm amber scent with a sweet, smooth drydown.\n\n-------------------------\n\nName (الاسم الصحيح): Power of You\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange, Pear\nMiddle Notes: Orange Blossom, Jasmine, Rose\nBase Notes: Vanilla, Cedar, White Musk\nDescription: Soft sweet floral-fruity scent with a warm feel.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Freeze\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lime, Ginger, Mandarin Orange, Apple\nMiddle Notes: Lavender, Cardamom, Bourbon Geranium, Sage\nBase Notes: Amberwood, Glace Chestnut, Marron Glace, Bourbon Vanilla, Guaiac Wood\nDescription: Cool, icy fresh scent with a clean, minty feel.\n\n-------------------------\n\nName (الاسم الصحيح): Stronger With You Leather\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Elemi, Chestnut, Spices\nMiddle Notes: Lavender, Sage\nBase Notes: Leather, Vanilla, Oud, Guaiac Wood\nDescription: Smooth leather scent with warm, spicy woody depth.\n\n-------------------------\n\nName (الاسم الصحيح): Si\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\n⚠️ عطر مختلف عن: Si Passion Red — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Blackcurrant\nMiddle Notes: Rose, Freesia\nBase Notes: Vanilla, Patchouli, Ambroxan, Woody Notes\nDescription: Elegant blackcurrant-vanilla scent, warm, smooth and feminine.\n\n-------------------------\n\nName (الاسم الصحيح): My Way\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Orange Blossom, Bergamot\nMiddle Notes: Tuberose, Indian Jasmine\nBase Notes: Madagascar Vanilla, White Musk, Virginian Cedar\nDescription: Fresh white floral scent with a soft, elegant feel.\n\n-------------------------\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "الأول بكام؟",
+      "reply": "تقصد أنهي عطر؟ ممكن تكتب اسمه؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 18,
+      "context": "ORDINAL_UNRESOLVED",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "طب والتاني",
+      "reply": "تقصد أنهي عطر؟ ممكن تكتب اسمه؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 18,
+      "context": "ORDINAL_UNRESOLVED",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "عايز 9 بي ام 90 ملي زجاجة البراند",
+      "reply": "لسه محتاج أتأكد من: 1 × 9 بي ام (90 ملي). ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "9 بي ام",
+            "volume": 90,
+            "line_id": "494d9774d89642d9b742162e276350e1",
+            "quantity": 1,
+            "bottle_type": "normal"
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 17,
+      "context": "No products found",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "مش قولت بـ990؟",
+      "reply": "تقصد سعر أنهي عطر وحجم ونوع زجاجة؟",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "9 بي ام",
+            "volume": 90,
+            "line_id": "494d9774d89642d9b742162e276350e1",
+            "quantity": 1,
+            "bottle_type": "normal"
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 23,
+      "context": "PRICE_DISPUTE_AMBIGUOUS",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "requested_volume": 90,
+    "bottle_type": "normal"
+  },
+  "seconds": 39.9,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_CONV1069 — category: adversarial — persona: hard_budget\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nKeep the delivered recommendation order through the first-product price follow-up; the second ordinal must select the other product and retain price intent. Resolve 9 بي ام to the current store's Afnan 9PM and its 90 ml brand bottle immediately. Every quoted product, size and price must match the current catalogue. The incident fixture prices are 508 (50 ml), 1077 (90 ml), and 881 (original 100 ml) EGP; 642 and 990 must never be presented as current 9PM prices. On the disputed price, acknowledge an earlier error only when the saved reply and its catalogue evidence prove one. Do not invent a discount or reason for a price change, and do not confirm checkout without the existing confirmation safeguards.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز عطر رجالي سويت للسهر، Ambero ولا Afnan 9PM؟\n[internal] classified_as=comparison sales_stage=comparison objection=None\n[internal] extracted_intent={}\nAGENT: لو بتحب ريحة دافية فيها فانيليا وتوابل وخشب، **Ambero** أنسب للسهر؛ أما **Afnan 9PM** فمش قادر أقارنه بدقة من غير بيانات ريحته. بتفضّل السويت الدافي ولا السويت الفريش؟\n\n--- TURN 2 ---\nCUSTOMER: الأول بكام؟\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: تقصد أنهي عطر؟ ممكن تكتب اسمه؟\n\n--- TURN 3 ---\nCUSTOMER: طب والتاني\n[internal] classified_as=product_info sales_stage=recommendation objection=None\n[internal] extracted_intent={}\nAGENT: تقصد أنهي عطر؟ ممكن تكتب اسمه؟\n\n--- TURN 4 ---\nCUSTOMER: عايز 9 بي ام 90 ملي زجاجة البراند\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: لسه محتاج أتأكد من: 1 × 9 بي ام (90 ملي). ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟\n\n--- TURN 5 ---\nCUSTOMER: مش قولت بـ990؟\n[internal] classified_as=product_info sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تقصد سعر أنهي عطر وحجم ونوع زجاجة؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n(no catalogue perfume was named in this conversation)\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"requested_volume\": 90, \"bottle_type\": \"normal\"}"
+}

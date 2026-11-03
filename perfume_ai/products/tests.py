@@ -2560,6 +2560,11 @@ class RemovedDeadCodeTests(TestCase):
         self.assertFalse(hasattr(django_settings, "BOTTLE_IMAGE_URL"))
 
 
+@override_settings(
+    OPENAI_MODEL="gpt-4.1-mini",
+    OPENAI_SMART_MODEL=None,
+    OPENAI_RESOLVER_MODEL=None,
+)
 class ChatProfileTests(TestCase):
     """chat() resolves model and sampling from named profiles.
 
@@ -2569,7 +2574,7 @@ class ChatProfileTests(TestCase):
     declare intent instead of implementation.
     """
 
-    def _request_kwargs(self, profile):
+    def _request_kwargs(self, profile, response_format=None):
         """Call chat() with a stubbed transport and return the request kwargs."""
         response = mock.Mock()
         response.choices = [mock.Mock(message=mock.Mock(content="ok"))]
@@ -2578,7 +2583,11 @@ class ChatProfileTests(TestCase):
             "products.services.ai.client.client.chat.completions.create",
             return_value=response,
         ) as create:
-            ai_client.chat([{"role": "user", "content": "hi"}], profile=profile)
+            ai_client.chat(
+                [{"role": "user", "content": "hi"}],
+                profile=profile,
+                response_format=response_format,
+            )
 
         return create.call_args.kwargs
 
@@ -2665,6 +2674,63 @@ class ChatProfileTests(TestCase):
     def test_unknown_profile_raises_rather_than_silently_defaulting(self):
         with self.assertRaises(ValueError):
             ai_client.chat([], profile="smart")
+
+    @override_settings(
+        OPENAI_MODEL="gpt-6-luna",
+        OPENAI_SMART_MODEL="gpt-6-luna",
+        OPENAI_RESOLVER_MODEL="gpt-6-luna",
+        OPENAI_TEMPERATURE=0.3,
+    )
+    def test_luna_reasoning_and_temperature_follow_the_workload(self):
+        for profile, effort, temperature in (
+            ("extract", "none", 0),
+            ("converse", "none", 0.3),
+            ("reason", "high", None),
+            ("resolve", "high", None),
+        ):
+            with self.subTest(profile=profile):
+                response_format = None if profile == "converse" else {"type": "json_object"}
+                kwargs = self._request_kwargs(profile, response_format=response_format)
+                self.assertEqual(kwargs["model"], "gpt-6-luna")
+                self.assertEqual(kwargs["reasoning_effort"], effort)
+                if temperature is None:
+                    self.assertNotIn("temperature", kwargs)
+                else:
+                    self.assertEqual(kwargs["temperature"], temperature)
+                if response_format:
+                    self.assertEqual(kwargs["response_format"], response_format)
+
+    @override_settings(OPENAI_MODEL="gpt-6-luna")
+    def test_luna_base_fallback_preserves_high_effort_for_smart_profiles(self):
+        for profile in ("reason", "resolve"):
+            with self.subTest(profile=profile):
+                kwargs = self._request_kwargs(profile)
+                self.assertEqual(kwargs["model"], "gpt-6-luna")
+                self.assertEqual(kwargs["reasoning_effort"], "high")
+                self.assertNotIn("temperature", kwargs)
+
+    @override_settings(
+        OPENAI_MODEL="gpt-6-luna",
+        OPENAI_SMART_MODEL="gpt-5-mini",
+        OPENAI_RESOLVER_MODEL="gpt-5-mini",
+    )
+    def test_legacy_smart_overrides_keep_their_existing_effort_with_luna_base(self):
+        reason = self._request_kwargs("reason")
+        resolver = self._request_kwargs("resolve")
+        self.assertEqual(reason["model"], "gpt-5-mini")
+        self.assertNotIn("reasoning_effort", reason)
+        self.assertNotIn("temperature", reason)
+        self.assertEqual(resolver["model"], "gpt-5-mini")
+        self.assertEqual(resolver["reasoning_effort"], "low")
+        self.assertNotIn("temperature", resolver)
+
+    def test_profile_configuration_can_roll_back_without_reimporting_client(self):
+        with override_settings(OPENAI_MODEL="gpt-6-luna"):
+            self.assertEqual(self._request_kwargs("extract")["reasoning_effort"], "none")
+        kwargs = self._request_kwargs("extract")
+        self.assertEqual(kwargs["model"], "gpt-4.1-mini")
+        self.assertNotIn("reasoning_effort", kwargs)
+        self.assertEqual(kwargs["temperature"], 0)
 
 
 class CallSiteProfileTests(TestCase):

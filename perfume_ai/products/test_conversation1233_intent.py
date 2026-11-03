@@ -1,5 +1,7 @@
 """Conversation 1233: an explicit Arabic lookalike target must survive validation."""
 
+from unittest.mock import patch
+
 from django.test import TestCase
 
 from products.models import Brand, Conversation, Product, ProductVariant, Store
@@ -10,6 +12,7 @@ from products.services.search_service import search_products
 
 class Conversation1233SimilarityTests(TestCase):
     def setUp(self):
+        self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
         self.store = Store.objects.create(name="Reference evidence test")
         self.hermes = Brand.objects.create(store=self.store, name="Hermes")
         self.terre = Product.objects.create(

@@ -43,6 +43,18 @@ OPENAI_TEMPERATURE = float(os.environ.get("OPENAI_TEMPERATURE", 1.0))
 # Set DEBUG=True in .env for development
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
+# Production cookies require HTTPS. Redirects and HSTS can be enabled after
+# configuring the hosting proxy; local development keeps plain HTTP working.
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', str(not DEBUG)).lower() in ('true', '1', 'yes')
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', str(not DEBUG)).lower() in ('true', '1', 'yes')
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '0'))
+# Enable only behind an ingress that overwrites X-Forwarded-Proto, such as Railway.
+SECURE_PROXY_SSL_HEADER = (
+    ('HTTP_X_FORWARDED_PROTO', 'https')
+    if os.environ.get('TRUST_PROXY_HTTPS', 'False').lower() in ('true', '1', 'yes') else None
+)
+
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # CORS configuration — set CORS_ALLOWED_ORIGINS in .env for production (comma-separated)

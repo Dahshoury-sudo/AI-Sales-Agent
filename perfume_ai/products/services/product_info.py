@@ -122,7 +122,7 @@ def _referent_from_conversation(message, store, conversation):
     perfume: an Arabic-written name matches `_named_in_message` never, so a message that named a
     perfume outright looked identical to one that named nothing.
     """
-    if conversation is None or store is None:
+    if conversation is None or store is None or conversation.store_id != store.pk:
         return []
 
     from .sales import described as sales_described
@@ -140,7 +140,22 @@ def _referent_from_conversation(message, store, conversation):
     except Exception:
         return []
     if not offered:
-        return []
+        # Older checkout replies sometimes mentioned only an unresolved line and
+        # omitted the other saved, unsized perfumes. Recover those exact names
+        # only directly after checkout; a later recommendation takes precedence.
+        latest_context = conversation.messages.filter(
+            role="assistant", delivery_status="sent",
+        ).order_by("-created_at", "-pk").values_list("internal_context", flat=True).first()
+        if not sales_described._is_cart_context(latest_context):
+            return []
+        from products.models import Cart
+        cart = Cart.objects.filter(conversation=conversation).first()
+        offered = list(dict.fromkeys(
+            line["name"] for line in (cart.pending_items if cart else [])
+            if isinstance(line, dict) and isinstance(line.get("name"), str)
+        ))
+        if not offered:
+            return []
 
     from products.models import Product
 

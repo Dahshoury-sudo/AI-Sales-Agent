@@ -6,7 +6,7 @@ client = OpenAI(
 )
 
 
-# Model families that take `reasoning_effort` and reject an explicit `temperature`.
+# Legacy reasoning profiles omit temperature. Luna is handled per profile in chat().
 # Prefix matching rather than an exact list so a point release does not silently fall
 # through to the wrong branch.
 _REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
@@ -74,6 +74,14 @@ def chat(messages, profile="converse", response_format=None):
         )
 
     kwargs = {"messages": messages, **profiles[profile]}
+
+    if kwargs["model"] == "gpt-6-luna":
+        # One model serves both fast extraction/prose and deeper order/name reasoning.
+        # Luna defaults to medium effort, which does not accept our temperatures.
+        effort = "high" if profile in {"reason", "resolve"} else "none"
+        kwargs["reasoning_effort"] = effort
+        if effort == "high":
+            kwargs.pop("temperature", None)
 
     if response_format:
         kwargs["response_format"] = response_format

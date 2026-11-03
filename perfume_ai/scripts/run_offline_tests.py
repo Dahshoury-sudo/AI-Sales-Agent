@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import traceback
 from unittest.mock import patch
 from urllib.parse import urlparse
 import uuid
@@ -35,7 +36,11 @@ def main():
     attempts = []
 
     def denied(*unused, **kwargs):
-        attempts.append("unexpected HTTP")
+        callers = [f"{Path(frame.filename).name}:{frame.lineno}:{frame.name}"
+                   for frame in traceback.extract_stack() if frame.name.startswith("test_")]
+        caller = " > ".join(callers) or "unidentified test/thread"
+        attempts.append(caller)
+        print("UNMOCKED_HTTP_CALLER", caller)
         raise AssertionError("Offline test attempted external HTTP")
 
     args.log.parent.mkdir(parents=True, exist_ok=True)

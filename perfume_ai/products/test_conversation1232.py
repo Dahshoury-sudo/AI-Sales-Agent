@@ -22,6 +22,7 @@ CASUAL = "وللمسجد ريحه نظافه كده ومريحه والخروج�
 
 class Conversation1232Tests(TestCase):
     def setUp(self):
+        self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
         self.store = Store.objects.create(name="Perfamix")
         self.brand = Brand.objects.create(store=self.store, name="Gucci")
         self.terre = self.product("Terre d'Hermes", "Casual", top_notes="Orange, Grapefruit",

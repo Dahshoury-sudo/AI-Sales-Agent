@@ -1,0 +1,27 @@
+{
+  "budget_usd": "0.30",
+  "accounted_usd": "0",
+  "reserved_usd": "0",
+  "calls": [],
+  "pricing_per_million": {
+    "gpt-4.1-mini": [
+      "0.40",
+      "0.10",
+      "1.60"
+    ],
+    "gpt-5-mini": [
+      "0.25",
+      "0.025",
+      "2.00"
+    ],
+    "gpt-6-luna": [
+      "0.10",
+      "0.01",
+      "0.50"
+    ]
+  },
+  "cache_write_multiplier": {
+    "gpt-6-luna": "1.25"
+  },
+  "note": "Standard processing; cached reads and 30-minute cache writes priced separately. Reasoning is already included in completion tokens. Uncertain requests retain their entire reservation. Taxes/credits excluded."
+}

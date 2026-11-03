@@ -1,0 +1,85 @@
+{
+  "effective_requests": {
+    "extract": {
+      "model": "gpt-6-luna",
+      "temperature": 0,
+      "reasoning_effort": "none",
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "converse": {
+      "model": "gpt-6-luna",
+      "temperature": 0.3,
+      "reasoning_effort": "none"
+    },
+    "reason": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "resolve": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "response_format": {
+        "type": "json_object"
+      }
+    }
+  },
+  "unexpected_http": 0,
+  "mode": "Production settings with DEBUG=False; local PostgreSQL; isolated static output; external HTTP blocked.",
+  "wsgi_import": "passed",
+  "celery_tasks": [
+    "products.tasks.process_comment_task",
+    "products.tasks.process_incoming_attachment",
+    "products.tasks.process_incoming_message",
+    "products.tasks.retry_order_notifications"
+  ],
+  "beat_tasks_registered": true,
+  "checks": [
+    {
+      "id": "security.W004",
+      "level": 30,
+      "message": "You have not set a value for the SECURE_HSTS_SECONDS setting. If your entire site is served only over SSL, you may want to consider setting a value and enabling HTTP Strict Transport Security. Be sure to read the documentation first; enabling HSTS carelessly can cause serious, irreversible problems.",
+      "hint": null
+    },
+    {
+      "id": "security.W012",
+      "level": 30,
+      "message": "SESSION_COOKIE_SECURE is not set to True. Using a secure-only session cookie makes it more difficult for network traffic sniffers to hijack user sessions.",
+      "hint": null
+    },
+    {
+      "id": "security.W008",
+      "level": 30,
+      "message": "Your SECURE_SSL_REDIRECT setting is not set to True. Unless your site should be available over both SSL and non-SSL connections, you may want to either set this setting True or configure a load balancer or reverse-proxy server to redirect all connections to HTTPS.",
+      "hint": null
+    },
+    {
+      "id": "security.W009",
+      "level": 30,
+      "message": "Your SECRET_KEY has less than 50 characters, less than 5 unique characters, or it's prefixed with 'django-insecure-' indicating that it was generated automatically by Django. Please generate a long and random value, otherwise many of Django's security-critical features will be vulnerable to attack.",
+      "hint": null
+    },
+    {
+      "id": "security.W016",
+      "level": 30,
+      "message": "You have 'django.middleware.csrf.CsrfViewMiddleware' in your MIDDLEWARE, but you have not set CSRF_COOKIE_SECURE to True. Using a secure-only CSRF cookie makes it more difficult for network traffic sniffers to steal the CSRF token.",
+      "hint": null
+    },
+    {
+      "id": "security.W019",
+      "level": 30,
+      "message": "You have 'django.middleware.clickjacking.XFrameOptionsMiddleware' in your MIDDLEWARE, but X_FRAME_OPTIONS is not set to 'DENY'. Unless there is a good reason for your site to serve other parts of itself in a frame, you should change it to 'DENY'.",
+      "hint": null
+    }
+  ],
+  "database_host_is_local": true,
+  "migration_drift": "none",
+  "migration_warning_count": 0,
+  "migration_output": "No changes detected\n",
+  "collectstatic": "\n179 static files copied to 'C:\\Users\\Mohamed\\AppData\\Local\\Temp\\perfume_predeploy_static_ifm832ks', 861 post-processed.\n",
+  "static_manifest": true
+}

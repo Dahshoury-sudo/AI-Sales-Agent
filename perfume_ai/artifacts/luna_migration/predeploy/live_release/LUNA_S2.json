@@ -1,0 +1,577 @@
+{
+  "id": "LUNA_S2",
+  "category": "similarity",
+  "persona": "clone_hunter",
+  "probe": "9PM is in the catalogue (apple/cinnamon/vanilla/tonka/amber — sweet spicy). Correct move: a sweet-warm lookalike with named shared notes, or direct alternatives with supported qualities and differences. Do not require a no-close-match declaration.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عندك حاجه زي 9pm بتاع افنان؟",
+      "reply": "Gentleman قريب من 9PM، ومشترك معاه في نوتات التونكا والفانيليا؟ Wait match says tonka bean, patchouli, cinnamon, lavender, bergamot. Need mention exact shared notes. Gender question same sentence. Arabic transliterations. Also don't say vanilla. \"Gentleman قريب من 9PM، ومشترك معاه في التونكا والباتشولي والقرفة واللافندر والبرغموت؛ هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" But product male only, and user gender unclear. Prompt says if perfume marked suitable both say that; otherwise ask gender. This is male, so ask. Could say \"Gentleman قريب من 9PM، وبينهم نوتات التونكا والباتشولي والقرفة واللافندر والبرغموت. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" But asks same sentence, not separate. combine. Need no unsupported \"قريب فعلا\" supported. Use Arabic. \"Gentleman قريب من 9PM، ومشترك معاه في نوتات التونكا والباتشولي والقرفة واللافندر والبرغموت—هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" Good.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "exclude_names": [
+          "9PM"
+        ],
+        "similar_to": "9PM",
+        "similar_to_notes": [
+          "apple",
+          "cinnamon",
+          "lavender",
+          "bergamot",
+          "orange blossom",
+          "vanilla",
+          "tonka bean",
+          "amber",
+          "patchouli"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "exclude_names": [
+          "9PM"
+        ],
+        "similar_to": "9PM",
+        "similar_to_notes": [
+          "apple",
+          "cinnamon",
+          "lavender",
+          "bergamot",
+          "orange blossom",
+          "vanilla",
+          "tonka bean",
+          "amber",
+          "patchouli"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Gentleman",
+          "Ultra Male",
+          "Invictus Victory",
+          "Gold",
+          "Pure XS",
+          "Sculpture",
+          "Bad Boy",
+          "Blue Jeans",
+          "Wanted",
+          "Pi",
+          "Black Orchid",
+          "Classic Green"
+        ],
+        "alternatives": [],
+        "similarity": {
+          "reference_name": "9PM",
+          "reference_source": "general_knowledge",
+          "best_band": "close",
+          "has_close_match": true
+        },
+        "reasons": {
+          "Gentleman": {
+            "score": 2.776,
+            "reasons": [
+              "Match: قريب فعلاً من 9PM — مشترك في: tonka bean، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Ultra Male": {
+            "score": 2.728,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Invictus Victory": {
+            "score": 2.698,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean، amber، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Gold": {
+            "score": 2.643,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، lavender، bergamot، cinnamon — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Pure XS": {
+            "score": 2.636,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: patchouli، vanilla، cinnamon، apple، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Sculpture": {
+            "score": 2.426,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، amber، orange blossom، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Bad Boy": {
+            "score": 2.421,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، amber، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Blue Jeans": {
+            "score": 2.376,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean، amber، patchouli، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Wanted": {
+            "score": 2.298,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، apple، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Pi": {
+            "score": 2.279,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Black Orchid": {
+            "score": 2.239,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: patchouli، vanilla، amber، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Classic Green": {
+            "score": 2.216,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع 9PM — مشترك في: orange blossom، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 13368,
+      "context": "\nName (الاسم الصحيح): Gentleman\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Black Pepper, Lavender, Bergamot\nMiddle Notes: Orris, Cloves, Cinnamon\nBase Notes: Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli\nDescription: Smooth woody-iris scent with a refined, elegant character.\n\n-------------------------\n✅ ليه مناسب: Match: قريب فعلاً من 9PM — مشترك في: tonka bean، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Ultra Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 125 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Le male Elixir، Le male Lover، Le male la perfume — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Club\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pear, Lavender, Mint, Bergamot, Lemon\nMiddle Notes: Cinnamon, Clary Sage, Caraway\nBase Notes: Black Vanilla Husk, Amber, Patchouli, Cedar\nDescription: Sweet vanilla-pear scent with a bold, seductive edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Invictus Victory\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Invictus، Invictus Aqua، Invictus Legend — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Lemon\nMiddle Notes: Olibanum, Lavender\nBase Notes: Vanilla, Tonka Bean, Amber\nDescription: Sweet spicy-vanilla scent with a bold, powerful presence.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean، amber، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Gold\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Cinnamon\nMiddle Notes: Praline, Cardamom, Lavender\nBase Notes: Amber, Ebony Wood, Patchouli, Musk\nDescription: Warm woody-amber scent with a smooth, elegant finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، lavender، bergamot، cinnamon — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\nDescription: Fresh spicy-woody scent with a clean modern feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: patchouli، vanilla، cinnamon، apple، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Sculpture\nBrand: Nikos Parfums\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Nikos Parfums) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange Blossom, Lemon, Bergamot, Mandarin Orange\nMiddle Notes: Jasmine, Lily of the Valley, Rose, Geranium\nBase Notes: Tonka Bean, Amber, Benzoin, Cedar\nDescription: Fresh woody fragrance with a clean, confident character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، amber، orange blossom، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bad Boy\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Black Pepper, White Pepper, Bergamot\nMiddle Notes: Sage, Cedar\nBase Notes: Tonka Bean, Cocoa, Amber\nDescription: Bold spicy-woody scent with a sweet, powerful edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، amber، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Blue Jeans\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Citruses, Bergamot, Juniper, Anise, Brazilian Rosewood, Basil\nMiddle Notes: Lavender, Rose, Carnation, Heliotrope, Jasmine, Geranium, Sage, Fir, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Sandalwood, Iris, Musk, Amber, Vetiver, Cedar, Patchouli\nDescription: Fresh aromatic scent with a young, casual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean، amber، patchouli، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Wanted\nBrand: Azzaro\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Azzaro) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Wanted by Night — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Lemon, Ginger, Lavender, Mint\nMiddle Notes: Apple, Juniper, Guatemalan Cardamom, Geranium\nBase Notes: Tonka Bean, Amberwood, Haitian Vetiver\nDescription: Spicy citrus scent with a warm, woody finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: tonka bean، apple، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Pi\nBrand: Givenchy\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Givenchy) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Tarragon, Rosemary, Basil\nMiddle Notes: Anise, Neroli, Geranium, Lily of the Valley\nBase Notes: Vanilla, Almond, Tonka Bean, Benzoin, Cedar\nDescription: Fresh woody-aromatic scent with a smooth classic feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Black Orchid\nBrand: Tom Ford\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon\nMiddle Notes: Orchid, Lotus Wood, Fruity Notes, Spices\nBase Notes: Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam\nDescription: Dark, rich floral-woody scent with a luxurious feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: patchouli، vanilla، amber، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Classic Green\nBrand: Jaguar\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jaguar) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Orange, Juniper Berries, Lavender, Mandarin Orange, Basil, Star Anise, Bergamot\nMiddle Notes: Ginger, Orange Blossom, Lotus\nBase Notes: Sandalwood, Benzoin, White Musk\nDescription: Fresh green-citrus scent with a light, sporty feel.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع 9PM — مشترك في: orange blossom، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\nMOVED_PAST: 9PM\n",
+      "findings": [
+        [
+          "unknown_latin_token",
+          "high",
+          "'Wait' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'says' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Need' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'mention' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'shared' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'question' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'same' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'sentence.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Arabic' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'transliterations.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Also' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'don't' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'But' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'product' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'user' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'unclear.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Prompt' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'says' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'marked' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'suitable' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'both' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'that' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'otherwise' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Could' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'But' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'asks' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'same' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'sentence' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'separate.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'combine.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Need' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'unsupported' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'supported.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "unknown_latin_token",
+          "high",
+          "'Arabic.' is not part of any catalogue product or brand name"
+        ],
+        [
+          "too_long",
+          "low",
+          "899 characters — persona caps replies at ~4 short sentences"
+        ]
+      ]
+    }
+  ],
+  "findings": [
+    [
+      "unknown_latin_token",
+      "high",
+      "'Wait' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'says' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Need' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'mention' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'shared' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'question' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'same' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'sentence.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Arabic' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'transliterations.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Also' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'don't' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'But' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'product' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'user' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'unclear.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Prompt' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'says' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'marked' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'suitable' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'both' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'that' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'otherwise' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Could' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'But' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'asks' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'same' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'sentence' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'separate.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'combine.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Need' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'unsupported' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'supported.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "unknown_latin_token",
+      "high",
+      "'Arabic.' is not part of any catalogue product or brand name"
+    ],
+    [
+      "too_long",
+      "low",
+      "899 characters — persona caps replies at ~4 short sentences"
+    ]
+  ],
+  "error": null,
+  "final_preferences": {
+    "similar_to": "9PM",
+    "similar_to_notes": [
+      "apple",
+      "cinnamon",
+      "lavender",
+      "bergamot",
+      "orange blossom",
+      "vanilla",
+      "tonka bean",
+      "amber",
+      "patchouli"
+    ]
+  },
+  "seconds": 20.0,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_S2 — category: similarity — persona: clone_hunter\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\n9PM is in the catalogue (apple/cinnamon/vanilla/tonka/amber — sweet spicy). Correct move: a sweet-warm lookalike with named shared notes, or direct alternatives with supported qualities and differences. Do not require a no-close-match declaration.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عندك حاجه زي 9pm بتاع افنان؟\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_names\": [\"9PM\"], \"similar_to\": \"9PM\", \"similar_to_notes\": [\"apple\", \"cinnamon\", \"lavender\", \"bergamot\", \"orange blossom\", \"vanilla\", \"tonka bean\", \"amber\", \"patchouli\"], \"recommendation_mode\": \"new_goal\"}\n[internal] shortlist_shown_to_model=['Gentleman', 'Ultra Male', 'Invictus Victory', 'Gold', 'Pure XS', 'Sculpture', 'Bad Boy', 'Blue Jeans', 'Wanted', 'Pi', 'Black Orchid', 'Classic Green']\n[internal] similarity_summary={\"reference_name\": \"9PM\", \"reference_source\": \"general_knowledge\", \"best_band\": \"close\", \"has_close_match\": true}\n[internal] ranking_evidence={\"Gentleman\": {\"score\": 2.776, \"reasons\": [\"Match: قريب فعلاً من 9PM — مشترك في: tonka bean، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Ultra Male\": {\"score\": 2.728, \"reasons\": [\"Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، cinnamon، lavender، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Invictus Victory\": {\"score\": 2.698, \"reasons\": [\"Match: اشتراك محدود في النوتات مع 9PM — مشترك في: vanilla، tonka bean، amber، lavender — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Gold\": {\"score\": 2.643, \"reasons\": [\"Match: اشتراك محدود في النوتات مع 9PM — مشترك في: amber، patchouli، lavender، bergamot، cinnamon — (المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا). ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Pure XS\": {\"score\": 2.636, \"reasons\": [\"Match: اشتراك محدود في النوتات مع 9PM — مشترك في: patchouli، vanilla، cinnamon، apple، bergamot — (المقارنة على النوتات المعروفة للعطر ده، مش على\nAGENT: Gentleman قريب من 9PM، ومشترك معاه في نوتات التونكا والفانيليا؟ Wait match says tonka bean, patchouli, cinnamon, lavender, bergamot. Need mention exact shared notes. Gender question same sentence. Arabic transliterations. Also don't say vanilla. \"Gentleman قريب من 9PM، ومشترك معاه في التونكا والباتشولي والقرفة واللافندر والبرغموت؛ هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" But product male only, and user gender unclear. Prompt says if perfume marked suitable both say that; otherwise ask gender. This is male, so ask. Could say \"Gentleman قريب من 9PM، وبينهم نوتات التونكا والباتشولي والقرفة واللافندر والبرغموت. هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" But asks same sentence, not separate. combine. Need no unsupported \"قريب فعلا\" supported. Use Arabic. \"Gentleman قريب من 9PM، ومشترك معاه في نوتات التونكا والباتشولي والقرفة واللافندر والبرغموت—هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\" Good.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Bad Boy | brand=Carolina Herrera | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Black Pepper, White Pepper, Bergamot | mid=Sage, Cedar | base=Tonka Bean, Cocoa, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Black Orchid | brand=Tom Ford | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon | mid=Orchid, Lotus Wood, Fruity Notes, Spices | base=Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Blue Jeans | brand=Versace | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Citruses, Bergamot, Juniper, Anise, Brazilian Rosewood, Basil | mid=Lavender, Rose, Carnation, Heliotrope, Jasmine, Geranium, Sage, Fir, Lily of the Valley | base=Vanilla, Tonka Bean, Sandalwood, Iris, Musk, Amber, Vetiver, Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Classic Green | brand=Jaguar | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Orange, Juniper Berries, Lavender, Mandarin Orange, Basil, Star Anise, Bergamot | mid=Ginger, Orange Blossom, Lotus | base=Sandalwood, Benzoin, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Gentleman | brand=Givenchy | gender=male | type=western | season=Fall, Winter | occasion=Formal | longevity=8 hours | projection=Moderate | top=Black Pepper, Lavender, Bergamot | mid=Orris, Cloves, Cinnamon | base=Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Gold | brand=Zara | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=6 hours | projection=Moderate | top=Lemon, Bergamot, Cinnamon | mid=Praline, Cardamom, Lavender | base=Amber, Ebony Wood, Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Her | brand=Burberry | gender=female | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Moderate | top=Strawberry, Raspberry, Blackberry, Sour Cherry, Black Currant, Mandarin Orange, Lemon | mid=Violet, Jasmine | base=Musk, Vanilla, Cashmeran, Woody Notes, Amber, Oakmoss, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1400EGP stock=100\n- Invictus Victory | brand=Paco Rabanne | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper, Lemon | mid=Olibanum, Lavender | base=Vanilla, Tonka Bean, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Pi | brand=Givenchy | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Moderate | top=Mandarin Orange, Tarragon, Rosemary, Basil | mid=Anise, Neroli, Geranium, Lily of the Valley | base=Vanilla, Almond, Tonka Bean, Benzoin, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Pure XS | brand=Paco Rabanne | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Ginger, Green Accord, Thyme, Bergamot, Grapefruit | mid=Vanilla, Cinnamon, Leather, Liquor, Apple | base=Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sculpture | brand=Nikos Parfums | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Orange Blossom, Lemon, Bergamot, Mandarin Orange | mid=Jasmine, Lily of the Valley, Rose, Geranium | base=Tonka Bean, Amber, Benzoin, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Ultra Male | brand=Jean Paul Gaultier | gender=male | type=western | season=Fall, Winter | occasion=Club | longevity=8 hours | projection=Strong | top=Pear, Lavender, Mint, Bergamot, Lemon | mid=Cinnamon, Clary Sage, Caraway | base=Black Vanilla Husk, Amber, Patchouli, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1500EGP stock=100\n- Wanted | brand=Azzaro | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Strong | top=Lemon, Ginger, Lavender, Mint | mid=Apple, Juniper, Guatemalan Cardamom, Geranium | base=Tonka Bean, Amberwood, Haitian Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n[\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Wait' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'says' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Need' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'mention' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'shared' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'question' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'same' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'sentence.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Arabic' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'transliterations.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Also' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'don't' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'But' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'product' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'user' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'unclear.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Prompt' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'says' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'marked' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'suitable' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'both' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'that' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'otherwise' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Could' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'But' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'asks' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'same' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'sentence' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'separate.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'combine.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Need' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'unsupported' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'supported.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"unknown_latin_token\",\n  \"high\",\n  \"'Arabic.' is not part of any catalogue product or brand name\"\n ],\n [\n  \"too_long\",\n  \"low\",\n  \"899 characters — persona caps replies at ~4 short sentences\"\n ]\n]\n\n[context] Final saved preferences after the conversation: {\"similar_to\": \"9PM\", \"similar_to_notes\": [\"apple\", \"cinnamon\", \"lavender\", \"bergamot\", \"orange blossom\", \"vanilla\", \"tonka bean\", \"amber\", \"patchouli\"]}"
+}

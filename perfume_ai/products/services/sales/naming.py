@@ -903,6 +903,11 @@ def candidates(name, store, products=None):
             brand_tokens = set()
         if brand_tokens and wanted <= brand_tokens:
             continue
+        # A shorter catalogue name must account for the rest of the typed name
+        # through its brand. "Dior Sauvage" can mean Sauvage by Dior;
+        # "Baccarat Rouge" cannot mean the unrelated Rouge by Narciso Rodriguez.
+        if _overlap(wanted, candidate | brand_tokens) < len(wanted):
+            continue
         partial.append(product)
 
     return exact, partial
@@ -1074,6 +1079,8 @@ def match_product(name, store, products=None):
 
     A candidate qualifies when one name's identifying tokens are contained in the
     other's, so "sauvage" matches "Dior Sauvage" and "9pm afnan" matches "Afnan 9PM".
+    Extra typed words must also belong to that product or its brand; a nested
+    short name does not explain an unrelated longer name.
 
     Ambiguity returns None rather than a guess. A bare brand word like "Dior" is a subset
     of three different perfume names here, and silently picking one of them would be

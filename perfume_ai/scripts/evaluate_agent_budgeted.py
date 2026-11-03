@@ -22,15 +22,68 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-# USD per million tokens, verified against official model pages on 2026-10-12.
+# USD per million tokens, verified against official model pages on 2026-11-03.
+# https://developers.openai.com/api/docs/models/gpt-6-luna
 PRICES = {
     "gpt-4.1-mini": (Decimal("0.40"), Decimal("0.10"), Decimal("1.60")),
     "gpt-5-mini": (Decimal("0.25"), Decimal("0.025"), Decimal("2.00")),
+    "gpt-6-luna": (Decimal("0.10"), Decimal("0.01"), Decimal("0.50")),
 }
+LUNA_COMPLETION_LIMITS = {"none": 2048, "high": 25000}
+LUNA_CACHE_WRITE_MULTIPLIER = Decimal("1.25")  # Default 30-minute retention.
 
 
 class BudgetStop(BaseException):
     """Bypass application fallbacks: budget exhaustion is not an agent failure."""
+
+
+def completion_limit(model, effort):
+    if model == "gpt-6-luna":
+        if effort not in LUNA_COMPLETION_LIMITS:
+            raise BudgetStop("Luna evaluation requires explicit none/high reasoning effort")
+        return LUNA_COMPLETION_LIMITS[effort]
+    return 8192 if model == "gpt-5-mini" else 2048
+
+
+def token_cost(model, prompt_tokens, cached_tokens, completion_tokens, cache_write_tokens=0):
+    """Standard text pricing; completion_tokens already includes reasoning tokens."""
+    counts = (prompt_tokens, cached_tokens, completion_tokens, cache_write_tokens)
+    if any(type(value) is not int or value < 0 for value in counts):
+        raise BudgetStop("Provider returned invalid token counts; retaining reservation")
+    if cached_tokens + cache_write_tokens > prompt_tokens:
+        raise BudgetStop("Provider cache counts exceed input; retaining reservation")
+    incoming, cached, outgoing = PRICES[model]
+    write_multiplier = Decimal(1)
+    if model == "gpt-6-luna":
+        write_multiplier = LUNA_CACHE_WRITE_MULTIPLIER
+        if prompt_tokens > 272000:
+            incoming *= 2
+            cached *= 2
+            outgoing *= Decimal("1.5")
+    ordinary = prompt_tokens - cached_tokens - cache_write_tokens
+    return (ordinary * incoming + cached_tokens * cached +
+            cache_write_tokens * incoming * write_multiplier +
+            completion_tokens * outgoing) / 1_000_000
+
+
+def response_error(response, response_format):
+    """Expose failures even when the application catches an invalid extractor reply."""
+    if not response.choices:
+        return "missing_choice"
+    choice = response.choices[0]
+    if choice.finish_reason == "length":
+        return "truncated_output"
+    content = choice.message.content
+    if not isinstance(content, str) or not content.strip():
+        return "empty_output"
+    if (response_format or {}).get("type") in {"json_object", "json_schema"}:
+        try:
+            value = json.loads(content)
+        except ValueError:
+            return "invalid_json"
+        if response_format["type"] == "json_object" and not isinstance(value, dict):
+            return "json_object_required"
+    return None
 
 
 def write_json(path, value):
@@ -65,7 +118,8 @@ class Meter:
             "budget_usd": self.cap, "accounted_usd": self.spent,
             "reserved_usd": self.reserved, "calls": self.calls,
             "pricing_per_million": PRICES,
-            "note": "Actual response usage with cached-input discounts; uncertain requests retain their entire reservation. Taxes/credits excluded.",
+            "cache_write_multiplier": {"gpt-6-luna": LUNA_CACHE_WRITE_MULTIPLIER},
+            "note": "Standard processing; cached reads and 30-minute cache writes priced separately. Reasoning is already included in completion tokens. Uncertain requests retain their entire reservation. Taxes/credits excluded.",
         })
 
     def wrap(self, original):
@@ -75,16 +129,21 @@ class Meter:
             model = kwargs["model"]
             if model not in PRICES:
                 raise BudgetStop("Unpriced model: " + model)
-            rates = PRICES[model]
+            if kwargs.get("service_tier") not in {None, "default"}:
+                raise BudgetStop("Only standard processing is priced for evaluation")
+            kwargs["service_tier"] = "default"
+            effort = kwargs.get("reasoning_effort")
+            maximum = completion_limit(model, effort)
+            kwargs["max_completion_tokens"] = maximum
             # For text-only BPE, UTF-8 bytes are a conservative token upper bound.
             # Include serialized framing plus 1,024 tokens for protocol overhead.
             for message in kwargs["messages"]:
                 if not isinstance(message.get("content"), str):
                     raise BudgetStop("Only text messages are supported")
             upper_input = len(json.dumps(kwargs, ensure_ascii=False).encode("utf-8")) + 1024
-            maximum = 8192 if model.startswith("gpt-5") else 2048
-            kwargs["max_completion_tokens"] = maximum
-            reservation = (upper_input * rates[0] + maximum * rates[2]) / 1_000_000
+            # Reserve all input at the write rate for Luna: a cold cache must fit too.
+            reservation = token_cost(model, upper_input, 0, maximum,
+                                     upper_input if model == "gpt-6-luna" else 0)
             with self.condition:
                 if self.halted:
                     raise BudgetStop("Budget guard already stopped the run")
@@ -98,6 +157,7 @@ class Meter:
                     raise BudgetStop("Remaining budget cannot cover this request's maximum cost")
                 self.reserved += reservation
                 entry = {"scenario": getattr(self.local, "scenario", "unknown"), "model": model,
+                         "reasoning_effort": effort, "max_completion_tokens": maximum,
                          "reserved_usd": reservation, "status": "in_flight"}
                 self.calls.append(entry)
                 self.save()
@@ -108,20 +168,30 @@ class Meter:
                     raise BudgetStop("Provider returned no usage; retaining reservation")
                 usage = response.usage
                 cached = getattr(usage.prompt_tokens_details, "cached_tokens", 0) or 0
-                cost = ((usage.prompt_tokens - cached) * rates[0] + cached * rates[1]
-                        + usage.completion_tokens * rates[2]) / 1_000_000
+                written = getattr(usage.prompt_tokens_details, "cache_write_tokens", None)
+                if written is None:
+                    # Accept the older Chat Completions field as well as the current name.
+                    written = getattr(usage.prompt_tokens_details, "cache_creation_tokens", 0) or 0
+                reasoning = getattr(getattr(usage, "completion_tokens_details", None), "reasoning_tokens", 0) or 0
+                cost = token_cost(model, usage.prompt_tokens, cached, usage.completion_tokens, written)
+                invalid = response_error(response, kwargs.get("response_format"))
                 with self.condition:
                     self.spent += cost
                     self.reserved -= reservation
                     entry.update(status="complete", prompt_tokens=usage.prompt_tokens,
                                  cached_tokens=cached, completion_tokens=usage.completion_tokens,
+                                 cache_write_tokens=written, reasoning_tokens=reasoning,
                                  cost_usd=cost, seconds=round(time.monotonic() - started, 3),
-                                 finish_reason=response.choices[0].finish_reason,
+                                 finish_reason=response.choices[0].finish_reason if response.choices else None,
                                  response_model=response.model)
+                    if invalid:
+                        entry["response_error"] = invalid
                     self.save()
                     self.condition.notify_all()
                 if usage.prompt_tokens > upper_input or cost > reservation:
                     raise BudgetStop("Provider usage exceeded conservative reservation")
+                if invalid:
+                    raise ValueError("Invalid evaluation response: " + invalid)
                 return response
             except BaseException:
                 with self.condition:
@@ -249,7 +319,9 @@ def main():
                        ("OPENAI_MODEL", "OPENAI_SMART_MODEL", "OPENAI_RESOLVER_MODEL")},
             "suites": {name: [{"id": s["id"], "turns": len(s["turns"])} for s in cases]
                        for name, cases in suites}, "catalogue_products": len(fixtures[2][1]),
-            "max_completion_tokens": {"gpt-4.1-mini": 2048, "gpt-5-mini": 8192},
+            "max_completion_tokens": {"gpt-4.1-mini": 2048, "gpt-5-mini": 8192,
+                                      "gpt-6-luna": LUNA_COMPLETION_LIMITS},
+            "service_tier": "default",
             "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries",
         })
 
@@ -294,8 +366,16 @@ def main():
         connections.close_all()
         test_runner.teardown_databases(old)
         test_runner.teardown_test_environment()
-    print(json.dumps({"completed": len(records), "skipped": len(skipped), "accounted_usd": str(meter.spent)}), flush=True)
-    return 0 if not skipped else 2
+    invalid_responses = sum(bool(call.get("response_error")) for call in meter.calls)
+    crashed_scenarios = sum(bool(record.get("error")) or any(
+        finding[0] == "crash" for finding in record.get("findings", [])
+    ) for record in records)
+    print(json.dumps({"completed": len(records), "skipped": len(skipped),
+                      "invalid_responses": invalid_responses, "crashed_scenarios": crashed_scenarios,
+                      "accounted_usd": str(meter.spent)}), flush=True)
+    if skipped:
+        return 2
+    return int(bool(invalid_responses or crashed_scenarios))
 
 
 if __name__ == "__main__":

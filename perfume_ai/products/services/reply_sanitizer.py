@@ -43,10 +43,22 @@ def _claim_normalize(text):
     return str(text or "").lower().translate(str.maketrans("أإآىة٠١٢٣٤٥٦٧٨٩", "ااايه0123456789"))
 
 
+def internal_draft_issues(reply):
+    """Reject explicit drafting notes before a model reply reaches the customer."""
+    if re.search(
+        r"\b(?:system\s+prompt|developer\s+message|prompt|persona)\s+(?:says|requires|instructs|tells)\b|"
+        r"\bwait[,;:]?\s+(?:the\s+)?(?:match|prompt|instruction)\s+says\b|"
+        r"<(?:think|analysis)>|(?:^|\n)\s*(?:analysis|reasoning)\s*:",
+        reply or "", re.I,
+    ):
+        return ["internal_draft: اكتب الرد النهائي للعميل فقط، بدون ملاحظات الصياغة أو شرح التعليمات"]
+    return []
+
+
 def product_claim_issues(reply, facts):
     """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
     text = _claim_normalize(reply)
-    issues = []
+    issues = internal_draft_issues(reply)
     for clause in re.split(r"[.!؟?\n]", text):
         if re.search(r"(?:عطر|برفان|عطور)\s+(?:رجالي\s+|حريمي\s+)?(?:اصلي|اصليه)|براندات\s+اصليه", clause):
             if not re.search(r"(?:مش|غير|لا|مفيش)\s+(?:متوفر\s+)?(?:عندنا\s+)?(?:عطر|برفان|عطور|براندات)", clause):

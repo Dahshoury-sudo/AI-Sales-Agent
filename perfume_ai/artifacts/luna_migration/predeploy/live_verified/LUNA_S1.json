@@ -1,0 +1,207 @@
+{
+  "id": "LUNA_S1",
+  "category": "similarity",
+  "persona": "clone_hunter",
+  "probe": "Sauvage IS in the catalogue, so its real notes are known (bergamot/mandarin/lavender/ambroxan/vanilla). Correct move: offer something that genuinely shares that fresh-ambroxan character and name the shared notes as evidence. A heavy oud, a leather, or a gourmand is NOT similar to Sauvage no matter how the reply words it. Sharing one note is not similarity. No similarity percentage may be quoted.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز حاجه شبه سوفاج",
+      "reply": "أقرب اختيار لطلبك **For Him**؛ مشترك مع Sauvage في نوتات خشب الأرز والفيتيفر والباتشولي واللافندر والجرانيوم، بس فوحانه أهدى منه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "exclude_names": [
+          "Sauvage"
+        ],
+        "similar_to": "Dior Sauvage",
+        "similar_to_notes": [
+          "bergamot",
+          "pepper",
+          "ambroxan"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "exclude_names": [
+          "Sauvage"
+        ],
+        "similar_to": "Sauvage",
+        "similar_to_notes": [
+          "bergamot",
+          "pepper",
+          "ambroxan"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "For Him",
+          "Bleu de Chanel",
+          "K By Dolce",
+          "Eternity",
+          "Bmw",
+          "Blue Jeans",
+          "Aramis 900",
+          "Euphoria Intense",
+          "212 NYC Man",
+          "Gold",
+          "Egosta Platinum",
+          "Ultra Male"
+        ],
+        "alternatives": [],
+        "similarity": {
+          "reference_name": "Sauvage",
+          "reference_source": "catalogue",
+          "best_band": "close",
+          "has_close_match": true
+        },
+        "reasons": {
+          "For Him": {
+            "score": 6.284,
+            "reasons": [
+              "Match: قريب فعلاً من Sauvage — مشترك في: cedar، vetiver، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Bleu de Chanel": {
+            "score": 5.95,
+            "reasons": [
+              "Match: قريب فعلاً من Sauvage — مشترك في: vetiver، cedar، patchouli، labdanum، pink pepper — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "K By Dolce": {
+            "score": 5.739,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، patchouli، geranium، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Eternity": {
+            "score": 5.697,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، geranium، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Bmw": {
+            "score": 5.553,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Blue Jeans": {
+            "score": 5.507,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، cedar، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Aramis 900": {
+            "score": 5.47,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، vetiver، geranium، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Euphoria Intense": {
+            "score": 5.36,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: labdanum، patchouli، vetiver، cedar، pepper — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "212 NYC Man": {
+            "score": 5.324,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، labdanum، bergamot، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Gold": {
+            "score": 5.183,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Egosta Platinum": {
+            "score": 5.179,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، cedar، geranium، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          },
+          "Ultra Male": {
+            "score": 5.159,
+            "reasons": [
+              "Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، cedar، lavender، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه."
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 14911,
+      "context": "\nName (الاسم الصحيح): For Him\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Cardamom, Lemon\nMiddle Notes: Lavender, Geranium, Sage\nBase Notes: Cedar, Vetiver, Patchouli, Musk\nDescription: Fresh aromatic scent with a clean everyday character.\n\n-------------------------\n✅ ليه مناسب: Match: قريب فعلاً من Sauvage — مشترك في: cedar، vetiver، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\nDescription: Fresh citrus-woody scent, elegant, clean and versatile.\n\n-------------------------\n✅ ليه مناسب: Match: قريب فعلاً من Sauvage — مشترك في: vetiver، cedar، patchouli، labdanum، pink pepper — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، patchouli، geranium، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Eternity\nBrand: Calvin Klein\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Calvin Klein) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lavender, Lemon, Bergamot, Mandarin Orange\nMiddle Notes: Sage, Juniper Berries, Basil, Geranium, Coriander, Jasmine\nBase Notes: Sandalwood, Vetiver, Musk, Brazilian Rosewood, Amber\nDescription: Fresh aromatic fragrance with a smooth woody drydown.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، geranium، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Blue Jeans\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Versace) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Citruses, Bergamot, Juniper, Anise, Brazilian Rosewood, Basil\nMiddle Notes: Lavender, Rose, Carnation, Heliotrope, Jasmine, Geranium, Sage, Fir, Lily of the Valley\nBase Notes: Vanilla, Tonka Bean, Sandalwood, Iris, Musk, Amber, Vetiver, Cedar, Patchouli\nDescription: Fresh aromatic scent with a young, casual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، cedar، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Aramis 900\nBrand: Aramis\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Aramis) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Green Notes, Coriander, Bergamot, Brazilian Rosewood, Lemon\nMiddle Notes: Rose, Carnation, Geranium, Orris Root, Jasmine, Lily of the Valley\nBase Notes: Oakmoss, Civet, Patchouli, Vetiver, Sandalwood, Amber\nDescription: Classic woody-spicy fragrance with a bold masculine character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، vetiver، geranium، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Euphoria Intense\nBrand: Calvin Klein\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Calvin Klein) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: Euphoria، Euphoria Men — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Ginger, Pepper\nMiddle Notes: Black Basil, Sage, Vetiver, Cedar\nBase Notes: Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh\nDescription: Warm spicy-woody scent with a deep, sensual character.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: labdanum، patchouli، vetiver، cedar، pepper — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): 212 NYC Man\nBrand: Carolina Herrera\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1375.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Green Notes, Grapefruit, Spices, Bergamot, Lavender, Petitgrain\nMiddle Notes: Ginger, Violet, Gardenia, Sage\nBase Notes: Musk, Sandalwood, Incense, Guaiac Wood, Vetiver, Labdanum\nDescription: Fresh urban citrus scent with light woody musk.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، labdanum، bergamot، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Gold\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Bergamot, Cinnamon\nMiddle Notes: Praline, Cardamom, Lavender\nBase Notes: Amber, Ebony Wood, Patchouli, Musk\nDescription: Warm woody-amber scent with a smooth, elegant finish.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Egosta Platinum\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Rosemary, Neroli, Petitgrain\nMiddle Notes: Geranium, Clary Sage, Galbanum, Jasmine\nBase Notes: Oakmoss, Vetiver, Cedar, Sandalwood, Amber\nDescription: Fresh aromatic-woody scent, clean, crisp and refined.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، cedar، geranium، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\nName (الاسم الصحيح): Ultra Male\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 125 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Le male Elixir، Le male Lover، Le male la perfume — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Club\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pear, Lavender, Mint, Bergamot, Lemon\nMiddle Notes: Cinnamon, Clary Sage, Caraway\nBase Notes: Black Vanilla Husk, Amber, Patchouli, Cedar\nDescription: Sweet vanilla-pear scent with a bold, seductive edge.\n\n-------------------------\n✅ ليه مناسب: Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: patchouli، cedar، lavender، bergamot. ❌ ممنوع تذكر نسبة مئوية للتشابه.\n\n═══ العطر اللي العميل بيقارن بيه (بيانات حقيقية من قاعدة البيانات) ═══\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\nDescription: Fresh spicy-woody scent, bold, clean and long lasting.\n\n-------------------------\n🔴 Sauvage متوفر عندنا — ❌ ممنوع تقول إنه مش موجود أو مش متوفر، ولو سأل عنه جاوبه من البيانات دي.\n🔴 بس ده مرجع المقارنة، مش ترشيح: العميل عايز حاجة *شبهه*، فـ ❌ ممنوع ترشحه له كإجابة على طلبه. رشّح من القائمة اللي فوق.\nMOVED_PAST: Sauvage\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "similar_to": "Sauvage",
+    "similar_to_notes": [
+      "bergamot",
+      "pepper",
+      "ambroxan"
+    ]
+  },
+  "seconds": 25.5,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_S1 — category: similarity — persona: clone_hunter\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nSauvage IS in the catalogue, so its real notes are known (bergamot/mandarin/lavender/ambroxan/vanilla). Correct move: offer something that genuinely shares that fresh-ambroxan character and name the shared notes as evidence. A heavy oud, a leather, or a gourmand is NOT similar to Sauvage no matter how the reply words it. Sharing one note is not similarity. No similarity percentage may be quoted.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز حاجه شبه سوفاج\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"exclude_names\": [\"Sauvage\"], \"similar_to\": \"Sauvage\", \"similar_to_notes\": [\"bergamot\", \"pepper\", \"ambroxan\"], \"recommendation_mode\": \"new_goal\"}\n[internal] shortlist_shown_to_model=['For Him', 'Bleu de Chanel', 'K By Dolce', 'Eternity', 'Bmw', 'Blue Jeans', 'Aramis 900', 'Euphoria Intense', '212 NYC Man', 'Gold', 'Egosta Platinum', 'Ultra Male']\n[internal] similarity_summary={\"reference_name\": \"Sauvage\", \"reference_source\": \"catalogue\", \"best_band\": \"close\", \"has_close_match\": true}\n[internal] ranking_evidence={\"For Him\": {\"score\": 6.284, \"reasons\": [\"Match: قريب فعلاً من Sauvage — مشترك في: cedar، vetiver، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Bleu de Chanel\": {\"score\": 5.95, \"reasons\": [\"Match: قريب فعلاً من Sauvage — مشترك في: vetiver، cedar، patchouli، labdanum، pink pepper — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"K By Dolce\": {\"score\": 5.739, \"reasons\": [\"Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، patchouli، geranium، lavender — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Eternity\": {\"score\": 5.697, \"reasons\": [\"Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، geranium، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Bmw\": {\"score\": 5.553, \"reasons\": [\"Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: cedar، vetiver، lavender، bergamot — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للتشابه.\"], \"mismatches\": []}, \"Blue Jeans\": {\"score\": 5.507, \"reasons\": [\"Match: اشتراك محدود في النوتات مع Sauvage — مشترك في: vetiver، cedar، patchouli، lavender، geranium — بس أخف منه. ❌ ممنوع تذكر نسبة مئوية للت\nAGENT: أقرب اختيار لطلبك **For Him**؛ مشترك مع Sauvage في نوتات خشب الأرز والفيتيفر والباتشولي واللافندر والجرانيوم، بس فوحانه أهدى منه.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- 212 NYC Man | brand=Carolina Herrera | gender=male | type=western | season=Spring, Summer | occasion=Office | longevity=6 hours | projection=Moderate | top=Green Notes, Grapefruit, Spices, Bergamot, Lavender, Petitgrain | mid=Ginger, Violet, Gardenia, Sage | base=Musk, Sandalwood, Incense, Guaiac Wood, Vetiver, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1375EGP stock=100\n- Aramis 900 | brand=Aramis | gender=male | type=western | season=Fall, Winter | occasion=Formal | longevity=8 hours | projection=Strong | top=Green Notes, Coriander, Bergamot, Brazilian Rosewood, Lemon | mid=Rose, Carnation, Geranium, Orris Root, Jasmine, Lily of the Valley | base=Oakmoss, Civet, Patchouli, Vetiver, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Grapefruit, Lemon, Mint, Pink Pepper | mid=Ginger, Nutmeg, Jasmine | base=Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Blue Jeans | brand=Versace | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Citruses, Bergamot, Juniper, Anise, Brazilian Rosewood, Basil | mid=Lavender, Rose, Carnation, Heliotrope, Jasmine, Geranium, Sage, Fir, Lily of the Valley | base=Vanilla, Tonka Bean, Sandalwood, Iris, Musk, Amber, Vetiver, Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bmw | brand=Bmw | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Grapefruit, Lemon, Bergamot | mid=Lavender, Cardamom, Violet Leaf | base=Cedar, Vetiver, White Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Egosta Platinum | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Lavender, Rosemary, Neroli, Petitgrain | mid=Geranium, Clary Sage, Galbanum, Jasmine | base=Oakmoss, Vetiver, Cedar, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Eternity | brand=Calvin Klein | gender=male | type=western | season=Spring, Summer | occasion=Office | longevity=6 hours | projection=Moderate | top=Lavender, Lemon, Bergamot, Mandarin Orange | mid=Sage, Juniper Berries, Basil, Geranium, Coriander, Jasmine | base=Sandalwood, Vetiver, Musk, Brazilian Rosewood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Euphoria Intense | brand=Calvin Klein | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Moderate | top=Ginger, Pepper | mid=Black Basil, Sage, Vetiver, Cedar | base=Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- For Him | brand=Zara | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Cardamom, Lemon | mid=Lavender, Geranium, Sage | base=Cedar, Vetiver, Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Gold | brand=Zara | gender=male | type=western | season=Fall, Winter | occasion=Evening | longevity=6 hours | projection=Moderate | top=Lemon, Bergamot, Cinnamon | mid=Praline, Cardamom, Lavender | base=Amber, Ebony Wood, Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- K By Dolce | brand=Dolce & Gabbana | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom | mid=Fig Nectar, Geranium, Clary Sage, Lavender | base=Cedar, Vetiver, Patchouli, Cypriol Oil | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1625EGP stock=100\n- Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Strong | top=Bergamot, Pepper | mid=Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi | base=Ambroxan, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Ultra Male | brand=Jean Paul Gaultier | gender=male | type=western | season=Fall, Winter | occasion=Club | longevity=8 hours | projection=Strong | top=Pear, Lavender, Mint, Bergamot, Lemon | mid=Cinnamon, Clary Sage, Caraway | base=Black Vanilla Husk, Amber, Patchouli, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1500EGP stock=100\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"similar_to\": \"Sauvage\", \"similar_to_notes\": [\"bergamot\", \"pepper\", \"ambroxan\"]}"
+}

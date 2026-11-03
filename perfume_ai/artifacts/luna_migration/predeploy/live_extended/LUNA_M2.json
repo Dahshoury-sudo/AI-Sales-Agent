@@ -1,0 +1,402 @@
+{
+  "id": "LUNA_M2",
+  "category": "memory",
+  "persona": "mind_changer",
+  "probe": "Explicit reversal. The LATEST preference (heavy, winter) must win outright. If the reply still pushes a fresh summer perfume, stale memory has overridden a fresh explicit statement — a hard failure.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايزه عطر حريمي فريش للصيف",
+      "reply": "Weekend for Women ريحته فريش فاكهي وزهري وخفيف، ومناسب للصيف والاستخدام اليومي. وكمان Very Sexy Now صيفي وفاكهي أكتر، لكن طابعه أحلى ودافي؛ أنا أرشحلك Weekend for Women أكتر لطلبك.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "So Scandal!",
+          "Libre",
+          "Prada Paradox",
+          "Mon Guerlain",
+          "Power of You",
+          "Lady Million",
+          "Poudree",
+          "Weekend for Women",
+          "Divine",
+          "Very Sexy Now",
+          "Sexy Graffiti",
+          "Bamboo"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "So Scandal!": {
+            "score": 4.389,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Libre": {
+            "score": 4.227,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Prada Paradox": {
+            "score": 4.175,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Mon Guerlain": {
+            "score": 4.137,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Power of You": {
+            "score": 4.098,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Lady Million": {
+            "score": 4.098,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Poudree": {
+            "score": 4.089,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Weekend for Women": {
+            "score": 4.087,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Divine": {
+            "score": 4.084,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Very Sexy Now": {
+            "score": 4.07,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Sexy Graffiti": {
+            "score": 4.057,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Bamboo": {
+            "score": 4.049,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 10080,
+      "context": "\nName (الاسم الصحيح): So Scandal!\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Orange Blossom\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Milk\nDescription: Sweet floral scent with a rich, seductive character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Libre\nBrand: Yves Saint Laurent\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Lavender, Petitgrain, Black Currant\nMiddle Notes: Lavender, Orange Blossom, Jasmine\nBase Notes: Madagascar Vanilla, Tonka Bean, Cedar, Musk, Ambergris\nDescription: Fresh lavender-floral scent with a warm vanilla base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Prada Paradox\nBrand: Prada\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Pear, Tangerine, Bergamot\nMiddle Notes: Orange Blossom, Neroli Essence, Neroli, Jasmine Sambac\nBase Notes: Bourbon Vanilla, White Musk, Amber, Benzoin\nDescription: Elegant powdery-floral scent with a soft, refined feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Mon Guerlain\nBrand: Guerlain\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1550.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Bergamot\nMiddle Notes: Jasmine Sambac, Iris\nBase Notes: Vanilla, Sandalwood, Tonka Bean\nDescription: Warm lavender-vanilla scent with a smooth, elegant feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Power of You\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Armani) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Mandarin Orange, Pear\nMiddle Notes: Orange Blossom, Jasmine, Rose\nBase Notes: Vanilla, Cedar, White Musk\nDescription: Soft sweet floral-fruity scent with a warm feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Lady Million\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Raspberry, Neroli, Amalfi Lemon\nMiddle Notes: Jasmine, African Orange Flower, Gardenia\nBase Notes: White Honey, Patchouli, Amber\nDescription: Sweet floral-honey scent with a rich, glamorous feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Poudree\nBrand: Narciso Rodriguez\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Bulgarian Rose, Jasmine, Orange Blossom\nMiddle Notes: Musk\nBase Notes: Vetiver, Cedar, Coumarin, Patchouli\nDescription: Soft powdery musk scent with a warm, elegant feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Weekend for Women\nBrand: Burberry\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Burberry) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Mignonette, Mandarin Orange, Sage\nMiddle Notes: Nectarine, Blue Hyacinth, Peach Blossom, Rose Hip, Iris, Red Cyclamen, Violet Root\nBase Notes: Musk, Sandalwood, Cedar\nDescription: Fresh fruity-floral scent, light, casual and feminine.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Divine\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Calypsone, Red Berries, Bergamot\nMiddle Notes: Lily, Ylang-Ylang, Jasmine\nBase Notes: Meringue, Musk, Patchouli\nDescription: Soft sweet floral scent with a warm, creamy base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Very Sexy Now\nBrand: Victoria's Secret\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1465.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Pineapple, Passionfruit\nMiddle Notes: Peony, Vanilla Orchid, Nutmeg\nBase Notes: Tonka Bean, Sandalwood, Grapefruit\nDescription: Sweet fruity-floral scent with a warm, sensual feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Sexy Graffiti\nBrand: Escada\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Escada) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Wild Strawberry, Raspberry, Grapefruit, Mint\nMiddle Notes: Peony, Violet, Lily of the Valley\nBase Notes: Vanilla, Cashmere Wood, Musk\nDescription: Sweet fruity-floral scent with a fun, youthful feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n\nName (الاسم الصحيح): Bamboo\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot\nMiddle Notes: Casablanca Lily, Ylang-Ylang, Orange Blossom\nBase Notes: Sandalwood, Tahitian Vanilla, Amber\nDescription: Soft white floral scent with a smooth, woody touch.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للموسم\n",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "لا غيرت رايي، عايزه حاجه تقيله للشتا",
+      "reply": "Flowerbomb مناسب للشتا، ريحته زهرية غنية وحلوة وفوحانه قوي، وثباته حوالي 8 ساعات. ولو عايزة حاجة أدفى وأتقل، Oud ريحته دافية بلمسة زهرية وفوحانه قوي وثباته أكتر من 10 ساعات؛ أرشحهولك أكتر لطلبك الشتوي.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "season": "winter",
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "season"
+        ]
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "female",
+        "perfume_type": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": "strong",
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "season"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "So Scandal!",
+          "Flowerbomb",
+          "Lady Million",
+          "Divine",
+          "Oud",
+          "Pink Sugar",
+          "Roberto Cavalli",
+          "Addict",
+          "Poison Girl",
+          "Girl of Now",
+          "Scandal by Night",
+          "Wild Cherry"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "So Scandal!": {
+            "score": 4.389,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Flowerbomb": {
+            "score": 4.154,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Lady Million": {
+            "score": 4.098,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Divine": {
+            "score": 4.084,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Oud": {
+            "score": 4.046,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Pink Sugar": {
+            "score": 4.019,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Roberto Cavalli": {
+            "score": 4.002,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Addict": {
+            "score": 3.993,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Poison Girl": {
+            "score": 3.992,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Girl of Now": {
+            "score": 3.985,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Scandal by Night": {
+            "score": 3.977,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          },
+          "Wild Cherry": {
+            "score": 3.976,
+            "reasons": [
+              "فيه fresh",
+              "فوحانه بيطابق طلبه (Strong)"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [
+        "Very Sexy Now",
+        "Weekend for Women"
+      ],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 10702,
+      "context": "\nName (الاسم الصحيح): So Scandal!\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Jean Paul Gaultier) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Orange Blossom\nMiddle Notes: Tuberose, Jasmine\nBase Notes: Milk\nDescription: Sweet floral scent with a rich, seductive character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Flowerbomb\nBrand: Viktor & Rolf\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Viktor & Rolf) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bergamot, Tea, Osmanthus\nMiddle Notes: Jasmine, Freesia, Orchid, Rose\nBase Notes: Patchouli, Musk\nDescription: Rich floral scent with a sweet, powdery character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Lady Million\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Raspberry, Neroli, Amalfi Lemon\nMiddle Notes: Jasmine, African Orange Flower, Gardenia\nBase Notes: White Honey, Patchouli, Amber\nDescription: Sweet floral-honey scent with a rich, glamorous feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Divine\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Calypsone, Red Berries, Bergamot\nMiddle Notes: Lily, Ylang-Ylang, Jasmine\nBase Notes: Meringue, Musk, Patchouli\nDescription: Soft sweet floral scent with a warm, creamy base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Oud\nBrand: Roberto Cavalli\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Roberto Cavalli) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Saffron, Mandarin Orange\nMiddle Notes: Orange Blossom\nBase Notes: Agarwood (Oud), Amber, Vanilla, Incense\nDescription: Warm oud scent with a sweet floral touch.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Pink Sugar\nBrand: Aquolina\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Aquolina) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Raspberry, Orange, Fig Leaf, Bergamot\nMiddle Notes: Cotton Candy, Licorice, Red Berries, Strawberry, Lily of the Valley\nBase Notes: Caramel, Vanilla, Musk, Tonka Bean, Sandalwood\nDescription: Sweet cotton-candy scent with a playful, gourmand feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Roberto Cavalli\nBrand: Roberto Cavalli\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Roberto Cavalli) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper\nMiddle Notes: African Orange Flower\nBase Notes: Benzoin, Tonka Bean, Vanilla\nDescription: Warm floral-oriental scent with a rich, feminine feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Addict\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dior) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Blackberry, Mandarin Leaf, Silk Tree Blossom\nMiddle Notes: Jasmine, Night Blooming Cereus, Orange Blossom, Rose\nBase Notes: Bourbon Vanilla, Tonka Bean, Mysore Sandalwood\nDescription: Sweet vanilla-floral scent with a warm, sensual base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Poison Girl\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Dior) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Bitter Orange, Lemon\nMiddle Notes: Damask Rose, Grasse Rose, Orange Blossom\nBase Notes: Vanilla, Almond, Tonka Bean, Tolu Balsam, Sandalwood, Cashmeran, Heliotrope\nDescription: Sweet almond-vanilla scent with a dark, sensual feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Girl of Now\nBrand: Elie Saab\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pistachio, Pear, Mandarin Orange\nMiddle Notes: Almond, Orange Blossom, Magnolia\nBase Notes: Almond Milk, Tonka Bean, Cashmeran, Patchouli\nDescription: Sweet nutty-floral scent with a warm, playful feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Scandal by Night\nBrand: Jean Paul Gaultier\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1675.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Honey, Bitter Orange, Citruses\nMiddle Notes: Tuberose, Cherry, Orange Blossom, Pear, Jatamansi\nBase Notes: Tonka Bean, Patchouli, Sandalwood, Amberwood, Vanilla, White Musk\nDescription: Sweet warm scent with honey, caramel and a dark base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n\nName (الاسم الصحيح): Wild Cherry\nBrand: Mancera\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Mancera) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Evening\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Cherry, Bergamot, Lemon\nMiddle Notes: Orris, Heliotrope, Patchouli, Jasmine\nBase Notes: Madagascar Vanilla, White Musk\nDescription: Sweet cherry scent with a juicy, bold, fruity character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | فوحانه بيطابق طلبه (Strong)\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "gender": "female",
+    "notes": [
+      "fresh"
+    ],
+    "projection": "strong"
+  },
+  "seconds": 48.2,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_M2 — category: memory — persona: mind_changer\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nExplicit reversal. The LATEST preference (heavy, winter) must win outright. If the reply still pushes a fresh summer perfume, stale memory has overridden a fresh explicit statement — a hard failure.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايزه عطر حريمي فريش للصيف\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"female\", \"season\": \"summer\", \"notes\": [\"fresh\"]}\n[internal] shortlist_shown_to_model=['So Scandal!', 'Libre', 'Prada Paradox', 'Mon Guerlain', 'Power of You', 'Lady Million', 'Poudree', 'Weekend for Women', 'Divine', 'Very Sexy Now', 'Sexy Graffiti', 'Bamboo']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"So Scandal!\": {\"score\": 4.389, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Libre\": {\"score\": 4.227, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Prada Paradox\": {\"score\": 4.175, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Mon Guerlain\": {\"score\": 4.137, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Power of You\": {\"score\": 4.098, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Lady Million\": {\"score\": 4.098, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Poudree\": {\"score\": 4.089, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Weekend for Women\": {\"score\": 4.087, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Divine\": {\"score\": 4.084, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Very Sexy Now\": {\"score\": 4.07, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Sexy Graffiti\": {\"score\": 4.057, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}, \"Bamboo\": {\"score\": 4.049, \"reasons\": [\"فيه fresh\", \"مناسب للموسم\"], \"mismatches\": []}}\nAGENT: Weekend for Women ريحته فريش فاكهي وزهري وخفيف، ومناسب للصيف والاستخدام اليومي. وكمان Very Sexy Now صيفي وفاكهي أكتر، لكن طابعه أحلى ودافي؛ أنا أرشحلك Weekend for Women أكتر لطلبك.\n\n--- TURN 2 ---\nCUSTOMER: لا غيرت رايي، عايزه حاجه تقيله للشتا\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"female\", \"projection\": \"strong\", \"notes\": [\"fresh\"], \"clear_preferences\": [\"season\"]}\n[internal] shortlist_shown_to_model=['So Scandal!', 'Flowerbomb', 'Lady Million', 'Divine', 'Oud', 'Pink Sugar', 'Roberto Cavalli', 'Addict', 'Poison Girl', 'Girl of Now', 'Scandal by Night', 'Wild Cherry']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"So Scandal!\": {\"score\": 4.389, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Flowerbomb\": {\"score\": 4.154, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Lady Million\": {\"score\": 4.098, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Divine\": {\"score\": 4.084, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Oud\": {\"score\": 4.046, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Pink Sugar\": {\"score\": 4.019, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Roberto Cavalli\": {\"score\": 4.002, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Addict\": {\"score\": 3.993, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Poison Girl\": {\"score\": 3.992, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Girl of Now\": {\"score\": 3.985, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Scandal by Night\": {\"score\": 3.977, \"reasons\": [\"فيه fresh\", \"فوحانه بيطابق طلبه (Strong)\"], \"mismatches\": []}, \"Wild Cherry\": {\"scor\nAGENT: Flowerbomb مناسب للشتا، ريحته زهرية غنية وحلوة وفوحانه قوي، وثباته حوالي 8 ساعات. ولو عايزة حاجة أدفى وأتقل، Oud ريحته دافية بلمسة زهرية وفوحانه قوي وثباته أكتر من 10 ساعات؛ أرشحهولك أكتر لطلبك الشتوي.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Addict | brand=Dior | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Blackberry, Mandarin Leaf, Silk Tree Blossom | mid=Jasmine, Night Blooming Cereus, Orange Blossom, Rose | base=Bourbon Vanilla, Tonka Bean, Mysore Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bamboo | brand=Gucci | gender=female | type=western | season=Spring, Summer | occasion=Office | longevity=6 hours | projection=Moderate | top=Bergamot | mid=Casablanca Lily, Ylang-Ylang, Orange Blossom | base=Sandalwood, Tahitian Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Divine | brand=Jean Paul Gaultier | gender=female | type=western | season=Spring, Summer | occasion=Evening | longevity=8 hours | projection=Strong | top=Calypsone, Red Berries, Bergamot | mid=Lily, Ylang-Ylang, Jasmine | base=Meringue, Musk, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Flowerbomb | brand=Viktor & Rolf | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Bergamot, Tea, Osmanthus | mid=Jasmine, Freesia, Orchid, Rose | base=Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Girl of Now | brand=Elie Saab | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pistachio, Pear, Mandarin Orange | mid=Almond, Orange Blossom, Magnolia | base=Almond Milk, Tonka Bean, Cashmeran, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Lady Million | brand=Paco Rabanne | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Strong | top=Raspberry, Neroli, Amalfi Lemon | mid=Jasmine, African Orange Flower, Gardenia | base=White Honey, Patchouli, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Libre | brand=Yves Saint Laurent | gender=female | type=western | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Mandarin Orange, Lavender, Petitgrain, Black Currant | mid=Lavender, Orange Blossom, Jasmine | base=Madagascar Vanilla, Tonka Bean, Cedar, Musk, Ambergris | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Mon Guerlain | brand=Guerlain | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Moderate | top=Lavender, Bergamot | mid=Jasmine Sambac, Iris | base=Vanilla, Sandalwood, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1550EGP stock=100\n- Oud | brand=Roberto Cavalli | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Saffron, Mandarin Orange | mid=Orange Blossom | base=Agarwood (Oud), Amber, Vanilla, Incense | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Pink Sugar | brand=Aquolina | gender=female | type=western | season=All Seasons | occasion=Casual | longevity=8 hours | projection=Strong | top=Raspberry, Orange, Fig Leaf, Bergamot | mid=Cotton Candy, Licorice, Red Berries, Strawberry, Lily of the Valley | base=Caramel, Vanilla, Musk, Tonka Bean, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Poison Girl | brand=Dior | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Bitter Orange, Lemon | mid=Damask Rose, Grasse Rose, Orange Blossom | base=Vanilla, Almond, Tonka Bean, Tolu Balsam, Sandalwood, Cashmeran, Heliotrope | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Poudree | brand=Narciso Rodriguez | gender=female | type=western | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Bulgarian Rose, Jasmine, Orange Blossom | mid=Musk | base=Vetiver, Cedar, Coumarin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Power of You | brand=Armani | gender=female | type=western | season=All Seasons | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Mandarin Orange, Pear | mid=Orange Blossom, Jasmine, Rose | base=Vanilla, Cedar, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Prada Paradox | brand=Prada | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Moderate | top=Pear, Tangerine, Bergamot | mid=Orange Blossom, Neroli Essence, Neroli, Jasmine Sambac | base=Bourbon Vanilla, White Musk, Amber, Benzoin | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Roberto Cavalli | brand=Roberto Cavalli | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=8 hours | projection=Strong | top=Pink Pepper | mid=African Orange Flower | base=Benzoin, Tonka Bean, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Scandal by Night | brand=Jean Paul Gaultier | gender=female | type=western | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Honey, Bitter Orange, Citruses | mid=Tuberose, Cherry, Orange Blossom, Pear, Jatamansi | base=Tonka Bean, Patchouli, Sandalwood, Amberwood, Vanilla, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1675EGP stock=100\n- Sexy Graffiti | brand=Escada | gender=female | type=western | season=Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Wild Strawberry, Raspberry, Grapefruit, Mint | mid=Peony, Violet, Lily of the Valley | base=Vanilla, Cashmere Wood, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- So Scandal! | brand=Jean Paul Gaultier | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Strong | top=Orange Blossom | mid=Tuberose, Jasmine | base=Milk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Very Sexy Now | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Blood Orange, Pineapple, Passionfruit | mid=Peony, Vanilla Orchid, Nutmeg | base=Tonka Bean, Sandalwood, Grapefruit | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1465EGP stock=100\n- Weekend for Women | brand=Burberry | gender=female | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Mignonette, Mandarin Orange, Sage | mid=Nectarine, Blue Hyacinth, Peach Blossom, Rose Hip, Iris, Red Cyclamen, Violet Root | base=Musk, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Wild Cherry | brand=Mancera | gender=female | type=western | season=All Seasons | occasion=Evening | longevity=8 hours | projection=Strong | top=Cherry, Bergamot, Lemon | mid=Orris, Heliotrope, Patchouli, Jasmine | base=Madagascar Vanilla, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"gender\": \"female\", \"notes\": [\"fresh\"], \"projection\": \"strong\"}"
+}

@@ -109,6 +109,36 @@ def _coerce_budget(value):
     return budget if budget > 0 else None
 
 
+def _unaffordable_candidates(candidates, intent, message):
+    """Explain a real price floor without offering an unaffordable product."""
+    without_budget = {**intent, "max_price": None}
+    choices = [(product, variant) for product in candidates if product.is_active
+               for variant in eligible_variants(product, without_budget)]
+    if not choices:
+        return ("مش لاقي الحجم ونوع الزجاجة المطلوبين متاحين. تحب تغيّر أنهي واحد فيهم؟",
+                described.relax_offer_block(intent))
+    product, variant = min(choices, key=lambda pair: (pair[1].price, pair[1].pk))
+    count = intent.get("purchase_quantity", 1) if intent.get("budget_scope") == "total" else 1
+    count = count if type(count) is int and count > 0 else 1
+    minimum = variant.price * count
+    budget = as_budget(intent.get("max_price"))
+    from ..static_faq_service import normalize_arabic
+    import re
+    if re.search(r"ايه اللي عندك|ايه المتاح|ارخص|المتاح عندك", normalize_arabic(message)):
+        reply = (f"في حدود {budget:g} جنيه، مش لاقي اختيار متاح من اللي بحثت فيهم. "
+                 f"أقل تكلفة للكمية المطلوبة {minimum:g} جنيه، وده أعلى من ميزانيتك. ")
+    else:
+        reply = (f"الاختيارات اللي لقيتها بتبدأ من {minimum:g} جنيه للكمية المطلوبة، "
+                 f"وده أعلى من ميزانيتك {budget:g} جنيه. ")
+    if intent.get("avoid_notes") or intent.get("avoid_traits"):
+        reply = "تمام، استبعاد الروائح اللي مش بتحبها محفوظ ضمن طلبك. " + reply
+    reply += "لو حبيت تغيّر الميزانية، قولّي الحد الجديد."
+    context = f"BUDGET_UNAVAILABLE: minimum {minimum:g} EGP; quantity {count}\n" + format_products([product])
+    context = quote_context(context, [ProductQuote.from_variant(variant, quantity=count)],
+                            max_price=budget, rendered=reply)
+    return reply, context
+
+
 def _format_products(products, max_price=None, ranked=None, brief_for=(),
                      show_value_pick=True):
     """Thin wrapper over the shared renderer, capped for prompt size.
@@ -605,7 +635,7 @@ def recommend(
     if requested_days and candidates and not any((peak_hours(p.longevity) or 0) >= 48 for p in candidates):
         return "ماقدرش أوعدك بثبات يومين للعطور دي، حتى لو زودت الميزانية. نختار على أساس الثبات الفعلي مع الحفاظ على ميزانيتك؟", "UNSUPPORTED_LONGEVITY"
     if intent and as_budget(intent.get("max_price")) and candidates and not any(eligible_variants(p, intent) for p in candidates):
-        return "مفيش اختيار بيجمع الشروط دي مع ميزانيتك. أنهي شرط في العطر ممكن نغيّره مع الحفاظ على الميزانية؟", described.relax_offer_block(intent)
+        return _unaffordable_candidates(candidates, intent, message)
     if intent and (intent.get("requested_volume") or intent.get("bottle_type") or intent.get("budget_strict") or intent.get("budget_scope") == "total"):
         return _constrained_recommendation(products if products else alternatives or [], intent, message, search)
     max_price = _coerce_budget(intent.get("max_price") if intent else None)

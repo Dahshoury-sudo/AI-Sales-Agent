@@ -300,6 +300,7 @@ class AnalyticsHistoryMigrationTests(TransactionTestCase):
     def test_existing_items_backfill_without_prices_changing(self):
         from django.db.migrations.executor import MigrationExecutor
         executor = MigrationExecutor(connection)
+        restore_target = executor.loader.graph.leaf_nodes()
         old_target = [("products", "0039_handoff_attention")]
         target = [("products", "0040_analytics_history")]
         executor.migrate(old_target)
@@ -324,4 +325,5 @@ class AnalyticsHistoryMigrationTests(TransactionTestCase):
             self.assertIsNone(retained.variant_id)
             self.assertEqual(retained.product_snapshot_id, product.pk)
         finally:
-            MigrationExecutor(connection).migrate(target)
+            # Later TransactionTestCases need the current schema, not just migration 0040.
+            MigrationExecutor(connection).migrate(restore_target)

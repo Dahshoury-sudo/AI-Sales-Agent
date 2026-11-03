@@ -1,0 +1,26 @@
+{
+  "review_date": "2026-11-03",
+  "local_status": "passed_with_documented_limits",
+  "production_status": "hosted_configuration_and_delivery_smoke_test_required",
+  "deployed": false,
+  "customer_messages_sent": false,
+  "offline_tests": {"count": 1821, "failures": 0, "unexpected_http": 0, "log": "offline_final.log"},
+  "browser_checks": {"count": 8, "failures": 0, "report": "ui/summary.json"},
+  "live_review": {
+    "unique_scenarios": 45,
+    "customer_turns_in_latest_records": 84,
+    "scenario_crashes": 0,
+    "retained_automatic_findings": 1,
+    "manual_disposition": "M4: transliteration in a thank-you reply; no availability, price, or scent claim",
+    "ledger": "live_final/usage.json",
+    "records": "live_final/runs.json",
+    "cumulative_calls": 513,
+    "invalid_responses": 0,
+    "cumulative_spend_usd": "0.153685335",
+    "review_increment_usd": "0.087407760",
+    "budget_usd": "0.30",
+    "unresolved_reservations_usd": "0"
+  },
+  "hosted_environment_inspected": false,
+  "production_load_tested": false
+}

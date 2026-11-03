@@ -1,0 +1,223 @@
+{
+  "id": "LUNA_RECOMMENDATION",
+  "category": "recommendation",
+  "persona": "summer_shopper",
+  "probe": "Recommend stocked masculine fresh summer/office perfumes using recorded notes and prices within 1200 EGP. The customer supplied enough constraints; do not ask for the same preferences again.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز عطر رجالي فريش للصيف للشغل ميزانيتي 1200 جنيه",
+      "reply": "Bonded ريحته فريش ونضيفة، ومناسب للشغل؛ فيه تفاح وبرغموت وخزامى، وثباته حوالي 8 ساعات وفوحانه متوسط. كمان Black Code مناسب للشغل، بطابع عطري خشبي ونفحات هيل وخزامى وبرغموت. أرشحلك Bonded أكتر لطلبك عشان ريحته الفريش أوضح.\n\nBonded — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nBonded — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nBlack Code — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nBlack Code — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": "office",
+        "max_price": 1200.0,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": "male",
+        "perfume_type": null,
+        "season": "summer",
+        "occasion": "office",
+        "max_price": 1200.0,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [
+          "fresh"
+        ],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Bonded",
+          "Black Code",
+          "Zlatan",
+          "Aqva Pour Homme",
+          "Sport",
+          "K By Dolce",
+          "Bmw",
+          "Acqua di Gio",
+          "For Him",
+          "Tommy",
+          "Egosta Platinum",
+          "Mont Blanc"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "Bonded": {
+            "score": 7.289,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Black Code": {
+            "score": 7.069,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Zlatan": {
+            "score": 7.029,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Aqva Pour Homme": {
+            "score": 6.991,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Sport": {
+            "score": 6.91,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "K By Dolce": {
+            "score": 6.866,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Bmw": {
+            "score": 6.859,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Acqua di Gio": {
+            "score": 6.835,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "For Him": {
+            "score": 6.824,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Tommy": {
+            "score": 6.773,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Egosta Platinum": {
+            "score": 6.735,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          },
+          "Mont Blanc": {
+            "score": 6.731,
+            "reasons": [
+              "فيه fresh",
+              "مناسب للمناسبة اللي قالها",
+              "مناسب للموسم"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 20436,
+      "context": "\nName (الاسم الصحيح): Bonded\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Apple\nMiddle Notes: Bergamot, Lavender\nBase Notes: Sandalwood\nDescription: Bonded is a fresh aromatic-woody fragrance created for a confident and effortlessly polished presence. Crisp apple opens the scent, followed by bright bergamot and calming lavender. Smooth sandalwood forms a warm, refined base that leaves a clean, sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Black Code\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: من صنع المتجر\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Cardamom\nMiddle Notes: Lavender, Cedarwood, Bergamot\nBase Notes: Caraway, Vetiver\nDescription: Black Code is a refined aromatic-woody fragrance created for the confident man. Spiced cardamom opens the scent, followed by an elegant blend of lavender, cedarwood and bergamot. Caraway and vetiver form a deep, distinctive base that leaves a sophisticated and memorable impression.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Zlatan\nBrand: Zlatan\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zlatan) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lemon, Green Grass, Pink Pepper\nMiddle Notes: Marine Notes, White Lavender\nBase Notes: Cedar, Vetiver, Leather\nDescription: Fresh woody-spicy scent with a bold, sporty character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Aqva Pour Homme\nBrand: Bvlgari\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bvlgari) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Mandarin Orange, Orange, Petitgrain\nMiddle Notes: Seaweed, Lavender, Cotton Flower\nBase Notes: Virginia Cedar, Woody Notes, Patchouli, Clary Sage, Amber\nDescription: Fresh aquatic scent with a cool marine character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Sport\nBrand: Puma\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Puma) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Bergamot, Mandarin Orange\nMiddle Notes: Cardamom, Juniper Berries, Green Notes\nBase Notes: Cedar, Musk, Amber\nDescription: Fresh citrus scent with a light, sporty energy.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): K By Dolce\nBrand: Dolce & Gabbana\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n- زجاجة اوريجنال 100 ملي: 1625.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom\nMiddle Notes: Fig Nectar, Geranium, Clary Sage, Lavender\nBase Notes: Cedar, Vetiver, Patchouli, Cypriol Oil\nDescription: Fresh citrus and spice with a smooth woody base.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Bmw\nBrand: Bmw\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Bmw) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Grapefruit, Lemon, Bergamot\nMiddle Notes: Lavender, Cardamom, Violet Leaf\nBase Notes: Cedar, Vetiver, White Musk, Amber\nDescription: Clean sporty woody scent with fresh citrus notes.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Acqua di Gio\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP ❌ (أعلى من الميزانية بكتير — ممنوع تعرضه)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lime, Lemon, Bergamot, Neroli, Mandarin Orange\nMiddle Notes: Sea Notes, Jasmine, Peach, Rosemary\nBase Notes: White Musk, Cedar, Oakmoss, Patchouli, Amber\nDescription: Fresh aquatic-citrus scent with a clean marine feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): For Him\nBrand: Zara\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Zara) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Bergamot, Cardamom, Lemon\nMiddle Notes: Lavender, Geranium, Sage\nBase Notes: Cedar, Vetiver, Patchouli, Musk\nDescription: Fresh aromatic scent with a clean everyday character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Tommy\nBrand: Tommy Hilfiger\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Tommy Hilfiger) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Mint, Lavender, Grapefruit, Bergamot\nMiddle Notes: Cranberry, Rose, Granny Smith Apple\nBase Notes: Amber, Cactus, Cotton Flower\nDescription: Fresh aromatic scent with a clean, casual character.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Egosta Platinum\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 8 hours\nProjection: Moderate\nTop Notes: Lavender, Rosemary, Neroli, Petitgrain\nMiddle Notes: Geranium, Clary Sage, Galbanum, Jasmine\nBase Notes: Oakmoss, Vetiver, Cedar, Sandalwood, Amber\nDescription: Fresh aromatic-woody scent, clean, crisp and refined.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nName (الاسم الصحيح): Mont Blanc\nBrand: Montblanc\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Montblanc) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Office\nLongevity: 6 hours\nProjection: Moderate\nTop Notes: Lavender, Pineapple, Bergamot, Lemon Verbena\nMiddle Notes: Red Apple, Dried Fruits, Oakmoss, Geranium, Coumarin, Rose\nBase Notes: Tonka Bean, Sandalwood\nDescription: Fresh woody-aromatic scent with a clean, classic feel.\n\n-------------------------\n✅ ليه مناسب: فيه fresh | مناسب للمناسبة اللي قالها | مناسب للموسم\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 909, \"variant_id\": 2517, \"name\": \"Bonded\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 909, \"variant_id\": 2516, \"name\": \"Bonded\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 908, \"variant_id\": 2515, \"name\": \"Black Code\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 908, \"variant_id\": 2514, \"name\": \"Black Code\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Bonded — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\\nBonded — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\\nBlack Code — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\\nBlack Code — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\", \"budget\": \"1200.0\"}",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "gender": "male",
+    "max_price": 1200.0,
+    "season": "summer",
+    "occasion": "office",
+    "notes": [
+      "fresh"
+    ]
+  },
+  "seconds": 10.0,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_RECOMMENDATION — category: recommendation — persona: summer_shopper\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nRecommend stocked masculine fresh summer/office perfumes using recorded notes and prices within 1200 EGP. The customer supplied enough constraints; do not ask for the same preferences again.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز عطر رجالي فريش للصيف للشغل ميزانيتي 1200 جنيه\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"gender\": \"male\", \"season\": \"summer\", \"occasion\": \"office\", \"max_price\": 1200.0, \"notes\": [\"fresh\"]}\n[internal] shortlist_shown_to_model=['Bonded', 'Black Code', 'Zlatan', 'Aqva Pour Homme', 'Sport', 'K By Dolce', 'Bmw', 'Acqua di Gio', 'For Him', 'Tommy', 'Egosta Platinum', 'Mont Blanc']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"Bonded\": {\"score\": 7.289, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Black Code\": {\"score\": 7.069, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Zlatan\": {\"score\": 7.029, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Aqva Pour Homme\": {\"score\": 6.991, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Sport\": {\"score\": 6.91, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"K By Dolce\": {\"score\": 6.866, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Bmw\": {\"score\": 6.859, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Acqua di Gio\": {\"score\": 6.835, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"For Him\": {\"score\": 6.824, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Tommy\": {\"score\": 6.773, \"reasons\": [\"فيه fresh\", \"مناسب للمناسبة اللي قالها\", \"مناسب للموسم\"], \"mismatches\": []}, \"Egosta Pla\nAGENT: Bonded ريحته فريش ونضيفة، ومناسب للشغل؛ فيه تفاح وبرغموت وخزامى، وثباته حوالي 8 ساعات وفوحانه متوسط. كمان Black Code مناسب للشغل، بطابع عطري خشبي ونفحات هيل وخزامى وبرغموت. أرشحلك Bonded أكتر لطلبك عشان ريحته الفريش أوضح.\n\nBonded — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nBonded — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nBlack Code — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nBlack Code — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Acqua di Gio | brand=Armani | gender=male | type=western | season=Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Lime, Lemon, Bergamot, Neroli, Mandarin Orange | mid=Sea Notes, Jasmine, Peach, Rosemary | base=White Musk, Cedar, Oakmoss, Patchouli, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Aqva Pour Homme | brand=Bvlgari | gender=male | type=western | season=Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Mandarin Orange, Orange, Petitgrain | mid=Seaweed, Lavender, Cotton Flower | base=Virginia Cedar, Woody Notes, Patchouli, Clary Sage, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Black Code | brand=Perfamix | gender=male | type=store_own_made | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Cardamom | mid=Lavender, Cedarwood, Bergamot | base=Caraway, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bmw | brand=Bmw | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Grapefruit, Lemon, Bergamot | mid=Lavender, Cardamom, Violet Leaf | base=Cedar, Vetiver, White Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bonded | brand=Perfamix | gender=male | type=store_own_made | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Apple | mid=Bergamot, Lavender | base=Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Egosta Platinum | brand=Chanel | gender=male | type=western | season=All Seasons | occasion=Office | longevity=8 hours | projection=Moderate | top=Lavender, Rosemary, Neroli, Petitgrain | mid=Geranium, Clary Sage, Galbanum, Jasmine | base=Oakmoss, Vetiver, Cedar, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- For Him | brand=Zara | gender=male | type=western | season=All Seasons | occasion=Casual | longevity=6 hours | projection=Moderate | top=Bergamot, Cardamom, Lemon | mid=Lavender, Geranium, Sage | base=Cedar, Vetiver, Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- K By Dolce | brand=Dolce & Gabbana | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Blood Orange, Sicilian Lemon, Juniper Berries, Cardamom | mid=Fig Nectar, Geranium, Clary Sage, Lavender | base=Cedar, Vetiver, Patchouli, Cypriol Oil | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1625EGP stock=100\n- Mont Blanc | brand=Montblanc | gender=male | type=western | season=All Seasons | occasion=Office | longevity=6 hours | projection=Moderate | top=Lavender, Pineapple, Bergamot, Lemon Verbena | mid=Red Apple, Dried Fruits, Oakmoss, Geranium, Coumarin, Rose | base=Tonka Bean, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Sport | brand=Puma | gender=male | type=western | season=Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Grapefruit, Bergamot, Mandarin Orange | mid=Cardamom, Juniper Berries, Green Notes | base=Cedar, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Tommy | brand=Tommy Hilfiger | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Mint, Lavender, Grapefruit, Bergamot | mid=Cranberry, Rose, Granny Smith Apple | base=Amber, Cactus, Cotton Flower | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Zlatan | brand=Zlatan | gender=male | type=western | season=Spring, Summer | occasion=Casual | longevity=6 hours | projection=Moderate | top=Lemon, Green Grass, Pink Pepper | mid=Marine Notes, White Lavender | base=Cedar, Vetiver, Leather | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"gender\": \"male\", \"max_price\": 1200.0, \"season\": \"summer\", \"occasion\": \"office\", \"notes\": [\"fresh\"]}"
+}

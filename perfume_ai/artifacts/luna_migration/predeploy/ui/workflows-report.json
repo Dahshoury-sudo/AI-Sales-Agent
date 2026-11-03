@@ -1,0 +1,17 @@
+{
+  "passed": [
+    "Overview percentages, zero-data state, failure/retry, quick actions and header navigation",
+    "Large metrics, long Arabic names and safe rendering of unknown platform names",
+    "Product search, editor, save payload, Escape and focus restoration",
+    "FAQ and post-rule creation",
+    "Settings, platform connection form and notification read action",
+    "Order filtering, keyboard detail dialog and status action",
+    "Conversation keyboard selection, replies, and handoff resolution",
+    "Test-chat send and reset",
+    "Excel import selection and upload",
+    "Empty products, FAQs, post rules and notifications",
+    "Visible request errors and expired-token refresh",
+    "Mobile drawer, inert background, Escape, navigation, and chat back control",
+    "Login error/success, registration, password recovery, mismatch and reset"
+  ]
+}

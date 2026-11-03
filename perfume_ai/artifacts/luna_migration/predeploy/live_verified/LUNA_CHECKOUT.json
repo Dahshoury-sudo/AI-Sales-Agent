@@ -1,0 +1,236 @@
+{
+  "id": "LUNA_CHECKOUT",
+  "category": "purchase",
+  "persona": "ready_buyer",
+  "probe": "Resolve the Arabic name to Eros, 50 ml, normal/store bottle, at 750 EGP. Save the quantity change to two without duplicating the line. Collect only missing contact details, then show a 1500 EGP product subtotal. The fifth turn changes the quantity and asks to confirm together: show the revised 750 EGP subtotal and do not create an order yet. Create exactly one order only after the sixth turn's fresh confirmation.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أطلب إيروس فرزاتشي 50 ملي زجاجة الستور",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Eros (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 759,
+            "variant__product__name": "Eros",
+            "variant_id": 2154,
+            "name": "Eros",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "750.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 57,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 1 (750.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "خليها اتنين بدل واحدة",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Eros (50ml) بـ 1500 جنيه\nالمجموع: 1500 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 759,
+            "variant__product__name": "Eros",
+            "variant_id": 2154,
+            "name": "Eros",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "750.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 58,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 2 (1500.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 3,
+      "user": "اسمي عميل اختبار، رقمي 01000000000 ورقم بديل 01100000000",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Eros (50ml) بـ 1500 جنيه\nالمجموع: 1500 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 759,
+            "variant__product__name": "Eros",
+            "variant_id": 2154,
+            "name": "Eros",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "750.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone"
+        ]
+      },
+      "context_chars": 58,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 2 (1500.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "العنوان القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: عميل اختبار\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1\n\n🛍️ الطلب:\n- 2 × Eros (50ml) - زجاجة الستور الخاصة بينا (السعر: 1500.00 جنيه)\n\n💰 الإجمالي: 1500.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 759,
+            "variant__product__name": "Eros",
+            "variant_id": 2154,
+            "name": "Eros",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "750.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 58,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 2 (1500.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 5,
+      "user": "خليها واحدة بس وأكد الطلب",
+      "reply": "تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: عميل اختبار\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1\n\n🛍️ الطلب:\n- 1 × Eros (50ml) - زجاجة الستور الخاصة بينا (السعر: 750.00 جنيه)\n\n💰 الإجمالي: 750.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [
+          {
+            "variant__product_id": 759,
+            "variant__product__name": "Eros",
+            "variant_id": 2154,
+            "name": "Eros",
+            "volume": 50,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "750.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "secondary_phone",
+          "shipping_address"
+        ]
+      },
+      "context_chars": 57,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 1 (750.00 EGP)",
+      "findings": []
+    },
+    {
+      "n": 6,
+      "user": "تمام أكد الطلب",
+      "reply": "تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #1.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 1,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 57,
+      "context": "Eros (50 ملي) (زجاجة الستور الخاصة بينا) x 1 (750.00 EGP)",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "bottle_type": "normal",
+    "requested_volume": 50
+  },
+  "seconds": 37.3,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_CHECKOUT — category: purchase — persona: ready_buyer\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nResolve the Arabic name to Eros, 50 ml, normal/store bottle, at 750 EGP. Save the quantity change to two without duplicating the line. Collect only missing contact details, then show a 1500 EGP product subtotal. The fifth turn changes the quantity and asks to confirm together: show the revised 750 EGP subtotal and do not create an order yet. Create exactly one order only after the sixth turn's fresh confirmation.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أطلب إيروس فرزاتشي 50 ملي زجاجة الستور\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Eros (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس الاسم و رقمين للموبايل واحد اساسي وواحد بديل و عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.\n\n--- TURN 2 ---\nCUSTOMER: خليها اتنين بدل واحدة\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 2 × Eros (50ml) بـ 1500 جنيه\nالمجموع: 1500 جنيه.\n\nولسه ناقص الاسم ورقم الموبايل ورقم بديل والعنوان.\n\n--- TURN 3 ---\nCUSTOMER: اسمي عميل اختبار، رقمي 01000000000 ورقم بديل 01100000000\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: 🛍️ الطلب لحد دلوقتي:\n- 2 × Eros (50ml) بـ 1500 جنيه\nالمجموع: 1500 جنيه.\n\nتمام، عشان أأكدلك الطلب ناقصني بس عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل.\n\n--- TURN 4 ---\nCUSTOMER: العنوان القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: عميل اختبار\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1\n\n🛍️ الطلب:\n- 2 × Eros (50ml) - زجاجة الستور الخاصة بينا (السعر: 1500.00 جنيه)\n\n💰 الإجمالي: 1500.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 5 ---\nCUSTOMER: خليها واحدة بس وأكد الطلب\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تمام، راجع معايا تفاصيل الطلب كده:\n\n👤 الاسم: عميل اختبار\n📱 الموبايل: 01000000000\n📞 موبايل بديل: 01100000000\n📍 العنوان: القاهرة مدينة نصر شارع الاختبار عمارة 1 شقة 1\n\n🛍️ الطلب:\n- 1 × Eros (50ml) - زجاجة الستور الخاصة بينا (السعر: 750.00 جنيه)\n\n💰 الإجمالي: 750.00 جنيه.\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 6 ---\nCUSTOMER: تمام أكد الطلب\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #1.\nسيقوم فريق المبيعات بالتواصل معك قريباً.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Eros | brand=Versace | gender=male | type=western | season=Spring, Summer | occasion=Club | longevity=8 hours | projection=Strong | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"bottle_type\": \"normal\", \"requested_volume\": 50}"
+}

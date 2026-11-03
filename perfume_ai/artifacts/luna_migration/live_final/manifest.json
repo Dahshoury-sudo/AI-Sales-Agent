@@ -1,0 +1,55 @@
+{
+  "started_utc": "2026-11-03T12:32:19.882402+00:00",
+  "budget_usd": "0.30",
+  "resume_from": "artifacts\\luna_migration\\live_verified",
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [
+    "D1",
+    "R1"
+  ],
+  "temporary_database": "test_agent_eval_2dd32c6514",
+  "models": {
+    "OPENAI_MODEL": "gpt-6-luna",
+    "OPENAI_SMART_MODEL": "gpt-6-luna",
+    "OPENAI_RESOLVER_MODEL": "gpt-6-luna"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "D1",
+        "turns": 1
+      },
+      {
+        "id": "R1",
+        "turns": 1
+      },
+      {
+        "id": "P1",
+        "turns": 1
+      },
+      {
+        "id": "P3",
+        "turns": 2
+      },
+      {
+        "id": "F3",
+        "turns": 4
+      },
+      {
+        "id": "CONV772",
+        "turns": 3
+      }
+    ]
+  },
+  "catalogue_products": 251,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192,
+    "gpt-6-luna": {
+      "none": 2048,
+      "high": 25000
+    }
+  },
+  "service_tier": "default",
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

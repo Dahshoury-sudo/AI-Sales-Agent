@@ -34,7 +34,7 @@ def check_expected_cart(state, expected):
     if "reply_kind" in expected and state.get("reply_kind") != expected["reply_kind"]:
         findings.append(("checkout_routing_mismatch", "critical", "Purchase follow-up did not receive a checkout response"))
     if "contact_fields" in expected and set(state.get("contact_fields", [])) != set(expected["contact_fields"]):
-        findings.append(("checkout_contact_mismatch", "critical", "Checkout saved personal details not supplied by the customer"))
+        findings.append(("checkout_contact_mismatch", "critical", "Saved checkout contact fields differ from the expected supplied details"))
     return findings
 
 # Latin tokens that appear in replies without naming a product.
@@ -695,8 +695,13 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
 
     # ── Unsupported certainty ─────────────────────────────────────────────
     for pattern in _GUARANTEE:
-        match = pattern.search(reply)
-        if match and not re.search(r"مش|ماقدرش|مقدرش|لا يمكن|بدون", reply[max(0, match.start()-24):match.start()]):
+        unsupported = False
+        for match in pattern.finditer(reply):
+            prefix = re.split(r"[.،,؛;!?؟\n]", reply[:match.start()])[-1][-24:]
+            if not re.search(r"مش|ماقدرش|مقدرش|لا يمكن|بدون|من غير", prefix):
+                unsupported = True
+                break
+        if unsupported:
             findings.append((
                 "unsupported_guarantee", "high",
                 f"guarantee/precision claim matched /{pattern.pattern}/",

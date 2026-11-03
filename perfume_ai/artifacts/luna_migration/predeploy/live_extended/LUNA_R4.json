@@ -1,0 +1,193 @@
+{
+  "id": "LUNA_R4",
+  "category": "recommendation",
+  "persona": "luxury",
+  "probe": "Luxury + uncommon. Correct move: show the niche/ultra-niche tier or the store's own exclusive blends, with a real differentiator. Must NOT say 'مفيش' while niche products exist. Must NOT drag them down to a cheap option.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز حاجه نيش مش منتشره، ومش مهم السعر",
+      "reply": "40 Knots ريحته بحرية منعشة بلمسة خشبية، وينفع للراجل وللست؛ هو رجالي ولا حريمي عشان أظبطلك الاختيار؟",
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": "niche",
+        "season": null,
+        "occasion": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": true,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "max_price"
+        ]
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": [],
+        "gender": null,
+        "perfume_type": "niche",
+        "season": null,
+        "occasion": null,
+        "longevity": null,
+        "projection": null,
+        "exclude_names": [],
+        "notes": [],
+        "avoid_notes": [],
+        "avoid_traits": [],
+        "wants_uncommon": true,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [
+          "max_price"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "40 Knots",
+          "Accento",
+          "Alexandria II",
+          "Interlude",
+          "Angel share",
+          "Baccarat Rouge 540",
+          "Baraonda",
+          "Black Afgano",
+          "Erba Pura",
+          "Fleur Narcotique",
+          "God of Fire",
+          "Hacivat"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {
+          "40 Knots": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Accento": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Alexandria II": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Interlude": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Angel share": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Baccarat Rouge 540": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Baraonda": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Black Afgano": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Erba Pura": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Fleur Narcotique": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "God of Fire": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          },
+          "Hacivat": {
+            "score": 0.4,
+            "reasons": [
+              "ينفع للراجل وللست"
+            ],
+            "mismatches": []
+          }
+        }
+      },
+      "keeping": [],
+      "dropped": {},
+      "offered": [],
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 9071,
+      "context": "\nName (الاسم الصحيح): 40 Knots\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Xerjoff) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Sea Notes, Salt, Green Notes\nMiddle Notes: Woody Notes, Cedar\nBase Notes: Ambergris, Sandalwood\nDescription: Fresh marine scent with citrus and a light woody base.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Accento\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Xerjoff) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Pineapple, Hyacinth\nMiddle Notes: Iris, Pink Pepper, Jasmine\nBase Notes: Musk, Vetiver, Amber, Vanilla, Patchouli\nDescription: Fresh fruity-floral scent with citrus and soft musk.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Alexandria II\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall, Winter\nOccasion: Formal\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Palisander Rosewood, Lavender, Cinnamon, Apple\nMiddle Notes: Rose, Cedar, Lily of the Valley\nBase Notes: Agarwood (Oud), Sandalwood, Amber, Vanilla, Musk\nDescription: Rich woody-oud scent with a warm, luxurious character.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Interlude\nBrand: Amouage\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Oregano, Pepper, Bergamot\nMiddle Notes: Incense, Opoponax, Amber, Labdanum\nBase Notes: Leather, Agarwood (Oud), Sandalwood, Patchouli\nDescription: Smoky spicy-woody scent with a bold, resinous character.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Angel share\nBrand: By Kilian\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 3000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Cognac, Cinnamon\nMiddle Notes: Tonka Bean, Oak\nBase Notes: Praline, Vanilla, Sandalwood\nDescription: Warm cognac-vanilla scent with a sweet, boozy woody base.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Baccarat Rouge 540\nBrand: Maison Francis Kurkdjian\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Saffron, Jasmine\nMiddle Notes: Amberwood, Ambergris\nBase Notes: Fir Resin, Cedar\nDescription: Sweet amber-floral scent with a warm, airy woody feel.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Baraonda\nBrand: Nasomatto\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Nasomatto) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Whiskey, Rum, Cinnamon\nMiddle Notes: Rose, Dried Fruits\nBase Notes: Woody Notes, Amber, Musk, Ambrette\nDescription: Warm, deep scent with woody, spicy and resinous notes.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Black Afgano\nBrand: Nasomatto\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1350.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Fall, Winter\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Cannabis, Green Notes\nMiddle Notes: Resins, Woodsy Notes, Tobacco, Coffee\nBase Notes: Agarwood (Oud), Incense\nDescription: Dark smoky resin scent with a deep woody character.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Erba Pura\nBrand: Xerjoff\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2460.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring, Summer\nOccasion: Casual\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Sicilian Orange, Calabrian Bergamot, Sicilian Lemon\nMiddle Notes: Fruits\nBase Notes: White Musk, Madagascar Vanilla, Amber\nDescription: Sweet fruity-musky scent with a warm amber base.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Fleur Narcotique\nBrand: Ex Nihilo\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Ex Nihilo) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring, Summer\nOccasion: Formal\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Litchi, Bergamot, Peach\nMiddle Notes: Peony, Orange Blossom, Jasmine, Petalia\nBase Notes: Musk, Moss, Woody Notes\nDescription: Soft white floral scent with peony, jasmine and musk.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): God of Fire\nBrand: God of Fire\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: Spring, Summer\nOccasion: Evening\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Mango, Ginger, Lemon, Red Berries\nMiddle Notes: Coumarin, Jasmine, Cedar\nBase Notes: Musk, Amber, Agarwood (Oud), Cypriol Oil\nDescription: Warm spicy-woody scent with a bold, fiery character.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n\nName (الاسم الصحيح): Hacivat\nBrand: Nishane\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Nishane) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: unisex\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Office\nLongevity: 10+ hours\nProjection: Strong\nTop Notes: Pineapple, Grapefruit, Bergamot\nMiddle Notes: Cedar, Patchouli, Jasmine\nBase Notes: Oakmoss, Woody Notes\nDescription: Fresh fruity-woody scent with pineapple and a mossy base.\n\n-------------------------\n✅ ليه مناسب: ينفع للراجل وللست\n",
+      "findings": []
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "final_preferences": {
+    "perfume_type": "niche",
+    "wants_uncommon": true
+  },
+  "seconds": 14.3,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO LUNA_R4 — category: recommendation — persona: luxury\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nLuxury + uncommon. Correct move: show the niche/ultra-niche tier or the store's own exclusive blends, with a real differentiator. Must NOT say 'مفيش' while niche products exist. Must NOT drag them down to a cheap option.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز حاجه نيش مش منتشره، ومش مهم السعر\n[internal] classified_as=recommendation sales_stage=recommendation objection=None\n[internal] extracted_intent={\"perfume_type\": \"niche\", \"wants_uncommon\": true, \"clear_preferences\": [\"max_price\"]}\n[internal] shortlist_shown_to_model=['40 Knots', 'Accento', 'Alexandria II', 'Interlude', 'Angel share', 'Baccarat Rouge 540', 'Baraonda', 'Black Afgano', 'Erba Pura', 'Fleur Narcotique', 'God of Fire', 'Hacivat']\n[internal] similarity_summary=null\n[internal] ranking_evidence={\"40 Knots\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Accento\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Alexandria II\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Interlude\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Angel share\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Baccarat Rouge 540\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Baraonda\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Black Afgano\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Erba Pura\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Fleur Narcotique\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"God of Fire\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}, \"Hacivat\": {\"score\": 0.4, \"reasons\": [\"ينفع للراجل وللست\"], \"mismatches\": []}}\nAGENT: 40 Knots ريحته بحرية منعشة بلمسة خشبية، وينفع للراجل وللست؛ هو رجالي ولا حريمي عشان أظبطلك الاختيار؟\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- 40 Knots | brand=Xerjoff | gender=unisex | type=niche | season=Spring, Summer | occasion=Casual | longevity=10+ hours | projection=Strong | top=Sea Notes, Salt, Green Notes | mid=Woody Notes, Cedar | base=Ambergris, Sandalwood | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Accento | brand=Xerjoff | gender=unisex | type=niche | season=All Seasons | occasion=Formal | longevity=10+ hours | projection=Strong | top=Pineapple, Hyacinth | mid=Iris, Pink Pepper, Jasmine | base=Musk, Vetiver, Amber, Vanilla, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Alexandria II | brand=Xerjoff | gender=unisex | type=niche | season=Fall, Winter | occasion=Formal | longevity=10+ hours | projection=Strong | top=Palisander Rosewood, Lavender, Cinnamon, Apple | mid=Rose, Cedar, Lily of the Valley | base=Agarwood (Oud), Sandalwood, Amber, Vanilla, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Angel share | brand=By Kilian | gender=unisex | type=niche | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Cognac, Cinnamon | mid=Tonka Bean, Oak | base=Praline, Vanilla, Sandalwood | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=3000EGP stock=100\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=unisex | type=niche | season=All Seasons | occasion=Evening | longevity=10+ hours | projection=Strong | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2000EGP stock=100\n- Baraonda | brand=Nasomatto | gender=unisex | type=niche | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Whiskey, Rum, Cinnamon | mid=Rose, Dried Fruits | base=Woody Notes, Amber, Musk, Ambrette | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Black Afgano | brand=Nasomatto | gender=unisex | type=niche | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Cannabis, Green Notes | mid=Resins, Woodsy Notes, Tobacco, Coffee | base=Agarwood (Oud), Incense | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=1350EGP stock=100\n- Erba Pura | brand=Xerjoff | gender=unisex | type=niche | season=Spring, Summer | occasion=Casual | longevity=10+ hours | projection=Strong | top=Sicilian Orange, Calabrian Bergamot, Sicilian Lemon | mid=Fruits | base=White Musk, Madagascar Vanilla, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2460EGP stock=100\n- Fleur Narcotique | brand=Ex Nihilo | gender=unisex | type=niche | season=Spring, Summer | occasion=Formal | longevity=10+ hours | projection=Strong | top=Litchi, Bergamot, Peach | mid=Peony, Orange Blossom, Jasmine, Petalia | base=Musk, Moss, Woody Notes | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- God of Fire | brand=God of Fire | gender=unisex | type=niche | season=Spring, Summer | occasion=Evening | longevity=10+ hours | projection=Strong | top=Mango, Ginger, Lemon, Red Berries | mid=Coumarin, Jasmine, Cedar | base=Musk, Amber, Agarwood (Oud), Cypriol Oil | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2000EGP stock=100\n- Hacivat | brand=Nishane | gender=unisex | type=niche | season=All Seasons | occasion=Office | longevity=10+ hours | projection=Strong | top=Pineapple, Grapefruit, Bergamot | mid=Cedar, Patchouli, Jasmine | base=Oakmoss, Woody Notes | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Interlude | brand=Amouage | gender=unisex | type=niche | season=Fall, Winter | occasion=Evening | longevity=10+ hours | projection=Strong | top=Oregano, Pepper, Bergamot | mid=Incense, Opoponax, Amber, Labdanum | base=Leather, Agarwood (Oud), Sandalwood, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n(none)\n\n[context] Final saved preferences after the conversation: {\"perfume_type\": \"niche\", \"wants_uncommon\": true}"
+}

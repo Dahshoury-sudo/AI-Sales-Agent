@@ -1,6 +1,7 @@
 """Customer evidence is required before a perfume becomes a lookalike target."""
 
 from django.test import TestCase
+from unittest.mock import patch
 
 from products.models import Brand, Conversation, Message, Product, ProductVariant, Store
 from products.services.conversation_service import merge_preferences
@@ -10,6 +11,9 @@ from products.services.search_service import search_products
 
 class SimilarityStateTests(TestCase):
     def setUp(self):
+        self.confirmer = self.enterContext(patch(
+            "products.services.product_resolver.confirm_unplaced", return_value=None,
+        ))
         self.store = Store.objects.create(name="Similarity Store")
         self.brand = Brand.objects.create(store=self.store, name="Carolina Herrera")
         self.product = Product.objects.create(
@@ -78,6 +82,47 @@ class SimilarityStateTests(TestCase):
         self.assertEqual(result["brand"], "Dior")
         self.assertEqual(result["max_price"], 900)
         self.assertEqual(self.conversation.sales_state[STATE_KEY], origin)
+
+    def test_scent_analogies_do_not_require_a_perfume_reference(self):
+        for text in ("عايزه عطر حريمي مسكر اوي زي الحلويات، وميزانيتي 700",
+                     "عايز ريحة شبه الفانيليا", "something like desserts"):
+            with self.subTest(text=text):
+                result = self.merge({"gender": "female", "notes": ["sweet"], "max_price": 700}, text)
+                self.assertNotIn("similarity_needs_reference", result)
+                self.assertNotIn("similar_to", result)
+                self.assertEqual(result["notes"], ["sweet"])
+        self.confirmer.assert_not_called()
+
+    def test_a_negated_scent_analogy_does_not_withdraw_the_reference(self):
+        self.start()
+        result = self.merge({"avoid_notes": ["sweet"]}, "بس مش عايز حاجة زي الحلويات")
+        self.assertEqual(result["similar_to"], self.product.name)
+
+    def test_arabic_reference_uses_a_confirmed_catalogue_identity(self):
+        product = Product.objects.create(store=self.store, brand=self.brand, name="Sauvage", gender="male")
+        Product.objects.create(store=self.store, brand=self.brand, name="Sauvage Elixir", gender="male")
+        self.confirmer.return_value = product
+        result = self.merge({"similar_to": "Sauvage", "similar_to_notes": ["ambroxan"]},
+                            "عايز حاجة شبه سوفاج")
+        self.assertEqual(result["similar_to"], product.name)
+        self.assertNotIn("similarity_needs_reference", result)
+        self.confirmer.assert_called_once_with("سوفاج", self.store)
+
+    def test_wrong_or_failed_confirmation_cannot_establish_a_reference(self):
+        Product.objects.create(store=self.store, brand=self.brand, name="Sauvage", gender="male")
+        for answer in (None, self.product):
+            with self.subTest(answer=answer):
+                self.confirmer.return_value = answer
+                result = self.merge({"similar_to": "Sauvage"}, "عايز حاجة شبه سوفاج")
+                self.assertNotIn("similar_to", result)
+                self.assertTrue(result.get("similarity_needs_reference"))
+        self.confirmer.side_effect = TimeoutError("simulated")
+        result = self.merge({"similar_to": "Sauvage"}, "عايز حاجة شبه سوفاج")
+        self.assertNotIn("similar_to", result)
+
+    def test_literal_names_do_not_need_an_extra_confirmation(self):
+        self.start()
+        self.confirmer.assert_not_called()
 
     def test_unsupported_fresh_reference_cannot_replace_a_valid_one(self):
         self.start()

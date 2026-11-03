@@ -1,0 +1,84 @@
+{
+  "started_utc": "2026-11-03T13:51:26.075345+00:00",
+  "budget_usd": "0.30",
+  "resume_from": "artifacts\\luna_migration\\predeploy\\live_verified",
+  "invalidated_harness_attempts": [],
+  "superseded_case_ids": [
+    "LUNA_C1",
+    "LUNA_CHECKOUT",
+    "LUNA_F3",
+    "LUNA_M3",
+    "LUNA_ORIGINAL_BOTTLE",
+    "LUNA_P3",
+    "LUNA_R1",
+    "LUNA_S1",
+    "LUNA_S2",
+    "LUNA_S3",
+    "LUNA_S4"
+  ],
+  "temporary_database": "test_agent_eval_5690231c2d",
+  "models": {
+    "OPENAI_MODEL": "gpt-6-luna",
+    "OPENAI_SMART_MODEL": "gpt-6-luna",
+    "OPENAI_RESOLVER_MODEL": "gpt-6-luna"
+  },
+  "suites": {
+    "selected": [
+      {
+        "id": "LUNA_R1",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_M3",
+        "turns": 3
+      },
+      {
+        "id": "LUNA_S1",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_S2",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_S3",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_S4",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_C1",
+        "turns": 1
+      },
+      {
+        "id": "LUNA_F3",
+        "turns": 4
+      },
+      {
+        "id": "LUNA_P3",
+        "turns": 2
+      },
+      {
+        "id": "LUNA_CHECKOUT",
+        "turns": 6
+      },
+      {
+        "id": "LUNA_ORIGINAL_BOTTLE",
+        "turns": 1
+      }
+    ]
+  },
+  "catalogue_products": 251,
+  "max_completion_tokens": {
+    "gpt-4.1-mini": 2048,
+    "gpt-5-mini": 8192,
+    "gpt-6-luna": {
+      "none": 2048,
+      "high": 25000
+    }
+  },
+  "service_tier": "default",
+  "isolation": "Disposable local PostgreSQL; read-only source snapshot; every scenario rolls back; requests delivery disabled; no automatic API retries"
+}

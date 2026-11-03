@@ -111,8 +111,8 @@ def install_probes():
     original_derive = sales_stage.derive
     original_detect = sales_objection.detect
 
-    def classify(message, history=None):
-        result = original_classify(message, history)
+    def classify(message, history=None, **kwargs):
+        result = original_classify(message, history, **kwargs)
         _rec()["classification"] = result
         return result
 
@@ -121,8 +121,8 @@ def install_probes():
         _rec()["raw_intent"] = result
         return result
 
-    def merge_preferences(conversation, intent, message=None, pending=None):
-        result = original_merge(conversation, intent, message, pending=pending)
+    def merge_preferences(conversation, intent, message=None, pending=None, **kwargs):
+        result = original_merge(conversation, intent, message, pending=pending, **kwargs)
         _rec()["merged_intent"] = dict(result or {})
         # What the previous reply offered to relax, per `sales.described.pending_relaxations`.
         # Recorded because a relaxation that silently fails to fire and one the customer never
@@ -277,6 +277,15 @@ def run_scenario(scenario, truth):
                 expected_cart = scenario.get("assert_cart_by_turn", {}).get(index)
                 if expected_cart is not None:
                     turn_findings.extend(checks.check_expected_cart(cart_state, expected_cart))
+                expected_intent = scenario.get("assert_intent_by_turn", {}).get(index, {})
+                actual_intent = state.get("merged_intent") or {}
+                for key, expected in expected_intent.items():
+                    if actual_intent.get(key) != expected:
+                        turn_findings.append(("recommendation_intent_mismatch", "critical",
+                            f"Expected {key}={expected!r}; got {actual_intent.get(key)!r}"))
+                if index in scenario.get("assert_search_by_turn", []) and not state.get("search"):
+                    turn_findings.append(("recommendation_search_missing", "high",
+                        "The supplied preferences should have reached catalogue search"))
                 if expected_names:
                     for item in cart_state["items"]:
                         if item["variant__product__name"] not in expected_names:

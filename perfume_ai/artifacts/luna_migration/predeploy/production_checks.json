@@ -1,0 +1,90 @@
+{
+  "mode": "Documented production environment simulated locally; temporary strong secret; local PostgreSQL; external HTTP blocked.",
+  "effective_requests": {
+    "extract": {
+      "model": "gpt-6-luna",
+      "temperature": 0,
+      "reasoning_effort": "none",
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "converse": {
+      "model": "gpt-6-luna",
+      "temperature": 0.3,
+      "reasoning_effort": "none"
+    },
+    "reason": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "resolve": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "response_format": {
+        "type": "json_object"
+      }
+    }
+  },
+  "unexpected_http": 0,
+  "wsgi_import": "passed",
+  "celery_tasks": [
+    "products.tasks.process_comment_task",
+    "products.tasks.process_incoming_attachment",
+    "products.tasks.process_incoming_message",
+    "products.tasks.retry_order_notifications"
+  ],
+  "beat_tasks_registered": true,
+  "checks": [
+    {
+      "id": "security.W005",
+      "level": 30,
+      "message": "You have not set the SECURE_HSTS_INCLUDE_SUBDOMAINS setting to True. Without this, your site is potentially vulnerable to attack via an insecure connection to a subdomain. Only set this to True if you are certain that all subdomains of your domain should be served exclusively via SSL."
+    },
+    {
+      "id": "security.W021",
+      "level": 30,
+      "message": "You have not set the SECURE_HSTS_PRELOAD setting to True. Without this, your site cannot be submitted to the browser preload list."
+    },
+    {
+      "id": "security.W019",
+      "level": 30,
+      "message": "You have 'django.middleware.clickjacking.XFrameOptionsMiddleware' in your MIDDLEWARE, but X_FRAME_OPTIONS is not set to 'DENY'. Unless there is a good reason for your site to serve other parts of itself in a frame, you should change it to 'DENY'."
+    }
+  ],
+  "intentional_warning": "security.W019: SAMEORIGIN is required by the embedded dashboard pages.",
+  "unexpected_checks": [],
+  "https_configuration": {
+    "DEBUG": false,
+    "SESSION_COOKIE_SECURE": true,
+    "CSRF_COOKIE_SECURE": true,
+    "SECURE_SSL_REDIRECT": true,
+    "SECURE_HSTS_SECONDS": 3600,
+    "SECURE_PROXY_SSL_HEADER": [
+      "HTTP_X_FORWARDED_PROTO",
+      "https"
+    ]
+  },
+  "migration_warning_count": 0,
+  "migration_output": "No changes detected\n",
+  "collectstatic": "\n179 static files copied to 'C:\\Users\\Mohamed\\AppData\\Local\\Temp\\perfume_predeploy_static_kriuhceg', 861 post-processed.\n",
+  "static_manifest": true,
+  "reviewed_advisories": [
+    {
+      "id": "security.W005",
+      "reason": "HSTS is limited to this service; other subdomains have not been audited for HTTPS."
+    },
+    {
+      "id": "security.W021",
+      "reason": "Browser HSTS preloading is not enabled during the initial one-hour rollout."
+    },
+    {
+      "id": "security.W019",
+      "reason": "SAMEORIGIN is required for the dashboard embedded pages."
+    }
+  ],
+  "status": "passed_with_documented_advisories"
+}

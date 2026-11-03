@@ -1,0 +1,184 @@
+{
+  "id": "F3",
+  "category": "adversarial",
+  "persona": "ready_buyer",
+  "probe": "All three perfumes are stocked. Turn 2 names two of them in Arabic transliteration and the order flow resolves both — so by turn 3 their prices are known and both must be quoted from real data. ❌ Answering turn 3 with the cart perfume's prices alone means the referent was taken from the stale cart instead of the reply the customer is answering. Turn 4 narrows to ONE of the two by name: its real price must come back. ❌ Deferring ('هسأل وأرد عليك') or implying either perfume is unavailable is a critical trust failure on a customer mid-order, and ❌ mentioning 'البيانات' to the customer at all is a separate failure — that is internal plumbing. Asking once for a bottle type in turn 2 is correct and expected.",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز اطلب افنان 9pm حجم 50",
+      "reply": "لسه محتاج أتأكد من: افنان 9pm. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "افنان 9pm",
+            "volume": 50,
+            "line_id": "f06dfc99571044fcb212f89d4c4b6eee",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 17,
+      "context": "No products found",
+      "findings": []
+    },
+    {
+      "n": 2,
+      "user": "وضيف كمان سترينجر وذ يو و سترينجر وذ يو انتنسلي",
+      "reply": "لسه محتاج أتأكد من: افنان 9pm، سترينجر وذ يو. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.",
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "افنان 9pm",
+            "volume": 50,
+            "line_id": "f06dfc99571044fcb212f89d4c4b6eee",
+            "quantity": 1
+          },
+          {
+            "name": "سترينجر وذ يو",
+            "line_id": "263543c0bc294e0989b3438a61846f7a",
+            "quantity": 1
+          },
+          {
+            "name": "Stronger With You Intensely",
+            "line_id": "29737e6dc6da471d8b157a66a1afbd04",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "context_chars": 17,
+      "context": "No products found",
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 92% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'لسه محتاج أتأكد من: افنان 9pm. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.'"
+        ]
+      ]
+    },
+    {
+      "n": 3,
+      "user": "كل واحده كام سعرها",
+      "reply": "Stronger With You Intensely ريحته دافية وحلوة بالفانيليا والتوابل والعنبر، وثباته حوالي 8 ساعات وفوحانه قوي.\n\nStronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "افنان 9pm",
+            "volume": 50,
+            "line_id": "f06dfc99571044fcb212f89d4c4b6eee",
+            "quantity": 1
+          },
+          {
+            "name": "سترينجر وذ يو",
+            "line_id": "263543c0bc294e0989b3438a61846f7a",
+            "quantity": 1
+          },
+          {
+            "name": "Stronger With You Intensely",
+            "line_id": "29737e6dc6da471d8b157a66a1afbd04",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2007,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1450.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Date Night\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: Sweet warm scent with vanilla, spice and amber.\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 744, \"variant_id\": 2113, \"name\": \"Stronger With You Intensely\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 744, \"variant_id\": 2112, \"name\": \"Stronger With You Intensely\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 744, \"variant_id\": 2114, \"name\": \"Stronger With You Intensely\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1450.00\"}], \"append\": true, \"text\": \"Stronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    },
+    {
+      "n": 4,
+      "user": "سعر انتنسلي لوحده عامل كام",
+      "reply": "Stronger With You Intensely سعره بيتحدد حسب الحجم، وريحته دافية وحلوة بالفانيليا والتوابل والعنبر.\n\nStronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.",
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "keeping": null,
+      "dropped": null,
+      "offered": null,
+      "cart": {
+        "items": [],
+        "pending": [
+          {
+            "name": "افنان 9pm",
+            "volume": 50,
+            "line_id": "f06dfc99571044fcb212f89d4c4b6eee",
+            "quantity": 1
+          },
+          {
+            "name": "سترينجر وذ يو",
+            "line_id": "263543c0bc294e0989b3438a61846f7a",
+            "quantity": 1
+          },
+          {
+            "name": "Stronger With You Intensely",
+            "line_id": "29737e6dc6da471d8b157a66a1afbd04",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "context_chars": 2007,
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Stronger With You Intensely\nBrand: Armani\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1450.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Fall, Winter\nOccasion: Date Night\nLongevity: 8 hours\nProjection: Strong\nTop Notes: Pink Pepper, Juniper, Violet\nMiddle Notes: Toffee, Cinnamon, Lavender, Sage\nBase Notes: Vanilla, Tonka Bean, Amber, Suede\nDescription: Sweet warm scent with vanilla, spice and amber.\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 744, \"variant_id\": 2113, \"name\": \"Stronger With You Intensely\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 744, \"variant_id\": 2112, \"name\": \"Stronger With You Intensely\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 744, \"variant_id\": 2114, \"name\": \"Stronger With You Intensely\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1450.00\"}], \"append\": true, \"text\": \"Stronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.\", \"budget\": null}",
+      "findings": []
+    }
+  ],
+  "findings": [
+    [
+      "repeated_reply",
+      "critical",
+      "this reply is 92% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'لسه محتاج أتأكد من: افنان 9pm. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.'"
+    ]
+  ],
+  "error": null,
+  "final_preferences": {},
+  "seconds": 60.8,
+  "suite": "selected",
+  "judge_evidence": "SCENARIO F3 — category: adversarial — persona: ready_buyer\n\nWHAT A SENIOR PERFUME SALESPERSON WOULD CONSIDER CORRECT HANDLING:\nAll three perfumes are stocked. Turn 2 names two of them in Arabic transliteration and the order flow resolves both — so by turn 3 their prices are known and both must be quoted from real data. ❌ Answering turn 3 with the cart perfume's prices alone means the referent was taken from the stale cart instead of the reply the customer is answering. Turn 4 narrows to ONE of the two by name: its real price must come back. ❌ Deferring ('هسأل وأرد عليك') or implying either perfume is unavailable is a critical trust failure on a customer mid-order, and ❌ mentioning 'البيانات' to the customer at all is a separate failure — that is internal plumbing. Asking once for a bottle type in turn 2 is correct and expected.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز اطلب افنان 9pm حجم 50\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: لسه محتاج أتأكد من: افنان 9pm. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.\n\n--- TURN 2 ---\nCUSTOMER: وضيف كمان سترينجر وذ يو و سترينجر وذ يو انتنسلي\n[internal] classified_as=order sales_stage=None objection=None\n[internal] extracted_intent={}\nAGENT: لسه محتاج أتأكد من: افنان 9pm، سترينجر وذ يو. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.\n\n--- TURN 3 ---\nCUSTOMER: كل واحده كام سعرها\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Stronger With You Intensely ريحته دافية وحلوة بالفانيليا والتوابل والعنبر، وثباته حوالي 8 ساعات وفوحانه قوي.\n\nStronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.\n\n--- TURN 4 ---\nCUSTOMER: سعر انتنسلي لوحده عامل كام\n[internal] classified_as=product_info sales_stage=purchase_intent objection=None\n[internal] extracted_intent={}\nAGENT: Stronger With You Intensely سعره بيتحدد حسب الحجم، وريحته دافية وحلوة بالفانيليا والتوابل والعنبر.\n\nStronger With You Intensely — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nStronger With You Intensely — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nStronger With You Intensely — زجاجة اوريجنال 100 ملي بـ1450.00 جنيه.\n\n═══ DATABASE FACTS (the ONLY supported truth about these perfumes) ═══\n- Stronger With You Intensely | brand=Armani | gender=male | type=western | season=Fall, Winter | occasion=Date Night | longevity=8 hours | projection=Strong | top=Pink Pepper, Juniper, Violet | mid=Toffee, Cinnamon, Lavender, Sage | base=Vanilla, Tonka Bean, Amber, Suede | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1450EGP stock=100\n\n═══ STORE-CONFIGURED FACTS (the agent MAY relay any of these verbatim; they are supported, NOT invented) ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n═══ DETERMINISTIC FINDINGS ALREADY PROVEN BY CODE ═══\n[\n [\n  \"repeated_reply\",\n  \"critical\",\n  \"this reply is 92% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'لسه محتاج أتأكد من: افنان 9pm. الاختيارات دي محفوظة ومش هأكد الطلب قبل ما نحددها أو تشيلها.'\"\n ]\n]\n\n[context] Final saved preferences after the conversation: {}"
+}
