@@ -803,221 +803,47 @@ def route(message, history=None, store=None, conversation=None):
         )
 
     if request_type == "recommendation":
-        # The only branch that needs the extracted intent.
-        intent = extract_intent(message, history, store)
-        previous_reply = next((h.get("content", "") for h in reversed(history) if h.get("role") == "assistant"), "")
-        if previous_reply.startswith("إيه أكتر حاجة بتحبها في") and not intent.get("similar_to_notes"):
-            from .sales.notes import terms_in
-            supplied = intent.get("notes") or list(terms_in(message))
-            if supplied:
-                intent["similar_to_notes"] = supplied
-        # Restore anything the customer said before the 8-message window cut it off.
-        # Merged here, before every check below, so the gender and budget prompts and
-        # search_products all see the full picture rather than a truncated one.
-        #
-        # `pending` is what the previous reply offered to relax when a search came back empty.
-        # Without it a customer accepting the offer in terse words ("التانية", "اه") is answering
-        # a question nothing recorded, and the constraint that emptied the search is restored
-        # from `preferences` on top of their answer — conversation 932, four times over.
+        from .sales.scent_preferences import has_scent_preference
+
+        fresh = extract_intent(message, history, store)
+        supplied_style = has_scent_preference({key: value for key, value in fresh.items() if key != "similar_to"})
+        previous_context = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                            .order_by("-created_at", "-pk").values_list("internal_context", flat=True).first()) if conversation else ""
+        previous_reply = next((entry.get("content", "") for entry in reversed(history or []) if entry.get("role") == "assistant"), "")
+        if supplied_style and ("SIMILARITY_NEEDS_PROFILE" in (previous_context or "")
+                               or previous_reply.startswith("قولي طابع الريحة اللي بتدور عليه")):
+            fresh["clear_preferences"] = list(set(fresh.get("clear_preferences") or []) | {"similar_to", "similar_to_notes"})
         intent = merge_preferences(
-            conversation, intent, message,
-            pending=sales_described.pending_relaxations(conversation),
-            history=history,
-            store=store,
+            conversation, fresh, message,
+            pending=sales_described.pending_relaxations(conversation), history=history, store=store,
         )
+        from .sales.occasion_preferences import CLARIFICATION, PENDING_KEY
+        if intent.get(PENDING_KEY):
+            return CLARIFICATION, "OCCASION_REQUIRED"
         if intent.get("requires_original_liquid"):
             return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
         if intent.get("similarity_needs_reference"):
             candidates = intent.get("similarity_candidates") or []
             question = "تقصد عطر شبه أنهي واحد: " + " ولا ".join(candidates) + "؟" if candidates else "تقصد عطر شبه أنهي عطر أو إصدار؟"
             return question, "SIMILARITY_NEEDS_REFERENCE"
-        
-        # Check if user explicitly insisted on multiple genders (rejected unisex)
         if intent.get("gender") == "multiple":
-            return handle_general(
-                f"""العميل بعتلي: "{message}"
-
-العميل مُصر يشتري عطرين مختلفين (رجالي وحريمي) في نفس الوقت ومش عايز حاجة للجنسين.
-قوله بلطف شديد: "ممتاز جداً! عشان أقدر أركز وأجيبلك أحسن حاجة لكل واحد فيكم، خلينا نختارهم واحد واحد. تحب نبدأ بالرجالي ولا الحريمي الأول؟"
-❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يختار هيبدأ بإيه.""",
-                history, store
-            )
-
-        # Resolve gender from data before considering asking for it. The old gate
-        # scanned only for literal Arabic gender words, so "عايز حاجة شبه سوفاج" —
-        # a perfume this store stocks as gender=male — read as unknown and burned the
-        # customer's most informative turn on "رجالي ولا حريمي؟". Three of four
-        # lookalike requests in evaluation were answered that way.
+            return "خلينا نختارهم واحد واحد عشان أقدر أركز معاك. تحب نبدأ بالرجالي ولا الحريمي؟", "MULTIPLE_RECIPIENTS"
         resolved_gender = sales_gender.resolve(intent, message, history, store)
         if resolved_gender:
             intent["gender"] = resolved_gender
+        if not has_scent_preference(intent):
+            return "بتحب الريحة تكون فريش ونضيفة، سويت، عودي، ولا طابع تاني؟", "SCENT_PREFERENCE_REQUIRED"
 
-        # Check if the intent is too vague (only gender, nothing about taste/preferences)
-        # Ask about preferences before recommending blindly
-        has_taste_info = any([
-            intent.get("brand"),
-            intent.get("perfume_type"),
-            intent.get("season"),
-            intent.get("occasion"),
-            intent.get("longevity"),
-            intent.get("projection"),
-            intent.get("max_price"),
-            intent.get("notes"),
-            # The new slots count too, and "شبه Sauvage" is the most specific thing a
-            # customer can say — without these, asking for a lookalike registered as
-            # having said nothing about their taste and got answered with "قولي ذوقك".
-            # Additive only: this can make has_taste_info true where it was false, never
-            # the reverse, so no path that works today changes.
-            intent.get("similar_to"),
-            intent.get("avoid_notes"),
-            intent.get("avoid_traits"),
-            intent.get("wants_uncommon"),
-        ])
-        
-        has_budget = intent.get("max_price") is not None
-        # "مش مهم السعر" answers the budget question. Asking it anyway is the same
-        # not-listening failure as re-asking a stated number.
-        if not has_budget and sales_constraints.budget_is_open(message, history):
-            has_budget = True
-
-        # The gender gate is now a last resort rather than the first move. Ask only when
-        # the data could not resolve it AND the customer has told us nothing else — at
-        # or above that bar, answering the request and folding the gender question into
-        # the same reply is what a salesperson actually does, and it is what the
-        # `similar_to` clause in has_taste_info was always meant to protect.
-        gender_unknown = not intent.get("gender")
-        if gender_unknown and not has_taste_info:
-            return handle_general(
-                f"""العميل بعتلي: "{message}"
-
-العميل ده عايز ترشيح عطر بس مش واضح عايز رجالي ولا حريمي.
-اسأله سؤال واحد مختصر: بتدور على عطر رجالي ولا حريمي؟
-ممنوع ترشح أي عطر قبل ما تعرف الإجابة. سؤال واحد بس ومتطولش.""",
-                history, store
-            )
-
-        if not has_taste_info or not has_budget:
-            # Check if bot already asked about preferences or budget recently (avoid looping)
-            already_asked_preferences = False
-            already_asked_budget = False
-            if history:
-                preference_indicators = [
-                    "بتحب", "تفضل", "ذوقك", "نوعية", "فريش", "عود", "خشبي",
-                    "سويت", "تقيل", "خفيف", "فواح", "هادي", "ريحة معينة",
-                    "ايه الريحة", "نوع العطر", "بتميل", "ستايلك",
-                ]
-                budget_indicators = [
-                    "ميزانيتك", "حدود كام", "السعر اللي", "في رينج", "بكام",
-                ]
-                # Check last 3 bot messages only
-                bot_count = 0
-                for msg in reversed(history):
-                    if msg.get("role") == "assistant":
-                        content = msg.get("content", "")
-                        if any(ind in content for ind in preference_indicators):
-                            already_asked_preferences = True
-                        if any(ind in content for ind in budget_indicators):
-                            already_asked_budget = True
-                        bot_count += 1
-                        if bot_count >= 3:
-                            break
-            
-            if not has_taste_info and not already_asked_preferences:
-                # A gift-giver who does not know the recipient's taste cannot answer "what
-                # do you like?" — asking it anyway is what produced two perfumes and
-                # "الاتنين مضمونين". Ask the one question they *can* answer instead.
-                is_gift, recipient_taste_known = sales_constraints.gift_context(
-                    message, history, intent
-                )
-                if is_gift and not recipient_taste_known:
-                    return handle_general(
-                        f"""العميل بعتلي: "{message}"
-{sales_constraints.GIFT_UNCERTAINTY_HINT}""",
-                        history, store
-                    )
-
-                return handle_general(
-                    f"""العميل بعتلي: "{message}"
-
-العميل ده عايز ترشيح عطر ({intent.get('gender', 'غير محدد')}) بس مقلش أي حاجة عن ذوقه أو تفضيلاته.
-
-اسأله في رسالة واحدة مختصرة وودودة فيها اختيارات واضحة تغطي ذوقه، زي كده بالظبط:
-"قولي ذوقك 😊 يعني بتحب الفريش والخفيف ولا التقيل والخشبي ولا العود؟ ولا بتحب الحاجات المسكرة مثلا؟"
-
-⚠️ لازم تكون رسالة واحدة مختصرة فيها كل الاختيارات مع بعض (مش أسئلة منفصلة). الهدف تفهم ذوقه في رسالة واحدة.
-❌ ممنوع ترشح أي عطر دلوقتي — استنى لما يرد الأول.""",
-                    history, store
-                )
-                
-
-        
-        # What the conversation is already on, so ranking can hold those perfumes near the
-        # top instead of re-deriving a fresh shortlist every turn. Without it a customer who
-        # merely added a budget lost the perfume they had been converging on.
-        # Reads the saved internal_context of our recent replies, not just their text, so a
-        # perfume named only while being withdrawn does not count as still under discussion —
-        # that loop announced the same withdrawal on turn after turn.
-        keep = sales_described.under_discussion(conversation, store)
-
-        # Minus anything the customer has told us to move past. That two-reply window is what
-        # re-promoted conversation 973's turn 4: Bloom and Coco Mademoiselle were excluded by name
-        # on turn 3, the refusal on turn 4 carried no `exclude_names` of its own, and they arrived
-        # in `keep` and `offered` at once — continuity +2.5 against repeat -2.0 is still +0.5, which
-        # ranked them above a fresh Good Girl that matched just as well. A perfume the customer has
-        # moved past is not what the conversation is on, whatever the window says.
-        #
-        # Subtracted here rather than inside `under_discussion`, which `offered_in_order` also reads
-        # to resolve a reference: "بكام Bloom؟" after moving past Bloom must still place Bloom.
-        keep = keep - sales_described.moved_past(conversation, store)
+        keep = sales_described.under_discussion(conversation, store) - sales_described.moved_past(conversation, store)
         if sales_constraints.preference_reversal(message) or intent.get("recommendation_mode") == "new_goal":
             keep = set()
-
-        # And what he has already SEEN, over the whole conversation rather than the two-reply
-        # window `keep` uses. `ranking.WEIGHTS["repeat"]` sinks these below fresh candidates
-        # without removing them, so a perfume from five turns ago can still be asked about.
-        #
-        # Conversation 973 is the failure: turn 4's "مش عايز حاجه من البراند بتاعكو" is a refusal,
-        # not a request for alternatives, so `ai/intent.py` left `exclude_names` empty and the
-        # unchanged intent re-derived turn 2's shortlist verbatim. Nothing was wrong with the
-        # search; nothing in it knew the customer had seen those two already.
-        offered = sales_described.offered_ever(conversation, store)
-        results = search_products(intent, store, keep=keep, offered=offered)
-        if intent.get("similar_to") and not results.get("similarity"):
-            return (
-                f"إيه أكتر حاجة بتحبها في {intent['similar_to']}، الحلاوة ولا التوابل ولا طابع تاني؟",
-                "SIMILARITY_NEEDS_PROFILE",
-            )
-
-        # Both retries below regenerate with the same products and the same arguments; only the
-        # instruction text differs. A closure rather than three near-identical nine-argument calls,
-        # which is how the second one drifted from the first before now.
-        def _recommend_again(hint="", msg=None):
-            return recommend(
-                msg if msg is not None else message,
-                results["products"], history, alternatives=results["alternatives"], store=store,
-                intent=intent, search=results, gender_unknown=gender_unknown, repeat_hint=hint,
-            )
-
-        response, context = _recommend_again()
-
-        # After the whole-reply guard above, and a different question from it: that one asks
-        # whether this reply IS the previous reply (0.7 on the full text) and answers it by
-        # ordering different PRODUCTS. This asks whether a sentence in it has been said before,
-        # and answers it by asking for different WORDING. Conversation 973 was invisible to the
-        # first — 0.451 at its peak — and is why the second exists; a reply can fail either
-        # test without failing the other, so both run.
-        response, context, _ = _rephrased(
-            response, context, history, store, _recommend_again,
-            recommendation_intent=intent,
-            recommendation_candidates=list(results["products"]) or list(results.get("alternatives") or ()),
+        results = search_products(intent, store, keep=keep, offered=sales_described.offered_ever(conversation, store))
+        if results.get("needs_scent_reference"):
+            return "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟", "SIMILARITY_NEEDS_PROFILE"
+        response, context = recommend(
+            message, results["products"], history, store=store, intent=intent, search=results,
+            gender_unknown=not intent.get("gender"),
         )
-        # Price/factual recovery can replace the generated text entirely.
-        from .sales.brand_response import disclose_brands
-        candidates = list(results["products"]) or list(results.get("alternatives") or ())
-        response = disclose_brands(response, candidates, intent, store)
-
-        # A customer being shown options for the first time has not chosen anything yet, so
-        # this turn has not earned "تحب أساعدك في الطلب؟".
         stage = sales_stage.derive(request_type, message, intent, objection, history)
         return _finalize(response, stage), context
 

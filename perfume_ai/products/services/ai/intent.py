@@ -3,35 +3,16 @@ import re
 
 from .client import chat
 from ..bottle_wording import strip_bottle_wording
+from products.scent_tags import SCENT_TAG_LABELS
+from products.occasions import DAILY, OCCASIONS
+from ..sales.scent_preferences import normalize_scent_intent, explicit_scent_updates
 
-# The closed vocabulary the prompt asks for. Enforced here as well as asked for there,
-# because the prompt is advice and this is arithmetic: `avoid_traits` is the only extracted
-# field scored as a PENALTY (ranking.WEIGHTS["avoid"] is -3.0), so a value the customer never
-# said does not merely add noise — it actively pushes away perfumes that suit them.
-#
-# Evaluation scenario M1 is the case: "مش عايز حاجه منتشره" (not widely owned) came back as
-# avoid_traits ["loud", "mainstream"] and persisted for the whole conversation. "loud" is in
-# vocabulary and is read as heaviness (ranking.py:213), so seven of eleven candidates were
-# penalised -3.0 — including the longest-lasting ones, one turn before the customer said
-# longevity was their top priority. "mainstream" is not in vocabulary at all and reached the
-# Arabic prompt as the literal string "مش mainstream".
+# Legacy exclusion fields remain validated when older conversations supply them.
 AVOID_TRAITS = frozenset({"heavy", "suffocating", "sweet", "loud", "strong", "old"})
 
-# Traits that describe the same axis as a positive `projection` request. You cannot want a
-# strong projection and simultaneously want to avoid strength — the extractor emitting both is
-# a polarity slip, not two constraints, and `_WANTED_PROJECTION` in ranking maps
-# "strong"/"heavy"/"loud" as *requests* while `avoid_heavy` reads the identical strings as
-# *exclusions*. When they collide the positive request wins, because it is the one the customer
-# has to have said out loud: nothing sets `projection` by accident.
-#
-# This is the deterministic half of the polarity fix. The prompt asks for it too, but a prompt
-# is advice and `avoid_traits` is the only extracted field scored as a penalty — "عايزه حاجه
-# تقيله للشتا" came back as avoid_traits ["heavy"], which put -3.0 on every heavy perfume and
-# had the reply describe a winter oriental as "خفيف ومش خانق" to a customer who asked for heavy.
+# An explicit positive performance request resolves contradictory legacy exclusions.
 _PROJECTION_AXIS = frozenset({"heavy", "loud", "strong"})
 
-# The `projection` values that mean "I want strength". Mirrors the upper half of
-# ranking._WANTED_PROJECTION; a request for "moderate" or "intimate" contradicts nothing.
 _WANTED_STRENGTH = frozenset({"strong", "heavy", "loud", "enormous", "beast", "nuclear"})
 
 # The sentinel for the store's own blends. Emitted positively in `brand` (see the first rule in
@@ -72,7 +53,7 @@ def _explicit_recommendation_updates(message):
         return {}
     updates = {}
     if tokens & daytime_words:
-        updates["occasion"] = "daytime"
+        updates["occasion"] = DAILY
     if tokens & projection_words:
         updates["projection"] = "strong"
     if tokens & longevity_words:
@@ -81,22 +62,7 @@ def _explicit_recommendation_updates(message):
 
 
 def _sanitize(intent):
-    """Drop extracted values that are outside a closed vocabulary or contradict each other.
-
-    Two fields are filtered, and for the same underlying reason: both are read downstream as
-    something stronger than a preference, so a value the customer never said does not merely add
-    noise. `avoid_traits` is the only extracted field scored as a PENALTY, and `exclude_brands` is
-    a hard SQL filter — the harsher of the two, since a penalty can be outweighed and a deleted
-    row cannot come back. Every other free-text field is matched against the catalogue downstream,
-    where an unknown value simply fails to match.
-
-    `avoid_traits`, two filters:
-      * outside the closed vocabulary — "mainstream" reached the Arabic prompt as the literal
-        string "مش mainstream";
-      * contradicting a positive request on the same axis — see `_PROJECTION_AXIS`.
-
-    `exclude_brands`: capped, deduped, Latin-only, and reconciled against `brand`.
-    """
+    """Validate legacy exclusions and resolve contradictory brand or performance updates."""
     if not isinstance(intent, dict):
         return {}
 
@@ -163,98 +129,77 @@ def _sanitize(intent):
 def extract_intent(message: str, history=None, store=None):
     store_name_text = f"The name of the store is '{store.name}'." if store else ""
     system_prompt = f"""
-You are an expert perfume intent extractor.
-{store_name_text}
+Extract perfume search updates from the customer's LATEST message. {store_name_text}
+Use history to understand answers and references. Saved preferences are merged separately:
+do not invent preferences or copy withdrawn requirements. Return only a JSON object.
 
-Analyze the user's latest message and conversation history to extract their search criteria.
-Return ONLY valid JSON.
+Fields (unspecified updates are null; use clear_preferences for explicit withdrawals):
+brand, brand_strict (boolean), exclude_brands (English house names),
+gender (male/female/unisex/multiple), perfume_type (oriental/western/niche/ultra_niche/store_own_made),
+season, occasion (one of {list(OCCASIONS)}),
+occasion_text (exact occasion/delegation words from the latest customer message),
+occasion_delegated (boolean), max_price (number), longevity, projection,
+scent_tags, excluded_scent_tags (arrays from {list(SCENT_TAG_LABELS)}),
+scent_match (all/any), scent_open (boolean),
+notes, avoid_notes (literal ingredients requested, in English),
+similar_to (one named reference perfume, English), similar_to_notes (always []),
+exclude_names (English perfume names), wants_uncommon (boolean),
+requested_volume (integer ml), bottle_type (normal/original), purchase_quantity (integer),
+recommendation_count (integer), budget_scope (per_item/total), budget_strict (boolean),
+reset_preferences (boolean), clear_preferences (array of field names).
 
-Schema:
-{{
-    "brand": "brand name or null",
-    "brand_strict": true or false or null,
-    "exclude_brands": ["brand1", "brand2"] or [] — HOUSES they said they do NOT want,
-    "gender": "must be 'male', 'female', 'unisex', 'multiple', or null",
-    "perfume_type": "must be 'oriental', 'western', 'niche', 'ultra_niche' or null",
-    "season": "season like 'summer', 'winter' or null",
-    "occasion": "like 'evening', 'office', 'party' or null",
-    "max_price": float or null,
-    "longevity": "like 'long-lasting', 'moderate', 'eternal' or null",
-    "projection": "like 'strong', 'moderate', 'intimate' or null",
-    "exclude_names": ["perfume1", "perfume2"] or [],
-    "notes": ["note1", "note2"] or [],
-    "similar_to": "name of the ONE perfume they want something similar to, or null",
-    "similar_to_notes": ["note1", "note2"] or [],
-    "avoid_notes": ["note1", "note2"] or [],
-    "avoid_traits": subset of ["heavy", "suffocating", "sweet", "loud", "strong", "old"] or [] — CLOSED list, nothing else,
-    "wants_uncommon": true or false or null,
-    "requested_volume": integer ml or null,
-    "bottle_type": "normal" or "original" or null,
-    "purchase_quantity": integer or null,
-    "recommendation_count": integer or null,
-    "budget_scope": "total" or "per_item" or null,
-    "budget_strict": true or false or null,
-    "reset_preferences": true or false,
-    "clear_preferences": []
-}}
+Scent rules:
+- Interpret Arabic and English scent styles using only the listed labels. فريش = fresh,
+  مسكر/سويت = sweet, عودي = oud, خشبي = woody, نضيف/نظافة = clean, تقيل = heavy.
+- Several requested labels mean ALL (fresh AND sweet). Explicit alternatives mean ANY
+  (fresh OR sweet). Exclusions go in excluded_scent_tags, never positive scent_tags.
+- heavy/light describe scent character. They do not establish projection or longevity.
+  Only extract projection/ longevity when the customer asks about those performance facts.
+- An occasion alone does not imply scent labels: work is not automatically fresh.
+- Set scent_open=true only when the customer explicitly accepts any scent style.
+  A specific scent request sets scent_open=false. Bare confirmations do not open the preference.
+- notes/avoid_notes are only explicit ingredient requirements. Do not expand scent labels
+  into guessed ingredients and do not infer tags or notes for a reference perfume.
+- For an explicit 'similar to X', 'same vibe as X', or anaphoric 'شبهه', set similar_to.
+  A bare mention of liking or owning X is not by itself a request to find similar perfumes.
+- Rejecting a perfume or asking for other options may set exclude_names from the actual
+  previous offers. Never exclude every name mentioned in a comparison or question.
 
-Rules:
-- Extract updates from the LATEST message. Unspecified booleans are null, never false.
-- wants_uncommon=false means the customer explicitly withdrew the uncommon requirement.
-- reset_preferences=true when changing the recipient or explicitly discarding earlier requirements.
-  In that case extract ONLY the new recipient's requirements; never copy old budget/projection.
-- clear_preferences lists explicitly withdrawn keys (e.g. max_price when dropping the budget).
-- purchase_quantity is bottles to BUY; recommendation_count is alternatives to SEE. Never confuse them.
-- A combined budget for two or more bottles is budget_scope=total and budget_strict=true.
-- Exact ceilings (at most, cannot add one pound, حد أقصى) are strict; "around" is approximate.
-- Requested volume and bottle type are mandatory filters, not optional suggestions.
-- Bottle names: "زجاجة الستور الخاصة بينا", "زجاجة الستور", "زجاجة البراند", "زجاجة الاستور", and "زجاجة المحل" mean bottle_type="normal". "زجاجة اوريجنال", "زجاجة أوريجينال", and "زجاجة بشكل الأوريجينال" mean bottle_type="original". Selecting packaging alone never sets brand or exclude_brands to STORE_BRAND_EXCLUSIVE and never means the liquid is authentic. Preserve separately stated perfume/house preferences.
-- If the user asks for the store's own brand, exclusive perfumes, or custom blends (e.g. "البراند بتاعكو", "عطوركم الخاصة", "تركيبكم", "بتاعكم"), set 'brand' to 'STORE_BRAND_EXCLUSIVE'. Asking for the store's recommendation ("من اختيار الستور", "اختيار المتجر") or buying from this shop ("من عندكم") alone does NOT request the store's own brand. 🔴 And the mirror: if they REJECT only the store's exclusive creations and ask for designer-inspired blends instead (e.g. "مش عايز حاجة من تصميمكم", "بلاش البراند بتاعكم"), put that SAME sentinel 'STORE_BRAND_EXCLUSIVE' in 'exclude_brands' and leave 'brand' null. ❌ Never in both.
-- Ordinary brand requests are preferences. Set brand_strict=true ONLY when they explicitly insist on that brand alone ("من ديور بس", "Perfamix only", "مش عايز غير شانيل"). "ديور بس يكون فريش" means Dior BUT fresh; it does not mean Dior only. Set brand_strict=false only for explicit openness to another brand; otherwise null. Never infer perfume_type='store_own_made' merely from a brand request.
-- If the user mentions a specific budget (e.g. "under 1000"), set max_price.
-- If the user mentions a brand name in Arabic (e.g. ديور, شانيل, توم فورد), MUST translate it to its English name (e.g. 'Dior', 'Chanel', 'Tom Ford') and put it in 'brand'.
-- If the user mentions a gender in Arabic (e.g. رجالي, حريمي), or uses terms like "bi" or "bisexual", map it exactly to 'male', 'female', or 'unisex' (map "bi" and "bisexual" to 'unisex').
-- If the user mentions a perfume type in Arabic (e.g. عطور شرقية, عطور غربية, نيش, الترا نيش, الترانيش, بريميوم), map it exactly to 'oriental', 'western', 'niche', or 'ultra_niche'.
-- CRITICAL — Infer gender from context: Even if the user doesn't say "رجالي" or "حريمي" explicitly, you MUST infer the gender from contextual clues:
-  • Male context: عريس, لصاحبي, لأخويا, لأبويا, لخطيبي, لجوزي, شاب, ولد, لابني, لعمي, لخالي, هدية لراجل, أنا راجل, أنا ولد
-  • Female context: عروسة, عروسه, لصاحبتي, لأختي, لماما, لخطيبتي, لمراتي, بنت, لبنتي, لطنطي, لخالتي, هدية لبنت, أنا بنت, ست
-  If any of these clues exist, set gender accordingly ('male' or 'female'). Only leave gender as null if there is absolutely NO clue about gender in the message or conversation history.
-- CRITICAL — Multiple Genders: If the user explicitly asks for BOTH male and female perfumes in the same message (e.g. "واحد ليا وواحد لمراتي", "رجالي وحريمي"), you MUST set 'gender' to 'unisex' to safely retrieve perfumes suitable for both. HOWEVER, if the user explicitly INSISTS on having separate distinct perfumes and REJECTS unisex (e.g. "مش عايز للجنسين عايز رجالي لوحده وحريمي لوحده"), you MUST set 'gender' to 'multiple'.
-- CRITICAL — SIMILARITY: If the user EXPLICITLY asks for a perfume SIMILAR to a specific known perfume (e.g. "عايز حاجة زي كريد", "بديل سوفاج", "شبه كذا"):
-  1. Put that perfume's name in 'similar_to' (English, correctly spelled). This is the most important field in that case — the ranking is driven by it.
-  2. Use your general knowledge to extract that perfume's main olfactory notes into 'similar_to_notes' (e.g. ["bergamot", "pepper", "ambroxan"]). Put them in 'similar_to_notes', NOT in 'notes' — 'notes' is for ingredients the user asked for directly.
-  3. Add that perfume's name to 'exclude_names' so we don't recommend the exact same one back.
-- CRITICAL: DO NOT put a perfume in 'exclude_names' if the user just names it (e.g. "سوفاج", "عايز سوفاج"). Only exclude it if they explicitly ask for an ALTERNATIVE ("بديل", "زي", "شبه").
-- If the user asks for alternatives or to see more options (e.g. "في حاجة تانية", "عندك ايه تاني", "ايه تاني", "ايه اللي عندك", "ايه المتاح", "وريني ايه عندك", "عندك ايه", "غيره", "حاجة غير كده"), you MUST read the history and extract the names of ALL perfumes the assistant previously recommended, and add them to the 'exclude_names' array. This ensures we don't recommend the exact same perfumes again — a customer who asks what else you have and is shown the same two perfumes reads it as not being listened to.
-- CRITICAL — "SAME VIBE" IS A SIMILARITY REQUEST: if the user asks for something in the same character as a perfume already discussed (e.g. "عايز حاجة تانية في نفس الجو", "نفس الستايل", "زي اللي جبته", "قريب من اللي اشتريته", "نفس النوع بس مختلف"), you MUST set 'similar_to' to that perfume's name from the history AND add it to 'exclude_names'. Returning only 'exclude_names' loses the whole point of the request — there is then nothing to match against, and the customer who told us exactly what they like gets asked what they like.
-- CRITICAL — PRODUCT INTEREST IS NOT A SIMILARITY REQUEST. A bare name ("212", "سوفاج"), wanting that perfume, liking/owning it ("بحب سوفاج", "اشتريت امبيرو وعجبني"), or asking why it was not offered ("ليه مرشحتش versace eros") does NOT set 'similar_to' or 'similar_to_notes'. Those are questions about the perfume itself, handled by product_info. Only an explicit request for something similar, including "نفس الجو", sets those fields.
-- Rejecting a perfume ("مش عايز سوفاج", "بلاش امبيرو") sets 'exclude_names', not 'similar_to'. Asking for the perfume itself never excludes it.
-- NAMING A PERFUME IS NOT NAMING A BRAND. Do not infer 'brand' from a named perfume's house. 'brand' is exclusively for an explicit house request ("عندك حاجة من ديور", "براند شانيل").
-- CRITICAL — EXCLUSIONS: If the user says what they do NOT want, capture it:
-  🔴🔴 POLARITY FIRST. 'avoid_traits' is ONLY for what they said they do NOT want. Before you put anything in it, check whether the sentence was negated. The SAME word means opposite things:
-    • "عايز عطر تقيل" / "عايزه حاجه تقيله للشتا" / "بحب العطور التقيلة" → they WANT heaviness. That is `projection: "strong"` (and `perfume_type: "oriental"` if they said شرقي). ❌ avoid_traits stays EMPTY.
-    • "مش عايز حاجة تقيلة" / "من غير تقل" / "حاجة خفيفة" → they do NOT want it. NOW `avoid_traits: ["heavy"]`.
-    Same for فواح / قوي: wanted → 'projection', rejected → 'avoid_traits'. Getting this backwards is the single most damaging error you can make: avoid_traits is scored as a PENALTY, so inverting it pushes away the exact perfumes they asked for and the reply then tells them their heavy winter perfume is "خفيف ومش خانق". A customer who said "عايزه حاجه تقيله للشتا" was handed avoid_traits ["heavy"].
-    ❌ NEVER return the same axis as both a want and an avoid — `projection: "strong"` together with `avoid_traits: ["strong"]` (or `["heavy"]`, or `["loud"]`) is a contradiction, and it will be discarded.
-  • A specific ingredient they don't want (e.g. "مش بحب العود", "من غير مسك") → 'avoid_notes' (English).
-  • A characteristic they don't want → 'avoid_traits'. This is a CLOSED list of exactly six values and you may return NOTHING else: "heavy" (تقيل), "suffocating" (يخنق/بيخنق اللي حواليا), "sweet" (مسكر), "loud" (فواح أوي), "strong" (قوي أوي), "old" (كلاسيكي/ريحة قديمة). A value outside this list is discarded, so inventing one silently loses the customer's constraint.
-  • 🔴 A HOUSE they don't want → 'exclude_brands' (English, same translation rule as 'brand': "مش عايز حاجة من ديور" → ["Dior"], "بلاش شانيل" → ["Chanel"], "أي حاجة غير توم فورد" → ["Tom Ford"]). One entry per house actually named.
-  ❌ A PERFUME IS NOT A HOUSE. This is the rule "NAMING A PERFUME IS NOT NAMING A BRAND" above, read backwards, and it is the same error with a bigger blast radius. "مش عايز سوفاج" / "بلاش امبيرو" reject ONE perfume → 'exclude_names', and 'exclude_brands' stays EMPTY. Inferring exclude_brands ["Dior"] from "مش عايز سوفاج" deletes every Dior in the shop over one bottle the customer didn't like — and unlike a note or a trait this is a HARD database filter, so nothing later in the pipeline can put those perfumes back or even tell that they went. If they name a perfume, exclude the perfume.
-  ❌ SWITCHING HOUSES IS NOT AN EXCLUSION. "لا مش ديور، عايز شانيل" sets brand='Chanel' and NOTHING in 'exclude_brands' — the STATE MANAGEMENT rule below already drops the old brand. Recording the abandoned house as an exclusion turns a changed mind into a permanent ban, because this field is remembered for the rest of the conversation.
-  ❌ NEVER the same value in 'brand' and in 'exclude_brands' — "عايز ديور" and "مش عايز ديور" cannot both be true of one message. A house asked FOR goes in 'brand' and nowhere else; the contradiction will be discarded.
-  • Example: "مش عايز حاجة تقيلة أو تخنق اللي حواليا" → avoid_traits: ["heavy", "suffocating"].
-  ❌ Never put an avoided thing in 'notes' — that would search FOR the thing they rejected.
-  ❌ POPULARITY IS NOT INTENSITY. "مش منتشر" / "مش مشهور" / "مش موجود عند حد" describe how MANY people own a perfume, not how strong it smells. They set 'wants_uncommon' ONLY. Putting them in 'avoid_traits' as "loud"/"strong"/"heavy" — or inventing "mainstream" — is a serious error: 'avoid_traits' is a heavy PENALTY, so it would push away the powerful, long-lasting perfumes the customer never objected to. A customer who said "مش منتشرة" has said nothing whatsoever about strength.
-- If the user wants something not mainstream (e.g. "مش منتشرة", "مش موجودة عند حد", "حاجة مختلفة", "مش مشهورة", "حاجة نادرة"), set 'wants_uncommon' to true — and leave 'avoid_traits' untouched.
-- If the user asks for high longevity (e.g. "ثبات عالي", "ثباته يومين"), set 'longevity' to 'long-lasting' or 'eternal'.
-- If the user asks for strong projection (e.g. "فواح جدا", "بيسيب أثر"), set 'projection' to 'strong' or 'enormous'.
-- If the user mentions specific ingredients (like vanilla, oud, فانيليا), translate to English and put them in 'notes'.
-- CRITICAL: In Egyptian dialect, "حلو" means "nice/good". DO NOT translate "حلو" to the "sweet" note unless the user explicitly asks for a sweet perfume (e.g. "عطر مسكر", "عطر سويتي", "حاجة مسكرة", "gourmand"). If they do ask for a sweet perfume, just add the word "sweet" to the 'notes' array.
-- 🔴🔴 CRITICAL — ZERO HALLUCINATION: You are an EXTRACTOR, not a recommender. You MUST only return what the user EXPLICITLY said or CLEARLY implied. If the user only said "رجالي" (male), return ONLY gender="male" and leave EVERYTHING else null/empty. DO NOT infer, guess, or fill in notes, perfume_type, season, occasion, longevity, projection, or avoid_traits unless the user EXPLICITLY mentioned them. 'avoid_traits' is the most damaging field to guess, because it is scored as a penalty rather than a preference — a trait the customer never rejected actively pushes away perfumes that suit them. Returning a field the user never asked about is the worst possible error — it causes the bot to tell the customer "فهمتك عايز سويت" when they never said "سويت", which makes the bot look broken. When in doubt, leave the field null/empty.
-- STATE MANAGEMENT: Return only preference updates expressed in the latest message. The application retains earlier preferences. Use history to resolve references, alternatives, and answers to earlier questions; do not copy old criteria into unspecified fields. Explicit changes replace the previous value; recipient changes discard earlier requirements.
-- A standalone new scent target or purpose starts a new recommendation goal. Do not carry the old scent, occasion, or performance into it. Retain a comparison on a later occasion request only when explicitly connected ("شبهه وينفع للمسجد") or answering a question refining it. "وللمسجد ريحه نظافه ومريحه والخروجات الخفيفه" is a new casual-use request, not a continuation of an earlier Terre comparison.
-- "عايز حاجه شبهو عشان عندي منو" means an alternative resembling the perfume the customer just named/owns, NOT an older recommendation. Resolve the latest reference, including colloquial شبهو/منو. Never confuse an edition with its base.
-- Never emit occasion="multiple". Use a concrete occasion: الخروجات الخفيفة is casual; للمسجد alone is mosque, not daytime. Quiet/light/comfortable use asks for subdued projection (moderate or intimate), not stronger projection. For mosque plus casual use, occasion=casual and projection=moderate; notes contain only the fresh/clean qualities actually requested.
+Occasion rules:
+- Return exactly one of the six listed occasion labels, or null if no occasion update.
+  Beach, Summer & Gym is ONE category. Date Night & Romantic is separate from nightlife.
+- Map other situations to the closest category using the customer's context: university,
+  errands, daytime and mosque/prayer -> Daily & Casual; work, meetings and job interviews
+  -> Work & Office; friends, parties and clubbing -> Night Out & Hanging Out; romantic
+  dinners/dates -> Date Night & Romantic; weddings, engagements, ceremonies -> Formal &
+  Special Occasions; beach, summer use, sports and workouts -> Beach, Summer & Gym.
+  Interpret unfamiliar situations too; quote the actual latest wording in occasion_text.
+  Prefer specific context (a wedding party or romantic evening) over a generic word.
+- When the customer leaves the occasion to you ('choose for me', 'انت اختار', 'على ذوقك'),
+  return occasion_delegated=true and occasion=null unless they also state an occasion.
+  Code keeps their existing explicit occasion, otherwise chooses Daily & Casual.
+  Choosing a scent, size, brand, or one of previously offered perfumes does not delegate
+  the occasion. Bare confirmations and omitted occasions are not occasion updates.
+- Occasion delegation does not itself open the scent preference or remove other requirements.
+
+Other requirements:
+- Ordinary brand requests are preferences; brand_strict=true only for explicit exclusivity.
+  'ديور بس يكون فريش' means Dior BUT fresh, not Dior only. Translate Arabic houses to English.
+- STORE_BRAND_EXCLUSIVE means the store's own creations, positively in brand or negatively
+  in exclude_brands. Buying from the store or choosing its bottle does not imply that brand.
+- 'زجاجة الستور', 'زجاجة البراند', 'زجاجة المحل' = bottle_type normal.
+  'زجاجة أوريجينال' / 'زجاجة بشكل الأوريجينال' = bottle_type original. Packaging is not authentic liquid.
+- Gender comes from explicit wording or recipient context (لخطيبتي = female, لجوزي = male),
+  not the customer's name. Two genders can use unisex; if they insist on separate choices use multiple.
+- Keep an explicit budget as max_price. Exact ceilings ('under', 'at most', 'حد أقصى',
+  'مش هقدر أزود') are strict. Approximate budgets allow the existing near-budget policy.
+- requested_volume and bottle_type are mandatory when stated. Suggested sizes in assistant
+  replies are not customer choices. purchase_quantity is bottles to BUY; recommendation_count
+  is alternatives to SEE. A combined budget is total + budget_strict=true; do not divide it.
+- Do not translate 'uncommon' into heavy/light/weak/loud. No popularity data is provided.
+- Changing the recipient or explicitly discarding all requirements sets reset_preferences=true;
+  extract only the NEW preferences. clear_preferences lists individually withdrawn fields,
+  including scent_tags/excluded_scent_tags or max_price. 'عادي لو منتشر' withdraws wants_uncommon.
 """
 
     messages = [
@@ -271,9 +216,8 @@ Rules:
         "content": message,
     })
 
-    response = chat(messages, profile="extract", response_format={"type": "json_object"})
-
     try:
+        response = chat(messages, profile="extract", response_format={"type": "json_object"})
         intent = _sanitize(json.loads(response))
         from ..sales.constraints import explicit_updates, original_liquid_update
         intent.update(explicit_updates(message))
@@ -330,7 +274,17 @@ Rules:
             intent["avoid_traits"] = [trait for trait in (intent.get("avoid_traits") or [])
                                       if str(trait).lower() not in _PROJECTION_AXIS]
         from ..sales.request_updates import prepare_updates
-        return prepare_updates(intent, message, history, store)[0]
+        intent = normalize_scent_intent(prepare_updates(intent, message, history, store)[0])
+        if not intent.get("similar_to"):
+            intent.update(explicit_scent_updates(message))
+        return intent
     except Exception:
         from ..sales.request_updates import prepare_updates
-        return prepare_updates(_explicit_recommendation_updates(message), message, history, store)[0]
+        fallback = normalize_scent_intent(prepare_updates(_explicit_recommendation_updates(message), message, history, store)[0])
+        fallback.update(explicit_scent_updates(message))
+        from ..sales.occasion_preferences import PENDING_KEY, occasion_question
+        if not fallback.get("occasion") and not fallback.get("occasion_delegated") and (
+            occasion_question(history) or re.search(r"\b(?:perfume|fragrance|something)\s+for\b", message or "", re.I)
+        ):
+            fallback[PENDING_KEY] = True
+        return fallback

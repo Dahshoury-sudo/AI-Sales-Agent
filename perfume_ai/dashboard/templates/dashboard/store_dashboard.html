@@ -942,6 +942,9 @@ Check your DM, we replied!
             document.getElementById('edit-product-id').value = id;
             document.getElementById('edit-product-name').value = p.name;
             document.getElementById('edit-product-desc').value = p.description || '';
+            document.querySelectorAll('[name="edit-scent-tag"]').forEach(input => {
+                input.checked = (p.scent_tags || []).includes(input.value);
+            });
             document.getElementById('edit-product-top').value = p.top_notes || '';
             document.getElementById('edit-product-mid').value = p.middle_notes || '';
             document.getElementById('edit-product-base').value = p.base_notes || '';
@@ -1004,6 +1007,7 @@ Check your DM, we replied!
                     body: JSON.stringify({
                         name: name,
                         description: desc,
+                        scent_tags: Array.from(document.querySelectorAll('[name="edit-scent-tag"]:checked'), input => input.value),
                         top_notes: top,
                         middle_notes: mid,
                         base_notes: base,
@@ -1019,7 +1023,7 @@ Check your DM, we replied!
                 if(res.ok) {
                     showToast('تم تحديث المنتج بنجاح');
                     closeEditModal();
-                    loadProducts(true); // reload list
+                    loadProducts(1); // reload list
                 } else {
                     showToast('فشل في التحديث');
                 }
@@ -1316,6 +1320,18 @@ Check your DM, we replied!
                 <label>الوصف</label>
                 <textarea id="edit-product-desc" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink);"></textarea>
             </div>
+
+            <fieldset style="border:1px solid var(--control-border); padding:12px; border-radius:8px; margin-bottom:15px;">
+                <legend>طابع الريحة</legend>
+                <p style="color:var(--text-muted); margin-bottom:10px;">اختار كل التصنيفات اللي بتوصف العطر. العطور المتصنفة بتظهر في الترشيحات.</p>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    {% for value, label in scent_tag_choices %}
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" name="edit-scent-tag" value="{{ value }}"> {{ label }} ({{ value }})
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
 
             <div style="display:flex; gap:10px;">
                 <div class="form-group" style="margin-bottom:15px; flex:1;">

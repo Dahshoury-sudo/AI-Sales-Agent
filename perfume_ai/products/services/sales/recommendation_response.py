@@ -1,6 +1,7 @@
 """Check recommendations against current ranked evidence, across all brands."""
 import re
 
+from products.occasions import occasion_groups, occasion_matches
 from ..static_faq_service import normalize_arabic
 from . import naming, ranking, similarity
 
@@ -67,17 +68,14 @@ def response_issues(reply, products, intent, search=None):
         product = by_name[mention.group().casefold()]
         end = mentions[index + 1].start() if index + 1 < len(mentions) else len(reply)
         text = normalize_arabic(reply[mention.end():end])
-        # Validate the occasion actually claimed, even when the customer only
-        # said 'mosque'. That word is not a time of day and licenses neither claim.
+        # Suitability claims use the same six categories as candidate filtering.
         for clause in re.split(r"[\n.!؟?،;]+", text):
             if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|لا\s+يناسب|not\s+suitable", clause):
                 continue
             if not re.search(r"يناسب|تناسب|مناسب|ينفع|suitable", clause):
                 continue
-            for claimed, pattern in (("daytime", r"نهار|الصبح|يومي|daytime|daily|morning"),
-                                     ("casual", r"خروجات|casual"),
-                                     ("evening", r"سهرات|سهره|مساء|ليل|evening|night")):
-                if re.search(pattern, clause) and ranking._occasion_verdict(product.occasion, claimed)[0] == ranking.CONFLICT:
+            for claimed in occasion_groups(clause):
+                if not occasion_matches(product.occasion, claimed):
                     issues.append(f"لا تنسب مناسبة مخالفة إلى {product.name}؛ مناسبته المسجلة {product.occasion}")
         if re.search(r"فوحان\w*[^.!؟?\n]{0,30}\d+\s*ساع", text) and not re.search(r"ثبات|ثابت|يدوم", text):
             issues.append("الساعات تصف الثبات، وليس الفوحان")

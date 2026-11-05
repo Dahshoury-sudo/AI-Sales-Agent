@@ -279,6 +279,7 @@ def build_llm_history(conversation, limit=8):
 # re-deriving intent from an 8-message window loses that. Losing an exclusion is worse
 # than losing a preference — it means recommending the exact thing they rejected.
 PERSISTED_PREFERENCE_KEYS = (
+    "scent_tags", "excluded_scent_tags", "scent_match", "scent_open",
     "requires_original_liquid",
     "requested_volume", "bottle_type", "purchase_quantity", "budget_scope", "budget_strict",
     "gender",
@@ -288,6 +289,7 @@ PERSISTED_PREFERENCE_KEYS = (
     "brand_strict",
     "season",
     "occasion",
+    "occasion_needs_clarification",
     "notes",
     "longevity",
     "projection",
@@ -295,10 +297,7 @@ PERSISTED_PREFERENCE_KEYS = (
     "avoid_traits",
     "exclude_brands",
     "similar_to",
-    # similar_to_notes travels with similar_to or the pair is useless: keeping the name
-    # while dropping the notes meant that on any later turn a reference we do not stock
-    # resolved to no catalogue product and no fallback notes, so _resolve_reference
-    # returned None and similarity silently switched itself off mid-conversation.
+    # Retained for old conversation state. Label search never uses inferred reference notes.
     "similar_to_notes",
     # "مش منتشرة" is a taste, not a passing remark, and losing it dropped the one signal
     # that favours the store's own exclusive blends — its highest-margin stock.
@@ -323,7 +322,7 @@ _TRANSIENT_GENDER = "multiple"
 _AXES = (
     ("scent", ("notes", "avoid_notes", "avoid_traits", "perfume_type")),
     ("season", ("season",)),
-    ("occasion", ("occasion",)),
+    ("occasion", ("occasion", "occasion_needs_clarification")),
     ("performance", ("longevity", "projection")),
     ("reference", ("similar_to", "similar_to_notes")),
 )
@@ -427,7 +426,8 @@ def _relaxed_keys(message, pending=None):
     # `relax_offer_block` writes out of HARD_FILTER_KEYS — so `exclude_brands` becoming a hard
     # filter is what puts it on the table here, and an "اه" cannot drop what was never offered.
     offered = frozenset(
-        key for key in ("brand", "exclude_brands") if key in (pending or {})
+        key for key in ("brand", "exclude_brands", "scent_tags", "excluded_scent_tags", "occasion",
+                        "longevity", "projection", "max_price") if key in (pending or {})
     )
     if offered:
         if any(normalize_arabic(phrase) in normalized for phrase in _RELAX_ACCEPT_PHRASES):
@@ -517,7 +517,9 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     `sales.described.pending_relaxations`. It is what lets a terse "التانية" be read as an
     answer; the unambiguous phrasings need no such help.
     """
-    merged = dict(intent or {})
+    from .sales.scent_preferences import normalize_scent_intent, merge_scent_preferences
+    from .sales.occasion_preferences import merge_occasion_preferences
+    merged = normalize_scent_intent(intent)
     from .sales.brand_preference import sanitize_brand_intent, apply_strictness, allows_other_brands
     merged = sanitize_brand_intent(merged, message, store or getattr(conversation, "store", None))
     fresh_brand_intent = dict(merged)
@@ -525,6 +527,9 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     merged.update(explicit_updates(message))
     from .sales.request_updates import prepare_updates
     merged, replaced = prepare_updates(merged, message, history, store or getattr(conversation, "store", None))
+    merged = normalize_scent_intent(merged)
+    fresh_scent = dict(merged)
+    fresh_occasion = dict(merged)
     if replaced and not merged.get("similar_to"):
         from .sales.reference import similarity_requested
         if not similarity_requested(message):
@@ -537,6 +542,8 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     if str(saved.get("occasion") or "").lower() == "multiple":
         saved.pop("occasion", None)
     if conversation is None:
+        merge_scent_preferences(merged, fresh_scent, {}, message)
+        merge_occasion_preferences(merged, fresh_occasion, history)
         apply_strictness(merged, saved, fresh_brand_intent, message, history=history, store=store)
         return merged
 
@@ -605,6 +612,15 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
             merged[key] = saved[key]
 
     apply_strictness(merged, saved, fresh_brand_intent, message, conversation, history, store)
+
+    scent_saved = {key: value for key, value in saved.items()
+                   if key not in cleared | contradicted | relaxed}
+    fresh_scent = {key: value for key, value in fresh_scent.items() if key not in relaxed | cleared}
+    if "scent_tags" in relaxed:
+        fresh_scent["scent_open"] = True
+    merge_scent_preferences(merged, fresh_scent, scent_saved, message)
+    fresh_occasion = {key: value for key, value in fresh_occasion.items() if key not in relaxed | cleared}
+    merge_occasion_preferences(merged, fresh_occasion, history)
 
     to_save = {
         key: merged[key] for key in PERSISTED_PREFERENCE_KEYS if _is_set(merged.get(key))

@@ -289,6 +289,7 @@ def product_claim_facts(products):
     """Serializable evidence shared by reply validation and evaluation."""
     return {p.name: {
         "notes": [p.top_notes or "", p.middle_notes or "", p.base_notes or ""],
+        "scent_tags": getattr(p, "scent_tags", []),
         "longevity": p.longevity or "", "projection": p.projection or "",
         "season": p.season or "", "occasion": p.occasion or "",
     } for p in products}
@@ -616,6 +617,7 @@ Season: {_field_or_placeholder(product.season)}
 Occasion: {_field_or_placeholder(product.occasion)}
 Longevity: {_field_or_placeholder(product.longevity)}
 Projection: {_field_or_placeholder(product.projection)}
+Scent Labels (character, not ingredients or performance): {', '.join(getattr(product, 'scent_tags', []) or []) or 'Not classified'}
 Top Notes: {_field_or_placeholder(product.top_notes)}
 Middle Notes: {_field_or_placeholder(product.middle_notes)}
 Base Notes: {_field_or_placeholder(product.base_notes)}

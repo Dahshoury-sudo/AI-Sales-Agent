@@ -18,7 +18,7 @@ class Conversation1233SimilarityTests(TestCase):
         self.terre = Product.objects.create(
             store=self.store, brand=self.hermes, name="Terre d'Hermes", gender="male",
             top_notes="Orange, Grapefruit", middle_notes="Pepper, Pelargonium",
-            base_notes="Vetiver, Cedar, Patchouli, Benzoin",
+            base_notes="Vetiver, Cedar, Patchouli, Benzoin", scent_tags=["citrus", "woody"],
         )
         self.elite = Product.objects.create(
             store=self.store, brand=self.hermes, name="Elite", gender="male",
@@ -39,7 +39,8 @@ class Conversation1233SimilarityTests(TestCase):
         self.assertEqual(self.conversation.sales_state[STATE_KEY]["source_text"], message)
         search = search_products(result, self.store)
         self.assertEqual(search["reference_product"], self.terre)
-        self.assertIsNotNone(search["similarity"])
+        self.assertEqual(search["effective_intent"]["scent_tags"], ["citrus", "woody"])
+        self.assertIsNone(search["similarity"])
         self.assertNotIn(self.terre, search["products"])
 
     def test_same_notes_alone_is_a_similarity_cue(self):

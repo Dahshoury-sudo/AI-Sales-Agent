@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views_auth import RegisterView, LoginView, ProfileView, ForgotPasswordView, ResetPasswordView
 from .views_store import StoreSettingsView, StoreAPIKeyView
 from .views_products import ProductListView, ProductDetailView, ProductCreateView
+from products.scent_tags import SCENT_TAG_CHOICES
 from .views_analytics import DashboardOverviewView, AnalyticsView, AnalyticsProductsView, AnalyticsExportView
 from .views_notifications import NotificationListView, NotificationMarkReadView
 from .views_faq import FAQListCreateView, FAQDetailView
@@ -16,7 +17,8 @@ urlpatterns = [
     path("register/", TemplateView.as_view(template_name="dashboard/register.html"), name="dashboard-register"),
     path("forgot-password/", TemplateView.as_view(template_name="dashboard/forgot_password.html"), name="dashboard-forgot-password"),
     path("reset-password/<uidb64>/<token>/", TemplateView.as_view(template_name="dashboard/reset_password.html"), name="dashboard-reset-password"),
-    path("", TemplateView.as_view(template_name="dashboard/store_dashboard.html"), name="dashboard-home"),
+    path("", TemplateView.as_view(template_name="dashboard/store_dashboard.html",
+                                extra_context={"scent_tag_choices": SCENT_TAG_CHOICES}), name="dashboard-home"),
 
     # --- Auth API ---
     path("api/register/", RegisterView.as_view(), name="dashboard-api-register"),

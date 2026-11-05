@@ -1,10 +1,8 @@
-"""Requested brands guide ties; product suitability decides soft-brand recommendations."""
-from unittest.mock import patch
+"""Direct eligibility preserves soft brand preferences and strict brand restrictions."""
 
 from django.test import TestCase
 
 from products.models import Brand, Product, ProductVariant, Store
-from products.services.sales import ranking
 from products.services.search_service import search_products
 
 
@@ -18,13 +16,13 @@ class BrandPreferenceSearchTests(TestCase):
         self.strong = self.product("Daytime fragrance", self.dior)
         self.intent = {
             "brand": "STORE_BRAND_EXCLUSIVE", "gender": "male", "occasion": "daytime",
-            "projection": "strong", "longevity": "long-lasting",
+            "projection": "strong", "longevity": "long-lasting", "scent_tags": ["fresh"],
         }
 
     def product(self, name, brand, *, price=750, volume=50, bottle_type="normal", stock=None, **fields):
-        attrs = {"gender": "male", "occasion": "Office", "season": "All Seasons",
+        attrs = {"gender": "male", "occasion": "Office, Daily", "season": "All Seasons",
                  "perfume_type": "western", "projection": "Strong", "longevity": "8 hours",
-                 "top_notes": "Bergamot", "base_notes": "Cedar", **fields}
+                 "top_notes": "Bergamot", "base_notes": "Cedar", "scent_tags": ["fresh", "woody"], **fields}
         product = Product.objects.create(store=brand.store, brand=brand, name=name, **attrs)
         ProductVariant.objects.create(product=product, volume=volume, price=price,
                                       bottle_type=bottle_type, stock=stock)
@@ -34,29 +32,29 @@ class BrandPreferenceSearchTests(TestCase):
     def selected(result):
         return list(result["products"]) or list(result.get("alternatives") or ())
 
-    def test_better_fit_leads_despite_brand_continuity_and_repeat_penalty(self):
+    def test_performance_requirement_excludes_a_previously_discussed_mismatch(self):
         result = search_products(self.intent, self.store, keep={self.mild.name}, offered={self.strong.name})
         self.assertEqual(self.selected(result)[0], self.strong)
-        self.assertIn(self.mild.name, result["keeping"])
+        self.assertNotIn(self.mild.name, result["keeping"])
         self.assertEqual(result["preferred_brand"], "Perfamix")
         self.assertFalse(result["brand_strict"])
         self.assertEqual(result["cross_brand_ids"], [self.strong.pk])
-        own_entry, other_entry = result["ranked"][self.mild.pk], result["ranked"][self.strong.pk]
-        self.assertLess(other_entry.score, own_entry.score)
-        self.assertLess(ranking.preference_fit_key(other_entry), ranking.preference_fit_key(own_entry))
+        self.assertIn(self.mild.name, result["dropped"])
+        self.assertEqual(result["ranked"], {})
 
-    def test_equally_suitable_preferred_brand_wins_before_continuity(self):
+    def test_all_matching_brands_remain_available_for_ai_selection(self):
         self.mild.projection = "Strong"
         self.mild.save(update_fields=["projection"])
         result = search_products(self.intent, self.store, keep={self.strong.name}, offered={self.mild.name})
         self.assertEqual(self.selected(result)[0], self.mild)
-        self.assertEqual(result["ranked"][self.mild.pk].fit_score, result["ranked"][self.strong.pk].fit_score)
+        self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
+        self.assertEqual(result["keeping"], [self.strong.name])
 
     def test_ordinary_named_house_is_also_a_soft_preference(self):
         better = self.product("Longer daytime", self.chanel, longevity="12 hours")
         intent = {**self.intent, "brand": "Dior"}
         result = search_products(intent, self.store, keep={self.strong.name})
-        self.assertEqual(self.selected(result)[0], better)
+        self.assertEqual(set(self.selected(result)), {self.strong, better})
         self.assertEqual(result["preferred_brand"], "Dior")
         self.assertIn(better.pk, result["cross_brand_ids"])
         self.assertNotIn(self.strong.pk, result["cross_brand_ids"])
@@ -64,7 +62,7 @@ class BrandPreferenceSearchTests(TestCase):
     def test_explicit_only_brand_stays_a_filter(self):
         for brand, expected in (("STORE_BRAND_EXCLUSIVE", self.mild), ("Dior", self.strong)):
             with self.subTest(brand=brand):
-                result = search_products({**self.intent, "brand": brand, "brand_strict": True}, self.store)
+                result = search_products({**self.intent, "projection": None, "brand": brand, "brand_strict": True}, self.store)
                 self.assertEqual(self.selected(result), [expected])
                 self.assertTrue(result["brand_strict"])
                 self.assertEqual(result["cross_brand_ids"], [])
@@ -83,10 +81,10 @@ class BrandPreferenceSearchTests(TestCase):
         result = search_products({**self.intent, "brand_strict": True}, self.store, keep={self.strong.name})
         self.assertIn("البراند", result["dropped"][self.strong.name])
 
-    def test_no_brand_keeps_existing_continuity_ranking_and_metadata(self):
+    def test_no_brand_does_not_rescue_a_performance_mismatch(self):
         intent = {k: v for k, v in self.intent.items() if k != "brand"}
         result = search_products(intent, self.store, keep={self.mild.name})
-        self.assertEqual(self.selected(result)[0], self.mild)
+        self.assertEqual(self.selected(result), [self.strong])
         self.assertFalse(result["preferred_brand"])
         self.assertEqual(result["cross_brand_ids"], [])
         self.assertFalse(result["brand_strict"])
@@ -97,7 +95,7 @@ class BrandPreferenceSearchTests(TestCase):
         other_store = Store.objects.create(name="Other store")
         other_brand = Brand.objects.create(store=other_store, name="Chanel")
         foreign = self.product("Foreign store", other_brand, longevity="12 hours")
-        result = search_products({**self.intent, "exclude_brands": ["Dior"]}, self.store)
+        result = search_products({**self.intent, "projection": None, "exclude_brands": ["Dior"]}, self.store)
         self.assertEqual(self.selected(result), [self.mild])
         self.assertEqual(result["cross_brand_ids"], [])
         self.assertFalse({unavailable.pk, inactive.pk, foreign.pk} & set(result.get("ranked", {})))
@@ -116,31 +114,34 @@ class BrandPreferenceSearchTests(TestCase):
         self.assertEqual(self.selected(result), [eligible])
         self.assertEqual(result["cross_brand_ids"], [eligible.pk])
 
-    def test_alternatives_branch_also_exposes_foreign_brand_and_fit_order(self):
+    def test_no_match_does_not_offer_products_missing_a_required_ingredient(self):
         result = search_products({**self.intent, "notes": ["oud"]}, self.store, keep={self.mild.name})
         self.assertFalse(result["products"].exists())
-        self.assertEqual(list(result["alternatives"])[0], self.strong)
-        self.assertEqual(result["cross_brand_ids"], [self.strong.pk])
+        self.assertIsNone(result["alternatives"])
+        self.assertEqual(result["cross_brand_ids"], [])
 
-    def test_preferred_brand_only_request_uses_brand_tie_break(self):
+    def test_brand_preference_does_not_filter_other_brands(self):
         self.mild.variants.update(price=900)
         result = search_products({"gender": "male", "brand": "STORE_BRAND_EXCLUSIVE"}, self.store)
         self.assertEqual(self.selected(result)[0], self.mild)
+        self.assertIn(self.strong, self.selected(result))
         self.assertEqual(result["preferred_brand"], "Perfamix")
 
     def test_preferred_brand_is_considered_beyond_cheapest_candidate_cap(self):
         self.mild.variants.update(price=900)
-        with patch("products.services.search_service.MAX_CANDIDATES_TO_SCORE", 1):
-            result = search_products({"gender": "male", "brand": "STORE_BRAND_EXCLUSIVE"}, self.store)
+        for index in range(65):
+            self.product(f"Other option {index}", self.dior, price=100)
+        result = search_products({"gender": "male", "brand": "STORE_BRAND_EXCLUSIVE"}, self.store)
         self.assertEqual(self.selected(result)[0], self.mild)
         self.assertIn(self.strong, self.selected(result))
+        self.assertEqual(len(self.selected(result)), 67)
 
     def test_a_foreign_close_scent_match_beats_unrelated_requested_brand(self):
-        reference = self.product("Reference", self.chanel, top_notes="Orange, Grapefruit", base_notes="Vetiver, Patchouli")
-        close = self.product("Close fragrance", self.dior, top_notes=reference.top_notes, base_notes=reference.base_notes)
-        result = search_products({**self.intent, "similar_to": reference.name}, self.store, keep={self.mild.name})
+        reference = self.product("Reference", self.chanel, scent_tags=["citrus", "woody"])
+        close = self.product("Close fragrance", self.dior, scent_tags=["citrus", "woody"])
+        result = search_products({**self.intent, "scent_tags": [], "similar_to": reference.name}, self.store, keep={self.mild.name})
         self.assertEqual(self.selected(result)[0], close)
-        self.assertTrue(result["similarity"]["has_close_match"])
+        self.assertIsNone(result["similarity"])
         self.assertNotIn(reference, self.selected(result))
         self.assertEqual(result["reference_product"], reference)
 
@@ -148,7 +149,8 @@ class BrandPreferenceSearchTests(TestCase):
         evening = self.product("Evening blend", self.own, occasion="Evening", longevity="12 hours")
         result = search_products(self.intent, self.store, keep={evening.name})
         self.assertEqual(self.selected(result)[0], self.strong)
-        self.assertTrue(result["ranked"][evening.pk].occasion_conflict)
+        self.assertNotIn(evening, self.selected(result))
+        self.assertIn("Evening", result["dropped"][evening.name])
 
     def test_no_signal_empty_result_still_has_brand_metadata(self):
         result = search_products({"gender": "female"}, self.store)

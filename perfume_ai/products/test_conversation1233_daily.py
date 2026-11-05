@@ -14,7 +14,7 @@ class Conversation1233DailyTests(TestCase):
         self.store = Store.objects.create(name="Daily reference test")
         StoreSettings.objects.create(store=self.store)
         self.brand = Brand.objects.create(store=self.store, name=self.store.name)
-        self.bonded = self.product("Bonded", "Office")
+        self.bonded = self.product("Bonded", "Office, Daily")
         self.showmix = self.product("Showmix", "Casual")
         self.elite = self.product("Elite", "Evening")
         self.dark = self.product("Dark Aura", "Evening")

@@ -1,95 +1,26 @@
 from decimal import Decimal, InvalidOperation
 
 from .client import chat
-from .prompts import get_system_prompt
 from ..bottle_wording import bottle_label
-from ..product_formatting import (format_products, is_variant_available, factual_description,
-    ProductQuote, product_quotes, render_quotes, quote_context, append_quotation, QUOTE_PROSE_INSTRUCTION)
-from ..sales import described
-from ..sales import brand_response
-from ..sales.constraints import acknowledgement_hint, describe_filters
+from ..product_formatting import format_products, is_variant_available, factual_description
 from ..sales.ranking import reasons_note
 from ..sales.value import budget_tier
-from ..sales.value import eligible_variants, as_budget
-from itertools import combinations
-from ..search_service import MAX_PRODUCTS_IN_CONTEXT
+
+# Used by the standalone formatting helpers, never by recommendation selection.
+_FORMATTING_LIMIT = 12
 
 
 def recommendation_fit(products, intent):
-    """A short, grounded explanation when a generated recommendation fails validation."""
-    from ..sales.constraints import describe
-    from ..sales.ranking import rank
-
-    products = list(products)
-    ranked = {entry.product.pk: entry for entry in rank(products, intent)}
+    """Grounded recovery uses assigned scent labels and recorded performance."""
+    from products.scent_tags import describe_scent_tags
     lines = []
-    for product in products[:2]:
-        entry = ranked[product.pk]
-        reasons = []
-        for key, evidence in (
-            ("season", "مناسب للموسم"),
-            ("occasion", "مناسب للمناسبة اللي قالها"),
-            ("projection", "فوحانه بيطابق طلبه"),
-            ("longevity", "ثباته بيطابق طلبه"),
-        ):
-            if any(reason.startswith(evidence) for reason in entry.reasons):
-                words = describe({key: intent.get(key)})
-                if words:
-                    reason = words[0]
-                    if key in ("season", "occasion"):
-                        reason = "مناسب " + reason
-                    reasons.append(reason)
-        if reasons:
-            qualification = "، بس مش بيحقق كل شروطك" if entry.mismatches else ""
-            lines.append(f"{product.name} ممكن يناسبك لأنه {' و'.join(reasons[:2])}{qualification}.")
-        elif facts := factual_description(product):
-            lines.append(f"{product.name}: {facts}.")
-    return "\n".join(lines)
-
-
-def _constrained_recommendation(products, intent, message="", search=None):
-    """Render hard requirements from eligible variants, never model arithmetic."""
-    choices = []
-    for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
-        variants = eligible_variants(product, intent)
-        if variants:
-            choices.append((product, min(variants, key=lambda v: (v.price, v.pk))))
-    budget = as_budget(intent.get("max_price"))
-    total_scope = intent.get("budget_scope") == "total"
-    count = intent.get("purchase_quantity") if total_scope else intent.get("recommendation_count", 2)
-    count = count if type(count) is int and count > 0 else 2
-    from ..static_faq_service import normalize_arabic
-    best = any(word in normalize_arabic(message) for word in ("احسن", "افضل", "انهي", "اختارلي واحد"))
-    if best and not total_scope:
-        count = 1
-    if total_scope:
-        selected = next((group for group in combinations(choices, count)
-                         if budget is not None and sum(v.price for _, v in group) <= budget), ())
-    else:
-        selected = choices[:count]
-    if not selected:
-        limit = f" بميزانية إجمالية {budget:g} جنيه" if total_scope and budget else ""
-        return f"مش لاقي اختيار بيحقق كل الشروط دي مع بعض{limit}. تحب تغيّر الحجم ولا الميزانية؟", ""
-    lines = []
-    for product, variant in selected:
-        line = "• " + render_quotes([ProductQuote.from_variant(variant)])
-        if budget is not None and variant.price > budget:
-            line += " أعلى حاجة بسيطة من ميزانيتك."
+    for product in list(products)[:2]:
+        style = describe_scent_tags(getattr(product, "scent_tags", []))
         facts = factual_description(product)
-        lines.append(line + (" " + facts if facts else ""))
-    if best or len(selected) > 1:
-        product = selected[0][0]
-        ranked = (search or {}).get("ranked", {}).get(product.pk)
-        reasons = [r for r in (ranked.reasons if ranked else [])
-                   if "بيتكلم" not in r and "منتشر" not in r]
-        reason = reasons[0] if reasons else "حجمه وسعره مناسبين للشروط اللي حددتها"
-        lines.append(f"أرشحلك {product.name} لأنه {reason}.")
-    if total_scope:
-        lines.append(f"إجمالي الـ{count} زجاجات: {sum(v.price for _, v in selected):g} جنيه.")
-    reply = "\n\n".join(lines)
-    reply = brand_response.disclose_brands(reply, [p for p, _ in selected], intent)
-    context = quote_context(reply, [ProductQuote.from_variant(v) for _, v in selected], rendered=reply)
-    return reply, context
+        explanation = "، ".join(part for part in (("طابعه " + style) if style else "", facts) if part)
+        if explanation:
+            lines.append(f"{product.name}: {explanation}.")
+    return "\n".join(lines)
 
 
 def _coerce_budget(value):
@@ -107,36 +38,6 @@ def _coerce_budget(value):
     except (InvalidOperation, TypeError, ValueError):
         return None
     return budget if budget > 0 else None
-
-
-def _unaffordable_candidates(candidates, intent, message):
-    """Explain a real price floor without offering an unaffordable product."""
-    without_budget = {**intent, "max_price": None}
-    choices = [(product, variant) for product in candidates if product.is_active
-               for variant in eligible_variants(product, without_budget)]
-    if not choices:
-        return ("مش لاقي الحجم ونوع الزجاجة المطلوبين متاحين. تحب تغيّر أنهي واحد فيهم؟",
-                described.relax_offer_block(intent))
-    product, variant = min(choices, key=lambda pair: (pair[1].price, pair[1].pk))
-    count = intent.get("purchase_quantity", 1) if intent.get("budget_scope") == "total" else 1
-    count = count if type(count) is int and count > 0 else 1
-    minimum = variant.price * count
-    budget = as_budget(intent.get("max_price"))
-    from ..static_faq_service import normalize_arabic
-    import re
-    if re.search(r"ايه اللي عندك|ايه المتاح|ارخص|المتاح عندك", normalize_arabic(message)):
-        reply = (f"في حدود {budget:g} جنيه، مش لاقي اختيار متاح من اللي بحثت فيهم. "
-                 f"أقل تكلفة للكمية المطلوبة {minimum:g} جنيه، وده أعلى من ميزانيتك. ")
-    else:
-        reply = (f"الاختيارات اللي لقيتها بتبدأ من {minimum:g} جنيه للكمية المطلوبة، "
-                 f"وده أعلى من ميزانيتك {budget:g} جنيه. ")
-    if intent.get("avoid_notes") or intent.get("avoid_traits"):
-        reply = "تمام، استبعاد الروائح اللي مش بتحبها محفوظ ضمن طلبك. " + reply
-    reply += "لو حبيت تغيّر الميزانية، قولّي الحد الجديد."
-    context = f"BUDGET_UNAVAILABLE: minimum {minimum:g} EGP; quantity {count}\n" + format_products([product])
-    context = quote_context(context, [ProductQuote.from_variant(variant, quantity=count)],
-                            max_price=budget, rendered=reply)
-    return reply, context
 
 
 def _format_products(products, max_price=None, ranked=None, brief_for=(),
@@ -170,12 +71,12 @@ def _format_products(products, max_price=None, ranked=None, brief_for=(),
     """
     if not ranked and not brief_for:
         return format_products(
-            products, max_price=max_price, limit=MAX_PRODUCTS_IN_CONTEXT,
+            products, max_price=max_price, limit=_FORMATTING_LIMIT,
             show_value_pick=show_value_pick,
         )
 
     blocks = []
-    for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
+    for product in list(products)[:_FORMATTING_LIMIT]:
         seen = product.name in brief_for
         block = format_products(
             [product], max_price=max_price, brief=seen,
@@ -184,41 +85,6 @@ def _format_products(products, max_price=None, ranked=None, brief_for=(),
         note = reasons_note((ranked or {}).get(product.id), mismatches_only=seen)
         blocks.append(f"{block}{note}\n" if note else block)
     return "".join(blocks)
-
-
-def _similarity_instruction(search):
-    """Tell the model how close we actually got, when similarity was asked for.
-
-    Lead with useful alternatives while keeping scent claims within the evidence.
-    A weak match does not require a no-match announcement to the customer.
-    """
-    summary = (search or {}).get("similarity")
-    if not summary:
-        return ""
-
-    name = summary["reference_name"]
-    if summary["has_close_match"]:
-        return (
-            f"\n🔎 العميل طلب حاجة شبه {name}. سطر Match في بيانات كل عطر بيقولك إيه "
-            f"المشترك بينهم بالظبط — اعتمد عليه واذكر النوتات المشتركة دي بالاسم عشان "
-            f"كلامك يكون مبني على حقيقة.\n"
-            f"❌ ممنوع تذكر نسبة مئوية للتشابه ولا تقول \"مطابق\" أو \"نفس العطر\".\n"
-        )
-
-    return (
-        f"\n🔎 العميل طلب حاجة شبه {name}؛ درجة التشابه المسجلة لا تدعم وصف البدائل كعطور مشابهة.\n"
-        "- ابدأ مباشرة بترشيح أفضل عطر أو عطرين من القائمة يناسبوا طلبه الحالي، "
-        "واشرح الصفات المدعومة والفرق المهم عن المرجع في جملة قصيرة.\n"
-        "- اعرض البدائل فوراً؛ لا تعلن عدم وجود عطر مشابه، ولا تسأل العميل الأول لو يحب بدائل.\n"
-        "- ❌ ممنوع تقول عن أي عطر إنه شبهه أو نفس ريحته أو نفس نوتاته أو بديل مطابق، "
-        "وممنوع تذكر نسبة مئوية للتشابه. اشتراك نوته لوحده مش دليل على نفس الطابع.\n"
-        "- الاشتراك المحدود في النوتات مش ترشيح بالتشابه: متقولش أقرب عطرين في النوتات. "
-        "ابدأ باسم الاختيار وصفاته، ووضح طابعه المختلف عن المرجع من النوتات المسجلة.\n"
-        "- قارن الثبات والفوحان كل واحد لوحده من بيانات الطرفين؛ متقولش أخف أو أقوى "
-        "لو القيم متساوية أو مش مسجلة. اشرح الفرق بكلام طبيعي من غير نسخ عناوين التحذير الداخلية.\n"
-        "- متعممش صفة على الاختيارين لو بياناتهم مختلفة: لو واحد مسائي قوي والتاني نهاري متوسط، "
-        "متقولش الاتنين شتويين أو فوحانهم قوي.\n"
-    )
 
 
 def _gender_note(gender_unknown):
@@ -385,7 +251,7 @@ def _performance_note(products, intent):
     if not axes:
         return ""
 
-    shortlist = list(products)[:MAX_PRODUCTS_IN_CONTEXT]
+    shortlist = list(products)[:_FORMATTING_LIMIT]
     if not shortlist:
         return ""
 
@@ -421,7 +287,7 @@ def _in_budget_note(products, max_price):
     affordable = []
     tolerable = []
     cheapest = None
-    for product in list(products)[:MAX_PRODUCTS_IN_CONTEXT]:
+    for product in list(products)[:_FORMATTING_LIMIT]:
         for variant in product.variants.all():
             # Sellable, not merely cheap. Filtering on price alone named Dior Sauvage's
             # original 60ml — which is in budget at 456 and has stock=0 — so the reply
@@ -485,468 +351,9 @@ def _in_budget_note(products, max_price):
     )
 
 
-def _no_match_note(seen, exhausted):
-    """The state-of-the-world line above the instructions, on the same fork as instruction 1.
-
-    It read "لم يتم العثور على أي منتجات … **أو** تم ترشيح كل الخيارات المتاحة بالفعل" — an
-    either/or covering both halves of the branch at once, which is exactly how the reply came to
-    pick the wrong half. A disjunction is not a fact the model can rely on, and it was the note
-    that licensed "دي كل الخيارات" on a first request. `exhausted` decides which disjunct is
-    true, so it decides which one gets stated.
-
-    Three states, not two, because "we showed you things" and "we showed you things that match
-    what you are asking for now" are different facts and conversation 931 turns on the gap
-    between them. See `_no_match_instruction` for why `seen` alone cannot separate them.
-    """
-    if exhausted:
-        return (
-            "تم ترشيح كل الخيارات المتاحة اللي بتطابق طلب العميل بالفعل، ومفيش جديد يتعرض "
-            "عليه بنفس الشروط."
-        )
-    if seen:
-        return (
-            "مفيش أي منتج في المتجر بيطابق الشروط اللي العميل طالبها دلوقتي. العطور اللي "
-            "اتعرضت عليه قبل كده في المحادثة دي مش بتطابق الشروط دي، فهي مش \"كل الخيارات\" "
-            "بالنسبة للطلب الحالي."
-        )
-    return (
-        "لم يتم العثور على أي منتجات تطابق طلب العميل في المتجر حالياً، ومحصلش أي ترشيح قبل "
-        "كده في المحادثة دي."
-    )
-
-
-def _no_match_instruction(intent, seen, exhausted):
-    """What to say when the search came back completely empty, forked on what is actually true.
-
-    One instruction used to serve both halves of this branch, and it was written for the half
-    where the customer asks for *more*: "اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي
-    بتطابق طلبه". On a first request that matched nothing it claimed a list that had never
-    existed. Conversation 931: Versace + حريمي, and the reply apologised for having shown
-    everything available and pinned it on the 1200 budget.
-
-    The budget cannot be the cause here, and that is structural rather than a judgement call.
-    `search_products` puts gender / perfume_type / season / brand on `base` and notes / price on
-    `exact`; this branch is reached only when `products` and `alternatives` are both empty, and
-    every empty-`alternatives` return path in that function requires `base` itself to be empty.
-    So the price filter had nothing left to narrow by the time it ran. Naming the budget is
-    therefore forbidden outright rather than discouraged — and it is worth being blunt about,
-    because "مفيش حاجة في الميزانية دي" is the single most available sentence for a model that
-    has been handed a budget and no products.
-
-    `exhausted` is the fork, and it is the second attempt at one. The first was `seen` —
-    `already_described`'s output, catalogue names this conversation has put in front of the
-    customer — on the reasoning that having shown something is what makes "دي كل الخيارات" a
-    true sentence. It is not. Conversation 931 had shown three perfumes and sold them, and then
-    the customer asked for Versace حريمي: `seen` was truthy, the branch congratulated itself on
-    having presented every option, and no Versace had ever been named. Both conv931 replay runs
-    reproduced that reply verbatim on this exact turn, with `exclude_names` populated in one run
-    and empty in the other — so it was not the exclusion list either. `seen` is a fact about the
-    conversation, and the question is a fact about the *search*.
-
-    `search_service` answers it directly now: `exhausted` is true only when dropping the name
-    exclusions would have found something, i.e. matches exist and have been used up. Versace +
-    حريمي matches nothing with or without exclusions, so it is false there however much has been
-    shown before. That is the same kind of argument as the budget paragraph above — a property of
-    the queryset, not an inference from the transcript.
-
-    `seen` is still read, for the middle case: matches never existed, but we have shown this
-    customer perfumes under *earlier* constraints. Claiming a first attempt would be false there
-    too, so the wording says the true thing instead — what was shown does not match this request.
-    """
-    filters = describe_filters(intent or {})
-
-    if exhausted:
-        return (
-            "⭐ إذا كان العميل يطلب المزيد من الخيارات (مثل \"إيه تاني؟\"، \"غيره\"، \"في حاجة "
-            "تانية\")، اعتذر بلطف وقوله إن دي كل الخيارات المتاحة حالياً اللي بتطابق طلبه "
-            "بالظبط، واعرض عليه يغير المواصفات بشكل عام عشان يظهرله عطور تانية. ❌ ممنوع تقترح "
-            "عليه روائح محددة (زي \"تحب حاجة خشبية؟\" أو \"فريش\") لأنك لا تعرف ما هو متوفر في "
-            "المخزون حالياً. ❌ وممنوع تقول إن السبب ميزانيته."
-        )
-
-    # The one clause that differs between "never showed anything" and "showed things, but not
-    # these things". Both make "دي كل الخيارات" false; they make it false for different reasons,
-    # and a prompt that states the wrong one hands the model a falsehood of its own.
-    if seen:
-        no_list = (
-            "🔴 اللي عرضته عليه قبل كده مش بيطابق الشروط اللي بيطلبها دلوقتي، فمعندكش قائمة "
-            "تقوله عليها إنها كل المتاح لطلبه الحالي: "
-        )
-    else:
-        no_list = (
-            "🔴 دي أول مرة تحاول ترشحله وملقيتش حاجة، فمعندكش قائمة عرضتها عليه قبل كده: "
-        )
-
-    if filters:
-        return (
-            no_list
-            + "❌ ممنوع تقول \"دي كل الخيارات المتاحة\" ولا \"عرضتلك كل اللي عندنا\" — مفيش "
-            "قائمة بتطابق الطلب ده أصلاً.\n"
-            "   🔴 اللي مفيش حاجة بتطابقه هو **مجموع** الشروط دي مع بعض: "
-            + " + ".join(filters)
-            + ". قوله كده بصراحة في جملة واحدة قصيرة، واعرض عليه يتنازل عن واحد منهم بالاسم "
-            "(مثال: نفس البراند بس من غير تحديد رجالي/حريمي، أو نفس النوع من براند تاني).\n"
-            "   ❌ ممنوع تقول إن السبب ميزانيته — الميزانية مش هي اللي منعت النتيجة دي، "
-            "وممنوع تقول \"مفيش حاجة في الميزانية دي\" ولا \"كل حاجة أغلى من كده\".\n"
-            "   ❌ وممنوع تقترح عليه روائح محددة (زي \"تحب حاجة خشبية؟\") لأنك مش شايف المخزون."
-        )
-
-    return (
-        no_list
-        + "❌ ممنوع تقول \"دي كل الخيارات المتاحة\" ولا \"عرضتلك كل اللي عندنا\".\n"
-        "   🔴 قوله بصراحة إنك محتاج تفاصيل أكتر عشان تعرف ترشحله (رجالي ولا حريمي، ولا نوع "
-        "الريحة اللي بيحبها)، واسأله سؤال واحد بس.\n"
-        "   ❌ ممنوع تقول إن السبب ميزانيته ولا تقول \"مفيش حاجة في الميزانية دي\".\n"
-        "   ❌ وممنوع تقترح عليه روائح محددة لأنك مش شايف المخزون."
-    )
-
-
-def recommend(
-    message, products, history=None, alternatives=None, store=None, intent=None, search=None,
-    gender_unknown=False, repeat_hint="",
-):
-    """Write the recommendation turn.
-
-    `repeat_hint` is instruction text from `router._rephrased` quoting sentences this draft already
-    said, and it is a parameter rather than something appended to `message` for the reason
-    `product_info.get_product_info`'s docstring sets out: the no-match branch below calls
-    `_named_in_message(message, store)`, so a warning glued onto the message is offered to the
-    catalogue matcher as a perfume name. `router` used to do exactly that on this branch — see the
-    comment at its `_is_repetitive` retry — and the reason it never produced 816's failure here is
-    that `_named_in_message` is a deterministic Latin-name match, which the Arabic warning misses.
-    It is one prompt edit away from mattering, so the hint now arrives on its own channel.
-
-    Appended to `user_content` after the four-way fork rather than inside any one branch: all four
-    are model-generated replies that can repeat a sentence, and the no-match branch repeats the most
-    (it has the least new information to carry). One injection point cannot be forgotten by a fifth.
-    """
-    # Not repeating a recommendation is handled upstream, not here: ai/intent.py fills
-    # intent["exclude_names"] when the customer asks for something else, and
-    # search_service drops those from the queryset before this function ever sees it.
-    # A prompt-level exclusion list used to live here as well, keyed on every catalogue
-    # name mentioned anywhere in the conversation — which excluded the perfume the
-    # customer had just asked about, contradicting the persona's own rule to stay on it.
-    # Deleted rather than narrowed: a hard queryset filter beats asking the model twice.
-    from ..static_faq_service import normalize_arabic
-    from ..sales.similarity import peak_hours
-    import re
-    requested_days = re.search(r"(?:ثبات|ثابت|يدوم).*?(يومين|48\s*ساع)", normalize_arabic(message))
-    candidates = list(products) or list(alternatives or [])
-    if requested_days and candidates and not any((peak_hours(p.longevity) or 0) >= 48 for p in candidates):
-        return "ماقدرش أوعدك بثبات يومين للعطور دي، حتى لو زودت الميزانية. نختار على أساس الثبات الفعلي مع الحفاظ على ميزانيتك؟", "UNSUPPORTED_LONGEVITY"
-    if intent and as_budget(intent.get("max_price")) and candidates and not any(eligible_variants(p, intent) for p in candidates):
-        return _unaffordable_candidates(candidates, intent, message)
-    if intent and (intent.get("requested_volume") or intent.get("bottle_type") or intent.get("budget_strict") or intent.get("budget_scope") == "total"):
-        return _constrained_recommendation(products if products else alternatives or [], intent, message, search)
-    max_price = _coerce_budget(intent.get("max_price") if intent else None)
-    budget_note = ""
-    if max_price:
-        budget_note = f"\n⚠️ ميزانية العميل: {int(max_price)} جنيه. اذكر الأسعار والأحجام اللي داخل الميزانية، واللي أعلى منها حاجة بسيطة (⚠️) كمان لو هي الأنسب لطلبه. متسألوش عن الميزانية تاني.\n"
-        budget_note += "🔴 ملاحظة هامة جداً بخصوص الميزانية والأحجام: إذا طلب العميل حجماً معيناً (مثل 90 ملي) وكان سعره أعلى من ميزانيته حاجة بسيطة (⚠️)، ❌ ممنوع تتجاهله وترشح عطر تاني مش مناسب لطلبه عشان حجمه أرخص. اعرض عليه الحجم اللي طلبه وقول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه — واعرض معاه الحجم الأصغر اللي داخل ميزانيته، وسيبه هو يقرر — من غير أي ضغط أو إلحاح.\n"
-        # The ✅ half of this rule is the one conversation 912 was missing.
-        #
-        # Everything above, plus persona rules prompts.py:104-106, describes what to say when a
-        # size is over budget: offer it anyway if it fits best, quote the real price, name it as
-        # slightly over. Five separate instructions on that case and, until this sentence, not one
-        # on what a ✅ obliges — so the label was authoritative in the arithmetic and merely
-        # suggestive in the prose, and the model occasionally applied the over-budget script to a
-        # size that was inside the budget.
-        #
-        # Conversation 912, budget 1200: "La Vie Est Belle 90 ملي بـ1046 جنيه أعلى شوية ⚠️ عن
-        # ميزانيتك". 1046 is in budget, its price line said "✅ (داخل الميزانية)", and
-        # _in_budget_note had *also* named that exact size in its affordable list. Two
-        # affirmations already pointed the right way and were overridden, which is why this is
-        # phrased as a prohibition instead of a third one: the model was not missing the fact,
-        # it was reaching for a script that had no stated stopping condition.
-        #
-        # This prohibition alone was not enough, and that is worth recording because the prose
-        # reads convincing. Measured on the failing turn: ~1 in 6 replies before it, still 2 in 44
-        # after, and both survivors invented an overage figure ("بـ 124 جنيه", "بـ 126 جنيه")
-        # against a real difference of 154 in the other direction. The model was doing budget
-        # arithmetic rather than reading a verdict sales.value.budget_tier had already computed.
-        #
-        # What closed it was leaving the model no arithmetic to do and nothing to quote. For a
-        # while `budget_label` wrote the overage into the ⚠️ label itself and every instruction
-        # here pointed at that figure instead of asking for one, so the request was unfillable
-        # rather than forbidden — the same move `_in_budget_note` makes for evaluation scenario X3
-        # below, naming the figure rather than asking for it. The figure has since left the label
-        # too, on that logic taken one step further: a ⚠️ size is announced with the fixed
-        # sentence "أعلى حاجة بسيطة من ميزانيتك" and its own price, so neither tier carries a
-        # difference and there is nothing in the data for either to quote. What the model can
-        # still *compute* from the stated budget and the printed price is banned in prose here and
-        # stripped on the way out by `reply_sanitizer.strip_overage_figure`, because a prose ban
-        # alone left ~1 turn in 20 still stating a difference.
-        #
-        # Conversation 915 is why the figure had to go rather than merely be pre-computed. The
-        # label read "أعلى شوية من الميزانية بـ 90 جنيه" beside a 990 price and the reply was
-        # "والـ90 ملي أعلى شوية بـ90 جنيه" — the overage quoted under بـ, the same particle the
-        # price uses, so it reads as *the price*. Asking for "الفرق" is satisfied by a single
-        # number, and asking for both numbers together only made the pair likelier, not the
-        # misreading impossible. One price and one fixed sentence is the shape that cannot be
-        # misread. See `product_formatting.budget_label`.
-        #
-        # "مهما كان سعره قريب من الرقم" names the specific trap. A tolerance band exists
-        # (value.BUDGET_TOLERANCE), so "close to the budget" is a real category in the data — but
-        # it is ⚠️, and the model does not get to decide a ✅ price is close enough to count.
-        budget_note += "🔴 كل حجم في البيانات اللي تحت مكتوب جانبه إذا كان داخل الميزانية (✅) أو أعلى منها حاجة بسيطة (⚠️) أو أعلى منها بكتير (❌). العلامة دي محسوبة وهي الحكم الوحيد على الميزانية — متحسبهاش بنفسك. التزم بده حرفياً: ممنوع تعرض أي حجم عليه ❌، والـ ⚠️ مسموح تعرضه بشرط تقول سعره المكتوب وتقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه.\n"
-        budget_note += "🔴 وحجم عليه ✅ يبقى داخل الميزانية خلاص، مهما كان سعره قريب من الرقم اللي قاله: ❌ ممنوع تقول عنه إنه \"أعلى حاجة بسيطة\" ولا \"أعلى شوية\" ولا \"أعلى من ميزانيتك\"، وممنوع تحسبله فرق — مفيش فرق أصلاً، ومفيش رقم فرق في البيانات خالص. ده بيخلي العميل يفتكر إنه مش قادر على حاجة هو قادر عليها فعلاً.\n"
-    price_instruction = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار مع الترشيح — اللي داخل ميزانيته واللي أعلى منها حاجة بسيطة (⚠️) كمان. اذكر السعر بشكل طبيعي جوه الكلام (مثال: \"الـ50ml بـ 400 جنيه، يعني داخل ميزانيتك\"). لو الحجم الأنسب لطلبه عليه ⚠️، رشّحه وقول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه — واذكر معاه حجم داخل الميزانية. ❌ ممنوع تختار عطر مش مناسب لطلبه بس لأنه أرخص. متسألوش عن الميزانية تاني."
-
-    # What the customer already told us, so the reply can nod to it once instead of
-    # answering five stated constraints as though none had registered.
-    constraint_note = acknowledgement_hint(intent or {})
-    gender_note = _gender_note(gender_unknown)
-
-    # What we already told *them*. A perfume the customer has had described once must not be
-    # described again — conv_990 re-pitched the same one four times, three of those replies
-    # opening identically, because nothing tracked this.
-    seen = described.already_described(history, store)
-    follow_up = described.is_follow_up(message, history, seen)
-    keeping = (search or {}).get("keeping") or ()
-    from ..sales import recommendation_response
-    new_goal = (intent or {}).get("recommendation_mode") == "new_goal"
-    if new_goal or brand_response.leads_outside_discussion(candidates, intent, keeping):
-        follow_up = False
-        keeping = ()
-    repeat_note = recommendation_response.instruction(intent) if new_goal else described.repeat_ban_hint(seen, follow_up)
-    brand_note = brand_response.instruction(candidates, intent, store)
-    # Whether an empty search means "used up" or "never matched" — a fact `search_products`
-    # computes from the queryset, because `seen` answered a different question and the
-    # no-match branch was reading it as though it answered this one. See
-    # `_no_match_instruction`. Defaults false: a caller that hands us no `search` dict has
-    # given us no evidence of exhaustion, and claiming a list is the harmful direction.
-    exhausted = bool((search or {}).get("exhausted"))
-    # What the conversation is on, and what a new constraint has just ruled out. The ranking
-    # boost alone is not enough: it puts the right perfume in front of the model, but nothing
-    # stops the model presenting a fresh pair alongside it. `converge` is the same follow_up
-    # signal, so on an answer to our own question the reply names exactly one.
-    continuity = described.continuity_note(
-        keeping,
-        (search or {}).get("dropped") or (),
-        converge=follow_up,
-    )
-    # Only shorten what was already covered, and only on a follow-up. A fresh request still
-    # gets the full block and the evidence line for everything, including a perfume mentioned
-    # earlier — the customer asking anew deserves the detail.
-    brief_for = seen if follow_up else frozenset()
-    # Rule 4 used to be an unconditional "ممنوع ترشح لو مش واضح رجالي ولا حريمي". That
-    # now contradicts the router, which reaches this function with an unresolved gender
-    # only when the customer *has* given usable taste information — so the instruction
-    # has to flip with it rather than veto the recommendation the router just decided to
-    # make. The "متدورش بنفسك" half matters too: WEIGHTS["gender_safe"] has already leaned the
-    # order safe wherever taste left room, and a model re-filtering by eye undoes that.
-    #
-    # It says "مرتبة بالأنسب" and not "مقدّمة اللي ينفع للجنسين", which is what it said first,
-    # because the second claim is only sometimes true. The hedge is a tie-break: on a request
-    # whose taste gaps are wide it changes nothing, and a shortlist can legitimately hold no
-    # unisex perfume at all. Telling the model the data is always ordered that way is a claim
-    # it can catch us out on, and the instruction it actually needs — start at the top, do not
-    # re-filter — is true either way.
-    gender_instruction = (
-        "🔴 مش واضح رجالي ولا حريمي، بس العميل قال تفاصيل كفاية — رشّح من المتاح "
-        "(البيانات مرتبة بالأنسب بالفعل، متدورش بنفسك) واسأله في نفس الجملة "
-        "\"رجالي ولا حريمي\" عشان تظبط الاختيار. ❌ مش \"هو لمين؟\" — سؤال مفتوح إجابته "
-        "مش بتحدد جنس."
-        if gender_unknown else
-        "🔴 لو الطلب عام ومش واضح رجالي ولا حريمي — ممنوع ترشح. اسأله الأول. لو واضح من السياق (قال \"لخطيبتي\") رشّح على طول."
-    )
-    # Instruction 7 tells the model to lean on the "✅ ليه مناسب" line for its stated reason.
-    # Correct on a first recommendation; on a follow-up it is precisely what made the bot
-    # recite "ثابت وفوحانه متوسط" four times, since that line is re-injected every turn.
-    reasons_instruction = (
-        "سطر \"✅ ليه مناسب\" هو دليلك لاختيار العطر لنفسك — ❌ مش كلام تقوله للعميل تاني، هو "
-        "سمعه خلاص. وسطر \"⚠️ مش مطابق في\" لازم تحترمه: ❌ ممنوع تقول إن العطر بيطابق حاجة "
-        "مكتوب جانبها إنه مش مطابق فيها."
-        if follow_up else
-        "مع كل ترشيح جديد، ضيف جملة قصيرة توضح للعميل ليه العطر مناسب لطلبه، مش أسماء وأسعار بس. "
-        "اربط صفة أو اتنين من بيانات العطر بتفضيل قاله فعلاً؛ ولو السبب مشترك بين العطرين ممكن جملة واحدة ليهم. "
-        "مثال لو البيانات بتأكد الشتا والفوحان القوي: \"دول مناسبين لطلبك عشان شتويين وفوحانهم قوي.\" "
-        "نوّع الصياغة حسب الطلب، ومتضمنش إنه هيعجبه أو هيلفت أنظار الناس. "
-        "سطر \"✅ ليه مناسب\" هو دليلك، وسطر \"⚠️ مش مطابق في\" لازم تحترمه: "
-        "ممنوع تقول إن العطر بيطابق شرط مش متحقق أو صفة مش مسجلة."
-    )
-
-    # Case 1: Exact matches found
-    if products.exists():
-        context = _format_products(
-            products, max_price=max_price,
-            ranked=(search or {}).get("ranked"), brief_for=brief_for,
-            # Only when a budget is on the table. Without one, `price_instruction` below
-            # forbids mentioning prices or sizes at all, so injecting a line that orders the
-            # model to lead with a size put two opposite instructions in one request — the
-            # same defect ComparisonSuppressesPricesTests pinned for comparison mode.
-            show_value_pick=bool(max_price),
-        )
-        context += _named_but_missing_block(message, store, products, max_price)
-        context += _reference_block(search, max_price)
-        user_content = f"""
-═══ طلب العميل ═══
-{message}
-{budget_note}{_in_budget_note(products, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}{_performance_note(products, intent)}
-═══ المنتجات المتاحة (هذه هي المنتجات الوحيدة الموجودة — لا تذكر أي منتج خارج هذه القائمة) ═══
-{context}
-
-═══ تعليمات الرد ═══
-1. ابدأ مباشرة بأفضل 1-2 منتج يناسب طلب العميل الحالي، مع توضيح الفروق المسجلة في سطر "⚠️ مش مطابق في". لو طلب النهار، قدّم المناسب للنهار حتى لو فوحانه أهدى، ووضّح فرق الأداء؛ متقدّمش عطر مسائي عليه عشان فوحانه أقوى أو عشان رشحته قبل كده. 🔴 الترتيب اللي فوق مرتّب بالمطابقة لطلب العميل، فابدأ من أوله. **الاختيار بيكون بالمطابقة بس — مش بسطر 💡.** سطر "💡 Value Pick" / "💡 اقتراح حجم" بيقولك أنهي *حجم* تبدأ بيه جوه العطر بعد ما تختاره، وعطر مالوش سطر 💡 مش أقل مناسبة — ده بس معناه إن أحجامه مفيهاش فرق في سعر الملي. ❌ ممنوع تنزل تحت في الترتيب وتختار عطر أقل مطابقة عشان هو اللي عليه سطر 💡.
-2. 🔴 لو رشحت عطرين، لازم تقارن بينهم في جملة واحدة سريعة تساعده يختار، **وترجّح واحد بالاسم** وتقول ليه: "أنا أرشحلك كذا أكتر لطلبك 👌". مثال: "Ambero أنسب لو بتحب التوابل والريحة الدافية، أما Afnan 9PM فهو أحلى ومسَكّر أكتر وفيه طابع فاكهي." ❌ ممنوع تسيبه بين خيارين من غير ترجيح — ده بيرجّع القرار لعميل سألك عشان تساعده يقرر، ومهم بشكل خاص لو الطلب هدية أو لو هو محتار.
-3. {price_instruction}
-4. {gender_instruction}
-5. 🔴 تجاهل تماماً أي منتج Stock Status = ❌ واختار غيره من المتوفر.
-6. 🔴 لو العميل محدد ميزانية ولقيت عطر ممتاز أرخص بكتير منها، رشحه كـ"قيمة مقابل سعر" — متفضلش الأغلى لمجرد إنه بيقفل الميزانية.
-7. {reasons_instruction}
-8. 🔴 القائمة اللي فوق هي مجموعة مختارة من العطور، مش كل الستور. ❌ ممنوع تعمل تعميم على المتجر كله زي "كل العطور أغلى من كده" أو "مفيش حاجة في الميزانية دي" — أنت شايف جزء بس، وممكن تكون رشحت للعميل حاجة أرخص في رسالة قبل كده. اتكلم عن العطور اللي قدامك بس.
-"""
-
-    # Case 2: No exact match, but we have alternatives (e.g. higher price)
-    elif alternatives and alternatives.exists():
-        context = _format_products(
-            alternatives, max_price=max_price,
-            ranked=(search or {}).get("ranked"), brief_for=brief_for,
-            show_value_pick=bool(max_price),  # same reasoning as case 1
-        )
-        context += _reference_block(search, max_price)
-        price_instruction_alt = "🔴🔴 ممنوع تذكر الأسعار أو الأحجام في الترشيح! اذكر اسم العطر وليه يناسبه بس. لما العميل يسأل عن السعر أو الحجم، ساعتها بس قوله." if not max_price else "🔴🔴 العميل حدد ميزانيته، فلازم تذكر الأحجام والأسعار اللي داخل أو قريبة من ميزانيته مع الترشيح. لو الحجم عليه ⚠️، قول سعره المكتوب وقول \"أعلى حاجة بسيطة من ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه. متسألوش عن الميزانية تاني."
-        user_content = f"""
-═══ طلب العميل ═══
-{message}
-{budget_note}{_in_budget_note(alternatives, max_price)}{constraint_note}{gender_note}{repeat_note}{continuity}{_similarity_instruction(search)}{_performance_note(alternatives, intent)}
-═══ ملحوظة مهمة ═══
-لم يتم العثور على تطابق 100% مع طلب العميل، ولكن المنتجات التالية هي أفضل وأقرب البدائل المتاحة لطلبه:
-
-{context}
-
-═══ تعليمات الرد ═══
-1. ❌ ممنوع تبدأ بـ"للأسف" أو تسيب العميل بإيد فاضية. البائع الماهر يركز على بيع المتاح.
-2. ادخل في الموضوع فوراً ورشّح أفضل 1-2 من القائمة بالترتيب. لو طلب النهار، قدّم المناسب للنهار حتى لو فوحانه أهدى، ووضّح فرق الأداء؛ متقدّمش عطر مسائي عليه عشان فوحانه أقوى أو عشان رشحته قبل كده.
-3. 🔴 لكن ممنوع توهمه إنهم بيطابقوا كل شروطه. سطر "⚠️ مش مطابق في" في بيانات كل عطر بيقولك الشرط اللي مش متحقق — لازم تقول الفرق ده بصراحة في نص جملة (مثال: "ثباته 8 ساعات، أقل من اللي طلبته، بس هو أقرب حاجة عندنا"). ❌ ممنوع تقول إن الثبات أو الفوحان "مناسب لطلبك" لو مكتوب إنه مش مطابق.
-4. 🔴 لو شرط من شروطه مستحيل يتحقق مع الباقي (زي ثبات يومين بميزانية صغيرة)، قوله كده بصراحة وقوله أنهي شرط لازم يتنازل عنه شوية — ده بيبني ثقة أكتر من إنك تبيعه حاجة وهو متوقع حاجة تانية.
-5. 🔴 لو رشحت عطرين، قارن بينهم في جملة واحدة سريعة تساعده يختار.
-6. {price_instruction_alt}
-7. 🔴 تجاهل أي منتج Stock Status = ❌ ورشّح المتوفر بس.
-8. {reasons_instruction}
-"""
-
-    else:
-        # Before reporting nothing found, check whether the customer simply named a perfume
-        # the shortlist happened to miss. The shortlist is a filtered, capped selection of a
-        # 47-product catalogue, so "not in my data" and "not in the store" are different
-        # statements — and this branch used to tell the customer the second one. Conversation
-        # 1099: "ليه مرشحتش versace eros" got "مش متوفر عندنا حالياً" while Eros sat in the
-        # catalogue at 1019 جنيه.
-        named = _named_in_message(message, store)
-        if named:
-            context = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
-            context += format_products(named, max_price=max_price)
-            user_content = f"""
-═══ طلب العميل ═══
-{message}
-{budget_note}
-
-═══ ملحوظة مهمة ═══
-العميل سأل عن عطر بالاسم، والعطر ده **موجود عندنا** وبياناته تحت. الشورت ليست اللي جالك قبل كده كانت مجموعة مختارة مش الكتالوج كله، فمجرد إنه مكانش فيها لا يعني إنه مش متوفر.
-
-═══ تعليمات الرد ═══
-1. 🔴 جاوب على سؤاله عن العطر ده من البيانات تحت. ❌ ممنوع تقول إنه مش متوفر أو مش موجود.
-2. 🔴 لو كان بيسأل ليه مرشحتهوش قبل كده، اعتذر في نص جملة قصيرة وقوله البيانات بتاعته، وخلاص. ❌ ممنوع تدخل في تفاصيل عن طريقة اختيارك للترشيحات.
-3. {price_instruction_alt}
-4. 🔴 تجاهل أي حجم Stock Status = ❌ واذكر المتوفر بس.
-"""
-        else:
-            # No verdict fork here, deliberately. `products.services.absence` needs a *name* to rule
-            # on, and the only two it trusts are a deterministic catalogue match — which is `named`
-            # above, and it is empty on this path — or an unplaceable span reported by the extractor,
-            # which never runs in `recommend`. Handing it this message's raw text instead would ask
-            # it to treat a whole recommendation request as a perfume name, and the token-subset
-            # test that makes it reliable on a name is unreliable on a sentence. So this branch
-            # abstains: rule 3 below neither denies nor promises to check.
-            #
-            # What it does record is which constraints instruction 1 is about to offer to relax,
-            # because that offer is a question and a question needs an answer. This branch used to
-            # set `context = ""`, and conversation 932 is what that cost: the reply offered "براند
-            # تاني حريمي", the customer accepted three times, and each turn re-derived the same
-            # dead intent because nothing knew an offer was open. The marker is persisted but not
-            # injected — `user_content` below does not embed it — so it changes what the next turn
-            # can *read*, never what this one says.
-            context = described.relax_offer_block(intent)
-            user_content = f"""
-═══ طلب العميل ═══
-{message}
-
-═══ ملحوظة مهمة ═══
-{_no_match_note(seen, exhausted)}
-
-═══ تعليمات الرد ═══
-1. {_no_match_instruction(intent, seen, exhausted)}
-2. ⭐ إذا كانت رسالة العميل غامضة أو غير مفهومة، لا تعتذر عن عدم توفر العطر، بل قل له بوضوح: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر عشان أقدر أساعدك؟".
-3. أما إذا كان يطلب عطراً بالاسم وهو مش في البيانات اللي معاك: ❌ ممنوع تقول إنه "مش متوفر" أو "مش موجود عندنا" — إنت شايف جزء من الكتالوج بس. ✅ اسأله يتأكد من اسم العطر ويكتبه تاني، واسأله لو يحب ترشحله بديل في نفس الجو. ❌ ومتوعدهوش إنك هتراجع الاسم وترد عليه بعدين — مفيش حد بيراجع بعد الرد ده. ممنوع تجزم بعدم التوفر إلا لو البيانات نفسها بتقول كده.
-4. ❌ ممنوع ترشيح أو ذكر أي منتج غير موجود أو اختراع أسماء منتجات.
-5. رد بشكل قصير ومباشر (1-4 جمل).
-6. 🔴🔴 متسألش أسئلة كتير. سؤال واحد بس لو محتاج توضيح، ومتسألش سؤال متابعة لو الموقف مش محتاج.
-"""
-
-    messages = [
-        {
-            "role": "system",
-            "content": get_system_prompt(store),
-        }
-    ]
-    if history:
-        messages.extend(history)
-
-    messages.append({
-        "role": "user",
-        "content": user_content + brand_note + (QUOTE_PROSE_INSTRUCTION if max_price else "") + (repeat_hint or ""),
-    })
-
-    response = chat(messages, profile="converse")
-    summary = (search or {}).get("similarity") or {}
-    def recommendation_issues(draft):
-        issues = brand_response.response_issues(draft, candidates, intent, search, store)
-        issues += recommendation_response.response_issues(draft, candidates, intent, search)
-        if summary and not summary.get("has_close_match") and candidates:
-            from ..sales.similarity import alternative_wording_issues
-            issues += alternative_wording_issues(draft)
-        return issues
-
-    issues = recommendation_issues(response)
-    if issues:
-        correction = (
-            "صحح الرد: " + "؛ ".join(issues) + ". ابدأ باسم عطر أو عطرين من القائمة "
-            "وصفاتهم المسجلة. وضح براند البديل المختلف والسبب المدعوم لاختياره؛ "
-            "ممنوع ادعاء تشابه غير مدعوم أو إعلان عدم وجود مشابه."
-        )
-        try:
-            response = chat(messages + [{"role": "assistant", "content": response},
-                                        {"role": "user", "content": correction}], profile="converse")
-        except Exception:
-            response = ""
-        if not (response or "").strip() or recommendation_issues(response):
-            response = "\n".join(
-                f"{product.name}: {factual_description(product) or 'اختيار متاح'}."
-                for product in candidates[:2]
-            )
-    response = brand_response.disclose_brands(response, candidates, intent, store)
-
-    # Record which perfumes this turn's message asked us to move past, on whichever of the four
-    # branches above answered it. `intent["exclude_names"]` is per-request and `ai/intent.py` only
-    # fills it when the message asks for an alternative, so the signal is gone by the next turn —
-    # conversation 973's turn 3 ("اي تاني") had Bloom and Coco Mademoiselle, turn 4 had nothing, and
-    # `under_discussion`'s two-reply window handed both straight back to `ranking` as still under
-    # discussion. `router` subtracts this from `keep`.
-    #
-    # After `chat`, and appended rather than assigned, so it cannot change what this turn was given:
-    # `user_content` was built above and does not embed `context`'s marker lines. Same reasoning as
-    # `relax_offer_block` on the no-match branch — the marker is persisted, not injected, so it
-    # changes what the NEXT turn can read and never what this one says.
-    context = (context or "") + described.moved_past_block(intent, store)
-    if max_price:
-        from ..sales.naming import names_in
-        pool = list(products or alternatives or [])
-        if not pool:
-            pool = _named_in_message(message, store)
-        supported = [p for p in pool if p.name in context]
-        ordered = names_in(response, [p.name for p in supported])
-        selected = [next(p for p in supported if p.name == name) for name in ordered[:2]]
-        quotes = product_quotes(selected, message, max_price)
-        context = quote_context(context, quotes, append=True, max_price=max_price)
-    return append_quotation(response, context), context
+def recommend(message, products, history=None, alternatives=None, store=None, intent=None, search=None,
+              gender_unknown=False, repeat_hint=""):
+    """Select eligible catalog IDs and write a grounded scent-label recommendation."""
+    from .scent_recommendation import recommend_from_labels
+    return recommend_from_labels(message, products, history, alternatives, store, intent, search,
+                                 gender_unknown, repeat_hint, chat=chat)

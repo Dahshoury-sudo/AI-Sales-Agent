@@ -3,8 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from products.models import Product, ProductVariant, Brand, Category
+from products.scent_tags import normalize_scent_tags
 from .auth_backend import StoreOwnerAuthentication
 
 logger = logging.getLogger(__name__)
@@ -57,6 +59,7 @@ class ProductListView(APIView):
                 "gender": p.gender,
                 "is_active": p.is_active,
                 "description": p.description,
+                "scent_tags": p.scent_tags,
                 "top_notes": p.top_notes,
                 "middle_notes": p.middle_notes,
                 "base_notes": p.base_notes,
@@ -114,6 +117,7 @@ class ProductDetailView(APIView):
             "middle_notes": p.middle_notes,
             "base_notes": p.base_notes,
             "description": p.description,
+            "scent_tags": p.scent_tags,
             "is_active": p.is_active,
             "variants": variants,
         })
@@ -124,6 +128,12 @@ class ProductDetailView(APIView):
             product = Product.objects.get(id=product_id, store=store)
         except Product.DoesNotExist:
             return Response({"error": "Product not found."}, status=404)
+
+        if "scent_tags" in request.data:
+            try:
+                product.scent_tags = normalize_scent_tags(request.data["scent_tags"])
+            except ValidationError as exc:
+                return Response({"error": " ".join(exc.messages)}, status=400)
 
         simple_fields = [
             "name", "gender", "season", "occasion", "longevity", "projection",
@@ -190,6 +200,11 @@ class ProductCreateView(APIView):
         category_name = data.get("category", "").strip()
 
         try:
+            scent_tags = normalize_scent_tags(data.get("scent_tags", []))
+        except ValidationError as exc:
+            return Response({"error": " ".join(exc.messages)}, status=400)
+
+        try:
             with transaction.atomic():
                 brand, _ = Brand.objects.get_or_create(store=store, name=brand_name) if brand_name else (None, False)
                 category, _ = Category.objects.get_or_create(store=store, name=category_name) if category_name else (None, False)
@@ -209,6 +224,7 @@ class ProductCreateView(APIView):
                     middle_notes=data.get("middle_notes", ""),
                     base_notes=data.get("base_notes", ""),
                     description=data.get("description", ""),
+                    scent_tags=scent_tags,
                 )
 
                 for v_data in data.get("variants", []):

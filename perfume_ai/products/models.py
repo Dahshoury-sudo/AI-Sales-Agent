@@ -2,6 +2,7 @@ import secrets
 from django.db import models
 from django.contrib.auth.models import User
 from .encryption import EncryptedCharField, EncryptedTextField, phone_blind_index
+from .scent_tags import normalize_scent_tags, validate_scent_tags
 
 def generate_api_key():
     return secrets.token_urlsafe(32)
@@ -149,6 +150,8 @@ class Product(models.Model):
 
     description = models.TextField(blank=True)
 
+    scent_tags = models.JSONField(default=list, blank=True, validators=[validate_scent_tags])
+
     # oil_stock_grams and concentration_percentage lived here. They gated availability:
     # a brand bottle was sellable only while the remaining bulk oil could fill it. The
     # problem was that the counter only ever went down — every confirmed order decremented
@@ -166,6 +169,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+    def clean(self):
+        super().clean()
+        self.scent_tags = normalize_scent_tags(self.scent_tags)
 
 
 class ProductVariant(models.Model):

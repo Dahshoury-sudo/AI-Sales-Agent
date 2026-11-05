@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django import forms
+from .scent_tags import SCENT_TAG_CHOICES, normalize_scent_tags
 
 from .encryption import normalize_phone, phone_blind_index
 
@@ -38,8 +40,21 @@ class ProductVariantInline(admin.TabularInline):
     fields = ('bottle_type', 'volume', 'price', 'stock')
     extra = 1
 
+class ProductAdminForm(forms.ModelForm):
+    scent_tags = forms.MultipleChoiceField(choices=SCENT_TAG_CHOICES, required=False,
+                                           widget=forms.CheckboxSelectMultiple)
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+    def clean_scent_tags(self):
+        return normalize_scent_tags(self.cleaned_data["scent_tags"])
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
     list_display = (
         "id",
         "name",

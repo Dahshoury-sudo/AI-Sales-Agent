@@ -23,7 +23,7 @@ class Conversation1233RankingTests(TestCase):
         )
 
     def product(self, name, **fields):
-        attributes = dict(gender="male", longevity="8 hours", projection="Strong")
+        attributes = dict(gender="male", longevity="8 hours", projection="Strong", scent_tags=["fresh"])
         attributes.update(fields)
         product = Product.objects.create(
             store=self.store, brand=self.brand, name=name, **attributes,
@@ -40,23 +40,17 @@ class Conversation1233RankingTests(TestCase):
                 self.assertTrue(entries[1].occasion_conflict)
                 self.assertIn("Evening", " ".join(entries[1].mismatches))
 
-    def test_daytime_fit_precedes_louder_evening_perfumes_already_offered(self):
+    def test_no_perfume_can_trade_away_explicit_occasion_or_projection(self):
         offered = {p.name for p in (self.elite, self.dark, self.bonded)}
-        results = search_products(
-            {"gender": "male", "occasion": "daytime", "projection": "strong",
-             "longevity": "long-lasting"},
-            self.store, keep=offered, offered=offered,
-        )
-        self.assertEqual(list(results["products"])[0], self.bonded)
-        self.assertEqual(results["keeping"], [self.bonded.name])
-        for perfume in (self.elite, self.dark):
-            self.assertIn("Evening", results["dropped"][perfume.name])
-            self.assertNotIn("العميل بيتكلم عنه بالفعل", results["ranked"][perfume.pk].reasons)
-        # The quieter daytime scent's tradeoff must remain explicit.
-        self.assertIn("فوحانه أقل", " ".join(results["ranked"][self.bonded.pk].mismatches))
-        note = described.continuity_note(results["keeping"], results["dropped"], converge=True)
-        self.assertIn("الكلام دلوقتي على: Bonded", note)
-        self.assertNotIn("الكلام دلوقتي على: Elite", note)
+        results = search_products({"gender": "male", "occasion": "daytime", "projection": "strong",
+                                   "longevity": "long-lasting", "scent_tags": ["fresh"]},
+                                  self.store, keep=offered, offered=offered)
+        self.assertFalse(results["products"].exists())
+        self.assertEqual(results["keeping"], [])
+        self.assertIn(results["relax_key"], {"occasion", "projection"})
+        self.assertIn("الفوحان", results["dropped"][self.bonded.name])
+        for product in (self.elite, self.dark):
+            self.assertIn("Evening", results["dropped"][product.name])
 
     def test_evening_request_also_reassesses_a_previous_daytime_suggestion(self):
         results = search_products(
@@ -67,15 +61,12 @@ class Conversation1233RankingTests(TestCase):
         self.assertIn("Casual/Office/Everyday", results["dropped"][self.bonded.name])
         self.assertNotEqual(list(results["products"])[0], self.bonded)
 
-    def test_blank_occasion_remains_unknown_without_false_withdrawal(self):
+    def test_blank_occasion_cannot_satisfy_a_requested_occasion(self):
         unknown = self.product("Unknown occasion")
-        results = search_products(
-            {"gender": "male", "occasion": "morning"}, self.store,
-            keep={unknown.name}, offered={unknown.name},
-        )
-        self.assertEqual(results["keeping"], [unknown.name])
-        self.assertNotIn(unknown.name, results["dropped"])
-        self.assertFalse(results["ranked"][unknown.pk].occasion_conflict)
+        result = search_products({"occasion": "morning"}, self.store, keep={unknown.name})
+        self.assertNotIn(unknown, result["products"])
+        self.assertEqual(result["keeping"], [])
+        self.assertIn("غير محددة", result["dropped"][unknown.name])
 
     def test_matching_morning_catalogue_value_satisfies_daily_request(self):
         morning = self.product("Morning scent", occasion="Morning")
@@ -89,28 +80,15 @@ class Conversation1233RankingTests(TestCase):
                 self.assertEqual(ranking._occasion_verdict("Holiday", asked)[0], ranking.UNKNOWN)
                 self.assertEqual(ranking._occasion_verdict("Birthday party", asked)[0], ranking.CONFLICT)
 
-    def test_similarity_reference_replaces_unrelated_continuity_anchors(self):
-        reference = self.product(
-            "Terre d'Hermes", top_notes="Orange, Grapefruit", middle_notes="Pepper",
-            base_notes="Vetiver, Cedar, Patchouli", occasion="Daily",
-        )
-        close = self.product(
-            "Vetiver citrus", top_notes="Orange, Grapefruit", middle_notes="Pepper",
-            base_notes="Vetiver, Cedar", occasion="Daily",
-        )
-        intent = {"gender": "male", "similar_to": reference.name}
-        results = search_products(
-            intent, self.store, keep={self.elite.name, self.dark.name},
-            offered={self.elite.name, self.dark.name},
-        )
-        self.assertEqual(list(results["products"])[0], close)
-        self.assertEqual(results["keeping"], [])
-        self.assertTrue(results["similarity"]["has_close_match"])
-        self.assertIn(reference.name, results["dropped"][self.elite.name])
-        # Rejected as lookalikes, not falsely declared unavailable.
-        self.assertIn(self.elite, results["products"])
-        self.assertNotIn(reference, results["products"])
-        self.assertEqual(results["reference_product"], reference)
+    def test_reference_labels_replace_unrelated_continuity_anchors(self):
+        reference = self.product("Terre d'Hermes", scent_tags=["citrus", "woody"])
+        match = self.product("Vetiver citrus", scent_tags=["citrus", "woody"])
+        result = search_products({"similar_to": reference.name}, self.store, keep={self.elite.name, self.dark.name})
+        self.assertEqual(list(result["products"]), [match])
+        self.assertEqual(result["keeping"], [])
+        self.assertIn(reference.name, result["dropped"][self.elite.name])
+        self.assertEqual(result["reference_product"], reference)
+        self.assertIsNone(result["similarity"])
 
     def test_close_similarity_match_stays_above_fresh_unrelated_options(self):
         reference = similarity.reference_from_product(self.bonded)
@@ -122,15 +100,12 @@ class Conversation1233RankingTests(TestCase):
         self.assertFalse(results[1].result.is_close)
         self.assertNotIn("العميل بيتكلم عنه بالفعل", results[1].reasons)
 
-    def test_no_close_match_has_no_forced_previous_choice(self):
-        results = search_products(
-            {"gender": "male", "similar_to": "Unstocked rose fragrance",
-             "similar_to_notes": ["rose", "peony"]},
-            self.store, keep={self.elite.name}, offered={self.elite.name},
-        )
-        self.assertFalse(results["similarity"]["has_close_match"])
-        self.assertEqual(results["keeping"], [])
-        self.assertTrue(results["products"].exists())
+    def test_unknown_reference_cannot_force_a_previous_choice(self):
+        result = search_products({"similar_to": "Unstocked rose fragrance", "similar_to_notes": ["rose"]},
+                                  self.store, keep={self.elite.name}, offered={self.elite.name})
+        self.assertTrue(result["needs_scent_reference"])
+        self.assertFalse(result["products"].exists())
+        self.assertEqual(result["keeping"], [])
 
     def test_budget_refinement_preserves_a_compatible_perfume(self):
         results = search_products(

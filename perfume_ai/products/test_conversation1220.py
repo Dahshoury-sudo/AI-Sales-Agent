@@ -27,7 +27,7 @@ class Conversation1220Tests(TestCase):
     def product(self, name, brand=None):
         product = Product.objects.create(
             store=self.store, brand=brand or self.brand, name=name, gender="male",
-            longevity="8 hours", projection="Strong", base_notes="Amber, Woody Notes",
+            longevity="8 hours", projection="Strong", base_notes="Amber, Woody Notes", scent_tags=["woody", "heavy"],
         )
         ProductVariant.objects.create(product=product, volume=50, price=750)
         ProductVariant.objects.create(product=product, volume=90, price=1000)
@@ -169,7 +169,7 @@ class Conversation1220Tests(TestCase):
         dior_reply = "Sauvage Elixir وFahrenheit مناسبين. تحب أقول لك الأسعار والأحجام؟"
         with patch("products.services.router.classify", return_value="recommendation"), patch(
             "products.services.router.extract_intent",
-            return_value={"brand": "Dior", "gender": "male", "similar_to": self.vip.name},
+            return_value={"brand": "Dior", "gender": "male", "similar_to": self.vip.name, "scent_tags": ["woody", "heavy"]},
         ), patch("products.services.router.recommend", return_value=(dior_reply, format_products([self.elixir, self.fahrenheit]))) as recommend:
             reply, context = route("ديور", build_llm_history(self.conv), self.store, self.conv)
         self.assertNotIn("similar_to", recommend.call_args.kwargs["intent"])

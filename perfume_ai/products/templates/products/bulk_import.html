@@ -21,6 +21,18 @@
             <input type="text" id="apiKey" placeholder="الصق مفتاح الـ API هنا...">
         </div>
 
+        <section class="step-card" aria-labelledby="scent-labels-title">
+            <h2 id="scent-labels-title">تصنيف روائح العطور الموجودة</h2>
+            <p class="step-desc">حمّل عطور متجرك، واكتب تصنيفات الريحة في عمود scent_tags بفواصل، مثلاً fresh, woody. قائمة التصنيفات موجودة في الورقة التانية. الخانات الفاضية بتسيب التصنيف الحالي زي ما هو؛ لمسح تصنيف استخدم تعديل المنتج.</p>
+            <button type="button" class="btn btn-secondary" id="scent-export">تحميل العطور للتصنيف</button>
+            <div style="margin-top:16px;">
+                <label for="scent-file">ملف التصنيفات بعد التعديل</label>
+                <input type="file" id="scent-file" accept=".xlsx">
+                <button type="button" class="btn btn-primary" id="scent-upload" disabled>حفظ تصنيفات العطور</button>
+            </div>
+            <p id="scent-status" role="status" aria-live="polite" style="white-space:pre-wrap; margin-top:12px;"></p>
+        </section>
+
         <!-- Step 1: Download Template -->
         <div class="step-card">
             <div class="step-header">
@@ -46,6 +58,7 @@
                         <tr><td>perfume_type</td><td>نوع العطر (oriental / western / niche / ultra_niche)</td><td class="optional">اختياري</td></tr>
                         <tr><td>season</td><td>الموسم المناسب</td><td class="optional">اختياري</td></tr>
                         <tr><td>occasion</td><td>المناسبة</td><td class="optional">اختياري</td></tr>
+                        <tr><td>scent_tags</td><td>تصنيفات الريحة بفواصل، مثل fresh, woody. العطر يحتاج تصنيف عشان يظهر في الترشيحات.</td><td class="optional">اختياري</td></tr>
                         <tr><td>longevity</td><td>مدة الثبات</td><td class="optional">اختياري</td></tr>
                         <tr><td>projection</td><td>قوة الانتشار</td><td class="optional">اختياري</td></tr>
                         <tr><td>concentration</td><td>التركيز (EDP, EDT...)</td><td class="optional">اختياري</td></tr>
@@ -99,6 +112,54 @@
     </div>
 
     <script>
+        const scentStatus = document.getElementById('scent-status');
+        const scentFile = document.getElementById('scent-file');
+        const scentUpload = document.getElementById('scent-upload');
+        const scentExport = document.getElementById('scent-export');
+        scentFile.addEventListener('change', () => { scentUpload.disabled = !scentFile.files.length; });
+        scentExport.addEventListener('click', async () => {
+            scentExport.disabled = true;
+            scentStatus.textContent = 'جاري تجهيز الملف…';
+            try {
+                const response = await authFetch('/api/import/scent-tags/');
+                if (!response || !response.ok) throw new Error('تعذر تحميل عطور المتجر.');
+                const url = URL.createObjectURL(await response.blob());
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'perfume_scent_labels.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                scentStatus.textContent = 'الملف جاهز. اكتب التصنيفات وارفعه هنا.';
+            } catch (error) {
+                scentStatus.textContent = error.message;
+            } finally {
+                scentExport.disabled = false;
+            }
+        });
+        scentUpload.addEventListener('click', async () => {
+            if (!scentFile.files.length) return;
+            scentUpload.disabled = true;
+            scentStatus.textContent = 'جاري حفظ التصنيفات…';
+            try {
+                const body = new FormData();
+                body.append('file', scentFile.files[0]);
+                const response = await authFetch('/api/import/scent-tags/', {method: 'POST', headers: {}, body});
+                if (!response) throw new Error('تعذر حفظ التصنيفات.');
+                const result = await response.json();
+                if (!response.ok) {
+                    const details = (result.errors || []).map(error => `سطر ${error.row}: ${error.message}`).join('\n');
+                    throw new Error(details || result.error || 'تعذر حفظ التصنيفات.');
+                }
+                scentStatus.textContent = `تم تحديث ${result.updated} عطر. ${result.unchanged} بدون تغيير، و${result.skipped} خانة فاضية.`;
+            } catch (error) {
+                scentStatus.textContent = error.message;
+            } finally {
+                scentUpload.disabled = !scentFile.files.length;
+            }
+        });
+
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
         const fileName = document.getElementById('fileName');

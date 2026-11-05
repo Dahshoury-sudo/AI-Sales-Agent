@@ -165,12 +165,6 @@ def can_recommend_without_budget(intent):
 # Slot values arrive from the extractor in English. Anything unrecognised is echoed as
 # written rather than dropped — an unmapped value is still something the customer said.
 _GENDER = {"male": "رجالي", "female": "حريمي", "unisex": "للجنسين"}
-_OCCASION = {
-    "evening": "للسهرات بالليل", "night": "للليل", "office": "للشغل",
-    "work": "للشغل", "party": "للمناسبات والحفلات", "casual": "يومي",
-    "daily": "يومي", "formal": "للمناسبات الرسمية", "wedding": "للفرح",
-    "date": "للخروجات",
-}
 _SEASON = {
     "summer": "للصيف", "winter": "للشتا", "spring": "للربيع",
     "autumn": "للخريف", "fall": "للخريف", "all seasons": "لكل الفصول",
@@ -241,7 +235,6 @@ def describe(intent):
     for table, key in (
         (_GENDER, "gender"),
         (_PERFUME_TYPE, "perfume_type"),
-        (_OCCASION, "occasion"),
         (_SEASON, "season"),
         (_LONGEVITY, "longevity"),
         (_PROJECTION, "projection"),
@@ -251,6 +244,12 @@ def describe(intent):
         if key == "gender" and intent.get(key) == "multiple":
             continue
         phrase = _lookup(table, intent.get(key))
+        if phrase:
+            phrases.append(phrase)
+
+    if intent.get("occasion"):
+        from products.occasions import describe_occasion
+        phrase = describe_occasion(intent["occasion"])
         if phrase:
             phrases.append(phrase)
 

@@ -75,11 +75,31 @@ def product_claim_issues(reply, facts):
         row = names[named.group()]
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
         segment = text[named.end():end]
+        if row.get("scent_tags"):
+            from .sales.scent_preferences import explicit_scent_updates
+            from products.occasions import occasion_groups, occasion_matches
+            claims = explicit_scent_updates(segment)
+            for tag in claims.get("scent_tags", []):
+                if tag not in row["scent_tags"]:
+                    issues.append(f"scent:{named.group()}:{tag}")
+            for tag in claims.get("excluded_scent_tags", []):
+                if tag in row["scent_tags"]:
+                    issues.append(f"scent:{named.group()}:denied {tag}")
+            for clause in re.split(r"[\n.!؟?،;]+", segment):
+                if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|not\s+suitable", clause):
+                    continue
+                if re.search(r"مناسب|ينفع|suitable", clause):
+                    for occasion in occasion_groups(clause):
+                        if not occasion_matches(row.get("occasion", ""), occasion):
+                            issues.append(f"occasion:{named.group()}:{occasion}")
         recorded = _claim_normalize(" ".join(row.get("notes", [])))
         for key, aliases in _NOTE_ALIASES.items():
             alias_pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"
             for claim in re.finditer(alias_pattern, segment):
                 before = segment[max(0, claim.start() - 28):claim.start()]
+                style_tag = {"musk": "musky"}.get(key, key)
+                if style_tag in row.get("scent_tags", []) and re.search(r"(?:طابع(?:ه|ها)?|ستايل|ريحته|ريحتها|style|scent)\s*$", before):
+                    continue
                 if re.search(r"مش|بدون|من غير|مفيهوش|مفيش|مافيش|ولا|بتحب|تحب", before):
                     continue
                 if not any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
@@ -94,6 +114,24 @@ def product_claim_issues(reply, facts):
                   "متوسط": ("moderate",), "قوي": ("strong", "very strong", "enormous")}
         if projection_claim and projection not in levels[projection_claim[1]]:
             issues.append(f"projection:{named.group()}:{projection_claim[1]}")
+        if row.get("scent_tags"):
+            from .sales.similarity import peak_hours, _ordinal, _PROJECTION_WORDS
+            others = [names[name] for name in {match.group() for match in matches} if name != named.group()]
+            comparisons = (
+                (r"ثابت\s+اكتر|ثباته\s+(?:وفوحانه\s+)?(?:اطول|اقوي|اعلي|اكتر)|يدوم\s+اطول|lasts\s+longer",
+                 "longevity", peak_hours, 1),
+                (r"ثباته\s+(?:اقل|اقصر)|lasts\s+less", "longevity", peak_hours, -1),
+                (r"فوحانه\s+(?:اقوي|اعلي)", "projection", lambda value: _ordinal(value, _PROJECTION_WORDS), 1),
+                (r"فوحانه\s+(?:اقل|اضعف|اهدي)", "projection", lambda value: _ordinal(value, _PROJECTION_WORDS), -1),
+            )
+            for wording, field, measure, direction in comparisons:
+                if not re.search(wording, segment):
+                    continue
+                actual = measure(row.get(field, ""))
+                compared = [measure(other.get(field, "")) for other in others]
+                if (actual is None or not compared or any(value is None for value in compared)
+                        or any((actual - value) * direction <= 0 for value in compared)):
+                    issues.append(f"comparison:{named.group()}:{field}")
         if re.search(r"ثابت اكتر|ثباته اطول|يدوم اطول", segment) and len(matches) < 2:
             issues.append(f"comparison:{named.group()}: طرف المقارنة غير محدد")
     return list(dict.fromkeys(issues))

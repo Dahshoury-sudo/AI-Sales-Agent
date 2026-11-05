@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 from django.db.models import Avg, Count, OuterRef, Subquery, Q, F
 from django.db.models.functions import Coalesce
 from .models import Product, ConversationEvaluation, Order, Conversation, Message
+from .occasions import DAILY
 from .serializers import ProductSerializer
 from .auth import StoreAPIKeyAuthentication
 from dashboard.auth_backend import StoreOwnerAuthentication
@@ -284,7 +285,7 @@ class BulkImportTemplateView(APIView):
 
         headers = [
             "name", "brand", "category", "gender", "perfume_type",
-            "season", "occasion", "longevity", "projection",
+            "season", "occasion", "scent_tags", "longevity", "projection",
             "concentration", "top_notes", "middle_notes", "base_notes",
             "description",
             "norm_vol_1", "norm_price_1",
@@ -298,13 +299,14 @@ class BulkImportTemplateView(APIView):
         # Example row
         ws.append([
             "Bleu de Chanel", "Chanel", "Perfume", "male", "western",
-            "All Seasons", "Casual", "8 hours", "Moderate",
+            "All Seasons", DAILY, "fresh, woody", "8 hours", "Moderate",
             "EDP", "Citrus, Mint", "Jasmine, Ginger", "Cedar, Sandalwood",
             "A fresh and woody fragrance",
             50, 500,
             90, 900,
+            None, None,
             100, 5000, 5,
-            200, 9000, 2
+            200, 9000, 2,
         ])
 
         # Auto-size columns

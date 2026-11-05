@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.test import TestCase
 
 from products.models import Brand, Conversation, Message, Product, ProductVariant, Store
+from products.occasions import DAILY, NIGHT_OUT
 from products.services.ai.intent import extract_intent
 from products.services.ai.recommendation import recommend
 from products.services.conversation_service import build_llm_history, merge_preferences
@@ -25,9 +26,9 @@ class Conversation1232Tests(TestCase):
         self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
         self.store = Store.objects.create(name="Perfamix")
         self.brand = Brand.objects.create(store=self.store, name="Gucci")
-        self.terre = self.product("Terre d'Hermes", "Casual", top_notes="Orange, Grapefruit",
+        self.terre = self.product("Terre d'Hermes", "Casual", scent_tags=["citrus", "woody"], top_notes="Orange, Grapefruit",
                                   middle_notes="Pepper, Pelargonium", base_notes="Vetiver, Cedar, Patchouli, Benzoin")
-        self.guilty = self.product("Guilty Black", "Evening", top_notes="Lavender, Green Coriander",
+        self.guilty = self.product("Guilty Black", "Evening", scent_tags=["heavy", "woody"], top_notes="Lavender, Green Coriander",
                                   middle_notes="Green Notes, Orange Blossom, Neroli", base_notes="Cedar, Patchouli")
         self.quiet = self.product("Quiet Day", "Casual", top_notes="Neroli, Green Tea", base_notes="White Musk")
         self.loud = self.product("Loud Day", "Casual", projection="Strong", top_notes="Neroli, Green Tea", base_notes="White Musk")
@@ -35,7 +36,8 @@ class Conversation1232Tests(TestCase):
 
     def product(self, name, occasion, **fields):
         p = Product.objects.create(store=self.store, brand=self.brand, name=name, occasion=occasion,
-                                   **{"gender": "male", "projection": "Moderate", "longevity": "6 hours", **fields})
+                                   **{"gender": "male", "projection": "Moderate", "longevity": "6 hours",
+                                      "scent_tags": ["fresh", "clean", "light"], **fields})
         ProductVariant.objects.create(product=p, volume=50, price=500)
         return p
 
@@ -103,9 +105,9 @@ class Conversation1232Tests(TestCase):
                              "notes": ["fresh"], "occasion": "multiple", "projection": "strong"}, CASUAL)
         self.assertNotIn("similar_to", result)
         self.assertNotIn(reference.STATE_KEY, self.conversation.sales_state)
-        self.assertEqual(result["notes"], ["clean"])
-        self.assertEqual(result["occasion"], "casual")
-        self.assertEqual(result["projection"], "moderate")
+        self.assertEqual(result["scent_tags"], ["clean"])
+        self.assertEqual(result["occasion"], DAILY)
+        self.assertNotIn("projection", result)
 
     def test_budget_and_explicit_connected_use_refine_the_reference(self):
         self.user(SIMILAR)
@@ -116,9 +118,9 @@ class Conversation1232Tests(TestCase):
         self.assertEqual(result["recommendation_mode"], "refinement")
         self.assertEqual(result["similar_to"], self.terre.name)
 
-    def test_mosque_is_not_inferred_as_daytime_and_multiple_is_not_saved(self):
+    def test_mosque_maps_to_casual_and_multiple_is_not_saved(self):
         result = self.merge({"occasion": "daytime"}, MOSQUE)
-        self.assertEqual(result["occasion"], "mosque")
+        self.assertEqual(result["occasion"], DAILY)
         self.conversation.preferences = {"occasion": "multiple"}
         self.conversation.save()
         self.merge({"occasion": "multiple"}, "تمام")
@@ -126,7 +128,7 @@ class Conversation1232Tests(TestCase):
 
     def test_explicit_night_outings_take_precedence_over_generic_casual_use(self):
         result = self.merge({"occasion": "evening"}, "عايز برفان ثابت للخروجات بالليل بس مش تقيل")
-        self.assertEqual(result["occasion"], "evening")
+        self.assertEqual(result["occasion"], NIGHT_OUT)
 
     def test_explicit_comparison_connected_to_mosque_keeps_both_requirements(self):
         self.user(SIMILAR)
@@ -134,15 +136,15 @@ class Conversation1232Tests(TestCase):
         result = self.merge({}, "عايز حاجة شبهه وينفع للمسجد ويكون مريح")
         self.assertEqual(result["recommendation_mode"], "refinement")
         self.assertEqual(result["similar_to"], self.terre.name)
-        self.assertEqual(result["occasion"], "mosque")
+        self.assertEqual(result["occasion"], DAILY)
 
     def test_model_omission_or_malformed_json_does_not_lose_purpose(self):
         for payload in ("{}", "invalid JSON", json.dumps({"occasion": "multiple", "projection": "strong"})):
             with self.subTest(payload=payload), patch("products.services.ai.intent.chat", return_value=payload):
                 result = extract_intent(CASUAL, store=self.store)
-            self.assertEqual(result["occasion"], "casual")
-            self.assertEqual(result["projection"], "moderate")
-            self.assertEqual(result["notes"], ["clean"])
+            self.assertEqual(result["occasion"], DAILY)
+            self.assertNotIn("projection", result)
+            self.assertEqual(result["scent_tags"], ["clean"])
 
     def test_current_fit_wins_without_brand_despite_earlier_offers(self):
         intent = self.merge({}, CASUAL)
@@ -150,7 +152,8 @@ class Conversation1232Tests(TestCase):
                                  offered={self.quiet.name})
         self.assertEqual(result["products"][0], self.quiet)
         self.assertIn(self.guilty.name, result["dropped"])
-        self.assertIn(self.loud.name, result["dropped"])
+        self.assertIn(self.loud, result["products"])
+        self.assertNotIn(self.loud.name, result["dropped"])
 
     def test_subdued_projection_does_not_reward_stronger_and_unknown_is_not_conflict(self):
         self.assertEqual(ranking._ordinal_hit("Strong", "moderate", ranking._WANTED_PROJECTION,
@@ -208,21 +211,17 @@ class Conversation1232Tests(TestCase):
             with self.subTest(message=message):
                 self.assertEqual(request_updates.request_mode(message, store=self.store), "")
 
-    def test_both_reply_branches_reject_stale_leader_and_unsupported_claims(self):
+    def test_selection_rejects_stale_leader_and_unsupported_claims(self):
         intent = self.merge({}, CASUAL)
         result = search_products(intent, self.store)
-        for alternatives in (False, True):
-            with self.subTest(alternatives=alternatives), patch(
-                "products.services.ai.recommendation.chat",
-                return_value="Guilty Black مناسب للمسجد ونفس ريحة Terre d'Hermes.",
-            ) as chat:
-                reply, _ = recommend(CASUAL, Product.objects.none() if alternatives else result["products"],
-                                     alternatives=result["products"] if alternatives else None,
-                                     store=self.store, intent=intent, search=result)
-            self.assertEqual(chat.call_count, 2)
-            self.assertIn(self.quiet.name, reply)
-            self.assertNotIn("نفس ريحة", reply)
-            self.assertNotIn("مفيش", reply)
+        invalid = json.dumps({"product_ids": [self.guilty.pk],
+                              "reply": "Guilty Black مناسب للمسجد ونفس ريحة Terre d'Hermes."})
+        with patch("products.services.ai.recommendation.chat", return_value=invalid) as chat:
+            reply, _ = recommend(CASUAL, result["products"], store=self.store, intent=intent, search=result)
+        self.assertEqual(chat.call_count, 2)
+        self.assertIn(self.quiet.name, reply)
+        self.assertNotIn("نفس ريحة", reply)
+        self.assertNotIn(self.guilty.name, reply)
 
     def test_factual_occasion_guard_applies_to_mosque_and_multi_product_prose(self):
         from products.services.sales.recommendation_response import response_issues

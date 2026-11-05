@@ -3,10 +3,14 @@ from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlsplit
 import mimetypes
+import sys
 from django.conf import settings
 import django
 
 root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(root))
+from products.scent_tags import SCENT_TAG_CHOICES
+template_context = {"scent_tag_choices": SCENT_TAG_CHOICES}
 settings.configure(SECRET_KEY='local-template-preview', DEBUG=True, STATIC_URL='/static/',
     INSTALLED_APPS=['django.contrib.staticfiles'],
     TEMPLATES=[{'BACKEND':'django.template.backends.django.DjangoTemplates',
@@ -27,13 +31,13 @@ routes = {
     '/api/demo/':'products/chat.html',
     '/api/import/':'products/bulk_import.html',
 }
-for template in routes.values(): render_to_string(template)
+for template in routes.values(): render_to_string(template, template_context)
 print('All 10 templates compiled. Preview: http://127.0.0.1:8766/dashboard/',flush=True)
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         route=urlsplit(self.path).path
         if route in routes:
-            content=render_to_string(routes[route]).encode('utf-8'); mime='text/html; charset=utf-8'
+            content=render_to_string(routes[route], template_context).encode('utf-8'); mime='text/html; charset=utf-8'
         elif route.startswith('/static/dashboard/'):
             directory=(root/'dashboard/static/dashboard').resolve()
             file=(directory/route.removeprefix('/static/dashboard/')).resolve()

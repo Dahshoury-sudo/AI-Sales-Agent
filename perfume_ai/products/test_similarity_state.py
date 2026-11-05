@@ -18,7 +18,7 @@ class SimilarityStateTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Carolina Herrera")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="212 VIB Man", gender="male",
-            top_notes="Ginger", middle_notes="Pepper", base_notes="Wood",
+            top_notes="Ginger", middle_notes="Pepper", base_notes="Wood", scent_tags=["woody", "spicy"],
         )
         ProductVariant.objects.create(product=self.product, volume=50, price=500)
         self.conversation = Conversation.objects.create(store=self.store)
@@ -90,7 +90,8 @@ class SimilarityStateTests(TestCase):
                 result = self.merge({"gender": "female", "notes": ["sweet"], "max_price": 700}, text)
                 self.assertNotIn("similarity_needs_reference", result)
                 self.assertNotIn("similar_to", result)
-                self.assertEqual(result["notes"], ["sweet"])
+                self.assertEqual(result["scent_tags"], ["sweet"])
+                self.assertFalse(result.get("notes"))
         self.confirmer.assert_not_called()
 
     def test_a_negated_scent_analogy_does_not_withdraw_the_reference(self):

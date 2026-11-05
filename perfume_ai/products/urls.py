@@ -8,6 +8,7 @@ from .views import (
     ChatHistoryDashboardView, ChatHistoryConversationsAPIView,
 )
 from .views_meta import MetaWebhookView
+from .views_scent_tags import ScentTagImportView
 
 urlpatterns = [
     path("products/", ProductListView.as_view()),
@@ -23,6 +24,7 @@ urlpatterns = [
     path("import/", BulkImportView.as_view(), name="bulk-import"),
     path("import/upload/", BulkImportAPIView.as_view(), name="bulk-import-api"),
     path("import/template/", BulkImportTemplateView.as_view(), name="bulk-import-template"),
+    path("import/scent-tags/", ScentTagImportView.as_view(), name="scent-tag-import"),
     path("handoff/", HandoffDashboardView.as_view(), name="handoff-dashboard"),
     path("handoff/conversations/", HandoffConversationsAPIView.as_view(), name="handoff-conversations"),
     path("handoff/conversations/<int:conversation_id>/messages/", HandoffMessagesAPIView.as_view(), name="handoff-messages"),

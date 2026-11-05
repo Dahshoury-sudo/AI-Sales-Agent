@@ -6,25 +6,20 @@ and answers refining an offer retain their existing handling.
 import re
 
 from ..static_faq_service import normalize_arabic
+from products.occasions import normalize_occasion, occasion_alias
+from .occasion_preferences import (
+    PENDING_KEY, delegates_occasion, normalize_occasion_updates, occasion_question,
+)
 
 
-GOAL_KEYS = frozenset({"notes", "occasion", "projection", "longevity",
+GOAL_KEYS = frozenset({"notes", "occasion", PENDING_KEY, "projection", "longevity", "scent_tags", "scent_match", "scent_open",
                        "similar_to", "similar_to_notes"})
 _REQUEST = r"(?:عايز(?:ه)?|عاوز(?:ه)?|محتاج(?:ه)?|رشح(?:لي)?|ترشح(?:لي)?|عندك(?:م|و)?|recommend|suggest|want)"
+_AVAILABILITY = re.compile(r"^(?:(?:و|طيب|طب)\s+)*(?:عندك(?:م|و)?|do\s+you\s+(?:have|stock))(?!\w)")
 _FACT = re.compile(r"^(?:(?:طيب|طب)\s+)?(?:هل|هو|هي|بكام|سعر|how|is|does)\b|\b(?:ينفع|بينفع|مناسب|سعره|ثباته كام|فوحانه ايه)\b")
 _PURCHASE = re.compile(r"(?<!\w)(?:ضيف|اطلب|هاخد|هشتري|اشتري|شيل|الغ[يى]|كنسل|order|buy|add|cancel)(?!\w)")
 _LINK = re.compile(r"(?<!\w)(?:نفس\s+(?:الطلب|الشروط|المواصفات|الريحه)|شبه(?:ه|ها|و)|زي(?:ه|ها)|يكون\s+كمان|same\s+(?:one|request)|also\s+suitable)(?!\w)")
 _NEGATIVE = re.compile(r"(?:مش|لا|بلاش|بدون|غير|not|no)(?:\s+(?:عايز(?:ه)?|عاوز(?:ه)?|حاجه|يكون|ريحه|want|something)){0,3}\s*$")
-_OCCASIONS = (
-    ("daytime", r"(?:لل)?نهار(?:ي)?|بالنهار|الصبح|للصبح|صباحي|للصباح|يومي|daily|daytime|morning"),
-    ("evening", r"للسهره|للسهرات|سهره|بالليل|للليل|ليلي|مسائي|evening|night"),
-    ("casual", r"(?:لل|ال)?خروجات(?:\s+الخفيفه)?|كاجوال|casual"),
-    ("office", r"للشغل|الشغل|للمكتب|office|work"),
-    ("gym", r"للجيم|الجيم|gym|sport"),
-    ("mosque", r"للمسجد|المسجد|للصلاه|mosque"),
-)
-
-
 def _text(message):
     text = normalize_arabic(message or "")
     # Arabic conjunctions attach to words, including the beginning of a request.
@@ -40,11 +35,9 @@ def explicit_criteria(message):
     """Canonical updates for the concrete use/scent/performance words we know."""
     text = _text(message)
     updates = {}
-    # Casual + mosque is casual use with subdued projection, not 'multiple'.
-    for occasion, pattern in _OCCASIONS:
-        if _positive(text, pattern):
-            updates["occasion"] = occasion
-            break
+    occasion = normalize_occasion(text, positive_only=True)
+    if occasion:
+        updates["occasion"] = occasion
     notes = []
     for note, pattern in (("fresh", r"فريش|منعش(?:ه)?|fresh"),
                           ("clean", r"نظافه|نضيف(?:ه)?|نظيف(?:ه)?|clean")):
@@ -54,14 +47,14 @@ def explicit_criteria(message):
         updates["notes"] = notes
     if _positive(text, r"فواح(?:ه)?|فوحان\s+قوي|strong\s+projection"):
         updates["projection"] = "strong"
-    elif _positive(text, r"خفيف(?:ه)?|مريح(?:ه)?|هادي|هادئ|هادئه|subdued|quiet|light"):
+    elif _positive(text, r"هادي|هادئ|هادئه|subdued|quiet"):
         updates["projection"] = "moderate"
     if _positive(text, r"ثابت(?:ه)?|ثبات\s+(?:عالي|طويل)|long[- ]lasting"):
         updates["longevity"] = "long-lasting"
     return updates
 
 
-def request_mode(message, history=None, store=None):
+def request_mode(message, history=None, store=None, *, occasion_evidence=None):
     """Return new_goal/refinement for a verified search, or '' to abstain."""
     from .reference import similarity_requested
 
@@ -72,6 +65,8 @@ def request_mode(message, history=None, store=None):
         return ""
     if re.match(r"^(?:(?:طيب|طب)\s+)?(?:هل|هو|هي|is|does)\b", text):
         return ""
+    if delegates_occasion(message, history) and not explicit_criteria(message).get("occasion"):
+        return "refinement"
     similar = similarity_requested(message)
     if similar:
         # A statement that two named perfumes resemble one another, or owning
@@ -86,8 +81,13 @@ def request_mode(message, history=None, store=None):
     from ..product_info import occasion_reference_requested
     if occasion_reference_requested(message):
         return ""
+    if _AVAILABILITY.search(text) and not re.search(r"(?<!\w)(?:لل\w+|بالنهار|بالليل|for)(?!\w)", text):
+        # Occasion words also occur inside names, including absent ones such as
+        # نسيم الليل. An availability question needs an actual purpose phrase
+        # before it can override the classifier and start a recommendation.
+        return ""
     criteria = explicit_criteria(message)
-    if not criteria.get("occasion"):
+    if not criteria.get("occasion") and not occasion_evidence:
         return ""
     # Sizes/quantities without an explicit recommendation verb may be purchases.
     if re.search(r"[0-9٠-٩]", text) and not re.search(r"رشح|ترشح|recommend|suggest", text):
@@ -102,6 +102,8 @@ def request_mode(message, history=None, store=None):
             from ..product_resolver import confident_catalogue_match
             if confident_catalogue_match(message, store):
                 return ""
+    if len(text.split()) <= 12 and not _positive(text, _REQUEST) and occasion_question(history):
+        return "refinement"
     if not (_positive(text, _REQUEST) or re.match(r"^(?:لل|بال)", text)
             or criteria.get("notes") or _LINK.search(text)):
         return ""
@@ -121,8 +123,8 @@ def request_mode(message, history=None, store=None):
 
 def prepare_updates(intent, message, history=None, store=None):
     """Return fresh fields plus the old goal fields which must not gap-fill."""
-    fresh = dict(intent or {})
-    mode = request_mode(message, history, store)
+    fresh = normalize_occasion_updates(intent, message, history)
+    mode = request_mode(message, history, store, occasion_evidence=fresh.get("occasion_text"))
     # Never trust a model-supplied mode without evidence in the message.
     fresh.pop("recommendation_mode", None)
     if not mode:
@@ -138,6 +140,11 @@ def prepare_updates(intent, message, history=None, store=None):
             fresh.pop("brand", None)
             fresh.pop("brand_strict", None)
     explicit = explicit_criteria(message)
+    if fresh.get("occasion") and fresh.get("occasion_text") and not occasion_alias(fresh["occasion_text"]):
+        # A richer situation can contain an incidental alias: an evening at
+        # home is casual, despite the word "evening". Keep the AI's grounded
+        # interpretation; exact named categories and fallback aliases stay deterministic.
+        explicit.pop("occasion", None)
     text = _text(message)
     if mode == "new_goal":
         # Extraction can echo history. Absent positive axes must be removed from
@@ -145,8 +152,11 @@ def prepare_updates(intent, message, history=None, store=None):
         from .reference import similarity_requested
         from .notes import terms_in
         evidence = {
+            "scent_tags": bool(fresh.get("scent_tags")),
+            "scent_match": bool(fresh.get("scent_tags")),
+            "scent_open": fresh.get("scent_open") is True,
             "notes": bool(explicit.get("notes") or terms_in(message)),
-            "occasion": bool(explicit.get("occasion")),
+            "occasion": bool(explicit.get("occasion") or fresh.get("occasion_text")),
             "projection": bool(explicit.get("projection") or re.search(r"فوحان|projection", text)),
             "longevity": bool(explicit.get("longevity") or re.search(r"ثبات|يدوم|longevity|lasts", text)),
             "similar_to": similarity_requested(message),
@@ -163,4 +173,6 @@ def prepare_updates(intent, message, history=None, store=None):
             notes = []
         fresh["notes"] = list(dict.fromkeys(notes + explicit.pop("notes")))
     fresh.update(explicit)
+    if fresh.get("occasion"):
+        fresh.pop(PENDING_KEY, None)
     return fresh, GOAL_KEYS if mode == "new_goal" else frozenset()

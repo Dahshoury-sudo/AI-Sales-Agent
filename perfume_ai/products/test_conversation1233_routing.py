@@ -1,4 +1,5 @@
 """Exercise the affected turns through routing, search, and response instructions."""
+import json
 from unittest.mock import patch
 
 from django.test import SimpleTestCase, TestCase
@@ -25,14 +26,14 @@ class Conversation1233RoutingTests(TestCase):
             "Terre d'Hermes", "Daily", top_notes="Orange, Grapefruit",
             middle_notes="Pepper, Pelargonium", base_notes="Vetiver, Cedar, Patchouli, Benzoin",
         )
-        self.bonded = self.product("Bonded", "Office", projection="Moderate", base_notes="Musk, Cedar")
+        self.bonded = self.product("Bonded", "Office, Daily", projection="Moderate", base_notes="Musk, Cedar")
         self.showmix = self.product("Showmix", "Casual", projection="Moderate", base_notes="Musk")
-        self.elite = self.product("Elite", "Evening", base_notes="Amber, Sandalwood")
-        self.dark = self.product("Dark Aura", "Evening", base_notes="Vanilla, Leather")
+        self.elite = self.product("Elite", "Evening", scent_tags=["heavy"], base_notes="Amber, Sandalwood")
+        self.dark = self.product("Dark Aura", "Evening", scent_tags=["sweet", "heavy"], base_notes="Vanilla, Leather")
         self.conversation = Conversation.objects.create(store=self.store, preferences={"gender": "male"})
 
     def product(self, name, occasion, **fields):
-        attrs = {"gender": "male", "longevity": "8 hours", "projection": "Strong", **fields}
+        attrs = {"gender": "male", "longevity": "8 hours", "projection": "Strong", "scent_tags": ["fresh", "woody"], **fields}
         product = Product.objects.create(store=self.store, brand=self.brand, name=name, occasion=occasion, **attrs)
         ProductVariant.objects.create(product=product, volume=50, price=750)
         return product
@@ -43,41 +44,42 @@ class Conversation1233RoutingTests(TestCase):
 
     def test_exact_similarity_request_keeps_reference_through_router(self):
         self.offer(self.elite, self.dark)
-        with patch("products.services.router.classify", return_value="recommendation"), patch(
-            "products.services.router.extract_intent",
-            return_value={"similar_to": self.terre.name, "similar_to_notes": ["vanilla"]},
-        ), patch("products.services.ai.recommendation.chat", return_value="Bonded فيه مسك وخشب الأرز.") as chat, patch(
-            "products.services.router.confident_catalogue_match", return_value=self.terre,
-        ) as matcher, patch("products.services.router.search_products", wraps=search_products) as search:
-            route(SIMILARITY_MESSAGE, build_llm_history(self.conversation), self.store, self.conversation)
+        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded فيه مسك وخشب الأرز."})
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent", return_value={"similar_to": self.terre.name}), \
+             patch("products.services.ai.recommendation.chat", return_value=answer) as chat, \
+             patch("products.services.router.confident_catalogue_match", return_value=self.terre) as matcher:
+            reply, _ = route(SIMILARITY_MESSAGE, build_llm_history(self.conversation), self.store, self.conversation)
         self.conversation.refresh_from_db()
         self.assertEqual(self.conversation.preferences["similar_to"], self.terre.name)
-        self.assertEqual(search.call_args.args[0]["similar_to"], self.terre.name)
-        prompt = chat.call_args.args[0][-1]["content"]
-        self.assertIn("Orange, Grapefruit", prompt)
-        self.assertIn("Vetiver, Cedar, Patchouli, Benzoin", prompt)
-        self.assertIn("ابدأ مباشرة بترشيح أفضل عطر أو عطرين", prompt)
-        self.assertNotIn("مفيش حاجة قريبة", prompt)
-        self.assertNotIn("الكلام دلوقتي على: Elite", prompt)
+        payload = json.loads(chat.call_args_list[0].args[0][-1]["content"])
+        self.assertEqual(payload["reference"], {"name": self.terre.name, "scent_tags": ["fresh", "woody"]})
+        candidates = {p["id"] for p in payload["eligible_products"]}
+        self.assertIn(self.bonded.pk, candidates)
+        self.assertNotIn(self.terre.pk, candidates)
+        self.assertNotIn(self.elite.pk, candidates)
+        self.assertIn(self.bonded.name, reply)
         matcher.assert_not_called()
 
-    def test_exact_morning_request_reassesses_evening_offers(self):
+    def test_morning_request_asks_style_then_matches_all_supplied_requirements(self):
         self.offer(self.bonded, self.showmix)
         self.offer(self.elite, self.dark)
-        with patch("products.services.router.classify", return_value="recommendation"), patch(
-            "products.services.router.extract_intent",
-            return_value={"occasion": "daytime", "projection": "strong", "longevity": "long-lasting"},
-        ), patch("products.services.ai.recommendation.chat", return_value="Bonded مناسب للنهار وفوحانه متوسط.") as chat, patch(
-            "products.services.router.search_products", wraps=search_products,
-        ) as search:
-            route(MORNING_MESSAGE, build_llm_history(self.conversation), self.store, self.conversation)
-        intent = search.call_args.args[0]
-        self.assertEqual(intent["occasion"], "daytime")
-        prompt = chat.call_args_list[0].args[0][-1]["content"]
-        self.assertLess(prompt.index("Name (الاسم الصحيح): Bonded"), prompt.index("Name (الاسم الصحيح): Elite"))
-        self.assertIn("قدّم المناسب للنهار حتى لو فوحانه أهدى", prompt)
-        self.assertIn("فوحانه أقل", prompt)
-        self.assertNotIn("الكلام دلوقتي على: Elite", prompt)
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent", return_value={"occasion": "daytime", "projection": "strong", "longevity": "long-lasting"}), \
+             patch("products.services.ai.recommendation.chat") as chat:
+            reply, context = route(MORNING_MESSAGE, build_llm_history(self.conversation), self.store, self.conversation)
+        chat.assert_not_called()
+        self.assertEqual(context, "SCENT_PREFERENCE_REQUIRED")
+        save_message(self.conversation, "assistant", reply, internal_context=context)
+        answer = json.dumps({"product_ids": [self.terre.pk], "reply": "Terre d'Hermes: طابعه فريش."})
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent", return_value={"scent_tags": ["fresh"]}), \
+             patch("products.services.ai.recommendation.chat", return_value=answer) as chat:
+            route("فريش", build_llm_history(self.conversation), self.store, self.conversation)
+        payload = json.loads(chat.call_args_list[0].args[0][-1]["content"])
+        self.assertEqual([p["id"] for p in payload["eligible_products"]], [self.terre.pk])
+        self.assertEqual(payload["preferences"]["occasion"], "Daily & Casual")
+        self.assertEqual(payload["preferences"]["projection"], "strong")
 
     def test_daily_pointer_overrides_recommendation_and_order_even_with_cart(self):
         self.offer(self.bonded, self.showmix)
@@ -112,7 +114,7 @@ class Conversation1233RoutingTests(TestCase):
             reply, context = route(DAILY_MESSAGE, build_llm_history(self.conversation), self.store, self.conversation)
         self.assertIn(self.bonded.name, reply)
         self.assertNotIn(self.elite.name, context)
-        self.assertIn("للنهار: Bonded", chat.call_args.args[0][-1]["content"])
+        self.assertIn("للاستخدام اليومي والكاجوال: Bonded", chat.call_args.args[0][-1]["content"])
         order.assert_not_called()
 
     def test_product_size_and_quantity_orders_stay_orders(self):
@@ -126,8 +128,8 @@ class Conversation1233RoutingTests(TestCase):
 
     def test_new_request_and_named_question_keep_their_routes(self):
         for message, classification, target in (
-            ("عايز عطر يومي", "recommendation", "recommend"),
-            ("مش عايز العطر اليومي رشحلي حاجة للسهرة", "recommendation", "recommend"),
+            ("عايز عطر فريش يومي", "recommendation", "recommend"),
+            ("مش عايز العطر اليومي رشحلي حاجة سويت للسهرة", "recommendation", "recommend"),
             ("هل Elite ينفع يومي؟", "product_info", "get_product_info"),
         ):
             with self.subTest(message=message), patch("products.services.router.classify", return_value=classification), patch(
@@ -136,46 +138,32 @@ class Conversation1233RoutingTests(TestCase):
                 route(message, [], self.store, self.conversation)
             handler.assert_called_once()
 
-    def test_both_recommendation_branches_offer_direct_grounded_alternatives(self):
+    def test_reference_selection_uses_a_single_eligible_path(self):
         intent = {"gender": "male", "occasion": "daily", "similar_to": self.terre.name}
-        results = search_products(intent, self.store)
-        self.assertFalse(results["similarity"]["has_close_match"])
-        for alternative_branch in (False, True):
-            with self.subTest(alternative_branch=alternative_branch), patch(
-                "products.services.ai.recommendation.chat", return_value="Bonded فيه مسك وخشب الأرز.",
-            ) as chat:
-                recommend(SIMILARITY_MESSAGE, Product.objects.none() if alternative_branch else results["products"],
-                          alternatives=results["products"] if alternative_branch else None,
-                          store=self.store, intent=intent, search=results)
-            prompt = chat.call_args.args[0][-1]["content"]
-            self.assertIn("ابدأ مباشرة بترشيح أفضل عطر أو عطرين", prompt)
-            self.assertIn("ممنوع تقول عن أي عطر إنه شبهه أو نفس ريحته", prompt)
-            self.assertIn("قدّم المناسب للنهار حتى لو فوحانه أهدى", prompt)
-            self.assertNotIn("مفيش حاجة قريبة", prompt)
-            self.assertNotIn("بل لازم", prompt)
+        result = search_products(intent, self.store)
+        self.assertIsNone(result["alternatives"])
+        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded فيه مسك وخشب الأرز."})
+        with patch("products.services.ai.recommendation.chat", return_value=answer) as chat:
+            reply, _ = recommend(SIMILARITY_MESSAGE, result["products"], store=self.store, intent=intent, search=result)
+        self.assertEqual(chat.call_count, 1)
+        self.assertEqual(reply, "Bonded فيه مسك وخشب الأرز.")
 
-    def test_repeated_similarity_overclaim_falls_back_to_catalogue_facts_in_both_branches(self):
-        intent = {"gender": "male", "occasion": "daily", "similar_to": self.terre.name}
-        results = search_products(intent, self.store)
-        for alternative_branch in (False, True):
-            with self.subTest(alternative_branch=alternative_branch), patch(
-                "products.services.ai.recommendation.chat", return_value="Bonded أقرب لطابع Terre d'Hermes.",
-            ) as chat:
-                reply, _ = recommend(
-                    SIMILARITY_MESSAGE, Product.objects.none() if alternative_branch else results["products"],
-                    alternatives=results["products"] if alternative_branch else None,
-                    store=self.store, intent=intent, search=results,
-                )
-            self.assertEqual(chat.call_count, 2)
-            self.assertIn("Bonded", reply)
-            self.assertNotIn("أقرب لطابع", reply)
-            self.assertNotIn("مفيش", reply)
+    def test_repeated_similarity_overclaim_falls_back_to_catalogue_facts(self):
+        intent = {"occasion": "daily", "similar_to": self.terre.name}
+        result = search_products(intent, self.store)
+        invalid = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded أقرب لطابع Terre d'Hermes."})
+        with patch("products.services.ai.recommendation.chat", return_value=invalid) as chat:
+            reply, _ = recommend(SIMILARITY_MESSAGE, result["products"], store=self.store, intent=intent, search=result)
+        self.assertEqual(chat.call_count, 2)
+        self.assertIn(self.bonded.name, reply)
+        self.assertNotIn("أقرب لطابع", reply)
+        self.assertNotIn("مفيش", reply)
 
     def test_no_match_declaration_is_rewritten_as_a_direct_alternative(self):
         intent = {"similar_to": self.terre.name}
         results = search_products(intent, self.store)
         corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه متوسط."
-        with patch("products.services.ai.recommendation.chat", side_effect=["مفيش عطر قريب منه.", corrected]) as chat:
+        with patch("products.services.ai.recommendation.chat", side_effect=[json.dumps({"product_ids": [], "reply": "مفيش عطر قريب منه."}), json.dumps({"product_ids": [self.bonded.pk], "reply": corrected})]) as chat:
             reply, _ = recommend(SIMILARITY_MESSAGE, results["products"], store=self.store, intent=intent, search=results)
         self.assertEqual(chat.call_count, 2)
         self.assertEqual(reply, corrected)

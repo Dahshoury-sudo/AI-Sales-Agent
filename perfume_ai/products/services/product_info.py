@@ -202,19 +202,17 @@ def occasion_reference_requested(message):
     grammar narrow so a new request ("عايز عطر يومي") or a named question
     ("Elite ينفع للنهار؟") still follows its normal path.
     """
-    text = " ".join(re.sub(r"[^\w\s]", " ", normalize_arabic(message or "")).split())
+    from products.occasions import normalize_text, occasion_alias
+    text = normalize_text(message)
     arabic_prefix = r"(?:(?:و)?(?:طيب|طب|تمام|عايز|عاوز|محتاج|ممكن|اعطيني|اديني|هات|هاتلي|قولي|بكام|سعر|وريني)\s+)*"
     arabic_suffix = r"(?:\s+(?:بكام|كام|سعره|ايه|ده|لو سمحت|من فضلك))*"
-    for occasion, arabic, english in (
-        ("daily", r"(?:العطر|البرفان|البرفيوم)\s+(?:اليومي|النهاري|الصباحي)|(?:اللي|الواحد)\s+(?:للنهار|للصباح|للاستخدام اليومي)",
-         r"the (?:daily|daytime|morning) (?:perfume|fragrance|one)"),
-        ("evening", r"(?:العطر|البرفان|البرفيوم)\s+(?:المسائي|الليلي)|(?:اللي|الواحد)\s+(?:للسهره|للسهرات|بالليل)",
-         r"the (?:evening|nighttime) (?:perfume|fragrance|one)"),
+    for pattern in (
+        arabic_prefix + r"(?:العطر|البرفان|البرفيوم|اللي|الواحد)\s+(.+?)" + arabic_suffix,
+        r"(?:(?:and |please )?(?:give me |show me |how much is |what is )?)"
+        r"the (.+?) (?:perfume|fragrance|one)(?: please)?",
     ):
-        if re.fullmatch(arabic_prefix + "(?:" + arabic + ")" + arabic_suffix, text):
-            return occasion
-        if re.fullmatch(r"(?:(?:and |please )?(?:give me |show me |how much is |what is )?)"
-                        + english + r"(?: please)?", text):
+        match = re.fullmatch(pattern, text)
+        if match and (occasion := occasion_alias(match[1])):
             return occasion
     return ""
 
@@ -229,13 +227,14 @@ def _occasion_referents(occasion, store, conversation, history):
         return []
     from products.models import Product
     from .product_formatting import is_variant_available
-    from .sales import naming, ranking
+    from .sales import naming
+    from products.occasions import occasion_matches
 
     catalogue = list(Product.objects.filter(store=store, is_active=True)
                      .select_related("brand").prefetch_related("variants"))
     suitable = {
         product.name: product for product in catalogue
-        if ranking._occasion_verdict(product.occasion, occasion)[0] == ranking.MATCH
+        if occasion_matches(product.occasion, occasion)
         and any(is_variant_available(variant) for variant in product.variants.all())
     }
     if not suitable:
@@ -801,7 +800,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     occasion_reference = occasion_reference_requested(message) if not products else ""
     if occasion_reference:
         products = _occasion_referents(occasion_reference, store, conversation, history)
-        occasion_label = "للنهار" if occasion_reference == "daily" else "للسهرة"
+        from products.occasions import describe_occasion
+        occasion_label = describe_occasion(occasion_reference)
         if not products:
             return (f"تقصد أنهي عطر {occasion_label}؟ ممكن تكتب اسمه؟",
                     "OCCASION_REFERENCE_UNRESOLVED")

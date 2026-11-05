@@ -240,6 +240,8 @@ class Conversation1069Tests(BugFixture):
         from products.services.sales.objection import detect
         from products.services.router import _rephrased
         from products.services.product_formatting import quote_evidence
+        self.b.scent_tags = ["sweet"]
+        self.b.save(update_fields=["scent_tags"])
         draft = "Afnan 9PM 90 ملي بـ990 جنيه"
         with patch("products.services.ai.recommendation.chat", return_value=draft):
             reply, context = recommend("رجالي سويت في حدود 1200", Product.objects.filter(pk=self.b.pk), [], store=self.store,
@@ -394,12 +396,13 @@ class Conversation1163RecommendationTests(BugFixture):
         for product in (self.a, self.b):
             product.season = "Fall/Winter"
             product.projection = "Strong"
+            product.scent_tags = ["woody"]
             product.save()
         self.av.price = 450
         self.av.save()
         self.bv.price = 592
         self.bv.save()
-        self.intent = {"season": "winter", "projection": "strong", "max_price": 600}
+        self.intent = {"season": "winter", "projection": "strong", "max_price": 600, "scent_tags": ["woody"]}
 
     def test_price_recovery_keeps_the_recommendation_reason_and_budget_warning(self):
         from products.services.router import route
@@ -413,7 +416,7 @@ class Conversation1163RecommendationTests(BugFixture):
             reply, context = route("عاوز حاجة بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
         self.conv.refresh_from_db()
         reply = sanitize_reply(reply, self.conv)
-        for expected in ("Vanilo ممكن يناسبك", "Leatherio ممكن يناسبك", "للشتا", "فواح", "450", "592"):
+        for expected in ("Vanilo", "Leatherio", "خشبي", "فوحانه قوي", "450", "592"):
             self.assertIn(expected, reply)
         self.assertIn("700", reply)
         self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
@@ -427,14 +430,15 @@ class Conversation1163RecommendationTests(BugFixture):
 
         self.b.projection = "Moderate"
         explanation = recommendation_fit([self.b], self.intent)
-        self.assertIn("للشتا", explanation)
-        self.assertIn("مش بيحقق كل شروطك", explanation)
+        self.assertIn("خشبي", explanation)
+        self.assertIn("فوحانه متوسط", explanation)
         self.assertNotIn("فواح", explanation)
 
     def test_missing_facts_do_not_become_claims_of_suitability(self):
         from products.services.ai.recommendation import recommendation_fit
 
         self.b.season = self.b.occasion = self.b.projection = self.b.longevity = ""
+        self.b.scent_tags = []
         self.assertEqual(recommendation_fit([self.b], self.intent), "")
 
     def test_valid_personal_explanation_is_preserved_without_a_retry(self):
@@ -442,7 +446,7 @@ class Conversation1163RecommendationTests(BugFixture):
         from products.services.router import _rephrased
 
         draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه قوي."
-        with patch("products.services.ai.recommendation.chat", return_value=draft):
+        with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.a.pk], "reply": draft})):
             reply, context = recommend("عاوز حاجة للشتا", Product.objects.filter(pk=self.a.pk),
                                        store=self.store, intent=self.intent)
         retry = Mock()
@@ -684,6 +688,12 @@ class CartBugTests(BugFixture):
 
 
 class RecommendationBugTests(BugFixture):
+    def setUp(self):
+        super().setUp()
+        for product in (self.a, self.b):
+            product.scent_tags = ["woody"]
+            product.save(update_fields=["scent_tags"])
+
     def test_total_followup_cannot_invent_a_different_bottle_type(self):
         from products.services.ai.intent import extract_intent
         merge_preferences(self.conv, {"requested_volume": 90, "bottle_type": "normal", "budget_scope": "total", "max_price": 1000})
@@ -696,10 +706,16 @@ class RecommendationBugTests(BugFixture):
     def test_L04_total_budget_cannot_be_used_per_bottle(self):
         from products.services.search_service import search_products
         from products.services.ai.recommendation import recommend
-        intent = {"max_price": 1000, "budget_scope": "total", "purchase_quantity": 2, "requested_volume": 90}
+        from products.services.product_formatting import quote_evidence
+        intent = {"max_price": 1000, "budget_scope": "total", "purchase_quantity": 2,
+                  "requested_volume": 90, "scent_tags": ["woody"]}
         found = search_products(intent, self.store)
-        reply, _ = recommend("", found["products"], intent=intent, store=self.store)
-        self.assertIn("إجمالية 1000", reply)
+        with patch("products.services.ai.recommendation.chat") as chat:
+            reply, context = recommend("", found["products"], intent=intent, store=self.store, search=found)
+        chat.assert_not_called()
+        self.assertIn("ميزاني", reply)
+        self.assertIn("max_price=offered", context)
+        self.assertFalse(quote_evidence(context))
         self.assertNotIn("944", reply)
         self.assertNotIn("700", reply)
 
@@ -718,14 +734,18 @@ class RecommendationBugTests(BugFixture):
         intent = {"max_price": 900, "budget_strict": True, "requested_volume": 90, "bottle_type": "normal"}
         found = search_products(intent, self.store)
         self.assertEqual(list(found["products"].values_list("name", flat=True)), [self.b.name])
-        reply, _ = recommend("", found["products"], intent=intent)
+        with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.b.pk], "reply": "Leatherio: طابعه خشبي."})):
+            reply, _ = recommend("", found["products"], intent=intent, store=self.store, search=found)
         self.assertIn("700", reply)
         self.assertNotIn("50 مل", reply)
         self.assertNotIn("944", reply)
 
     def test_approximate_budget_keeps_disclosed_flexibility(self):
         from products.services.ai.recommendation import recommend
-        reply, _ = recommend("", [self.a], intent={"requested_volume": 90, "max_price": 900, "budget_strict": False})
+        answer = json.dumps({"product_ids": [self.a.pk], "reply": "Vanilo: طابعه خشبي."})
+        with patch("products.services.ai.recommendation.chat", return_value=answer):
+            reply, _ = recommend("", [self.a], store=self.store,
+                                 intent={"requested_volume": 90, "max_price": 900, "budget_strict": False})
         self.assertIn("944", reply)
         self.assertIn("أعلى حاجة بسيطة", reply)
 
@@ -1043,24 +1063,26 @@ class AgentEvaluationFixTests(BugFixture):
             self.assertEqual(intent["notes"], [])
             self.assertNotIn("requested_volume", intent)
             intent = extract_intent("عايز حاجة حلوة", [{"role":"user", "content":"بحب المسكر"}])
-            self.assertEqual(intent["notes"], ["sweet"])
+            self.assertEqual(intent["scent_tags"], ["sweet"])
 
     def test_unknown_similarity_asks_without_recommendation(self):
         from products.services.router import route
         with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"similar_to":"Lattafa Khamrah"}), patch("products.services.router.recommend") as recommend:
             reply, _ = route("عايز عطر زي Lattafa Khamrah", [], self.store, self.conv)
         recommend.assert_not_called()
-        self.assertIn("Khamrah", reply)
+        self.assertIn("طابع الريحة", reply)
         self.assertIn("؟", reply)
         self.assertNotIn("Vanilo", reply)
 
-    def test_inactive_reference_uses_catalogue_notes(self):
-        from products.services.search_service import _resolve_reference
+    def test_inactive_reference_uses_its_assigned_labels(self):
+        from products.services.search_service import search_products
         self.a.is_active = False
-        self.a.top_notes = "Vanilla"
+        self.a.scent_tags = ["sweet"]
         self.a.save()
-        reference = _resolve_reference({"similar_to":"Vanilo"}, self.store)
-        self.assertEqual(reference.product.pk, self.a.pk)
+        result = search_products({"similar_to": "Vanilo"}, self.store)
+        self.assertEqual(result["reference_product"].pk, self.a.pk)
+        self.assertEqual(result["effective_intent"]["scent_tags"], ["sweet"])
+        self.assertNotIn(self.a, result["products"])
 
     def test_thinking_has_no_product_lookup_or_pitch(self):
         from products.services.objection_service import handle_objection
@@ -1073,15 +1095,21 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertNotIn("؟", reply)
         self.assertNotIn("جنيه", reply)
 
-    def test_best_followup_is_not_the_same_constrained_list(self):
+    def test_ai_can_choose_one_when_the_customer_asks_for_the_best(self):
         from products.services.ai.recommendation import recommend
-        intent = {"requested_volume":90, "max_price":1000}
-        first, _ = recommend("رشحلي", [self.a, self.b], intent=intent)
-        best, _ = recommend("طب ايه احسن حاجة", [self.a, self.b], intent=intent)
+        for product in (self.a, self.b):
+            product.scent_tags = ["woody"]
+            product.save(update_fields=["scent_tags"])
+        intent = {"requested_volume": 90, "max_price": 1000, "scent_tags": ["woody"]}
+        answers = [json.dumps({"product_ids": [self.a.pk, self.b.pk], "reply": "Vanilo وLeatherio طابعهم خشبي."}),
+                   json.dumps({"product_ids": [self.a.pk], "reply": "أرشحلك Vanilo بطابعه الخشبي."})]
+        with patch("products.services.ai.recommendation.chat", side_effect=answers) as chat:
+            first, _ = recommend("رشحلي", [self.a, self.b], intent=intent, store=self.store)
+            best, _ = recommend("طب ايه احسن حاجة", [self.a, self.b], intent={**intent, "recommendation_count": 1}, store=self.store)
+        self.assertEqual(chat.call_count, 2)
         self.assertNotEqual(first, best)
         self.assertIn("أرشحلك Vanilo", best)
         self.assertNotIn("Leatherio", best)
-        self.assertNotIn("Strong", best)
 
     def test_factual_guard_retries_once_then_uses_recorded_facts(self):
         from products.services.router import _rephrased
@@ -1105,16 +1133,18 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertTrue(product_claim_issues("Oud Wood فيه عود وباتشولي", facts))
         self.assertTrue(product_claim_issues("Oud Wood ريحته نادرة وفيه وردة", facts))
 
-    def test_unknown_reference_answer_supplies_a_profile(self):
+    def test_unknown_reference_answer_supplies_labels_without_inventing_reference_notes(self):
         from products.services.router import route
-        from products.services.search_service import search_products
         merge_preferences(self.conv, {"similar_to": "Mystery Perfume"}, "عايز حاجة شبه Mystery Perfume")
-        history = [{"role": "assistant", "content": "إيه أكتر حاجة بتحبها في Mystery Perfume، الحلاوة ولا التوابل ولا طابع تاني؟"}]
-        self.a.base_notes = "Vanilla, Tonka Bean"
-        self.a.save()
-        with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"notes":["sweet"]}), patch("products.services.router.recommend", return_value=("Vanilo", "Vanilo")) as recommend:
-            route("بحب الحلاوة", history, self.store, self.conv)
-        self.assertEqual(self.conv.preferences["similar_to_notes"], ["sweet"])
+        question = "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟"
+        save_message(self.conv, "assistant", question, internal_context="SIMILARITY_NEEDS_PROFILE")
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent", return_value={"scent_tags": ["sweet"]}), \
+             patch("products.services.router.recommend", return_value=("Vanilo", "Vanilo")) as recommend:
+            route("بحب الحلاوة", [{"role": "assistant", "content": question}], self.store, self.conv)
+        self.assertEqual(self.conv.preferences["scent_tags"], ["sweet"])
+        self.assertNotIn("similar_to_notes", self.conv.preferences)
+        self.assertNotIn("similar_to", self.conv.preferences)
         recommend.assert_called_once()
 
     def test_evaluation_accepts_subtotals_but_not_wrong_unit_prices(self):
@@ -1145,10 +1175,17 @@ class AgentEvaluationFixTests(BugFixture):
 
     def test_impossible_longevity_does_not_become_a_price_upsell(self):
         from products.services.ai.recommendation import recommend
+        from products.services.search_service import search_products
+        self.a.scent_tags = ["woody"]
+        self.a.save(update_fields=["scent_tags"])
+        intent = {"scent_tags": ["woody"], "longevity": "48 hours", "max_price": 1000}
+        found = search_products(intent, self.store)
         with patch("products.services.ai.recommendation.chat") as chat:
-            reply, _ = recommend("عايز نيش ثباته يومين", [self.a], intent={"max_price":300})
+            reply, context = recommend("عايز ثبات يومين", found["products"], store=self.store, intent=intent, search=found)
         chat.assert_not_called()
-        self.assertIn("حتى لو زودت الميزانية", reply)
+        self.assertIn("بثبات أقل", reply)
+        self.assertIn("longevity=offered", context)
+        self.assertNotIn("ميزاني", reply)
         self.assertNotIn("607", reply)
 
     def test_supported_rounding_of_price_per_ml(self):

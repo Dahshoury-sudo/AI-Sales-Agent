@@ -108,10 +108,7 @@ from products.services.router import (
     _was_already_handed_off,
     route,
 )
-from products.services.search_service import (
-    MAX_PRODUCTS_IN_CONTEXT,
-    search_products,
-)
+from products.services.search_service import search_products
 from products.tasks import (
     COMMENT_REPLY_DELAY_RANGE,
     process_comment_async,
@@ -204,101 +201,34 @@ _placement_confirm_keeps_the_pick = mock.patch(
 )
 
 
-class ProductContextCapTests(TestCase):
-    """The prompt-size cap on how many products reach the AI.
-
-    Without it, the "no exact match" branch of search_products handed the entire
-    filtered catalogue to recommend(), which serialises ~15 lines of prompt text
-    per product into a single request.
-    """
-
-    PRODUCT_COUNT = MAX_PRODUCTS_IN_CONTEXT * 2
-
+class CompleteCandidatePoolTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.store = Store.objects.create(name="Perfamix Test")
-        cls.brand = Brand.objects.create(store=cls.store, name="Dior")
+        cls.store = Store.objects.create(name="Complete catalogue")
+        cls.brand = Brand.objects.create(store=cls.store, name="House")
+        for i in range(75):
+            product = Product.objects.create(store=cls.store, brand=cls.brand, name=f"Perfume {i}",
+                                             gender="male", scent_tags=["fresh"], occasion="Office")
+            ProductVariant.objects.create(product=product, volume=50, price=1000 - i)
 
-        for i in range(cls.PRODUCT_COUNT):
-            product = Product.objects.create(
-                store=cls.store,
-                brand=cls.brand,
-                name=f"Test Perfume {i}",
-                gender="male",
-                perfume_type="western",
-                season="All Seasons",
-                occasion="Casual",
-                longevity="8 hours",
-                projection="Moderate",
-                top_notes="Citrus",
-                middle_notes="Jasmine",
-                base_notes="Cedar",
-                description="A test perfume.",
-            )
-            ProductVariant.objects.create(
-                # Varied so the cheapest-first ordering has something to sort on. This
-                # used to be a varied oil_stock_grams, back when the shortlist led with
-                # the most bulk oil.
-                product=product, volume=50, price=500 + i, bottle_type="normal"
-            )
-
-    def test_exact_match_path_is_capped(self):
-        """A broad intent that matches everything still yields a bounded list."""
-        results = search_products({"gender": "male"}, store=self.store)
-
+    def test_every_eligible_product_survives_the_search(self):
+        results = search_products({"scent_tags": ["fresh"]}, self.store)
+        self.assertEqual(results["products"].count(), 75)
         self.assertIsNone(results["alternatives"])
-        self.assertEqual(len(results["products"]), MAX_PRODUCTS_IN_CONTEXT)
 
-    def test_alternatives_path_is_capped(self):
-        """The regression: no exact match used to return the whole catalogue."""
-        # A note no product has forces exact to come back empty while base stays full.
-        results = search_products(
-            {"gender": "male", "notes": ["unobtainium"]}, store=self.store
-        )
-
-        self.assertFalse(results["products"].exists())
-        self.assertEqual(len(results["alternatives"]), MAX_PRODUCTS_IN_CONTEXT)
-
-    def test_shortlist_is_deterministic(self):
-        """The prompts tell the model to stay on one perfume once the customer
-        shows interest, so the shortlist must not reshuffle between turns."""
-        intent = {"gender": "male", "notes": ["unobtainium"]}
-
-        first = [p.id for p in search_products(intent, store=self.store)["alternatives"]]
-        second = [p.id for p in search_products(intent, store=self.store)["alternatives"]]
-
+    def test_candidate_order_is_stable_and_does_not_prefer_the_cheapest(self):
+        intent = {"scent_tags": ["fresh"]}
+        first = list(search_products(intent, self.store)["products"])
+        second = list(search_products(intent, self.store, keep={"Perfume 74"}, offered={"Perfume 0"})["products"])
         self.assertEqual(first, second)
+        self.assertEqual(first[0].name, "Perfume 0")
+        self.assertEqual(first[-1].name, "Perfume 74")
 
-    def test_shortlist_leads_with_the_cheapest_brand_bottle(self):
-        """Replaces test_shortlist_prefers_products_with_more_oil_stock.
-
-        That test asserted the shortlist led with the most bulk oil, which was the
-        ordering before oil tracking was removed. Something still has to order the
-        shortlist deterministically — the prompts tell the model to stay on a perfume once
-        the customer shows interest — and cheapest-brand-bottle-first is the deliberate
-        replacement for an ordering by inventory depth, which was commercially arbitrary.
-        """
-        results = search_products({"gender": "male"}, store=self.store)
-        prices = [
-            min(
-                variant.price
-                for variant in product.variants.all()
-                if variant.bottle_type == "normal"
-            )
-            for product in results["products"]
-        ]
-
-        self.assertEqual(prices, sorted(prices))
-
-    def test_formatter_caps_an_unsliced_queryset(self):
-        """Defensive net: a caller bypassing search_products can't blow up the
-        prompt either."""
-        every_product = Product.objects.filter(store=self.store)
-        self.assertEqual(every_product.count(), self.PRODUCT_COUNT)
-
-        context = _format_products(every_product)
-
-        self.assertEqual(context.count("Name (الاسم الصحيح):"), MAX_PRODUCTS_IN_CONTEXT)
+    def test_no_match_does_not_fall_back_to_a_capped_alternative_list(self):
+        result = search_products({"scent_tags": ["oud"]}, self.store)
+        self.assertFalse(result["products"].exists())
+        self.assertIsNone(result["alternatives"])
+        self.assertEqual(result["relax_key"], "scent_tags")
 
 
 class ExcludeNamesTests(TestCase):
@@ -325,7 +255,7 @@ class ExcludeNamesTests(TestCase):
         brand = Brand.objects.create(store=self.store, name="YSL")
         for name in ("Black Opium", "Good Girl", "Libre"):
             product = Product.objects.create(
-                store=self.store, brand=brand, name=name, gender="female",
+                store=self.store, brand=brand, name=name, gender="female", scent_tags=["sweet"],
                 )
             ProductVariant.objects.create(
                 product=product, volume=50, price=600, bottle_type="normal"
@@ -3075,7 +3005,7 @@ class PreferenceMemoryTests(TestCase):
     def test_the_router_merges_before_it_decides_anything(self):
         """The whole point of merging at the top of the branch: the budget prompt and
         search_products must both see the restored value, not the truncated intent."""
-        self.conversation.preferences = {"gender": "male", "max_price": 700}
+        self.conversation.preferences = {"gender": "male", "max_price": 700, "scent_tags": ["fresh"]}
         self.conversation.save()
 
         with mock.patch(
@@ -4045,29 +3975,7 @@ class AvoidTraitVocabularyTests(TestCase):
         self.assertIn("حاجة مش منتشرة", phrases)
         self.assertEqual(len(phrases), 1)
 
-    def test_popularity_is_not_intensity_in_the_prompt(self):
-        """The extractor prompt must say so explicitly — this is what the model got wrong."""
-        import inspect
 
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-
-        self.assertIn("منتشر", source)
-        self.assertIn("POPULARITY IS NOT INTENSITY", source)
-        self.assertIn("avoid_traits", source)
-
-    def test_the_zero_hallucination_rule_names_avoid_traits(self):
-        """It listed every inferable field except the one that costs -3.0."""
-        import inspect
-
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-        rule = source[source.index("ZERO HALLUCINATION"):]
-        rule = rule[: rule.index("\n")]
-
-        self.assertIn("avoid_traits", rule)
 
 
 class ScriptedRepliesSurviveSanitizingTests(TestCase):
@@ -5677,143 +5585,73 @@ class TolerantFamilyLookupTests(TestCase):
 
 
 class SimilaritySearchTests(TestCase):
-    """search_products end-to-end for "عايز حاجة شبه X".
-
-    Covers the two halves of the fix: notes are OR-scored rather than AND-filtered, so a
-    similarity request no longer falls through to the gender-and-brand-only branch; and
-    when nothing is actually close, the caller is told so instead of being handed the
-    nearest perfume as though it matched.
-    """
-
+    """Reference recommendations use assigned labels, with no inferred note profile."""
     def setUp(self):
-        self.store = Store.objects.create(name="Perfamix Test")
-        self.dior = Brand.objects.create(store=self.store, name="Dior")
-        self.own = Brand.objects.create(store=self.store, name="Perfamix Test")
+        self.store = Store.objects.create(name="Reference catalogue")
+        self.brand = Brand.objects.create(store=self.store, name="House")
 
-    def _make(self, name, top="", middle="", base="", brand=None, **extra):
-        product = Product.objects.create(
-            store=self.store, brand=brand or self.dior, name=name, gender="male",
-            top_notes=top, middle_notes=middle, base_notes=base,
-            **extra
-        )
-        ProductVariant.objects.create(
-            product=product, volume=50, price=600, bottle_type="normal"
-        )
+    def perfume(self, name, tags, **fields):
+        product = Product.objects.create(store=self.store, brand=self.brand, name=name, scent_tags=tags, **fields)
+        ProductVariant.objects.create(product=product, volume=50, price=600)
         return product
 
-    def _names(self, results):
-        products = results["products"]
-        chosen = products if products.exists() else results["alternatives"]
-        return [product.name for product in (chosen or [])]
+    def test_reference_labels_choose_matches_independently_of_notes(self):
+        reference = self.perfume("Sauvage", ["fresh", "woody"], top_notes="Bergamot")
+        match = self.perfume("Ambero", ["fresh", "woody"], top_notes="Vanilla")
+        self.perfume("Different Style", ["sweet"], top_notes="Bergamot")
+        result = search_products({"similar_to": reference.name}, self.store)
+        self.assertEqual(list(result["products"]), [match])
+        self.assertEqual(result["reference_product"], reference)
+        self.assertIsNone(result["similarity"])
 
-    def test_the_sauvage_regression_a_lookalike_is_ranked_first(self):
-        self._make("Dior Sauvage", "Bergamot, Pepper", "Lavender", "Ambroxan, Cedar")
-        self._make("Ambero", "Bergamot, Pink Pepper", "Lavender", "Ambroxan, Vetiver",
-                   brand=self.own)
-        self._make("Fahrenheit", "Mandarin", "Violet", "Leather, Tobacco",
-                   occasion="Evening", projection="Strong")
-        self._make("Dior Homme Intense", "Lavender", "Iris", "Leather, Amber",
-                   occasion="Evening", projection="Strong")
+    def test_guessed_reference_notes_are_ignored(self):
+        reference = self.perfume("Sauvage", ["fresh", "woody"])
+        match = self.perfume("Ambero", ["fresh", "woody"])
+        self.perfume("Rose Choice", ["floral"], top_notes="Rose")
+        result = search_products({"similar_to": reference.name, "similar_to_notes": ["rose"]}, self.store)
+        self.assertEqual(list(result["products"]), [match])
 
-        results = search_products(
-            {
-                "gender": "male",
-                "occasion": "evening",
-                "projection": "strong",
-                "similar_to": "Dior Sauvage",
-                "similar_to_notes": ["bergamot", "pepper", "ambroxan", "lavender"],
-                "exclude_names": ["Dior Sauvage"],
-                "wants_uncommon": True,
-            },
-            store=self.store,
-        )
+    def test_unknown_reference_requires_a_style_answer(self):
+        self.perfume("Pineapple Choice", ["fruity"], top_notes="Pineapple")
+        result = search_products({"similar_to": "Aventus", "similar_to_notes": ["pineapple"]}, self.store)
+        self.assertTrue(result["needs_scent_reference"])
+        self.assertFalse(result["products"].exists())
+        self.assertIsNone(result["alternatives"])
 
-        self.assertEqual(self._names(results)[0], "Ambero")
+    def test_untagged_reference_requires_a_style_answer(self):
+        reference = self.perfume("Sauvage", [], top_notes="Bergamot")
+        self.perfume("Ambero", ["fresh"], top_notes="Bergamot")
+        result = search_products({"similar_to": reference.name}, self.store)
+        self.assertTrue(result["needs_scent_reference"])
+        self.assertFalse(result["products"].exists())
 
-    def test_several_notes_no_longer_have_to_all_match(self):
-        """The AND-chain emptied the result set and hid the fall-through."""
-        self._make("Partial", "Bergamot", "Rose", "Cedar")
+    def test_reference_with_no_other_label_match_has_no_alternatives(self):
+        reference = self.perfume("Sauvage", ["fresh", "woody"])
+        self.perfume("Rose Choice", ["floral"])
+        result = search_products({"similar_to": reference.name}, self.store)
+        self.assertFalse(result["needs_scent_reference"])
+        self.assertFalse(result["products"].exists())
+        self.assertIsNone(result["alternatives"])
 
-        results = search_products(
-            {"notes": ["bergamot", "pepper", "ambroxan"]}, store=self.store
-        )
+    def test_explicit_ingredients_must_all_match(self):
+        self.perfume("Partial", ["fresh"], top_notes="Bergamot", base_notes="Cedar")
+        match = self.perfume("Complete", ["fresh"], top_notes="Bergamot, Pepper", base_notes="Cedar")
+        result = search_products({"notes": ["bergamot", "pepper"]}, self.store)
+        self.assertEqual(list(result["products"]), [match])
 
-        self.assertIn("Partial", self._names(results))
+    def test_unknown_occasion_is_not_evidence_of_suitability(self):
+        self.perfume("Unknown Occasion", ["fresh"])
+        evening = self.perfume("Evening Choice", ["fresh"], occasion="Evening")
+        result = search_products({"scent_tags": ["fresh"], "occasion": "evening"}, self.store)
+        self.assertEqual(list(result["products"]), [evening])
 
-    def test_a_reference_in_the_catalogue_is_preferred_over_guessed_notes(self):
-        self._make("Dior Sauvage", "Bergamot", "Lavender", "Ambroxan")
-        self._make("Other", "Rose", "Jasmine", "Musk")
-
-        results = search_products(
-            {"similar_to": "Dior Sauvage", "similar_to_notes": ["rose"]},
-            store=self.store,
-        )
-
-        self.assertEqual(results["similarity"]["reference_source"], "catalogue")
-
-    def test_an_unstocked_reference_falls_back_to_general_knowledge(self):
-        self._make("Other", "Pineapple", "Birch", "Musk")
-
-        results = search_products(
-            {"similar_to": "Creed Aventus",
-             "similar_to_notes": ["pineapple", "birch", "musk"]},
-            store=self.store,
-        )
-
-        self.assertEqual(results["similarity"]["reference_source"], "general_knowledge")
-
-    def test_no_close_match_is_reported_honestly(self):
-        """The honesty requirement: do not present the nearest perfume as a match."""
-        self._make("Nothing Alike", "Rose", "Jasmine", "Vanilla")
-
-        results = search_products(
-            {"similar_to": "Creed Aventus",
-             "similar_to_notes": ["pineapple", "birch", "ambergris"]},
-            store=self.store,
-        )
-
-        self.assertFalse(results["similarity"]["has_close_match"])
-        self.assertEqual(results["similarity"]["best_band"], "none")
-
-    def test_a_close_match_is_reported_as_one(self):
-        self._make("Twin", "Pineapple, Birch", "Ambergris", "Musk")
-
-        results = search_products(
-            {"similar_to": "Creed Aventus",
-             "similar_to_notes": ["pineapple", "birch", "ambergris", "musk"]},
-            store=self.store,
-        )
-
-        self.assertTrue(results["similarity"]["has_close_match"])
-
-    def test_a_sparsely_filled_product_survives_an_occasion_request(self):
-        """The regression this fixes: occasion was an icontains AND-filter, and icontains
-        against an empty column matches nothing — so naming an occasion silently deleted
-        every product whose occasion the store never filled in."""
-        self._make("No Occasion Recorded", "Bergamot", "", "Cedar")
-
-        results = search_products(
-            {"gender": "male", "occasion": "evening", "notes": ["bergamot"]},
-            store=self.store,
-        )
-
-        self.assertIn("No Occasion Recorded", self._names(results))
-
-    def test_the_return_value_is_still_a_queryset(self):
-        """recommend() calls .exists() on this, and the existing tests call len()."""
-        self._make("Any", "Bergamot", "", "Cedar")
-
-        results = search_products({"notes": ["bergamot"]}, store=self.store)
-
-        self.assertTrue(hasattr(results["products"], "exists"))
-        self.assertEqual(len(results["products"]), 1)
-
-    def test_similarity_is_none_when_none_was_requested(self):
-        self._make("Any", "Bergamot", "", "Cedar")
-
-        self.assertIsNone(
-            search_products({"gender": "male"}, store=self.store)["similarity"]
-        )
+    def test_reference_cannot_bypass_performance_or_budget(self):
+        reference = self.perfume("Sauvage", ["fresh"])
+        self.perfume("Quiet Choice", ["fresh"], projection="Moderate")
+        strong = self.perfume("Strong Choice", ["fresh"], projection="Strong")
+        intent = {"similar_to": reference.name, "projection": "strong"}
+        self.assertEqual(list(search_products(intent, self.store)["products"]), [strong])
+        self.assertFalse(search_products({**intent, "max_price": 100}, self.store)["products"].exists())
 
 
 class ValueLanguageTests(TestCase):
@@ -6294,299 +6132,82 @@ class RecommendationDropsTheSizeVerdictTests(TestCase):
 
 
 class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
-    """Conversation 931's other false statement: an apology for having shown everything, on a
-    turn that had shown nothing, blamed on a budget that had not been consulted.
-
-    The customer wanted a Versace for his wife. Versace + حريمي matches nothing in the catalogue
-    — Eros is a men's perfume — so `search_products` returned no products and no alternatives,
-    and `recommend` fell to its nothing-found branch. That branch had one instruction 1, written
-    for the customer who asks for *more* ("إيه تاني؟"), and a note above it offering the model
-    either reading with an `أو`. It duly apologised for the end of a list that never existed and
-    named the 1200 as the reason.
-
-    The budget being impossible here is structural, and `test_a_completely_empty_search_is_never
-    _the_budgets_fault` pins it: `search_products` puts gender/brand/type/season on `base` and
-    notes/price on `exact`, and every empty-`alternatives` path in that function needs `base`
-    itself to be empty — so by the time the price filter ran there was nothing left for it to
-    narrow. That is what lets the new instruction forbid naming the budget outright rather than
-    merely discouraging it.
-
-    The fork itself took two attempts, and the first one is recorded here because the replay
-    caught it and I did not. It was `already_described` — have we shown this customer anything?
-    Conversation 931 had shown three perfumes and sold them before the Versace turn, so that
-    answered yes, the branch took the exhausted half, and both replay runs reproduced the
-    original sentence word for word on the turn this class was written for. `seen` is a fact
-    about the transcript; "these are all the options" is a claim about the search. It is now
-    forked on `search_products`'s own `exhausted` — would dropping the name exclusions have
-    found anything — with `seen` demoted to choosing between two ways of *not* claiming a list.
-    """
-
+    """An empty selection asks for a change without inventing scarcity or prior offers."""
     def setUp(self):
-        self.store = Store.objects.create(name="Perfamix Test")
+        self.store = Store.objects.create(name="Empty result catalogue")
         versace = Brand.objects.create(store=self.store, name="Versace")
-        self.eros = Product.objects.create(
-            store=self.store, brand=versace, name="Eros", gender="male",
-            top_notes="Mint, Green Apple", middle_notes="Tonka Bean",
-            base_notes="Vanilla, Vetiver",
-        )
-        ProductVariant.objects.create(
-            product=self.eros, volume=90, price=1019, bottle_type="normal"
-        )
+        dior = Brand.objects.create(store=self.store, name="Dior")
+        self.eros = Product.objects.create(store=self.store, brand=versace, name="Eros",
+                                           gender="male", scent_tags=["fresh"], occasion="Office")
+        self.rose = Product.objects.create(store=self.store, brand=dior, name="Rose Choice",
+                                           gender="female", scent_tags=["fresh"], occasion="Office")
+        for product in (self.eros, self.rose):
+            ProductVariant.objects.create(product=product, volume=90, price=1019)
 
-    # ── the prompt the empty branch actually delivers ─────────────────────
-    def _empty_turn(self, intent, history=None, search=None):
-        from products.services.ai import recommendation
-
-        with mock.patch.object(recommendation, "chat", return_value="ok") as chat_call:
-            recommendation.recommend(
-                "عايز فيرزاتشي لمراتي",
-                Product.objects.none(),
-                history=history,
-                alternatives=Product.objects.none(),
-                store=self.store,
-                intent=intent,
-                search=search,
-            )
-        return chat_call.call_args[0][0][-1]["content"]
-
-    CONV931 = {"brand": "Versace", "gender": "female", "max_price": 1200}
-
-    def _shown(self):
-        """A history in which we have named a catalogue perfume, which is what
-        `described.already_described` reads to decide there was a list at all."""
-        return [
-            {"role": "user", "content": "عايز حاجة حلوة"},
-            {"role": "assistant", "content": "أرشحلك Eros، ريحته منعشة."},
-        ]
-
-    def test_a_first_request_names_the_constraints_that_ruled_everything_out(self):
-        """Not "دي كل الخيارات" — there was no list — and not the budget either. The reply owes
-        the customer the one true reason: حريمي and Versace do not coexist in this catalogue."""
-        prompt = self._empty_turn({**self.CONV931, "brand_strict": True})
-
-        self.assertIn("حريمي + من Versace", prompt)
-        self.assertIn("مجموع", prompt)
-        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
-
-    def test_a_first_request_may_not_blame_the_budget(self):
-        """1200 fits the 90ml at 1019 with room to spare, and the price filter never ran."""
-        prompt = self._empty_turn(self.CONV931)
-
-        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
-        self.assertIn("مفيش حاجة في الميزانية دي", prompt)  # named so it can be forbidden
-
-    def test_it_offers_to_relax_one_of_the_named_constraints(self):
-        """An apology with no way forward is what the old wording gave. Naming the constraint is
-        only useful if the customer is told which one to drop."""
-        prompt = self._empty_turn(self.CONV931)
-
-        self.assertIn("يتنازل عن واحد منهم بالاسم", prompt)
-
-    def test_the_note_above_the_instructions_stops_offering_a_choice_of_facts(self):
-        """The note said "لم يتم العثور … **أو** تم ترشيح كل الخيارات بالفعل". A disjunction is
-        not a fact, and it is what licensed the wrong half."""
-        prompt = self._empty_turn(self.CONV931)
-
-        self.assertIn("محصلش أي ترشيح قبل كده", prompt)
-        self.assertNotIn("أو تم ترشيح كل الخيارات المتاحة بالفعل", prompt)
-
-    # ── the reading the old instruction was written for, kept ─────────────
-    EXHAUSTED = {"exhausted": True}
-
-    def test_a_follow_up_after_a_real_list_keeps_the_exhausted_wording(self):
-        """The old instruction was not wrong, it was unconditional. Where it is true it stays.
-
-        "True" is now `search_products`'s verdict rather than the presence of a history: the
-        exclusions are what emptied the search, so matching perfumes exist and have all been
-        offered. That is the one state in which apologising for the end of the list is a fact."""
-        prompt = self._empty_turn(self.CONV931, history=self._shown(),
-                                  search=self.EXHAUSTED)
-
-        self.assertIn("وقوله إن دي كل الخيارات المتاحة", prompt)
-        self.assertIn("تم ترشيح كل الخيارات المتاحة", prompt)
-        self.assertNotIn("محصلش أي ترشيح قبل كده", prompt)
-
-    def test_even_the_exhausted_wording_may_not_blame_the_budget(self):
-        """Both halves of the fork carry the prohibition: "مفيش حاجة في الميزانية" was available
-        on this turn too, and `base` was just as empty for reasons the price never touched."""
-        prompt = self._empty_turn(self.CONV931, history=self._shown(),
-                                  search=self.EXHAUSTED)
-
-        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
-
-    # ── shown things, but not these things (the replay's own failure) ──────
-    # Conversation 931's real shape, and the state the first version of this fix got wrong: three
-    # perfumes described and ordered, then a request for a brand+gender pair that matches nothing.
-    # `seen` is truthy and exhaustion is false, and both replay runs produced "دي كل الخيارات
-    # المتاحة حالياً اللي بتطابق طلبك بالظبط" here — about a brand never once offered.
-
-    def test_a_history_alone_no_longer_licenses_the_exhausted_wording(self):
-        """The regression, pinned at the fork. Same history as the test above, same empty search,
-        and the only difference is the one that decides the truth of the sentence: nothing was
-        excluded, so nothing was used up."""
-        prompt = self._empty_turn(self.CONV931, history=self._shown())
-
-        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
-        self.assertNotIn("تم ترشيح كل الخيارات المتاحة", prompt)
-        self.assertIn("ممنوع تقول \"دي كل الخيارات المتاحة\"", prompt)
-
-    def test_it_still_names_the_constraints_when_something_was_shown_earlier(self):
-        """Having shown perfumes under other constraints changes who is owed what, not the
-        reason. The customer still gets حريمي + Versace, and still not the budget."""
-        prompt = self._empty_turn({**self.CONV931, "brand_strict": True}, history=self._shown())
-
-        self.assertIn("حريمي + من Versace", prompt)
-        self.assertIn("مجموع", prompt)
-        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
-
-    def test_it_does_not_claim_a_first_attempt_either(self):
-        """The other way to be false. Perfumes *were* shown in this conversation, so "دي أول مرة
-        تحاول ترشحله" would be its own fabrication — which is why `seen` survives the rewrite
-        instead of being deleted along with the fork it used to serve."""
-        prompt = self._empty_turn(self.CONV931, history=self._shown())
-
-        self.assertNotIn("دي أول مرة تحاول ترشحله", prompt)
-        self.assertNotIn("محصلش أي ترشيح قبل كده", prompt)
-        self.assertIn("مش بيطابق الشروط اللي بيطلبها دلوقتي", prompt)
-
-    def test_the_first_request_wording_survives_for_a_real_first_request(self):
-        """The unshown case is unchanged, and says the stronger true thing."""
-        prompt = self._empty_turn(self.CONV931)
-
-        self.assertIn("دي أول مرة تحاول ترشحله", prompt)
-        self.assertIn("محصلش أي ترشيح قبل كده", prompt)
-
-    def test_a_caller_that_reports_no_search_does_not_get_the_claim(self):
-        """`recommend`'s `search` is optional and three call sites pass it, but the default has to
-        be the harmless one: absent evidence of exhaustion is not evidence of it."""
-        for search in (None, {}, {"exhausted": False}, {"keeping": []}):
-            with self.subTest(search=search):
-                prompt = self._empty_turn(self.CONV931, history=self._shown(), search=search)
-                self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
-
-    # ── nothing stated, nothing shown ─────────────────────────────────────
-    def test_with_no_stated_constraints_it_asks_instead_of_inventing_a_reason(self):
-        """`base` can also be emptied by `exclude_names` or by stock, and then there is no
-        constraint to name. Asking is honest; naming a constraint the customer never gave is not,
-        and neither is falling back on the budget."""
-        prompt = self._empty_turn({})
-
-        self.assertIn("محتاج تفاصيل أكتر", prompt)
-        self.assertIn("ممنوع تقول إن السبب ميزانيته", prompt)
-        self.assertNotIn("مجموع", prompt)
-        self.assertNotIn("وقوله إن دي كل الخيارات المتاحة", prompt)
-
-    # ── the renderer, and what it deliberately leaves out ─────────────────
-    def test_only_the_hard_filters_are_offered_as_reasons(self):
-        """`describe` renders everything the customer said, budget and notes included, which is
-        right for "what I already know" and wrong for "what ruled everything out". Notes narrow
-        `exact`; a request with notes that matched nothing still leaves `base` populated and never
-        reaches this branch at all."""
-        phrases = sales_constraints.describe_filters({
-            "gender": "female", "brand": "Versace", "perfume_type": "niche",
-            "brand_strict": True,
-            "season": "summer", "notes": ["vanilla"], "max_price": 1200,
-            "occasion": "evening", "longevity": "long-lasting",
-        })
-
-        self.assertEqual(phrases, ["حريمي", "نيش", "للصيف", "من Versace"])
-
-    def test_the_store_own_blend_marker_is_rendered_as_words(self):
-        self.assertEqual(
-            sales_constraints.describe_filters({"brand": "STORE_BRAND_EXCLUSIVE", "brand_strict": True}), ["من تركيباتنا الخاصة"]
-        )
-
-    def test_a_routing_gender_is_not_a_constraint_to_relax(self):
-        """"multiple" is the router asking which to start with, and `search_products` filters on
-        it as a literal value that matches no row — so it is neither a preference to echo back
-        nor a constraint the customer can drop."""
-        self.assertEqual(sales_constraints.describe_filters({"gender": "multiple"}), [])
-        self.assertEqual(sales_constraints.describe_filters({}), [])
-        self.assertEqual(sales_constraints.describe_filters(None), [])
-
-    def test_every_hard_filter_key_is_rendered(self):
-        """Pinned against the key list itself, so a filter added to `search_products` and to
-        `HARD_FILTER_KEYS` cannot silently go unnamed in the one reply that owes the reason."""
-        HARD_FILTER_KEYS = sales_constraints.HARD_FILTER_KEYS
-        values = {"gender": "male", "perfume_type": "niche",
-                  "season": "winter", "brand": "Dior",
-                  "exclude_brands": ["Dior"]}
-        self.assertEqual(set(values), set(HARD_FILTER_KEYS))
-        for key in HARD_FILTER_KEYS:
-            with self.subTest(key=key):
-                self.assertTrue(sales_constraints.describe_filters({key: values[key], "brand_strict": True}))
-
-    # ── the premise the whole fix rests on ────────────────────────────────
-    def test_a_completely_empty_search_is_never_the_budgets_fault(self):
-        """Why the prohibition can be absolute. A hard filter that matches nothing empties `base`
-        and reaches `recommend`'s nothing-found branch; a budget nothing satisfies leaves `base`
-        alone and comes back as *alternatives*, which is a different branch with a different
-        instruction that does discuss the price. So this branch can state flatly that the budget
-        is not the reason."""
-        ruled_out = search_products(self.CONV931, store=self.store)
-        self.assertFalse(ruled_out["products"].exists())
-        self.assertFalse(ruled_out["alternatives"] and ruled_out["alternatives"].exists())
-
-        # Same catalogue, same code path, a budget no size can meet: alternatives, not silence.
-        unaffordable = search_products(
-            {"brand": "Versace", "gender": "male", "max_price": 100}, store=self.store
-        )
-        self.assertFalse(unaffordable["products"].exists())
-        self.assertTrue(unaffordable["alternatives"].exists())
-
-    # ── the fork, computed where the facts are ────────────────────────────
-    def test_constraints_that_match_nothing_are_never_reported_as_exhaustion(self):
-        """Versace + حريمي, which is the conv931 turn. No exclusion could have caused this: with
-        the exclusions dropped the search is just as empty, and that is what `exhausted` asks."""
-        self.assertFalse(search_products(self.CONV931, store=self.store)["exhausted"])
-
-    def test_an_exclusion_list_that_could_not_have_emptied_it_is_not_exhaustion(self):
-        """Replay run 1's turn 9 exactly: the customer had ordered three perfumes, so the
-        extractor put them in `exclude_names` — and not one of them is a Versace. A non-empty
-        exclusion list is not evidence, which is why this is a query and not a `bool()`."""
-        intent = dict(self.CONV931,
-                      exclude_names=["Good Girl", "La Vie Est Belle", "Stronger With You"])
-
-        self.assertFalse(search_products(intent, store=self.store)["exhausted"])
-
-    def test_exclusions_that_did_empty_it_are_reported_as_exhaustion(self):
-        """The state the "دي كل الخيارات" wording was written for, and the only one it is true in:
-        Eros matches رجالي + Versace, and Eros is what the customer has asked us to move past."""
-        intent = {"brand": "Versace", "gender": "male", "exclude_names": ["Eros"]}
-        result = search_products(intent, store=self.store)
-
+    def empty_turn(self, intent, history=None):
+        from products.services.ai.recommendation import recommend
+        result = search_products(intent, self.store)
         self.assertFalse(result["products"].exists())
-        self.assertFalse(result["alternatives"] and result["alternatives"].exists())
+        with mock.patch("products.services.ai.recommendation.chat") as chat:
+            reply, context = recommend("رشحلي", result["products"], history, store=self.store, intent=intent, search=result)
+        chat.assert_not_called()
+        self.assertNotIn("كل الخيارات", reply)
+        self.assertNotIn("غير متوفر", reply)
+        self.assertEqual(reply.count("؟"), 1)
+        self.assertIsNone(result["alternatives"])
+        return reply, context, result
+
+    def test_only_a_requirement_that_opens_matches_is_offered(self):
+        intent = {"gender": "female", "brand": "Versace", "brand_strict": True,
+                  "scent_tags": ["fresh"], "max_price": 1200}
+        reply, context, result = self.empty_turn(intent)
+        self.assertEqual(result["relax_key"], "brand")
+        self.assertIn("براند تاني", reply)
+        self.assertNotIn("ميزاني", reply)
+        self.assertIn("brand=offered", context)
+        self.assertTrue(intent["brand_strict"])
+
+    def test_previous_offers_do_not_change_the_reason_for_no_match(self):
+        intent = {"gender": "female", "brand": "Versace", "brand_strict": True}
+        first, _, _ = self.empty_turn(intent)
+        later, _, _ = self.empty_turn(intent, [{"role": "assistant", "content": "Eros موجود عندنا."}])
+        self.assertEqual(first, later)
+
+    def test_budget_is_offered_only_when_removing_it_finds_a_match(self):
+        reply, context, result = self.empty_turn({"scent_tags": ["fresh"], "max_price": 100})
+        self.assertEqual(result["relax_key"], "max_price")
+        self.assertIn("ميزاني", reply)
+        self.assertIn("max_price=offered", context)
+        self.assertNotIn(self.eros.name, reply)
+
+    def test_an_impossible_combination_asks_which_condition_can_change(self):
+        reply, context, result = self.empty_turn({"gender": "female", "brand": "Missing House",
+                                                 "brand_strict": True, "scent_tags": ["oud"]})
+        self.assertIsNone(result["relax_key"])
+        self.assertNotIn("PENDING_RELAX", context)
+        self.assertIn("أنهي شرط", reply)
+
+    def test_excluding_all_eligible_names_never_reoffers_them(self):
+        reply, _, result = self.empty_turn({"scent_tags": ["fresh"], "exclude_names": [self.eros.name, self.rose.name]})
         self.assertTrue(result["exhausted"])
+        self.assertNotIn(self.eros.name, reply)
+        self.assertNotIn(self.rose.name, reply)
 
-    def test_a_search_that_found_something_is_not_exhausted(self):
-        """`exhausted` is only ever read on the empty branch, but it rides on every return path,
-        so it must be false wherever there is something to show rather than merely unread."""
-        found = search_products({"brand": "Versace", "gender": "male"}, store=self.store)
+    def test_names_already_ruled_out_do_not_establish_exhaustion(self):
+        _, _, result = self.empty_turn({"scent_tags": ["oud"], "exclude_names": [self.eros.name]})
+        self.assertFalse(result["exhausted"])
 
-        self.assertTrue(found["products"].exists())
-        self.assertFalse(found["exhausted"])
+    def test_irrelevant_exclusions_do_not_remove_matches(self):
+        result = search_products({"gender": "male", "exclude_names": [self.rose.name, "Missing"]}, self.store)
+        self.assertEqual(list(result["products"]), [self.eros])
+        self.assertFalse(result["exhausted"])
 
-    def test_moving_the_exclusions_below_the_constraints_changed_no_result(self):
-        """The exclusions used to run first, and were moved so the pre-exclusion queryset could be
-        kept. Every clause in that chain is a conjunction over single-valued fields, so the move is
-        supposed to be a no-op on the results themselves — pinned rather than asserted in a
-        comment, because "it should be the same SQL" is the kind of claim that stops being true."""
-        excluded = search_products(
-            {"brand": "Versace", "gender": "male", "exclude_names": ["Eros"]}, store=self.store
-        )
-        self.assertFalse(excluded["products"].exists())
-        self.assertFalse(excluded["alternatives"] and excluded["alternatives"].exists())
-
-        # And an exclusion naming something the constraints had already ruled out removes
-        # nothing, rather than interacting with them.
-        untouched = search_products(
-            {"brand": "Versace", "gender": "male", "exclude_names": ["Good Girl"]},
-            store=self.store,
-        )
-        self.assertEqual(
-            list(untouched["products"].values_list("name", flat=True)), ["Eros"]
-        )
+    def test_empty_catalogue_makes_no_budget_or_stock_claim(self):
+        Product.objects.filter(store=self.store).delete()
+        reply, context, result = self.empty_turn({"scent_tags": ["fresh"], "max_price": 1200})
+        self.assertNotIn("ميزاني", reply)
+        self.assertNotIn("نفد", reply)
+        self.assertIsNone(result["relax_key"])
 
 
 class AcceptedRelaxationClearsTheConstraintTests(TestCase):
@@ -6764,43 +6385,18 @@ class AcceptedRelaxationClearsTheConstraintTests(TestCase):
         self.assertEqual(merged.get("max_price"), 1200.0)
 
     # ── the offer records itself, so the next turn can read it ────────────
-    def test_the_no_match_reply_records_what_it_offered_to_relax(self):
-        """This branch used to persist `context = ""`, which is why every `internal_context` in
-        conversation 932's transcript is empty and the stale brand was invisible in the dump."""
-        from products.services.ai import recommendation
-
-        with mock.patch.object(recommendation, "chat", return_value="ok"):
-            _, context = recommendation.recommend(
-                "عايز حاجه حريمي من فيرزاتشي فقط",
-                Product.objects.none(),
-                alternatives=Product.objects.none(),
-                store=self.store,
-                intent={**self.CONV932, "brand_strict": True},
-            )
-
-        self.assertIn(sales_described.PENDING_RELAX_MARKER, context)
-        self.assertIn("brand=Versace", context)
-        self.assertIn("gender=female", context)
+    def test_the_no_match_reply_records_only_the_offered_change(self):
+        from products.services.ai.scent_recommendation import no_match_reply
+        reply, context = no_match_reply({"relax_key": "brand"})
+        self.assertIn("براند تاني", reply)
+        self.assertIn("brand=offered", context)
+        self.assertNotIn("gender=", context)
 
     def test_the_marker_survives_the_round_trip_through_a_message_row(self):
-        """Writer and reader pinned together against a real `Message`. A brand with a space in it
-        is the case the pipe separator exists for: on spaces, "Tom Ford" parses as "Tom"."""
-        from products.services.ai import recommendation
-
-        with mock.patch.object(recommendation, "chat", return_value="ok"):
-            _, context = recommendation.recommend(
-                "عايز حاجه حريمي من توم فورد فقط",
-                Product.objects.none(),
-                alternatives=Product.objects.none(),
-                store=self.store,
-                intent={"brand": "Tom Ford", "brand_strict": True, "gender": "female"},
-            )
-        save_message(self.conversation, "assistant", "ok", internal_context=context)
-
-        self.assertEqual(
-            sales_described.pending_relaxations(self.conversation),
-            {"brand": "Tom Ford", "gender": "female"},
-        )
+        from products.services.ai.scent_recommendation import no_match_reply
+        reply, context = no_match_reply({"relax_key": "brand"})
+        save_message(self.conversation, "assistant", reply, internal_context=context)
+        self.assertEqual(sales_described.pending_relaxations(self.conversation), {"brand": "offered"})
 
     def test_a_turn_that_offered_nothing_leaves_no_marker(self):
         """`relax_offer_block` returns "" with no hard filter set, so the branch can write it
@@ -6967,7 +6563,7 @@ class ConstraintAcknowledgementTests(TestCase):
         })
 
         self.assertIn("رجالي", phrases)
-        self.assertIn("للسهرات بالليل", phrases)
+        self.assertIn("للخروجات والسهرات", phrases)
         self.assertIn("ثابت", phrases)
         self.assertIn("مش تقيل", phrases)
         self.assertIn("مش خانق", phrases)
@@ -6989,8 +6585,8 @@ class ConstraintAcknowledgementTests(TestCase):
     def test_no_constraints_produces_no_hint(self):
         self.assertEqual(sales_constraints.acknowledgement_hint({}), "")
 
-    def test_an_unmapped_value_is_echoed_rather_than_dropped(self):
-        self.assertIn("للجيم", sales_constraints.describe({"occasion": "للجيم"}))
+    def test_legacy_occasion_aliases_use_canonical_descriptions(self):
+        self.assertIn("للبحر والصيف والجيم", sales_constraints.describe({"occasion": "للجيم"}))
 
     def test_the_multiple_gender_signal_is_not_echoed_as_a_preference(self):
         """It means "he wants one of each, ask which first" — not a taste."""
@@ -7187,15 +6783,15 @@ class SalesScenarioTests(TestCase):
 
         self.sauvage = self._make(
             "Dior Sauvage", "Bergamot, Pepper", "Lavender", "Ambroxan, Cedar",
-            longevity="8 hours", projection="Strong", occasion="Casual",
+            longevity="8 hours", projection="Strong", occasion="Casual", scent_tags=["fresh", "woody"],
         )
         self.light = self._make(
             "Citrolo", "Bergamot, Lemon", "Mint", "Cedar", brand=self.own,
-            longevity="8 hours", projection="Moderate", occasion="Evening",
+            longevity="8 hours", projection="Moderate", occasion="Evening", scent_tags=["fresh", "light", "woody"],
         )
         self.heavy = self._make(
             "Oudy", "Oud", "Incense", "Amber, Leather",
-            longevity="12 hours", projection="Enormous", occasion="Evening",
+            longevity="12 hours", projection="Enormous", occasion="Evening", scent_tags=["oud", "heavy"],
         )
         self.vanilla = self._make(
             "Black Opium", "Coffee", "Vanilla", "Vanilla, Patchouli",
@@ -7203,6 +6799,7 @@ class SalesScenarioTests(TestCase):
         )
 
     def _make(self, name, top, middle, base, brand=None, gender="male", **extra):
+        extra.setdefault("scent_tags", ["floral", "sweet"])
         product = Product.objects.create(
             store=self.store, brand=brand or self.brand, name=name, gender=gender,
             top_notes=top, middle_notes=middle, base_notes=base,
@@ -7213,19 +6810,20 @@ class SalesScenarioTests(TestCase):
         return product
 
     def _route_recommendation(self, message, intent):
-        """Route a recommendation and return (prompt_sent_to_recommend, general_prompt)."""
+        """Exercise selection with an eligible JSON response and capture the real inputs."""
+        self.recommend_payload = None
+        def choose(messages, **kwargs):
+            self.recommend_payload = json.loads(messages[-1]["content"])
+            selected = self.recommend_payload["eligible_products"][:2]
+            return json.dumps({"product_ids": [p["id"] for p in selected],
+                               "reply": "، ".join(p["name"] for p in selected) + ": اختيارات مناسبة لطابع الريحة اللي طلبته."})
         with mock.patch("products.services.router.classify", return_value="recommendation"), \
              mock.patch("products.services.router.extract_intent", return_value=intent), \
-             mock.patch("products.services.ai.recommendation.chat", return_value="ok") as rec, \
+             mock.patch("products.services.ai.recommendation.chat", side_effect=choose) as rec, \
              mock.patch("products.services.general_service.chat", return_value="ok") as gen:
-            route(message, [], self.store, self.conversation)
-
-        recommend_prompt = (
-            "\n".join(m["content"] for m in rec.call_args[0][0]) if rec.called else ""
-        )
-        general_prompt = (
-            "\n".join(m["content"] for m in gen.call_args[0][0]) if gen.called else ""
-        )
+            self.last_reply, self.last_context = route(message, [], self.store, self.conversation)
+        recommend_prompt = "\n".join(m["content"] for m in rec.call_args_list[0].args[0]) if rec.called else ""
+        general_prompt = "\n".join(m["content"] for m in gen.call_args.args[0]) if gen.called else ""
         return recommend_prompt, general_prompt
 
     # ---- A: rich constraints, no budget ----
@@ -7243,29 +6841,21 @@ class SalesScenarioTests(TestCase):
         self.assertNotIn("ميزانيتك في حدود كام عشان أرشحلك", general_prompt)
 
     def test_a_the_stated_constraints_reach_the_recommendation_prompt(self):
-        recommend_prompt, _ = self._route_recommendation(
-            "عايز برفان رجالي ثابت للخروجات بالليل بس مش تقيل",
-            {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
-             "avoid_traits": ["heavy"]},
-        )
+        self._route_recommendation("عايز برفان رجالي ثابت للخروجات بالليل بس مش تقيل",
+                                   {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
+                                    "excluded_scent_tags": ["heavy"]})
+        preferences = self.recommend_payload["preferences"]
+        self.assertEqual(preferences["occasion"], "Night Out & Hanging Out")
+        self.assertEqual(preferences["excluded_scent_tags"], ["heavy"])
+        self.assertNotIn(self.heavy.pk, {p["id"] for p in self.recommend_payload["eligible_products"]})
 
-        self.assertIn("العميل قال بالفعل", recommend_prompt)
-        self.assertIn("للسهرات بالليل", recommend_prompt)
-        self.assertIn("مش تقيل", recommend_prompt)
-
-    def test_a_the_acknowledgement_is_a_hint_not_a_script(self):
-        """A single mandated sentence would be the same bug in a nicer costume — and it
-        happened: the hint briefly quoted "تمام جداً، أرشحلك..." and conv_990 opened three of
-        six replies with exactly that."""
-        recommend_prompt, _ = self._route_recommendation(
-            "عايز حاجة ثابتة للليل مش تقيلة",
-            {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
-             "avoid_traits": ["heavy"]},
-        )
-
-        self.assertIn("ممنوع تستخدم نفس الصيغة", recommend_prompt)
-        self.assertIn("ممنوع تكرار كلام العميل", recommend_prompt)
-        self.assertNotIn("تمام جداً، أرشحلك", recommend_prompt)
+    def test_a_the_recommendation_keeps_a_valid_natural_explanation(self):
+        self._route_recommendation("عايز حاجة ثابتة للليل مش تقيلة",
+                                   {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
+                                    "excluded_scent_tags": ["heavy"]})
+        self.assertIn(self.light.name, self.last_reply)
+        self.assertIn("طابع الريحة", self.last_reply)
+        self.assertNotIn("تمام جداً، أرشحلك", self.last_reply)
 
     def test_a_sparse_request_still_reaches_recommendations(self):
         # This checkout intentionally no longer blocks sparse taste requests on budget.
@@ -7273,16 +6863,13 @@ class SalesScenarioTests(TestCase):
             recommend_prompt, _ = self._route_recommendation(
                 "عايز عطر رجالي فيه عود", {"gender": "male", "notes": ["oud"]}
             )
-        self.assertIn("العميل قال بالفعل", recommend_prompt)
-        self.assertIn("عود", recommend_prompt)
+        self.assertTrue(self.recommend_payload)
+        self.assertIn(self.heavy.pk, {p["id"] for p in self.recommend_payload["eligible_products"]})
 
-    def test_a_a_heavy_perfume_is_flagged_when_heaviness_was_excluded(self):
-        results = search_products(
-            {"gender": "male", "avoid_traits": ["heavy", "suffocating"]}, store=self.store
-        )
-        ranked = results["ranked"]
-
-        self.assertTrue(ranked[self.heavy.id].mismatches)
+    def test_a_heavy_perfume_is_excluded_when_heaviness_was_rejected(self):
+        result = search_products({"gender": "male", "excluded_scent_tags": ["heavy"]}, self.store)
+        self.assertNotIn(self.heavy, result["products"])
+        self.assertIn(self.light, result["products"])
 
     # ---- B: similar to X, not mainstream ----
 
@@ -7294,8 +6881,8 @@ class SalesScenarioTests(TestCase):
              "exclude_names": ["Dior Sauvage"], "wants_uncommon": True},
         )
 
-        self.assertIn("طلب حاجة شبه", recommend_prompt)
-        self.assertIn("Match:", recommend_prompt)
+        self.assertEqual(self.recommend_payload["reference"]["name"], self.sauvage.name)
+        self.assertEqual(self.recommend_payload["reference"]["scent_tags"], ["fresh", "woody"])
 
     def test_b_the_prompt_forbids_a_similarity_percentage(self):
         """"95% similar to the original" is the claim this has to make unsayable."""
@@ -7305,18 +6892,14 @@ class SalesScenarioTests(TestCase):
              "similar_to_notes": ["bergamot", "ambroxan"]},
         )
 
-        self.assertIn("ممنوع تذكر نسبة مئوية للتشابه", recommend_prompt)
+        self.assertIn("Do not claim close similarity or a similarity percentage", recommend_prompt)
 
-    def test_b_no_close_match_leads_with_grounded_alternatives(self):
-        recommend_prompt, _ = self._route_recommendation(
-            "عايز حاجة شبه Creed Aventus",
-            {"gender": "male", "similar_to": "Creed Aventus",
-             "similar_to_notes": ["pineapple", "birch", "ambergris"]},
-        )
-
-        self.assertIn("ابدأ مباشرة بترشيح أفضل عطر أو عطرين", recommend_prompt)
-        self.assertNotIn("مفيش حاجة قريبة", recommend_prompt)
-        self.assertIn("ممنوع تقول عن أي عطر إنه شبهه", recommend_prompt)
+    def test_b_unknown_reference_asks_for_style_without_guessing(self):
+        prompt, _ = self._route_recommendation("عايز حاجة شبه Creed Aventus",
+            {"gender": "male", "similar_to": "Creed Aventus", "similar_to_notes": ["pineapple", "birch"]})
+        self.assertEqual(prompt, "")
+        self.assertEqual(self.last_context, "SIMILARITY_NEEDS_PROFILE")
+        self.assertIn("طابع الريحة", self.last_reply)
 
     # ---- C: identification from clues ----
 
@@ -7493,39 +7076,30 @@ class SalesScenarioTests(TestCase):
 
     # ---- F: gift with unknown taste ----
 
-    def test_f_a_gift_with_unknown_taste_acknowledges_the_uncertainty(self):
-        _, general_prompt = self._route_recommendation(
-            "عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه",
-            {"gender": "female"},
-        )
+    def test_f_a_gift_with_unknown_taste_asks_for_style(self):
+        prompt, _ = self._route_recommendation("عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه", {"gender": "female"})
+        self.assertEqual(prompt, "")
+        self.assertEqual(self.last_context, "SCENT_PREFERENCE_REQUIRED")
+        self.assertIn("بتحب الريحة", self.last_reply)
 
-        self.assertIn("مش عارف ذوق المستلم", general_prompt)
-        self.assertIn("بتساعده يقرب لذوقها مش بتضمنه", general_prompt)
+    def test_f_only_one_style_question_is_asked(self):
+        self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
+        self.assertEqual(self.last_reply.count("؟"), 1)
+        self.assertIn("سويت", self.last_reply)
 
-    def test_f_the_one_high_value_question_is_asked(self):
-        _, general_prompt = self._route_recommendation(
-            "عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"}
-        )
-
-        self.assertIn("برفان كانت بتحبه", general_prompt)
-
-    def test_f_guarantees_are_forbidden(self):
-        """"الاتنين مضمونين" about a recipient we have never met."""
-        _, general_prompt = self._route_recommendation(
-            "عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"}
-        )
-
-        self.assertIn('ممنوع تقول "مضمون"', general_prompt)
+    def test_f_unknown_gift_taste_never_gets_a_guaranteed_product(self):
+        self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
+        self.assertNotIn("مضمون", self.last_reply)
+        self.assertNotIn(self.vanilla.name, self.last_reply)
 
     # ---- G: budget ----
 
     def test_g_a_stated_budget_filters_and_is_not_asked_again(self):
-        recommend_prompt, _ = self._route_recommendation(
-            "عايز حاجة كويسة تحت 1000", {"gender": "male", "max_price": 1000}
-        )
-
-        self.assertIn("ميزانية العميل: 1000", recommend_prompt)
-        self.assertIn("متسألوش عن الميزانية تاني", recommend_prompt)
+        self._route_recommendation("عايز حاجة فريش تحت 1000",
+                                   {"gender": "male", "max_price": 1000, "scent_tags": ["fresh"]})
+        self.assertEqual(self.recommend_payload["preferences"]["max_price"], 1000)
+        self.assertNotIn("ميزانيتك كام", self.last_reply)
+        self.assertIn("600", self.last_reply)
 
     def test_g_a_budget_excludes_products_priced_above_it_from_the_matched_set(self):
         """The matched set honours the budget. The alternatives fallback deliberately
@@ -7555,9 +7129,10 @@ class SalesScenarioTests(TestCase):
             {"gender": "male", "max_price": 1000, "notes": ["tuberose"]},
             store=self.store,
         )
-        entry = results["ranked"][expensive.id]
+        self.assertFalse(results["products"].exists())
 
-        self.assertIn("مفيش حجم متاح داخل ميزانيته", entry.mismatches)
+        self.assertIsNone(results["alternatives"])
+        self.assertEqual(results["relax_key"], "max_price")
 
     def test_a_tolerance_band_product_is_eligible_but_a_far_over_one_is_not(self):
         """Conversation 757's defect, at the selection layer.
@@ -7598,9 +7173,9 @@ class SalesScenarioTests(TestCase):
         results = search_products(
             {"gender": "male", "max_price": 1000, "notes": ["rose"]}, store=self.store
         )
-        ranked = results["ranked"]
+        eligible = set(results["products"])
 
-        self.assertGreater(ranked[inside.id].score, ranked[near.id].score)
+        self.assertEqual(eligible, {inside, near})
 
     def test_a_tolerance_band_product_is_not_flagged_as_unaffordable(self):
         """It is in the candidate list, so claiming it has nothing the customer can afford
@@ -7613,9 +7188,8 @@ class SalesScenarioTests(TestCase):
             {"gender": "male", "max_price": 1000, "notes": ["rose"]}, store=self.store
         )
 
-        self.assertNotIn(
-            "مفيش حجم متاح داخل ميزانيته", results["ranked"][near.id].mismatches
-        )
+        self.assertIn(near, results["products"])
+        self.assertIsNone(results["alternatives"])
 
     def test_a_tolerance_band_perfume_is_not_blamed_on_price(self):
         """A withdrawal needs a true cause, and this perfume has not been withdrawn."""
@@ -8631,7 +8205,7 @@ class ConversationContinuityTests(TestCase):
     def _make(self, name, price, **fields):
         product = Product.objects.create(
             store=self.store, brand=self.brand, name=name, gender="male",
-            projection="Moderate", **fields,
+            projection="Moderate", scent_tags=["fresh", "woody"], **fields,
         )
         ProductVariant.objects.create(
             product=product, volume=50, price=price, bottle_type="normal"
@@ -8946,14 +8520,11 @@ class ConversationContinuityTests(TestCase):
         self.assertIn("العميل بيتكلم عنه بالفعل", ranked[0].reasons)
 
     # ── search_products threading ────────────────────────────────────────
-    def test_a_kept_perfume_leads_the_shortlist(self):
-        results = search_products(
-            {"gender": "male", "longevity": "long-lasting", "max_price": 800},
-            store=self.store, keep={"Le Male"},
-        )
-
-        self.assertEqual([p.name for p in results["products"]][0], "Le Male")
-        self.assertEqual(results["keeping"], ["Le Male"])
+    def test_a_kept_perfume_stays_available_without_reordering_candidates(self):
+        result = search_products({"gender": "male"}, self.store, keep={self.cheap.name})
+        self.assertIn(self.cheap, result["products"])
+        self.assertEqual(result["keeping"], [self.cheap.name])
+        self.assertEqual(list(result["products"]), list(search_products({"gender": "male"}, self.store)["products"]))
 
     def test_a_new_budget_reports_what_it_ruled_out(self):
         """Silently swapping a perfume out is what made the conversation read as random."""
@@ -8966,14 +8537,13 @@ class ConversationContinuityTests(TestCase):
         self.assertIn("Green Irish Tweed", results["dropped"])
         self.assertIn("3300", results["dropped"]["Green Irish Tweed"])
 
-    def test_a_note_request_does_not_evict_a_discussed_perfume(self):
-        """Notes narrow the search; they are not a reason to drop what is being discussed."""
-        results = search_products(
-            {"gender": "male", "notes": ["oud"]}, store=self.store, keep={"Le Male"},
-        )
-
-        self.assertEqual(results["keeping"], ["Le Male"])
-        self.assertEqual(results["dropped"], {})
+    def test_a_new_ingredient_requirement_reassesses_the_discussed_perfume(self):
+        self.rival.top_notes = "Vanilla"
+        self.rival.save(update_fields=["top_notes"])
+        result = search_products({"notes": ["vanilla"]}, self.store, keep={self.cheap.name})
+        self.assertEqual(list(result["products"]), [self.rival])
+        self.assertEqual(result["keeping"], [])
+        self.assertIn(self.cheap.name, result["dropped"])
 
     def test_an_expensive_kept_perfume_still_reaches_the_scorer(self):
         """The candidate cap is ordered cheapest-first, so a costly perfume under discussion
@@ -9355,14 +8925,6 @@ class PerformanceLeadNoteTests(TestCase):
 
         self.assertEqual(_performance_note([], {"longevity": "long-lasting"}), "")
 
-    def test_the_note_reaches_the_recommendation_prompt(self):
-        import inspect
-
-        from products.services.ai import recommendation
-
-        source = inspect.getsource(recommendation.recommend)
-
-        self.assertIn("_performance_note(products, intent)", source)
 
 
 class LongevityBandTieBreakTests(TestCase):
@@ -9977,16 +9539,6 @@ class HarnessFalseDenialCheckTests(TestCase):
 
         self.assertNotIn("similarity_overclaim", codes)
 
-    def test_naming_a_perfume_does_not_set_the_brand(self):
-        """Inferring brand='Dior' from "سوفاج" collapsed a twelve-perfume shortlist to two
-        mainstream Dior products for a customer who had just asked for something uncommon."""
-        import inspect
-
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-
-        self.assertIn("NAMING A PERFUME IS NOT NAMING A BRAND", source)
 
 
 class NameTokenPunctuationTests(TestCase):
@@ -10352,16 +9904,6 @@ class WantedHeavyIsNotAvoidedTests(TestCase):
             self._clean({"projection": "moderate", "avoid_traits": ["heavy"]}), ["heavy"]
         )
 
-    def test_the_prompt_states_the_polarity_rule(self):
-        import inspect
-
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-
-        self.assertIn("POLARITY FIRST", source)
-        self.assertIn("عايزه حاجه تقيله للشتا", source)
-        self.assertIn("مش عايز حاجة تقيلة", source)
 
     def test_the_ranker_cannot_penalise_a_wanted_strength(self):
         """End to end: the intent a wanted-heavy customer produces must not carry the penalty."""
@@ -10659,27 +10201,7 @@ class NamedPerfumeSurvivesTheShortlistTests(TestCase):
         for leaked in ("similar_to", "exclude", "avoid", "مش عايزه", "بيحبه"):
             self.assertNotIn(leaked, block)
 
-    def test_the_guarantee_is_on_the_normal_path_not_just_the_empty_one(self):
-        """It used to guard only the nothing-found branch, which is not where 1099 failed."""
-        import inspect
 
-        from products.services.ai import recommendation
-
-        source = inspect.getsource(recommendation.recommend)
-        case_one = source[: source.index("# Case 2")]
-
-        self.assertIn("_named_but_missing_block(message, store, products", case_one)
-
-    def test_the_extractor_separates_product_interest_from_similarity(self):
-        import inspect
-
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-
-        self.assertIn("PRODUCT INTEREST IS NOT A SIMILARITY REQUEST", source)
-        self.assertIn("does NOT set 'similar_to' or 'similar_to_notes'", source)
-        self.assertIn("ليه مرشحتش", source)
 
 
 class NamedPerfumeIsNeverDeniedTests(TestCase):
@@ -10782,15 +10304,6 @@ class NamedPerfumeIsNeverDeniedTests(TestCase):
         self.assertIn("مش في البيانات دي\" ≠ \"مش موجود في الستور", prompt)
         self.assertNotIn("المنتج اللي مش في البيانات = مش موجود عندنا", prompt)
 
-    def test_the_nothing_found_branch_no_longer_asserts_unavailability(self):
-        import inspect
-
-        from products.services.ai import recommendation
-
-        source = inspect.getsource(recommendation.recommend)
-
-        self.assertIn("_named_in_message(message, store)", source)
-        self.assertNotIn("وأخبره أن العطر غير متوفر حالياً", source)
 
     def test_the_classifier_routes_why_didnt_you_recommend_to_product_info(self):
         import inspect
@@ -11269,7 +10782,7 @@ class ReferenceIsNotItsOwnLookalikeTests(TestCase):
 
     def _make(self, name, top, middle, base, price):
         product = Product.objects.create(
-            store=self.store, brand=self.brand, name=name, gender="male",
+            store=self.store, brand=self.brand, name=name, gender="male", scent_tags=["fresh", "woody"],
             top_notes=top, middle_notes=middle, base_notes=base,
         )
         ProductVariant.objects.create(
@@ -11315,18 +10828,12 @@ class ReferenceIsNotItsOwnLookalikeTests(TestCase):
 
         self.assertIsNone(results["reference_product"])
 
-    def test_the_self_match_never_set_the_band(self):
-        """The harness blamed has_close_match, and that was never the mechanism:
-        _similarity_summary already skips the reference when computing the best band. Pinned so
-        a future reader does not go hunting for a bug that is not there."""
-        results = search_products(
-            {"similar_to": "Dior Sauvage"}, store=self.store, keep={"Dior Sauvage"},
-        )
-
-        self.assertEqual(results["similarity"]["reference_name"], "Dior Sauvage")
-        self.assertTrue(
-            results["similarity"]["has_close_match"], "Ambero is a real close match"
-        )
+    def test_the_reference_is_excluded_even_when_it_is_the_only_style_match(self):
+        self.lookalike.scent_tags = ["sweet"]
+        self.lookalike.save(update_fields=["scent_tags"])
+        result = search_products({"similar_to": self.sauvage.name}, self.store)
+        self.assertFalse(result["products"].exists())
+        self.assertIsNone(result["similarity"])
 
     # ── the prompt half ──────────────────────────────────────────────────
     def _block(self, keep=frozenset()):
@@ -11363,16 +10870,6 @@ class ReferenceIsNotItsOwnLookalikeTests(TestCase):
             _reference_block(search_products({"gender": "male"}, store=self.store)), ""
         )
 
-    def test_both_branches_inject_the_block(self):
-        import inspect
-        from products.services.ai import recommendation
-
-        source = inspect.getsource(recommendation.recommend)
-
-        self.assertEqual(
-            source.count("_reference_block(search, max_price)"), 2,
-            "the exact-match and alternatives branches both need it",
-        )
 
 
 class NothingAffordableStillQuotesARealPriceTests(TestCase):
@@ -11503,7 +11000,7 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
     def _make(self, name, occasion, season, prices):
         product = Product.objects.create(
             store=self.store, brand=self.brand, name=name, gender="male",
-            occasion=occasion, season=season,
+            occasion=occasion, season=season, scent_tags=["fresh", "aquatic"],
             top_notes="Bergamot, Marine Notes", middle_notes="Hedione",
             base_notes="Musk",
         )
@@ -11524,14 +11021,15 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
 
     def test_the_gym_match_outranks_the_cheaper_evening_perfume(self):
         # The real catalogue numbers from the conversation.
-        self._make("Acqua di Gio", "Casual", "Spring/Summer", [(50, 503), (90, 1032)])
+        self._make("Acqua di Gio", "Sport", "Spring/Summer", [(50, 503), (90, 1032)])
         self._make("Armani Code", "Evening", "Fall/Winter", [(50, 633), (90, 866)])
         self._make("Y Eau de Parfum", "Formal", "All Seasons", [(50, 594), (90, 900)])
 
         names = self._ranked_names()
 
-        self.assertLess(names.index("Acqua di Gio"), names.index("Armani Code"))
-        self.assertLess(names.index("Acqua di Gio"), names.index("Y Eau de Parfum"))
+        self.assertIn("Acqua di Gio", names)
+        self.assertNotIn("Armani Code", names)
+        self.assertNotIn("Y Eau de Parfum", names)
 
     def test_the_only_sport_perfume_is_visible_on_a_tight_budget(self):
         """Invictus is the catalogue's only Sport perfume. At a 500 budget the strict filter
@@ -17791,7 +17289,7 @@ class RefusedBrandsLeaveTheCatalogueTests(TestCase):
 
     def _perfume(self, brand, name, gender, store=None):
         product = Product.objects.create(
-            store=store or self.store, brand=brand, name=name, gender=gender,
+            store=store or self.store, brand=brand, name=name, gender=gender, scent_tags=["fresh"],
             top_notes="Bergamot", middle_notes="Lavender", base_notes="Amber",
         )
         ProductVariant.objects.create(
@@ -18166,16 +17664,6 @@ class RefusedBrandsLeaveTheCatalogueTests(TestCase):
         )
 
     # -- the prompt text the extraction depends on -----------------------
-    def test_the_extractor_is_told_a_perfume_is_not_a_house(self):
-        """The one mis-inference that deletes a house over a single bottle, and it is suppressed
-        only by this text — there is no closed vocabulary to validate a brand against."""
-        from products.services.ai import intent as intent_module
-
-        source = inspect.getsource(intent_module.extract_intent)
-
-        self.assertIn("A PERFUME IS NOT A HOUSE", source)
-        self.assertIn("SWITCHING HOUSES IS NOT AN EXCLUSION", source)
-        self.assertIn("exclude_brands", source)
 
     def test_the_persona_stops_pitching_its_own_blends_when_they_are_refused(self):
         """The store-exclusive rule lives in the SYSTEM prompt, which every branch receives —
@@ -18253,7 +17741,7 @@ class Conv973SaidItTwiceTests(TestCase):
 
     def _make(self, name, brand, price):
         product = Product.objects.create(
-            store=self.store, brand=brand, name=name, gender="female",
+            store=self.store, brand=brand, name=name, gender="female", scent_tags=["floral", "musky"],
             top_notes="Rose", middle_notes="Jasmine", base_notes="Musk",
         )
         ProductVariant.objects.create(
@@ -18460,32 +17948,17 @@ class Conv973SaidItTwiceTests(TestCase):
 
     # ── the has_signal bypass (search_service) ──────────────────────────────────────
 
-    def test_a_turn_with_no_taste_signal_still_applies_the_penalty(self):
-        """The highest-value test here. `search_products` returns the legacy ordering without calling
-        `rank` at all when `has_signal` is false, so on a bare budget turn — no notes, no occasion,
-        nothing in the *intent* to discriminate on — the penalty would be unreachable on exactly the
-        kind of turn it exists for. Having offered something is a discriminator too; it comes from
-        the conversation rather than the intent, so `has_signal` cannot see it."""
-        intent = {"gender": "female", "max_price": 1010}
-        self.assertFalse(sales_ranking.has_signal(intent))
+    def test_previous_offers_remain_metadata_without_a_hidden_ranking_penalty(self):
+        result = search_products({"gender": "female"}, self.store, offered={self.bloom.name})
+        self.assertIn(self.bloom, result["products"])
+        self.assertEqual(result["offered"], [self.bloom.name])
+        self.assertEqual(result["ranked"], {})
 
-        results = search_products(
-            intent, store=self.store, offered=("Bloom", "Coco Mademoiselle")
-        )
-        names = [product.name for product in results["products"]]
-
-        self.assertNotIn("Bloom", names[:2])
-        self.assertNotIn("Coco Mademoiselle", names[:2])
-        self.assertIn("Bloom", names)
-
-    def test_the_penalty_reaches_the_shortlist_when_there_is_signal_too(self):
-        results = search_products(
-            {"gender": "female", "notes": ["rose"]}, store=self.store, offered=("Bloom",)
-        )
-        names = [product.name for product in results["products"]]
-
-        self.assertIn("Bloom", names)
-        self.assertNotEqual(names[0], "Bloom")
+    def test_style_filter_keeps_all_matches_and_records_previous_offers(self):
+        result = search_products({"scent_tags": ["floral"]}, self.store, offered={self.bloom.name})
+        self.assertIn(self.bloom, result["products"])
+        self.assertIn(self.coco, result["products"])
+        self.assertEqual(result["offered"], [self.bloom.name])
 
     def test_nothing_offered_leaves_the_search_as_it_was(self):
         intent = {"gender": "female", "notes": ["rose"]}
@@ -18667,7 +18140,7 @@ class Conv973SaidItTwiceTests(TestCase):
         with mock.patch(
             "products.services.ai.recommendation.chat", return_value="رد"
         ), mock.patch(
-            "products.services.ai.recommendation.get_system_prompt", return_value="sys"
+            "products.services.ai.scent_recommendation.get_system_prompt", return_value="sys"
         ):
             _, context = recommend(
                 "اي تاني",
@@ -19040,8 +18513,13 @@ class Conv973SaidItTwiceTests(TestCase):
     # ── the retry (router._rephrased) ───────────────────────────────────────────────
 
     def _verified_price_context(self):
-        """Repetition fixtures also need the catalogue evidence required by pricing."""
+        """Repetition fixtures need the catalog evidence for their prices and occasions."""
         from products.services.product_formatting import format_products
+        from products.occasions import ACTIVE, DAILY, FORMAL
+        for product, occasion in ((self.coco, FORMAL), (self.bloom, DAILY),
+                                  (self.light_blue, f"{DAILY}; {ACTIVE}")):
+            product.occasion = occasion
+            product.save(update_fields=["occasion"])
         for product, price in ((self.coco, 1006), (self.chloe, 1058), (self.light_blue, 852)):
             ProductVariant.objects.get_or_create(product=product, volume=90,
                 defaults={"price": price, "bottle_type": "normal"})

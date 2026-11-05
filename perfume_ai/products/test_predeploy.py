@@ -89,65 +89,59 @@ class CheckoutFollowupTests(BugFixture):
 
 
 class UnaffordableRecommendationTests(BugFixture):
-    def reply(self, intent, message="عايز عطر رجالي"):
+    def reply(self, intent):
         from products.services.ai.recommendation import recommend
+        from products.services.search_service import search_products
+        for product in (self.a, self.b):
+            product.scent_tags = ["woody"]
+            product.save(update_fields=["scent_tags"])
+        found = search_products(intent, self.store)
         with patch("products.services.ai.recommendation.chat") as chat:
-            result = recommend(message=message, products=[], alternatives=[self.a, self.b], intent=intent, store=self.store)
+            result = recommend("رشحلي", found["products"], intent=intent, store=self.store, search=found)
         chat.assert_not_called()
         return result
 
-    def test_price_floor_does_not_relax_the_budget_or_offer_a_far_above_budget_product(self):
-        intent = {"max_price": 500, "gender": "male"}
+    def test_empty_budget_match_does_not_offer_an_unaffordable_product(self):
+        intent = {"max_price": 500, "gender": "male", "scent_tags": ["woody"]}
         reply, context = self.reply(intent)
-        self.assertIn("607", reply)
-        self.assertIn("500", reply)
-        self.assertIn("أعلى من ميزانيتك", reply)
         self.assertNotIn(self.a.name, reply)
-        self.assertNotIn("PENDING_RELAX", context)
-        self.assertEqual(intent, {"max_price": 500, "gender": "male"})
-
-    def test_followups_acknowledge_new_exclusions_and_answer_availability(self):
-        first, _ = self.reply({"max_price": 500})
-        intent = {"max_price": 500, "avoid_notes": ["oud"]}
-        second, _ = self.reply(intent, "مش بحب العود خالص")
-        third, _ = self.reply(intent, "طيب ايه اللي عندك؟")
-        self.assertIn("استبعاد الروائح", second)
-        self.assertIn("607", third)
-        self.assertNotEqual(first, second)
-        self.assertNotEqual(second, third)
+        self.assertNotIn(self.b.name, reply)
+        self.assertFalse(quote_evidence(context))
+        self.assertIn("max_price=offered", context)
         self.assertEqual(intent["max_price"], 500)
 
-    def test_price_floor_uses_the_requested_size_and_sellable_stock(self):
-        ProductVariant.objects.create(product=self.a, volume=90, price=100, bottle_type="original", stock=0)
-        reply, _ = self.reply({"max_price": 500, "requested_volume": 90})
-        self.assertIn("700", reply)
-        self.assertNotIn("607", reply)
-
-    def test_budget_explanation_survives_the_router_price_guard(self):
-        from products.services.router import _rephrased
-        intent = {"max_price": 500, "avoid_notes": ["oud"]}
-        reply, context = self.reply(intent, "مش بحب العود خالص")
-        retry = Mock(side_effect=AssertionError("A verified price needs no regeneration"))
-        final, _, _ = _rephrased(reply, context, [], self.store, retry,
-                                 recommendation_intent=intent, recommendation_candidates=[])
-        self.assertEqual(final, reply)
-        self.assertIn("607", final)
-        self.assertIn("500", final)
-        retry.assert_not_called()
-
-    def test_total_budget_explanation_keeps_verified_quantity_and_unit_price(self):
-        from products.services.router import _rephrased
-        intent = {"max_price": 500, "budget_scope": "total", "purchase_quantity": 2}
+    def test_relaxation_offer_keeps_size_and_scent_exclusions_until_accepted(self):
+        from products.services.conversation_service import merge_preferences
+        intent = {"max_price": 500, "requested_volume": 90, "excluded_scent_tags": ["oud"]}
         reply, context = self.reply(intent)
-        retry = Mock(side_effect=AssertionError("A verified total needs no regeneration"))
+        merge_preferences(self.conv, intent)
+        self.assertEqual(self.conv.preferences["requested_volume"], 90)
+        self.assertEqual(self.conv.preferences["excluded_scent_tags"], ["oud"])
+        self.assertEqual(self.conv.preferences["max_price"], 500)
+        self.assertIn("max_price=offered", context)
+
+    def test_unavailable_size_cannot_be_fixed_by_a_budget_relaxation(self):
+        reply, context = self.reply({"max_price": 500, "requested_volume": 150})
+        self.assertNotIn("max_price=offered", context)
+        self.assertNotIn("ميزاني", reply)
+        self.assertFalse(quote_evidence(context))
+
+    def test_no_match_reply_passes_the_existing_reply_guard(self):
+        from products.services.router import _rephrased
+        intent = {"max_price": 500, "scent_tags": ["woody"]}
+        reply, context = self.reply(intent)
+        retry = Mock(side_effect=AssertionError("No product facts were claimed"))
         final, _, _ = _rephrased(reply, context, [], self.store, retry,
                                  recommendation_intent=intent, recommendation_candidates=[])
-        self.assertIn("1214", final)
-        evidence = quote_evidence(context)
-        self.assertEqual(evidence["quotes"][0]["quantity"], 2)
-        self.assertEqual(Decimal(evidence["quotes"][0]["price"]), 607)
         self.assertEqual(final, reply)
         retry.assert_not_called()
+
+    def test_total_budget_failure_never_quotes_affordable_individual_bottles(self):
+        intent = {"max_price": 1000, "budget_scope": "total", "purchase_quantity": 2}
+        reply, context = self.reply(intent)
+        self.assertIn("max_price=offered", context)
+        self.assertNotIn(self.a.name, reply)
+        self.assertFalse(quote_evidence(context))
 
 
 class ReferenceNameCollisionTests(BugFixture):

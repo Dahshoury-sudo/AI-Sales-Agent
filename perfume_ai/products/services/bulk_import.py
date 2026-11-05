@@ -2,6 +2,8 @@ import openpyxl
 from io import BytesIO
 from decimal import Decimal, InvalidOperation
 from products.models import Store, Brand, Category, Product, ProductVariant
+from products.scent_tags import parse_scent_tags_cell
+from django.core.exceptions import ValidationError
 
 
 # Valid choices (must match model field choices exactly)
@@ -44,12 +46,12 @@ def parse_excel(file_bytes, store):
     Parse an Excel file and bulk-create products for a given store.
     Returns a dict with 'created' count, 'errors' list, and 'skipped' count.
 
-    Columns are resolved by **header name** (row 1), so the order/count of
-    variant columns does not need to be fixed — the file can have 2 or 3
-    normal-size columns and the importer adapts automatically.
+    All columns, including scent_tags, are resolved by **header name** (row 1),
+    so column order is flexible. Variant columns can also be omitted — the file
+    can have 2 or 3 normal-size columns and the importer adapts automatically.
 
     Required headers:  name, brand
-    Optional headers:  category, gender, perfume_type, season, occasion,
+    Optional headers:  category, gender, perfume_type, season, occasion, scent_tags,
                        longevity, projection, concentration,
                        top_notes, middle_notes, base_notes, description,
                        norm_vol_1, norm_price_1,
@@ -104,6 +106,13 @@ def parse_excel(file_bytes, store):
             results["errors"].append(
                 f"سطر {row_idx}: اسم المنتج أو البراند ناقص - تم تخطيه."
             )
+            results["skipped"] += 1
+            continue
+
+        try:
+            scent_tags = parse_scent_tags_cell(_get(row, col_map, "scent_tags"))
+        except ValidationError as exc:
+            results["errors"].append(f"سطر {row_idx}: {' '.join(exc.messages)}")
             results["skipped"] += 1
             continue
 
@@ -168,6 +177,7 @@ def parse_excel(file_bytes, store):
                 middle_notes=str(_get(row, col_map, "middle_notes", "")).strip(),
                 base_notes=str(_get(row, col_map, "base_notes", "")).strip(),
                 description=str(_get(row, col_map, "description", "")).strip(),
+                scent_tags=scent_tags,
             )
 
             variant_count = 0

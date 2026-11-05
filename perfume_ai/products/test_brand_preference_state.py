@@ -184,7 +184,7 @@ class BrandPreferenceStateTests(TestCase):
                         {"occasion": "evening", "projection": "moderate", "avoid_traits": ["strong"]}):
             with self.subTest(payload=payload), patch("products.services.ai.intent.chat", return_value=json.dumps(payload)):
                 intent = extract_intent(message, store=self.store)
-            self.assertEqual(intent["occasion"], "daytime")
+            self.assertEqual(intent["occasion"], "Daily & Casual")
             self.assertEqual(intent["projection"], "strong")
             self.assertEqual(intent["longevity"], "long-lasting")
             self.assertNotIn("strong", intent["avoid_traits"])
@@ -194,7 +194,7 @@ class BrandPreferenceStateTests(TestCase):
     def test_explicit_daytime_performance_survives_malformed_model_json(self):
         with patch("products.services.ai.intent.chat", return_value="invalid JSON"):
             intent = extract_intent("عايز عطر نهاري ثابت وفواح", store=self.store)
-        self.assertEqual(intent, {"occasion": "daytime", "projection": "strong", "longevity": "long-lasting",
+        self.assertEqual(intent, {"occasion": "Daily & Casual", "projection": "strong", "longevity": "long-lasting",
                                   "recommendation_mode": "new_goal"})
 
     def test_daytime_performance_override_does_not_reinterpret_names_or_questions(self):
