@@ -65,6 +65,9 @@ def request_mode(message, history=None, store=None, *, occasion_evidence=None):
         return ""
     if re.match(r"^(?:(?:طيب|طب)\s+)?(?:هل|هو|هي|is|does)\b", text):
         return ""
+    from .gender import pending_answer
+    if pending_answer(message, history, store=store):
+        return "refinement"
     if delegates_occasion(message, history) and not explicit_criteria(message).get("occasion"):
         return "refinement"
     similar = similarity_requested(message)

@@ -16,7 +16,7 @@ _DELEGATE = re.compile(
 _NEGATIVE = re.compile(r"(?<!\w)(?:مش|لا|بلاش|متختارش|not|don't|dont|do\s+not)\s*$")
 _SELF_CHOICE = re.compile(r"(?<!\w)(?:انا|انا\s+اللي|عايز|عاوز|محتاج|خليني|i\s+want\s+to|let\s+me)\s*$")
 _OCCASION_SCOPE = re.compile(r"مناسبه|مناسبات|استخدام|هتستخدم|بتستخدم|occasion|when.*wear|wear.*when|نهار.*ليل|day.*night")
-_OTHER_QUESTION = re.compile(r"ريحه|ستايل|طابع|فريش|سويت|حجم|ملي|ميزانيه|سعر|انهي|اي واحد|scent|style|fresh|sweet|size|bottle|budget|price|which")
+_OTHER_QUESTION = re.compile(r"ريحه|ستايل|طابع|فريش|سويت|حجم|ملي|ميزانيه|سعر|انهي|اي واحد|رجالي|حريمي|نسائي|للجنسين|gender|male|female|unisex|scent|style|fresh|sweet|size|bottle|budget|price|which")
 _SCOPED_CHOICE = re.compile(
     r"(?:choose|pick|select|decide)\s+(?:(?:the|a)\s+)?(?:scent|style|size|bottle|brand)|"
     r"اختار(?:لي)?\s+(?:(?:لي|انت)\s+)?(?:الريحه|الستايل|الطابع|الحجم|الزجاجه|البراند)|"
@@ -46,7 +46,8 @@ def _other_choice(message, history):
     if _OCCASION_SCOPE.search(text) or occasion_question(history):
         return False
     previous = _previous_reply(history)
-    return bool(_SCOPED_CHOICE.search(text) or (
+    from .gender import question_pending
+    return bool(question_pending(history) or _SCOPED_CHOICE.search(text) or (
         re.search(r"[؟?]", previous) and _OTHER_QUESTION.search(normalize_text(previous))
     ))
 

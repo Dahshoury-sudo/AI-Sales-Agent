@@ -126,7 +126,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "Respect preferred brands where possible and identify a different brand when choosing it. "
         "Use previous offers and current discussion for continuity; when asked for other choices, prefer an unoffered match. "
         "Do not repeat earlier sales sentences, ask for an occasion, or ask for a scent preference already supplied. "
-        "If gender is unknown, prefer suitable unisex choices and briefly clarify gender in the same reply when needed. "
+        "The recommendation flow requires a customer gender choice before selection. "
+        "Honor that choice, do not infer it from perfume names, and do not ask for it again. "
         "Do NOT write prices, bottle volumes, or totals in reply: code will append actual eligible quotations. "
         "Write naturally and briefly, with no internal IDs, scoring, labels about system behavior, or premature checkout request."
     )

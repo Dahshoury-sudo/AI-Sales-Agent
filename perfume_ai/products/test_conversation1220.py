@@ -158,6 +158,8 @@ class Conversation1220Tests(TestCase):
         info.assert_not_called()
 
     def test_replay_selection_brand_change_and_accepted_prices(self):
+        self.conv.preferences = {"gender": "male"}
+        self.conv.save(update_fields=["preferences"])
         save_message(self.conv, "user", "تقيله وخشبية")
         self.offer([self.vip, self.black])
         with patch("products.services.router.classify", return_value="product_info"), patch(

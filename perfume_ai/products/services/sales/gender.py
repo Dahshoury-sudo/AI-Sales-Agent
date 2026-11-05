@@ -1,54 +1,31 @@
-"""Resolve who a perfume is for, preferring data over asking.
+"""Customer gender choices and the pending recommendation question.
 
-The failure this exists for: "عندك حاجه زي 9pm بتاع افنان؟" was answered with
-"بتدور على عطر رجالي ولا حريمي؟". 9PM is in the catalogue with gender=male, so the
-router asked a question its own database already answered — and spent the customer's
-most information-dense turn on protocol.
-
-The old gate scanned for literal Arabic gender words and nothing else, so any request
-carrying its gender implicitly (a named perfume, a similarity target) read as "gender
-unknown". Worse, the gate ran before the taste-information check, which meant the
-`similar_to` clause added to that check specifically to protect lookalike requests was
-unreachable whenever a gender was absent.
-
-Resolution order, strongest evidence first:
-
-  1. what the extractor already put in the intent;
-  2. explicit gender words in the message or history;
-  3. the recorded gender of any catalogue perfume named in the conversation —
-     including the similarity target, which is the whole point;
-  4. unresolved.
-
-Step 3 deliberately ignores `unisex` products as evidence: a unisex perfume tells us
-nothing about who is shopping, so inferring from it would be inventing a fact.
+Recommendations require a customer choice, supplied now or saved for the same
+recipient. The legacy catalog resolver remains available to product information.
 """
 
+import re
+
 from ..static_faq_service import normalize_arabic
+
+QUESTION = "حضرتك محتاج برفان رجالي ولا حريمي"
+REQUIRED_MARKER = "GENDER_REQUIRED"
+MULTIPLE_QUESTION = "خلينا نختارهم واحد واحد عشان أقدر أركز معاك. تحب نبدأ بالرجالي ولا الحريمي؟"
+VALID_GENDERS = frozenset({"male", "female", "unisex"})
 
 # The single copy of the vocabulary the router used inline. Relationship words
 # ("لمراتي") are simultaneously gender clues and gift clues, which is why
 # sales.constraints reuses the same idea for gift detection.
 #
-# Matching is substring-based, so an entry earns its place only if it cannot appear inside an
-# unrelated word — and on the female side that rules out almost every short form, because in
-# Egyptian "ست" is also the number six. Rejected after testing against real phrasings:
-#
-#   * bare "ست" — inside "ستة", "مستحضر", and "لستة" (which normalize_arabic delivers as
-#     "لسته", since it maps ة→ه);
-#   * "الست" — "بكام الست حجات دي" is six items, not a woman, and it resolved female;
-#   * "ستي" — inside "ستين", so "حاجة بستين جنيه" resolved female.
-#
-# "للست" survives because the doubled lam does not occur in the number forms. The asymmetry
-# with "راجل" below is therefore a property of the language, not an oversight: there is no
-# equally safe bare female word. It is also why the recommendation prompt asks "رجالي ولا
-# حريمي" — those two are the least collision-prone words in this file, and a question whose
-# answer this vocabulary cannot read is not a question at all (conversation 910).
+# Choice parsing uses word boundaries and common Arabic prefixes. Ambiguous forms
+# such as "ست" and "الست" remain excluded because they can mean the number six;
+# "للست" identifies a recipient without that ambiguity.
 MALE_WORDS = (
     # Bare, because a direct question invites a bare answer. "راجل" is the most natural
     # one-word reply and was the wording the *old* prompt invited with "العطر لراجل ولا لست؟",
     # yet it matched nothing here — so a customer who answered the question was treated as
-    # never having answered it. Subsumes "لراجل", "انا راجل" and "أنا راجل", which is why
-    # those are gone rather than kept alongside it.
+    # never having answered it. Prefix-aware matching also handles "لراجل", while
+    # word boundaries recognize "راجل" in "انا راجل" and "أنا راجل".
     "راجل",
     "رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي", "شبابي", "شاب",
     "رجاله", "عريس", "لصاحبي", "لاخويا", "لأخويا", "لابويا", "لأبويا",
@@ -68,6 +45,155 @@ UNISEX_WORDS = (
 # Any of these means the customer told us who it is for, even if we cannot tell which
 # — the router uses this to decide whether asking is still worth a turn.
 ALL_WORDS = MALE_WORDS + FEMALE_WORDS + UNISEX_WORDS
+
+_CATEGORIES = {
+    "male": ("male", "men", "mens", "men's", "رجالي", "رجاليه", "للرجال", "رجاله", "ولادي", "شبابي"),
+    "female": ("female", "women", "womens", "women's", "ladies", "حريمي", "حريميه", "نسائي", "نسائيه", "بناتي"),
+    "unisex": UNISEX_WORDS,
+}
+_RECIPIENTS = {
+    "male": (*MALE_WORDS, "man", "boy", "for him", "for my husband", "for my boyfriend", "for my fiance",
+             "for my father", "for my dad", "for my brother", "for my son", "لزوجي", "لولد"),
+    "female": (*FEMALE_WORDS, "woman", "girl", "for her", "for my wife", "for my girlfriend", "for my fiancee",
+               "for my mother", "for my mom", "for my sister", "for my daughter", "لزوجتي", "لامي"),
+}
+_NEGATIVE = re.compile(
+    r"(?<!\w)(?:مش|لا|بلاش|بدون|غير|not|no|without|don't|dont)"
+    r"(?:\s+(?:عايز(?:ه)?|عاوز(?:ه)?|محتاج(?:ه)?|want|need|a|an|the|for)){0,4}\s*$"
+)
+_CONNECTOR = re.compile(r"\s*(?:و|او|ولا|and|or|nor)\s*")
+_ALTERNATIVE = re.compile(r"(?<!\w)(?:او|ولا|or)(?!\w)")
+_REFERENCE_SPAN = re.compile(
+    r"(?<!\w)(?:similar\s+to|something\s+like|perfume\s+like|fragrance\s+like|شبه|زي|بديل)\s+"
+    r".+?(?=\s+(?:but|بس|لكن|for\s+(?:my|him|her)|ل(?:مراتي|خطيبتي|جوزي|اخويا|اختي|زوجتي)|"
+    r"رجالي|حريمي|unisex)(?!\w)|[.!؟?،;]|$)"
+)
+_UNRESOLVED_ANSWER = re.compile(
+    r"(?:(?:طيب|طب)\s+)?(?:تمام|اه|ايوه|ماشي|ليا|لنفسي|هديه|لحد عزيز|مش عارف(?:ه)?|"
+    r"انت اختار|اختار(?:لي)?(?: انت)?|علي ذوقك|اي حاجه|ok|okay|yes|sure|for me|"
+    r"a gift|don't know|not sure|you choose|choose for me|surprise me)[.!؟?]*"
+)
+_OTHER_REQUEST = re.compile(
+    r"(?<!\w)(?:ضيف|هاخد|هشتري|اطلب|الغي|الغاء|كنسل|موظف|حد اكلمه|بكام|سعر|ثبات|فوحان|"
+    r"شحن|توصيل|عنوان|مواعيد|order|buy|add|cancel|human|price|cost|delivery|shipping)(?!\w)|"
+    r"^(?:هل|هو|هي|عندك|how|what|why|is|does)\b"
+)
+
+
+def _text(message):
+    return " ".join(normalize_arabic(message or "").replace("’", "'").split())
+
+
+def _compile_words(table):
+    aliases = {}
+    for gender, words in table.items():
+        for word in words:
+            word = _text(word)
+            aliases[word] = gender
+            if re.match(r"[\u0600-\u06ff]", word):
+                for prefix in ("و", "ل", "ال", "لل", "وال", "ول"):
+                    aliases[prefix + word] = gender
+    pattern = re.compile(r"(?<!\w)(?:" + "|".join(
+        re.escape(word) for word in sorted(aliases, key=lambda word: (-len(word), word))
+    ) + r")(?!\w)")
+    return pattern, aliases
+
+
+_CATEGORY_WORDS = _compile_words(_CATEGORIES)
+_RECIPIENT_WORDS = _compile_words(_RECIPIENTS)
+
+
+def _groups(text, words):
+    pattern, aliases = words
+    groups = set()
+    previous_end, previous_negative = 0, False
+    for match in pattern.finditer(text):
+        negative = bool(_NEGATIVE.search(text[:match.start()])) or bool(
+            previous_negative and _CONNECTOR.fullmatch(text[previous_end:match.start()])
+        )
+        if not negative:
+            groups.add(aliases[match.group()])
+        previous_end, previous_negative = match.end(), negative
+    return groups
+
+
+def _choice(text):
+    groups = _groups(text, _CATEGORY_WORDS) or _groups(text, _RECIPIENT_WORDS)
+    if "unisex" in groups:
+        return "unisex"
+    if len(groups) == 1:
+        return next(iter(groups))
+    if len(groups) > 1 and not _ALTERNATIVE.search(text):
+        return "multiple"
+    return None
+
+
+def canonical(value):
+    return value.strip().lower() if isinstance(value, str) and value.strip().lower() in VALID_GENDERS else None
+
+
+def customer_choice(message, intent=None, store=None):
+    """A choice grounded in customer wording, with perfume names masked."""
+    text = _text(message)
+    if _CATEGORY_WORDS[0].fullmatch(text) or _RECIPIENT_WORDS[0].fullmatch(text):
+        return _choice(text)
+    if not (_CATEGORY_WORDS[0].search(text) or _RECIPIENT_WORDS[0].search(text)):
+        return None
+    names = [(intent or {}).get("similar_to")]
+    if store:
+        from products.models import Product
+        names.extend(Product.objects.filter(store=store).values_list("name", flat=True))
+    for name in sorted((_text(name) for name in names if isinstance(name, str) and name), key=len, reverse=True):
+        text = re.sub(r"(?<!\w)" + re.escape(name) + r"(?!\w)", " perfume_reference ", text)
+    text = _REFERENCE_SPAN.sub(" ", text)
+    return _choice(text)
+
+
+def sanitize_updates(intent, message=None, store=None):
+    """Never persist a model-inferred gender from a perfume or customer name."""
+    result = dict(intent or {})
+    previous = result.pop("gender", None)
+    gender = canonical(previous) if message is None else customer_choice(message, result, store)
+    if gender:
+        result["gender"] = gender
+        result["clear_preferences"] = [key for key in (result.get("clear_preferences") or []) if key != "gender"]
+        if not result["clear_preferences"]:
+            result.pop("clear_preferences")
+    return result
+
+
+def from_customer_history(history, store=None):
+    from .reference import _RESET, _normalized
+    for row in reversed(history or []):
+        if row.get("role") != "user":
+            continue
+        message = row.get("content", "")
+        choice = customer_choice(message, store=store)
+        if choice or _RESET.search(_normalized(message)):
+            return choice
+    return None
+
+
+def question_pending(history=None, conversation=None):
+    if conversation is not None:
+        latest = conversation.messages.filter(role__in=("assistant", "agent"), delivery_status="sent").order_by("-created_at", "-pk").first()
+        if latest:
+            return latest.role == "assistant" and (
+                REQUIRED_MARKER in (latest.internal_context or "") or _text(latest.content) == _text(QUESTION)
+                or "MULTIPLE_RECIPIENTS" in (latest.internal_context or "")
+            )
+    latest = next((row for row in reversed(history or []) if row.get("role") in ("assistant", "agent")), {})
+    return latest.get("role") == "assistant" and _text(latest.get("content", "")) in {_text(QUESTION), _text(MULTIPLE_QUESTION)}
+
+
+def pending_answer(message, history=None, conversation=None, store=None):
+    if not question_pending(history, conversation):
+        return False
+    text = _text(message)
+    if len(text.split()) > 16 or _OTHER_REQUEST.search(text):
+        return False
+    return bool(customer_choice(message, store=store) or _UNRESOLVED_ANSWER.fullmatch(text)
+                or _groups(text, _CATEGORY_WORDS))
 
 
 def _conversation_text(message, history=None):
@@ -92,20 +218,11 @@ def mentioned_in_words(message, history=None):
 
 def from_words(message, history=None):
     """Gender stated outright, or implied by a relationship word."""
-    text = _conversation_text(message, history)
-
-    if any(normalize_arabic(word) in text for word in UNISEX_WORDS):
-        return "unisex"
-
-    male = any(normalize_arabic(word) in text for word in MALE_WORDS)
-    female = any(normalize_arabic(word) in text for word in FEMALE_WORDS)
-    if male and not female:
-        return "male"
-    if female and not male:
-        return "female"
-    # Both present is the "واحد ليا وواحد لمراتي" case. The extractor owns that
-    # decision (unisex, or 'multiple' when the customer rejects unisex); guessing
-    # here would override it.
+    texts = [message] + [row.get("content", "") for row in reversed(history or []) if row.get("role") == "user"]
+    for text in texts:
+        choice = _choice(_text(text))
+        if choice:
+            return choice if choice in VALID_GENDERS else None
     return None
 
 

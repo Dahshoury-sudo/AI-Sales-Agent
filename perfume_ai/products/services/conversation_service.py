@@ -538,10 +538,21 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     from .sales.reference import prepare_similarity, STATE_KEY
     prepared = prepare_similarity(conversation, merged, message, history, store)
     merged, saved = prepared.intent, prepared.preferences
+    from .sales import gender as sales_gender
+    merged = sales_gender.sanitize_updates(merged, message, store or getattr(conversation, "store", None))
     saved = {key: value for key, value in saved.items() if key not in replaced}
+    saved_gender = sales_gender.canonical(saved.get("gender"))
+    if saved_gender:
+        saved["gender"] = saved_gender
+    else:
+        saved.pop("gender", None)
     if str(saved.get("occasion") or "").lower() == "multiple":
         saved.pop("occasion", None)
     if conversation is None:
+        if not merged.get("gender") and not merged.get("reset_preferences") and "gender" not in (merged.get("clear_preferences") or []):
+            history_gender = sales_gender.from_customer_history(history, store)
+            if history_gender:
+                merged["gender"] = history_gender
         merge_scent_preferences(merged, fresh_scent, {}, message)
         merge_occasion_preferences(merged, fresh_occasion, history)
         apply_strictness(merged, saved, fresh_brand_intent, message, history=history, store=store)

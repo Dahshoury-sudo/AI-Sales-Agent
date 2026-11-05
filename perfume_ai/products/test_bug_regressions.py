@@ -413,7 +413,7 @@ class Conversation1163RecommendationTests(BugFixture):
         with patch("products.services.router.classify", return_value="recommendation"), patch(
             "products.services.router.extract_intent", return_value=self.intent
         ), patch("products.services.ai.recommendation.chat", return_value=draft):
-            reply, context = route("عاوز حاجة بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
+            reply, context = route("عاوز حاجة رجالي بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
         self.conv.refresh_from_db()
         reply = sanitize_reply(reply, self.conv)
         for expected in ("Vanilo", "Leatherio", "خشبي", "فوحانه قوي", "450", "592"):
@@ -1034,6 +1034,7 @@ class AgentEvaluationFixTests(BugFixture):
 
     def test_authenticity_survives_followups_and_blocks_original_bottle(self):
         from products.services.router import route
+        merge_preferences(self.conv, {"gender": "male"})
         with patch("products.services.router.classify") as classify:
             reply, _ = route("مش عايز تركيبات بتاعتكم، عايز براندات أصلية", [], self.store, self.conv)
             self.assertIn("كلها تركيب", reply)
@@ -1068,7 +1069,7 @@ class AgentEvaluationFixTests(BugFixture):
     def test_unknown_similarity_asks_without_recommendation(self):
         from products.services.router import route
         with patch("products.services.router.classify", return_value="recommendation"), patch("products.services.router.extract_intent", return_value={"similar_to":"Lattafa Khamrah"}), patch("products.services.router.recommend") as recommend:
-            reply, _ = route("عايز عطر زي Lattafa Khamrah", [], self.store, self.conv)
+            reply, _ = route("عايز عطر رجالي زي Lattafa Khamrah", [], self.store, self.conv)
         recommend.assert_not_called()
         self.assertIn("طابع الريحة", reply)
         self.assertIn("؟", reply)
@@ -1135,7 +1136,7 @@ class AgentEvaluationFixTests(BugFixture):
 
     def test_unknown_reference_answer_supplies_labels_without_inventing_reference_notes(self):
         from products.services.router import route
-        merge_preferences(self.conv, {"similar_to": "Mystery Perfume"}, "عايز حاجة شبه Mystery Perfume")
+        merge_preferences(self.conv, {"similar_to": "Mystery Perfume"}, "عايز حاجة رجالي شبه Mystery Perfume")
         question = "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟"
         save_message(self.conv, "assistant", question, internal_context="SIMILARITY_NEEDS_PROFILE")
         with patch("products.services.router.classify", return_value="recommendation"), \

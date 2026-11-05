@@ -598,6 +598,11 @@ def route(message, history=None, store=None, conversation=None):
     from .static_faq_service import match_static_faq, normalize_arabic
     import re
     normalized = normalize_arabic(message)
+    gender_followup = sales_gender.pending_answer(message, history, conversation, store)
+    if gender_followup and not sales_gender.question_pending(history) and conversation:
+        latest = conversation.messages.filter(role="assistant", delivery_status="sent").order_by("-created_at", "-pk").first()
+        if latest:
+            history = [*history, {"role": "assistant", "content": latest.content}]
     accepted_prices = accepts_price_offer(message, history, conversation)
     original = sales_constraints.original_liquid_update(message)
     if original is not None or sales_constraints.explicit_updates(message).get("reset_preferences"):
@@ -619,7 +624,7 @@ def route(message, history=None, store=None, conversation=None):
         return handle_price_dispute(message, store, conversation)
     checkout_update = active_cart and re.search(
         r"\d[\d\s-]{6,}\d|اسمي|عنواني|موبايلي|الرقم البديل|خلي|غيّر|غير الكميه|ضيف|شيل", message)
-    if checkout_update and request_type in (None, "order"):
+    if checkout_update and request_type in (None, "order") and not gender_followup:
         if request_type is None:
             record_llm_message(store)
         reply, context = handle_order(message, history, store, conversation)
@@ -640,7 +645,7 @@ def route(message, history=None, store=None, conversation=None):
                 cart.save(update_fields=["quote"])
         return reply, context
     faq_match = match_static_faq(message, store)
-    if faq_match and request_type in (None, "faq", "greeting") and not accepted_prices:
+    if faq_match and request_type in (None, "faq", "greeting") and not accepted_prices and not gender_followup:
         return faq_match["answer"], ""
 
     # --- Goodbye loop detection ---
@@ -661,7 +666,9 @@ def route(message, history=None, store=None, conversation=None):
     # early classification, reuse that result without counting the message twice.
     if request_type is None:
         record_llm_message(store)
-        request_type = classify(message, history, promotion_context=promotion_facts)
+        request_type = "recommendation" if gender_followup else classify(message, history, promotion_context=promotion_facts)
+    if gender_followup:
+        request_type = "recommendation"
     if request_type == "promotion" and regular_purchase:
         # A classifier must not trap an explicit switch to normal prices.
         request_type = "order" if promotion_service.checkout_requested(message) else "faq"
@@ -681,7 +688,7 @@ def route(message, history=None, store=None, conversation=None):
     if request_type in ("recommendation", "order", "product_info", "faq") and occasion_reference_requested(message):
         request_type = "product_info"
     from .sales.request_updates import request_mode
-    recommendation_mode = request_mode(message, history, store)
+    recommendation_mode = "refinement" if gender_followup else request_mode(message, history, store)
     if recommendation_mode and request_type in ("recommendation", "product_info", "faq", "order", "out_of_domain"):
         request_type = "recommendation"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message):
@@ -729,6 +736,26 @@ def route(message, history=None, store=None, conversation=None):
     # the turn simply falls through to the behaviour it had before. It outranks the
     # classification because "غالي" arrives labelled faq or product_info, and answering
     # those as ordinary questions is the defend-instead-of-address bug.
+    if request_type == "recommendation":
+        from .sales.scent_preferences import has_scent_preference
+
+        fresh = extract_intent(message, history, store)
+        supplied_style = has_scent_preference({key: value for key, value in fresh.items() if key != "similar_to"})
+        previous_context = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                            .order_by("-created_at", "-pk").values_list("internal_context", flat=True).first()) if conversation else ""
+        previous_reply = next((entry.get("content", "") for entry in reversed(history or []) if entry.get("role") == "assistant"), "")
+        if supplied_style and ("SIMILARITY_NEEDS_PROFILE" in (previous_context or "")
+                               or previous_reply.startswith("قولي طابع الريحة اللي بتدور عليه")):
+            fresh["clear_preferences"] = list(set(fresh.get("clear_preferences") or []) | {"similar_to", "similar_to_notes"})
+        intent = merge_preferences(
+            conversation, fresh, message,
+            pending=sales_described.pending_relaxations(conversation), history=history, store=store,
+        )
+        if intent.get("gender") == "multiple":
+            return sales_gender.MULTIPLE_QUESTION, "MULTIPLE_RECIPIENTS"
+        if not sales_gender.canonical(intent.get("gender")):
+            return sales_gender.QUESTION, sales_gender.REQUIRED_MARKER
+
     objection = None
     if request_type in OBJECTION_ELIGIBLE and not _wants_a_human(message):
         objection = sales_objection.detect(message, history)
@@ -803,20 +830,6 @@ def route(message, history=None, store=None, conversation=None):
         )
 
     if request_type == "recommendation":
-        from .sales.scent_preferences import has_scent_preference
-
-        fresh = extract_intent(message, history, store)
-        supplied_style = has_scent_preference({key: value for key, value in fresh.items() if key != "similar_to"})
-        previous_context = (conversation.messages.filter(role="assistant", delivery_status="sent")
-                            .order_by("-created_at", "-pk").values_list("internal_context", flat=True).first()) if conversation else ""
-        previous_reply = next((entry.get("content", "") for entry in reversed(history or []) if entry.get("role") == "assistant"), "")
-        if supplied_style and ("SIMILARITY_NEEDS_PROFILE" in (previous_context or "")
-                               or previous_reply.startswith("قولي طابع الريحة اللي بتدور عليه")):
-            fresh["clear_preferences"] = list(set(fresh.get("clear_preferences") or []) | {"similar_to", "similar_to_notes"})
-        intent = merge_preferences(
-            conversation, fresh, message,
-            pending=sales_described.pending_relaxations(conversation), history=history, store=store,
-        )
         from .sales.occasion_preferences import CLARIFICATION, PENDING_KEY
         if intent.get(PENDING_KEY):
             return CLARIFICATION, "OCCASION_REQUIRED"
@@ -826,11 +839,6 @@ def route(message, history=None, store=None, conversation=None):
             candidates = intent.get("similarity_candidates") or []
             question = "تقصد عطر شبه أنهي واحد: " + " ولا ".join(candidates) + "؟" if candidates else "تقصد عطر شبه أنهي عطر أو إصدار؟"
             return question, "SIMILARITY_NEEDS_REFERENCE"
-        if intent.get("gender") == "multiple":
-            return "خلينا نختارهم واحد واحد عشان أقدر أركز معاك. تحب نبدأ بالرجالي ولا الحريمي؟", "MULTIPLE_RECIPIENTS"
-        resolved_gender = sales_gender.resolve(intent, message, history, store)
-        if resolved_gender:
-            intent["gender"] = resolved_gender
         if not has_scent_preference(intent):
             return "بتحب الريحة تكون فريش ونضيفة، سويت، عودي، ولا طابع تاني؟", "SCENT_PREFERENCE_REQUIRED"
 
@@ -842,7 +850,7 @@ def route(message, history=None, store=None, conversation=None):
             return "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟", "SIMILARITY_NEEDS_PROFILE"
         response, context = recommend(
             message, results["products"], history, store=store, intent=intent, search=results,
-            gender_unknown=not intent.get("gender"),
+            gender_unknown=False,
         )
         stage = sales_stage.derive(request_type, message, intent, objection, history)
         return _finalize(response, stage), context

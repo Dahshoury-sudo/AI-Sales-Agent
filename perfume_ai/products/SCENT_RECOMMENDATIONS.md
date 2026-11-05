@@ -29,9 +29,14 @@ Allowed labels:
 
 ## How selection works
 
+- Gender is established first. When it is missing, the agent asks exactly:
+  **حضرتك محتاج برفان رجالي ولا حريمي**
+  A stated choice or a saved choice for the same recipient skips this question.
+  Explicit unisex is accepted, but a perfume name or "choose for me" does not
+  establish gender. Other preferences are saved while waiting for the answer.
 - “Fresh and sweet for work” requires both labels and a matching recorded occasion.
   “Fresh or sweet” accepts either label. Excluded labels remove a perfume.
-- Occasion is optional. An occasion-only request gets a scent-style question.
+- Occasion is optional. After gender is known, an occasion-only request gets a scent-style question.
   A scent preference alone, or an explicit “any scent,” is enough to search.
 - Stock, gender, strict brand restrictions, requested size and bottle type,
   budget, literal ingredients, and explicit performance requirements still apply.

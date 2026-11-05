@@ -327,7 +327,7 @@ class OccasionRecommendationTests(TestCase):
         self.assertNotIn(night.name, context)
 
     def test_router_retains_work_on_delegation_even_if_extractor_supplies_default(self):
-        self.conversation.preferences = {"occasion": "Office", "scent_tags": ["fresh"]}
+        self.conversation.preferences = {"occasion": "Office", "scent_tags": ["fresh"], "gender": "unisex"}
         self.conversation.save(update_fields=["preferences"])
         with patch("products.services.router.classify", return_value="faq"), \
              patch("products.services.router.extract_intent", return_value={"occasion": DAILY}), \
@@ -343,7 +343,7 @@ class OccasionRecommendationTests(TestCase):
              patch("products.services.router.confident_catalogue_match", return_value=None), \
              patch("products.services.router.search_products") as search, \
              patch("products.services.router.recommend") as model:
-            reply, context = route("recommend fresh perfume", [], self.store, self.conversation)
+            reply, context = route("recommend fresh unisex perfume", [], self.store, self.conversation)
         self.assertEqual((reply, context), (CLARIFICATION, "OCCASION_REQUIRED"))
         search.assert_not_called()
         model.assert_not_called()

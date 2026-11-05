@@ -303,7 +303,7 @@ class ScentPreferenceTests(TestCase):
              patch("products.services.router.extract_intent", return_value={"occasion": "office"}), \
              patch("products.services.router.confident_catalogue_match", return_value=None), \
              patch("products.services.router.recommend") as model:
-            reply, context = route("عايز عطر للشغل", [], self.store, self.conversation)
+            reply, context = route("عايز عطر رجالي للشغل", [], self.store, self.conversation)
         self.assertEqual(context, "SCENT_PREFERENCE_REQUIRED")
         self.assertIn("فريش", reply)
         model.assert_not_called()
@@ -314,14 +314,14 @@ class ScentPreferenceTests(TestCase):
              patch("products.services.router.extract_intent", return_value={"scent_tags": ["fresh"]}), \
              patch("products.services.router.confident_catalogue_match", return_value=None), \
              patch("products.services.router.recommend", return_value=("اختيار فريش", "chosen")) as model:
-            reply, context = route("عايز عطر فريش", [], self.store, self.conversation)
+            reply, context = route("عايز عطر رجالي فريش", [], self.store, self.conversation)
         model.assert_called_once()
         self.assertEqual(context, "chosen")
 
     def test_scent_answer_after_unknown_reference_does_not_loop(self):
         from products.services.router import route
         save_message(self.conversation, "assistant", "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟", "SIMILARITY_NEEDS_PROFILE")
-        self.conversation.preferences = {"similar_to": "Unknown fragrance", "max_price": 800}
+        self.conversation.preferences = {"similar_to": "Unknown fragrance", "max_price": 800, "gender": "unisex"}
         self.conversation.save(update_fields=["preferences"])
         with patch("products.services.router.classify", return_value="recommendation"), \
              patch("products.services.router.extract_intent", return_value={"scent_tags": ["fresh"]}), \

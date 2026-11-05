@@ -190,7 +190,10 @@ Other requirements:
 - 'زجاجة الستور', 'زجاجة البراند', 'زجاجة المحل' = bottle_type normal.
   'زجاجة أوريجينال' / 'زجاجة بشكل الأوريجينال' = bottle_type original. Packaging is not authentic liquid.
 - Gender comes from explicit wording or recipient context (لخطيبتي = female, لجوزي = male),
-  not the customer's name. Two genders can use unisex; if they insist on separate choices use multiple.
+  never the customer's name, a named/reference perfume, or products the assistant offered.
+  Use null when unstated; code merges saved customer choices. Unisex requires explicit
+  acceptance of unisex; 'choose for me' does not establish gender. Separate men's and
+  women's requests use multiple. A short gender answer continues the pending recommendation.
 - Keep an explicit budget as max_price. Exact ceilings ('under', 'at most', 'حد أقصى',
   'مش هقدر أزود') are strict. Approximate budgets allow the existing near-budget policy.
 - requested_volume and bottle_type are mandatory when stated. Suggested sizes in assistant
@@ -277,6 +280,8 @@ Other requirements:
         intent = normalize_scent_intent(prepare_updates(intent, message, history, store)[0])
         if not intent.get("similar_to"):
             intent.update(explicit_scent_updates(message))
+        from ..sales.gender import sanitize_updates
+        intent = sanitize_updates(intent, message, store)
         return intent
     except Exception:
         from ..sales.request_updates import prepare_updates
@@ -287,4 +292,5 @@ Other requirements:
             occasion_question(history) or re.search(r"\b(?:perfume|fragrance|something)\s+for\b", message or "", re.I)
         ):
             fallback[PENDING_KEY] = True
-        return fallback
+        from ..sales.gender import sanitize_updates
+        return sanitize_updates(fallback, message, store)

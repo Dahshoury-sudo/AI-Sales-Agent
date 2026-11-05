@@ -6850,7 +6850,7 @@ class SalesScenarioTests(TestCase):
         self.assertNotIn(self.heavy.pk, {p["id"] for p in self.recommend_payload["eligible_products"]})
 
     def test_a_the_recommendation_keeps_a_valid_natural_explanation(self):
-        self._route_recommendation("عايز حاجة ثابتة للليل مش تقيلة",
+        self._route_recommendation("عايز حاجة رجالي ثابتة للليل مش تقيلة",
                                    {"gender": "male", "occasion": "evening", "longevity": "long-lasting",
                                     "excluded_scent_tags": ["heavy"]})
         self.assertIn(self.light.name, self.last_reply)
@@ -6875,7 +6875,7 @@ class SalesScenarioTests(TestCase):
 
     def test_b_similarity_drives_the_recommendation_and_is_evidenced(self):
         recommend_prompt, _ = self._route_recommendation(
-            "بحب ريحة Sauvage بس عايز حاجة شبهه ومش منتشرة أوي",
+            "بحب ريحة Sauvage بس عايز حاجة رجالي شبهه ومش منتشرة أوي",
             {"gender": "male", "similar_to": "Dior Sauvage",
              "similar_to_notes": ["bergamot", "pepper", "ambroxan"],
              "exclude_names": ["Dior Sauvage"], "wants_uncommon": True},
@@ -6887,7 +6887,7 @@ class SalesScenarioTests(TestCase):
     def test_b_the_prompt_forbids_a_similarity_percentage(self):
         """"95% similar to the original" is the claim this has to make unsayable."""
         recommend_prompt, _ = self._route_recommendation(
-            "عايز حاجة شبه Sauvage",
+            "عايز حاجة رجالي شبه Sauvage",
             {"gender": "male", "similar_to": "Dior Sauvage",
              "similar_to_notes": ["bergamot", "ambroxan"]},
         )
@@ -6895,7 +6895,7 @@ class SalesScenarioTests(TestCase):
         self.assertIn("Do not claim close similarity or a similarity percentage", recommend_prompt)
 
     def test_b_unknown_reference_asks_for_style_without_guessing(self):
-        prompt, _ = self._route_recommendation("عايز حاجة شبه Creed Aventus",
+        prompt, _ = self._route_recommendation("عايز حاجة رجالي شبه Creed Aventus",
             {"gender": "male", "similar_to": "Creed Aventus", "similar_to_notes": ["pineapple", "birch"]})
         self.assertEqual(prompt, "")
         self.assertEqual(self.last_context, "SIMILARITY_NEEDS_PROFILE")
@@ -7095,7 +7095,7 @@ class SalesScenarioTests(TestCase):
     # ---- G: budget ----
 
     def test_g_a_stated_budget_filters_and_is_not_asked_again(self):
-        self._route_recommendation("عايز حاجة فريش تحت 1000",
+        self._route_recommendation("عايز حاجة رجالي فريش تحت 1000",
                                    {"gender": "male", "max_price": 1000, "scent_tags": ["fresh"]})
         self.assertEqual(self.recommend_payload["preferences"]["max_price"], 1000)
         self.assertNotIn("ميزانيتك كام", self.last_reply)
@@ -19216,7 +19216,7 @@ class Conversation1106Tests(TestCase):
         the span "خمره" at coverage 1.0. `describes_rather_than_names` is what keeps them apart, and
         it is consulted before the catalogue is scored.
         """
-        product_info, recommend = self._route("عايز عطر ريحته خمره", "recommendation")
+        product_info, recommend = self._route("عايز عطر رجالي ريحته خمره", "recommendation")
 
         self.assertFalse(product_info.called)
         self.assertTrue(recommend.called)
@@ -19247,7 +19247,7 @@ class Conversation1106Tests(TestCase):
         self.assertFalse(product_info.called)
 
     def test_a_browse_request_is_not_corrected(self):
-        product_info, recommend = self._route("عايز عطر شرقي ثابت", "recommendation")
+        product_info, recommend = self._route("عايز عطر رجالي شرقي ثابت", "recommendation")
 
         self.assertFalse(product_info.called)
         self.assertTrue(recommend.called)
