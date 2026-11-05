@@ -78,7 +78,7 @@ def product_claim_issues(reply, facts):
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches
-            claims = explicit_scent_updates(segment)
+            claims = explicit_scent_updates(segment, for_claims=True)
             for tag in claims.get("scent_tags", []):
                 if tag not in row["scent_tags"]:
                     issues.append(f"scent:{named.group()}:{tag}")

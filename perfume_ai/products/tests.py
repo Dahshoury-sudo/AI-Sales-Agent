@@ -6305,15 +6305,18 @@ class AcceptedRelaxationClearsTheConstraintTests(TestCase):
     def test_everything_the_customer_still_wants_survives(self):
         """A withdrawn brand is one constraint, not a reset. Dropping the budget here would put
         the reply back to "ممنوع تذكر الأسعار" and start offering perfumes over 1200."""
-        self._saved(notes=["sweet"], **self.CONV932)
+        self._saved(notes=["sweet", "rose"], **self.CONV932)
 
         merged = self._merge(self.ECHO, "من براند تاني حريمي")
 
         self.assertEqual(merged.get("gender"), "female")
         self.assertEqual(merged.get("max_price"), 1200.0)
-        self.assertEqual(merged.get("notes"), ["sweet"])
+        self.assertEqual(merged.get("scent_tags"), ["sweet"])
+        self.assertEqual(merged.get("notes"), ["rose"])
         self.assertEqual(self.conversation.preferences.get("gender"), "female")
         self.assertEqual(self.conversation.preferences.get("max_price"), 1200.0)
+        self.assertEqual(self.conversation.preferences.get("scent_tags"), ["sweet"])
+        self.assertEqual(self.conversation.preferences.get("notes"), ["rose"])
 
     # ── terse answers, which only mean this because of what was offered ────
     def test_a_bare_word_needs_the_offer_to_be_read_as_an_answer(self):
@@ -7080,12 +7083,12 @@ class SalesScenarioTests(TestCase):
         prompt, _ = self._route_recommendation("عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه", {"gender": "female"})
         self.assertEqual(prompt, "")
         self.assertEqual(self.last_context, "SCENT_PREFERENCE_REQUIRED")
-        self.assertIn("بتحب الريحة", self.last_reply)
+        self.assertIn("قولي ذوقك.", self.last_reply)
 
     def test_f_only_one_style_question_is_asked(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
-        self.assertEqual(self.last_reply.count("؟"), 1)
-        self.assertIn("سويت", self.last_reply)
+        self.assertEqual(self.last_reply.count("قولي ذوقك"), 1)
+        self.assertIn("الحاجات المسكره", self.last_reply)
 
     def test_f_unknown_gift_taste_never_gets_a_guaranteed_product(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})

@@ -47,7 +47,8 @@ def _other_choice(message, history):
         return False
     previous = _previous_reply(history)
     from .gender import question_pending
-    return bool(question_pending(history) or _SCOPED_CHOICE.search(text) or (
+    from .scent_answers import question_pending as scent_question_pending
+    return bool(question_pending(history) or scent_question_pending(history) or _SCOPED_CHOICE.search(text) or (
         re.search(r"[؟?]", previous) and _OTHER_QUESTION.search(normalize_text(previous))
     ))
 

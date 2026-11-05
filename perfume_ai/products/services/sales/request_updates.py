@@ -33,18 +33,13 @@ def _positive(text, pattern):
 
 def explicit_criteria(message):
     """Canonical updates for the concrete use/scent/performance words we know."""
+    from .scent_preferences import explicit_scent_updates
+
     text = _text(message)
-    updates = {}
+    updates = explicit_scent_updates(message)
     occasion = normalize_occasion(text, positive_only=True)
     if occasion:
         updates["occasion"] = occasion
-    notes = []
-    for note, pattern in (("fresh", r"فريش|منعش(?:ه)?|fresh"),
-                          ("clean", r"نظافه|نضيف(?:ه)?|نظيف(?:ه)?|clean")):
-        if _positive(text, pattern):
-            notes.append(note)
-    if notes:
-        updates["notes"] = notes
     if _positive(text, r"فواح(?:ه)?|فوحان\s+قوي|strong\s+projection"):
         updates["projection"] = "strong"
     elif _positive(text, r"هادي|هادئ|هادئه|subdued|quiet"):
@@ -108,7 +103,7 @@ def request_mode(message, history=None, store=None, *, occasion_evidence=None):
     if len(text.split()) <= 12 and not _positive(text, _REQUEST) and occasion_question(history):
         return "refinement"
     if not (_positive(text, _REQUEST) or re.match(r"^(?:لل|بال)", text)
-            or criteria.get("notes") or _LINK.search(text)):
+            or criteria.get("scent_tags") or _LINK.search(text)):
         return ""
     if _LINK.search(text):
         return "refinement"
@@ -126,7 +121,16 @@ def request_mode(message, history=None, store=None, *, occasion_evidence=None):
 
 def prepare_updates(intent, message, history=None, store=None):
     """Return fresh fields plus the old goal fields which must not gap-fill."""
+    from .scent_preferences import SCENT_KEYS, reconcile_scent_intent
+    from .scent_answers import answer_updates
+
     fresh = normalize_occasion_updates(intent, message, history)
+    answer = answer_updates(message, history)
+    if answer:
+        fresh.update(answer)
+        if fresh.get("clear_preferences"):
+            fresh["clear_preferences"] = [key for key in fresh["clear_preferences"]
+                                          if key not in ("scent_tags", "scent_match", "scent_open")]
     mode = request_mode(message, history, store, occasion_evidence=fresh.get("occasion_text"))
     # Never trust a model-supplied mode without evidence in the message.
     fresh.pop("recommendation_mode", None)
@@ -143,6 +147,10 @@ def prepare_updates(intent, message, history=None, store=None):
             fresh.pop("brand", None)
             fresh.pop("brand_strict", None)
     explicit = explicit_criteria(message)
+    # Scent phrases need per-mention reconciliation; replacing a whole array here
+    # would discard other model-grounded phrases or resurrect excluded styles.
+    for key in SCENT_KEYS:
+        explicit.pop(key, None)
     if fresh.get("occasion") and fresh.get("occasion_text") and not occasion_alias(fresh["occasion_text"]):
         # A richer situation can contain an incidental alias: an evening at
         # home is casual, despite the word "evening". Keep the AI's grounded
@@ -158,7 +166,7 @@ def prepare_updates(intent, message, history=None, store=None):
             "scent_tags": bool(fresh.get("scent_tags")),
             "scent_match": bool(fresh.get("scent_tags")),
             "scent_open": fresh.get("scent_open") is True,
-            "notes": bool(explicit.get("notes") or terms_in(message)),
+            "notes": bool(terms_in(message)),
             "occasion": bool(explicit.get("occasion") or fresh.get("occasion_text")),
             "projection": bool(explicit.get("projection") or re.search(r"فوحان|projection", text)),
             "longevity": bool(explicit.get("longevity") or re.search(r"ثبات|يدوم|longevity|lasts", text)),
@@ -168,14 +176,11 @@ def prepare_updates(intent, message, history=None, store=None):
         for key, supported in evidence.items():
             if not supported:
                 fresh.pop(key, None)
-    if explicit.get("notes"):
-        # Keep other ingredients explicitly extracted from this same utterance.
-        from .notes import terms_in, FRESH_REQUEST_TERMS, CLEAN_REQUEST_TERMS
-        notes = list(fresh.get("notes") or [])
-        if not (set(terms_in(message)) - set(FRESH_REQUEST_TERMS) - set(CLEAN_REQUEST_TERMS)):
-            notes = []
-        fresh["notes"] = list(dict.fromkeys(notes + explicit.pop("notes")))
     fresh.update(explicit)
+    # A new goal must not carry a style echoed from the abandoned request. The
+    # extractor keeps its phrase evidence until preferences are merged, so valid
+    # interpretations still survive even when no deterministic alias exists.
+    fresh = reconcile_scent_intent(fresh, message, require_evidence=mode == "new_goal")
     if fresh.get("occasion"):
         fresh.pop(PENDING_KEY, None)
     return fresh, GOAL_KEYS if mode == "new_goal" else frozenset()

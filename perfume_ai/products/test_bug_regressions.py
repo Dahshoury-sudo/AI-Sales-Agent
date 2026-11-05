@@ -1062,9 +1062,15 @@ class AgentEvaluationFixTests(BugFixture):
         with patch("products.services.ai.intent.chat", return_value='{"notes":["sweet"],"requested_volume":90}'):
             intent = extract_intent("عايز عطر حلو")
             self.assertEqual(intent["notes"], [])
+            self.assertFalse(intent.get("scent_tags"))
             self.assertNotIn("requested_volume", intent)
+            merge_preferences(self.conv, {"scent_tags": ["sweet"]}, "بحب المسكر")
             intent = extract_intent("عايز حاجة حلوة", [{"role":"user", "content":"بحب المسكر"}])
-            self.assertEqual(intent["scent_tags"], ["sweet"])
+            self.assertFalse(intent.get("scent_tags"))
+            merged = merge_preferences(self.conv, intent, "عايز حاجة حلوة")
+            self.assertEqual(merged["scent_tags"], ["sweet"])
+            self.conv.refresh_from_db()
+            self.assertEqual(self.conv.preferences["scent_tags"], ["sweet"])
 
     def test_unknown_similarity_asks_without_recommendation(self):
         from products.services.router import route

@@ -27,6 +27,43 @@ Allowed labels:
 `fresh`, `sweet`, `oud`, `woody`, `citrus`, `floral`, `fruity`, `spicy`, `musky`,
 `clean`, `powdery`, `smoky`, `leather`, `aquatic`, `light`, `heavy`.
 
+## Customer scent wording
+
+The extractor interprets the customer's latest answer in context and retains
+these store conventions:
+
+| Customer wording | Scent label |
+| --- | --- |
+| تبغي، تبغية، توباكو، tobacco | `smoky` |
+| توابل، متبل | `spicy` |
+| حمضي، حمضية | `citrus` |
+| صابوني، صابونية، soapy | `clean` |
+| فانيليا، فانيلا، vanilla as a scent style | `sweet` |
+
+For example, **تبغي وحمضي** requires `smoky` and `citrus`.
+**فريش ومش مسكر** requests `fresh` and excludes `sweet`.
+A vanilla style does not require a recorded vanilla ingredient; an explicit
+request such as **لازم يكون فيه فانيليا** does. The same distinction applies to
+tobacco. Words inside a named reference perfume do not add scent or ingredient
+requirements, and a recorded ingredient does not establish a product's labels.
+
+Known wording corrects its own AI interpretation without discarding other
+recognized phrases. Unfamiliar wording requires a quoted phrase from the latest
+customer message. This evidence stays internal to extraction and merging; it is
+not saved as a customer preference. Unrecognized wording is not guaranteed to
+map to a label.
+
+Later explicit preferences replace earlier styles; **كمان** adds to them. A
+current exclusion removes the corresponding wanted style, while a later wanted
+style can withdraw that exclusion. Budget-only answers retain saved preferences.
+Explicit withdrawals and recipient resets retain their existing behavior.
+
+For the current preference question, short choices such as **اول حاجة**,
+**التانية**, and **آخر حاجة** select its stated options in order. This only
+applies while that question is pending. **على ذوقك** delegates the scent choice
+without choosing an occasion. **يا فريش يا خشبي** accepts either label;
+**حاجة حلوة** means something nice and does not establish sweetness.
+
 ## How selection works
 
 - Gender is established first. When it is missing, the agent asks exactly:

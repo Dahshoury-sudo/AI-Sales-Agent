@@ -5,7 +5,7 @@ from .client import chat
 from ..bottle_wording import strip_bottle_wording
 from products.scent_tags import SCENT_TAG_LABELS
 from products.occasions import DAILY, OCCASIONS
-from ..sales.scent_preferences import normalize_scent_intent, explicit_scent_updates
+from ..sales.scent_preferences import reconcile_scent_intent
 
 # Legacy exclusion fields remain validated when older conversations supply them.
 AVOID_TRAITS = frozenset({"heavy", "suffocating", "sweet", "loud", "strong", "old"})
@@ -141,6 +141,7 @@ occasion_text (exact occasion/delegation words from the latest customer message)
 occasion_delegated (boolean), max_price (number), longevity, projection,
 scent_tags, excluded_scent_tags (arrays from {list(SCENT_TAG_LABELS)}),
 scent_match (all/any), scent_open (boolean),
+scent_evidence (array of objects: text, tags, polarity),
 notes, avoid_notes (literal ingredients requested, in English),
 similar_to (one named reference perfume, English), similar_to_notes (always []),
 exclude_names (English perfume names), wants_uncommon (boolean),
@@ -151,13 +152,36 @@ reset_preferences (boolean), clear_preferences (array of field names).
 Scent rules:
 - Interpret Arabic and English scent styles using only the listed labels. فريش = fresh,
   مسكر/سويت = sweet, عودي = oud, خشبي = woody, نضيف/نظافة = clean, تقيل = heavy.
+- The store's scent convention is تبغي/تبغية/توباكو/tobacco = smoky. توابل/متبل = spicy,
+  حمضي/حمضية = citrus, صابوني/صابونية/soapy = clean, زهرية = floral.
+- A vanilla-style preference (فانيليا/فانيلا/vanilla or ريحة زي الفانيليا) means sweet.
+  Do not also require a vanilla ingredient for those style descriptions. Only explicit
+  ingredient wording such as لازم يكون فيه فانيليا or contains vanilla sets notes=["vanilla"].
+  Likewise, تبغي as a style means smoky; explicitly requiring فيه تبغ sets notes=["tobacco"].
+- Give source evidence for EVERY wanted or excluded scent interpretation. Each entry has
+  text copied EXACTLY from the latest customer message, tags from the listed vocabulary,
+  and polarity "positive" or "negative". Use separate entries for separate scent phrases;
+  include the negation in a negative phrase. Do not quote history as latest-message evidence.
+  Example: فريش ومش مسكر -> scent_tags=["fresh"], excluded_scent_tags=["sweet"],
+  scent_evidence=[{{"text":"فريش","tags":["fresh"],"polarity":"positive"}},
+  {{"text":"ومش مسكر","tags":["sweet"],"polarity":"negative"}}].
+  مش بحب العود excludes oud. بدل فريش خلينا سويت requests only sweet; the replaced
+  fresh phrase is not a positive preference. A later explicit stance on the same scent wins.
+- Replacing a scent style sets scent_tags to the new styles. Do not also put scent_tags
+  in clear_preferences; that field is for withdrawing a requirement without replacing it.
 - Several requested labels mean ALL (fresh AND sweet). Explicit alternatives mean ANY
-  (fresh OR sweet). Exclusions go in excluded_scent_tags, never positive scent_tags.
+  (fresh OR sweet, يا فريش يا خشبي). Exclusions go in excluded_scent_tags, never positive scent_tags.
+- Use the latest assistant question to resolve short choices: اول حاجة/التانية/آخر حاجة
+  select its first/second/last offered scent. Quote the customer's choice words as evidence,
+  not the assistant's scent words. Do not interpret a product or size choice as a scent.
+- حاجة حلوة/عطر حلو/nice mean something nice, not a sweet scent; leave the style unspecified.
 - heavy/light describe scent character. They do not establish projection or longevity.
   Only extract projection/ longevity when the customer asks about those performance facts.
 - An occasion alone does not imply scent labels: work is not automatically fresh.
 - Set scent_open=true only when the customer explicitly accepts any scent style.
   A specific scent request sets scent_open=false. Bare confirmations do not open the preference.
+  Replying على ذوقك/اختارلي انت to a scent question delegates the scent: scent_open=true,
+  occasion_delegated=null. مش عارف or اه does not choose a scent or delegate the choice.
 - notes/avoid_notes are only explicit ingredient requirements. Do not expand scent labels
   into guessed ingredients and do not infer tags or notes for a reference perfume.
 - For an explicit 'similar to X', 'same vibe as X', or anaphoric 'شبهه', set similar_to.
@@ -221,7 +245,7 @@ Other requirements:
 
     try:
         response = chat(messages, profile="extract", response_format={"type": "json_object"})
-        intent = _sanitize(json.loads(response))
+        intent = reconcile_scent_intent(_sanitize(json.loads(response)), message, require_evidence=True)
         from ..sales.constraints import explicit_updates, original_liquid_update
         intent.update(explicit_updates(message))
         # Packaging ownership is not a perfume-house preference. Keep a separately
@@ -277,16 +301,14 @@ Other requirements:
             intent["avoid_traits"] = [trait for trait in (intent.get("avoid_traits") or [])
                                       if str(trait).lower() not in _PROJECTION_AXIS]
         from ..sales.request_updates import prepare_updates
-        intent = normalize_scent_intent(prepare_updates(intent, message, history, store)[0])
-        if not intent.get("similar_to"):
-            intent.update(explicit_scent_updates(message))
+        intent = reconcile_scent_intent(prepare_updates(intent, message, history, store)[0], message)
         from ..sales.gender import sanitize_updates
         intent = sanitize_updates(intent, message, store)
         return intent
     except Exception:
         from ..sales.request_updates import prepare_updates
-        fallback = normalize_scent_intent(prepare_updates(_explicit_recommendation_updates(message), message, history, store)[0])
-        fallback.update(explicit_scent_updates(message))
+        fallback = reconcile_scent_intent(_explicit_recommendation_updates(message), message)
+        fallback = reconcile_scent_intent(prepare_updates(fallback, message, history, store)[0], message)
         from ..sales.occasion_preferences import PENDING_KEY, occasion_question
         if not fallback.get("occasion") and not fallback.get("occasion_delegated") and (
             occasion_question(history) or re.search(r"\b(?:perfume|fragrance|something)\s+for\b", message or "", re.I)

@@ -738,6 +738,7 @@ def route(message, history=None, store=None, conversation=None):
     # those as ordinary questions is the defend-instead-of-address bug.
     if request_type == "recommendation":
         from .sales.scent_preferences import has_scent_preference
+        from .sales.scent_answers import PREFERENCE_QUESTION
 
         fresh = extract_intent(message, history, store)
         supplied_style = has_scent_preference({key: value for key, value in fresh.items() if key != "similar_to"})
@@ -840,7 +841,7 @@ def route(message, history=None, store=None, conversation=None):
             question = "تقصد عطر شبه أنهي واحد: " + " ولا ".join(candidates) + "؟" if candidates else "تقصد عطر شبه أنهي عطر أو إصدار؟"
             return question, "SIMILARITY_NEEDS_REFERENCE"
         if not has_scent_preference(intent):
-            return "بتحب الريحة تكون فريش ونضيفة، سويت، عودي، ولا طابع تاني؟", "SCENT_PREFERENCE_REQUIRED"
+            return PREFERENCE_QUESTION, "SCENT_PREFERENCE_REQUIRED"
 
         keep = sales_described.under_discussion(conversation, store) - sales_described.moved_past(conversation, store)
         if sales_constraints.preference_reversal(message) or intent.get("recommendation_mode") == "new_goal":
