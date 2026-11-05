@@ -1,0 +1,349 @@
+{
+  "model": "gpt-6-luna",
+  "completed": 24,
+  "total": 24,
+  "passed": 24,
+  "results": [
+    {
+      "id": "general_quality",
+      "message": "ثبات عطوركم وفوحانها عاملين إيه؟",
+      "excellent": true,
+      "reply": "عطورنا ثباتها ممتاز وفوحانها ممتاز يا فندم.",
+      "model_outputs": [
+        "{\"intent\":\"faq\"}",
+        "عطورنا ثباتها ممتاز وفوحانها ممتاز يا فندم."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 2.43,
+      "original_check_errors": []
+    },
+    {
+      "id": "general_hours",
+      "message": "عطوركم بتثبت كام ساعة؟",
+      "hours": true,
+      "reply": "ثباتها أكتر من 8 ساعات يا فندم.",
+      "model_outputs": [
+        "{\"intent\":\"faq\"}",
+        "ثباتها أكتر من 8 ساعات يا فندم."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 2.62,
+      "original_check_errors": []
+    },
+    {
+      "id": "named_quality",
+      "message": "ثبات Cedar Day وفوحانه إيه؟",
+      "excellent": true,
+      "reply": "Cedar Day: ثباته وفوحانه ممتازين.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 1.1,
+      "original_check_errors": []
+    },
+    {
+      "id": "named_hours",
+      "message": "Cedar Day بيثبت كام ساعة؟",
+      "hours": true,
+      "reply": "Cedar Day: ثباته أكتر من 8 ساعات.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.96,
+      "original_check_errors": []
+    },
+    {
+      "id": "blank_record",
+      "message": "ثبات Blank Fragrance وفوحانه إيه؟",
+      "excellent": true,
+      "reply": "Blank Fragrance: ثباته وفوحانه ممتازين.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 1.19,
+      "original_check_errors": []
+    },
+    {
+      "id": "duration_followup",
+      "message": "طيب كام ساعة؟",
+      "previous": "Cedar Day ثباته وفوحانه ممتازين.",
+      "hours": true,
+      "reply": "Cedar Day: ثباته أكتر من 8 ساعات، وفوحانه ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "{\"perfumes\":[\"Cedar Day\"],\"unplaced\":[]}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 3.73,
+      "original_check_errors": []
+    },
+    {
+      "id": "number_followup",
+      "message": "قولي رقم",
+      "previous": "Cedar Day ثباته ممتاز.",
+      "hours": true,
+      "reply": "Cedar Day: ثباته أكتر من 8 ساعات.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "{\"perfumes\":[\"Cedar Day\"],\"unplaced\":[]}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 3.0,
+      "original_check_errors": []
+    },
+    {
+      "id": "projection_hours",
+      "message": "فوحان Cedar Day بيفضل كام ساعة؟",
+      "excellent": true,
+      "reply": "Cedar Day: فوحانه ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.98,
+      "original_check_errors": []
+    },
+    {
+      "id": "projection_followup",
+      "message": "كام ساعة بقى؟",
+      "previous": "Cedar Day فوحانه ممتاز.",
+      "excellent": true,
+      "reply": "Cedar Day: فوحانه ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "{\"perfumes\":[\"Cedar Day\"],\"unplaced\":[]}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 2.81,
+      "original_check_errors": []
+    },
+    {
+      "id": "projection_distance",
+      "message": "فوحان Cedar Day بيوصل كام متر؟",
+      "excellent": true,
+      "reply": "Cedar Day: فوحانه ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.97,
+      "original_check_errors": []
+    },
+    {
+      "id": "comparison_quality",
+      "message": "قارن ثبات وفوحان Cedar Day وAmber Night",
+      "excellent": true,
+      "reply": "Cedar Day: ثباته وفوحانه ممتازين.\n\nAmber Night: ثباته وفوحانه ممتازين.",
+      "model_outputs": [
+        "{\"intent\":\"comparison\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.99,
+      "original_check_errors": []
+    },
+    {
+      "id": "comparative_quality",
+      "message": "مين أثبت Cedar Day ولا Amber Night؟",
+      "excellent": true,
+      "reply": "Cedar Day: ثباته ممتاز.\n\nAmber Night: ثباته ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"comparison\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.87,
+      "original_check_errors": []
+    },
+    {
+      "id": "comparison_hours",
+      "message": "Cedar Day وAmber Night كل واحد ثابت كام ساعة؟",
+      "hours": true,
+      "reply": "Cedar Day: ثباته أكتر من 8 ساعات.\n\nAmber Night: ثباته أكتر من 8 ساعات.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 1.01,
+      "original_check_errors": []
+    },
+    {
+      "id": "unsupported_threshold",
+      "message": "عايز عطر فريش يثبت 48 ساعة",
+      "hours": true,
+      "reply": "Cedar Day: طابعه فريش، خشبي، خفيف. ثباته أكتر من 8 ساعات، وفوحانه ممتاز.\nAmber Night: طابعه فريش، خشبي، تقيل. ثباته أكتر من 8 ساعات، وفوحانه ممتاز. ماقدرش أوعدك بمدة أطول محددة.",
+      "model_outputs": [
+        "{\"intent\":\"recommendation\"}",
+        "{\"brand\":null,\"brand_strict\":null,\"exclude_brands\":null,\"gender\":null,\"perfume_type\":null,\"season\":null,\"occasion\":null,\"occasion_text\":null,\"occasion_delegated\":null,\"max_price\":null,\"longevity\":\"48 hours\",\"projection\":null,\"scent_tags\":[\"fresh\"],\"excluded_scent_tags\":null,\"scent_match\":null,\"scent_open\":false,\"scent_evidence\":[{\"text\":\"فريش\",\"tags\":[\"fresh\"],\"polarity\":\"positive\"}],\"notes\":null,\"avoid_notes\":null,\"similar_to\":null,\"similar_to_notes\":[],\"exclude_names\":null,\"wants_uncommon\":null,\"requested_volume\":null,\"bottle_type\":null,\"purchase_quantity\":null,\"recommendation_count\":null,\"budget_scope\":null,\"budget_strict\":null,\"reset_preferences\":null,\"clear_preferences\":[]}",
+        "{\"product_ids\":[1],\"reply\":\"Cedar Day مناسب لطلبك؛ ريحته فريش وخفيفة، وينفع للاستخدام اليومي والشغل. ثباته أكتر من 8 ساعات.\"}",
+        "{\"product_ids\":[3],\"reply\":\"Blank Fragrance ريحته فريش ونضيفة، ومناسب للاستخدام اليومي والشغل. ثباته أكتر من 8 ساعات وفوحانه ممتاز.\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 6.97,
+      "original_check_errors": []
+    },
+    {
+      "id": "saved_preferences",
+      "message": "رشحلي عطر فريش للشغل",
+      "preferences": {
+        "longevity": "48 hours",
+        "projection": "intimate"
+      },
+      "reply": "Blank Fragrance مناسب للشغل، ريحته فريش ونضيفة، وفيه نوتات برغموت وأرز.",
+      "model_outputs": [
+        "{\"intent\":\"recommendation\"}",
+        "{\"brand\":null,\"brand_strict\":null,\"exclude_brands\":null,\"gender\":null,\"perfume_type\":null,\"season\":null,\"occasion\":\"Work & Office\",\"occasion_text\":\"للشغل\",\"occasion_delegated\":null,\"max_price\":null,\"longevity\":null,\"projection\":null,\"scent_tags\":[\"fresh\"],\"excluded_scent_tags\":null,\"scent_match\":null,\"scent_open\":false,\"scent_evidence\":[{\"text\":\"فريش\",\"tags\":[\"fresh\"],\"polarity\":\"positive\"}],\"notes\":null,\"avoid_notes\":null,\"similar_to\":null,\"similar_to_notes\":[],\"exclude_names\":null,\"wants_uncommon\":null,\"requested_volume\":null,\"bottle_type\":null,\"purchase_quantity\":null,\"recommendation_count\":null,\"budget_scope\":null,\"budget_strict\":null,\"reset_preferences\":null,\"clear_preferences\":[]}",
+        "{\"product_ids\":[1,3],\"reply\":\"للشغل، أرشّحلك Cedar Day بريحة فريش وخشبية خفيفة، أو Blank Fragrance لو بتحب الريحة الفريش والنضيفة. الاتنين مناسبين للشغل؛ الأول فيه طابع خشبي أوضح، والتاني أنضف وأبسط.\"}",
+        "{\"product_ids\":[3],\"reply\":\"Blank Fragrance مناسب للشغل، ريحته فريش ونضيفة، وفيه نوتات برغموت وأرز.\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 9.3,
+      "original_check_errors": []
+    },
+    {
+      "id": "price_size_hours",
+      "message": "Cedar Day حجم 50 مل بكام وثباته كام ساعة؟",
+      "hours": true,
+      "price": true,
+      "reply": "Cedar Day ثباته أكتر من 8 ساعات يا فندم.\n\nCedar Day — زجاجة الستور الخاصة بينا 50 ملي بـ500.00 جنيه.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "Cedar Day ثباته أكتر من 8 ساعات يا فندم."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 5.54,
+      "original_check_errors": []
+    },
+    {
+      "id": "price_number_only",
+      "message": "ثبات Cedar Day كويس؟ وسعر حجم 50 مل كام؟",
+      "excellent": true,
+      "price": true,
+      "reply": "ثبات Cedar Day ممتاز يا فندم.\n\nCedar Day — زجاجة الستور الخاصة بينا 50 ملي بـ500.00 جنيه.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "ثبات Cedar Day ممتاز يا فندم."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 2.02,
+      "original_check_errors": []
+    },
+    {
+      "id": "size_number_only",
+      "message": "ثبات Cedar Day كويس وحجمه كام؟",
+      "excellent": true,
+      "reply": "Cedar Day ثباته ممتاز يا فندم، وحجمه المتاح 50 ملي.\n\nCedar Day — زجاجة الستور الخاصة بينا 50 ملي بـ500.00 جنيه.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "Cedar Day ثباته ممتاز يا فندم، وحجمه المتاح 50 ملي."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 3.27,
+      "original_check_errors": []
+    },
+    {
+      "id": "light_scent",
+      "message": "عايز عطر فريش وخفيف وفواح للشغل",
+      "avoid": "Amber Night",
+      "reply": "Cedar Day مناسب للشغل؛ ريحته فريش وخفيفة بلمسة خشبية، وفوحانه ممتاز.",
+      "model_outputs": [
+        "{\"intent\":\"recommendation\"}",
+        "{\"brand\":null,\"brand_strict\":null,\"exclude_brands\":null,\"gender\":null,\"perfume_type\":null,\"season\":null,\"occasion\":\"Work & Office\",\"occasion_text\":\"للشغل\",\"occasion_delegated\":null,\"max_price\":null,\"longevity\":null,\"projection\":null,\"scent_tags\":[\"fresh\",\"light\"],\"excluded_scent_tags\":[],\"scent_match\":\"all\",\"scent_open\":false,\"scent_evidence\":[{\"text\":\"فريش\",\"tags\":[\"fresh\"],\"polarity\":\"positive\"},{\"text\":\"خفيف\",\"tags\":[\"light\"],\"polarity\":\"positive\"}],\"notes\":null,\"avoid_notes\":null,\"similar_to\":null,\"similar_to_notes\":[],\"exclude_names\":null,\"wants_uncommon\":null,\"requested_volume\":null,\"bottle_type\":null,\"purchase_quantity\":null,\"recommendation_count\":null,\"budget_scope\":null,\"budget_strict\":null,\"reset_preferences\":null,\"clear_preferences\":[]}",
+        "{\"product_ids\":[1],\"reply\":\"Cedar Day مناسب للشغل؛ ريحته فريش وخفيفة بلمسة خشبية، وفوحانه ممتاز.\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 5.16,
+      "original_check_errors": []
+    },
+    {
+      "id": "static_faq",
+      "message": "الثبات كام ساعة؟",
+      "hours": true,
+      "faq": true,
+      "reply": "كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها ممتاز.",
+      "model_outputs": [],
+      "errors": [],
+      "passed": true,
+      "seconds": 0.01,
+      "original_check_errors": []
+    },
+    {
+      "id": "english_hours",
+      "message": "How many hours does Cedar Day last?",
+      "hours": true,
+      "reply": "Cedar Day: ثباته أكتر من 8 ساعات.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 1.01,
+      "original_check_errors": []
+    },
+    {
+      "id": "external_unknown",
+      "message": "ثبات Imaginary Outside كام ساعة؟",
+      "external": true,
+      "reply": "للأسف Imaginary Outside مش موجود عندنا يا فندم. ممكن بدلًا منه تجرب **Blank Fragrance**، فيه نوتة برغموت، أو **Cedar Day** بنوتة برغموت وخشب الأرز؛ دول عطور تانية. تحب تعرف تفاصيل عن واحد منهم؟",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "{\"perfumes\": [], \"unplaced\": [\"Imaginary Outside\"]}",
+        "للأسف Imaginary Outside مش موجود عندنا يا فندم. ممكن بدلًا منه تجرب **Blank Fragrance**، فيه نوتة برغموت، أو **Cedar Day** بنوتة برغموت وخشب الأرز؛ دول عطور تانية. تحب تعرف تفاصيل عن واحد منهم؟"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 7.86,
+      "original_check_errors": []
+    },
+    {
+      "id": "past_experience",
+      "message": "جربت Cedar Day وثباته كان ساعتين ومش راضي عنه",
+      "reply": "متفهم إنك مش راضي يا فندم، خصوصًا إن تجربتك مع Cedar Day كانت ساعتين. مش هجادلك في تجربتك؛ تحب تقولي إيه أكتر حاجة ضايقتك فيه؟",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "متفهم إنك مش راضي يا فندم، خصوصًا إن تجربتك مع Cedar Day كانت ساعتين. مش هجادلك في تجربتك؛ تحب تقولي إيه أكتر حاجة ضايقتك فيه؟"
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 4.81,
+      "original_check_errors": [
+        "unsupported_performance_number"
+      ]
+    },
+    {
+      "id": "later_scent_question",
+      "message": "حلو، ريحته عاملة إيه؟",
+      "previous": "Cedar Day ثباته أكتر من 8 ساعات.",
+      "reply": "Cedar Day ريحته فريش وخفيفة، فيها برغموت وخشب الأرز؛ مناسبة للشغل والاستخدام اليومي.",
+      "model_outputs": [
+        "{\"intent\":\"product_info\"}",
+        "Cedar Day ريحته فريش وخفيفة، فيها برغموت وخشب الأرز؛ مناسبة للشغل والاستخدام اليومي."
+      ],
+      "errors": [],
+      "passed": true,
+      "seconds": 2.65,
+      "original_check_errors": []
+    }
+  ],
+  "review": "Rechecked the same captured live outputs with customer reports distinguished from new store claims."
+}

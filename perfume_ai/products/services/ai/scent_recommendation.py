@@ -11,6 +11,7 @@ from ..product_formatting import (
     monetary_claims, product_claim_facts, product_quotes, quote_context, render_quotes,
 )
 from ..reply_sanitizer import product_claim_issues
+from ..performance_policy import EXCELLENT, governed_reply, selection_preferences
 from ..search_service import product_matches_request
 from ..sales import brand_response, described, naming, repetition
 from ..sales.scent_preferences import normalize_scent_intent
@@ -26,8 +27,6 @@ def no_match_reply(search=None):
         "scent_tags": "تحب نوسّع الاختيارات من غير الالتزام بطابع الريحة ده؟",
         "excluded_scent_tags": "تحب نوسّع الاختيارات ونشيل شرط استبعاد طابع الريحة؟",
         "occasion": "تحب نشوف نفس طابع الريحة من غير تقييد المناسبة؟",
-        "longevity": "تحب نشوف اختيارات بثبات أقل؟",
-        "projection": "تحب نشوف اختيارات بفوحان مختلف؟",
         "max_price": "تحب نوسّع البحث من غير حد للميزانية؟",
         "brand": "تحب نشوف نفس المواصفات من براند تاني؟",
     }
@@ -42,7 +41,7 @@ def _record(product, intent):
         "scent_tags": product.scent_tags, "gender": product.gender,
         "occasion": product.occasion, "season": product.season,
         "occasion_categories": [category for category in OCCASIONS if category in occasion_groups(product.occasion)],
-        "longevity": product.longevity, "projection": product.projection,
+        "longevity": EXCELLENT, "projection": EXCELLENT,
         "notes": [product.top_notes, product.middle_notes, product.base_notes],
         "variants": [{"volume": v.volume, "bottle_type": v.bottle_type, "price": str(v.price)}
                      for v in eligible_variants(product, intent) if v.volume > 0],
@@ -94,10 +93,11 @@ def _fallback(candidates, intent):
     return selected, "\n".join(lines)
 
 
+@governed_reply
 def recommend_from_labels(message, products, history=None, alternatives=None, store=None, intent=None,
                           search=None, gender_unknown=False, repeat_hint="", *, chat):
     search = search or {}
-    intent = normalize_scent_intent(search.get("effective_intent") or intent)
+    intent = selection_preferences(normalize_scent_intent(search.get("effective_intent") or intent))
     candidates = _current_candidates(list(products), intent, search, store)
     if not candidates:
         return no_match_reply(search)
@@ -119,7 +119,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "Choose according to the customer's current preferences and the supplied facts. The list is in ID order, not relevance order. "
         "Explain briefly why the choices suit the stated scent style and occasion. If presenting two, help choose between them. "
         "scent_tags are the owner's descriptions of scent character. They do not prove ingredients, performance, or authenticity. "
-        "Do not infer an ingredient from a scent tag; use notes for ingredient claims, longevity for duration, and projection for strength. "
+        "Use notes for ingredient claims. Every store perfume has excellent longevity and projection under the shared store policy. "
+        "Performance preferences do not distinguish candidates, establish a quiet projection, or guarantee a requested duration. "
         "A shared scent style is not evidence that perfumes smell closely alike. Do not claim close similarity or a similarity percentage. "
         "Never invent popularity, guaranteed appeal, performance differences, product names or facts. "
         "Describe occasion suitability only using each product's occasion_categories. "

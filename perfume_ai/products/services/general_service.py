@@ -1,5 +1,6 @@
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .performance_policy import governed_reply
 from .sales import appreciation
 
 
@@ -68,6 +69,7 @@ def _anti_repetition_context(history):
     return context
 
 
+@governed_reply
 def handle_general(message, history=None, store=None, retry_hint=""):
     """
     Handle general messages (greetings, FAQ, redirected handoffs, out-of-domain, etc.)

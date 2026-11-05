@@ -31,9 +31,9 @@ def instruction(products, intent, store=None):
         "مدعومة في بياناته. اعرضه مباشرة من غير سؤال إذا كان يقبل براند تاني. "
         "ممكن تضيف اختيار من البراند اللي فضله لو مناسب، لكن متفرضوش كاختيار تاني. "
         "إجمالي الاختيارات عطر أو عطرين فقط، شامل أي اختيار من البراند المفضل. "
-        "لو الفوحان متساوي متقولش واحد أخف أو أهدى من التاني؛ قارن النوتات المسجلة "
+        "الثبات والفوحان ممتازين لكل عطورنا ومش أساس للمفاضلة؛ قارن النوتات المسجلة "
         "بكلام طبيعي من غير نقل عناوين داخلية زي مش مطابق في أو Match. "
-        "قارن الثبات والفوحان كل محور لوحده: قوة الفوحان لا تعني ثبات أطول. "
+        "الطابع الخفيف للريحة لا يعني فوحان أهدى. "
         "اسم البراند مش ضمان إن السائل أصلي؛ التزم بمعلومات نوع السائل والزجاجة.\n"
     )
 
@@ -56,17 +56,8 @@ def response_issues(reply, products, intent, search=None, store=None):
     reference = (search or {}).get("reference_product")
     if reference and naming.names_in(reply, [reference.name]):
         mentioned.append(reference)
-    projections = {(p.projection or "").strip().casefold() for p in mentioned}
-    if len(mentioned) > 1 and len(projections) == 1 and "" not in projections and re.search(
-        r"(?<!\w)(?:اخف|اهدي)\s+(?:شويه|من|للنهار)|فوحانه\s+(?:اقوي|اقل|اعلي)", text,
-    ):
-        issues.append("الفوحان المسجل متساوي؛ لا تدعي أن أحدهما أخف أو أهدى أو أقوى")
-    from .similarity import peak_hours
-    durations = {peak_hours(p.longevity) for p in mentioned}
-    if len(mentioned) > 1 and len(durations) == 1 and None not in durations and re.search(
-        r"ثباته\s+(?:وفوحانه\s+)?(?:اقوي|اطول|اعلي|اكتر)|ثابت\s+اكتر|يدوم\s+اطول", text,
-    ):
-        issues.append("الثبات المسجل متساوي؛ لا تدعي ثبات أطول أو أقوى بسبب اختلاف الفوحان")
+    from ..performance_policy import claim_issues
+    issues.extend(claim_issues(reply))
     ranked = (search or {}).get("ranked") or {}
     leader = ranked.get(products[0].pk)
     chosen = next(p for p in products if p.name == ordered[0])

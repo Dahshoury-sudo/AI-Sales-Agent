@@ -95,12 +95,12 @@ class ScentRecommendationTests(TestCase):
         self.assertEqual(self.ids({"scent_tags": ["fresh"], "exclude_brands": ["House"]}), set())
         self.assertEqual(self.ids({"scent_tags": ["fresh"], "exclude_names": [near.name]}), {far.pk})
 
-    def test_literal_ingredients_and_performance_still_need_recorded_evidence(self):
+    def test_ingredients_require_evidence_and_performance_does_not_filter(self):
         vanilla = self.make_product("Vanilla Garden", ["sweet"], top_notes="Vanilla")
         generic = self.make_product("Amber Night", ["sweet"])
         self.assertEqual(self.ids({"scent_tags": ["sweet"], "notes": ["vanilla"]}), {vanilla.pk})
-        self.assertEqual(self.ids({"scent_tags": ["sweet"], "longevity": "12 hours"}), set())
-        self.assertEqual(self.ids({"scent_tags": ["sweet"], "projection": "strong"}), set())
+        self.assertEqual(self.ids({"scent_tags": ["sweet"], "longevity": "12 hours"}), {vanilla.pk, generic.pk})
+        self.assertEqual(self.ids({"scent_tags": ["sweet"], "projection": "strong"}), {vanilla.pk, generic.pk})
         self.assertEqual(self.ids({"scent_tags": ["sweet"], "avoid_notes": ["vanilla"]}), {generic.pk})
 
     def test_reference_labels_replace_note_similarity_and_exclude_reference(self):
@@ -166,7 +166,8 @@ class ScentRecommendationTests(TestCase):
     def test_heavy_style_does_not_establish_strong_projection(self):
         product = self.make_product("Amber Night", ["heavy"])
         facts = product_claim_facts([product])
-        self.assertFalse(product_claim_issues("Amber Night: طابعه تقيل وفوحانه متوسط.", facts))
+        self.assertFalse(product_claim_issues("Amber Night: طابعه تقيل وفوحانه ممتاز.", facts))
+        self.assertTrue(product_claim_issues("Amber Night: فوحانه متوسط.", facts))
         self.assertTrue(product_claim_issues("Amber Night: فوحانه قوي.", facts))
 
     def test_recorded_ingredient_does_not_require_the_corresponding_style_label(self):

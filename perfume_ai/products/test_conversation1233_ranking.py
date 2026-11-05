@@ -40,15 +40,15 @@ class Conversation1233RankingTests(TestCase):
                 self.assertTrue(entries[1].occasion_conflict)
                 self.assertIn("Evening", " ".join(entries[1].mismatches))
 
-    def test_no_perfume_can_trade_away_explicit_occasion_or_projection(self):
+    def test_occasion_is_required_while_projection_does_not_filter(self):
         offered = {p.name for p in (self.elite, self.dark, self.bonded)}
         results = search_products({"gender": "male", "occasion": "daytime", "projection": "strong",
                                    "longevity": "long-lasting", "scent_tags": ["fresh"]},
                                   self.store, keep=offered, offered=offered)
-        self.assertFalse(results["products"].exists())
-        self.assertEqual(results["keeping"], [])
-        self.assertIn(results["relax_key"], {"occasion", "projection"})
-        self.assertIn("الفوحان", results["dropped"][self.bonded.name])
+        self.assertEqual(list(results["products"]), [self.bonded])
+        self.assertEqual(results["keeping"], [self.bonded.name])
+        self.assertIsNone(results["relax_key"])
+        self.assertNotIn(self.bonded.name, results["dropped"])
         for product in (self.elite, self.dark):
             self.assertIn("Evening", results["dropped"][product.name])
 

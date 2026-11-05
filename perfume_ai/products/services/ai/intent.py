@@ -10,10 +10,8 @@ from ..sales.scent_preferences import reconcile_scent_intent
 # Legacy exclusion fields remain validated when older conversations supply them.
 AVOID_TRAITS = frozenset({"heavy", "suffocating", "sweet", "loud", "strong", "old"})
 
-# An explicit positive performance request resolves contradictory legacy exclusions.
-_PROJECTION_AXIS = frozenset({"heavy", "loud", "strong"})
-
-_WANTED_STRENGTH = frozenset({"strong", "heavy", "loud", "enormous", "beast", "nuclear"})
+# Performance exclusions are ignored; heavy/light remain scent-character choices.
+_PROJECTION_AXIS = frozenset({"loud", "strong"})
 
 # The sentinel for the store's own blends. Emitted positively in `brand` (see the first rule in
 # the prompt below) and negatively in `exclude_brands` for a customer who wants real designer
@@ -71,23 +69,16 @@ def _sanitize(intent):
         kept = [
             trait for trait in traits
             if str(trait).strip().lower() in AVOID_TRAITS
+            and str(trait).strip().lower() not in _PROJECTION_AXIS
         ]
 
-        # A positive projection request outranks an avoid on the same axis. Deliberately not
-        # inferred from the message — only from two extracted fields disagreeing, so no
-        # polarity is being guessed here.
-        if str(intent.get("projection") or "").strip().lower() in _WANTED_STRENGTH:
-            kept = [
-                trait for trait in kept
-                if str(trait).strip().lower() not in _PROJECTION_AXIS
-            ]
-
+        # Scent character remains independent of the uniform projection policy.
         intent["avoid_traits"] = kept
 
     brands = intent.get("exclude_brands")
     if isinstance(brands, (list, tuple, set)):
-        # The positive request wins a collision, for the reason `_PROJECTION_AXIS` gives one field
-        # up: this function sees the RAW output of a single call about a single message, so `brand`
+        # The positive request wins a collision: this function sees the RAW output of a
+        # single call about a single message, so `brand`
         # and `exclude_brands` naming the same house is one polarity slip and not two constraints.
         # Staleness is not what this is looking at — a `brand` gap-filled from five turns ago has
         # not reached here yet, and conversation_service resolves that collision the other way
@@ -299,7 +290,7 @@ Other requirements:
         intent.update(explicit)
         if explicit.get("projection"):
             intent["avoid_traits"] = [trait for trait in (intent.get("avoid_traits") or [])
-                                      if str(trait).lower() not in _PROJECTION_AXIS]
+                                      if str(trait).strip().lower() not in _PROJECTION_AXIS]
         from ..sales.request_updates import prepare_updates
         intent = reconcile_scent_intent(prepare_updates(intent, message, history, store)[0], message)
         from ..sales.gender import sanitize_updates

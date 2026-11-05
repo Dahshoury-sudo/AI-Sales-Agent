@@ -7,6 +7,7 @@ from .product_resolver import CARRIED_HOUSE, UNVERIFIED, confirm_unplaced, resol
 from .product_formatting import format_products
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .performance_policy import governed_reply, performance_only_question
 from .fallback import suggest_alternatives
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
@@ -771,6 +772,7 @@ def _alternatives_budget_hint(budget):
     )
 
 
+@governed_reply
 def get_product_info(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer a question about a named perfume.
 
@@ -1212,9 +1214,13 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # falsehood is caught wherever it comes from, which `reply_sanitizer.strip_false_over_budget`
     # now does deterministically. That guard is why this can land at all.
     from .comparison_service import requested_dimensions, requested_facts
-    dimensions = requested_dimensions(message)
-    if products and not deferring and ((len(products) > 1 and (products_from_message or naming.refers_to_several(message))) or "sweetness" in dimensions) and dimensions:
-        return requested_facts(message, products)
+    dimensions = requested_dimensions(message, history)
+    if products and not deferring and dimensions and (
+        (len(products) > 1 and (products_from_message or naming.refers_to_several(message)))
+        or "sweetness" in dimensions
+        or (len(products) == 1 and not named_but_unresolved and performance_only_question(message, history))
+    ):
+        return requested_facts(message, products, history)
     budget = sales_value.stated_budget(conversation)
 
     # Are the rows in context something other than what the customer asked about? Two ways that
@@ -1283,7 +1289,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 1. 🔴 فرّق بين نوع السؤال:
    • لو العميل بيسأل عن التوافر بس (زي "عندكم سوفاج؟" أو "فيه بلو دي شانيل؟" أو "موجود عندكم X؟") → أكّد إنه متوفر **وكمّل في نفس الرد بسؤال يضيّق** (في حجم معين حابب تعرف سعره؟). ❌ ممنوع ترد "أه متوفر عندنا" وتسكت — ده رد ميت وبيوقف المحادثة. ❗ ومتبدأش تسرد أسعار ولا ترشح حجم — هو مسألش عن السعر.
    • لو العميل سأل عن السعر أو الحجم صراحة (زي "بكام؟" أو "الأحجام إيه؟") → 🔴 ابدأ بالحجم اللي في سطر 💡 Value Pick (أو 💡 اقتراح حجم) ورشّحه بالأرقام اللي فيه، وبعدها اذكر باقي الأحجام في نص جملة عشان يعرف إن فيه خيارات. ❌ ممنوع تسرد الأسعار كلها في صف واحد زي فاتورة، وممنوع تغير أي سعر أو تخفي إن فيه أحجام تانية. ولو السطر ده هو "اقتراح حجم"، اذكر الأرقام من غير ما تقول "أحسن قيمة".
-   • لو العميل سأل سؤال تفصيلي (زي "إيه مكوناته؟" أو "ثباته إيه؟") → جاوب على اللي سأله بس في جملة طبيعية واحدة أو اتنين. مثال: "ثباته حوالي 8-10 ساعات، وفوحانه قوي خصوصاً أول كام ساعة."
+   • لو العميل سأل سؤال تفصيلي (زي "إيه مكوناته؟" أو "ثباته إيه؟") → جاوب على اللي سأله بس في جملة طبيعية واحدة أو اتنين. الثبات والفوحان ممتازين، ولو طلب مدة الثبات صراحة قول "ثباته أكتر من 8 ساعات". الفوحان بدون أرقام.
 2. لو العميل سأل عن الحجم أو الملي، اذكر كل الأحجام المتاحة كما هي مكتوبة بالظبط.
 3. لو العميل سأل رأيك، اعطيه رأي مبني على البيانات الحقيقية (المكونات، الثبات، المناسبة) في كلام طبيعي.
 4. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.

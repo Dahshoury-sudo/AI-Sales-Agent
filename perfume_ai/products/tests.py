@@ -2127,7 +2127,7 @@ class UnifiedProductFormattingTests(TestCase):
             "Name (الاسم الصحيح): Dior Sauvage", "Brand: Dior", "Stock Status:",
             "Original Bottle:", "Available Sizes & Prices:", "Out of Stock Sizes",
             "Gender: male", "Perfume Type:", "Season: All Seasons", "Occasion: Casual",
-            "Longevity: 8 hours", "Projection: Strong", "Top Notes: Bergamot",
+            "Longevity: ممتاز", "Projection: ممتاز", "Top Notes: Bergamot",
             "Middle Notes: Pepper", "Base Notes: Ambroxan", "Description: Fresh spicy",
         ):
             self.assertIn(field, context)
@@ -3923,14 +3923,14 @@ class AvoidTraitVocabularyTests(TestCase):
 
         cleaned = _sanitize({"avoid_traits": ["loud", "mainstream"]})
 
-        self.assertEqual(cleaned["avoid_traits"], ["loud"])
+        self.assertEqual(cleaned["avoid_traits"], [])
 
-    def test_every_documented_trait_survives(self):
+    def test_scent_traits_survive_while_performance_traits_are_ignored(self):
         from products.services.ai.intent import _sanitize
 
         traits = ["heavy", "suffocating", "sweet", "loud", "strong", "old"]
 
-        self.assertEqual(_sanitize({"avoid_traits": traits})["avoid_traits"], traits)
+        self.assertEqual(_sanitize({"avoid_traits": traits})["avoid_traits"], ["heavy", "suffocating", "sweet", "old"])
 
     def test_case_and_whitespace_are_tolerated(self):
         from products.services.ai.intent import _sanitize
@@ -5110,7 +5110,7 @@ class UnresolvedGenderLeansUnisexTests(TestCase):
         weights = dict(sales_ranking.WEIGHTS)
         hedge = weights.pop("gender_safe")
 
-        self.assertLess(hedge, min(abs(value) for value in weights.values()))
+        self.assertLess(hedge, min(abs(value) for value in weights.values() if value))
 
 
 class GenderAnswerVocabularyTests(TestCase):
@@ -5645,12 +5645,12 @@ class SimilaritySearchTests(TestCase):
         result = search_products({"scent_tags": ["fresh"], "occasion": "evening"}, self.store)
         self.assertEqual(list(result["products"]), [evening])
 
-    def test_reference_cannot_bypass_performance_or_budget(self):
+    def test_reference_respects_budget_with_uniform_performance(self):
         reference = self.perfume("Sauvage", ["fresh"])
-        self.perfume("Quiet Choice", ["fresh"], projection="Moderate")
+        quiet = self.perfume("Quiet Choice", ["fresh"], projection="Moderate")
         strong = self.perfume("Strong Choice", ["fresh"], projection="Strong")
         intent = {"similar_to": reference.name, "projection": "strong"}
-        self.assertEqual(list(search_products(intent, self.store)["products"]), [strong])
+        self.assertEqual(set(search_products(intent, self.store)["products"]), {quiet, strong})
         self.assertFalse(search_products({**intent, "max_price": 100}, self.store)["products"].exists())
 
 
@@ -5958,8 +5958,8 @@ class ValueLanguageTests(TestCase):
         dimensions, unknown = sales_value.cross_product_value(cheap, dear)
         labels = [label for label, _, _ in dimensions]
 
-        self.assertIn("الثبات", labels)
-        self.assertIn("الفوحان", labels)
+        self.assertNotIn("الثبات", labels)
+        self.assertNotIn("الفوحان", labels)
         self.assertIn("سعر الملي", labels)
         self.assertIn("الموسم", unknown)
 
@@ -5995,14 +5995,15 @@ class BlankFieldHallucinationGuardTests(TestCase):
             )
         ProductVariant.objects.create(product=self.product, volume=50, price=500)
 
-    def test_a_blank_longevity_renders_as_unrecorded(self):
-        self.assertIn("Longevity: غير مسجل", format_product(self.product))
+    def test_a_blank_longevity_uses_the_store_standard(self):
+        self.assertIn("Longevity: ممتاز", format_product(self.product))
 
     def test_a_blank_field_carries_an_explicit_ban(self):
         block = format_product(self.product)
 
         self.assertIn("بيانات ناقصة", block)
-        self.assertIn("ممنوع تذكر رقم ساعات", block)
+        self.assertIn("ممنوع تقول مناسب لموسم معين", block)
+        self.assertIn("Projection: ممتاز", block)
 
     def test_missing_notes_are_banned_too(self):
         self.assertIn("ممنوع تخترع نوتات", format_product(self.product))
@@ -6567,7 +6568,7 @@ class ConstraintAcknowledgementTests(TestCase):
 
         self.assertIn("رجالي", phrases)
         self.assertIn("للخروجات والسهرات", phrases)
-        self.assertIn("ثابت", phrases)
+        self.assertNotIn("ثابت", phrases)
         self.assertIn("مش تقيل", phrases)
         self.assertIn("مش خانق", phrases)
 
@@ -7061,7 +7062,7 @@ class SalesScenarioTests(TestCase):
              mock.patch("products.services.objection_service.chat", return_value="ok") as chat_mock:
             reply, _ = route("ليه أدفع 1200 بدل 500؟", [], self.store, self.conversation)
         chat_mock.assert_not_called()
-        for fact in ("Oudy", "1200", "12", "Citrolo", "500", "8"):
+        for fact in ("Oudy", "1200", "Citrolo", "500", "ثباته وفوحانه ممتازين"):
             self.assertIn(fact, reply)
 
     def test_e_recommending_the_cheaper_option_is_explicitly_permitted(self):
@@ -7293,21 +7294,20 @@ class SalesScenarioTests(TestCase):
 
     # ---- I: factual product question ----
 
-    def test_i_a_factual_question_is_answered_from_the_database(self):
+    def test_i_a_duration_question_gets_the_store_answer_without_generation(self):
         with mock.patch("products.services.router.classify", return_value="product_info"), \
              mock.patch(
                  "products.services.product_info.resolve_products",
                  return_value=[self.sauvage],
              ), \
              mock.patch("products.services.product_info.chat", return_value="ok") as chat_mock:
-            route("ثبات سوفاج قد ايه؟", [], self.store, self.conversation)
+            reply, _ = route("ثبات سوفاج قد ايه؟", [], self.store, self.conversation)
 
-        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
+        self.assertIn(self.sauvage.name, reply)
+        self.assertIn("ثباته أكتر من 8 ساعات", reply)
+        chat_mock.assert_not_called()
 
-        self.assertIn("8 hours", prompt)
-        self.assertIn("ممنوع تخترع أي معلومة", prompt)
-
-    def test_i_an_unrecorded_fact_is_refused_rather_than_invented(self):
+    def test_i_blank_performance_fields_use_the_store_policy(self):
         bare = self._make("Bare", "", "", "")
         bare.longevity = ""
         bare.save()
@@ -7317,12 +7317,11 @@ class SalesScenarioTests(TestCase):
                  "products.services.product_info.resolve_products", return_value=[bare]
              ), \
              mock.patch("products.services.product_info.chat", return_value="ok") as chat_mock:
-            route("ثباته قد ايه؟", [], self.store, self.conversation)
+            reply, _ = route("ثباته قد ايه؟", [], self.store, self.conversation)
 
-        prompt = "\n".join(m["content"] for m in chat_mock.call_args[0][0])
-
-        self.assertIn("غير مسجل", prompt)
-        self.assertIn("ممنوع تذكر رقم ساعات", prompt)
+        self.assertIn(bare.name, reply)
+        self.assertIn("ثباته أكتر من 8 ساعات", reply)
+        chat_mock.assert_not_called()
 
     def test_i_a_factual_question_does_not_close_the_sale(self):
         with mock.patch("products.services.router.classify", return_value="product_info"), \
@@ -8051,13 +8050,13 @@ class SuppressedReasonsKeepTheirWarningTests(TestCase):
         self.brand = Brand.objects.create(store=self.store, name="Dior")
         self.product = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Homme Intense",
-            gender="male", occasion="Evening/Formal", longevity="8 hours",
+            gender="male", occasion="Evening/Formal", longevity="8 hours", top_notes="Bergamot",
         )
         ProductVariant.objects.create(
             product=self.product, volume=50, price=550, bottle_type="normal"
         )
         self.entry = sales_ranking.rank(
-            [self.product], {"occasion": "daily", "longevity": "long-lasting"}
+            [self.product], {"occasion": "daily", "notes": ["bergamot"]}
         )[0]
 
     def test_the_full_note_carries_both_halves(self):
@@ -8092,7 +8091,7 @@ class SuppressedReasonsKeepTheirWarningTests(TestCase):
         )
 
         self.assertIn("✅ ليه مناسب", context)
-        self.assertIn("Longevity: 8 hours", context)
+        self.assertIn("Longevity: ممتاز", context)
 
 
 class FieldVocabularyTests(TestCase):
@@ -8862,12 +8861,7 @@ class OrderEditNotCancelTests(TestCase):
 
 
 class PerformanceLeadNoteTests(TestCase):
-    """The lead recommendation must follow the ranking, and quote the recorded figure.
-
-    Evaluation scenario M1, on the turn the customer said "بس اهم حاجه الثبات": the ranker put
-    Ambero (10 hours) first and the reply recommended Dark Aura (8 hours), describing both as
-    "وثباتهم كويس" without quoting either number. The ranking was right and the prose ignored it.
-    """
+    """Performance guidance applies uniformly, without selecting a performance leader."""
 
     def setUp(self):
         self.store = Store.objects.create(name="Perfamix Test")
@@ -8886,42 +8880,44 @@ class PerformanceLeadNoteTests(TestCase):
 
         return _performance_note([self.lead, self.other], intent)
 
-    def test_the_note_names_the_top_ranked_perfume(self):
+    def test_the_note_does_not_choose_a_leader_from_performance(self):
         note = self._note({"longevity": "long-lasting"})
 
-        self.assertIn("Ambero", note)
-        self.assertIn("رشحه هو الأساس", note)
+        self.assertNotIn("Ambero", note)
+        self.assertNotIn("رشحه هو الأساس", note)
 
-    def test_the_note_carries_the_recorded_figure(self):
-        self.assertIn("10 hours", self._note({"longevity": "long-lasting"}))
+    def test_the_note_does_not_carry_the_recorded_figure(self):
+        self.assertNotIn("10 hours", self._note({"longevity": "long-lasting"}))
 
-    def test_vague_performance_claims_are_forbidden_by_name(self):
-        self.assertIn("ثباته كويس", self._note({"longevity": "long-lasting"}))
+    def test_unsolicited_numbers_are_forbidden(self):
+        self.assertIn("ممنوع تذكر ساعات", self._note({"longevity": "long-lasting"}))
 
     def test_projection_is_covered_too(self):
         note = self._note({"projection": "strong"})
 
         self.assertIn("الفوحان", note)
-        self.assertIn("Strong", note)
+        self.assertNotIn("Strong", note)
 
     def test_both_axes_are_reported_together(self):
         note = self._note({"longevity": "long-lasting", "projection": "strong"})
 
-        self.assertIn("10 hours", note)
-        self.assertIn("Strong", note)
+        self.assertIn("ثبات ممتاز وفوحان ممتاز", note)
+        self.assertNotIn("10 hours", note)
+        self.assertNotIn("Strong", note)
 
     def test_no_note_without_a_performance_request(self):
         """It must not appear on every turn — the persona already carries too many rules."""
         self.assertEqual(self._note({"gender": "male", "max_price": 700}), "")
 
-    def test_an_unrecorded_figure_is_named_as_missing_not_invented(self):
+    def test_an_unrecorded_figure_uses_the_same_policy(self):
         blank = self._make("Nofigure", "", "")
 
         from products.services.ai.recommendation import _performance_note
 
         note = _performance_note([blank], {"longevity": "long-lasting"})
 
-        self.assertIn("غير مسجل", note)
+        self.assertIn("ثبات ممتاز وفوحان ممتاز", note)
+        self.assertNotIn("غير مسجل", note)
 
     def test_an_empty_shortlist_is_safe(self):
         from products.services.ai.recommendation import _performance_note
@@ -8931,16 +8927,7 @@ class PerformanceLeadNoteTests(TestCase):
 
 
 class LongevityBandTieBreakTests(TestCase):
-    """Longevity has to be able to discriminate, or declaring it a priority does nothing.
-
-    similarity._ordinal maps every value from 7 to 12 hours onto 3, and 3 is exactly what
-    "long-lasting" asks for. A real catalogue lives almost entirely inside that band, so nine
-    of the eleven candidates in evaluation scenario M1 scored an identical 1.0 and the customer
-    who had just said "بس اهم حاجه الثبات" was handed an 8-hour perfume over an 11-hour one.
-
-    Raising WEIGHTS["longevity"] would not have helped: with the hit at 1.0 for everyone, any
-    weight multiplies a constant and reorders nothing.
-    """
+    """Legacy duration parsing remains compatible but cannot influence recommendations."""
 
     def setUp(self):
         self.store = Store.objects.create(name="Perfamix Test")
@@ -8969,8 +8956,7 @@ class LongevityBandTieBreakTests(TestCase):
         self.assertIsNone(peak_hours(None))
 
     def test_the_ordinal_bands_are_unchanged(self):
-        """_ordinal also drives _performance, whose stronger/lighter verdict appears in the
-        similarity reason line for every comparison — re-banding it was not the fix."""
+        """Changing the sales policy does not rewrite historical measurements."""
         from products.services.sales.similarity import _LONGEVITY_WORDS, _ordinal
 
         for text, expected in (
@@ -8980,21 +8966,21 @@ class LongevityBandTieBreakTests(TestCase):
             with self.subTest(text=text):
                 self.assertEqual(_ordinal(text, _LONGEVITY_WORDS), expected)
 
-    def test_more_hours_ranks_higher_inside_the_same_band(self):
+    def test_more_recorded_hours_do_not_change_rank(self):
         eleven = self._make("Safrano", "11 hours")
         eight = self._make("Dark Aura", "8 hours")
 
         ranked = {e.product.name: e.score for e in sales_ranking.rank([eight, eleven], self.INTENT)}
 
-        self.assertGreater(ranked["Safrano"], ranked["Dark Aura"])
+        self.assertEqual(ranked["Safrano"], ranked["Dark Aura"])
 
-    def test_the_tie_break_stays_below_a_single_weight_unit(self):
-        """It orders within a tier. It must never overturn a real signal."""
+    def test_duration_tie_break_is_disabled(self):
         from products.services.sales.ranking import WEIGHTS, _within_band_bonus
 
         widest = _within_band_bonus("longevity", "12 hours", 1.0)
 
-        self.assertLess(widest, WEIGHTS["longevity"])
+        self.assertEqual(widest, 0.0)
+        self.assertEqual(WEIGHTS["longevity"], 0.0)
         self.assertLess(widest, WEIGHTS["continuity"])
 
     def test_a_half_credit_match_earns_no_bonus(self):
@@ -9009,24 +8995,21 @@ class LongevityBandTieBreakTests(TestCase):
         self.assertEqual(_within_band_bonus("longevity", "", 1.0), 0.0)
         self.assertEqual(_within_band_bonus("longevity", "Strong", 1.0), 0.0)
 
-    def test_full_credit_is_still_full_credit(self):
-        """The bonus is additive. A product whose only reason was a longevity match must keep
-        it, or the ✅ evidence half of its note disappears."""
+    def test_performance_cannot_be_a_differentiating_reason(self):
         product = self._make("Ambero", "10 hours")
 
         entry = sales_ranking.rank([product], self.INTENT)[0]
 
-        self.assertTrue(any("بيطابق طلبه" in reason for reason in entry.reasons))
-        self.assertGreaterEqual(entry.score, sales_ranking.WEIGHTS["longevity"])
+        self.assertFalse(any("ثبات" in reason for reason in entry.reasons))
+        self.assertEqual(entry.score, sales_ranking.rank([product], {"gender": "male"})[0].score)
 
-    def test_the_recorded_hours_reach_the_evidence_line(self):
-        """"وثباتهم كويس" with no number is what the evaluation caught. Give the model the
-        figure so it can quote the row instead of asserting."""
+    def test_recorded_hours_do_not_reach_the_evidence_line(self):
         product = self._make("Ambero", "10 hours")
 
         entry = sales_ranking.rank([product], self.INTENT)[0]
 
-        self.assertIn("10 hours", sales_ranking.reasons_note(entry))
+        self.assertNotIn("10 hours", sales_ranking.reasons_note(entry))
+        self.assertNotIn("ثبات", sales_ranking.reasons_note(entry))
 
     def test_continuity_still_outranks_the_tie_break(self):
         """A refinement must not displace the perfume the customer was converging on."""
@@ -9861,31 +9844,20 @@ class ProductInfoReferentTests(TestCase):
 
 
 class WantedHeavyIsNotAvoidedTests(TestCase):
-    """Wanting a heavy perfume and rejecting one are opposites, and were the same output.
-
-    "عايزه حاجه تقيله للشتا" — I want something HEAVY for winter — came back as
-    avoid_traits ["heavy"] and persisted for the whole conversation. `avoid_traits` is the only
-    extracted field scored as a penalty (-3.0), and `notes.HEAVY_NOTES` includes musk and amber,
-    the two commonest bases and the fixatives that produce high longevity. So the inversion put
-    -3.0 on precisely the perfumes the customer asked for, and the reply then described a winter
-    oriental as "خفيف ومش خانق" to someone who wanted heavy. Scenario M2 scored 5.3 on it.
-
-    The deterministic half guesses no polarity: it only resolves two extracted fields
-    contradicting each other on the same axis.
-    """
+    """Projection requests cannot erase independently stated scent-character exclusions."""
 
     def _clean(self, intent):
         from products.services.ai.intent import _sanitize
 
         return _sanitize(dict(intent))["avoid_traits"]
 
-    def test_wanting_strength_discards_an_avoid_on_the_same_axis(self):
+    def test_wanting_projection_preserves_an_avoid_on_scent_character(self):
         self.assertEqual(
-            self._clean({"projection": "strong", "avoid_traits": ["heavy"]}), []
+            self._clean({"projection": "strong", "avoid_traits": ["heavy"]}), ["heavy"]
         )
 
     def test_every_projection_axis_trait_is_discarded(self):
-        for trait in ("heavy", "loud", "strong"):
+        for trait in ("loud", "strong"):
             with self.subTest(trait=trait):
                 self.assertEqual(
                     self._clean({"projection": "strong", "avoid_traits": [trait]}), []
@@ -9895,7 +9867,7 @@ class WantedHeavyIsNotAvoidedTests(TestCase):
         """Wanting strength says nothing about sweetness."""
         self.assertEqual(
             self._clean({"projection": "strong", "avoid_traits": ["heavy", "sweet"]}),
-            ["sweet"],
+            ["heavy", "sweet"],
         )
 
     def test_a_genuine_avoid_is_untouched(self):
@@ -9908,8 +9880,7 @@ class WantedHeavyIsNotAvoidedTests(TestCase):
         )
 
 
-    def test_the_ranker_cannot_penalise_a_wanted_strength(self):
-        """End to end: the intent a wanted-heavy customer produces must not carry the penalty."""
+    def test_the_ranker_preserves_scent_character_exclusions(self):
         from products.services.ai.intent import _sanitize
         from products.services.sales import ranking
 
@@ -9926,10 +9897,7 @@ class WantedHeavyIsNotAvoidedTests(TestCase):
         intent = _sanitize({"projection": "strong", "avoid_traits": ["heavy"]})
         entry = sales_ranking.rank([heavy], intent)[0]
 
-        self.assertEqual(
-            [m for m in entry.mismatches if "تقيل" in m], [],
-            "a wanted strength must not be scored as an avoided one",
-        )
+        self.assertTrue(any("تقيل" in m for m in entry.mismatches))
 
 
 class OnlineFirstCallToActionTests(TestCase):
@@ -14685,7 +14653,7 @@ class ReAskedDeferralTests(TestCase):
 
         from products.services import router
 
-        source = inspect.getsource(router.route)
+        source = inspect.getsource(router._route)
 
         self.assertIn("retry_hint=", source)
         self.assertNotIn("get_product_info(modified_msg", source)
@@ -15066,7 +15034,7 @@ class BriefBlockCannotInviteInventionTests(TestCase):
         return format_products(self.queryset, brief=True)
 
     def test_the_withheld_fields_are_named_as_withheld(self):
-        self.assertIn("النوتات والثبات والفوحان والموسم والمناسبة مش معروضين", self._brief())
+        self.assertIn("النوتات والموسم والمناسبة مش معروضين", self._brief())
 
     def test_inventing_a_note_is_banned_in_so_many_words(self):
         """Turn 3's exact move. The perfume was sold on a note nobody had shown the model."""

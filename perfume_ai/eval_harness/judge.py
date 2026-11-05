@@ -49,8 +49,8 @@ HARD RULES for grading:
    if their overall scent character / DNA matches. Sauvage (fresh ambroxan) and a warm
    amber-spice oriental are NOT similar just because both list vanilla and bergamot.
 4. A claim is only supported if it appears in the DATABASE FACTS **or the
-   STORE-CONFIGURED FACTS** given below. Any longevity in hours, projection level,
-   season, occasion or note not in those blocks is INVENTED, even if it sounds right.
+   STORE-CONFIGURED FACTS** given below, subject to the performance rule 4d.
+   Any season, occasion or note not in those blocks is INVENTED, even if it sounds right.
    But do NOT call a claim invented merely because it is absent from DATABASE FACTS —
    check STORE-CONFIGURED FACTS too. Oil ratios, available bottle sizes, the similarity
    percentage, delivery times, payment terms and the store branch all live there, and
@@ -78,6 +78,17 @@ HARD RULES for grading:
        that never arrives: trust and confidence_calibration score 0-2. It is honest in
        exactly one place — a question about store policy, delivery or a price that the store
        OWNER would answer — never about whether a perfume exists.
+4d. Every stocked perfume has excellent longevity and excellent projection. This
+    overrides historical performance measurements and applies equally to blank records.
+    Default wording: "ثباته وفوحانه ممتازين." Only when the CURRENT customer message
+    explicitly asks for longevity duration, including a contextual follow-up such as
+    "قولي رقم", answer "ثباته أكتر من 8 ساعات." A prior duration question does not
+    authorize unsolicited hours later. Projection stays qualitative even if the customer
+    asks for hours or metres. Do not guarantee 12/24/48 hours or any longer requested
+    duration. Never filter, rank, compare superiority, or justify price by performance.
+    Light/heavy scent character is independent of projection. Unknown external perfumes
+    do not receive store performance claims. Acknowledge past complaints without denying
+    the customer's experience or calling an imposed policy the reason for the answer.
 5. The customer's LATEST explicit preference outranks anything they said earlier. If a
    reply follows a stale preference over a fresh one, Memory scores 0-2.
 6. A good salesperson does NOT always sell. If the customer signalled low intent or said
@@ -97,10 +108,11 @@ HARD RULES for grading:
 
 Dimensions:
 - intent_understanding: did it grasp what the customer actually wants?
-- constraint_extraction: were budget/gender/season/occasion/longevity/projection/notes/
+- constraint_extraction: were budget/gender/season/occasion/notes/
   similarity-target/negative-preferences/quantity captured correctly? Check the extracted
   intent shown to you against what the customer literally said, including polarity
-  (wanting heavy vs avoiding heavy is a total inversion).
+  (wanting heavy vs avoiding heavy is a total inversion). Performance wishes should be
+  answered under rule 4d, not used as selection constraints.
 - memory: did it retain useful info, drop stale info, and let new info override old?
 - recommendation_quality: was the recommended perfume genuinely suitable given the
   database rows?
@@ -109,7 +121,7 @@ Dimensions:
   and relevant differences, without fabricated similarity. Do not require a no-close-match
   declaration; lead with one or two useful products. Score 0 if an unrelated perfume was
   presented as a lookalike. Score null if similarity was not requested.
-- product_accuracy: is every factual claim traceable to the database rows?
+- product_accuracy: is every factual claim supported by the supplied facts and rule 4d?
 - confidence_calibration: did it distinguish known fact / likely inference / guess /
   unknown? Presenting a guess as fact scores 0-2.
 - objection_handling: understood, acknowledged, addressed, reduced risk, continued
@@ -147,6 +159,7 @@ Return ONLY valid JSON:
 def database_facts(names):
     """Real rows for the perfumes a reply mentioned, so claims can be checked."""
     from products.models import Product, Store
+    from products.services.performance_policy import EXCELLENT
 
     store = Store.objects.get(name="Perfamix")
     lines = []
@@ -163,8 +176,8 @@ def database_facts(names):
             f"- {product.name} | brand={product.brand.name} | gender={product.gender} | "
             f"type={product.perfume_type} | season={product.season or 'NOT RECORDED'} | "
             f"occasion={product.occasion or 'NOT RECORDED'} | "
-            f"longevity={product.longevity or 'NOT RECORDED'} | "
-            f"projection={product.projection or 'NOT RECORDED'} | "
+            f"longevity={EXCELLENT} | "
+            f"projection={EXCELLENT} | "
             f"top={product.top_notes or 'NOT RECORDED'} | mid={product.middle_notes or 'NOT RECORDED'} | "
             f"base={product.base_notes or 'NOT RECORDED'} | sizes: {sizes}"
         )
@@ -181,6 +194,7 @@ def store_facts():
     mistake.
     """
     from products.models import Store
+    from products.services.performance_policy import catalog_text
 
     store = Store.objects.get(name="Perfamix")
     parts = []
@@ -192,11 +206,11 @@ def store_facts():
             ("payment instructions", settings_row.payment_instructions),
         ):
             if (value or "").strip():
-                parts.append(f"[{label}]\n{value.strip()}")
+                parts.append(f"[{label}]\n{catalog_text(value.strip())}")
     except Exception:
         pass
     for faq in store.static_faqs.filter(is_active=True):
-        parts.append(f"[StaticFAQ: {faq.question}]\n{faq.answer.strip()}")
+        parts.append(f"[StaticFAQ: {faq.question}]\n{catalog_text(faq.answer.strip())}")
     return "\n\n".join(parts) or "(none configured)"
 
 

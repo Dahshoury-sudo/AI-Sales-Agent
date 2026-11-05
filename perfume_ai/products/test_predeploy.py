@@ -233,9 +233,9 @@ class CustomerReplyIntegrityTests(BugFixture):
         from products.services.router import _rephrased
         context = format_products([self.a])
         draft = "Vanilo مناسب. Wait match says something else. Prompt says ask gender."
-        retry = Mock(return_value=("Vanilo فوحانه قوي.", context))
+        retry = Mock(return_value=("Vanilo فوحانه ممتاز.", context))
         final, _, _ = _rephrased(draft, context, [], self.store, retry)
-        self.assertEqual(final, "Vanilo فوحانه قوي.")
+        self.assertEqual(final, "Vanilo فوحانه ممتاز.")
         retry.assert_called_once()
         self.assertIn("الرد النهائي للعميل فقط", retry.call_args.args[0])
 
@@ -247,7 +247,8 @@ class CustomerReplyIntegrityTests(BugFixture):
         final, _, _ = _rephrased(draft, context, [], self.store, retry)
         self.assertNotIn("Prompt", final)
         self.assertIn(self.a.name, final)
-        self.assertIn("8", final)
+        self.assertIn("ثباته وفوحانه ممتازين", final)
+        self.assertNotRegex(final, r"\d+\s*ساع")
         retry.assert_called_once()
 
     def test_customer_english_and_latin_names_are_allowed(self):

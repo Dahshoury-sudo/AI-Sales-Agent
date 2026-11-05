@@ -1,6 +1,7 @@
 import re
 from products.models import StaticFAQ
 from .bottle_wording import normalize_bottle_wording
+from .performance_policy import enforce_reply, request_for
 
 
 def normalize_arabic(text: str) -> str:
@@ -51,12 +52,12 @@ def match_static_faq(message: str, store) -> dict | None:
             if '+' in keyword_group:
                 required_words = [w.strip() for w in keyword_group.split('+') if w.strip()]
                 if required_words and all(req_word in normalized_msg for req_word in required_words):
-                    return {"answer": normalize_bottle_wording(faq.answer)}
+                    return {"answer": enforce_reply(normalize_bottle_wording(faq.answer), request_for(message))}
             else:
                 # Single keyword — only match on short messages (likely direct FAQ questions)
                 # to avoid false positives in longer conversational messages
                 word_count = len(normalized_msg.split())
                 if keyword_group and keyword_group in normalized_msg and word_count <= 5:
-                    return {"answer": normalize_bottle_wording(faq.answer)}
+                    return {"answer": enforce_reply(normalize_bottle_wording(faq.answer), request_for(message))}
 
     return None

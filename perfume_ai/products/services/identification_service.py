@@ -21,6 +21,7 @@ from django.db.models import Q
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .performance_policy import governed_reply
 from .product_formatting import format_products
 from .sales.notes import NOTE_FAMILIES, parse_notes
 from .sales.value import stated_budget
@@ -53,7 +54,7 @@ Rules:
 
 # Clue types we can check against a stored field. Everything else is unverifiable, and
 # unverifiable clues must not raise confidence.
-VERIFIABLE_CLUES = ("notes", "sweet", "gender", "brand_hint", "longevity_hint", "name_fragment")
+VERIFIABLE_CLUES = ("notes", "sweet", "gender", "brand_hint", "name_fragment")
 UNVERIFIABLE_CLUES = ("bottle_color", "bottle_shape")
 
 # Clues that actually *identify* rather than describe. Vanilla, sweet, female and
@@ -185,16 +186,6 @@ def score_candidates(clues, products):
             entry.score += 2.0
             entry.matched_types.add("name_fragment")
 
-        hint = clues.get("longevity_hint")
-        if hint and (product.longevity or "").strip():
-            recorded = product.longevity.lower()
-            long_lasting = any(
-                word in recorded for word in ("long", "ثابت", "eternal", "10", "12", "8")
-            )
-            if (hint == "long") == long_lasting:
-                entry.score += 0.5
-                entry.matched_types.add("longevity_hint")
-
         if entry.score > 0:
             candidates.append(entry)
 
@@ -251,6 +242,7 @@ def _unverifiable_note(clues):
     )
 
 
+@governed_reply
 def identify_perfume(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer "what was that perfume called?" at a confidence the evidence supports.
 

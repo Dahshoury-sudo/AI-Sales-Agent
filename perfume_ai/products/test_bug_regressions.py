@@ -416,7 +416,7 @@ class Conversation1163RecommendationTests(BugFixture):
             reply, context = route("عاوز حاجة رجالي بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
         self.conv.refresh_from_db()
         reply = sanitize_reply(reply, self.conv)
-        for expected in ("Vanilo", "Leatherio", "خشبي", "فوحانه قوي", "450", "592"):
+        for expected in ("Vanilo", "Leatherio", "خشبي", "ثباته وفوحانه ممتازين", "450", "592"):
             self.assertIn(expected, reply)
         self.assertIn("700", reply)
         self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
@@ -425,13 +425,13 @@ class Conversation1163RecommendationTests(BugFixture):
         self.assertFalse(product_price_issues(reply, [self.a, self.b], evidence=quote_evidence(context)))
         self.assertFalse(Cart.objects.filter(conversation=self.conv).exists())
 
-    def test_partial_match_does_not_promise_the_requested_projection(self):
+    def test_historical_projection_does_not_override_the_policy(self):
         from products.services.ai.recommendation import recommendation_fit
 
         self.b.projection = "Moderate"
         explanation = recommendation_fit([self.b], self.intent)
         self.assertIn("خشبي", explanation)
-        self.assertIn("فوحانه متوسط", explanation)
+        self.assertIn("ثباته وفوحانه ممتازين", explanation)
         self.assertNotIn("فواح", explanation)
 
     def test_missing_facts_do_not_become_claims_of_suitability(self):
@@ -439,13 +439,15 @@ class Conversation1163RecommendationTests(BugFixture):
 
         self.b.season = self.b.occasion = self.b.projection = self.b.longevity = ""
         self.b.scent_tags = []
-        self.assertEqual(recommendation_fit([self.b], self.intent), "")
+        explanation = recommendation_fit([self.b], self.intent)
+        self.assertIn("ثباته وفوحانه ممتازين", explanation)
+        self.assertNotIn("مناسب", explanation)
 
     def test_valid_personal_explanation_is_preserved_without_a_retry(self):
         from products.services.ai.recommendation import recommend
         from products.services.router import _rephrased
 
-        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه قوي."
+        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه ممتاز."
         with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.a.pk], "reply": draft})):
             reply, context = recommend("عاوز حاجة للشتا", Product.objects.filter(pk=self.a.pk),
                                        store=self.store, intent=self.intent)
@@ -757,8 +759,9 @@ class RecommendationBugTests(BugFixture):
     def test_L07_all_products_dimensions_and_computed_value(self):
         from products.services.comparison_service import compare_products
         reply, _ = compare_products("قارن Vanilo وLeatherio سعر 50 مل زجاجة البراند والثبات والفوحان وسعر الملي", store=self.store)
-        for expected in ("Vanilo", "Leatherio", "607", "645", "12.14", "12.90", "8 hours", "6 hours", "Strong", "Moderate"):
+        for expected in ("Vanilo", "Leatherio", "607", "645", "12.14", "12.90", "الثبات: ممتاز", "الفوحان: ممتاز"):
             self.assertIn(expected, reply)
+        self.assertNotRegex(reply, r"\d+\s*(?:ساع|hours)")
 
     def test_L09_explicit_false_replaces_true_and_survives_omission(self):
         merge_preferences(self.conv, {"wants_uncommon": True})
@@ -1128,7 +1131,8 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertEqual(regenerate.call_count, 1)
         self.assertNotIn("عود", reply)
         self.assertNotIn("48", reply)
-        self.assertIn("حوالي 8", reply)
+        self.assertIn("ثباته وفوحانه ممتازين", reply)
+        self.assertNotRegex(reply, r"\d+\s*ساع")
 
     def test_claims_are_per_product_and_negation_is_respected(self):
         from products.services.reply_sanitizer import product_claim_issues
@@ -1160,11 +1164,12 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertFalse(check_variant_prices("2 × Vanilo (50ml) بـ 1214 جنيه", truth))
         self.assertTrue(check_variant_prices("Vanilo 50ml بـ 1214 جنيه", truth))
 
-    def test_projection_claim_must_match_its_product(self):
+    def test_projection_claim_must_follow_uniform_policy(self):
         from products.services.reply_sanitizer import product_claim_issues
         facts = {"Vanilo": {"projection": "Strong"}}
         self.assertTrue(product_claim_issues("Vanilo فوحانه خفيف", facts))
-        self.assertFalse(product_claim_issues("Vanilo فوحانه قوي", facts))
+        self.assertTrue(product_claim_issues("Vanilo فوحانه قوي", facts))
+        self.assertFalse(product_claim_issues("Vanilo فوحانه ممتاز", facts))
 
     def test_inactive_reference_preserves_gender(self):
         from products.services.sales.gender import resolve
@@ -1187,13 +1192,15 @@ class AgentEvaluationFixTests(BugFixture):
         self.a.save(update_fields=["scent_tags"])
         intent = {"scent_tags": ["woody"], "longevity": "48 hours", "max_price": 1000}
         found = search_products(intent, self.store)
-        with patch("products.services.ai.recommendation.chat") as chat:
+        invalid = json.dumps({"product_ids": [self.a.pk], "reply": "Vanilo ثباته 48 ساعة."})
+        with patch("products.services.ai.recommendation.chat", return_value=invalid) as chat:
             reply, context = recommend("عايز ثبات يومين", found["products"], store=self.store, intent=intent, search=found)
-        chat.assert_not_called()
-        self.assertIn("بثبات أقل", reply)
-        self.assertIn("longevity=offered", context)
+        self.assertEqual(chat.call_count, 2)
+        self.assertIn("أكتر من 8 ساعات", reply)
+        self.assertNotIn("longevity=offered", context)
+        self.assertNotIn("48", reply)
         self.assertNotIn("ميزاني", reply)
-        self.assertNotIn("607", reply)
+        self.assertIn("607", reply)
 
     def test_supported_rounding_of_price_per_ml(self):
         from eval_harness.checks import build_ground_truth, check_variant_prices

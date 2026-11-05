@@ -241,23 +241,7 @@ def _ordinal(text, vocabulary):
 
 
 def _performance(reference_product, product):
-    """Whether this perfume performs like the reference, where both are recorded."""
-    if reference_product is None:
-        return None
-
-    for attribute, vocabulary in (
-        ("projection", _PROJECTION_WORDS),
-        ("longevity", _LONGEVITY_WORDS),
-    ):
-        left = _ordinal(getattr(reference_product, attribute, ""), vocabulary)
-        right = _ordinal(getattr(product, attribute, ""), vocabulary)
-        if left is None or right is None:
-            continue
-        if right > left:
-            return "stronger"
-        if right < left:
-            return "lighter"
-        return "similar"
+    """Catalog measurements cannot establish a performance difference."""
     return None
 
 
@@ -340,11 +324,6 @@ def describe(reference, result):
         parts.append("مشترك في: " + "، ".join(result.shared_notes[:5]))
     elif result.shared_accords:
         parts.append("عائلات مشتركة: " + "، ".join(result.shared_accords[:3]))
-
-    if result.performance == "stronger":
-        parts.append("بس أقوى منه")
-    elif result.performance == "lighter":
-        parts.append("بس أخف منه")
 
     if reference.source == "general_knowledge":
         parts.append("(المقارنة على النوتات المعروفة للعطر ده، مش على عطر عندنا)")

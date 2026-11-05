@@ -32,14 +32,14 @@ class BrandPreferenceSearchTests(TestCase):
     def selected(result):
         return list(result["products"]) or list(result.get("alternatives") or ())
 
-    def test_performance_requirement_excludes_a_previously_discussed_mismatch(self):
+    def test_performance_requirement_preserves_previously_discussed_perfumes(self):
         result = search_products(self.intent, self.store, keep={self.mild.name}, offered={self.strong.name})
-        self.assertEqual(self.selected(result)[0], self.strong)
-        self.assertNotIn(self.mild.name, result["keeping"])
+        self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
+        self.assertIn(self.mild.name, result["keeping"])
         self.assertEqual(result["preferred_brand"], "Perfamix")
         self.assertFalse(result["brand_strict"])
         self.assertEqual(result["cross_brand_ids"], [self.strong.pk])
-        self.assertIn(self.mild.name, result["dropped"])
+        self.assertNotIn(self.mild.name, result["dropped"])
         self.assertEqual(result["ranked"], {})
 
     def test_all_matching_brands_remain_available_for_ai_selection(self):
@@ -54,7 +54,7 @@ class BrandPreferenceSearchTests(TestCase):
         better = self.product("Longer daytime", self.chanel, longevity="12 hours")
         intent = {**self.intent, "brand": "Dior"}
         result = search_products(intent, self.store, keep={self.strong.name})
-        self.assertEqual(set(self.selected(result)), {self.strong, better})
+        self.assertEqual(set(self.selected(result)), {self.mild, self.strong, better})
         self.assertEqual(result["preferred_brand"], "Dior")
         self.assertIn(better.pk, result["cross_brand_ids"])
         self.assertNotIn(self.strong.pk, result["cross_brand_ids"])
@@ -81,10 +81,10 @@ class BrandPreferenceSearchTests(TestCase):
         result = search_products({**self.intent, "brand_strict": True}, self.store, keep={self.strong.name})
         self.assertIn("البراند", result["dropped"][self.strong.name])
 
-    def test_no_brand_does_not_rescue_a_performance_mismatch(self):
+    def test_no_brand_uses_the_same_uniform_performance_policy(self):
         intent = {k: v for k, v in self.intent.items() if k != "brand"}
         result = search_products(intent, self.store, keep={self.mild.name})
-        self.assertEqual(self.selected(result), [self.strong])
+        self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
         self.assertFalse(result["preferred_brand"])
         self.assertEqual(result["cross_brand_ids"], [])
         self.assertFalse(result["brand_strict"])
@@ -148,7 +148,7 @@ class BrandPreferenceSearchTests(TestCase):
     def test_evening_perfume_cannot_win_daytime_request_on_brand_or_strength(self):
         evening = self.product("Evening blend", self.own, occasion="Evening", longevity="12 hours")
         result = search_products(self.intent, self.store, keep={evening.name})
-        self.assertEqual(self.selected(result)[0], self.strong)
+        self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
         self.assertNotIn(evening, self.selected(result))
         self.assertIn("Evening", result["dropped"][evening.name])
 

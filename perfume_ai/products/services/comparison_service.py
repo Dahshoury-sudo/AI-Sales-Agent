@@ -8,25 +8,39 @@ from .ai.prompts import get_system_prompt
 from .product_formatting import format_products, product_quotes, render_quotes, quote_context
 from .product_info import get_product_info
 from .product_resolver import resolve_products
+from . import performance_policy
 
 
-def requested_dimensions(message):
+def requested_dimensions(message, history=None):
     from .static_faq_service import normalize_arabic
     text = normalize_arabic(message)
     if "نوع السائل" in text or "مصنع" in text:
         return set()
-    return {key for key, words in {
+    dimensions = {key for key, words in {
         "price": ("سعر", "بكام", "price", "اسعار"),
         "longevity": ("ثبات", "يثبت", "longevity"),
         "projection": ("فوحان", "projection"),
         "value": ("اوفَر", "اوفر", "سعر المل", "per ml"),
         "sweetness": ("حلاوه", "اقل حلو", "اقل مسكر", "sweet"),
     }.items() if any(word in text for word in words)}
+    request = performance_policy.request_for(message, history)
+    if request.longevity:
+        dimensions.add("longevity")
+    if request.projection:
+        dimensions.add("projection")
+    return dimensions
 
 
-def requested_facts(message, products):
+@performance_policy.governed_reply
+def requested_facts(message, products, history=None):
     from .sales.value import price_per_ml
-    dims = requested_dimensions(message)
+    dims = requested_dimensions(message, history)
+    if dims and dims <= {"longevity", "projection"}:
+        wording = performance_policy.description(
+            longevity="longevity" in dims, projection="projection" in dims,
+        )
+        reply = "\n\n".join(f"{product.name}: {wording}." for product in products)
+        return reply, format_products(products, show_prices=False, show_value_pick=False)
     lines, values, quotes = [], [], []
     for product in products:
         facts = []
@@ -47,7 +61,7 @@ def requested_facts(message, products):
                     values.append((price_per_ml(v), product.name, v.volume, bottle))
         for key, label in (("longevity", "الثبات"), ("projection", "الفوحان")):
             if key in dims:
-                facts.append(f"{label}: {getattr(product, key) or 'مش متأكد منه حالياً'}")
+                facts.append(f"{label}: {performance_policy.value(key)}")
         lines.append(f"{product.name}:\n" + "\n".join(facts) if facts else product.name)
     if "value" in dims and len(values) >= 2:
         best = min(values)
@@ -59,6 +73,7 @@ def requested_facts(message, products):
     return reply, quote_context(context, quotes, rendered=reply)
 
 
+@performance_policy.governed_reply
 def compare_products(message, history=None, store=None, conversation=None, retry_hint=""):
     """Compare two named perfumes.
 
@@ -111,8 +126,8 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     if len(matches) < 2:
         return get_product_info(message, history, store, conversation, retry_hint=retry_hint)
 
-    if requested_dimensions(message):
-        return requested_facts(message, matches)
+    if requested_dimensions(message, history):
+        return requested_facts(message, matches, history)
 
     context = format_products(matches, show_prices=False)
 
@@ -137,7 +152,7 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 ═══ تعليمات المقارنة ═══
 1. 🔴🔴 لخّص قرار الشراء في فقرة قصيرة طبيعية بدل جدول مواصفات. قول للعميل: "لو بتحب كذا اختار ده، ولو بتحب كذا اختار ده." استخدم أسماء العطور ونوتاتها من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
 2. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). ادمج الفروقات المهمة بس في كلام طبيعي.
-3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة، الثبات، المناسبة). متسردش كل حاجة.
+3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة والمناسبة). الثبات والفوحان ممتازين لكل اختياراتنا، ومش أساس لترجيح عطر على التاني.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.
 5. رجّح واحد فقط لو بياناته بتدعم الترجيح حسب طلب العميل. لو البيانات مش كفاية قول إنك مش قادر تجزم؛ ممنوع تخمّن الحلاوة من النوتات أو تجبر المقارنة على فائز.
 6. 🔴 العميل لسه بيوازن بين اختيارين ومختارش — ❌ ممنوع تقفل البيعة في الرد ده. ممنوع "تحب أساعدك في الطلب؟" ولا "تحب تطلب واحد فيهم؟". لو حابب تختم بسؤال، اسأله سؤال تضييق بيساعده يقرر (زي "بتستخدمه بالنهار ولا بالليل؟").

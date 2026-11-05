@@ -40,10 +40,12 @@ class BrandPreferenceReplyTests(TestCase):
         return json.dumps({"product_ids": [p.pk for p in (products or (self.better,))], "reply": reply})
 
     def test_selection_discloses_brand_and_removes_stale_continuity(self):
+        self.local.occasion = "Evening"
+        self.local.save(update_fields=["occasion"])
         search = self.search()
         history = [{"role": "assistant", "content": "Local Blend مناسب للمكتب. هتستخدمه فين؟"}]
         with patch("products.services.ai.recommendation.chat",
-                   return_value=self.selection("Fresh Choice مناسب للنهار وفوحانه قوي.")) as chat:
+                   return_value=self.selection("Fresh Choice مناسب للنهار وفوحانه ممتاز.")) as chat:
             reply, _ = recommend("للنهار وعايزه فواح", search["products"], history,
                                  store=self.store, intent=self.intent, search=search)
         payload = json.loads(chat.call_args.args[0][-1]["content"])
@@ -55,6 +57,8 @@ class BrandPreferenceReplyTests(TestCase):
         self.assertEqual(chat.call_count, 1)
 
     def test_worse_fit_cannot_lead_after_the_correction_attempt(self):
+        self.local.occasion = "Evening"
+        self.local.save(update_fields=["occasion"])
         search = self.search()
         with patch("products.services.ai.recommendation.chat", return_value=self.selection("Local Blend هو الأفضل.", self.local)) as chat:
             reply, _ = recommend("رشحلي فواح للنهار", search["products"], store=self.store,
@@ -73,7 +77,7 @@ class BrandPreferenceReplyTests(TestCase):
         search = self.search()
         with patch("products.services.ai.recommendation.chat", side_effect=[
             self.selection("Fresh Choice فوحانه قوي. ⚠️ مش مطابق في قوة الفوحان."),
-            self.selection("Fresh Choice للنهار وفوحانه قوي."),
+            self.selection("Fresh Choice للنهار وفوحانه ممتاز."),
         ]) as chat:
             reply, _ = recommend("رشحلي فواح", search["products"], store=self.store, intent=self.intent, search=search)
         self.assertEqual(chat.call_count, 2)
@@ -83,19 +87,19 @@ class BrandPreferenceReplyTests(TestCase):
     def test_equal_projection_does_not_support_claiming_one_is_lighter(self):
         from products.services.sales.brand_response import response_issues
         self.local.projection = "Strong"
-        draft = "Fresh Choice وLocal Blend ثابتين 8 ساعات، بس Local Blend أخف شوية."
+        draft = "Fresh Choice فوحانه أهدى من Local Blend."
         issues = response_issues(draft, [self.better, self.local], self.intent, store=self.store)
-        self.assertTrue(any("الفوحان المسجل متساوي" in issue for issue in issues))
+        self.assertTrue(any(issue.startswith("performance:") for issue in issues))
         self.local.projection = "Moderate"
-        self.assertFalse(response_issues(draft, [self.better, self.local], self.intent, store=self.store))
+        self.assertTrue(response_issues(draft, [self.better, self.local], self.intent, store=self.store))
 
     def test_stronger_projection_does_not_imply_longer_longevity(self):
         from products.services.sales.brand_response import response_issues
         draft = "Local Blend للمكتب. Fresh Choice ثباته وفوحانه أقوى."
         issues = response_issues(draft, [self.better, self.local], self.intent, store=self.store)
-        self.assertTrue(any("الثبات المسجل متساوي" in issue for issue in issues))
+        self.assertTrue(any(issue.startswith("performance:") for issue in issues))
         self.better.longevity = "10 hours"
-        self.assertFalse(response_issues(draft, [self.better, self.local], self.intent, store=self.store))
+        self.assertTrue(response_issues(draft, [self.better, self.local], self.intent, store=self.store))
 
     def test_optional_requested_brand_products_do_not_expand_reply_beyond_two(self):
         third = self.product("Third Option", self.better.brand, "Strong")
@@ -104,9 +108,8 @@ class BrandPreferenceReplyTests(TestCase):
             "Fresh Choice وThird Option ومعاهم Local Blend.", self.better, third, self.local)) as chat:
             reply, _ = recommend("رشحلي عطرين", search["products"], store=self.store, intent=self.intent, search=search)
         self.assertEqual(chat.call_count, 2)
-        self.assertIn(self.better.name, reply)
-        self.assertIn(third.name, reply)
-        self.assertNotIn(self.local.name, reply)
+        from products.services.sales.naming import names_in
+        self.assertEqual(len(set(names_in(reply, [self.better.name, third.name, self.local.name]))), 2)
 
     def test_known_wrong_brand_gets_corrected(self):
         search = self.search()
@@ -128,7 +131,7 @@ class BrandPreferenceReplyTests(TestCase):
     def test_constrained_recommendation_discloses_brand_and_keeps_exact_prices(self):
         intent = {**self.intent, "requested_volume": 50, "max_price": 800, "recommendation_count": 1}
         search = search_products(intent, self.store)
-        with patch("products.services.ai.recommendation.chat", return_value=self.selection("Fresh Choice فوحانه قوي.")) as chat:
+        with patch("products.services.ai.recommendation.chat", return_value=self.selection("Fresh Choice فوحانه ممتاز.")) as chat:
             reply, _ = recommend("50 ملي تحت 800", search["products"], store=self.store, intent=intent, search=search)
         chat.assert_called_once()
         self.assertIn("Fresh Choice من Dior", reply)

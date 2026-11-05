@@ -437,10 +437,10 @@ def build_ground_truth(store):
     from products.models import Product
     from products.services.product_formatting import is_variant_available
     from products.services.product_formatting import product_claim_facts
+    from products.services.performance_policy import catalog_text
 
     prices, volumes, names, name_tokens, brands = set(), set(), set(), set(), set()
     variant_prices = {}
-    longevity_numbers = set()
     # Active products with at least one sellable bottle. A denial of one of these is always
     # wrong, which is what the denial check needs and what `names` cannot express: `names`
     # deliberately stays unfiltered so it can still catch a hallucinated or deactivated
@@ -462,8 +462,6 @@ def build_ground_truth(store):
         for token in re.findall(r"[A-Za-z0-9]+", f"{product.name} {product.brand.name}"):
             if len(token) > 1:
                 name_tokens.add(token.lower())
-        for number in re.findall(r"\d+", product.longevity or ""):
-            longevity_numbers.add(number)
         for variant in product.variants.all():
             variant_prices.setdefault(product.name, []).append({"volume": variant.volume, "bottle_type": variant.bottle_type, "price": str(variant.price)})
             volumes.add(str(int(variant.volume)))
@@ -483,6 +481,7 @@ def build_ground_truth(store):
         pass
     for faq in store.static_faqs.all():
         store_text += " " + (faq.answer or "")
+    store_text = catalog_text(store_text)
 
     return {
         "variant_prices": variant_prices,
@@ -493,7 +492,6 @@ def build_ground_truth(store):
         "available_names": available_names,
         "name_tokens": name_tokens,
         "brands": brands,
-        "longevity_numbers": longevity_numbers,
         "store_numbers": _numbers(store_text),
         "store_text": store_text,
         "catalog_size": products.count(),
@@ -505,7 +503,6 @@ def _allowed_numbers(truth, context, customer_text):
     allowed = set()
     allowed |= truth["prices"]
     allowed |= truth["volumes"]
-    allowed |= truth["longevity_numbers"]
     allowed |= truth["store_numbers"]
     allowed |= _numbers(context)
     allowed |= _numbers(customer_text)
@@ -571,17 +568,23 @@ def claims_unsupported_similarity(reply):
     return claims(reply)
 
 
-def check_reply(reply, *, truth, context, customer_text, turn_state, history_text=""):
+def check_reply(reply, *, truth, context, customer_text, turn_state, history_text="", history=None):
     """Findings for one bot reply. Each finding is (code, severity, detail).
 
     `history_text` is everything said earlier in the conversation. Without it a number the
     customer typed two turns ago reads as invented — the summary that correctly echoed back
     the phone numbers from the previous turn produced two `invented_number` criticals, the
     single worst class of false positive this file can emit.
+
+    `history` contains prior user/assistant messages without internal context, so
+    a follow-up duration question is evaluated against the same topic as routing.
     """
     findings = check_variant_prices(reply, truth, customer_text)
     from products.services.reply_sanitizer import product_claim_issues
-    for issue in product_claim_issues(reply, truth.get("product_facts", {})):
+    from products.services.performance_policy import request_for
+    for issue in product_claim_issues(
+        reply, truth.get("product_facts", {}), request=request_for(customer_text, history), context=context,
+    ):
         findings.append(("unsupported_product_claim", "high", issue))
     reply = reply or ""
     allowed = _allowed_numbers(

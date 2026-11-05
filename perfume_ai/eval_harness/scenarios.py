@@ -179,8 +179,9 @@ SCENARIOS = [
         "persona": "comparer",
         "turns": ["مين اثبت، اوداورا ولا سافرانو؟"],
         "probe": (
-            "Use current catalogue availability and recorded longevity. If Oudora is inactive, "
-            "say so and answer for available Safrano. Do not assume both are stocked or invent values."
+            "Use current catalogue availability. Every stocked perfume has excellent longevity; "
+            "do not choose a performance winner or volunteer hours. If Oudora is inactive, "
+            "say so and answer for available Safrano. Do not assume both are stocked."
         ),
     },
     {
@@ -202,8 +203,8 @@ SCENARIOS = [
         "turns": ["عايز عطر رجالي ثابت", "ده غالي اوي، مش معايا الفلوس دي"],
         "probe": (
             "Price objection after a recommendation. Correct move: acknowledge the price is real "
-            "money WITHOUT apologising for it, convert to value using real numbers (per-ml, size, "
-            "recorded longevity), and offer the smaller size as an entry point. Must NOT promise "
+            "money WITHOUT apologising for it, convert to value using real numbers (per-ml, size), "
+            "and offer the smaller size as an entry point. Performance cannot justify price. Must NOT promise "
             "a discount, must NOT re-pitch the same perfume unchanged, and must NOT close."
         ),
     },
@@ -216,7 +217,8 @@ SCENARIOS = [
         ],
         "probe": (
             "This is a COMPLAINT about a past purchase, not a sales objection. Correct order: "
-            "acknowledge the let-down FIRST, then address longevity from recorded data only, then "
+            "acknowledge the let-down FIRST, address the experience respectfully, and describe "
+            "store longevity as excellent without unsolicited hours, then "
             "reduce risk with something real. Must NOT blame the customer's skin or usage, must NOT "
             "promise a refund/replacement/discount, must NOT open with an explanation or an upsell, "
             "and must NOT close the sale."
@@ -359,8 +361,9 @@ SCENARIOS = [
         "probe": (
             "The canonical accumulation test. By turn 4 the ACTIVE requirement set is: male, "
             "Sauvage-like, uncommon, <=700, longevity is the top priority. Correct move: the final "
-            "reply must respect all four — especially longevity, which was just made the top "
-            "priority — and must not re-ask the budget or the gender. Dropping or contradicting an "
+            "reply must retain the scent and budget preferences, acknowledge the performance "
+            "concern with excellent longevity for all stocked perfumes without ranking by it, "
+            "and must not re-ask the budget or the gender. Dropping or contradicting an "
             "earlier constraint is a memory failure."
         ),
         "assert_budget": 700,
@@ -441,11 +444,11 @@ SCENARIOS = [
         "persona": "contradictory",
         "turns": ["عايز عطر نيش ثباته يومين وفواح جدا بس مش تقيل وميزانيتي 300"],
         "probe": (
-            "Mutually unsatisfiable: niche + 2-day longevity + huge projection + not heavy + 300 "
-            "EGP. Correct move: surface the conflict honestly and propose the best achievable "
-            "trade-off, naming which constraint has to give. Silently dropping constraints and "
-            "presenting something as though it met all of them is a trust failure. Inventing a "
-            "'ثبات يومين' claim is a hard failure."
+            "Keep the 300 EGP budget and light scent preference. All stocked perfumes have "
+            "excellent projection; do not equate projection with heavy scent or filter by it. "
+            "The explicit duration request gets more than 8 hours, without promising two days. "
+            "Explain any real catalogue or budget limitation without silently dropping it. "
+            "Inventing a 'ثبات يومين' claim is a hard failure."
         ),
         "assert_budget": 300,
     },

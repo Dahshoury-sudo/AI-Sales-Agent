@@ -287,26 +287,19 @@ def product_price_issues(reply, products, *, evidence=None, monetary_sources=(),
 
 def product_claim_facts(products):
     """Serializable evidence shared by reply validation and evaluation."""
+    from .performance_policy import EXCELLENT
     return {p.name: {
         "notes": [p.top_notes or "", p.middle_notes or "", p.base_notes or ""],
         "scent_tags": getattr(p, "scent_tags", []),
-        "longevity": p.longevity or "", "projection": p.projection or "",
+        "longevity": EXCELLENT, "projection": EXCELLENT,
         "season": p.season or "", "occasion": p.occasion or "",
     } for p in products}
 
 
 def factual_description(product):
-    """Short Egyptian wording with no inferred ingredients or performance."""
-    import re
-    from .static_faq_service import normalize_arabic
-    facts = []
-    hours = re.findall(r"\d+(?:\.\d+)?", product.longevity or "")
-    if hours:
-        facts.append("ثباته حوالي " + "–".join(hours) + " ساعات")
-    projection = {"intimate": "هادي", "weak": "هادي", "soft": "هادي", "moderate": "متوسط", "strong": "قوي", "very strong": "قوي جداً", "enormous": "قوي جداً"}.get(normalize_arabic(product.projection or ""))
-    if projection:
-        facts.append("فوحانه " + projection)
-    return "، ".join(facts)
+    """The shared store standard, with hours only when this turn asks for them."""
+    from .performance_policy import description
+    return description()
 
 
 def is_variant_available(variant):
@@ -435,13 +428,8 @@ def _original_bottle_status(product, variants):
     )
 
 
-# The fields a customer asks about that carry a factual claim. A blank one used to render
-# as "Longevity: " with nothing after it, which reads to the model as a gap to fill — and
-# it filled them, quoting hours and projection figures no row contained. Naming the gap
-# and forbidding it by name is the whole fix.
+# Performance comes from store policy; the remaining fields require catalog evidence.
 _CLAIM_FIELDS = (
-    ("longevity", "الثبات", "ممنوع تذكر رقم ساعات"),
-    ("projection", "الفوحان", "ممنوع تقيّم الفوحان"),
     ("season", "الموسم", "ممنوع تقول مناسب لموسم معين"),
     ("occasion", "المناسبة", "ممنوع تقول مناسب لمناسبة معينة"),
 )
@@ -476,8 +464,8 @@ def _missing_data_note(product):
 # cinnamon, vanilla, chestnut and amberwood — no incense at any layer — so the invented note was
 # the whole reason to buy, and nothing in the block said not to invent one.
 _WITHHELD_DATA_NOTE = (
-    "⚠️ النوتات والثبات والفوحان والموسم والمناسبة مش معروضين للعطر ده هنا: "
-    "❌ ممنوع تقول ريحته فيها إيه، ولا تقيّم ثباته أو فوحانه، ولا تقول إنه مناسب لموسم "
+    "⚠️ النوتات والموسم والمناسبة مش معروضين للعطر ده هنا: "
+    "❌ ممنوع تقول ريحته فيها إيه، ولا تقول إنه مناسب لموسم "
     "أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من "
     "عندك، مش من البيانات."
 )
@@ -545,6 +533,7 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     the brief block too: brief means the customer has heard of this perfume already, which is
     when confusing it with its flanker is most likely, not least.
     """
+    from .performance_policy import catalog_text, EXCELLENT
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
 
@@ -581,7 +570,7 @@ Original Bottle: {_original_bottle_status(product, variants)}
 {sizes_block}{brief_extras}
 Gender: {product.gender}
 Perfume Type: {perfume_type}
-Description: {product.description}
+Description: {catalog_text(product.description)}
 -----------------------
 """
 
@@ -615,13 +604,13 @@ Original Bottle: {_original_bottle_status(product, variants)}
 Perfume Type: {perfume_type}
 Season: {_field_or_placeholder(product.season)}
 Occasion: {_field_or_placeholder(product.occasion)}
-Longevity: {_field_or_placeholder(product.longevity)}
-Projection: {_field_or_placeholder(product.projection)}
+Longevity: {EXCELLENT}
+Projection: {EXCELLENT}
 Scent Labels (character, not ingredients or performance): {', '.join(getattr(product, 'scent_tags', []) or []) or 'Not classified'}
 Top Notes: {_field_or_placeholder(product.top_notes)}
 Middle Notes: {_field_or_placeholder(product.middle_notes)}
 Base Notes: {_field_or_placeholder(product.base_notes)}
-Description: {product.description}
+Description: {catalog_text(product.description)}
 
 -------------------------
 """

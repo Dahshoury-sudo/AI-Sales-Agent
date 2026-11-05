@@ -86,15 +86,17 @@ PERSONAS = {
         "name": "إسلام - عايز فوحان وثبات",
         "traits": "أهم حاجة عنده الثبات والفوحان، بيسأل 'بيقعد كام ساعة'",
         "expectation": (
-            "Must quote longevity/projection from the product row only, never invent hours, "
-            "and must actually rank by the recorded longevity."
+            "Describe every stocked perfume's longevity and projection as excellent. "
+            "Give more than 8 hours only for an explicit longevity-duration question. "
+            "Keep projection qualitative and never rank or filter by performance."
         ),
     },
     "longevity_worrier": {
         "name": "سامح - قلقان من الثبات",
         "traits": "خايف العطر يطير، مش واثق في التركيب",
         "expectation": (
-            "Acknowledge first, then use only recorded longevity, then reduce risk with "
+            "Acknowledge first, then describe longevity as excellent without unsolicited hours, "
+            "then reduce risk with "
             "something real (smaller size / visit the store). No guarantees."
         ),
     },

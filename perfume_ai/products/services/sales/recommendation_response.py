@@ -13,10 +13,9 @@ def instruction(intent):
         "\nالعميل بدأ طلب ترشيح جديد. قيّم الاختيارات حسب طلبه الحالي وابدأ بالأكثر مطابقة "
         "في القائمة، حتى لو كنت رشحت غيره قبل كده. اعرض عطر أو عطرين فقط. "
         "ممنوع تتمسك بترشيح قديم أو تنقل شروط أو مقارنة من الطلب السابق. "
-        "لو الفوحان قوي متقولش خفيف أو هادي؛ ولو المناسبة المسجلة مختلفة متدعيش إنه مناسب "
-        "للمناسبة المطلوبة. لو الفوحان متساوي متقولش واحد أهدى أو أخف من التاني، "
-        "ولو الثبات متساوي متقولش واحد ثابت أكتر. قارن النوتات المسجلة بدل اختراع فرق أداء. "
-        "للمسجد اشرح النوتات والفوحان المسجلين من غير ضمان إنه مريح لكل الناس.\n"
+        "لو المناسبة المسجلة مختلفة متدعيش إنه مناسب للمناسبة المطلوبة. "
+        "الثبات والفوحان ممتازين لكل عطورنا، فمتخترعش فرق أداء بين الاختيارات. "
+        "قارن طابع الريحة والنوتات والمناسبة المسجلين؛ الطابع الخفيف لا يعني فوحان هادي.\n"
     )
 
 
@@ -47,18 +46,8 @@ def response_issues(reply, products, intent, search=None):
         if re.search(r"(?m)^\s*(?:[•🔹*\-]\s*)?" + re.escape(reference.name) + r"\s*[:—–-]|"
                      r"(?:ارشحلك|أرشحلك|جرب)\s+" + re.escape(reference.name), reply, re.I):
             issues.append("مرجع المقارنة ليس بديلاً؛ لا تعرضه ضمن الترشيحات")
-    if current and len(mentioned_products) > 1:
-        text = normalize_arabic(reply)
-        projections = {(p.projection or "").strip().casefold() for p in mentioned_products}
-        if len(projections) == 1 and "" not in projections and re.search(
-            r"(?<!\w)(?:اخف|اهدي)\s+(?:شويه|من|للنهار|للمسجد)|فوحانه\s+(?:اقوي|اقل|اعلي)", text,
-        ):
-            issues.append("الفوحان المسجل متساوي؛ لا تدعي أن أحدهما أهدى أو أخف أو أقوى")
-        durations = {similarity.peak_hours(p.longevity) for p in mentioned_products}
-        if len(durations) == 1 and None not in durations and re.search(
-            r"ثباته\s+(?:وفوحانه\s+)?(?:اقوي|اطول|اعلي|اكتر)|ثابت\s+اكتر|يدوم\s+اطول", text,
-        ):
-            issues.append("الثبات المسجل متساوي؛ لا تدعي ثبات أطول لأحدهما")
+    from ..performance_policy import claim_issues
+    issues.extend(claim_issues(reply))
     if not products:
         return issues
     by_name = {p.name.casefold(): p for p in products}
@@ -77,10 +66,4 @@ def response_issues(reply, products, intent, search=None):
             for claimed in occasion_groups(clause):
                 if not occasion_matches(product.occasion, claimed):
                     issues.append(f"لا تنسب مناسبة مخالفة إلى {product.name}؛ مناسبته المسجلة {product.occasion}")
-        if re.search(r"فوحان\w*[^.!؟?\n]{0,30}\d+\s*ساع", text) and not re.search(r"ثبات|ثابت|يدوم", text):
-            issues.append("الساعات تصف الثبات، وليس الفوحان")
-        actual = similarity._ordinal(product.projection, similarity._PROJECTION_WORDS) if product.projection else None
-        if actual is not None and actual > 2 and re.search(r"خفيف|هادي|هادئ|فوحانه\s+متوسط", text):
-            if not re.search(r"مش\s+(?:خفيف|هادي|هادئ)|غير\s+خفيف", text):
-                issues.append(f"لا تصف {product.name} بالفوحان الهادئ؛ المسجل {product.projection}")
     return list(dict.fromkeys(issues))

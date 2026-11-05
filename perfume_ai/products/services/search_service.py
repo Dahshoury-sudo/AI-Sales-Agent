@@ -64,7 +64,7 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
     if perfume_type and (product.perfume_type or "").lower() != perfume_type:
         return "مش من الفئة اللي طلبها"
 
-    from .sales.scent_matching import occasion_matches, season_matches, note_matches, performance_matches
+    from .sales.scent_matching import occasion_matches, season_matches, note_matches
     from .sales.value import eligible_variants
 
     season = intent.get("season")
@@ -100,8 +100,6 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
         return "المكونات المسجلة مش بتطابق النوتات المطلوبة"
     if any(note_matches(product, note) for note in intent.get("avoid_notes") or ()):
         return "فيه نوتات العميل استبعدها"
-    if not performance_matches(product, intent):
-        return "الثبات أو الفوحان المسجل مش بيطابق الطلب"
     variants = [v for v in eligible_variants(product, {**intent, "max_price": None}) if v.volume > 0]
     if not variants:
         return "الحجم أو نوع الزجاجة المطلوب مش متاح"
@@ -114,7 +112,7 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
 
 def product_matches_request(product, intent, store, *, blocked_brands=(), excluded_names=(), reference_id=None):
     """Reused after AI selection so changing stock or labels cannot license a stale offer."""
-    from .sales.scent_matching import occasion_matches, season_matches, note_matches, performance_matches
+    from .sales.scent_matching import occasion_matches, season_matches, note_matches
     from .sales.value import eligible_variants
 
     if intent.get("occasion_needs_clarification"):
@@ -142,15 +140,16 @@ def product_matches_request(product, intent, store, *, blocked_brands=(), exclud
         return False
     if any(note_matches(product, note) for note in intent.get("avoid_notes") or ()):
         return False
-    return performance_matches(product, intent) and any(v.volume > 0 for v in eligible_variants(product, intent))
+    return any(v.volume > 0 for v in eligible_variants(product, intent))
 
 
 def search_products(intent, store=None, keep=(), offered=()):
     """All eligible labeled perfumes. AI chooses from these; there are no scent scores."""
     from .sales.scent_preferences import normalize_scent_intent
     from .sales.occasion_preferences import normalize_occasion_updates, PENDING_KEY
+    from .performance_policy import selection_preferences
 
-    intent = normalize_occasion_updates(normalize_scent_intent(intent))
+    intent = selection_preferences(normalize_occasion_updates(normalize_scent_intent(intent)))
     products = Product.objects.none()
     reference = None
     needs_reference = False
@@ -188,7 +187,7 @@ def search_products(intent, store=None, keep=(), offered=()):
     preferred = preferred_brand_name(intent.get("brand"), store)
     relax_key = None
     if not rows and not needs_reference and not intent.get(PENDING_KEY):
-        for key in ("scent_tags", "occasion", "longevity", "projection", "max_price", "excluded_scent_tags", "brand"):
+        for key in ("scent_tags", "occasion", "max_price", "excluded_scent_tags", "brand"):
             if not intent.get(key) or (key == "brand" and intent.get("brand_strict") is not True):
                 continue
             relaxed = {name: value for name, value in intent.items() if name != key}

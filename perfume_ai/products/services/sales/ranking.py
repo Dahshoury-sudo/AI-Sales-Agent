@@ -139,7 +139,7 @@ WEIGHTS = {
     # comment of `ai/recommendation.recommend`). A penalty reorders; it never withholds.
     "repeat": -2.0,
     "budget": 1.5,
-    "longevity": 1.0,
+    "longevity": 0.0,
     "occasion": 1.0,
     # What a *stated* occasion implies about season, when the customer named no season of
     # their own. Equal to `season` deliberately: nothing here is inferred about the customer
@@ -149,10 +149,10 @@ WEIGHTS = {
     # the Spring/Summer perfume it was beating, and the signal changes no ordering.
     #
     # Still below `continuity` (2.5), so it cannot pull the conversation off a perfume the
-    # customer is converging on, and occasion + season + occasion_season + projection = 3.6
+    # customer is converging on, and occasion + season + occasion_season = 2.6
     # stays under `similarity` (5.0).
     "occasion_season": 0.8,
-    "projection": 0.8,
+    "projection": 0.0,
     "season": 0.8,
     "uncommon": 1.2,
 }
@@ -190,7 +190,7 @@ class Ranked:
 def preference_fit_key(entry):
     """Lower is a better preference match, without brand or conversation bonuses."""
     return (
-        entry.occasion_conflict or entry.projection_conflict,
+        entry.occasion_conflict,
         any(m.startswith("مش مسجل فيه ") for m in entry.mismatches),
         {"close": 0, "loose": 1, "none": 2}.get(entry.result.band, 2) if entry.result else 0,
         -entry.fit_score,
@@ -234,7 +234,7 @@ def has_signal(intent, reference=None):
     return any(
         intent.get(key)
         for key in ("notes", "avoid_notes", "avoid_traits", "occasion",
-                    "longevity", "projection", "season", "wants_uncommon")
+                    "season", "wants_uncommon")
     )
 
 
@@ -251,8 +251,7 @@ def _text_hit(field_value, wanted):
     return str(wanted).strip().lower() in str(field_value).lower()
 
 
-# What the extractor emits for these two slots, as the same 1-4 scale similarity._ordinal
-# reads catalogue text onto.
+# Legacy vocabulary retained for callers; these values no longer affect ranking.
 _WANTED_LONGEVITY = {
     "weak": 1, "poor": 1, "short": 1,
     "moderate": 2, "medium": 2, "average": 2,
@@ -268,52 +267,12 @@ _WANTED_PROJECTION = {
 
 
 def _ordinal_hit(field_value, wanted, vocabulary, words):
-    """Score a graded request against a graded catalogue value, 0.0-1.0.
-
-    This replaces `_text_hit` for longevity and projection, and it exists because that
-    substring test was dead on arrival for longevity: the extractor emits
-    'long-lasting' / 'eternal' / 'moderate', while stores type '8 hours', '8–10 hrs',
-    '12 hours'. No product in a real catalogue ever matched, so a customer whose stated
-    top priority was الثبات contributed exactly zero to the ranking — and evaluation
-    caught the bot recommending a 6-hour perfume while saying out loud that its
-    longevity was lower.
-
-    similarity._ordinal already parses both the words and the hour numbers onto a 1-4
-    scale, so it is reused rather than reimplemented. Meeting or beating the request
-    scores full; one grade short scores half, because a 7-hour perfume is a real answer
-    to "ثابت" even if it is not the best one; further short scores nothing.
-    """
-    if not field_value or not wanted:
-        return 0.0
-
-    target = vocabulary.get(str(wanted).strip().lower())
-    if target is None:
-        # An unmapped request value falls back to the old substring behaviour rather
-        # than silently scoring zero.
-        return 1.0 if _text_hit(field_value, wanted) else 0.0
-
-    actual = similarity._ordinal(field_value, words)
-    if actual is None:
-        return 0.0
-    if vocabulary is _WANTED_PROJECTION and target <= 2 and actual > target:
-        return 0.0
-    if actual >= target:
-        return 1.0
-    return 0.5 if target - actual == 1 else 0.0
+    """Compatibility helper: performance contributes no ranking credit."""
+    return 0.0
 
 
-# The widest ordinal band, in hours: `similarity._ordinal` maps everything from 7 to 12 onto
-# 3, and 3 is what "long-lasting" asks for. A real catalogue lives almost entirely inside that
-# band, so every candidate scored an identical 1.0 and longevity discriminated nothing —
-# raising WEIGHTS["longevity"] to any value would have multiplied a constant and reordered
-# nothing. Evaluation scenario M1: nine of eleven candidates tied, and the customer who had
-# just said "بس اهم حاجه الثبات" was handed an 8-hour perfume over an 11-hour one.
+# Legacy tuning constants; _within_band_bonus always returns zero.
 _BAND_FLOOR, _BAND_CEILING = 7, 12
-
-# Ordering *within* a band, never across one. Capped at a quarter of the signal's own weight,
-# which keeps it far below `continuity` (2.5) — a refinement must not displace the perfume the
-# customer was converging on — and leaves the full-credit hit untouched, so a product whose
-# only reason was a longevity match still has one.
 _WITHIN_BAND_FRACTION = 0.25
 
 # What a product earns on budget when its best offerable size is over the stated number but
@@ -330,20 +289,8 @@ _TOLERANCE_BUDGET_FRACTION = 0.5
 
 
 def _within_band_bonus(key, recorded, hit):
-    """Break a tie inside an ordinal band using the recorded hours.
-
-    Additive on top of the hit, and deliberately tiny: it decides between two perfumes that
-    already satisfy the request, not whether the request is satisfied.
-    """
-    if hit < 1.0:
-        return 0.0
-    peak = similarity.peak_hours(recorded)
-    if peak is None:
-        return 0.0
-
-    span = _BAND_CEILING - _BAND_FLOOR
-    above = min(max(peak - _BAND_FLOOR, 0), span)
-    return WEIGHTS[key] * _WITHIN_BAND_FRACTION * (above / span)
+    """Historical duration measurements never break recommendation ties."""
+    return 0.0
 
 
 def _best_budget_tier(product, max_price):
@@ -449,7 +396,8 @@ def rank(products, intent, reference=None, keep=(), offered=()):
     conversation (`described.offered_ever`), which pay WEIGHTS["repeat"]. The two sets overlap by
     design and the sizing is what resolves the overlap — see that weight's comment.
     """
-    intent = intent or {}
+    from ..performance_policy import selection_preferences
+    intent = selection_preferences(intent)
     keep = frozenset(keep or ())
     offered = frozenset(offered or ())
     max_price = _as_decimal(intent.get("max_price"))
@@ -577,40 +525,6 @@ def rank(products, intent, reference=None, keep=(), offered=()):
                 entry.mismatches.append(
                     f"موسمه المسجل {recorded_season}، مش الأنسب للمجهود اللي قاله"
                 )
-
-        # Graded, not substring-matched — see _ordinal_hit. Partial credit is reported as
-        # a mismatch rather than a reason so the reply cannot claim a perfume "matches"
-        # a longevity request it only half meets.
-        for key, attribute, vocabulary, words, label, short_label in (
-            ("longevity", "longevity", _WANTED_LONGEVITY, similarity._LONGEVITY_WORDS,
-             "ثباته بيطابق طلبه", "ثباته أقل من اللي طلبه شوية"),
-            ("projection", "projection", _WANTED_PROJECTION, similarity._PROJECTION_WORDS,
-             "فوحانه بيطابق طلبه", "فوحانه أقل من اللي طلبه شوية"),
-        ):
-            wanted = intent.get(key)
-            if not wanted:
-                continue
-            recorded = getattr(product, attribute, "")
-            if key == "projection" and excessive_projection(recorded, wanted):
-                entry.projection_conflict = True
-                entry.mismatches.append(f"فوحانه المسجل {recorded} أعلى من الهدوء اللي طلبه")
-                continue
-            hit = _ordinal_hit(recorded, wanted, vocabulary, words)
-            if hit <= 0:
-                entry.mismatches.append(
-                    f"{'ثباته' if key == 'longevity' else 'فوحانه'} مش بيطابق طلبه"
-                )
-                continue
-            entry.score += WEIGHTS[key] * hit + _within_band_bonus(key, recorded, hit)
-            reason = label if hit >= 1.0 else short_label
-            if hit < 1.0:
-                entry.mismatches.append(short_label)
-            # The recorded value rides along so the reply can quote it instead of asserting
-            # "وثباتهم كويس" with no number, which is what the evaluation caught it doing on
-            # the turn the customer said longevity mattered most.
-            if hit >= 1.0 and (recorded or "").strip():
-                reason = f"{reason} ({str(recorded).strip()})"
-            entry.reasons.append(reason)
 
         # A stated gender scores an exact match; an unresolved one leans safe instead.
         #
@@ -785,8 +699,6 @@ def continuity_conflict(product, intent, reference=None, result=None):
     recorded = (getattr(product, "occasion", "") or "").strip()
     if occasion and recorded and _occasion_verdict(recorded, occasion)[0] == CONFLICT:
         return f"مناسبته المسجلة {recorded}، مش اللي قاله"
-    if excessive_projection(getattr(product, "projection", ""), intent.get("projection")):
-        return f"فوحانه المسجل {product.projection} أعلى من الهدوء اللي طلبه"
     if reference is not None and reference.is_usable:
         result = result or similarity.compare(reference, product)
         if not result.is_close:
@@ -795,10 +707,8 @@ def continuity_conflict(product, intent, reference=None, result=None):
 
 
 def excessive_projection(recorded, wanted):
-    """A subdued request is an upper limit, unlike a longevity minimum."""
-    target = _WANTED_PROJECTION.get(str(wanted or "").strip().lower())
-    actual = similarity._ordinal(recorded, similarity._PROJECTION_WORDS) if recorded else None
-    return target in (1, 2) and actual is not None and actual > target
+    """A projection preference cannot disqualify a store perfume."""
+    return False
 
 
 def _occasion_verdict(recorded, wanted):

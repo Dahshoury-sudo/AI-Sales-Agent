@@ -18,6 +18,7 @@ import logging
 import re
 from decimal import Decimal
 from .bottle_wording import normalize_bottle_wording
+from .performance_policy import claim_issues as performance_claim_issues
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +56,10 @@ def internal_draft_issues(reply):
     return []
 
 
-def product_claim_issues(reply, facts):
+def product_claim_issues(reply, facts, *, request=None, context=""):
     """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
     text = _claim_normalize(reply)
-    issues = internal_draft_issues(reply)
+    issues = internal_draft_issues(reply) + performance_claim_issues(reply, request, context=context)
     for clause in re.split(r"[.!؟?\n]", text):
         if re.search(r"(?:عطر|برفان|عطور)\s+(?:رجالي\s+|حريمي\s+)?(?:اصلي|اصليه)|براندات\s+اصليه", clause):
             if not re.search(r"(?:مش|غير|لا|مفيش)\s+(?:متوفر\s+)?(?:عندنا\s+)?(?:عطر|برفان|عطور|براندات)", clause):
@@ -104,36 +105,6 @@ def product_claim_issues(reply, facts):
                     continue
                 if not any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
                     issues.append(f"note:{named.group()}:{key}")
-        allowed_hours = set(re.findall(r"\d+(?:\.\d+)?", row.get("longevity", "")))
-        for hours in re.findall(r"(\d+(?:\.\d+)?)\s*ساع(?:ه|ات)", segment):
-            if hours not in allowed_hours:
-                issues.append(f"longevity:{named.group()}:{hours}")
-        projection = _claim_normalize(row.get("projection", ""))
-        projection_claim = re.search(r"فوحانه\s+(هادي|خفيف|متوسط|قوي)", segment)
-        levels = {"هادي": ("intimate", "weak", "soft"), "خفيف": ("intimate", "weak", "soft"),
-                  "متوسط": ("moderate",), "قوي": ("strong", "very strong", "enormous")}
-        if projection_claim and projection not in levels[projection_claim[1]]:
-            issues.append(f"projection:{named.group()}:{projection_claim[1]}")
-        if row.get("scent_tags"):
-            from .sales.similarity import peak_hours, _ordinal, _PROJECTION_WORDS
-            others = [names[name] for name in {match.group() for match in matches} if name != named.group()]
-            comparisons = (
-                (r"ثابت\s+اكتر|ثباته\s+(?:وفوحانه\s+)?(?:اطول|اقوي|اعلي|اكتر)|يدوم\s+اطول|lasts\s+longer",
-                 "longevity", peak_hours, 1),
-                (r"ثباته\s+(?:اقل|اقصر)|lasts\s+less", "longevity", peak_hours, -1),
-                (r"فوحانه\s+(?:اقوي|اعلي)", "projection", lambda value: _ordinal(value, _PROJECTION_WORDS), 1),
-                (r"فوحانه\s+(?:اقل|اضعف|اهدي)", "projection", lambda value: _ordinal(value, _PROJECTION_WORDS), -1),
-            )
-            for wording, field, measure, direction in comparisons:
-                if not re.search(wording, segment):
-                    continue
-                actual = measure(row.get(field, ""))
-                compared = [measure(other.get(field, "")) for other in others]
-                if (actual is None or not compared or any(value is None for value in compared)
-                        or any((actual - value) * direction <= 0 for value in compared)):
-                    issues.append(f"comparison:{named.group()}:{field}")
-        if re.search(r"ثابت اكتر|ثباته اطول|يدوم اطول", segment) and len(matches) < 2:
-            issues.append(f"comparison:{named.group()}: طرف المقارنة غير محدد")
     return list(dict.fromkeys(issues))
 
 

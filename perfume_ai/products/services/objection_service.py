@@ -27,6 +27,7 @@ from decimal import Decimal
 
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
+from .performance_policy import governed_reply
 from .product_formatting import (format_products, is_variant_available, factual_description,
     ProductQuote, product_quotes, render_quotes, quote_context, quote_evidence,
     requested_quote_options, monetary_claims, append_quotation, QUOTE_PROSE_INSTRUCTION)
@@ -61,7 +62,8 @@ _COMPLAINT_NOTE = (
 
 _NO_GUARANTEE = (
     "\n❌ ممنوع في الرد ده: \"مضمون\"، \"100%\"، \"أضمنلك إنه هيعجبك\"، أي نسبة مئوية "
-    "للتشابه أو للثبات مش مكتوبة في البيانات، وأي رقم ساعات مش مكتوب في بيانات العطر."
+    "للتشابه مش مكتوبة في البيانات. الثبات والفوحان يخضعوا لسياسة الستور المشتركة، "
+    "وممنوع ضمان مدة أطول من الصيغة المسموحة لو العميل طلب رقم."
 )
 
 
@@ -294,6 +296,7 @@ def _budget_verdict_note(budget, context):
     return note
 
 
+@governed_reply
 def handle_objection(message, objection, history=None, store=None, conversation=None, retry_hint=""):
     """Reply to a customer objection or complaint, addressing it before selling.
 

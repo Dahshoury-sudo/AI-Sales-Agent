@@ -15,6 +15,7 @@ from .conversation_service import merge_preferences
 from .notification_service import create_notification, notify_handoff
 from .handoff import HANDOFF_CONFIRMATION, handoff_offer_reply, has_handoff_offer, requests_human
 from . import promotion_service
+from .performance_policy import enforce_reply, performance_turn
 from .usage_service import record_llm_message
 from .identification_service import identify_perfume
 from .objection_service import handle_objection
@@ -168,7 +169,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         sources.append("ميزانية " + evidence["budget"] + " جنيه")
     if evidence and not evidence.get("append"):
         sources.append(context)
-    issues = product_claim_issues(reply, facts) + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
+    issues = product_claim_issues(reply, facts, context=context) + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
     prose = reply.replace(evidence.get("text") or "\0", "")
     repeats = repetition.repeated_sentences(prose, history, store=store)
     # Plus the frames, which are a different question about the same draft: that one asks whether a
@@ -192,7 +193,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         if not issues:
             raise
         retried, retried_context = "", context
-    remaining = product_claim_issues(retried, facts) + product_price_issues(
+    remaining = product_claim_issues(retried, facts, context=retried_context) + product_price_issues(
         retried, rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
     if remaining or (issues and not (retried or "").strip()):
         if any(i.startswith("price:") for i in remaining or issues):
@@ -551,6 +552,22 @@ def _is_goodbye_loop(history):
 
 
 def route(message, history=None, store=None, conversation=None):
+    """Apply the performance policy to every route, including scripted replies."""
+    with performance_turn(message, history):
+        reply, context = _route(message, history, store, conversation)
+        cleaned = enforce_reply(reply, context=context)
+        if cleaned != reply and conversation is not None:
+            # Checkout binds confirmation to the exact reply saved and delivered.
+            import hashlib
+            from products.models import Cart
+            cart = Cart.objects.filter(conversation=conversation).first()
+            if cart and cart.quote.get("summary_hash") == hashlib.sha256(reply.encode()).hexdigest():
+                cart.quote = {**cart.quote, "summary_hash": hashlib.sha256(cleaned.encode()).hexdigest()}
+                cart.save(update_fields=["quote"])
+        return cleaned, context
+
+
+def _route(message, history=None, store=None, conversation=None):
     if history is None:
         history = []
 

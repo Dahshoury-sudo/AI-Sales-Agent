@@ -272,6 +272,10 @@ def run_scenario(scenario, truth):
                         f"{turn['user']}\n{turn['reply']}\n{turn.get('context') or ''}"
                         for turn in record["turns"]
                     ),
+                    history=[item for turn in record["turns"] for item in (
+                        {"role": "user", "content": turn["user"]},
+                        {"role": "assistant", "content": turn["reply"]},
+                    )],
                 )
                 expected_names = scenario.get("assert_cart_names")
                 expected_cart = scenario.get("assert_cart_by_turn", {}).get(index)

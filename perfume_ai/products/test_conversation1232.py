@@ -161,7 +161,7 @@ class Conversation1232Tests(TestCase):
         self.assertFalse(ranking.excessive_projection("", "moderate"))
         self.assertEqual(ranking._occasion_verdict("", "casual")[0], ranking.UNKNOWN)
         self.assertEqual(ranking._ordinal_hit("12 hours", "moderate", ranking._WANTED_LONGEVITY,
-                                             similarity._LONGEVITY_WORDS), 1)
+                                             similarity._LONGEVITY_WORDS), 0)
 
     def test_unavailable_and_other_store_products_cannot_lead(self):
         self.quiet.is_active = False
@@ -242,7 +242,7 @@ class Conversation1232Tests(TestCase):
     def test_no_brand_reply_cannot_invent_differences_in_equal_performance(self):
         from products.services.sales.recommendation_response import response_issues
         intent = {"recommendation_mode": "new_goal"}
-        for claim in ("Quiet Day أهدى شوية من Guilty Black.", "Quiet Day ثابت أكتر من Guilty Black."):
+        for claim in ("Quiet Day فوحانه أهدى شوية من Guilty Black.", "Quiet Day ثابت أكتر من Guilty Black."):
             with self.subTest(claim=claim):
                 self.assertTrue(response_issues(claim, [self.quiet, self.guilty], intent))
         self.assertFalse(response_issues("Quiet Day فيه مسك. Guilty Black فيه باتشولي.",

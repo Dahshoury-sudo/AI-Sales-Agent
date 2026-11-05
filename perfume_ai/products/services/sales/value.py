@@ -406,8 +406,6 @@ def cross_product_value(cheaper, dearer):
     unknown = []
 
     for label, attribute in (
-        ("الثبات", "longevity"),
-        ("الفوحان", "projection"),
         ("الموسم", "season"),
         ("المناسبة", "occasion"),
     ):

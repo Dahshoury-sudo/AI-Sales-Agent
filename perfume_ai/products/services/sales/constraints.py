@@ -236,8 +236,6 @@ def describe(intent):
         (_GENDER, "gender"),
         (_PERFUME_TYPE, "perfume_type"),
         (_SEASON, "season"),
-        (_LONGEVITY, "longevity"),
-        (_PROJECTION, "projection"),
     ):
         # "multiple" is a routing signal, not a taste — the router asks which to start
         # with, so echoing it back as a preference would be nonsense.

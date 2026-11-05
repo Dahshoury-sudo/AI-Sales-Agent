@@ -77,9 +77,9 @@ class Conversation1233RoutingTests(TestCase):
              patch("products.services.ai.recommendation.chat", return_value=answer) as chat:
             route("فريش", build_llm_history(self.conversation), self.store, self.conversation)
         payload = json.loads(chat.call_args_list[0].args[0][-1]["content"])
-        self.assertEqual([p["id"] for p in payload["eligible_products"]], [self.terre.pk])
+        self.assertEqual({p["id"] for p in payload["eligible_products"]}, {self.terre.pk, self.bonded.pk, self.showmix.pk})
         self.assertEqual(payload["preferences"]["occasion"], "Daily & Casual")
-        self.assertEqual(payload["preferences"]["projection"], "strong")
+        self.assertNotIn("projection", payload["preferences"])
 
     def test_daily_pointer_overrides_recommendation_and_order_even_with_cart(self):
         self.offer(self.bonded, self.showmix)
@@ -162,7 +162,7 @@ class Conversation1233RoutingTests(TestCase):
     def test_no_match_declaration_is_rewritten_as_a_direct_alternative(self):
         intent = {"similar_to": self.terre.name}
         results = search_products(intent, self.store)
-        corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه متوسط."
+        corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه ممتاز."
         with patch("products.services.ai.recommendation.chat", side_effect=[json.dumps({"product_ids": [], "reply": "مفيش عطر قريب منه."}), json.dumps({"product_ids": [self.bonded.pk], "reply": corrected})]) as chat:
             reply, _ = recommend(SIMILARITY_MESSAGE, results["products"], store=self.store, intent=intent, search=results)
         self.assertEqual(chat.call_count, 2)

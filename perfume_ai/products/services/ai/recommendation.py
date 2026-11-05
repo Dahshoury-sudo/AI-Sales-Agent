@@ -237,38 +237,11 @@ def _named_in_message(message, store):
 
 
 def _performance_note(products, intent):
-    """Pin the lead recommendation to the ranking, and make it quote the recorded figure.
-
-    Evaluation scenario M1, on the turn the customer said "بس اهم حاجه الثبات": the ranker put
-    Ambero (10 hours) first and the reply recommended Dark Aura (8 hours) instead, describing
-    both as "وثباتهم كويس" without quoting either figure. Two separate failures — the ranking
-    was right and the prose ignored it, and a performance claim was asserted rather than sourced.
-
-    Computed here rather than asked for in the persona because which product is first is a fact
-    about the list we just built, the same reason _in_budget_note exists.
-    """
-    axes = [key for key in ("longevity", "projection") if (intent or {}).get(key)]
-    if not axes:
+    """Explain the shared policy when performance is part of the request."""
+    from ..performance_policy import instruction
+    if not any((intent or {}).get(key) for key in ("longevity", "projection")) or not list(products):
         return ""
-
-    shortlist = list(products)[:_FORMATTING_LIMIT]
-    if not shortlist:
-        return ""
-
-    leader = shortlist[0]
-    labels = {"longevity": "الثبات", "projection": "الفوحان"}
-    asked = " و".join(labels[key] for key in axes)
-    recorded = " / ".join(
-        f"{labels[key]}: {(getattr(leader, key, '') or '').strip() or 'غير مسجل'}"
-        for key in axes
-    )
-
-    return (
-        f"\n🔴 العميل سأل عن {asked}. القائمة تحت مرتبة بالأنسب لطلبه، و**{leader.name}** هو "
-        f"الأول فيها ({recorded}). رشحه هو الأساس. لو رشحت غيره قبله، لازم تقول السبب صراحة "
-        f"من بيانات العطر. ❌ ممنوع تقول \"ثباته كويس\" أو \"ثباتهم عالي\" كده — اذكر الرقم "
-        f"المسجل زي ما هو من بيانات العطر.\n"
-    )
+    return instruction()
 
 
 def _in_budget_note(products, max_price):
