@@ -466,7 +466,7 @@ def _missing_data_note(product):
     ]
     if not any((getattr(product, layer, "") or "").strip()
                for layer in ("top_notes", "middle_notes", "base_notes")):
-        missing.append(("النوتات", "ممنوع تخترع نوتات أو تقول ريحته فيها إيه"))
+        missing.append(("النوتات", "ممنوع تخترع نوتات؛ وصف الريحة من scent_tags فقط"))
 
     if not missing:
         return ""
@@ -485,10 +485,9 @@ def _missing_data_note(product):
 # cinnamon, vanilla, chestnut and amberwood — no incense at any layer — so the invented note was
 # the whole reason to buy, and nothing in the block said not to invent one.
 _WITHHELD_DATA_NOTE = (
-    "⚠️ النوتات والموسم والمناسبة مش معروضين للعطر ده هنا: "
-    "❌ ممنوع تقول ريحته فيها إيه، ولا تقول إنه مناسب لموسم "
-    "أو مناسبة — إلا لو مكتوب حرفياً في سطر Description تحت. أي حاجة غير كده تبقى من "
-    "عندك، مش من البيانات."
+    "⚠️ النوتات والموسم مش معروضين للعطر ده هنا: ممنوع تخترعهم. "
+    "لو محتاج توصف الريحة، استخدم أول 3 scent_tags والمناسبة المسجلة فقط؛ "
+    "وجود وصف مختصر مش سبب تعيده في سؤال عن السعر أو الثبات."
 )
 
 
@@ -528,12 +527,12 @@ def _field_or_placeholder(value):
 
 
 def format_product(product, max_price=None, brief=False, show_prices=True,
-                   show_value_pick=True, line_mates=None):
+                   show_value_pick=True, line_mates=None, preferred_occasion=None):
     """Render one product as a prompt block.
 
-    brief=True drops stock status, out-of-stock sizes and the scent/performance fields, and
-    says so in `_WITHHELD_DATA_NOTE` — because a withheld field and an unrecorded one read to
-    the model identically, and both read as a gap to fill. Two callers want it:
+    brief=True drops stock status, out-of-stock sizes, notes and performance fields.
+    Character labels and the saved occasion remain available for requested descriptions.
+    Two callers want it:
     `recommendation._format_products` for a perfume the customer has already had described, so
     the same scent sentence stops coming back every turn, and `identification_service` for a
     guess we do not stock. Prices stay in both cases, so "بكام" is still answerable.
@@ -554,7 +553,14 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     the brief block too: brief means the customer has heard of this perfume already, which is
     when confusing it with its flanker is most likely, not least.
     """
-    from .performance_policy import catalog_text, EXCELLENT, STRONG
+    from .performance_policy import EXCELLENT, STRONG
+    from .scent_description import describe_scent, selected_tags
+    tags = getattr(product, "scent_tags", []) or []
+    scent_block = (
+        f"Scent Labels (character, not ingredients or performance): {', '.join(tags) or 'Not classified'}\n"
+        f"Description Tags (first three only): {', '.join(selected_tags(tags)) or 'Not classified'}\n"
+        f"Simple Scent Description: {describe_scent(tags, product.occasion, preferred_occasion=preferred_occasion)}\n"
+    )
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
 
@@ -591,7 +597,8 @@ Original Bottle: {_original_bottle_status(product, variants)}
 {sizes_block}{brief_extras}
 Gender: {product.gender}
 Perfume Type: {perfume_type}
-Description: {catalog_text(product.description)}
+Occasion: {_field_or_placeholder(product.occasion)}
+{scent_block}
 -----------------------
 """
 
@@ -627,11 +634,10 @@ Season: {_field_or_placeholder(product.season)}
 Occasion: {_field_or_placeholder(product.occasion)}
 Longevity: {EXCELLENT}
 Projection: {STRONG}
-Scent Labels (character, not ingredients or performance): {', '.join(getattr(product, 'scent_tags', []) or []) or 'Not classified'}
+{scent_block}Notes below are for explicit notes/ingredient questions only; never use them to infer scent character.
 Top Notes: {_field_or_placeholder(product.top_notes)}
 Middle Notes: {_field_or_placeholder(product.middle_notes)}
 Base Notes: {_field_or_placeholder(product.base_notes)}
-Description: {catalog_text(product.description)}
 
 -------------------------
 """
@@ -681,7 +687,7 @@ def _line_mates_for(products):
 
 
 def format_products(products, max_price=None, limit=None, brief=False, show_prices=True,
-                    show_value_pick=True):
+                    show_value_pick=True, preferred_occasion=None):
     """Render several products, optionally capped.
 
     The cap is a safety net on prompt size: callers should already be handing over
@@ -703,6 +709,7 @@ def format_products(products, max_price=None, limit=None, brief=False, show_pric
             product, max_price=max_price, brief=brief,
             show_prices=show_prices, show_value_pick=show_value_pick,
             line_mates=mates.get(product.name),
+            preferred_occasion=preferred_occasion,
         )
         for product in selected
     )

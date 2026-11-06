@@ -579,9 +579,10 @@ _UNREADABLE_NAME_RULES = """14. 🔴🔴 العميل كتب اسم عطر مش 
 # filling it with the prohibition: an empty slot reads as no opinion, and a sales model with no
 # opinion about whether to pitch will pitch.
 _ALTERNATIVES_PITCH_RULE = (
-    "4. في حالة (أ)، رشح له 1-2 من \"البدائل المقترحة\" أعلاه بشكل جذاب في **نفس الرد** — والبدائل دي "
-    "مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات "
-    "العطر نفسها. ❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!"
+    "4. في حالة (أ)، رشح له 1-2 من \"البدائل المقترحة\" أعلاه بصياغة مصرية بسيطة في **نفس الرد** — والبدائل دي "
+    "مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اوصف ريحة كل بديل حسب قاعدة التاجات + المناسبة "
+    "في الخط الأحمر 6، من غير نوتات إلا لو سأل عن المكونات صراحة. "
+    "❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!"
 )
 
 _NO_ALTERNATIVES_RULE = (
@@ -1284,7 +1285,10 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # Capped as a prompt-size safety net. The referent branch can now hand over every
         # perfume the last reply named, which is ~2 in practice and bounded by the two-reply
         # window — the limit only guards the pathological case.
-        context += format_products(products, max_price=budget, limit=6)
+        from .scent_description import occasion_preference
+        preferred = occasion_preference(message, product_names=[p.name for p in products],
+                                         saved=(conversation.preferences or {}).get("occasion") if conversation else None)
+        context += format_products(products, max_price=budget, limit=6, preferred_occasion=preferred)
         instructions = f"""
 ═══ تعليمات صارمة ═══
 1. 🔴 لو محتاج تذكر اسم العطر، استخدم الإملاء الموجود في البيانات حتى لو العميل كتبه غلط أو بالعربي. لو دي متابعة عن نفس العطر المعروف، جاوب بـ"ده" أو "هو" أو الصفة المطلوبة من غير إعادة اسمه؛ مثلاً "لا يا فندم، ده رجالي."
@@ -1292,9 +1296,11 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 1. 🔴 فرّق بين نوع السؤال:
    • لو العميل بيسأل عن التوافر بس (زي "عندكم سوفاج؟" أو "فيه بلو دي شانيل؟" أو "موجود عندكم X؟") → أكّد التوفر باختصار باسم العطر. سؤال واحد فقط لو لازم للطلب الحالي؛ متسألش لمجرد الخاتمة. ❗ متسردش أسعار ولا ترشح حجم — هو مسألش عن السعر.
    • لو العميل سأل عن السعر أو الحجم صراحة (زي "بكام؟" أو "الأحجام إيه؟") → جاوب بالأسعار والأحجام ونوع الزجاجة اللي طلبهم، من غير وصف ريحة أو شرح سعر الملي أو اقتراح حجم أكبر. لو سأل أنهي حجم أوفر أو طلب مساعدة في الحجم، استخدم سطر 💡 Value Pick (أو 💡 اقتراح حجم) والأرقام المكتوبة فقط؛ "اقتراح حجم" مش دليل على "أحسن قيمة".
-   • لو العميل سأل سؤال تفصيلي (زي "إيه مكوناته؟" أو "ثباته إيه؟") → جاوب على اللي سأله بس في جملة طبيعية واحدة أو اتنين. الثبات ممتاز والفوحان قوي، ولو طلب مدة الثبات صراحة قول "ثباته أكتر من 8 ساعات". الفوحان بدون أرقام.
+   • لو العميل سأل عن الريحة أو تفاصيل عامة → جاوب حسب قاعدة التاجات + المناسبة في الخط الأحمر 6؛ التفاصيل العامة مش طلب نوتات.
+   • لو سأل عن المكونات أو النوتات صراحة (ومنها "فيه فانيليا؟") → جاوب عن المطلوب من Top/Middle/Base Notes فقط حسب الخط الأحمر 6.
+   • لو سأل عن الثبات أو الفوحان → جاوب عن الأداء المطلوب بس في جملة طبيعية واحدة أو اتنين، من غير وصف ريحة. الثبات ممتاز والفوحان قوي، ولو طلب مدة الثبات صراحة قول "ثباته أكتر من 8 ساعات". الفوحان بدون أرقام.
 2. لو العميل سأل عن الحجم أو الملي، اذكر كل الأحجام المتاحة كما هي مكتوبة بالظبط.
-3. لو العميل سأل رأيك، قول سبب قصير مبني على النوتات أو المناسبة المسجلة. متعيدش الثبات والفوحان إلا لو سأل عنهم؛ مش فرق بين العطور.
+3. لو العميل سأل رأيك، قول سبب قصير حسب قاعدة التاجات + المناسبة في الخط الأحمر 6. متعيدش الثبات والفوحان إلا لو سأل عنهم؛ مش فرق بين العطور.
 4. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
 5. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌) أو حجم معين نفد، أخبر العميل بذلك بشكل لطيف واقترح عليه إنه يسأل عن عطور تانية متوفرة أو اعرض عليه الأحجام المتوفرة إن وجدت.
 6. 🔴🔴 ادمج المعلومات في كلام طبيعي. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). العميل بيتكلم مع بياع مش قاعدة بيانات.
@@ -1360,17 +1366,17 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives:
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
-            # Not `brief=True` any more. Brief withholds the note and performance fields, and
-            # conversation 795 turn 1 shows what that costs here: an alternative is a perfume the
-            # customer has never heard of, quoted a price and pitched "بشكل جذاب" by rule 5 below,
-            # and the model filled the missing scent data itself — "فيها لمسة بخور خفيفة" on a
-            # perfume whose notes are cardamom, pineapple, cinnamon, vanilla, chestnut and
-            # amberwood. Handing over the real notes is what lets the pitch be true, and it is
-            # the whole point of ranking these by the accord that was asked for.
+            # Alternatives need their saved scent tags and occasions for ordinary descriptions.
+            # Notes are evidence only for explicit ingredient questions, never a substitute for
+            # missing scent tags or a reason to invent a note that the customer wants.
             #
             # The value pick still goes, for recommendation's reason: a turn about *which perfume*
             # must not open with a verdict about *which size*.
-            context += format_products(alternatives, max_price=budget, show_value_pick=False)
+            from .scent_description import occasion_preference
+            preferred = occasion_preference(message, product_names=[p.name for p in alternatives],
+                                             saved=(conversation.preferences or {}).get("occasion") if conversation else None)
+            context += format_products(alternatives, max_price=budget, show_value_pick=False,
+                                        preferred_occasion=preferred)
 
         # Which half of rule 4 goes in. The verdict is asked first and `alternatives` second,
         # because the two empty cases are empty for opposite reasons and must not borrow each
@@ -1397,7 +1403,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
    • **(ج) العميل بيتفرج بشكل مبهم** (مثل "عندكو حاجة من شانيل" أو "عايز حاجة حلوة") → ❌ ممنوع تقول "مش متوفر"! اسأله يحدد: "تقصد أنهي عطر بالظبط يا فندم؟".
    • **(د) الرسالة نفسها غير مفهومة فعلاً** (حروف عشوائية، كلام مبتور، مفيش معنى واضح) → دي الحالة الوحيدة اللي تقول فيها: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟".
 {alternatives_rule}
-5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. ❌ وممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته فوق، حتى لو كانت هي اللي العميل بيدور عليها. (عميل طلب بخور، فاتقاله إن Stronger With You "فيه لمسة بخور خفيفة" — ونوتاته المسجلة هيل وأناناس وقرفة وفانيليا وكستناء وأمبروود، مفيش فيها بخور خالص.)
+5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. لو هتوصف ريحة، التزم بقاعدة التاجات + المناسبة في الخط الأحمر 6؛ النوتات للمكونات المطلوبة صراحة فقط. ممنوع تضيف ريحة أو نوتة مش مسجلة عشان ترضي طلب العميل.
 """        # Case (أ) above delegates to rule 14, so the fork has to actually be here. Which half
         # depends on the verdict and not on how many times the customer has asked: that is the whole
         # change. `deferring` is the guard rather than a bare `if denied` because a turn with no

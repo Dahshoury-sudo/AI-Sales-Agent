@@ -275,9 +275,17 @@ class PerformanceIntegrationTests(TestCase):
     def test_catalog_descriptions_and_business_facts_cannot_restore_old_values(self):
         from products.services.ai.prompts import get_system_prompt
         product = self.products[0]
+        original_block = format_product(product)
         product.description = "طابعه خفيف. ثباته 4 ساعات وفوحانه متوسط."
-        self.assertNotIn("4 ساعات", format_product(product))
-        self.assertIn("طابعه خفيف", format_product(product))
+        block = format_product(product)
+        self.assertEqual(block, original_block)
+        self.assertNotIn("4 ساعات", block)
+        self.assertNotIn(product.description, block)
+        self.assertIn("Description Tags (first three only): fresh, light", block)
+        scent_description = next(line for line in block.splitlines() if line.startswith("Simple Scent Description:"))
+        self.assertIn("خفيف", scent_description)
+        product.scent_tags = ["fresh"]
+        self.assertNotIn("خفيف", format_product(product))
         self.settings.business_facts = "الشحن 24 ساعة. عطورنا ثباتها 48 ساعة."
         self.settings.save()
         prompt = get_system_prompt(Store.objects.get(pk=self.store.pk))

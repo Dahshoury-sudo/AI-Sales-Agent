@@ -118,12 +118,14 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
     reply, context, _ = _rephrased(
         reply, context, history, store,
         lambda hint: _handle_general_raw(message, history, store, retry_hint=hint),
+        message=message,
     )
     return _finalize(reply, stage), context
 
 
 
-def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None, recommendation_candidates=None):
+def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None,
+               recommendation_candidates=None, message=None, preferred_occasion=None):
     """One targeted regeneration when a draft repeats a sentence we already said.
 
     `_is_repetitive` above compares whole replies at 0.7 and is the right guard for a branch that
@@ -146,10 +148,11 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     from .product_formatting import (product_claim_facts, factual_description,
         product_price_issues, quote_evidence, append_quotation, product_quotes, render_quotes, quote_context)
     from .reply_sanitizer import product_claim_issues
-    from .price_reply import composition_issues, quotation_prose, fallback_price_reply
+    from .price_reply import composition_issues, quotation_prose, fallback_price_reply, requested_product_details
     from products.models import Product
     catalogue = list(Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")) if store else []
     evidence = quote_evidence(context)
+    message = message if message is not None else evidence.get("request")
     # Only actual product rows and quotations supply evidence; names in notes,
     # labels (e.g. Pi in "Value Pick") and flanker warnings do not.
     row_names = sales_described._row_names(context or "", [p.name for p in catalogue])
@@ -158,6 +161,21 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     # Reference rows supply comparison facts, not products to offer in recovery.
     offer_rows = list(recommendation_candidates) if recommendation_candidates is not None else rows
     facts = product_claim_facts(rows)
+    from .scent_description import occasion_preference
+    preferred_occasion = occasion_preference(
+        message, product_names=facts,
+        saved=preferred_occasion or (recommendation_intent or {}).get("occasion"),
+    )
+
+    def claims(draft, draft_context):
+        # A missing external subject cannot make the displayed alternatives the
+        # answer to its scent question. Any actual description still gets checked.
+        scoped_message = message
+        if any(marker in (draft_context or "") for marker in ("ABSENCE_DENIED", "NAME_UNREADABLE")):
+            scoped_message = "" if message is not None else None
+        return product_claim_issues(draft, facts, context=draft_context, message=scoped_message,
+                                    history=history, preferred_occasion=preferred_occasion,
+                                    description_required=recommendation_intent is not None)
     from products.models import StoreSettings, StaticFAQ
     sources = []
     if store:
@@ -170,7 +188,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         sources.append("ميزانية " + evidence["budget"] + " جنيه")
     if evidence and not evidence.get("append"):
         sources.append(context)
-    issues = (product_claim_issues(reply, facts, context=context)
+    issues = (claims(reply, context)
               + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
               + composition_issues(reply, context))
     prose = quotation_prose(reply, evidence)
@@ -196,7 +214,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         if not issues:
             raise
         retried, retried_context = "", context
-    remaining = product_claim_issues(retried, facts, context=retried_context) + product_price_issues(
+    remaining = claims(retried, retried_context) + product_price_issues(
         retried, rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
     remaining += composition_issues(retried, retried_context)
     if remaining or (issues and not (retried or "").strip()):
@@ -205,7 +223,9 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             selected = [p for p in offer_rows if p.pk in quoted_ids]
             fallback, fallback_context = fallback_price_reply(context, selected, recommendation_intent)
             fallback_issues = (
-                product_claim_issues(fallback, product_claim_facts(selected), context=fallback_context)
+                product_claim_issues(fallback, product_claim_facts(selected), context=fallback_context,
+                                     message=message, history=history, preferred_occasion=preferred_occasion,
+                                     description_required=recommendation_intent is not None)
                 + product_price_issues(fallback, selected, evidence=quote_evidence(fallback_context),
                                        monetary_sources=sources, catalogue=catalogue)
                 + composition_issues(fallback, fallback_context)
@@ -231,9 +251,15 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
                     quoted_ids = {q.product_id for q in quotes}
                     explanation = recommendation_fit(
                         [p for p in selected if p.pk in quoted_ids], recommendation_intent,
+                        message=message, history=history,
                     )
                     if explanation:
                         fallback = explanation + "\n\n" + fallback
+                else:
+                    details = requested_product_details(selected, message, preferred_occasion=preferred_occasion,
+                                                        history=history)
+                    if details:
+                        fallback = "\n".join(details) + "\n\n" + fallback
                 return fallback, quote_context(context, quotes, max_price=budget), repeats
             return "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟", context, repeats
         if any(i.startswith("authenticity:") for i in remaining or issues):
@@ -243,13 +269,25 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         from .sales.recommendation_response import _choice_limit
         limit = _choice_limit(recommendation_intent)
         selected = [by_name[name] for name in mentioned[:limit]]
+        if recommendation_intent is None:
+            selected = [by_name[name] for name in mentioned]
+            requested_names = sales_naming.names_in(message or "", list(by_name))
+            selected += [by_name[name] for name in requested_names if by_name[name] not in selected]
+            if not selected and len(offer_rows) == 1 and not any(
+                marker in (context or "") for marker in ("ABSENCE_DENIED", "NAME_UNREADABLE")
+            ):
+                selected = offer_rows
         if (recommendation_intent or {}).get("recommendation_mode") == "new_goal":
             selected = offer_rows[:limit]
         if recommendation_intent is not None:
             from .ai.recommendation import recommendation_fit
-            fallback = recommendation_fit(selected, recommendation_intent)
+            fallback = recommendation_fit(selected, recommendation_intent, message=message, history=history)
         else:
-            fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
+            lines = requested_product_details(selected, message, preferred_occasion=preferred_occasion, history=history)
+            if message is None and not lines:
+                # Preserve legacy callers that have not supplied a question.
+                lines = [f"{product.name}: {factual_description(product)}." for product in selected]
+            fallback = "\n".join(lines)
         if fallback and any(i.startswith("popularity:") for i in remaining or issues):
             fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
         return append_quotation(fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context), context, repeats
@@ -812,6 +850,7 @@ def _route(message, history=None, store=None, conversation=None):
             lambda hint: handle_objection(
                 message, objection, history, store, conversation, retry_hint=hint
             ),
+            message=message,
         )
         stage = (
             sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
@@ -825,6 +864,7 @@ def _route(message, history=None, store=None, conversation=None):
         reply, context, _ = _rephrased(
             reply, context, history, store,
             lambda hint: identify_perfume(message, history, store, conversation, retry_hint=hint),
+            message=message,
         )
         return _finalize(reply, sales_stage.IDENTIFICATION), context
 
@@ -940,6 +980,7 @@ def _route(message, history=None, store=None, conversation=None):
         response, context, _ = _rephrased(
             response, context, history, store,
             lambda hint: get_product_info(message, history, store, conversation, retry_hint=hint),
+            message=message, preferred_occasion=(conversation.preferences or {}).get("occasion") if conversation else None,
         )
 
         # After the retry, so a deferral the retry introduced or removed is judged on the context
@@ -961,6 +1002,7 @@ def _route(message, history=None, store=None, conversation=None):
         response, context, _ = _rephrased(
             response, context, history, store,
             lambda hint: compare_products(message, history, store, conversation, retry_hint=hint),
+            message=message, preferred_occasion=(conversation.preferences or {}).get("occasion") if conversation else None,
         )
 
         # `compare_products` hands a turn it cannot place two perfumes on straight to

@@ -15,6 +15,7 @@ from ..search_service import product_matches_request
 from ..sales import brand_response, described, naming, repetition
 from ..sales.scent_preferences import normalize_scent_intent
 from ..sales.value import as_budget, eligible_variants
+from ..scent_description import describe_scent, selected_tags, selected_occasion
 
 
 def no_match_reply(search=None):
@@ -38,6 +39,10 @@ def _record(product, intent):
     return {
         "id": product.pk, "name": product.name, "brand": product.brand.name,
         "scent_tags": product.scent_tags, "gender": product.gender,
+        "description_tags": selected_tags(product.scent_tags),
+        "description_occasion": selected_occasion(product.occasion, intent.get("occasion")),
+        "scent_description": describe_scent(product.scent_tags, product.occasion,
+                                            preferred_occasion=intent.get("occasion")),
         "occasion": product.occasion, "season": product.season,
         "occasion_categories": [category for category in OCCASIONS if category in occasion_groups(product.occasion)],
         "longevity": EXCELLENT, "projection": STRONG,
@@ -77,20 +82,21 @@ def _quotes(selected, intent, message):
     return quotes
 
 
-def _fallback(candidates, intent):
+def _fallback(candidates, intent, message=None, history=None):
     from ..sales.recommendation_response import _choice_limit
     limit = _choice_limit(intent)
     if intent.get("budget_scope") == "total":
         candidates = sorted(candidates, key=lambda p: min(v.price for v in eligible_variants(p, intent)))
     selected = candidates[:limit]
     from .recommendation import recommendation_fit
-    return selected, recommendation_fit(selected, intent)
+    return selected, recommendation_fit(selected, intent, message=message, history=history)
 
 
 def _compose_selection(reply, selected, intent, message, store):
     """Keep the same selection evidence while checking the final price layout."""
     reply = brand_response.disclose_brands(reply, selected, intent, store)
-    context = format_products(selected, show_prices=False, show_value_pick=False)
+    context = format_products(selected, show_prices=False, show_value_pick=False,
+                              preferred_occasion=intent.get("occasion"))
     context += described.moved_past_block(intent, store)
     budget = as_budget(intent.get("max_price"))
     if budget is not None or intent.get("requested_volume") or intent.get("bottle_type"):
@@ -131,13 +137,18 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         f"Choose between one and {count} perfumes from eligible_products; use their exact catalog names in reply. "
         "For a total purchase budget choose exactly the purchase_quantity of bottles within that combined budget. "
         "Choose according to the customer's current preferences and the supplied facts. The list is in ID order, not relevance order. "
-        "Use one short grounded reason for each selected perfume, in friendly natural Egyptian Arabic. "
+        "Describe every selected perfume in natural Egyptian Arabic using all its description_tags "
+        "(the first three saved scent_tags) followed by its description_occasion. "
+        "If the customer explicitly excludes a scent description, omit it and keep the other requested facts. "
+        "The supplied scent_description demonstrates the simple wording; no extra descriptors or fancy phrases. "
         "Ordinary prose is one or two short sentences; honor requests for more choices or complete details. "
         "No introductory recap, decorative bullets, emoji, repeated performance descriptions, or obligatory closing question. "
         "Ask at most one useful question only when the current request needs missing information. "
         "If presenting two, give a short difference only if it helps the customer choose. "
         "scent_tags are the owner's descriptions of scent character. They do not prove ingredients, performance, or authenticity. "
-        "Use notes for ingredient claims. Every store perfume has excellent longevity and projection under the shared store policy. "
+        "Mention notes only when the current customer explicitly asks about notes or ingredients. "
+        "An ordinary smell question does not ask for notes; never infer character from notes. "
+        "Every store perfume has excellent longevity and projection under the shared store policy. "
         "Performance preferences do not distinguish candidates, establish a quiet projection, or guarantee a requested duration. "
         "A shared scent style is not evidence that perfumes smell closely alike. Do not claim close similarity or a similarity percentage. "
         "Never invent popularity, guaranteed appeal, performance differences, product names or facts. "
@@ -184,7 +195,9 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
             allowed_names = chosen_names | ({reference.name} if reference else set())
             if not chosen_names <= mentioned or mentioned - allowed_names:
                 raise ValueError("Name every selected perfume and do not offer another perfume in the reply.")
-            issues = product_claim_issues(draft, product_claim_facts(proposed))
+            issues = product_claim_issues(draft, product_claim_facts(proposed), message=message,
+                                          history=history, preferred_occasion=intent.get("occasion"),
+                                          description_required=True)
             if monetary_claims(draft):
                 issues.append("Do not write prices or totals; quotations are added automatically.")
             from ..sales.similarity import claims_unsupported_similarity
@@ -213,7 +226,7 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         candidates = _current_candidates(candidates, intent, search, store)
         if not candidates:
             return no_match_reply(search)
-        selected, reply = _fallback(candidates, intent)
+        selected, reply = _fallback(candidates, intent, message, history)
     try:
         quotes = _quotes(selected, intent, message)
     except ValueError:

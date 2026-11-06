@@ -44,7 +44,7 @@ class Conversation1233RoutingTests(TestCase):
 
     def test_exact_similarity_request_keeps_reference_through_router(self):
         self.offer(self.elite, self.dark)
-        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded فيه مسك وخشب الأرز."})
+        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded ريحته فريش ومنعش وخشبي ومناسب للشغل والمكتب."})
         with patch("products.services.router.classify", return_value="recommendation"), \
              patch("products.services.router.extract_intent", return_value={"similar_to": self.terre.name}), \
              patch("products.services.ai.recommendation.chat", return_value=answer) as chat, \
@@ -71,7 +71,7 @@ class Conversation1233RoutingTests(TestCase):
         chat.assert_not_called()
         self.assertEqual(context, "SCENT_PREFERENCE_REQUIRED")
         save_message(self.conversation, "assistant", reply, internal_context=context)
-        answer = json.dumps({"product_ids": [self.terre.pk], "reply": "Terre d'Hermes: طابعه فريش."})
+        answer = json.dumps({"product_ids": [self.terre.pk], "reply": "Terre d'Hermes ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي."})
         with patch("products.services.router.classify", return_value="recommendation"), \
              patch("products.services.router.extract_intent", return_value={"scent_tags": ["fresh"]}), \
              patch("products.services.ai.recommendation.chat", return_value=answer) as chat:
@@ -142,11 +142,12 @@ class Conversation1233RoutingTests(TestCase):
         intent = {"gender": "male", "occasion": "daily", "similar_to": self.terre.name}
         result = search_products(intent, self.store)
         self.assertIsNone(result["alternatives"])
-        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": "Bonded فيه مسك وخشب الأرز."})
+        explanation = "Bonded ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي."
+        answer = json.dumps({"product_ids": [self.bonded.pk], "reply": explanation})
         with patch("products.services.ai.recommendation.chat", return_value=answer) as chat:
             reply, _ = recommend(SIMILARITY_MESSAGE, result["products"], store=self.store, intent=intent, search=result)
         self.assertEqual(chat.call_count, 1)
-        self.assertEqual(reply, "Bonded فيه مسك وخشب الأرز.")
+        self.assertEqual(reply, explanation)
 
     def test_repeated_similarity_overclaim_falls_back_to_catalogue_facts(self):
         intent = {"occasion": "daily", "similar_to": self.terre.name}
@@ -162,7 +163,7 @@ class Conversation1233RoutingTests(TestCase):
     def test_no_match_declaration_is_rewritten_as_a_direct_alternative(self):
         intent = {"similar_to": self.terre.name}
         results = search_products(intent, self.store)
-        corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه قوي."
+        corrected = "Bonded ريحته فريش ومنعش وخشبي ومناسب للشغل والمكتب، وفوحانه قوي."
         with patch("products.services.ai.recommendation.chat", side_effect=[json.dumps({"product_ids": [], "reply": "مفيش عطر قريب منه."}), json.dumps({"product_ids": [self.bonded.pk], "reply": corrected})]) as chat:
             reply, _ = recommend(SIMILARITY_MESSAGE, results["products"], store=self.store, intent=intent, search=results)
         self.assertEqual(chat.call_count, 2)

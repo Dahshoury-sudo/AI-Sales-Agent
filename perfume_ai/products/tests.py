@@ -2121,6 +2121,8 @@ class UnifiedProductFormattingTests(TestCase):
         self.queryset = Product.objects.filter(pk=self.product.pk)
 
     def test_every_field_is_rendered(self):
+        self.product.scent_tags = ["fresh", "spicy"]
+        self.product.save(update_fields=["scent_tags"])
         context = format_products(self.queryset)
 
         for field in (
@@ -2128,9 +2130,14 @@ class UnifiedProductFormattingTests(TestCase):
             "Original Bottle:", "Available Sizes & Prices:", "Out of Stock Sizes",
             "Gender: male", "Perfume Type:", "Season: All Seasons", "Occasion: Casual",
             "Longevity: ممتاز", "Projection: قوي", "Top Notes: Bergamot",
-            "Middle Notes: Pepper", "Base Notes: Ambroxan", "Description: Fresh spicy",
+            "Middle Notes: Pepper", "Base Notes: Ambroxan",
+            "Scent Labels (character, not ingredients or performance): fresh, spicy",
+            "Description Tags (first three only): fresh, spicy",
+            "Simple Scent Description: ريحته فريش ومنعش وفيه ريحة توابل، ومناسب للاستخدام اليومي",
         ):
             self.assertIn(field, context)
+        self.assertNotRegex(context, r"(?m)^Description:")
+        self.assertNotIn("Fresh spicy", context)
 
     def test_perfume_type_is_no_longer_missing_from_recommendations(self):
         """The drift: recommendation and comparison omitted it."""
@@ -4321,8 +4328,8 @@ class PersonaConsolidationTests(TestCase):
             ("product not in data = absent", "مش في البيانات"),
             ("never change a price", "ممنوع تغيره"),
             ("no confirm without a summary", "ممنوع تأكد أي طلب"),
-            ("no invented attributes", "ممنوع تخترع مواصفات"),
-            ("no unbacked similarity claims", 'ممنوع تقول عطر "شبه"'),
+            ("saved scent labels supply ordinary descriptions", "Product.scent_tags"),
+            ("no unbacked similarity claims", "دليل مسجل يدعم التشابه"),
             ("prices in EGP", "بالجنيه المصري"),
             ("obey the Original Bottle wording", "خانة (Original Bottle)"),
             ("no fusha or literal translation", "ترجمة حرفية"),
@@ -6809,8 +6816,17 @@ class SalesScenarioTests(TestCase):
         def choose(messages, **kwargs):
             self.recommend_payload = json.loads(messages[-1]["content"])
             selected = self.recommend_payload["eligible_products"][:2]
+            explanations = {
+                self.sauvage.name: "ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي",
+                self.light.name: "ريحته فريش ومنعش وخفيف وخشبي ومناسب للخروجات والسهرات",
+                self.heavy.name: "ريحته عودي وتقيل ومناسب للخروجات والسهرات",
+                self.vanilla.name: "فيه ريحة زهور ومسكر",
+            }
             return json.dumps({"product_ids": [p["id"] for p in selected],
-                               "reply": "، ".join(p["name"] for p in selected) + ": اختيارات مناسبة لطابع الريحة اللي طلبته."})
+                               "reply": "\n".join(
+                                   p["name"] + ": " + explanations[p["name"]] + ". ده طابع الريحة اللي طلبته."
+                                   for p in selected
+                               )})
         with mock.patch("products.services.router.classify", return_value="recommendation"), \
              mock.patch("products.services.router.extract_intent", return_value=intent), \
              mock.patch("products.services.ai.recommendation.chat", side_effect=choose) as rec, \
@@ -13443,17 +13459,21 @@ class FirstAskDeniesAndOffersTests(TestCase):
         self.assertIn("ممنوع ترد بنفي لوحده ومتعرضش حاجة", prompt)
 
     def test_the_alternatives_answer_the_accord_that_was_asked_for(self):
-        """The pitch has to be true, and the only way it can be is if the perfume really carries the
-        note. Both of these do — olibanum and incense — and that is what the ranking is for; the
-        rows arrive with their note fields precisely so the model does not have to invent one.
-        795's reply gave Stronger With You "لمسة بخور خفيفة" over notes that contain no incense at
-        all."""
+        """Actual notes support accord ranking; saved tags and occasion supply description prose."""
+        for product, occasion in ((self.sport, "Office"), (self.bleu, "Casual")):
+            product.scent_tags = ["fresh", "woody"]
+            product.occasion = occasion
+            product.save(update_fields=["scent_tags", "occasion"])
         context, prompt = self._first_ask()
 
         self.assertLess(context.index("Dior Homme Sport"), context.index("Bleu de Chanel"))
         self.assertIn("Olibanum", context)
         self.assertIn("Incense", context)
-        self.assertIn("اذكر النوتة اللي بتخلي البديل قريب من طلبه من بيانات العطر نفسها", prompt)
+        self.assertEqual(context.count("Description Tags (first three only): fresh, woody"), 2)
+        for evidence in ("Occasion: Office", "Occasion: Casual", "مناسب للشغل والمكتب",
+                         "مناسب للاستخدام اليومي"):
+            self.assertIn(evidence, context)
+        self.assertIn(context, prompt)
 
     def test_an_availability_question_does_not_become_a_price_list(self):
         """The counterweight to handing this turn a pool of perfumes. "عندك لادور بخور ؟" asks
@@ -14971,13 +14991,19 @@ class AlternativesAnswerTheRequestTests(TestCase):
         self.assertLess(context.index("Dior Homme Sport"), context.index("Stronger With You"))
 
     def test_the_alternatives_carry_their_real_notes(self):
-        """The whole point of ranking these by the accord asked for: the pitch can now cite the
-        note the perfume actually has, instead of the model inventing one that fits. Turn 1 was
-        handed a brief block with no notes in it at all and filled the gap itself."""
+        """Notes remain available for explicit ingredients, separate from ordinary scent evidence."""
+        self.sport.scent_tags = ["fresh", "citrus", "woody"]
+        self.sport.occasion = "Office"
+        self.sport.description = "Untrusted catalog description"
+        self.sport.save(update_fields=["scent_tags", "occasion", "description"])
         context, prompt = self._turn()
 
         self.assertIn("Olibanum", context)
-        self.assertIn("ممنوع تنسب لعطر نوتة أو ريحة مش مكتوبة في بياناته", prompt)
+        self.assertIn("Description Tags (first three only): fresh, citrus, woody", context)
+        self.assertIn("Occasion: Office", context)
+        self.assertIn("مناسب للشغل والمكتب", context)
+        self.assertNotIn("Untrusted catalog description", context)
+        self.assertIn(context, prompt)
 
     def test_the_rows_reach_the_model_and_not_just_the_return_value(self):
         """`context` is interpolated into the prompt, but nothing pinned that. If the two ever
@@ -14989,17 +15015,10 @@ class AlternativesAnswerTheRequestTests(TestCase):
 
 
 class BriefBlockCannotInviteInventionTests(TestCase):
-    """Conversation 795 turn 3: "مع لمسة بخور خفيفة" attached to a perfume that has no incense.
+    """Brief descriptions retain saved tags and occasions without inviting note invention.
 
-    The brief block is what the alternatives path renders. It withholds the note, longevity,
-    projection, season and occasion fields — and said nothing about having withheld them. A
-    withheld field and an unrecorded one read to the model identically, and both read as a gap to
-    fill, so `_missing_data_note`'s whole purpose was silently dropped on the one path where the
-    model is simultaneously told to sell what it is looking at.
-
-    Brief keeps dropping those fields: it exists so a perfume the customer has already had
-    described stops getting the same scent sentence recited every turn. What changes is that the
-    gap is now labelled as a gap.
+    Notes, season and performance stay withheld. Free-text catalog descriptions cannot replace
+    the saved scent labels, and only the first three labels supply ordinary description prose.
     """
 
     def setUp(self):
@@ -15011,7 +15030,7 @@ class BriefBlockCannotInviteInventionTests(TestCase):
             middle_notes="Pepper, Cardamom, Nutmeg",
             base_notes="Woody Notes, Amber, Olibanum",
             season="Winter", occasion="Evening", longevity="8 hours", projection="Strong",
-            description="Spicy woody",
+            scent_tags=["fresh", "citrus", "light", "woody"], description="Spicy woody",
         )
         ProductVariant.objects.create(
             product=self.product, volume=50, price=450, bottle_type="normal"
@@ -15019,37 +15038,48 @@ class BriefBlockCannotInviteInventionTests(TestCase):
         self.queryset = Product.objects.filter(pk=self.product.pk)
 
     def _brief(self):
-        return format_products(self.queryset, brief=True)
+        return format_products(self.queryset.all(), brief=True)
 
-    def test_the_withheld_fields_are_named_as_withheld(self):
-        self.assertIn("النوتات والموسم والمناسبة مش معروضين", self._brief())
+    def test_the_saved_scent_tags_remain_available(self):
+        self.assertIn("Scent Labels (character, not ingredients or performance): fresh, citrus, light, woody", self._brief())
 
-    def test_inventing_a_note_is_banned_in_so_many_words(self):
-        """Turn 3's exact move. The perfume was sold on a note nobody had shown the model."""
-        self.assertIn("ممنوع تقول ريحته فيها إيه", self._brief())
-
-    def test_claiming_a_season_or_an_occasion_is_banned_too(self):
-        """Turn 1's "مناسبة للشتا والسهرات" was correct only by luck — the row does carry Winter
-        and Evening, and the model had not been shown either."""
-        self.assertIn("ولا تقول إنه مناسب لموسم", self._brief())
-
-    def test_the_description_line_is_the_one_permitted_source(self):
-        """A blanket ban would contradict the block itself, which still renders Description."""
+    def test_only_the_first_three_tags_supply_ordinary_scent_prose(self):
         brief = self._brief()
+        self.assertIn("Description Tags (first three only): fresh, citrus, light", brief)
+        scent_description = next(line for line in brief.splitlines() if line.startswith("Simple Scent Description:"))
+        for included in ("فريش", "حمضيات", "خفيف"):
+            self.assertIn(included, scent_description)
+        for excluded in ("خشبي", "Spicy woody", "Bergamot", "Olibanum"):
+            self.assertNotIn(excluded, scent_description)
 
-        self.assertIn("إلا لو مكتوب حرفياً في سطر Description", brief)
-        self.assertIn("Description: Spicy woody", brief)
+    def test_the_recorded_occasion_remains_available_without_a_season_claim(self):
+        brief = self._brief()
+        self.assertIn("Occasion: Evening", brief)
+        self.assertIn("للخروجات والسهرات", brief)
+        self.assertNotIn("Season:", brief)
+        self.assertNotIn("Winter", brief)
+
+    def test_catalog_description_cannot_supply_scent_evidence(self):
+        brief = self._brief()
+        self.assertNotRegex(brief, r"(?m)^Description:")
+        self.assertNotIn("Spicy woody", brief)
+        self.product.description = "Saffron mystery signature"
+        self.product.save(update_fields=["description"])
+        self.assertEqual(self._brief(), brief)
 
     def test_the_detail_fields_are_still_dropped(self):
-        """The anti-recital purpose survives: this is a label on the gap, not the data back."""
         brief = self._brief()
-
-        for omitted in ("Top Notes:", "Base Notes:", "Season:", "Longevity:", "Stock Status:"):
+        for omitted in ("Top Notes:", "Middle Notes:", "Base Notes:", "Season:", "Longevity:",
+                        "Projection:", "Stock Status:", "Bergamot", "Cardamom", "Olibanum"):
             self.assertNotIn(omitted, brief)
 
-    def test_the_full_block_carries_no_such_warning(self):
-        """Nothing is withheld there, so the line would be false."""
-        self.assertNotIn("مش معروضين للعطر ده هنا", format_products(self.queryset))
+    def test_the_full_block_exposes_recorded_notes_season_and_policy_performance(self):
+        full = format_products(self.queryset)
+        for included in ("Top Notes: Bergamot, Lemon, Ginger", "Middle Notes: Pepper, Cardamom, Nutmeg",
+                         "Base Notes: Woody Notes, Amber, Olibanum", "Season: Winter",
+                         "Occasion: Evening", "Longevity: ممتاز", "Projection: قوي"):
+            self.assertIn(included, full)
+        self.assertNotIn("Spicy woody", full)
 
 
 class AbsentNameEscalationTests(TestCase):

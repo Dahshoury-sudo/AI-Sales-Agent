@@ -136,7 +136,10 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     if requested_dimensions(message, history) and supported_facts_question(message, matches):
         return requested_facts(message, matches, history, max_price=budget)
 
-    context = format_products(matches, show_prices=False)
+    from .scent_description import occasion_preference
+    preferred = occasion_preference(message, product_names=[p.name for p in matches],
+                                     saved=(conversation.preferences or {}).get("occasion") if conversation else None)
+    context = format_products(matches, show_prices=False, preferred_occasion=preferred)
     from .product_formatting import price_question, QUOTE_PROSE_INSTRUCTION
     quoting = price_question(message, history, conversation)
     if quoting:
@@ -162,7 +165,7 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 {context}
 
 ═══ تعليمات المقارنة ═══
-1. جاوب بجملة أو جملتين مصري طبيعي، بفارق واحد مفيد لكل عطر حسب سؤاله؛ من غير مقدمة أو إعادة تلخيص الطلب. لو طلب تفاصيل أكتر، جاوب على كلها. استخدم أسماء العطور ونوتاتها من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
+1. جاوب بجملة أو جملتين مصري طبيعي، بفارق مفيد لكل عطر حسب سؤاله؛ من غير مقدمة أو إعادة تلخيص الطلب. الوصف العام لريحة كل عطر يتبع قاعدة التاجات + المناسبة في الخط الأحمر 6؛ السؤال عن صفة معينة يسمح تستخدم كل تاجاته، والنوتات للمكونات المطلوبة صراحة فقط. لو طلب تفاصيل أكتر، جاوب على كلها بنفس القاعدة. استخدم أسماء العطور من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
 2. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). ادمج الفروقات المهمة بس في كلام طبيعي.
 3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة والمناسبة). الثبات ممتاز والفوحان قوي لكل اختياراتنا، ومش أساس لترجيح عطر على التاني.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.

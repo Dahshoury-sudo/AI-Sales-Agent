@@ -65,7 +65,7 @@ class ScentRecommendationTests(TestCase):
             self.make_product(f"Catalog Item {index}", ["fresh"], price=100)
         selected = self.make_product("Cedar Day", ["fresh"], price=900)
         (reply, context), model = self.generate({"scent_tags": ["fresh"]},
-                                               {"product_ids": [selected.pk], "reply": "Cedar Day: طابعه فريش."})
+                                               {"product_ids": [selected.pk], "reply": "Cedar Day: ريحته فريش ومنعش ومناسب للشغل والمكتب."})
         payload = json.loads(model.call_args.args[0][-1]["content"])
         self.assertEqual(len(payload["eligible_products"]), 66)
         self.assertIn(selected.pk, {p["id"] for p in payload["eligible_products"]})
@@ -139,7 +139,7 @@ class ScentRecommendationTests(TestCase):
     def test_prices_are_rendered_from_eligible_variants(self):
         product = self.make_product("Cedar Day", ["fresh"], price=550)
         intent = {"scent_tags": ["fresh"], "max_price": 500}
-        (reply, context), model = self.generate(intent, {"product_ids": [product.pk], "reply": "Cedar Day: طابعه فريش."})
+        (reply, context), model = self.generate(intent, {"product_ids": [product.pk], "reply": "Cedar Day: ريحته فريش ومنعش ومناسب للشغل والمكتب."})
         self.assertIn("550.00", reply)
         self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
         self.assertEqual(quote_evidence(context)["quotes"][0]["product_id"], product.pk)
@@ -222,7 +222,7 @@ class ScentRecommendationTests(TestCase):
         selected = self.make_product("Cedar Day", ["fresh"])
         self.make_product("Citrus Run", ["fresh"])
         (reply, context), _ = self.generate({"scent_tags": ["fresh"]},
-                                           {"product_ids": [selected.pk], "reply": "Cedar Day: طابعه فريش."})
+                                           {"product_ids": [selected.pk], "reply": "Cedar Day: ريحته فريش ومنعش ومناسب للشغل والمكتب."})
         conversation = Conversation.objects.create(store=self.store)
         save_message(conversation, "assistant", reply, context)
         conversation.refresh_from_db()

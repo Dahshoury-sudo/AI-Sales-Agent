@@ -56,10 +56,15 @@ def internal_draft_issues(reply):
     return []
 
 
-def product_claim_issues(reply, facts, *, request=None, context=""):
+def product_claim_issues(reply, facts, *, request=None, context="", message=None,
+                         history=None, preferred_occasion=None, description_required=False):
     """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
     text = _claim_normalize(reply)
     issues = internal_draft_issues(reply) + performance_claim_issues(reply, request, context=context)
+    from .scent_description import (description_issues, _attributed_segments, _character_text,
+                                    _notes_authorized, request_texts)
+    issues += description_issues(reply, facts, message=message, history=history,
+                                 preferred_occasion=preferred_occasion, required=description_required)
     for clause in re.split(r"[.!؟?\n]", text):
         if re.search(r"(?:عطر|برفان|عطور)\s+(?:رجالي\s+|حريمي\s+)?(?:اصلي|اصليه)|براندات\s+اصليه", clause):
             if not re.search(r"(?:مش|غير|لا|مفيش)\s+(?:متوفر\s+)?(?:عندنا\s+)?(?:عطر|برفان|عطور|براندات)", clause):
@@ -69,32 +74,31 @@ def product_claim_issues(reply, facts, *, request=None, context=""):
             issues.append("popularity: لا توجد بيانات شعبية أو ضمان إعجاب")
     if not facts:
         return issues
-    names = {_claim_normalize(name): row for name, row in facts.items()}
-    pattern = re.compile("|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)))
-    matches = list(pattern.finditer(text))
-    segments = []
-    for index, named in enumerate(matches):
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
-        segments.append((named.group(), text[named.end():end]))
-    if not matches and len(names) == 1 and not any(
+    segments = _attributed_segments(reply, facts)
+    if len(facts) == 1 and not re.search(
+        re.escape(_claim_normalize(next(iter(facts)))), text,
+    ) and any(
         marker in (context or "") for marker in ("ABSENCE_DENIED", "NAME_UNREADABLE")
     ):
-        # A short follow-up need not repeat its sole resolved perfume's name.
-        # An unresolved external subject must not inherit an alternative's facts.
-        segments = [(next(iter(names)), text)]
-    for name, segment in segments:
-        row = names[name]
+        segments = {}
+    requests = request_texts(message, facts)
+    for product_name, segment in segments.items():
+        row = facts[product_name]
+        name = _claim_normalize(product_name)
+        character = (_character_text(segment, row.get("notes", ()))
+                     if message is not None and _notes_authorized(requests[product_name], row.get("notes", ()))
+                     else segment)
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches
-            claims = explicit_scent_updates(segment, for_claims=True)
+            claims = explicit_scent_updates(character, for_claims=True)
             for tag in claims.get("scent_tags", []):
                 if tag not in row["scent_tags"]:
                     issues.append(f"scent:{name}:{tag}")
             for tag in claims.get("excluded_scent_tags", []):
                 if tag in row["scent_tags"]:
                     issues.append(f"scent:{name}:denied {tag}")
-            for clause in re.split(r"[\n.!؟?،;]+", segment):
+            for clause in re.split(r"[\n.!؟?،;]+", character):
                 if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|not\s+suitable", clause):
                     continue
                 if re.search(r"مناسب|ينفع|suitable", clause):

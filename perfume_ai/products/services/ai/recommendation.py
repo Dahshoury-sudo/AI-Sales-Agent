@@ -10,16 +10,24 @@ from ..sales.value import budget_tier
 _FORMATTING_LIMIT = 12
 
 
-def recommendation_fit(products, intent):
-    """One grounded scent reason per choice, with requested shared performance once."""
-    from products.scent_tags import describe_scent_tags
+def recommendation_fit(products, intent, *, message=None, history=None):
+    """Selected scent labels and occasion, with requested performance once."""
+    from ..scent_description import describe_scent
     from ..performance_policy import current_request, description
     from ..sales.recommendation_response import _choice_limit
     limit = _choice_limit(intent)
-    lines = []
-    for product in list(products)[:limit]:
-        style = describe_scent_tags(getattr(product, "scent_tags", []))
-        lines.append(f"{product.name}: طابعه {style}." if style else product.name + ".")
+    selected = list(products)[:limit]
+    if message is not None:
+        from ..price_reply import requested_product_details
+        lines = requested_product_details(selected, message, history=history,
+                                          preferred_occasion=(intent or {}).get("occasion"),
+                                          description_required=True, include_performance=False)
+    else:
+        lines = []
+        for product in selected:
+            style = describe_scent(getattr(product, "scent_tags", []), product.occasion,
+                                   preferred_occasion=(intent or {}).get("occasion"))
+            lines.append(f"{product.name}: {style}.")
     request = current_request()
     if lines and (request.longevity or request.projection):
         performance = description(request, longevity=request.longevity, projection=request.projection)

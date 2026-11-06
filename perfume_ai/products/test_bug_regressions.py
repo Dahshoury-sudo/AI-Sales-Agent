@@ -447,15 +447,16 @@ class Conversation1163RecommendationTests(BugFixture):
         from products.services.ai.recommendation import recommend
         from products.services.router import _rephrased
 
-        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه قوي."
-        with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.a.pk], "reply": draft})):
+        draft = "Vanilo مناسب لطلبك عشان ريحته خشبي وفوحانه قوي."
+        with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.a.pk], "reply": draft})) as chat:
             reply, context = recommend("عاوز حاجة للشتا", Product.objects.filter(pk=self.a.pk),
                                        store=self.store, intent=self.intent)
+        chat.assert_called_once()
         retry = Mock()
         final, _, _ = _rephrased(reply, context, [], self.store, retry,
                                  recommendation_intent=self.intent)
         self.assertEqual(final.count("Vanilo"), 1)
-        self.assertIn("مناسب لطلبك عشان شتوي وفوحانه قوي.", final)
+        self.assertIn("مناسب لطلبك عشان ريحته خشبي وفوحانه قوي.", final)
         self.assertEqual(final.count("مناسب لطلبك"), 1)
         retry.assert_not_called()
 

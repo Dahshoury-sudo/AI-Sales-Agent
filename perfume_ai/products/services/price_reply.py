@@ -210,23 +210,37 @@ def compose_price_reply(reply, context):
     return "\n\n".join(display), context
 
 
-def fallback_price_reply(context, products, recommendation_intent=None):
-    """Use catalogue facts for requested detail after an unsuccessful grounding retry."""
-    evidence = quote_evidence(context)
-    text = naming.normalize_product_name(evidence.get("request", ""))
+def requested_product_details(products, message, *, preferred_occasion=None, history=None,
+                              description_required=False, include_performance=True):
+    """Render the independently requested facts for each resolved product."""
+    products = list(products)
     lines = []
     from . import performance_policy
-    request = performance_policy.request_for(evidence.get("request", ""))
+    from .scent_description import (describe_scent, scent_requested, scent_excluded, selected_occasion,
+                                    occasion_preference, request_texts, _notes_authorized)
+    from .product_formatting import is_variant_available
+    from products.occasions import OCCASION_DESCRIPTIONS
+    product_names = [p.name for p in products]
+    requests = request_texts(message, product_names)
     for product in products:
+        text = requests[product.name]
+        preferred = occasion_preference(text, saved=preferred_occasion)
+        wants_notes = _notes_authorized(text, (product.top_notes, product.middle_notes, product.base_notes))
+        wants_scent = not scent_excluded(text) and (description_required or scent_requested(text))
+        request = performance_policy.request_for(text, history)
         facts = []
-        if re.search(r"مكونات|نوت|ريح|رائح|notes?|ingredients?|scent", text, re.I):
+        if wants_scent:
+            facts.append(describe_scent(product.scent_tags, product.occasion, preferred_occasion=preferred))
+        if wants_notes:
             notes = [n for n in (product.top_notes, product.middle_notes, product.base_notes) if n]
-            facts.append("نوتاته " + "، ".join(notes) if notes else "مفيش تفاصيل نوتات مسجلة عندي")
-        longevity = bool(re.search(r"ثبات|يثبت|longevity", text, re.I))
-        projection = bool(re.search(r"فوحان|projection", text, re.I))
-        if longevity or projection:
-            facts.append(performance_policy.description(request, longevity=longevity, projection=projection))
-        if re.search(r"رجالي|حريمي|للجنسين|gender|male|female|unisex", text, re.I):
+            facts.append("نوتاته " + "، ".join(notes) if notes else "نوتاته محتاجة تأكيد")
+        if include_performance and (request.longevity or request.projection):
+            facts.append(performance_policy.description(request, longevity=request.longevity, projection=request.projection))
+        if re.search(r"متوفر|موجود|متاح|عندك|available|availability|in stock", text, re.I):
+            available = product.is_active and any(v.volume > 0 and is_variant_available(v)
+                                                 for v in product.variants.all())
+            facts.append("متوفر" if available else "مش متوفر حاليا")
+        if re.search(r"رجال|حريم|للجنسين|gender|male|female|unisex", text, re.I):
             facts.append({"male": "رجالي", "female": "حريمي", "unisex": "للجنسين"}.get(product.gender, "نوعه مش مسجل عندي"))
         if re.search(r"اصلي|اصال|تركيب|سائل|تصنيع|مصنع|authentic|original", text, re.I):
             from .sales.constraints import formulation_reply
@@ -238,16 +252,27 @@ def fallback_price_reply(context, products, recommendation_intent=None):
             facts.append("تركيزه " + product.perfume_type if product.perfume_type else "تركيزه مش مسجل عندي")
         if re.search(r"تقييم|reviews?|ratings?", text, re.I):
             facts.append("مش عندي تقييمات عملاء مسجلة")
-        if re.search(r"مناسب|مناسبه|occasion", text, re.I) and product.occasion:
-            facts.append("مناسب لـ" + product.occasion)
+        if not wants_scent and re.search(r"مناسب|مناسبه|occasion", text, re.I):
+            occasion = selected_occasion(product.occasion, preferred)
+            facts.append("مناسب " + OCCASION_DESCRIPTIONS[occasion] if occasion else "مناسبته محتاجة تأكيد")
         if re.search(r"موسم|صيف|شتا|season", text, re.I) and product.season:
             facts.append("موسمه " + product.season)
         if facts:
             lines.append(product.name + ": " + ". ".join(facts) + ".")
+        elif description_required:
+            lines.append(product.name + ".")
+    return lines
+
+
+def fallback_price_reply(context, products, recommendation_intent=None):
+    """Use catalogue facts for requested detail after an unsuccessful grounding retry."""
+    evidence = quote_evidence(context)
+    lines = requested_product_details(products, evidence.get("request", ""),
+                                      preferred_occasion=(recommendation_intent or {}).get("occasion"))
     clean = {key: value for key, value in evidence.items() if key not in ("sections", "ambiguous_prose")}
     clean["append"] = True
     context += "\n" + QUOTE_MARKER + json.dumps(clean, ensure_ascii=False)
     if recommendation_intent is not None:
         from .ai.recommendation import recommendation_fit
-        lines = [recommendation_fit(products, recommendation_intent)]
+        lines = [recommendation_fit(products, recommendation_intent, message=evidence.get("request", ""))]
     return compose_price_reply("\n".join(lines), context)
