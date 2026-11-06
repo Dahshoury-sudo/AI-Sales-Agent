@@ -310,11 +310,11 @@ def product_price_issues(reply, products, *, evidence=None, monetary_sources=(),
 
 def product_claim_facts(products):
     """Serializable evidence shared by reply validation and evaluation."""
-    from .performance_policy import EXCELLENT
+    from .performance_policy import EXCELLENT, STRONG
     return {p.name: {
         "notes": [p.top_notes or "", p.middle_notes or "", p.base_notes or ""],
         "scent_tags": getattr(p, "scent_tags", []),
-        "longevity": EXCELLENT, "projection": EXCELLENT,
+        "longevity": EXCELLENT, "projection": STRONG,
         "season": p.season or "", "occasion": p.occasion or "",
     } for p in products}
 
@@ -554,7 +554,7 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     the brief block too: brief means the customer has heard of this perfume already, which is
     when confusing it with its flanker is most likely, not least.
     """
-    from .performance_policy import catalog_text, EXCELLENT
+    from .performance_policy import catalog_text, EXCELLENT, STRONG
     variants = list(product.variants.all())
     available, out_of_stock = _size_lines(product, variants, max_price)
 
@@ -626,7 +626,7 @@ Perfume Type: {perfume_type}
 Season: {_field_or_placeholder(product.season)}
 Occasion: {_field_or_placeholder(product.occasion)}
 Longevity: {EXCELLENT}
-Projection: {EXCELLENT}
+Projection: {STRONG}
 Scent Labels (character, not ingredients or performance): {', '.join(getattr(product, 'scent_tags', []) or []) or 'Not classified'}
 Top Notes: {_field_or_placeholder(product.top_notes)}
 Middle Notes: {_field_or_placeholder(product.middle_notes)}

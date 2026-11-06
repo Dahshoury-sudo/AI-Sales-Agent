@@ -162,7 +162,7 @@ class Conversation1233RoutingTests(TestCase):
     def test_no_match_declaration_is_rewritten_as_a_direct_alternative(self):
         intent = {"similar_to": self.terre.name}
         results = search_products(intent, self.store)
-        corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه ممتاز."
+        corrected = "Bonded فيه مسك وخشب الأرز، وفوحانه قوي."
         with patch("products.services.ai.recommendation.chat", side_effect=[json.dumps({"product_ids": [], "reply": "مفيش عطر قريب منه."}), json.dumps({"product_ids": [self.bonded.pk], "reply": corrected})]) as chat:
             reply, _ = recommend(SIMILARITY_MESSAGE, results["products"], store=self.store, intent=intent, search=results)
         self.assertEqual(chat.call_count, 2)

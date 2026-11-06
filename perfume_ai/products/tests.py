@@ -2127,7 +2127,7 @@ class UnifiedProductFormattingTests(TestCase):
             "Name (الاسم الصحيح): Dior Sauvage", "Brand: Dior", "Stock Status:",
             "Original Bottle:", "Available Sizes & Prices:", "Out of Stock Sizes",
             "Gender: male", "Perfume Type:", "Season: All Seasons", "Occasion: Casual",
-            "Longevity: ممتاز", "Projection: ممتاز", "Top Notes: Bergamot",
+            "Longevity: ممتاز", "Projection: قوي", "Top Notes: Bergamot",
             "Middle Notes: Pepper", "Base Notes: Ambroxan", "Description: Fresh spicy",
         ):
             self.assertIn(field, context)
@@ -5993,7 +5993,7 @@ class BlankFieldHallucinationGuardTests(TestCase):
 
         self.assertIn("بيانات ناقصة", block)
         self.assertIn("ممنوع تقول مناسب لموسم معين", block)
-        self.assertIn("Projection: ممتاز", block)
+        self.assertIn("Projection: قوي", block)
 
     def test_missing_notes_are_banned_too(self):
         self.assertIn("ممنوع تخترع نوتات", format_product(self.product))
@@ -7052,7 +7052,7 @@ class SalesScenarioTests(TestCase):
              mock.patch("products.services.objection_service.chat", return_value="ok") as chat_mock:
             reply, _ = route("ليه أدفع 1200 بدل 500؟", [], self.store, self.conversation)
         chat_mock.assert_not_called()
-        for fact in ("Oudy", "1200", "Citrolo", "500", "ثباته وفوحانه ممتازين"):
+        for fact in ("Oudy", "1200", "Citrolo", "500", "ثباته ممتاز وفوحانه قوي"):
             self.assertIn(fact, reply)
 
     def test_e_recommending_the_cheaper_option_is_explicitly_permitted(self):
@@ -8891,7 +8891,7 @@ class PerformanceLeadNoteTests(TestCase):
     def test_both_axes_are_reported_together(self):
         note = self._note({"longevity": "long-lasting", "projection": "strong"})
 
-        self.assertIn("ثبات ممتاز وفوحان ممتاز", note)
+        self.assertIn("ثبات ممتاز وفوحان قوي", note)
         self.assertNotIn("10 hours", note)
         self.assertNotIn("Strong", note)
 
@@ -8906,7 +8906,7 @@ class PerformanceLeadNoteTests(TestCase):
 
         note = _performance_note([blank], {"longevity": "long-lasting"})
 
-        self.assertIn("ثبات ممتاز وفوحان ممتاز", note)
+        self.assertIn("ثبات ممتاز وفوحان قوي", note)
         self.assertNotIn("غير مسجل", note)
 
     def test_an_empty_shortlist_is_safe(self):

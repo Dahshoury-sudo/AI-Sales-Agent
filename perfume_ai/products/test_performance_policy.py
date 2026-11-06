@@ -150,14 +150,19 @@ class PerformanceReplyTests(SimpleTestCase):
                       "فوحانه ممتاز وبيوصل 3 متر.", "فوحانه ممتاز لمسافة تلاتة أمتار.", "فوحانه ممتاز 10/10."):
             with self.subTest(draft=draft):
                 request = policy.request_for("فوحانه كام ساعة وكام متر؟")
-                self.assertEqual(policy.enforce_reply(draft, request), "فوحانه ممتاز.")
+                self.assertEqual(policy.enforce_reply(draft, request), "فوحانه قوي.")
 
     def test_negated_excellence_and_english_descriptors_do_not_escape_validation(self):
-        for draft in ("ثباته مش ممتاز.", "فوحانه غير ممتاز.", "Cedar Day has strong projection.",
-                      "Cedar Day has weak longevity.", "Cedar Day أقوى في الفوحان."):
+        for draft, expected in (
+            ("ثباته مش ممتاز.", "ثباته ممتاز."),
+            ("فوحانه غير ممتاز.", "فوحانه قوي."),
+            ("Cedar Day has strong projection.", "Cedar Day فوحانه قوي."),
+            ("Cedar Day has weak longevity.", "Cedar Day ثباته ممتاز."),
+            ("Cedar Day أقوى في الفوحان.", "Cedar Day فوحانه قوي."),
+        ):
             with self.subTest(draft=draft):
                 self.assertTrue(policy.claim_issues(draft))
-                self.assertIn("ممتاز", policy.enforce_reply(draft))
+                self.assertEqual(policy.enforce_reply(draft), expected)
 
     def test_bare_hour_replies_and_conjugated_verbs_read_naturally(self):
         request = policy.request_for("طيب كام ساعة؟")
@@ -191,9 +196,9 @@ class PerformanceReplyTests(SimpleTestCase):
 
     def test_plural_wording_is_preserved_in_store_answers(self):
         draft = "كل عطورنا ثباتها 24 ساعة وفوحانها أول 6 ساعات قوي."
-        self.assertEqual(policy.enforce_reply(draft), "كل عطورنا ثباتها وفوحانها ممتازين.")
+        self.assertEqual(policy.enforce_reply(draft), "كل عطورنا ثباتها ممتاز وفوحانها قوي.")
         self.assertEqual(policy.enforce_reply(draft, policy.request_for("الثبات كام ساعة؟")),
-                         "كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها ممتاز.")
+                         "كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها قوي.")
 
     def test_customer_experience_is_not_rewritten_as_a_store_claim(self):
         report = "متفهم إن تجربتك مع Cedar Day كانت ساعتين."
@@ -234,7 +239,7 @@ class PerformanceReplyTests(SimpleTestCase):
         for claim in ("ثباته أطول من", "فوحانه أقوى من", "ثابت أكتر من", "أثبت من"):
             with self.subTest(claim=claim):
                 self.assertTrue(product_claim_issues(f"Cedar Day {claim} Amber Night.", facts))
-        self.assertFalse(product_claim_issues("Cedar Day: ثباته وفوحانه ممتازين.", facts))
+        self.assertFalse(product_claim_issues("Cedar Day: ثباته ممتاز وفوحانه قوي.", facts))
 
 
 class PerformanceIntegrationTests(TestCase):
@@ -259,11 +264,11 @@ class PerformanceIntegrationTests(TestCase):
             with self.subTest(product=product.name):
                 original = (product.longevity, product.projection)
                 self.assertEqual(facts[product.name]["longevity"], policy.EXCELLENT)
-                self.assertEqual(facts[product.name]["projection"], policy.EXCELLENT)
-                self.assertEqual(factual_description(product), "ثباته وفوحانه ممتازين")
+                self.assertEqual(facts[product.name]["projection"], "قوي")
+                self.assertEqual(factual_description(product), "ثباته ممتاز وفوحانه قوي")
                 block = format_product(product)
                 self.assertIn("Longevity: ممتاز", block)
-                self.assertIn("Projection: ممتاز", block)
+                self.assertIn("Projection: قوي", block)
                 product.refresh_from_db()
                 self.assertEqual((product.longevity, product.projection), original)
 
@@ -297,8 +302,8 @@ class PerformanceIntegrationTests(TestCase):
         from products.services.conversation_service import save_message
         product = self.products[0]
         for previous, message, expected in (
-            ("Cedar Day ثباته ممتاز.", "قولي رقم", "Cedar Day: ثباته أكتر من 8 ساعات."),
-            ("Cedar Day فوحانه ممتاز.", "كام ساعة بقى؟", "Cedar Day: فوحانه ممتاز."),
+            ("Cedar Day ثباته ممتاز.", "قولي رقم", "ثباته أكتر من 8 ساعات."),
+            ("Cedar Day فوحانه ممتاز.", "كام ساعة بقى؟", "فوحانه قوي."),
         ):
             with self.subTest(message=message):
                 conversation = Conversation.objects.create(store=self.store)
@@ -318,7 +323,7 @@ class PerformanceIntegrationTests(TestCase):
         for message, previous, reply, invalid in (
             ("ثبات Cedar Day كام ساعة؟", "", "Cedar Day: ثباته أكتر من 8 ساعات.", False),
             ("قولي رقم", "Cedar Day ثباته ممتاز.", "Cedar Day: ثباته أكتر من 8 ساعات.", False),
-            ("كام ساعة بقى؟", "Cedar Day فوحانه ممتاز.", "Cedar Day: فوحانه ممتاز.", False),
+            ("كام ساعة بقى؟", "Cedar Day فوحانه ممتاز.", "Cedar Day: فوحانه قوي.", False),
             ("كام ساعة بقى؟", "Cedar Day فوحانه ممتاز.", "Cedar Day: ثباته أكتر من 8 ساعات.", True),
             ("ثباته إيه؟", "", "Cedar Day: ثباته أكتر من 8 ساعات.", True),
             ("ريحته إيه؟", "Cedar Day ثباته أكتر من 8 ساعات.", "Cedar Day: ثباته أكتر من 8 ساعات.", True),
@@ -348,7 +353,7 @@ class PerformanceIntegrationTests(TestCase):
             facts = judge.database_facts([product.name])
             store_facts = judge.store_facts()
         self.assertIn("longevity=ممتاز", facts)
-        self.assertIn("projection=ممتاز", facts)
+        self.assertIn("projection=قوي", facts)
         self.assertNotIn("777", facts)
         self.assertNotIn("48 ساعة", store_facts)
         self.assertIn("الشحن 24 ساعة", store_facts)
@@ -388,10 +393,10 @@ class PerformanceIntegrationTests(TestCase):
                                  answer="عطورنا ثباتها 6 ساعات وفوحانها ضعيف.")
         reply, _ = route("الثبات إيه؟", [], self.store)
         self.assertNotRegex(reply, r"\d")
-        self.assertIn("ممتازين", reply)
+        self.assertIn("ثباتها ممتاز وفوحانها قوي", reply)
         reply, _ = route("الثبات كام ساعة؟", [], self.store)
         self.assertIn(policy.LONGEVITY_HOURS, reply)
-        self.assertIn("فوحانها ممتاز", reply)
+        self.assertIn("فوحانها قوي", reply)
 
     def test_router_finalization_keeps_checkout_confirmation_hash_in_sync(self):
         conversation = Conversation.objects.create(store=self.store)
@@ -432,7 +437,7 @@ class PerformanceIntegrationTests(TestCase):
         intent = {"gender": "male", "scent_tags": ["fresh"], "longevity": "24 hours", "projection": "intimate"}
         search = search_products(intent, self.store)
         responses = [json.dumps({"product_ids": [product.pk], "reply": reply}, ensure_ascii=False)
-                     for reply in ("Cedar Day: ثباته 6 ساعات.", "Cedar Day: طابعه فريش وثباته وفوحانه ممتازين.")]
+                     for reply in ("Cedar Day: ثباته 6 ساعات.", "Cedar Day: طابعه فريش وثباته ممتاز وفوحانه قوي.")]
         with patch("products.services.ai.recommendation.chat", side_effect=responses) as model:
             reply, _ = recommend("رشحلي عطر فريش", search["products"], store=self.store, intent=intent, search=search)
         self.assertEqual(model.call_count, 2)
@@ -441,7 +446,7 @@ class PerformanceIntegrationTests(TestCase):
         self.assertNotIn("projection", payload["preferences"])
         self.assertNotIn("longevity", payload["preferences"])
         for row in payload["eligible_products"]:
-            self.assertEqual((row["longevity"], row["projection"]), (policy.EXCELLENT, policy.EXCELLENT))
+            self.assertEqual((row["longevity"], row["projection"]), ("ممتاز", "قوي"))
 
     def test_identification_cannot_differentiate_by_duration(self):
         from products.services.identification_service import score_candidates

@@ -45,7 +45,7 @@ class BrandPreferenceReplyTests(TestCase):
         search = self.search()
         history = [{"role": "assistant", "content": "Local Blend مناسب للمكتب. هتستخدمه فين؟"}]
         with patch("products.services.ai.recommendation.chat",
-                   return_value=self.selection("Fresh Choice مناسب للنهار وفوحانه ممتاز.")) as chat:
+                   return_value=self.selection("Fresh Choice مناسب للنهار وفوحانه قوي.")) as chat:
             reply, _ = recommend("للنهار وعايزه فواح", search["products"], history,
                                  store=self.store, intent=self.intent, search=search)
         payload = json.loads(chat.call_args.args[0][-1]["content"])
@@ -77,7 +77,7 @@ class BrandPreferenceReplyTests(TestCase):
         search = self.search()
         with patch("products.services.ai.recommendation.chat", side_effect=[
             self.selection("Fresh Choice فوحانه قوي. ⚠️ مش مطابق في قوة الفوحان."),
-            self.selection("Fresh Choice للنهار وفوحانه ممتاز."),
+            self.selection("Fresh Choice للنهار وفوحانه قوي."),
         ]) as chat:
             reply, _ = recommend("رشحلي فواح", search["products"], store=self.store, intent=self.intent, search=search)
         self.assertEqual(chat.call_count, 2)
@@ -131,7 +131,7 @@ class BrandPreferenceReplyTests(TestCase):
     def test_constrained_recommendation_discloses_brand_and_keeps_exact_prices(self):
         intent = {**self.intent, "requested_volume": 50, "max_price": 800, "recommendation_count": 1}
         search = search_products(intent, self.store)
-        with patch("products.services.ai.recommendation.chat", return_value=self.selection("Fresh Choice فوحانه ممتاز.")) as chat:
+        with patch("products.services.ai.recommendation.chat", return_value=self.selection("Fresh Choice فوحانه قوي.")) as chat:
             reply, _ = recommend("50 ملي تحت 800", search["products"], store=self.store, intent=intent, search=search)
         chat.assert_called_once()
         self.assertEqual(reply.count("Fresh Choice"), 1)

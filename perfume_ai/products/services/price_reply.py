@@ -71,6 +71,7 @@ def supported_facts_question(message, products=()):
         "اوفر", "الاوفر", "اقل", "اكتر", "احسن", "افضل", "انهي", "حلاوه", "حلو", "مسكر",
         "sweet", "sweetness", "value", "per", "ml", "compare", "comparison", "and", "or",
         "الملي", "المل", "كام", "قد", "ساعه", "ساعات", "مده", "المده", "hours", "hour", "رقم", "بالارقام",
+        "متر", "امتار", "meters", "metres",
     }, alias_products=products)
 
 

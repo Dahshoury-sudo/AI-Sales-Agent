@@ -33,14 +33,17 @@ def requested_dimensions(message, history=None):
 
 
 @performance_policy.governed_reply
-def requested_facts(message, products, history=None, *, max_price=None):
+def requested_facts(message, products, history=None, *, max_price=None, include_names=True):
     from .sales.value import price_per_ml
     dims = requested_dimensions(message, history)
     if dims and dims <= {"longevity", "projection"}:
         wording = performance_policy.description(
             longevity="longevity" in dims, projection="projection" in dims,
         )
-        reply = "\n\n".join(f"{product.name}: {wording}." for product in products)
+        show_names = include_names or len(products) > 1
+        reply = "\n\n".join(
+            (f"{product.name}: " if show_names else "") + wording + "." for product in products
+        )
         return reply, format_products(products, show_prices=False, show_value_pick=False)
     lines, values, quotes = [], [], []
     for product in products:
@@ -161,7 +164,7 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 ═══ تعليمات المقارنة ═══
 1. جاوب بجملة أو جملتين مصري طبيعي، بفارق واحد مفيد لكل عطر حسب سؤاله؛ من غير مقدمة أو إعادة تلخيص الطلب. لو طلب تفاصيل أكتر، جاوب على كلها. استخدم أسماء العطور ونوتاتها من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
 2. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). ادمج الفروقات المهمة بس في كلام طبيعي.
-3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة والمناسبة). الثبات والفوحان ممتازين لكل اختياراتنا، ومش أساس لترجيح عطر على التاني.
+3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة والمناسبة). الثبات ممتاز والفوحان قوي لكل اختياراتنا، ومش أساس لترجيح عطر على التاني.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.
 5. رجّح واحد فقط لو بياناته بتدعم الترجيح حسب طلب العميل. لو البيانات مش كفاية قول إنك مش قادر تجزم؛ ممنوع تخمّن الحلاوة من النوتات أو تجبر المقارنة على فائز.
 6. العميل لسه بيوازن بين اختيارين ومختارش — ممنوع تقفل البيعة في الرد ده. سؤال واحد بس لو فيه تفضيل ناقص فعلاً هيغير الإجابة؛ من غير سؤال ختامي لازم ولا إعادة سؤال جاوب عليه.

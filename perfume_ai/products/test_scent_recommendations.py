@@ -163,12 +163,14 @@ class ScentRecommendationTests(TestCase):
                 self.assertNotIn("فانيليا", reply)
                 self.assertNotIn("سويت", reply)
 
-    def test_heavy_style_does_not_establish_strong_projection(self):
+    def test_scent_weight_does_not_change_uniform_projection(self):
         product = self.make_product("Amber Night", ["heavy"])
         facts = product_claim_facts([product])
-        self.assertFalse(product_claim_issues("Amber Night: طابعه تقيل وفوحانه ممتاز.", facts))
+        self.assertFalse(product_claim_issues("Amber Night: طابعه تقيل وفوحانه قوي.", facts))
         self.assertTrue(product_claim_issues("Amber Night: فوحانه متوسط.", facts))
-        self.assertTrue(product_claim_issues("Amber Night: فوحانه قوي.", facts))
+        self.assertFalse(product_claim_issues("Amber Night: فوحانه قوي.", facts))
+        product.scent_tags = ["light"]
+        self.assertFalse(product_claim_issues("Amber Night: طابعه خفيف وفوحانه قوي.", product_claim_facts([product])))
 
     def test_recorded_ingredient_does_not_require_the_corresponding_style_label(self):
         product = self.make_product("Cedar Day", ["woody"], base_notes="Oud")

@@ -34,7 +34,7 @@ from .product_formatting import (format_products, is_variant_available, factual_
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
-from .sales.value import stated_budget, value_comparison_note
+from .sales.value import stated_budget, value_comparison_note, is_store_exclusive
 
 # The sequence every objection reply follows. Stated once here rather than repeated per
 # objection type, because the ordering is the fix — the per-type guidance in PLAYBOOK only
@@ -297,6 +297,81 @@ def _budget_verdict_note(budget, context):
     return note
 
 
+def _previous_quote_options(product, turns):
+    """Keep a customer's selection through follow-ups within the same subject."""
+    sizes, bottle, subject = [], None, None
+    for role, content, names in turns:
+        if names:
+            if names != [product.name] or (subject is not None and subject != names):
+                sizes, bottle = [], None
+            subject = names
+        if role == "user" and (subject is None or subject == [product.name]):
+            selected_sizes, selected_bottle = requested_quote_options(content)
+            if selected_sizes or selected_bottle:
+                sizes, bottle = selected_sizes, selected_bottle
+    return sizes, bottle
+
+
+def smaller_size_quotes(products, message, history=None, max_price=None):
+    """One genuinely cheaper, smaller sellable option per discussed perfume."""
+    from products.models import Product
+    from .sales import naming
+
+    current_sizes, current_bottle = requested_quote_options(message)
+    turns = []
+    if products and history and not (current_sizes or current_bottle):
+        catalogue_names = list(Product.objects.filter(
+            store_id__in={product.store_id for product in products},
+        ).values_list("name", flat=True))
+        turns = [(row["role"], row.get("content", ""),
+                  naming.names_in(row.get("content", ""), catalogue_names))
+                 for row in [*history, {"role": "user", "content": message}]
+                 if row.get("role") in ("user", "assistant")]
+    choices = []
+    for product in products:
+        sizes, bottle = (_previous_quote_options(product, turns) if turns
+                         else (current_sizes, current_bottle))
+        available = [q for q in product_quotes([product], filter_budget=False)
+                     if not bottle or q.bottle_type == bottle]
+        baselines = [q for q in available if not sizes or q.volume in sizes]
+        if not baselines:
+            continue
+        baseline = max(baselines, key=lambda q: (q.volume, -q.price))
+        eligible_ids = {q.variant_id for q in product_quotes([product], max_price=max_price)}
+        smaller = [q for q in available if q.variant_id in eligible_ids
+                   and q.volume < baseline.volume and q.price < baseline.price]
+        if smaller:
+            choices.append(min(smaller, key=lambda q: (q.volume, q.price)))
+    return choices
+
+
+def _requests_objection_prices(message):
+    """A request for an amount, not a complaint about why the price is high."""
+    from .static_faq_service import normalize_arabic
+    text = normalize_arabic(message)
+    if re.search(r"بكام|بكم|how much", text):
+        return True
+    price = r"(?:سعر\w*|السعر|اسعار\w*|الاسعار|ثمن\w*|price|prices|cost)"
+    question = r"(?:كام|ايه|اعرف|قولي|قوللي|وريني|what|tell|show)"
+    causal = r"(?<!\w)(?:و)?(?:ليه|لماذا|why|(?:ال)?سبب)(?!\w)"
+    # Scope "why" to its own question so a separate amount request survives,
+    # including unpunctuated "ليه غالي وقولي سعر الـ50 ملي".
+    clauses = re.split(
+        rf"[.!؟?\n؛;،,]|\s+(?=و(?:{price}|{question}|عايز|عاوز|ممكن|ليه|لماذا)(?!\w))|\band\s+",
+        text,
+    )
+    for clause in clauses:
+        if re.search(causal, clause) and not re.search(rf"{price}.{{0,30}}\bكام\b", clause):
+            continue
+        if re.search(
+            rf"{price}.{{0,45}}(?:كام|ايه|what|how much)|"
+            rf"{question}.{{0,45}}{price}|"
+            rf"(?:كل|باقي)\s+(?:الاسعار|اسعار)|(?:ممكن|هات)\s+(?:الاسعار|اسعار)", clause,
+        ):
+            return True
+    return False
+
+
 @governed_reply
 def handle_objection(message, objection, history=None, store=None, conversation=None, retry_hint=""):
     """Reply to a customer objection or complaint, addressing it before selling.
@@ -333,6 +408,20 @@ def handle_objection(message, objection, history=None, store=None, conversation=
         return _price_gap_reply(products, message, store)
     budget = stated_budget(conversation)
     context = format_products(products[:2], max_price=budget) if products else ""
+    quoting = bool(products) and _requests_objection_prices(message)
+    shown_context = context if quoting else format_products(
+        products[:2], max_price=budget, show_prices=False, show_value_pick=False,
+    )
+    if objection.kind in ("price", "expensive", "budget"):
+        smaller = smaller_size_quotes(products[:2], message, history, budget)
+        if smaller:
+            guidance += "\nالحجم الأصغر والأقل تكلفة المتاح: " + "؛ ".join(
+                f"{q.name}: {q.volume} ملي" for q in smaller
+            ) + ". ممكن تعرضه من غير ذكر سعر إلا لو مطلوب."
+        else:
+            guidance += "\nمفيش اختيار أصغر وأقل تكلفة للاعتراض ده؛ ممنوع تعرض حجم أصغر أو عينة."
+        if any(is_store_exclusive(product) for product in products[:2]):
+            guidance += "\nالعطر الحصري تصميم الستور؛ اشرح جودة الزيوت من الحقائق فقط، من غير تشبيه ريحته بأوريجنال."
 
     sequence = _SEQUENCE
     if not sales_stage.closing_allowed(stage):
@@ -349,7 +438,7 @@ def handle_objection(message, objection, history=None, store=None, conversation=
 {guidance}
 {sequence}
 {_NO_GUARANTEE}
-{("═══ بيانات العطور اللي بيتكلم عنها ═══" + chr(10) + context) if context else "⚠️ مفيش بيانات منتجات مبعوتة لك — ❌ ممنوع تذكر أي سعر أو اسم عطر من دمك."}
+{("═══ بيانات العطور اللي بيتكلم عنها ═══" + chr(10) + shown_context) if shown_context else "⚠️ مفيش بيانات منتجات مبعوتة لك — ❌ ممنوع تذكر أي سعر أو اسم عطر من دمك."}
 {_budget_verdict_note(budget, context)}{retry_hint}
 """
 
@@ -358,9 +447,11 @@ def handle_objection(message, objection, history=None, store=None, conversation=
         messages.extend(history)
     messages.append({"role": "user", "content": user_content})
 
-    messages[-1]["content"] += QUOTE_PROSE_INSTRUCTION
+    messages[-1]["content"] += (QUOTE_PROSE_INSTRUCTION if quoting else
+        "\nجاوب على الاعتراض نفسه في جملة أو جملتين. العميل مسألش عن مبلغ دلوقتي؛ "
+        "ممنوع تسرد أسعار أو تعمل عنوان باسم العطر. استخدم حقائق الستور فقط لتبرير التكلفة.\n")
     response = chat(messages, profile="converse")
-    if objection.kind in ("price", "price_gap", "expensive", "budget"):
+    if quoting:
         context = quote_context(context, product_quotes(products[:2], message, budget), append=True, max_price=budget,
                                 request=message)
         from .price_reply import compose_price_reply

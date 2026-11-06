@@ -72,27 +72,35 @@ def product_claim_issues(reply, facts, *, request=None, context=""):
     names = {_claim_normalize(name): row for name, row in facts.items()}
     pattern = re.compile("|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)))
     matches = list(pattern.finditer(text))
+    segments = []
     for index, named in enumerate(matches):
-        row = names[named.group()]
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
-        segment = text[named.end():end]
+        segments.append((named.group(), text[named.end():end]))
+    if not matches and len(names) == 1 and not any(
+        marker in (context or "") for marker in ("ABSENCE_DENIED", "NAME_UNREADABLE")
+    ):
+        # A short follow-up need not repeat its sole resolved perfume's name.
+        # An unresolved external subject must not inherit an alternative's facts.
+        segments = [(next(iter(names)), text)]
+    for name, segment in segments:
+        row = names[name]
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches
             claims = explicit_scent_updates(segment, for_claims=True)
             for tag in claims.get("scent_tags", []):
                 if tag not in row["scent_tags"]:
-                    issues.append(f"scent:{named.group()}:{tag}")
+                    issues.append(f"scent:{name}:{tag}")
             for tag in claims.get("excluded_scent_tags", []):
                 if tag in row["scent_tags"]:
-                    issues.append(f"scent:{named.group()}:denied {tag}")
+                    issues.append(f"scent:{name}:denied {tag}")
             for clause in re.split(r"[\n.!؟?،;]+", segment):
                 if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|not\s+suitable", clause):
                     continue
                 if re.search(r"مناسب|ينفع|suitable", clause):
                     for occasion in occasion_groups(clause):
                         if not occasion_matches(row.get("occasion", ""), occasion):
-                            issues.append(f"occasion:{named.group()}:{occasion}")
+                            issues.append(f"occasion:{name}:{occasion}")
         recorded = _claim_normalize(" ".join(row.get("notes", [])))
         for key, aliases in _NOTE_ALIASES.items():
             alias_pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"
@@ -104,7 +112,7 @@ def product_claim_issues(reply, facts, *, request=None, context=""):
                 if re.search(r"مش|بدون|من غير|مفيهوش|مفيش|مافيش|ولا|بتحب|تحب", before):
                     continue
                 if not any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
-                    issues.append(f"note:{named.group()}:{key}")
+                    issues.append(f"note:{name}:{key}")
     return list(dict.fromkeys(issues))
 
 
@@ -599,6 +607,29 @@ def strip_overage_figure(reply):
     return cleaned, removed
 
 
+_SOURCE_QUALIFIERS = re.compile(
+    r"(?<!\w)(?:حسب\s+(?:المتوفر\s+عندنا|تصنيف(?:ه|ها)?\s+عندنا|معلوماتي|"
+    r"(?:الداتا|البيانات|المعلومات)\s+(?:(?:اللي|الي)\s+)?(?:معايا|عندي))|"
+    r"(?P<classification>(?:مصن[\u064b-\u065f]*ف|متصنف)(?:ه)?\s+عندنا))(?!\w)(?:[ \t]*[،,])?"
+)
+_CLASSIFICATION_NEGATION = re.compile(
+    r"(?<!\w)(?:مش|مِش|غير|ليس|ليست|ماهوش|مكانش|مبقاش)\s*$"
+)
+
+
+def strip_source_qualifiers(reply):
+    """Remove source asides, preserving the claim, negation and real uncertainty."""
+    text = _claim_normalize(reply)
+    matches = [match for match in _SOURCE_QUALIFIERS.finditer(text)
+               if not (match.group("classification")
+                       and _CLASSIFICATION_NEGATION.search(text[:match.start()]))]
+    if not matches:
+        return reply
+    for match in reversed(matches):
+        reply = reply[:match.start()] + reply[match.end():]
+    return _tidy_after_strip(reply)
+
+
 def sanitize_reply(reply, conversation=None):
     """Remove forbidden filler questions, and any provably false over-budget claim.
 
@@ -613,7 +644,7 @@ def sanitize_reply(reply, conversation=None):
     if not reply:
         return reply
 
-    cleaned = normalize_bottle_wording(reply)
+    cleaned = strip_source_qualifiers(normalize_bottle_wording(reply))
 
     # Read straight off the conversation rather than importing the model, so this module stays
     # Django-free. merge_preferences (conversation_service) writes max_price *inside* route(),

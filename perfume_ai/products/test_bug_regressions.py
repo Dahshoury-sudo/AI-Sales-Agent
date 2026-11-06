@@ -254,7 +254,7 @@ class Conversation1069Tests(BugFixture):
         with patch("products.services.objection_service.chat", return_value="فاهم إن السعر عالي."), patch(
             "products.services.objection_service.resolve_products", side_effect=AssertionError("An explicit name must resolve from the catalogue")
         ):
-            reply, context = handle_objection("Afnan 9PM غالي", detect("غالي"), [], self.store, self.conv)
+            reply, context = handle_objection("Afnan 9PM غالي، بكام كل الأحجام؟", detect("غالي"), [], self.store, self.conv)
         self.assertIn("508", reply)
         self.assertTrue(quote_evidence(context)["quotes"])
 
@@ -447,7 +447,7 @@ class Conversation1163RecommendationTests(BugFixture):
         from products.services.ai.recommendation import recommend
         from products.services.router import _rephrased
 
-        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه ممتاز."
+        draft = "Vanilo مناسب لطلبك عشان شتوي وفوحانه قوي."
         with patch("products.services.ai.recommendation.chat", return_value=json.dumps({"product_ids": [self.a.pk], "reply": draft})):
             reply, context = recommend("عاوز حاجة للشتا", Product.objects.filter(pk=self.a.pk),
                                        store=self.store, intent=self.intent)
@@ -455,7 +455,7 @@ class Conversation1163RecommendationTests(BugFixture):
         final, _, _ = _rephrased(reply, context, [], self.store, retry,
                                  recommendation_intent=self.intent)
         self.assertEqual(final.count("Vanilo"), 1)
-        self.assertIn("مناسب لطلبك عشان شتوي وفوحانه ممتاز.", final)
+        self.assertIn("مناسب لطلبك عشان شتوي وفوحانه قوي.", final)
         self.assertEqual(final.count("مناسب لطلبك"), 1)
         retry.assert_not_called()
 
@@ -760,7 +760,7 @@ class RecommendationBugTests(BugFixture):
     def test_L07_all_products_dimensions_and_computed_value(self):
         from products.services.comparison_service import compare_products
         reply, _ = compare_products("قارن Vanilo وLeatherio سعر 50 مل زجاجة البراند والثبات والفوحان وسعر الملي", store=self.store)
-        for expected in ("Vanilo", "Leatherio", "607", "645", "12.14", "12.90", "الثبات: ممتاز", "الفوحان: ممتاز"):
+        for expected in ("Vanilo", "Leatherio", "607", "645", "12.14", "12.90", "الثبات: ممتاز", "الفوحان: قوي"):
             self.assertIn(expected, reply)
         self.assertNotRegex(reply, r"\d+\s*(?:ساع|hours)")
 
@@ -1133,7 +1133,7 @@ class AgentEvaluationFixTests(BugFixture):
         self.assertEqual(regenerate.call_count, 1)
         self.assertNotIn("عود", reply)
         self.assertNotIn("48", reply)
-        self.assertIn("ثباته وفوحانه ممتازين", reply)
+        self.assertIn("ثباته ممتاز وفوحانه قوي", reply)
         self.assertNotRegex(reply, r"\d+\s*ساع")
 
     def test_claims_are_per_product_and_negation_is_respected(self):
@@ -1170,8 +1170,8 @@ class AgentEvaluationFixTests(BugFixture):
         from products.services.reply_sanitizer import product_claim_issues
         facts = {"Vanilo": {"projection": "Strong"}}
         self.assertTrue(product_claim_issues("Vanilo فوحانه خفيف", facts))
-        self.assertTrue(product_claim_issues("Vanilo فوحانه قوي", facts))
-        self.assertFalse(product_claim_issues("Vanilo فوحانه ممتاز", facts))
+        self.assertFalse(product_claim_issues("Vanilo فوحانه قوي", facts))
+        self.assertTrue(product_claim_issues("Vanilo فوحانه ممتاز", facts))
 
     def test_inactive_reference_preserves_gender(self):
         from products.services.sales.gender import resolve

@@ -80,7 +80,7 @@ class PriceNameOnceTests(TestCase):
             self.assert_grounded(reply, context, [self.a])
 
     def test_mixed_price_performance_and_notes_stay_below_one_heading(self):
-        draft = "Stronger With You متوفر. Stronger With You ثباته ممتاز وفوحانه ممتاز، وفيه برغموت ومسك."
+        draft = "Stronger With You متوفر. Stronger With You ثباته ممتاز وفوحانه قوي، وفيه برغموت ومسك."
         reply, context, chat = self.info("Stronger With You بكام وثباته وفوحانه ومكوناته إيه؟", draft)
         self.assertEqual(reply.count(self.a.name), 1)
         self.assertIn("ثباته ممتاز", reply)

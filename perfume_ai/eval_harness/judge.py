@@ -78,9 +78,9 @@ HARD RULES for grading:
        that never arrives: trust and confidence_calibration score 0-2. It is honest in
        exactly one place — a question about store policy, delivery or a price that the store
        OWNER would answer — never about whether a perfume exists.
-4d. Every stocked perfume has excellent longevity and excellent projection. This
+4d. Every stocked perfume has excellent longevity and strong projection. This
     overrides historical performance measurements and applies equally to blank records.
-    Default wording: "ثباته وفوحانه ممتازين." Only when the CURRENT customer message
+    Default wording: "ثباته ممتاز وفوحانه قوي." Only when the CURRENT customer message
     explicitly asks for longevity duration, including a contextual follow-up such as
     "قولي رقم", answer "ثباته أكتر من 8 ساعات." A prior duration question does not
     authorize unsolicited hours later. Projection stays qualitative even if the customer
@@ -163,7 +163,7 @@ Return ONLY valid JSON:
 def database_facts(names):
     """Real rows for the perfumes a reply mentioned, so claims can be checked."""
     from products.models import Product, Store
-    from products.services.performance_policy import EXCELLENT
+    from products.services.performance_policy import EXCELLENT, STRONG
 
     store = Store.objects.get(name="Perfamix")
     lines = []
@@ -181,7 +181,7 @@ def database_facts(names):
             f"type={product.perfume_type} | season={product.season or 'NOT RECORDED'} | "
             f"occasion={product.occasion or 'NOT RECORDED'} | "
             f"longevity={EXCELLENT} | "
-            f"projection={EXCELLENT} | "
+            f"projection={STRONG} | "
             f"top={product.top_notes or 'NOT RECORDED'} | mid={product.middle_notes or 'NOT RECORDED'} | "
             f"base={product.base_notes or 'NOT RECORDED'} | sizes: {sizes}"
         )

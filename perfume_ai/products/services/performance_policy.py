@@ -13,8 +13,9 @@ import re
 
 
 EXCELLENT = "ممتاز"
+STRONG = "قوي"
 LONGEVITY_HOURS = "أكتر من 8 ساعات"
-GENERAL_REPLY = "ثباته وفوحانه ممتازين."
+GENERAL_REPLY = "ثباته ممتاز وفوحانه قوي."
 UNKNOWN_REPLY = "ما عنديش معلومات مؤكدة عن ثبات العطر ده وفوحانه"
 
 
@@ -191,6 +192,8 @@ def governed_reply(function):
 
 def value(axis, request=None):
     request = request or current_request()
+    if axis == "projection":
+        return STRONG
     return LONGEVITY_HOURS if axis == "longevity" and request.hours else EXCELLENT
 
 
@@ -212,7 +215,7 @@ def description(request=None, *, longevity=True, projection=True):
     if longevity:
         parts.append("ثباته " + value("longevity", request))
     if projection:
-        parts.append("فوحانه ممتاز")
+        parts.append("فوحانه " + STRONG)
     return "، و".join(parts)
 
 
@@ -224,14 +227,14 @@ def instruction(request=None):
         "العميل لم يطلب مدة الثبات بالأرقام في الرسالة الحالية: ممنوع تذكر ساعات أو أرقام أداء."
     )
     return (
-        "\nسياسة الثبات والفوحان لكل عطر بنبيعه: ثبات ممتاز وفوحان ممتاز. "
+        "\nسياسة الثبات والفوحان لكل عطر بنبيعه: ثبات ممتاز وفوحان قوي. "
         "السياسة دي هي المرجع حتى لو وصف قديم أو سجل المحادثة أو تعليمات الستور فيها قيم مختلفة. "
         "مفيش عطر نفضله أو نستبعده أو نبرر سعره بسبب فرق ثبات أو فوحان. "
         "طابع الريحة الخفيف أو التقيل منفصل عن الفوحان. "
         + duration +
         " العدد الوحيد المسموح للثبات عند السؤال عن مدته هو أكتر من 8 ساعات؛ "
         "ممنوع حوالي أو مدى ساعات أو وعد بمدة أكبر طلبها العميل. "
-        "الفوحان ممتاز بوصف كيفي فقط حتى لو العميل طلب ساعات أو أمتار؛ متديش رقم للفوحان. "
+        "عند السؤال عن الفوحان قول \"فوحانه قوي\" بوصف كيفي فقط حتى لو العميل طلب ساعات أو أمتار؛ متديش رقم للفوحان. "
         "اذكر الأداء لما يكون له علاقة بالسؤال بس، ومتسألش العميل يختار درجة أداء. "
         "السياسة تخص عطور الستور فقط؛ العطر الخارجي غير المعروف ملوش ادعاء أداء. "
         "قول وصف الأداء بشكل طبيعي؛ متقولش للعميل إن دي سياسة أو تعليمات مفروضة عليك. "
@@ -259,7 +262,8 @@ _QUALITY_PREFIX = re.compile(
     r"(?:اقوي|اضعف|اطول|اقصر|افضل|اقل|اسوا)\s+(?:(?:في|من ناحيه)\s+)?$"
 )
 _EXCELLENT = re.compile(r"ممتاز(?:ين|ه)?|\bexcellent\b", re.I)
-_NEGATED_EXCELLENT = re.compile(r"(?:مش|غير|ليس|not|isn.t|aren.t)\s+(?:ممتاز|excellent)")
+_STRONG_PROJECTION = re.compile(rf"{_PROJECTION.pattern}\s*[:：]?\s*(?:قوي|strong)\b")
+_NEGATED_QUALITY = re.compile(r"(?:مش|غير|ليس|not|isn.t|aren.t)\s+(?:ممتاز|قوي|excellent|strong)")
 _NUMERICAL_CLAIM = re.compile(rf"\d|{_NUMBER}\s*(?:متر|امتار|meters?|metres?|feet|من عشره)|مترين")
 _UNSUPPORTED = re.compile(
     r"قوي|اقوي|اضعف|اعلي|اقل|اكتر|اطول|اقصر|اهدي|هادي|هادئ|خفيف|متوسط|ضعيف|"
@@ -313,13 +317,20 @@ def _rewrite_clause(clause, request, *, external=False):
     claim = _normal(clause[start:end])
     if external and claim.strip() == _normal(UNKNOWN_REPLY):
         return clause
-    longevity = bool(lon or general)
-    projection = bool(proj or general)
+    # A later performance fact beyond the scent/price boundary belongs to its
+    # own span; it must not add an axis to this claim's replacement.
+    longevity = any(match.start() < end for match in [*lon, *general])
+    projection = any(match.start() < end for match in [*proj, *general])
     has_hours = bool(_DURATION.search(claim))
     # Already compliant wording is left byte-identical, including scent character.
     canonical_hours = bool(re.search(r"اكتر من 8 ساعات|more than 8 hours", claim))
-    if (_EXCELLENT.search(claim) and not has_hours and not _NUMERICAL_CLAIM.search(claim)
-            and not _UNSUPPORTED.search(claim) and not _NEGATED_EXCELLENT.search(claim) and not negative):
+    # Strong is allowed only as the projection's own quality. Removing the
+    # approved span for this check must not also allow "ثباته قوي" or "أقوى".
+    other_claims = _STRONG_PROJECTION.sub("", claim)
+    if ((not longevity or _EXCELLENT.search(other_claims))
+            and (not projection or _STRONG_PROJECTION.search(claim))
+            and not has_hours and not _NUMERICAL_CLAIM.search(claim)
+            and not _UNSUPPORTED.search(other_claims) and not _NEGATED_QUALITY.search(claim) and not negative):
         if not (longevity and request.hours) and not external:
             return clause
     if (longevity and not projection and request.hours and canonical_hours
@@ -379,7 +390,7 @@ def enforce_reply(reply, request=None, *, context=""):
 def claim_issues(reply, request=None, *, context=""):
     if enforce_reply(reply, request, context=context) == reply:
         return []
-    return ["performance: التزم بثبات وفوحان ممتازين لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"]
+    return ["performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"]
 
 
 def catalog_text(text):
