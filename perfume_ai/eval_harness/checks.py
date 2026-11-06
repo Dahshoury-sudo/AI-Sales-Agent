@@ -787,7 +787,7 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
     # ── Verbosity ─────────────────────────────────────────────────────────
     if len(reply) > 700:
         findings.append((
-            "too_long", "low", f"{len(reply)} characters — persona caps replies at ~4 short sentences",
+            "too_long", "low", f"{len(reply)} characters — review for unnecessary detail; ordinary replies target 1–2 short sentences",
         ))
 
     # ── Similarity band vs the claim made ─────────────────────────────────

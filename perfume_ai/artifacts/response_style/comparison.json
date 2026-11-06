@@ -1,0 +1,229 @@
+{
+  "summary": {
+    "scenarios": 9,
+    "turns": 16,
+    "mean_words_before": 20.3,
+    "mean_words_after": 11.8,
+    "findings_before": {
+      "F1": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم '"
+        ]
+      ],
+      "R2": [
+        [
+          "unsupported_product_claim",
+          "high",
+          "note:black xs:musk"
+        ]
+      ]
+    },
+    "findings_after": {
+      "F1": [
+        [
+          "premature_close",
+          "medium",
+          "closing question at stage 'None' (leaked past the sanitizer): /تحب[يى]?\\s+[نت]طلب/"
+        ]
+      ]
+    }
+  },
+  "turns": [
+    {
+      "scenario": "C1",
+      "turn": 1,
+      "customer": "ايه الفرق بين بلو دي شانيل وسوفاج؟",
+      "before": "Bleu de Chanel ريحته حمضية خشبية منعشة وأنيقة، ومناسب للشغل؛ فيه جريب فروت وليمون ونعناع. Sauvage منعش وحار وخشبي بطابع أقوى، وفيه برغموت وفلفل، ومناسب للاستخدام اليومي. لو بتحب ريحة أنضف وأهدى للشغل اختار Bleu de Chanel، ولو بتحب طابع حار وأجرأ اختار Sauvage.",
+      "after": "Bleu de Chanel حمضي وخشبي وفيه جريب فروت ونعناع، ومناسب للشغل؛ Sauvage فريش وحار بالبرغموت والفلفل، وأنسب للاستخدام اليومي والكاجوال.",
+      "words_before": 44,
+      "words_after": 20,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "CS1",
+      "turn": 1,
+      "customer": "انتو نصابين، الاوردر بقاله اسبوع ومجاني",
+      "before": "حقك تزعل يا فندم، وآسف إن الأوردر اتأخر. أنا بساعد في اختيار العطور والطلبات الجديدة، لكن متابعة الشحنات السابقة بيتابعها فريق المبيعات؛ تحب أحولك لهم؟",
+      "after": "حقك تزعل يا فندم، وآسف إن الأوردر اتأخر. متابعة الطلبات والشحن مع فريق المبيعات؛ تحب أحولك ليهم؟",
+      "words_before": 25,
+      "words_after": 17,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "CS1",
+      "turn": 2,
+      "customer": "عايز اكلم حد مسؤول حالا",
+      "before": "حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك.",
+      "after": "حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك.",
+      "words_before": 8,
+      "words_after": 8,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "D2",
+      "turn": 1,
+      "customer": "ازيك",
+      "before": "اهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي",
+      "after": "اهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي",
+      "words_before": 8,
+      "words_after": 8,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "D2",
+      "turn": 2,
+      "customer": "بصراحه مش فاهم حاجه في العطور، بس عايز حاجه تعجب الناس",
+      "before": "حضرتك محتاج برفان رجالي ولا حريمي",
+      "after": "محتاج برفان رجالي ولا حريمي؟",
+      "words_before": 6,
+      "words_after": 5,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "F1",
+      "turn": 1,
+      "customer": "عايز عطر رجالي ميزانيتي 900",
+      "before": "قولي ذوقك. يعني بتحب الحاجات الفريش ولا الحاجات الخشبية ولا العود ولا الحاجات المسكره عشان اشوفلك حاجه مناسبه",
+      "after": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "words_before": 18,
+      "words_after": 6,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "F1",
+      "turn": 2,
+      "customer": "تمام هاخد ده، وضيف كمان واحد للهدية",
+      "before": "تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+      "after": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "words_before": 26,
+      "words_after": 6,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "F1",
+      "turn": 3,
+      "customer": "خليه 90 ملي بدل الـ50",
+      "before": "تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+      "after": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "words_before": 26,
+      "words_after": 6,
+      "findings_before": [
+        [
+          "repeated_reply",
+          "critical",
+          "this reply is 100% identical to an earlier one in the same conversation — the customer answered and got the same message back: 'تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم '"
+        ]
+      ],
+      "findings_after": []
+    },
+    {
+      "scenario": "F1",
+      "turn": 4,
+      "customer": "الاجمالي بقى كام؟",
+      "before": "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء.\n\nتسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء.\n\nتحب أحولك لمندوب يساعدك؟",
+      "after": "تحب تطلب أنهي عطر؟ قولي اسمه.",
+      "words_before": 34,
+      "words_after": 6,
+      "findings_before": [],
+      "findings_after": [
+        [
+          "premature_close",
+          "medium",
+          "closing question at stage 'None' (leaked past the sanitizer): /تحب[يى]?\\s+[نت]طلب/"
+        ]
+      ]
+    },
+    {
+      "scenario": "O5",
+      "turn": 1,
+      "customer": "عايز عطر للسهرات",
+      "before": "حضرتك محتاج برفان رجالي ولا حريمي",
+      "after": "محتاج برفان رجالي ولا حريمي؟",
+      "words_before": 6,
+      "words_after": 5,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "O5",
+      "turn": 2,
+      "customer": "طيب هفكر وارجعلك",
+      "before": "تمام يا فندم، خد وقتك. تحت أمرك لما تحب ترجع.",
+      "after": "تمام، خد وقتك.",
+      "words_before": 10,
+      "words_after": 3,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "P1",
+      "turn": 1,
+      "customer": "سوفاج بكام؟",
+      "before": "Sauvage متوفر يا فندم، ريحته فريش وحارة بلمسة خشبية. تحب تعرف سعر حجم معين؟\n\nSauvage — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه.\nSauvage — زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\nSauvage — زجاجة اوريجنال 100 ملي بـ1500.00 جنيه.",
+      "after": "Sauvage متوفر يا فندم.\n\nSauvage — زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\nSauvage — زجاجة اوريجنال 100 ملي بـ1500.00 جنيه.",
+      "words_before": 42,
+      "words_after": 26,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "P3",
+      "turn": 1,
+      "customer": "هاخد اودورا",
+      "before": "لسه محتاج أتأكد من: 1 × اودورا. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "after": "لسه محتاج أتأكد من: 1 × اودورا. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "words_before": 16,
+      "words_after": 16,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "P3",
+      "turn": 2,
+      "customer": "خليها 2 بدل واحده",
+      "before": "تمام، عدلت الكمية لـ 2 × اودورا.\nلسه محتاج أتأكد من: 2 × اودورا. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "after": "تمام، عدلت الكمية لـ 2 × اودورا.\nلسه محتاج أتأكد من: 2 × اودورا. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "words_before": 23,
+      "words_after": 23,
+      "findings_before": [],
+      "findings_after": []
+    },
+    {
+      "scenario": "R2",
+      "turn": 1,
+      "customer": "عايز برفان رجالي ريحته فخمه وثابته، مناسب للخروجات بالليل، بس مش عايز حاجه تقيله تخنق اللي حواليا",
+      "before": "212 VIB Man: طابعه فريش، حمضي، متبّل، خشبي. ثباته وفوحانه ممتازين.\nBlack XS: طابعه مسكّر، متبّل، خشبي، حمضي. ثباته وفوحانه ممتازين.",
+      "after": "212 VIB Man ريحته حمضيات وتوابل وخشب، مناسب للخروجات بالليل. ولو عايز اختيار منعش وأهدى بطابع خشبي، Guilty Black فيه لافندر وكزبرة خضرا وأرز.",
+      "words_before": 21,
+      "words_after": 24,
+      "findings_before": [
+        [
+          "unsupported_product_claim",
+          "high",
+          "note:black xs:musk"
+        ]
+      ],
+      "findings_after": []
+    },
+    {
+      "scenario": "X1",
+      "turn": 1,
+      "customer": "عندكم عطر اسمه بلاك اوركيد؟",
+      "before": "أيوه يا فندم، Black Orchid متوفر. في حجم معين حابب تعرف سعره؟",
+      "after": "أيوه، عطر Black Orchid من Tom Ford متوفر عندنا.",
+      "words_before": 12,
+      "words_after": 9,
+      "findings_before": [],
+      "findings_after": []
+    }
+  ]
+}

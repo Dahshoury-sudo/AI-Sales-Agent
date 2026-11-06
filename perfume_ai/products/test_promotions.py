@@ -328,7 +328,7 @@ class PromotionRoutingTests(TestCase):
         self.make_cart()
         self.classifier.return_value = "order_cancel"
         response, _ = route("الغي الاوردر كله", [bot(OFFER)], self.store, self.conversation)
-        self.assertIn("إلغاء", response)
+        self.assertIn("لغيت", response)
         self.assertFalse(CartItem.objects.exists())
 
     def test_unsent_promotion_and_staff_boundary_do_not_block_normal_orders(self):

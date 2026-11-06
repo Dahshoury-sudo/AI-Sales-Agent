@@ -5,7 +5,8 @@ import re
 from ..static_faq_service import normalize_arabic
 
 
-PREFERENCE_QUESTION = "قولي ذوقك. يعني بتحب الحاجات الفريش ولا الحاجات الخشبية ولا العود ولا الحاجات المسكره عشان اشوفلك حاجه مناسبه"
+PREFERENCE_QUESTION = "بتحب الفريش، الخشبي، العود، ولا المسكر؟"
+_LEGACY_PREFERENCE_QUESTION = "قولي ذوقك. يعني بتحب الحاجات الفريش ولا الحاجات الخشبية ولا العود ولا الحاجات المسكره عشان اشوفلك حاجه مناسبه"
 # Keep this order aligned with the choices in PREFERENCE_QUESTION.
 _CHOICES = ("fresh", "woody", "oud", "sweet")
 _ORDINALS = {
@@ -29,7 +30,9 @@ _FILLERS = frozenset({
 def question_pending(history=None):
     latest = next((row for row in reversed(history or []) if row.get("role") in ("assistant", "agent")), {})
     return latest.get("role") == "assistant" and (
-        normalize_arabic(latest.get("content", "")) == normalize_arabic(PREFERENCE_QUESTION)
+        normalize_arabic(latest.get("content", "")) in {
+            normalize_arabic(PREFERENCE_QUESTION), normalize_arabic(_LEGACY_PREFERENCE_QUESTION),
+        }
     )
 
 

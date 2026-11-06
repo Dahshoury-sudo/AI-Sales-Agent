@@ -416,7 +416,7 @@ class Conversation1163RecommendationTests(BugFixture):
             reply, context = route("عاوز حاجة رجالي بتلفت الأنظار للشتا بـ600 جنيه", [], self.store, self.conv)
         self.conv.refresh_from_db()
         reply = sanitize_reply(reply, self.conv)
-        for expected in ("Vanilo", "Leatherio", "خشبي", "ثباته وفوحانه ممتازين", "450", "592"):
+        for expected in ("Vanilo", "Leatherio", "خشبي", "450", "592"):
             self.assertIn(expected, reply)
         self.assertIn("700", reply)
         self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
@@ -431,7 +431,7 @@ class Conversation1163RecommendationTests(BugFixture):
         self.b.projection = "Moderate"
         explanation = recommendation_fit([self.b], self.intent)
         self.assertIn("خشبي", explanation)
-        self.assertIn("ثباته وفوحانه ممتازين", explanation)
+        self.assertNotIn("فوحان", explanation)
         self.assertNotIn("فواح", explanation)
 
     def test_missing_facts_do_not_become_claims_of_suitability(self):
@@ -440,7 +440,7 @@ class Conversation1163RecommendationTests(BugFixture):
         self.b.season = self.b.occasion = self.b.projection = self.b.longevity = ""
         self.b.scent_tags = []
         explanation = recommendation_fit([self.b], self.intent)
-        self.assertIn("ثباته وفوحانه ممتازين", explanation)
+        self.assertIn("Leatherio", explanation)
         self.assertNotIn("مناسب", explanation)
 
     def test_valid_personal_explanation_is_preserved_without_a_retry(self):
@@ -666,7 +666,7 @@ class CartBugTests(BugFixture):
         with patch("products.services.order_service.notify_new_order", side_effect=RuntimeError("injected")):
             with self.captureOnCommitCallbacks(execute=True):
                 reply = self.turn(is_confirmed=True)
-        self.assertIn("تم تأكيد", reply)
+        self.assertIn("طلبك اتأكد", reply)
         order = Order.objects.get()
         self.assertTrue(order.notification_pending)
         self.assertFalse(Cart.objects.filter(conversation=self.conv).exists())

@@ -76,7 +76,7 @@ class GenderFirstRecommendationTests(TestCase):
 
     def ask(self, updates=None, message="عايز عطر فريش"):
         result, _, model = self.call(message, updates or {"scent_tags": ["fresh"]})
-        self.assertEqual(result, ("حضرتك محتاج برفان رجالي ولا حريمي", "GENDER_REQUIRED"))
+        self.assertEqual(result, (gender.QUESTION, gender.REQUIRED_MARKER))
         model.assert_not_called()
         save_message(self.conversation, "assistant", *result)
         return result

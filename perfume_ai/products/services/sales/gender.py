@@ -8,9 +8,11 @@ import re
 
 from ..static_faq_service import normalize_arabic
 
-QUESTION = "حضرتك محتاج برفان رجالي ولا حريمي"
+QUESTION = "محتاج برفان رجالي ولا حريمي؟"
+_LEGACY_QUESTION = "حضرتك محتاج برفان رجالي ولا حريمي"
 REQUIRED_MARKER = "GENDER_REQUIRED"
-MULTIPLE_QUESTION = "خلينا نختارهم واحد واحد عشان أقدر أركز معاك. تحب نبدأ بالرجالي ولا الحريمي؟"
+MULTIPLE_QUESTION = "نختار واحد واحد. نبدأ بالرجالي ولا الحريمي؟"
+_LEGACY_MULTIPLE_QUESTION = "خلينا نختارهم واحد واحد عشان أقدر أركز معاك. تحب نبدأ بالرجالي ولا الحريمي؟"
 VALID_GENDERS = frozenset({"male", "female", "unisex"})
 
 # The single copy of the vocabulary the router used inline. Relationship words
@@ -175,15 +177,18 @@ def from_customer_history(history, store=None):
 
 
 def question_pending(history=None, conversation=None):
+    questions = {_text(question) for question in (
+        QUESTION, _LEGACY_QUESTION, MULTIPLE_QUESTION, _LEGACY_MULTIPLE_QUESTION,
+    )}
     if conversation is not None:
         latest = conversation.messages.filter(role__in=("assistant", "agent"), delivery_status="sent").order_by("-created_at", "-pk").first()
         if latest:
             return latest.role == "assistant" and (
-                REQUIRED_MARKER in (latest.internal_context or "") or _text(latest.content) == _text(QUESTION)
+                REQUIRED_MARKER in (latest.internal_context or "") or _text(latest.content) in questions
                 or "MULTIPLE_RECIPIENTS" in (latest.internal_context or "")
             )
     latest = next((row for row in reversed(history or []) if row.get("role") in ("assistant", "agent")), {})
-    return latest.get("role") == "assistant" and _text(latest.get("content", "")) in {_text(QUESTION), _text(MULTIPLE_QUESTION)}
+    return latest.get("role") == "assistant" and _text(latest.get("content", "")) in questions
 
 
 def pending_answer(message, history=None, conversation=None, store=None):

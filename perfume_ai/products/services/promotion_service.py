@@ -12,6 +12,9 @@ from .usage_service import record_llm_message
 
 PROMOTION_CONTEXT = "PROMOTION_PENDING"
 LIMITATION = (
+    "طلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا."
+)
+_LEGACY_LIMITATION = (
     "تسجيل طلبات الباندلز والكومبوهات أو تطبيق العروض والخصومات والكوبونات "
     "والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء."
 )
@@ -132,7 +135,7 @@ def has_promotion_context(history):
             if _explicit(content):
                 return True
         elif row.get("role") == "assistant":
-            if LIMITATION in content:
+            if any(limitation in content for limitation in (LIMITATION, _LEGACY_LIMITATION)):
                 return True
             # Also support conversations started before this guard was installed.
             if _explicit(content) and re.search(r"مندوب|فريق|بشري|human|team", _words(content)):
@@ -238,7 +241,9 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
     history = history or []
     declined = declined_transfer(message, history)
     for row in reversed(history):
-        if row.get("role") == "assistant" and LIMITATION in row.get("content", ""):
+        if row.get("role") == "assistant" and any(
+            limitation in row.get("content", "") for limitation in (LIMITATION, _LEGACY_LIMITATION)
+        ):
             declined = declined or DECLINED in row["content"]
             break
     details = ""

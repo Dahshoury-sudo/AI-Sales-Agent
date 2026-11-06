@@ -130,7 +130,11 @@ Dimensions:
   pushing)?
 - closing_timing: closed at the right moment? Premature closing scores LOW. Score null
   if no close attempted and none was warranted.
-- human_feel: natural Egyptian, not robotic, not repetitive, not a product catalogue.
+- human_feel: friendly, everyday Egyptian Arabic. Ordinary replies should be 1–2 short
+  sentences: answer directly, without repeated introductions, forced honorifics, decorative
+  emoji, or an unnecessary closing question. Recommendations may use one short reason per
+  perfume. Complete order summaries, requested details, and necessary price options can be
+  longer. Judge relevance and natural wording as well as length; never reward omitted facts.
 - trust: no fake guarantees, no manipulation, no unsupported statistics, no false
   urgency, no exaggerated promises.
 

@@ -4,10 +4,9 @@ import json
 
 from products.models import Product
 from products.occasions import OCCASIONS, occasion_groups
-from products.scent_tags import describe_scent_tags
 from .prompts import get_system_prompt
 from ..product_formatting import (
-    ProductQuote, append_quotation, factual_description, format_products,
+    ProductQuote, append_quotation, format_products,
     monetary_claims, product_claim_facts, product_quotes, quote_context, render_quotes,
 )
 from ..reply_sanitizer import product_claim_issues
@@ -79,18 +78,13 @@ def _quotes(selected, intent, message):
 
 
 def _fallback(candidates, intent):
-    limit = intent.get("recommendation_count") or 2
+    from ..sales.recommendation_response import _choice_limit
+    limit = _choice_limit(intent)
     if intent.get("budget_scope") == "total":
-        limit = intent.get("purchase_quantity") or 2
         candidates = sorted(candidates, key=lambda p: min(v.price for v in eligible_variants(p, intent)))
-    limit = limit if type(limit) is int and limit > 0 else 2
     selected = candidates[:limit]
-    lines = []
-    for product in selected:
-        profile = describe_scent_tags(product.scent_tags)
-        facts = factual_description(product)
-        lines.append(f"{product.name}: طابعه {profile}." + (" " + facts + "." if facts else ""))
-    return selected, "\n".join(lines)
+    from .recommendation import recommendation_fit
+    return selected, recommendation_fit(selected, intent)
 
 
 @governed_reply
@@ -103,8 +97,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         return no_match_reply(search)
     if intent.get("budget_scope") == "total" and as_budget(intent.get("max_price")) is None:
         return "ميزانيتك الإجمالية للزجاجات في حدود كام؟", "TOTAL_BUDGET_REQUIRED"
-    count = intent.get("purchase_quantity") if intent.get("budget_scope") == "total" else intent.get("recommendation_count")
-    count = count if type(count) is int and count > 0 else 2
+    from ..sales.recommendation_response import _choice_limit
+    count = _choice_limit(intent)
     if intent.get("budget_scope") == "total":
         minimum_prices = sorted(min(v.price for v in eligible_variants(p, intent) if v.volume > 0)
                                 for p in candidates)
@@ -117,7 +111,11 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         f"Choose between one and {count} perfumes from eligible_products; use their exact catalog names in reply. "
         "For a total purchase budget choose exactly the purchase_quantity of bottles within that combined budget. "
         "Choose according to the customer's current preferences and the supplied facts. The list is in ID order, not relevance order. "
-        "Explain briefly why the choices suit the stated scent style and occasion. If presenting two, help choose between them. "
+        "Use one short grounded reason for each selected perfume, in friendly natural Egyptian Arabic. "
+        "Ordinary prose is one or two short sentences; honor requests for more choices or complete details. "
+        "No introductory recap, decorative bullets, emoji, repeated performance descriptions, or obligatory closing question. "
+        "Ask at most one useful question only when the current request needs missing information. "
+        "If presenting two, give a short difference only if it helps the customer choose. "
         "scent_tags are the owner's descriptions of scent character. They do not prove ingredients, performance, or authenticity. "
         "Use notes for ingredient claims. Every store perfume has excellent longevity and projection under the shared store policy. "
         "Performance preferences do not distinguish candidates, establish a quiet projection, or guarantee a requested duration. "
@@ -130,7 +128,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "The recommendation flow requires a customer gender choice before selection. "
         "Honor that choice, do not infer it from perfume names, and do not ask for it again. "
         "Do NOT write prices, bottle volumes, or totals in reply: code will append actual eligible quotations. "
-        "Write naturally and briefly, with no internal IDs, scoring, labels about system behavior, or premature checkout request."
+        "Write naturally and briefly, with no internal IDs, scoring, labels about system behavior, or premature checkout request. "
+        "Performance is shared by the choices; mention it once only if relevant to the current request."
     )
     reference = search.get("reference_product")
     payload = {

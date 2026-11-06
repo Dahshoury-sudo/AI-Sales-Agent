@@ -317,15 +317,11 @@ def size_value_note(value, max_price=None):
     name rather than left for the model to reach for: a 0.4% per-ml gap presented as
     "أحسن اختيار من حيث القيمة" is a claim the data does not support.
 
-    Both tiers say "ابدأ بالحجم ده" and then say what that does *not* mean. The old wording was
-    a bare "ابدأ بيه", which reads as "open your reply with this" — and because the line is
-    attached to one product and was the only per-product "start with" instruction in the whole
-    context, the model obeyed it as a choice of *perfume*. Conversation 762: a customer wanted a
-    fresh gym perfume with 1000 to spend, Invictus was ranked first and listed first with its
-    50ml in budget at 540, and the reply led with Le Male — the 4th-ranked perfume, and the only
-    one of the top four carrying this line. Invictus carries none, because its 90ml is dearer
-    per ml than its 50ml, so a perfume was passed over for a reason that has nothing to do with
-    whether it suits the gym.
+    These facts are optional guidance for an explicit value or size-choice question.
+    Ordering the model to lead with a size made ordinary price answers into unsolicited
+    upsells and could override the choice of perfume. Conversation 762: Invictus was ranked
+    first for a fresh gym request, but the reply led with the 4th-ranked Le Male because only
+    that perfume carried the size instruction. A size comparison must not rank perfumes.
 
     `max_price` is passed through to `_money_and_warning` and used for nothing else here — see
     there for why one clause of the prohibition is gated on a budget existing at all.
@@ -334,7 +330,7 @@ def size_value_note(value, max_price=None):
         return ""
 
     money, warning = _money_and_warning(value, max_price)
-    # Said on both tiers: this line orders *sizes inside this perfume*, and nothing else.
+    # Both tiers supply facts about sizes within this perfume, only when requested.
     #
     # The scope clause carried a ⚠️ and no longer does. That glyph is the over-budget marker
     # (product_formatting._BUDGET_LABELS["near"]), and four prompt rules bind it to that meaning
@@ -348,9 +344,9 @@ def size_value_note(value, max_price=None):
     # turns). It costs nothing to remove a decoy, and ❌ carries the two clauses that follow more
     # accurately anyway: they are prohibitions, which is what ❌ means in every other line here.
     scope = (
-        f"لما تذكر أسعار العطر ده، ابدأ بالحجم ده بدل ما تسرد الأسعار كلها، وبعدها اذكر "
-        f"باقي أحجامه باختصار. ده ترتيب الأحجام جوه العطر ده بس — ❌ مش سبب تبدأ بيه ردك "
-        f"ولا تفضّله على عطر تاني أنسب لطلب العميل."
+        "المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر "
+        "أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح "
+        "حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل."
     )
 
     if value.is_strong:
@@ -365,7 +361,8 @@ def size_value_note(value, max_price=None):
         f"كمية أكتر بـ {value.extra_volume_pct}%، {money}. "
         f"{scope} "
         f"❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" "
-        f"ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — اذكر الأرقام وسيب العميل يقرر. "
+        f"ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، "
+        f"والاختيار حسب طلب العميل. "
         f"{warning}"
     )
 

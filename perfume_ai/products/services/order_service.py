@@ -143,12 +143,12 @@ def _summary_was_shown(conversation, cart, items=None):
 
 def _quote_summary(conversation, cart, items):
     """Persist the exact cart/prices awaiting approval and render its public summary."""
-    summary = "تمام، راجع معايا تفاصيل الطلب كده:\n\n"
-    summary += f"👤 الاسم: {cart.customer_name}\n"
-    summary += f"📱 الموبايل: {cart.customer_phone}\n"
+    summary = "راجع معايا تفاصيل الطلب:\n\n"
+    summary += f"الاسم: {cart.customer_name}\n"
+    summary += f"الموبايل: {cart.customer_phone}\n"
     if cart.secondary_phone:
-        summary += f"📞 موبايل بديل: {cart.secondary_phone}\n"
-    summary += f"📍 العنوان: {cart.shipping_address}\n\n🛍️ الطلب:\n"
+        summary += f"موبايل بديل: {cart.secondary_phone}\n"
+    summary += f"العنوان: {cart.shipping_address}\n\nالطلب:\n"
     for item in items:
         bottle_disp = bottle_label(item['bottle_type'])
         summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
@@ -448,7 +448,8 @@ def _offered_context(conversation, store):
     return sales_described.offered_context_block(conversation, store)
 
 
-_WHICH_PERFUME = "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟"
+_WHICH_PERFUME = "تحب تطلب أنهي عطر؟ قولي اسمه."
+_LEGACY_WHICH_PERFUME = "تمام، بس مش واضحلي عايز تطلب أنهي عطر. ممكن تقولي اسم العطر اللي عايزه؟"
 
 
 def _ask_which_perfume(conversation, store):
@@ -472,7 +473,7 @@ def _ask_which_perfume(conversation, store):
         .first()
         if conversation is not None else None
     )
-    if (previous or "").strip() != _WHICH_PERFUME:
+    if (previous or "").strip() not in {_WHICH_PERFUME, _LEGACY_WHICH_PERFUME}:
         return _WHICH_PERFUME
 
     try:
@@ -480,15 +481,16 @@ def _ask_which_perfume(conversation, store):
     except Exception:
         offered = []
     if not offered:
-        return "معلش، أنا مش لاقي العطر. ممكن تكتبلي اسمه وأنا أجيبلك سعره والأحجام؟"
+        return "لسه مش واضح أنهي عطر تقصد. ممكن تكتب اسمه كامل؟"
 
     if len(offered) == 1:
-        return f"تقصد {offered[0]}؟ لو أيوة قولي الحجم وأجهزلك الطلب."
+        return f"تقصد {offered[0]}؟ قولي الحجم لو هو ده."
     names = " ولا ".join(offered[:3])
-    return f"تقصد {names}؟ قولي أنهي واحد والحجم وأجهزلك الطلب."
+    return f"تقصد {names}؟ قولي أنهي واحد والحجم."
 
 
-_DETAILS_ASK_MARKER = "عشان أأكدلك الطلب ناقصني"
+_DETAILS_ASK_MARKER = "ناقصني للطلب"
+_DETAILS_ASK_MARKERS = (_DETAILS_ASK_MARKER, "عشان أأكدلك الطلب ناقصني", "ولسه ناقص")
 
 
 def _already_asked_for_details(conversation):
@@ -501,7 +503,7 @@ def _already_asked_for_details(conversation):
         .values_list("content", flat=True)
         .first()
     )
-    return _DETAILS_ASK_MARKER in (previous or "")
+    return any(marker in (previous or "") for marker in _DETAILS_ASK_MARKERS)
 
 
 def _short_missing(name, phone, secondary_phone, address):
@@ -557,9 +559,9 @@ def _house_choice_question(brand, store):
     if not names:
         return f"مفيش عندنا عطور متاحة من {brand.name} دلوقتي، لكن ممكن أرشحلك بدائل من نفس الطابع."
     if len(names) == 1:
-        return f"تمام 👌 من {brand.name} عندنا {names[0]} — تحب أنهي حجم؟"
+        return f"من {brand.name} عندنا {names[0]}. تحب أنهي حجم؟"
     listed = " و ".join(names[:-1]) + f" و {names[-1]}"
-    return f"تمام 👌 من {brand.name} عندنا: {listed}. تحب أنهي واحد، وأي حجم؟"
+    return f"من {brand.name} عندنا {listed}. تحب أنهي واحد وحجم؟"
 
 
 def _cart_recap(conversation, items_to_create, total_price):
@@ -719,7 +721,7 @@ Return valid JSON in this exact format:
         response = chat(messages, profile="reason", response_format={"type": "json_object"})
         data = json.loads(response)
     except Exception:
-        return "مش فاهم تفاصيل الطلب كويس يا فندم. ممكن تقولي تاني عايز تطلب ايه بالظبط؟", ""
+        return "ممكن تقولي عايز تطلب إيه؟ تفاصيل الطلب مش واضحة لي.", ""
 
     if not isinstance(data, dict):
         return "ممكن توضح تفاصيل الطلب؟ الطلب المحفوظ زي ما هو.", ""
@@ -741,11 +743,11 @@ Return valid JSON in this exact format:
     _save_cart_details(cart, name, phone, secondary_phone, address)
     if data.get("cart_cleared") is True:
         clear_cart(conversation, keep_details=True)
-        return "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟", ""
+        return "تمام، شلت الطلب.", ""
     if not products_data:
         if data.get("removed_line_ids"):
             clear_cart(conversation, keep_details=True)
-            return "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟", ""
+            return "تمام، شلت الطلب.", ""
         # Conversation 1093: "عايز امبيرو 50 ملي" — the extractor placed nothing and this branch
         # asked "which perfume?" without ever reading the house the customer did name. When the
         # message names a house we carry, answer that question instead: list its perfumes.
@@ -905,7 +907,7 @@ Return valid JSON in this exact format:
                         bottle_type = 'original'
                         p_data['bottle_type'] = 'original'
                     elif not available_normal and (not available_original):
-                        raise _LineProblem((f'للأسف عطر {product.name} نفد من المخزون بجميع أحجامه حالياً 😔', ''))
+                        raise _LineProblem((f'{product.name} خلص بكل أحجامه دلوقتي.', ''))
                     else:
                         p_data['product_obj'] = product
                         p_data['missing_bottle_type'] = True
@@ -916,19 +918,19 @@ Return valid JSON in this exact format:
                         is_custom_blend = bool(product.store and product.brand.name.lower() == product.store.name.lower())
                         if available_normal:
                             if is_custom_blend:
-                                raise _LineProblem((f'عذراً يا فندم، عطر {product.name} من تصميمنا وابتكارنا ولا يوجد منه {ORIGINAL_BOTTLE}. متوفر فقط في {NORMAL_BOTTLE}. تحب تطلبه؟', ''))
+                                raise _LineProblem((f'{product.name} من تصميمنا وابتكارنا، ومتاح في {NORMAL_BOTTLE} بس. مفيش منه {ORIGINAL_BOTTLE}، تحب الزجاجة المتاحة؟', ''))
                             else:
-                                raise _LineProblem((f'عذراً يا فندم، غير متوفر {ORIGINAL_BOTTLES} لعطر {product.name} حالياً. متوفر منه فقط {NORMAL_BOTTLE}. تحب تطلبه؟', ''))
+                                raise _LineProblem((f'{product.name} متاح في {NORMAL_BOTTLE} بس، و{ORIGINAL_BOTTLES} مش متوفرة دلوقتي. تحب الزجاجة المتاحة؟', ''))
                         else:
-                            raise _LineProblem((f'عذراً يا فندم، عطر {product.name} نفد من المخزون حالياً 😔.', ''))
+                            raise _LineProblem((f'{product.name} خلص دلوقتي.', ''))
                     elif not available_original:
                         if available_normal:
-                            raise _LineProblem((f'عذراً يا فندم، {ORIGINAL_BOTTLES} لعطر {product.name} نفدت من المخزون حالياً 😔. متوفر منه {NORMAL_BOTTLES}. تحب تطلب {NORMAL_BOTTLE}؟', ''))
+                            raise _LineProblem((f'{ORIGINAL_BOTTLES} من {product.name} خلصت، ومتاح منه {NORMAL_BOTTLES}. تحب {NORMAL_BOTTLE}؟', ''))
                         else:
-                            raise _LineProblem((f'عذراً يا فندم، عطر {product.name} نفد من المخزون تماماً 😔.', ''))
+                            raise _LineProblem((f'{product.name} خلص دلوقتي.', ''))
                 elif bottle_type == 'normal' and (not available_normal):
                     if available_original:
-                        raise _LineProblem((f'عذراً يا فندم، {NORMAL_BOTTLES} لعطر {product.name} غير متوفرة حالياً 😔. متوفر منه {ORIGINAL_BOTTLE}. تحب تطلبها؟', ''))
+                        raise _LineProblem((f'{NORMAL_BOTTLES} من {product.name} مش متاحة دلوقتي، ومتاح منه {ORIGINAL_BOTTLE}. تحبها؟', ''))
                 if bottle_type == 'normal':
                     filtered_variants = available_normal
                 elif bottle_type == 'original':
@@ -945,22 +947,22 @@ Return valid JSON in this exact format:
                     selected_variant = None
                 if not selected_variant:
                     if not filtered_variants:
-                        raise _LineProblem((f'للأسف عطر {product.name} نفد من المخزون حالياً 😔', ''))
+                        raise _LineProblem((f'{product.name} خلص دلوقتي.', ''))
                     if req_volume:
                         if bottle_type == 'original':
                             has_normal_vol = any((v.volume == req_volume for v in available_normal))
                             avail_orig_vols = '، '.join([f'{v.volume} ملي' for v in filtered_variants])
                             if has_normal_vol:
-                                raise _LineProblem((f'عذراً يا فندم، الـ {req_volume} ملي من عطر {product.name} متاح في {NORMAL_BOTTLE} فقط. ({ORIGINAL_BOTTLE} متاح منها: {avail_orig_vols}). تحب تطلب {NORMAL_BOTTLE}؟', ''))
+                                raise _LineProblem((f'{product.name} حجم {req_volume} ملي متاح في {NORMAL_BOTTLE} بس، و{ORIGINAL_BOTTLE} متاح منها {avail_orig_vols}. تحب {NORMAL_BOTTLE}؟', ''))
                             else:
-                                raise _LineProblem((f'عذراً يا فندم، حجم {req_volume} ملي غير متوفر من {ORIGINAL_BOTTLES} لعطر {product.name}. (المتاح: {avail_orig_vols}). تحب تطلب حجم تاني؟', ''))
+                                raise _LineProblem((f'{product.name} حجم {req_volume} ملي مش متاح في {ORIGINAL_BOTTLES}، والمتاح {avail_orig_vols}. تحب أنهي حجم؟', ''))
                         elif bottle_type == 'normal':
                             has_orig_vol = any((v.volume == req_volume for v in available_original))
                             avail_normal_vols = '، '.join([f'{v.volume} ملي' for v in filtered_variants])
                             if has_orig_vol:
-                                raise _LineProblem((f'عذراً يا فندم، الـ {req_volume} ملي من عطر {product.name} متاح في {ORIGINAL_BOTTLE} فقط حالياً. ({NORMAL_BOTTLES} المتاح منها: {avail_normal_vols}). تحب تطلب {ORIGINAL_BOTTLE}؟', ''))
+                                raise _LineProblem((f'{product.name} حجم {req_volume} ملي متاح في {ORIGINAL_BOTTLE} بس، و{NORMAL_BOTTLES} متاح منها {avail_normal_vols}. تحب {ORIGINAL_BOTTLE}؟', ''))
                             else:
-                                raise _LineProblem((f'عذراً يا فندم، حجم {req_volume} ملي غير متوفر من {NORMAL_BOTTLES} لعطر {product.name}. (المتاح: {avail_normal_vols}). تحب تطلب حجم تاني؟', ''))
+                                raise _LineProblem((f'{product.name} حجم {req_volume} ملي مش متاح في {NORMAL_BOTTLES}، والمتاح {avail_normal_vols}. تحب أنهي حجم؟', ''))
                         else:
                             avail_vols_display = []
                             for v in filtered_variants:
@@ -969,7 +971,7 @@ Return valid JSON in this exact format:
                                 else:
                                     avail_vols_display.append(f'{v.volume} ملي ({NORMAL_BOTTLE})')
                             vols_str = '، '.join(avail_vols_display)
-                            raise _LineProblem((f'عذراً يا فندم، حجم {req_volume} ملي غير متوفر حالياً لعطر {product.name}. المتاح: {vols_str}. تحب تطلب حاجة منهم؟', ''))
+                            raise _LineProblem((f'{product.name} حجم {req_volume} ملي مش متاح دلوقتي، والمتاح {vols_str}. تحب أنهي حجم؟', ''))
                     all_type_variants = [v for v in variants if v.bottle_type == bottle_type] if bottle_type else variants
                     if len(filtered_variants) == 1 and len(all_type_variants) == 1:
                         selected_variant = filtered_variants[0]
@@ -986,9 +988,9 @@ Return valid JSON in this exact format:
                 if bottle_type == 'original':
                     stock = selected_variant.stock or 0
                     if stock == 0:
-                        raise _LineProblem((f'عذراً يا فندم، {ORIGINAL_BOTTLES} لعطر {product.name} حجم {selected_variant.volume} ملي نفدت تماماً.', ''))
+                        raise _LineProblem((f'{ORIGINAL_BOTTLES} من {product.name} حجم {selected_variant.volume} ملي خلصت.', ''))
                     elif stock < qty:
-                        raise _LineProblem((f'عذراً يا فندم، {ORIGINAL_BOTTLES} لعطر {product.name} المتوفرة حالياً {stock} زجاجة فقط من حجم {selected_variant.volume} ملي. تحب تطلب {stock} بس؟', ''))
+                        raise _LineProblem((f'متاح {stock} زجاجة بس من {product.name} حجم {selected_variant.volume} ملي في {ORIGINAL_BOTTLES}. تحب تطلب {stock}؟', ''))
                 price = selected_variant.price
                 total_price += price * qty
                 items_to_create.append({'variant': selected_variant, 'quantity': qty, 'price': price, 'bottle_type': bottle_type, 'line_id': p_data['line_id']})
@@ -1049,7 +1051,7 @@ Return valid JSON in this exact format:
         details = [_house_choice_question(brand, store) for brand in house_questions]
         details.extend(issue[0] for issue in issues)
         if product_missing_fields:
-            details.append("تمام 👌 بس محتاج أعرف " + " و ".join(product_missing_fields) + "؟")
+            details.append("محتاج أعرف " + " و ".join(product_missing_fields) + "؟")
         return "\n".join(details), context_str
     if issues or unknown:
         details = [issue[0] for issue in issues]
@@ -1097,9 +1099,9 @@ Return valid JSON in this exact format:
                 sizes = " ولا ".join(pending["available_volumes_display"])
                 quantity = pending.get("quantity") or 1
                 count = f"{quantity} × " if quantity > 1 else ""
-                return recap + f"تمام 👌 {count}{pending.get('name')} — تحب {sizes}؟", context_str
-            return recap + f"تمام 👌 بس محتاج أعرف {missing_text}؟", context_str
-        return recap + f"تمام 👌 بس محتاج أعرف {missing_text}؟", context_str
+                return recap + f"{count}{pending.get('name')}، تحب {sizes}؟", context_str
+            return recap + f"محتاج أعرف {missing_text}؟", context_str
+        return recap + f"محتاج أعرف {missing_text}؟", context_str
 
     # 3. Product details are complete — now check for missing personal info.
     # Phones go through _looks_like_phone rather than a truthiness check: the
@@ -1113,18 +1115,18 @@ Return valid JSON in this exact format:
         personal_missing_fields.append("الاسم")
 
     if not phone and not secondary_phone:
-        personal_missing_fields.append("رقمين للموبايل واحد اساسي وواحد بديل")
+        personal_missing_fields.append("رقم الموبايل الأساسي ورقم بديل")
     elif not phone:
         personal_missing_fields.append("رقم الموبايل الأساسي")
     elif not secondary_phone:
         personal_missing_fields.append("رقم موبايل بديل")
         
     if not address:
-        personal_missing_fields.append("عنوانك بالتفصيل (المحافظة - المنطقة - رقم المنزل - اسم الشارع ) لو فى أي علامة مميزة بجوار المنزل")
+        personal_missing_fields.append("العنوان بالتفصيل: المحافظة، المنطقة، الشارع، رقم المنزل وأي علامة مميزة")
 
     if personal_missing_fields:
         missing_text = " و ".join(personal_missing_fields)
-        ask = f"تمام، عشان أأكدلك الطلب ناقصني بس {missing_text}."
+        ask = f"ناقصني للطلب {missing_text}."
         # Asking for the same fields a second time in a row gets the short form. The long
         # parenthesised address prompt going out verbatim on consecutive turns is what made
         # three replies identical in evaluation scenario F1, and re-reading the same
@@ -1152,8 +1154,8 @@ Return valid JSON in this exact format:
 
 
 def _order_success(order):
-    return (f"تم تأكيد طلبك بنجاح! 🎉 رقم الطلب هو #{order.id}.\n"
-            f"سيقوم فريق المبيعات بالتواصل معك قريباً.\n\n{_payment_instructions(order.store)}")
+    return (f"طلبك اتأكد يا فندم، ورقمه #{order.id}.\n"
+            f"فريق المبيعات هيتواصل معاك قريب.\n\n{_payment_instructions(order.store)}")
 
 
 def deliver_order_notification(order_id):
@@ -1207,7 +1209,7 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                 if not variant or not variant.product.is_active or variant.product.store_id != store.pk:
                     cart.quote = {}
                     cart.save(update_fields=["quote"])
-                    return "توفر أحد الاختيارات اتغير. خلينا نراجع الطلب قبل التأكيد.", context_str
+                    return "واحد من الاختيارات مبقاش متاح. نراجع الطلب قبل التأكيد.", context_str
                 if type(item["quantity"]) is not int or item["quantity"] <= 0:
                     raise ValueError("Invalid quantity")
                 item["variant"] = variant
@@ -1220,7 +1222,7 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                 if variant.bottle_type == "original" and (variant.stock or 0) < quantity:
                     cart.quote = {}
                     cart.save(update_fields=["quote"])
-                    return f"للأسف الكمية المطلوبة من {variant.product.name} مش متاحة حالياً. نراجع الكمية؟", context_str
+                    return f"الكمية دي من {variant.product.name} مش متاحة دلوقتي. نراجع الكمية؟", context_str
             total_price = sum((item["price"] * item["quantity"] for item in items_to_create), Decimal("0"))
             order = Order.objects.create(store=store, customer_name=name, customer_phone=phone,
                 secondary_phone=secondary_phone, shipping_address=address, total_price=total_price,
@@ -1236,4 +1238,4 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
         return _order_success(order), context_str
     except Exception:
         logger.exception("Failed to create order for store %s", store.pk)
-        return "حصل مشكلة في تسجيل الطلب يا فندم. ممكن تجرب تاني ولو المشكلة استمرت هحولك لحد من الفريق يساعدك.", ""
+        return "حصلت مشكلة في تسجيل الطلب. جرّب تاني، ولو استمرت هحولك لحد من الفريق يساعدك.", ""

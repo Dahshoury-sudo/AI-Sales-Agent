@@ -224,10 +224,16 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             return sales_constraints.formulation_reply(), context, repeats
         mentioned = sales_naming.names_in(reply, [p.name for p in offer_rows])
         by_name = {p.name: p for p in offer_rows}
-        selected = [by_name[name] for name in mentioned[:2]]
+        from .sales.recommendation_response import _choice_limit
+        limit = _choice_limit(recommendation_intent)
+        selected = [by_name[name] for name in mentioned[:limit]]
         if (recommendation_intent or {}).get("recommendation_mode") == "new_goal":
-            selected = offer_rows[:2]
-        fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
+            selected = offer_rows[:limit]
+        if recommendation_intent is not None:
+            from .ai.recommendation import recommendation_fit
+            fallback = recommendation_fit(selected, recommendation_intent)
+        else:
+            fallback = "\n".join(f"{p.name}: {factual_description(p)}." for p in selected if factual_description(p))
         if fallback and any(i.startswith("popularity:") for i in remaining or issues):
             fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
         return append_quotation(fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context), context, repeats
@@ -670,7 +676,7 @@ def _route(message, history=None, store=None, conversation=None):
         goodbye_words = ["سلام", "باي", "مع السلامة", "bye", "شكرا"]
         msg_clean = message.strip()
         if any(msg_clean == gw or msg_clean.startswith(gw) for gw in goodbye_words) and len(msg_clean) < 30:
-            return "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك 24 ساعة. يوم سعيد!", ""
+            return "نورتنا يا فندم، يومك جميل.", ""
 
     # --- Classify the request ---
     # Intent extraction is deliberately NOT started here. It is only needed by the
@@ -974,7 +980,7 @@ def _route(message, history=None, store=None, conversation=None):
 
     elif request_type == "order":
         if not conversation:
-            return "محتاج الأول تبدأ محادثة جديدة عشان أقدر أسجللك الطلب يا فندم.", ""
+            return "ابدأ محادثة جديدة عشان أسجلك الطلب.", ""
         return handle_order(message, history, store, conversation)
         
     elif request_type == "order_cancel":
@@ -1003,16 +1009,16 @@ def _route(message, history=None, store=None, conversation=None):
 
             if cart and (cart.items.exists() or cart.pending_items or cart.pending_product_id):
                 clear_cart(conversation, keep_details=True)
-                return "تم إلغاء الطلب اللي كنا بنجهزه يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+                return "تمام، لغيت الطلب اللي كنا بنجهزه.", ""
 
             latest_order = Order.objects.filter(conversation=conversation, status="pending").order_by('-created_at').first()
             if latest_order:
                 from .order_service import change_order_status
                 change_order_status(latest_order.pk, store, "cancelled", bot_notes="تم إلغاء الطلب بواسطة البوت بناءً على طلب العميل.")
-                return "تم الغاء اخر اوردر تم تسجيله يا فندم. تحت أمرك لو حابب تختار عطر تاني أو محتاج أي مساعدة!", ""
+                return "تمام، لغيت آخر طلب اتسجل.", ""
             else:
-                return "مفيش طلب نشط حالياً عشان ألغيه يا فندم. لو كنت حابب تعمل طلب جديد أو محتاج أي مساعدة، أنا تحت أمرك!", ""
-        return "مفيش طلب نشط حالياً عشان ألغيه يا فندم. لو كنت حابب تعمل طلب جديد أو محتاج أي مساعدة، أنا تحت أمرك!", ""
+                return "مفيش طلب نشط دلوقتي عشان ألغيه.", ""
+        return "مفيش طلب نشط دلوقتي عشان ألغيه.", ""
         
     elif request_type == "handoff":
         already_handed_off = _was_already_handed_off(history)

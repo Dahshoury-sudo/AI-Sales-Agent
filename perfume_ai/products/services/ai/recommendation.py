@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from .client import chat
 from ..bottle_wording import bottle_label
-from ..product_formatting import format_products, is_variant_available, factual_description
+from ..product_formatting import format_products, is_variant_available
 from ..sales.ranking import reasons_note
 from ..sales.value import budget_tier
 
@@ -11,15 +11,21 @@ _FORMATTING_LIMIT = 12
 
 
 def recommendation_fit(products, intent):
-    """Grounded recovery uses assigned scent labels and recorded performance."""
+    """One grounded scent reason per choice, with requested shared performance once."""
     from products.scent_tags import describe_scent_tags
+    from ..performance_policy import current_request, description
+    from ..sales.recommendation_response import _choice_limit
+    limit = _choice_limit(intent)
     lines = []
-    for product in list(products)[:2]:
+    for product in list(products)[:limit]:
         style = describe_scent_tags(getattr(product, "scent_tags", []))
-        facts = factual_description(product)
-        explanation = "، ".join(part for part in (("طابعه " + style) if style else "", facts) if part)
-        if explanation:
-            lines.append(f"{product.name}: {explanation}.")
+        lines.append(f"{product.name}: طابعه {style}." if style else product.name + ".")
+    request = current_request()
+    if lines and (request.longevity or request.projection):
+        performance = description(request, longevity=request.longevity, projection=request.projection)
+        if len(lines) > 1:
+            performance = "كل الاختيارات " + performance.replace("ثباته ", "ثباتهم ").replace("فوحانه ", "فوحانهم ")
+        lines.append(performance + ".")
     return "\n".join(lines)
 
 

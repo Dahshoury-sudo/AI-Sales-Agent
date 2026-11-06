@@ -11,7 +11,7 @@ answered, which is the exact inconsistency the prompts spend hundreds of lines
 trying to prevent. Both drifts are resolved by including the superset.
 """
 
-from itertools import islice
+from itertools import groupby, islice
 from dataclasses import dataclass, asdict
 from decimal import Decimal
 import json
@@ -101,7 +101,9 @@ LOW_BOTTLE_THRESHOLD = 3
 
 QUOTE_MARKER = "QUOTE_EVIDENCE:"
 QUOTE_PROSE_INSTRUCTION = (
-    "\nاكتب وصف العطر والرد على السؤال فقط من البيانات. لا تكتب أسعار منتجات أو أحجام؛ "
+    "\nاكتب بس الكلام اللازم للإجابة على السؤال من البيانات؛ في العادي جملة أو جملتين قصيرين، "
+    "ولو طلب تفاصيل، جاوبه على قد طلبه. "
+    "لو السؤال عن السعر أو الأحجام بس، متضيفش وصف للعطر أو سؤال متابعة. لا تكتب أسعار منتجات أو أحجام؛ "
     "الأسعار والأحجام هتتضاف تلقائياً بعد ردك. لا تنقل أي سعر من المحادثة.\n"
 )
 
@@ -159,14 +161,22 @@ def product_quotes(products, message="", max_price=None, *, filter_budget=True):
 
 
 def render_quotes(quotes, max_price=None, *, include_name=True):
+    """Share labels across adjacent variants without changing quotation order."""
     lines = []
-    for quote in quotes:
-        bottle = bottle_label(quote.bottle_type)
-        quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
-        prefix = f"{quote.name} — " if include_name else ""
-        line = f"{prefix}{bottle} {quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه."
-        if max_price is not None and budget_tier(quote.price, max_price) == "near":
-            line += " أعلى حاجة بسيطة من ميزانيتك."
+    for _, adjacent in groupby(quotes, key=lambda q: (q.product_id, q.name, q.bottle_type)):
+        group = list(adjacent)
+        first = group[0]
+        prefix = f"{first.name} — " if include_name else ""
+        parts = []
+        for quote in group:
+            quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
+            part = f"{quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه"
+            if max_price is not None and budget_tier(quote.price, max_price) == "near":
+                # Keep the warning beside its own size, including within a group.
+                part += (". أعلى حاجة بسيطة من ميزانيتك" if len(group) == 1
+                         else " (أعلى حاجة بسيطة من ميزانيتك)")
+            parts.append(part)
+        line = f"{prefix}{bottle_label(first.bottle_type)} " + "، و".join(parts) + "."
         lines.append(line)
     return "\n".join(lines)
 
@@ -377,11 +387,9 @@ def value_pick_note(product, variants, max_price=None):
     A hard `<= max_price` and not `budget_tier`, which is the deliberate exception among the
     budget readers. Everywhere else "near" means offerable-with-the-overage-said-out-loud, and
     `order_service._over_budget_warning` was moved onto `budget_tier` for exactly that reason.
-    Here the tier would change which size the model is told to *lead with* for every customer
-    whose next size up happens to sit inside the tolerance band — a catalogue-wide change to the
-    recommendation, with no incident asking for it. The line above is the stance, not an
-    oversight: this note carries "ابدأ بالحجم ده", and a size the customer has already priced
-    themselves out of is not the one to open with.
+    Here the hard limit preserves the eligible sizes used by the value calculation. The note
+    supplies optional facts for explicit value or size-choice questions, so a size outside the
+    customer's budget is not the basis of its value comparison.
     """
     eligible = [
         variant for variant in variants

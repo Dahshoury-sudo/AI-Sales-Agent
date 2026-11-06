@@ -6,12 +6,21 @@ from ..static_faq_service import normalize_arabic
 from . import naming, ranking, similarity
 
 
+def _choice_limit(intent):
+    count = (intent or {}).get("recommendation_count") or 2
+    if (intent or {}).get("budget_scope") == "total":
+        count = (intent or {}).get("purchase_quantity") or 2
+    return count if type(count) is int and count > 0 else 2
+
+
 def instruction(intent):
     if (intent or {}).get("recommendation_mode") != "new_goal":
         return ""
+    count = _choice_limit(intent)
     return (
         "\nالعميل بدأ طلب ترشيح جديد. قيّم الاختيارات حسب طلبه الحالي وابدأ بالأكثر مطابقة "
-        "في القائمة، حتى لو كنت رشحت غيره قبل كده. اعرض عطر أو عطرين فقط. "
+        f"في القائمة، حتى لو كنت رشحت غيره قبل كده. اعرض لحد {count} عطور حسب طلبه، مع سبب قصير لكل عطر. "
+        "من غير تلخيص طلبه أو سؤال ختامي لازم أو نقط مزخرفة. "
         "ممنوع تتمسك بترشيح قديم أو تنقل شروط أو مقارنة من الطلب السابق. "
         "لو المناسبة المسجلة مختلفة متدعيش إنه مناسب للمناسبة المطلوبة. "
         "الثبات والفوحان ممتازين لكل عطورنا، فمتخترعش فرق أداء بين الاختيارات. "
@@ -27,8 +36,9 @@ def response_issues(reply, products, intent, search=None):
     if current and products:
         if not ordered:
             issues.append("قدم عطر مناسب من القائمة مباشرة")
-        if len(ordered) > 2:
-            issues.append("اكتف بعطر أو عطرين")
+        count = _choice_limit(intent)
+        if len(ordered) > count:
+            issues.append(f"اكتف بعدد الترشيحات المطلوب: {count}")
         entries = search.get("ranked") or {}
         leader = entries.get(products[0].pk)
         chosen = next((p for p in products if ordered and p.name == ordered[0]), None)

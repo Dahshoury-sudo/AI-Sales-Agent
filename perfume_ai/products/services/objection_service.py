@@ -41,11 +41,12 @@ from .sales.value import stated_budget, value_comparison_note
 # decides what "address the concern" means.
 _SEQUENCE = """
 ═══ ترتيب الرد على الاعتراض (التزم بالترتيب ده) ═══
+الرد العادي جملة أو جملتين قصيرتين بالمصري الطبيعي. اجمع الاعتراف والرد المفيد، ومتعملش كل خطوة فقرة منفصلة. التفاصيل الكاملة استثناء لما العميل يطلبها.
 1. 🔴 ابدأ بالاعتراف باللي قاله العميل في جملة قصيرة بأسلوبك. ❌ ممنوع تبدأ بشرح ولا بتبرير ولا بمنتج.
 2. رد على الاعتراض نفسه بالتحديد — مش على اعتراض تاني ومش بكلام عام.
 3. اذكر العوامل الحقيقية من البيانات المبعوتة لك بس.
 4. لو ينفع تقلل المخاطرة بحاجة حقيقية (حجم أصغر كبداية، أو حقيقة مكتوبة في حقائق الستور زي وجود فرع يجرب فيه) — اعرضها. ❌ ممنوع تعرض استرجاع أو استبدال أو تعويض أو خصم.
-5. رشّح بعد كده بس، ولو مناسب.
+5. الترشيح وتقليل المخاطرة اختياريين؛ اذكرهم بس لو محتاجين فعلاً لحل الاعتراض، من غير بيع زيادة أو سؤال ختامي ثابت.
 """
 
 _NO_CLOSING = (
@@ -312,7 +313,7 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     """
     guidance = PLAYBOOK.get(objection.kind, "")
     if objection.kind == "thinking" and not re.search(r"[?؟]|بكام|سعر|فيه ايه|ثبات|عنوان|احجام|ملي", message):
-        return "تمام يا فندم، خد وقتك. تحت أمرك لما تحب ترجع.", "CUSTOMER_DEFERRED"
+        return "تمام، خد وقتك.", "CUSTOMER_DEFERRED"
     stage = sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
 
     # Only the perfumes actually under discussion, so the reply stays on the customer's

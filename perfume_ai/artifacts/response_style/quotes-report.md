@@ -1,0 +1,21 @@
+# Task 3: compact quotations
+
+Implemented in `products/services/product_formatting.py`; regression coverage in `products/test_compact_quotes.py` (13 tests). Follow-up scope authorized by root additionally covers wording in `products/services/sales/value.py`. No commits or edits to other owners' source files.
+
+Consecutive rows with the same product ID/name and bottle type now share one label, with size/price clauses joined by `، و`. Product or bottle changes start a new line; separated groups stay in place. Grouped near-budget warnings sit beside their own size in parentheses. Single-row output, `include_name=False`, empty input, exact Decimal totals, quantities, per-unit budget tiering, selected order, public interfaces and quotation records remain compatible. The prose instruction requests only necessary answers, omits unsolicited descriptions/follow-ups on price-only asks, and permits explicitly requested detail.
+
+## Verification
+
+- Red: `.venv/Scripts/python.exe scripts/run_offline_tests.py products.test_compact_quotes --log artifacts/response_style/quotes-tests-red.log` — 12 tests ran, 8 expected assertion failures for missing grouping; zero errors or unexpected HTTP. Compatibility/validation characterization cases already passed.
+- Green (rerun after final prose edit): `.venv/Scripts/python.exe scripts/run_offline_tests.py products.test_compact_quotes products.test_bug_regressions products.tests.UnifiedProductFormattingTests products.tests.BudgetLabelsReachEveryPricePathTests --log artifacts/response_style/quotes-tests.log` — 139 tests passed, zero unexpected HTTP.
+- `git diff --check -- products/services/product_formatting.py products/test_compact_quotes.py` — passed.
+
+Coverage checks input order, nonconsecutive groups, bottle switches, duplicate names with different product IDs, omitted names, four-decimal arithmetic, quantity totals, per-item warning association, single-row/empty compatibility, real catalogue selection/evidence, append idempotence and downstream rejection of stale evidence/unverified prose prices.
+
+Integration follow-up: added a real `sanitize_reply` regression covering in-budget then near-budget and the reverse, each with quantity 1 and 2. Hand-derived literal expected blocks verify parentheses, exact totals, warning scope, unchanged evidence text, append idempotence after sanitizing, and downstream validation. `.venv/Scripts/python.exe scripts/run_offline_tests.py products.test_compact_quotes products.tests.FalseOverBudgetClaimTests --log artifacts/response_style/quotes-sanitizer-tests.log` — 46 tests passed, zero unexpected HTTP. No sanitizer defect reproduced; the new characterization test passed immediately, so no production fix or additional red/green cycle was needed.
+
+Value wording follow-up: `size_value_note` now supplies optional facts only for explicit value/size-choice questions. Removed mandatory `ابدأ بالحجم ده` and number-recital instructions; retained both value tiers/markers, total-vs-per-ml safeguards, budget scoping, exact existing price facts, thresholds, eligibility and ordering. Updated outdated `value_pick_note` documentation. Existing tests in `products/tests.py` were updated by the prompt owner after an initial 77-test run identified four obsolete imperative assertions. No new copy-only tests were added. Final command: `.venv/Scripts/python.exe scripts/run_offline_tests.py products.test_compact_quotes products.tests.ValueLanguageTests products.tests.SalesQualityTests products.tests.UnifiedProductFormattingTests products.tests.BudgetLabelsReachEveryPricePathTests products.tests.ComparisonSuppressesPricesTests products.tests.BudgetTierTests --log artifacts/response_style/quotes-value-tests.log` — 98 tests passed, zero unexpected HTTP. `git diff --check` passed for owned files.
+
+## Concerns and integration
+
+No task-specific failures remain. The passing existing delivery regression tests intentionally log simulated delivery exceptions and missing payment configuration; these are not failed tests or HTTP attempts. Full-suite verification and live model wording evaluation remain with root integration. Existing evidence design trusts the code-rendered block; its schema and validation were intentionally preserved. The user's pre-existing `../.gitignore` change was untouched.

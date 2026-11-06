@@ -854,7 +854,7 @@ class CartPersistenceTests(TestCase):
     def test_confirming_creates_an_order_and_clears_the_cart(self):
         reply, _ = self._confirm()
 
-        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        self.assertIn("طلبك اتأكد يا فندم، ورقمه #", reply)
         order = Order.objects.get(store=self.store)
         self.assertEqual(order.items.count(), 1)
         self.assertEqual(order.customer_name, "محمد")
@@ -950,7 +950,7 @@ class CartCancellationTests(TestCase):
         reply, _ = self._cancel()
 
         self.assertFalse(Cart.objects.filter(conversation=self.conversation).exists())
-        self.assertIn("إلغاء", reply)
+        self.assertIn("لغيت", reply)
 
     def test_cancelling_a_confirmed_order_restores_original_bottles(self):
         """Replaces the oil-restoring version.
@@ -1133,7 +1133,7 @@ class PerStorePaymentInstructionsTests(TestCase):
         """A store missing StoreSettings entirely must not break the order."""
         reply, _ = self._confirm_order()
 
-        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        self.assertIn("طلبك اتأكد يا فندم، ورقمه #", reply)
         self.assertIn(PAYMENT_FALLBACK, reply)
         self.assertNotIn(self.LEAKED, reply)
 
@@ -1150,7 +1150,7 @@ class PerStorePaymentInstructionsTests(TestCase):
         reply, _ = self._confirm_order()
         order = Order.objects.get(store=self.store)
 
-        self.assertIn("تم تأكيد طلبك بنجاح", reply)
+        self.assertIn("طلبك اتأكد يا فندم، ورقمه #", reply)
         self.assertIn(f"#{order.id}", reply)
 
 
@@ -4066,16 +4066,13 @@ class ScriptedRepliesSurviveSanitizingTests(TestCase):
                          (original.pk, "original", Decimal("900")))
 
     def test_the_cart_cancellation_reply_is_untouched(self):
-        """Contains "تحب تشوف حاجة تانية" — near-miss on the filler pattern."""
-        scripted = "تمام، شلت الطلب خلاص. تحب تشوف حاجة تانية أو أرشحلك عطر؟"
+        """The short scripted cancellation survives sanitizing."""
+        scripted = "تمام، شلت الطلب."
 
         self.assertEqual(sanitize_reply(scripted), scripted)
 
     def test_the_goodbye_reply_is_untouched(self):
-        scripted = (
-            "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك "
-            "24 ساعة. يوم سعيد!"
-        )
+        scripted = "نورتنا يا فندم، يومك جميل."
 
         self.assertEqual(sanitize_reply(scripted), scripted)
 
@@ -4284,7 +4281,7 @@ class PersonaConsolidationTests(TestCase):
             ("diagnose rejection", "مش عاجبني"),
             ("niche pivot", "نيش"),
             ("value pick", "Value Pick"),
-            ("no dead-end availability", "رد ميت"),
+            ("answer availability directly", "أكّد التوفر باختصار"),
         ):
             with self.subTest(play=play):
                 self.assertIn(marker, prompt)
@@ -4332,9 +4329,9 @@ class PersonaConsolidationTests(TestCase):
             ("banned florid words", "عبير"),
             ("banned robotic phrases", "يسعدني مساعدتك"),
             ("store not محل", 'ممنوع كلمة "محل"'),
-            ("1-4 short sentences", "4 جمل قصيرة"),
+            ("1-2 short sentences", "جملة أو جملتين قصيرتين"),
             ("no spec-list dumps", "ممنوع تسرد"),
-            ("max 2-3 recommendations", "ترشيحين أو تلاتة"),
+            ("max two recommendations by default", "عطر أو عطرين"),
             ("no (تركيب) label on sizes", '(تركيب)'),
             ("only in-stock sizes offered", "الأحجام المتوفرة بس"),
             ("brand vs original same juice", "العطر في الاتنين نفس التركيبة من عندنا"),
@@ -5819,13 +5816,12 @@ class ValueLanguageTests(TestCase):
         """The real prices from the transcript are an 18.3% saving, which the 22% threshold
         deliberately leaves in the weak tier. Sauvage is the shop's most-asked perfume and
         eval scenario P1 quotes it, so this records the consequence rather than hiding it:
-        the reply still leads with the 90ml, it just no longer calls it the best value."""
+        its size-value evidence remains available without a strong-value claim."""
         value = sales_value.size_value(list(self.product.variants.all()))
 
         self.assertFalse(value.is_strong)
         self.assertEqual(value.saving_pct.quantize(Decimal("0.1")), Decimal("18.3"))
         self.assertIn("💡 اقتراح حجم", self._note())
-        self.assertIn("ابدأ بالحجم ده", self._note())
 
     def test_a_comfortably_strong_saving_is_sold_as_the_value_pick(self):
         self.large.price = _comfortably_strong_price(self.small.price, self.small.volume, 90)
@@ -5847,14 +5843,13 @@ class ValueLanguageTests(TestCase):
         self.assertIn("💡 اقتراح حجم", note)
 
     def test_a_small_saving_still_names_the_size_and_the_numbers(self):
-        """Silence here would regress eval scenario P1, which marks a bare price list with
-        no recommendation as a weak sales answer."""
+        """Both sizes remain available for an explicit value comparison."""
         self._weaken_to(5)
 
         note = self._note()
 
         self.assertIn("90 ملي", note)
-        self.assertIn("ابدأ بالحجم ده", note)
+        self.assertIn("50 ملي", note)
         self.assertIn("سعر الملي أرخص", note)
 
     def test_a_small_saving_bans_the_superlatives_by_name(self):
@@ -5911,13 +5906,8 @@ class ValueLanguageTests(TestCase):
 
         self.assertIsInstance(value.saving_pct, Decimal)
 
-    def test_both_tiers_scope_the_lead_instruction_to_the_size(self):
-        """Conversation 762. The line used to end in a bare "ابدأ بيه", which reads as "open
-        your reply with this" — and since it is attached to one product and was the only
-        per-product "start with" instruction in the context, the model obeyed it as a choice of
-        *perfume*. Invictus was ranked first with its 50ml in budget and lost to the 4th-ranked
-        perfume, the only one of the top four carrying this line.
-        """
+    def test_both_tiers_scope_the_value_instruction_to_a_size_choice(self):
+        """Size value supports an explicit size decision without changing perfume ranking."""
         for label, saving in (("strong", None), ("weak", 5)):
             with self.subTest(tier=label):
                 if saving is not None:
@@ -5930,8 +5920,8 @@ class ValueLanguageTests(TestCase):
 
                 note = self._note()
 
-                self.assertIn("لما تذكر أسعار العطر ده", note)
-                self.assertIn("ترتيب الأحجام جوه العطر ده بس", note)
+                self.assertIn("عن أحجام نفس العطر فقط", note)
+                self.assertIn("لو العميل سأل أنهي حجم أوفر", note)
                 self.assertNotIn("ابدأ بيه بدل", note)
 
     def test_neither_tier_invites_preferring_this_perfume(self):
@@ -7084,12 +7074,12 @@ class SalesScenarioTests(TestCase):
         prompt, _ = self._route_recommendation("عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه", {"gender": "female"})
         self.assertEqual(prompt, "")
         self.assertEqual(self.last_context, "SCENT_PREFERENCE_REQUIRED")
-        self.assertIn("قولي ذوقك.", self.last_reply)
+        self.assertIn("بتحب الفريش، الخشبي، العود، ولا المسكر؟", self.last_reply)
 
     def test_f_only_one_style_question_is_asked(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
-        self.assertEqual(self.last_reply.count("قولي ذوقك"), 1)
-        self.assertIn("الحاجات المسكره", self.last_reply)
+        self.assertEqual(self.last_reply.count("بتحب الفريش"), 1)
+        self.assertIn("المسكر", self.last_reply)
 
     def test_f_unknown_gift_taste_never_gets_a_guaranteed_product(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
@@ -8795,7 +8785,7 @@ class OrderEditNotCancelTests(TestCase):
         reply, handle_order = self._route("مش عايز Le Male")
 
         self.assertFalse(handle_order.called)
-        self.assertIn("إلغاء", reply)
+        self.assertIn("لغيت", reply)
 
     def test_a_blanket_cancellation_still_cancels_a_multi_item_cart(self):
         self._cart(self.le_male, self.noirvel)
@@ -8803,7 +8793,7 @@ class OrderEditNotCancelTests(TestCase):
         reply, handle_order = self._route("الغي الاوردر")
 
         self.assertFalse(handle_order.called)
-        self.assertIn("إلغاء", reply)
+        self.assertIn("لغيت", reply)
         self.assertFalse(
             CartItem.objects.filter(cart__conversation=self.conversation).exists()
         )
@@ -11039,13 +11029,11 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
         self.assertNotIn("الفرق 32", block)
 
     def test_the_persona_states_the_perfume_before_size_ordering(self):
-        """Conversation 762's fix, at the persona layer: the 💡 line decides which *size* to
-        lead with, never which *perfume* to pick."""
+        """Size-value facts must never decide which perfume fits the customer."""
         prompt = get_system_prompt(self.store)
 
         self.assertIn("العطر الأول، الحجم بعده", prompt)
         self.assertIn("مش سبب تختار عطر", prompt)
-        self.assertIn("مش أقل مناسبة", prompt)
 
     def test_the_persona_marker_budget_is_not_raised_to_fit_the_rule(self):
         """The ratchet's own instruction is to consolidate rather than raise the number, and
@@ -18803,10 +18791,7 @@ class Conv973SaidItTwiceTests(TestCase):
         pins them against sanitizing. A scripted line said twice is still byte-for-byte itself."""
         from products.services import router
 
-        goodbye = (
-            "نورتنا يا فندم! 😊 لو احتجت أي حاجة في المستقبل، إحنا هنا في خدمتك "
-            "24 ساعة. يوم سعيد!"
-        )
+        goodbye = "نورتنا يا فندم، يومك جميل."
         StaticFAQ.objects.create(
             store=self.store, question="الشحن بكام؟", keywords="شحن, توصيل",
             answer="الشحن 60 جنيه لكل محافظات مصر، والتوصيل من 2 لـ 4 أيام.",
@@ -19381,3 +19366,68 @@ class DescribesRatherThanNamesTests(TestCase):
 
         self.assertFalse(naming.describes_rather_than_names(""))
         self.assertFalse(naming.describes_rather_than_names(None))
+
+
+class RecommendationReplyScopeTests(TestCase):
+    """Fallbacks retain requested scope without reciting shared performance per pick."""
+
+    def setUp(self):
+        self.store = Store.objects.create(name="Reply scope")
+        brand = Brand.objects.create(store=self.store, name="House")
+        self.products = [
+            Product.objects.create(store=self.store, brand=brand, name=name,
+                                   scent_tags=["fresh"], occasion="Office")
+            for name in ("Cedar Day", "Green Walk", "Clean Air")
+        ]
+
+    def test_fallback_does_not_recap_unrequested_performance(self):
+        from products.services.ai.scent_recommendation import _fallback
+
+        selected, reply = _fallback(self.products, {})
+
+        self.assertEqual(selected, self.products[:2])
+        self.assertTrue(all(product.name in reply for product in selected))
+        self.assertIn("فريش", reply)
+        self.assertNotIn("ثبات", reply)
+        self.assertNotIn("فوحان", reply)
+
+    def test_fallback_states_requested_shared_performance_once(self):
+        from products.services.ai.scent_recommendation import _fallback
+        from products.services.performance_policy import performance_turn
+
+        with performance_turn("رشحلي عطر فريش وثباته كام ساعة؟"):
+            selected, reply = _fallback(self.products, {})
+
+        self.assertTrue(all(product.name in reply for product in selected))
+        self.assertEqual(reply.count("ثبات"), 1)
+        self.assertIn("أكتر من 8 ساعات", reply)
+        self.assertNotIn("فوحان", reply)
+
+    def test_fallback_keeps_explicit_recommendation_count(self):
+        from products.services.ai.scent_recommendation import _fallback
+
+        selected, reply = _fallback(self.products, {"recommendation_count": 3})
+
+        self.assertEqual(selected, self.products)
+        self.assertTrue(all(product.name in reply for product in self.products))
+
+    def test_new_goal_validation_honors_explicit_count(self):
+        from products.services.sales.recommendation_response import response_issues
+
+        reply = ". ".join(f"{product.name}: طابعه فريش" for product in self.products) + "."
+        issues = response_issues(reply, self.products,
+                                 {"recommendation_mode": "new_goal", "recommendation_count": 3})
+
+        self.assertEqual(issues, [])
+
+    def test_soft_brand_preference_keeps_all_requested_choices_and_disclosures(self):
+        from products.services.sales.brand_response import disclose_brands, response_issues
+
+        preferred = Brand.objects.create(store=self.store, name="Preferred")
+        intent = {"brand": preferred.name, "recommendation_count": 3}
+        reply = ". ".join(f"{product.name}: طابعه فريش" for product in self.products) + "."
+
+        self.assertEqual(response_issues(reply, self.products, intent, store=self.store), [])
+        disclosed = disclose_brands(reply, self.products, intent, self.store)
+        for product in self.products:
+            self.assertIn(f"{product.name} من House", disclosed)

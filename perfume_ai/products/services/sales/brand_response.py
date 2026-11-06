@@ -3,6 +3,7 @@ import re
 
 from . import naming
 from .brand_preference import matches_brand, preferred_brand_name
+from .recommendation_response import _choice_limit
 
 
 def is_soft_preference(intent):
@@ -30,7 +31,7 @@ def instruction(products, intent, store=None):
         "وضح براند كل بديل بتعرضه وإنه مختلف عن البراند المطلوب، واربط ترشيحك بصفة "
         "مدعومة في بياناته. اعرضه مباشرة من غير سؤال إذا كان يقبل براند تاني. "
         "ممكن تضيف اختيار من البراند اللي فضله لو مناسب، لكن متفرضوش كاختيار تاني. "
-        "إجمالي الاختيارات عطر أو عطرين فقط، شامل أي اختيار من البراند المفضل. "
+        f"اعرض لحد {_choice_limit(intent)} عطور حسب طلبه، شامل أي اختيار من البراند المفضل. "
         "الثبات والفوحان ممتازين لكل عطورنا ومش أساس للمفاضلة؛ قارن النوتات المسجلة "
         "بكلام طبيعي من غير نقل عناوين داخلية زي مش مطابق في أو Match. "
         "الطابع الخفيف للريحة لا يعني فوحان أهدى. "
@@ -46,8 +47,8 @@ def response_issues(reply, products, intent, search=None, store=None):
     if not ordered:
         return ["الرد لازم يقدم عطر مناسب من القائمة مباشرة"]
     issues = []
-    if len(ordered) > 2:
-        issues.append("اكتف بعطر أو عطرين إجمالاً، بما فيهم أي اختيار من البراند المفضل")
+    if len(ordered) > _choice_limit(intent):
+        issues.append(f"اكتف بعدد الترشيحات المطلوب: {_choice_limit(intent)}، شامل البراند المفضل")
     from ..static_faq_service import normalize_arabic
     text = normalize_arabic(reply)
     if re.search(r"مش مطابق في|ليه مناسب\s*:|\bmatch\s*:", text):
@@ -82,7 +83,7 @@ def disclose_brands(reply, products, intent, store=None):
 
     products = list(products)
     ordered = naming.names_in(reply, [p.name for p in products])
-    selected = [next(p for p in products if p.name == name) for name in ordered[:2]]
+    selected = [next(p for p in products if p.name == name) for name in ordered[:_choice_limit(intent)]]
     selected = [p for p in selected if not matches_brand(p, intent["brand"], store)]
     if not selected:
         return reply

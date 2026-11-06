@@ -5,7 +5,7 @@ import re
 from products.occasions import DAILY, normalize_occasion, normalize_text, occasion_groups
 
 
-CLARIFICATION = "هتستخدم العطر في أي مناسبة: يومي وكاجوال، شغل، خروجات وسهرات، ديت، مناسبة رسمية، ولا بحر وصيف وجيم؟"
+CLARIFICATION = "هتستخدمه يومي، للشغل، للخروجات والسهرات، للديت، لمناسبة رسمية، ولا للبحر والصيف والجيم؟"
 PENDING_KEY = "occasion_needs_clarification"
 _DELEGATE = re.compile(
     r"(?<!\w)(?:اختار(?:لي|يلي)?(?:\s+(?:انت|انتي|بنفسك))?|انت\s+اختار|انتي\s+اختاري|"
