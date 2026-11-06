@@ -33,12 +33,12 @@ class CompactQuoteRenderingTests(SimpleTestCase):
         self.assertEqual(text.count("Dior Sauvage"), 1)
         self.assertEqual(text.count("زجاجة الستور الخاصة بينا"), 1)
         self.assertEqual(text.split("، و"), [
-            "Dior Sauvage — زجاجة الستور الخاصة بينا 90 ملي بـ180.00 جنيه",
+            "Dior Sauvage\nزجاجة الستور الخاصة بينا 90 ملي بـ180.00 جنيه",
             "50 ملي بـ123.45 جنيه",
             "100 ملي بـ190.00 جنيه.",
         ])
 
-    def test_each_product_or_bottle_change_starts_a_new_group_without_reordering(self):
+    def test_interleaved_products_share_one_heading_and_keep_each_products_quote_order(self):
         quotes = [self.quote(50, "123.45"), self.quote(90, "180.00"),
                   self.quote(50, "299.99", bottle_type="original"),
                   self.quote(90, "499.00", bottle_type="original"),
@@ -46,20 +46,52 @@ class CompactQuoteRenderingTests(SimpleTestCase):
                   self.quote(90, "150.00", product_id=2, name="Afnan 9PM"),
                   self.quote(100, "190.00")]
 
-        lines = render_quotes(quotes).splitlines()
+        text = render_quotes(iter(quotes))
 
-        self.assertEqual(len(lines), 4)
-        self.assertTrue(lines[0].startswith("Dior Sauvage — زجاجة الستور الخاصة بينا"))
-        self.assertTrue(lines[1].startswith("Dior Sauvage — زجاجة اوريجنال"))
-        self.assertTrue(lines[2].startswith("Afnan 9PM — زجاجة الستور الخاصة بينا"))
-        self.assertTrue(lines[3].startswith("Dior Sauvage — زجاجة الستور الخاصة بينا"))
-        self.assertIn("50 ملي بـ299.99 جنيه، و90 ملي بـ499.00 جنيه", lines[1])
+        self.assertEqual(text, (
+            "Dior Sauvage\n"
+            "زجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه، و90 ملي بـ180.00 جنيه.\n"
+            "زجاجة اوريجنال 50 ملي بـ299.99 جنيه، و90 ملي بـ499.00 جنيه.\n"
+            "زجاجة الستور الخاصة بينا 100 ملي بـ190.00 جنيه.\n\n"
+            "Afnan 9PM\n"
+            "زجاجة الستور الخاصة بينا 50 ملي بـ100.00 جنيه، و90 ملي بـ150.00 جنيه."
+        ))
+        self.assertEqual(text.count("Dior Sauvage"), 1)
+        self.assertEqual(text.count("Afnan 9PM"), 1)
+
+    def test_interleaved_adjacent_bottle_quotes_join_inside_their_product_section(self):
+        quotes = [self.quote(90, "180.00"),
+                  self.quote(50, "100.00", product_id=2, name="Afnan 9PM"),
+                  self.quote(50, "123.45"), self.quote(100, "190.00")]
+
+        self.assertEqual(render_quotes(quotes), (
+            "Dior Sauvage\n"
+            "زجاجة الستور الخاصة بينا 90 ملي بـ180.00 جنيه، و50 ملي بـ123.45 جنيه، و100 ملي بـ190.00 جنيه.\n\n"
+            "Afnan 9PM\nزجاجة الستور الخاصة بينا 50 ملي بـ100.00 جنيه."
+        ))
+
+    def test_overlapping_names_keep_their_own_sections_and_all_bottle_types(self):
+        quotes = [self.quote(50, "123.45"),
+                  self.quote(90, "400.00", product_id=2, name="Dior Sauvage Elixir"),
+                  self.quote(90, "499.00", bottle_type="original"),
+                  self.quote(50, "700.00", product_id=2, name="Dior Sauvage Elixir",
+                             bottle_type="original")]
+
+        self.assertEqual(render_quotes(quotes).split("\n\n"), [
+            "Dior Sauvage\nزجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه.\n"
+            "زجاجة اوريجنال 90 ملي بـ499.00 جنيه.",
+            "Dior Sauvage Elixir\nزجاجة الستور الخاصة بينا 90 ملي بـ400.00 جنيه.\n"
+            "زجاجة اوريجنال 50 ملي بـ700.00 جنيه.",
+        ])
 
     def test_identical_names_do_not_merge_distinct_catalogue_products(self):
         quotes = [self.quote(50, "123.45"),
                   self.quote(90, "180.00", product_id=2)]
 
-        self.assertEqual(len(render_quotes(quotes).splitlines()), 2)
+        self.assertEqual(render_quotes(quotes).split("\n\n"), [
+            "Dior Sauvage\nزجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه.",
+            "Dior Sauvage\nزجاجة الستور الخاصة بينا 90 ملي بـ180.00 جنيه.",
+        ])
 
     def test_grouped_quantities_keep_exact_decimal_totals(self):
         text = render_quotes([self.quote(50, "123.4567", quantity=2),
@@ -96,8 +128,11 @@ class CompactQuoteRenderingTests(SimpleTestCase):
                   self.quote(50, "299.99", bottle_type="original"),
                   self.quote(50, "100.00", product_id=2, name="Afnan 9PM")]
 
-        lines = render_quotes(quotes, include_name=False).splitlines()
+        text = render_quotes(quotes, include_name=False)
+        sections = text.split("\n\n")
+        lines = [line for line in text.splitlines() if line]
 
+        self.assertEqual(len(sections), 2)
         self.assertEqual(len(lines), 3)
         self.assertEqual(lines[0], "زجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه، و90 ملي بـ180.00 جنيه.")
         self.assertEqual(lines[1], "زجاجة اوريجنال 50 ملي بـ299.99 جنيه.")
@@ -105,10 +140,10 @@ class CompactQuoteRenderingTests(SimpleTestCase):
         self.assertNotIn("Dior Sauvage", "\n".join(lines))
         self.assertNotIn("Afnan 9PM", "\n".join(lines))
 
-    def test_single_quote_output_remains_compatible(self):
+    def test_single_quote_keeps_quantity_and_warning_below_its_optional_heading(self):
         quote = self.quote(90, "105.00", quantity=2, bottle_type="original")
         for include_name, expected in (
-            (True, "Dior Sauvage — زجاجة اوريجنال 90 ملي × 2 بـ210.00 جنيه. أعلى حاجة بسيطة من ميزانيتك."),
+            (True, "Dior Sauvage\nزجاجة اوريجنال 90 ملي × 2 بـ210.00 جنيه. أعلى حاجة بسيطة من ميزانيتك."),
             (False, "زجاجة اوريجنال 90 ملي × 2 بـ210.00 جنيه. أعلى حاجة بسيطة من ميزانيتك."),
         ):
             with self.subTest(include_name=include_name):
@@ -130,6 +165,46 @@ class CompactQuoteEvidenceTests(TestCase):
         cls.medium = ProductVariant.objects.create(product=cls.product, volume=90, price=Decimal("180.00"))
         cls.large = ProductVariant.objects.create(product=cls.product, volume=100, price=Decimal("190.00"))
         cls.original = ProductVariant.objects.create(product=cls.product, volume=50, price=Decimal("299.99"), bottle_type="original", stock=2)
+        cls.elixir = Product.objects.create(store=store, brand=brand, name="Dior Sauvage Elixir", gender="male")
+        cls.elixir_small = ProductVariant.objects.create(product=cls.elixir, volume=50, price=Decimal("160.00"))
+        cls.elixir_original = ProductVariant.objects.create(product=cls.elixir, volume=90, price=Decimal("199.99"), bottle_type="original", stock=1)
+
+    def test_interleaved_sections_preserve_exact_evidence_through_sanitizing_and_reappend(self):
+        quotes = [ProductQuote.from_variant(self.small, quantity=2),
+                  ProductQuote.from_variant(self.elixir_small),
+                  ProductQuote.from_variant(self.original),
+                  ProductQuote.from_variant(self.large),
+                  ProductQuote.from_variant(self.elixir_original)]
+        context = quote_context("catalogue facts", quotes, append=True,
+                                max_price=Decimal("180.00"))
+        evidence = quote_evidence(context)
+        expected_block = (
+            "Dior Sauvage\n"
+            "زجاجة الستور الخاصة بينا 50 ملي × 2 بـ246.90 جنيه.\n"
+            "زجاجة اوريجنال 50 ملي بـ299.99 جنيه.\n"
+            "زجاجة الستور الخاصة بينا 100 ملي بـ190.00 جنيه. أعلى حاجة بسيطة من ميزانيتك.\n\n"
+            "Dior Sauvage Elixir\n"
+            "زجاجة الستور الخاصة بينا 50 ملي بـ160.00 جنيه.\n"
+            "زجاجة اوريجنال 90 ملي بـ199.99 جنيه. أعلى حاجة بسيطة من ميزانيتك."
+        )
+        self.assertEqual(evidence["text"], expected_block)
+        self.assertEqual([record["variant_id"] for record in evidence["quotes"]], [
+            self.small.pk, self.elixir_small.pk, self.original.pk,
+            self.large.pk, self.elixir_original.pk,
+        ])
+        self.assertEqual([(record["price"], record["quantity"]) for record in evidence["quotes"]], [
+            ("123.45", 2), ("160.00", 1), ("299.99", 1), ("190.00", 1), ("199.99", 1),
+        ])
+        conversation = Conversation.objects.create(
+            store=self.product.store, preferences={"max_price": "180.00"},
+        )
+        reply = append_quotation("", context)
+
+        cleaned = sanitize_reply(reply, conversation)
+
+        self.assertEqual(cleaned, expected_block)
+        self.assertEqual(append_quotation(cleaned, context), cleaned)
+        self.assertEqual(product_price_issues(cleaned, [self.product, self.elixir], evidence=evidence), [])
 
     def test_selection_order_and_evidence_survive_compact_append_and_validation(self):
         quotes = product_quotes([self.product], max_price=Decimal("180.00"))
@@ -179,13 +254,13 @@ class CompactQuoteEvidenceTests(TestCase):
         )
         for first, second, quantity, expected_block in (
             (self.small, self.large, 1,
-             "Dior Sauvage — زجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه، و100 ملي بـ190.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)."),
+             "Dior Sauvage\nزجاجة الستور الخاصة بينا 50 ملي بـ123.45 جنيه، و100 ملي بـ190.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)."),
             (self.large, self.small, 1,
-             "Dior Sauvage — زجاجة الستور الخاصة بينا 100 ملي بـ190.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)، و50 ملي بـ123.45 جنيه."),
+             "Dior Sauvage\nزجاجة الستور الخاصة بينا 100 ملي بـ190.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)، و50 ملي بـ123.45 جنيه."),
             (self.small, self.large, 2,
-             "Dior Sauvage — زجاجة الستور الخاصة بينا 50 ملي × 2 بـ246.90 جنيه، و100 ملي × 2 بـ380.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)."),
+             "Dior Sauvage\nزجاجة الستور الخاصة بينا 50 ملي × 2 بـ246.90 جنيه، و100 ملي × 2 بـ380.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)."),
             (self.large, self.small, 2,
-             "Dior Sauvage — زجاجة الستور الخاصة بينا 100 ملي × 2 بـ380.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)، و50 ملي × 2 بـ246.90 جنيه."),
+             "Dior Sauvage\nزجاجة الستور الخاصة بينا 100 ملي × 2 بـ380.00 جنيه (أعلى حاجة بسيطة من ميزانيتك)، و50 ملي × 2 بـ246.90 جنيه."),
         ):
             with self.subTest(first=first.volume, quantity=quantity):
                 quotes = [ProductQuote.from_variant(first, quantity=quantity),

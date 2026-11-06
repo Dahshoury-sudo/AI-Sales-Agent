@@ -1214,14 +1214,15 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # falsehood is caught wherever it comes from, which `reply_sanitizer.strip_false_over_budget`
     # now does deterministically. That guard is why this can land at all.
     from .comparison_service import requested_dimensions, requested_facts
+    from .price_reply import supported_facts_question, compose_price_reply
     dimensions = requested_dimensions(message, history)
-    if products and not deferring and dimensions and (
+    budget = sales_value.stated_budget(conversation)
+    if products and not deferring and dimensions and supported_facts_question(message, products) and (
         (len(products) > 1 and (products_from_message or naming.refers_to_several(message)))
         or "sweetness" in dimensions
         or (len(products) == 1 and not named_but_unresolved and performance_only_question(message, history))
     ):
-        return requested_facts(message, products, history)
-    budget = sales_value.stated_budget(conversation)
+        return requested_facts(message, products, history, max_price=budget)
 
     # Are the rows in context something other than what the customer asked about? Two ways that
     # happens, and both must read the same to everything below, which is why it is one flag.
@@ -1424,7 +1425,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 
     if quoting:
         instructions += QUOTE_PROSE_INSTRUCTION
-        context = quote_context(context, quotes, append=True, max_price=budget)
+        context = quote_context(context, quotes, append=True, max_price=budget, request=message)
 
     messages = [
         {
@@ -1447,4 +1448,4 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     })
 
     response = chat(messages, profile="converse")
-    return append_quotation(response, context), context
+    return compose_price_reply(response, context) if quoting else (append_quotation(response, context), context)

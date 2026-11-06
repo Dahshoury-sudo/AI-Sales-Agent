@@ -104,7 +104,9 @@ QUOTE_PROSE_INSTRUCTION = (
     "\nاكتب بس الكلام اللازم للإجابة على السؤال من البيانات؛ في العادي جملة أو جملتين قصيرين، "
     "ولو طلب تفاصيل، جاوبه على قد طلبه. "
     "لو السؤال عن السعر أو الأحجام بس، متضيفش وصف للعطر أو سؤال متابعة. لا تكتب أسعار منتجات أو أحجام؛ "
-    "الأسعار والأحجام هتتضاف تلقائياً بعد ردك. لا تنقل أي سعر من المحادثة.\n"
+    "الأسعار والأحجام هتتضاف تلقائياً بعد ردك. لا تنقل أي سعر من المحادثة. "
+    "من غير مقدمة توافر أو إعادة اسم العطر؛ لو طلب تفاصيل، ابدأ تفاصيل كل عطر باسمه مرة واحدة "
+    "كعنوان مستقل، وبعده التفاصيل المطلوبة بدون تكرار الاسم.\n"
 )
 
 
@@ -161,32 +163,39 @@ def product_quotes(products, message="", max_price=None, *, filter_budget=True):
 
 
 def render_quotes(quotes, max_price=None, *, include_name=True):
-    """Share labels across adjacent variants without changing quotation order."""
-    lines = []
-    for _, adjacent in groupby(quotes, key=lambda q: (q.product_id, q.name, q.bottle_type)):
-        group = list(adjacent)
-        first = group[0]
-        prefix = f"{first.name} — " if include_name else ""
-        parts = []
-        for quote in group:
-            quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
-            part = f"{quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه"
-            if max_price is not None and budget_tier(quote.price, max_price) == "near":
-                # Keep the warning beside its own size, including within a group.
-                part += (". أعلى حاجة بسيطة من ميزانيتك" if len(group) == 1
-                         else " (أعلى حاجة بسيطة من ميزانيتك)")
-            parts.append(part)
-        line = f"{prefix}{bottle_label(first.bottle_type)} " + "، و".join(parts) + "."
-        lines.append(line)
-    return "\n".join(lines)
+    """Name each product once, preserving its quote order and adjacent bottle labels."""
+    products = {}
+    for quote in quotes:
+        products.setdefault((quote.product_id, quote.name), []).append(quote)
+    sections = []
+    for (_, name), product_quotes in products.items():
+        lines = [name] if include_name else []
+        for bottle_type, adjacent in groupby(product_quotes, key=lambda q: q.bottle_type):
+            group = list(adjacent)
+            parts = []
+            for quote in group:
+                quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
+                part = f"{quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه"
+                if max_price is not None and budget_tier(quote.price, max_price) == "near":
+                    # Keep the warning beside its own size, including within a group.
+                    part += (". أعلى حاجة بسيطة من ميزانيتك" if len(group) == 1
+                             else " (أعلى حاجة بسيطة من ميزانيتك)")
+                parts.append(part)
+            lines.append(f"{bottle_label(bottle_type)} " + "، و".join(parts) + ".")
+        sections.append("\n".join(lines))
+    return "\n\n".join(sections)
 
 
-def quote_context(context, quotes, *, append=False, max_price=None, rendered=None):
+def quote_context(context, quotes, *, append=False, max_price=None, rendered=None, request=None, footer=None):
     if not quotes:
         return context
     payload = {"quotes": [q.evidence() for q in quotes], "append": append,
                "text": rendered if rendered is not None else render_quotes(quotes, max_price),
                "budget": str(max_price) if max_price is not None else None}
+    if request is not None:
+        payload["request"] = request
+    if footer:
+        payload["footer"] = footer
     return context + "\n" + QUOTE_MARKER + json.dumps(payload, ensure_ascii=False)
 
 
@@ -204,6 +213,10 @@ def quote_evidence(context):
 
 def append_quotation(reply, context):
     evidence = quote_evidence(context)
+    if evidence.get("sections"):
+        from .price_reply import quotation_prose
+        if quotation_prose(reply, evidence) != reply:
+            return reply
     block = evidence.get("text", "")
     if evidence.get("append") and block and block not in reply:
         return (reply.strip() + "\n\n" + block).strip()
@@ -246,8 +259,8 @@ def product_price_issues(reply, products, *, evidence=None, monetary_sources=(),
     """Bind every price to its local product, size and bottle, never a global number set."""
     evidence = evidence or {}
     # This exact block was rendered by code. Only the surrounding prose needs parsing.
-    block = evidence.get("text", "")
-    prose = reply.replace(block, "") if block else reply
+    from .price_reply import quotation_prose
+    prose = quotation_prose(reply, evidence)
     text = naming.normalize_product_name(prose).replace("ـ", "")
     names = [p.name for p in (catalogue if catalogue is not None else products)]
     by_name = {p.name: p for p in products}

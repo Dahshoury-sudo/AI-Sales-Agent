@@ -1,0 +1,79 @@
+{
+  "budget_usd": "0.20",
+  "accounted_usd": "0.00024469",
+  "reserved_usd": "0E-9",
+  "calls": [
+    {
+      "scenario": "NAME_PRICE",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "none",
+      "max_completion_tokens": 2048,
+      "reserved_usd": "0.003825375",
+      "status": "complete",
+      "prompt_tokens": 4692,
+      "cached_tokens": 4689,
+      "completion_tokens": 12,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0,
+      "cost_usd": "0.00005319",
+      "seconds": 3.095,
+      "finish_reason": "stop",
+      "response_model": "gpt-6-luna"
+    },
+    {
+      "scenario": "NAME_PRICE",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "max_completion_tokens": 25000,
+      "reserved_usd": "0.0150065",
+      "status": "complete",
+      "prompt_tokens": 5157,
+      "cached_tokens": 5154,
+      "completion_tokens": 46,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 21,
+      "cost_usd": "0.00007484",
+      "seconds": 1.513,
+      "finish_reason": "stop",
+      "response_model": "gpt-6-luna"
+    },
+    {
+      "scenario": "NAME_PRICE",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "none",
+      "max_completion_tokens": 2048,
+      "reserved_usd": "0.007455875",
+      "status": "complete",
+      "prompt_tokens": 10089,
+      "cached_tokens": 10086,
+      "completion_tokens": 31,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0,
+      "cost_usd": "0.00011666",
+      "seconds": 1.864,
+      "finish_reason": "stop",
+      "response_model": "gpt-6-luna"
+    }
+  ],
+  "pricing_per_million": {
+    "gpt-4.1-mini": [
+      "0.40",
+      "0.10",
+      "1.60"
+    ],
+    "gpt-5-mini": [
+      "0.25",
+      "0.025",
+      "2.00"
+    ],
+    "gpt-6-luna": [
+      "0.10",
+      "0.01",
+      "0.50"
+    ]
+  },
+  "cache_write_multiplier": {
+    "gpt-6-luna": "1.25"
+  },
+  "note": "Standard processing; cached reads and 30-minute cache writes priced separately. Reasoning is already included in completion tokens. Uncertain requests retain their entire reservation. Taxes/credits excluded."
+}

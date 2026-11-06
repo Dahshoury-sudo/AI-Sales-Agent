@@ -87,6 +87,26 @@ def _fallback(candidates, intent):
     return selected, recommendation_fit(selected, intent)
 
 
+def _compose_selection(reply, selected, intent, message, store):
+    """Keep the same selection evidence while checking the final price layout."""
+    reply = brand_response.disclose_brands(reply, selected, intent, store)
+    context = format_products(selected, show_prices=False, show_value_pick=False)
+    context += described.moved_past_block(intent, store)
+    budget = as_budget(intent.get("max_price"))
+    if budget is not None or intent.get("requested_volume") or intent.get("bottle_type"):
+        quotes = _quotes(selected, intent, message)
+        rendered = render_quotes(quotes, budget)
+        footer = None
+        if intent.get("budget_scope") == "total":
+            footer = f"إجمالي الـ{len(quotes)} زجاجات: {sum(q.price for q in quotes):f} جنيه."
+            rendered += "\n" + footer
+        context = quote_context(context, quotes, append=True, max_price=budget, rendered=rendered,
+                                request=message, footer=footer)
+        from ..price_reply import compose_price_reply
+        return compose_price_reply(reply, context)
+    return reply, context
+
+
 @governed_reply
 def recommend_from_labels(message, products, history=None, alternatives=None, store=None, intent=None,
                           search=None, gender_unknown=False, repeat_hint="", *, chat):
@@ -178,6 +198,11 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
             if issues or repeats:
                 raise ValueError("; ".join(issues) if issues else repetition.retry_hint(repeats))
             _quotes(proposed, intent, message)
+            composed, composed_context = _compose_selection(draft, proposed, intent, message, store)
+            from ..price_reply import composition_issues
+            layout_issues = composition_issues(composed, composed_context)
+            if layout_issues:
+                raise ValueError("; ".join(layout_issues))
             selected, reply = proposed, draft.strip()
             break
         except (ValueError, TypeError, KeyError, AttributeError) as exc:
@@ -193,14 +218,4 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         quotes = _quotes(selected, intent, message)
     except ValueError:
         return no_match_reply(search)
-    reply = brand_response.disclose_brands(reply, selected, intent, store)
-    # Only actual selections become row evidence for references and offer history.
-    context = format_products(selected, show_prices=False, show_value_pick=False)
-    context += described.moved_past_block(intent, store)
-    budget = as_budget(intent.get("max_price"))
-    if budget is not None or intent.get("requested_volume") or intent.get("bottle_type"):
-        rendered = render_quotes(quotes, budget)
-        if intent.get("budget_scope") == "total":
-            rendered += f"\nإجمالي الـ{len(quotes)} زجاجات: {sum(q.price for q in quotes):f} جنيه."
-        context = quote_context(context, quotes, append=True, max_price=budget, rendered=rendered)
-    return append_quotation(reply, context), context
+    return _compose_selection(reply, selected, intent, message, store)

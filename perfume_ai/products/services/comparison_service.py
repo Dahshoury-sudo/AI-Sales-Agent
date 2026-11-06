@@ -9,6 +9,7 @@ from .product_formatting import format_products, product_quotes, render_quotes, 
 from .product_info import get_product_info
 from .product_resolver import resolve_products
 from . import performance_policy
+from .price_reply import supported_facts_question, compose_price_reply
 
 
 def requested_dimensions(message, history=None):
@@ -32,7 +33,7 @@ def requested_dimensions(message, history=None):
 
 
 @performance_policy.governed_reply
-def requested_facts(message, products, history=None):
+def requested_facts(message, products, history=None, *, max_price=None):
     from .sales.value import price_per_ml
     dims = requested_dimensions(message, history)
     if dims and dims <= {"longevity", "projection"}:
@@ -45,7 +46,7 @@ def requested_facts(message, products, history=None):
     for product in products:
         facts = []
         if dims & {"price", "value"}:
-            current_quotes = product_quotes([product], message)
+            current_quotes = product_quotes([product], message, max_price, filter_budget=False)
             quotes.extend(current_quotes)
             by_id = {v.pk: v for v in product.variants.all()}
             variants = [by_id[q.variant_id] for q in current_quotes]
@@ -54,7 +55,7 @@ def requested_facts(message, products, history=None):
             for v in variants:
                 bottle = bottle_label(v.bottle_type)
                 quote = next(q for q in current_quotes if q.variant_id == v.pk)
-                facts.append(render_quotes([quote], include_name=False))
+                facts.append(render_quotes([quote], max_price, include_name=False))
                 if "value" in dims and v.volume > 0:
                     unit = price_per_ml(v).quantize(Decimal(".01"))
                     facts.append(f"سعر المل: {unit} جنيه")
@@ -65,12 +66,13 @@ def requested_facts(message, products, history=None):
         lines.append(f"{product.name}:\n" + "\n".join(facts) if facts else product.name)
     if "value" in dims and len(values) >= 2:
         best = min(values)
-        lines.append(f"الأوفر في سعر المل بين الأحجام دي: {best[1]} ({best[2]} مل، {best[3]}).")
+        position = next(index for index, product in enumerate(products, 1) if product.name == best[1])
+        lines.append(f"الأوفر في سعر المل بين الأحجام دي: الخيار رقم {position} ({best[2]} مل، {best[3]}).")
     if "sweetness" in dims:
         lines.append("ماقدرش أجزم أنهي أقل حلاوة؛ وجود نوتة زي الفانيليا لوحده مش كفاية عشان نقارن درجة الحلاوة بدقة.")
     reply = "\n\n".join(lines)
     context = format_products(products, show_prices=bool(dims & {"price", "value"}), show_value_pick=False)
-    return reply, quote_context(context, quotes, rendered=reply)
+    return reply, quote_context(context, quotes, max_price=max_price, rendered=reply)
 
 
 @performance_policy.governed_reply
@@ -126,10 +128,17 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     if len(matches) < 2:
         return get_product_info(message, history, store, conversation, retry_hint=retry_hint)
 
-    if requested_dimensions(message, history):
-        return requested_facts(message, matches, history)
+    from .sales.value import stated_budget
+    budget = stated_budget(conversation)
+    if requested_dimensions(message, history) and supported_facts_question(message, matches):
+        return requested_facts(message, matches, history, max_price=budget)
 
     context = format_products(matches, show_prices=False)
+    from .product_formatting import price_question, QUOTE_PROSE_INSTRUCTION
+    quoting = price_question(message, history, conversation)
+    if quoting:
+        context = quote_context(context, product_quotes(matches, message, budget, filter_budget=False),
+                                append=True, max_price=budget, request=message)
 
     messages = [
         {
@@ -161,5 +170,7 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 {retry_hint}"""
     })
 
+    if quoting:
+        messages[-1]["content"] += QUOTE_PROSE_INSTRUCTION
     response = chat(messages, profile="converse")
-    return response, context
+    return compose_price_reply(response, context) if quoting else (response, context)

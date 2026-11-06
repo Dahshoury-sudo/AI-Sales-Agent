@@ -146,6 +146,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     from .product_formatting import (product_claim_facts, factual_description,
         product_price_issues, quote_evidence, append_quotation, product_quotes, render_quotes, quote_context)
     from .reply_sanitizer import product_claim_issues
+    from .price_reply import composition_issues, quotation_prose, fallback_price_reply
     from products.models import Product
     catalogue = list(Product.objects.filter(store=store).select_related("brand").prefetch_related("variants")) if store else []
     evidence = quote_evidence(context)
@@ -169,8 +170,10 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         sources.append("ميزانية " + evidence["budget"] + " جنيه")
     if evidence and not evidence.get("append"):
         sources.append(context)
-    issues = product_claim_issues(reply, facts, context=context) + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
-    prose = reply.replace(evidence.get("text") or "\0", "")
+    issues = (product_claim_issues(reply, facts, context=context)
+              + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
+              + composition_issues(reply, context))
+    prose = quotation_prose(reply, evidence)
     repeats = repetition.repeated_sentences(prose, history, store=store)
     # Plus the frames, which are a different question about the same draft: that one asks whether a
     # sentence has been SAID before, this asks whether a sentence has been STARTED the same way
@@ -195,7 +198,20 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
         retried, retried_context = "", context
     remaining = product_claim_issues(retried, facts, context=retried_context) + product_price_issues(
         retried, rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
+    remaining += composition_issues(retried, retried_context)
     if remaining or (issues and not (retried or "").strip()):
+        if evidence.get("sections"):
+            quoted_ids = {q.get("product_id") for q in evidence.get("quotes", [])}
+            selected = [p for p in offer_rows if p.pk in quoted_ids]
+            fallback, fallback_context = fallback_price_reply(context, selected, recommendation_intent)
+            fallback_issues = (
+                product_claim_issues(fallback, product_claim_facts(selected), context=fallback_context)
+                + product_price_issues(fallback, selected, evidence=quote_evidence(fallback_context),
+                                       monetary_sources=sources, catalogue=catalogue)
+                + composition_issues(fallback, fallback_context)
+            )
+            if not fallback_issues:
+                return fallback, fallback_context, repeats
         if any(i.startswith("price:") for i in remaining or issues):
             ids = {q.get("product_id") for q in evidence.get("quotes", [])}
             mentioned = sales_naming.names_in(reply, [p.name for p in offer_rows])

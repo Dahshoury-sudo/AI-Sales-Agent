@@ -361,5 +361,8 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     messages[-1]["content"] += QUOTE_PROSE_INSTRUCTION
     response = chat(messages, profile="converse")
     if objection.kind in ("price", "price_gap", "expensive", "budget"):
-        context = quote_context(context, product_quotes(products[:2], message, budget), append=True, max_price=budget)
+        context = quote_context(context, product_quotes(products[:2], message, budget), append=True, max_price=budget,
+                                request=message)
+        from .price_reply import compose_price_reply
+        return compose_price_reply(response, context)
     return append_quotation(response, context), context

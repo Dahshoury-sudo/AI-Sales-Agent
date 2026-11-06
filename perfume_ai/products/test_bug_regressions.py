@@ -454,7 +454,8 @@ class Conversation1163RecommendationTests(BugFixture):
         retry = Mock()
         final, _, _ = _rephrased(reply, context, [], self.store, retry,
                                  recommendation_intent=self.intent)
-        self.assertIn(draft, final)
+        self.assertEqual(final.count("Vanilo"), 1)
+        self.assertIn("مناسب لطلبك عشان شتوي وفوحانه ممتاز.", final)
         self.assertEqual(final.count("مناسب لطلبك"), 1)
         retry.assert_not_called()
 
@@ -1111,14 +1112,15 @@ class AgentEvaluationFixTests(BugFixture):
             product.scent_tags = ["woody"]
             product.save(update_fields=["scent_tags"])
         intent = {"requested_volume": 90, "max_price": 1000, "scent_tags": ["woody"]}
-        answers = [json.dumps({"product_ids": [self.a.pk, self.b.pk], "reply": "Vanilo وLeatherio طابعهم خشبي."}),
+        answers = [json.dumps({"product_ids": [self.a.pk, self.b.pk], "reply": "Vanilo طابعه خشبي. Leatherio طابعه خشبي."}),
                    json.dumps({"product_ids": [self.a.pk], "reply": "أرشحلك Vanilo بطابعه الخشبي."})]
         with patch("products.services.ai.recommendation.chat", side_effect=answers) as chat:
             first, _ = recommend("رشحلي", [self.a, self.b], intent=intent, store=self.store)
             best, _ = recommend("طب ايه احسن حاجة", [self.a, self.b], intent={**intent, "recommendation_count": 1}, store=self.store)
         self.assertEqual(chat.call_count, 2)
         self.assertNotEqual(first, best)
-        self.assertIn("أرشحلك Vanilo", best)
+        self.assertEqual(best.count("Vanilo"), 1)
+        self.assertIn("بطابعه الخشبي", best)
         self.assertNotIn("Leatherio", best)
 
     def test_factual_guard_retries_once_then_uses_recorded_facts(self):
