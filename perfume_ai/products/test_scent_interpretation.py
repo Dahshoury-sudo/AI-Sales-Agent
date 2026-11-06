@@ -55,6 +55,11 @@ class ScentExtractionTests(SimpleTestCase):
         })
         self.assert_scents(result, {"smoky", "citrus"})
 
+    def test_sugary_preferences_mean_sweet_without_model_labels(self):
+        for message in ("شوجري", "عايز برفان شوجري", "sugary", "I want a sugary perfume"):
+            with self.subTest(message=message):
+                self.assert_scents(self.extract(message), {"sweet"})
+
     def test_negation_survives_correct_model_extraction(self):
         result = self.extract("فريش ومش مسكر", {
             "scent_tags": ["fresh"], "excluded_scent_tags": ["sweet"],
@@ -67,6 +72,8 @@ class ScentExtractionTests(SimpleTestCase):
             ("مش بحب العود", set(), {"oud"}),
             ("مش بحب الحاجات المسكرة", set(), {"sweet"}),
             ("مش عايز حاجات مسكره", set(), {"sweet"}),
+            ("مش عايز شوجري", set(), {"sweet"}),
+            ("no sugary", set(), {"sweet"}),
             ("مش عايز عود ولا سويت", set(), {"oud", "sweet"}),
             ("مش بحب العود بس عايز فريش", {"fresh"}, {"oud"}),
             ("فريش ومش مسكر", {"fresh"}, {"sweet"}),
@@ -390,6 +397,44 @@ class ScentPreferenceFlowTests(TestCase):
 
     def ids(self, intent):
         return set(search_products(intent, self.store)["products"].values_list("pk", flat=True))
+
+    def test_sugary_request_reaches_gender_then_sweet_recommendations(self):
+        from products.services.router import route
+
+        self.product("Shohra Grey", ["woody", "spicy", "oud"])
+        self.product("Lost Cherry", ["fruity"])
+        sweet = self.product("Dessert Choice", ["sweet"])
+        self.conversation.preferences = {}
+        self.conversation.save(update_fields=["preferences"])
+        message = "عايز برفان شوجري"
+        with patch("products.services.ai.classifier.chat", return_value='{"intent":"recommendation"}'), \
+             patch("products.services.ai.intent.chat", return_value="{}"), \
+             patch("products.services.router.get_product_info", side_effect=AssertionError("Scent request entered product lookup")), \
+             patch("products.services.ai.recommendation.chat", return_value=json.dumps({
+                 "product_ids": [sweet.pk], "reply": "Dessert Choice ريحته مسكرة.",
+             })):
+            reply, context = route(message, [], self.store, self.conversation)
+            self.assertEqual(context, "GENDER_REQUIRED")
+            self.conversation.refresh_from_db()
+            self.assertEqual(self.conversation.preferences["scent_tags"], ["sweet"])
+            history = [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
+            reply, context = route("رجالي", history, self.store, self.conversation)
+
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.preferences["gender"], "male")
+        self.assertEqual(self.ids(self.conversation.preferences), {sweet.pk})
+        self.assertIn("Dessert Choice", reply)
+        self.assertNotIn("Shohra Grey", reply + context)
+
+    def test_named_shohra_grey_question_still_loads_the_product(self):
+        from products.services.router import route
+
+        self.product("Shohra Grey", ["woody", "spicy", "oud"])
+        with patch("products.services.ai.classifier.chat", return_value='{"intent":"product_info"}'), \
+             patch("products.services.product_info.chat", return_value="Shohra Grey متوفر عندنا."):
+            reply, context = route("عندك Shohra Grey؟", [], self.store, self.conversation)
+        self.assertIn("Name (الاسم الصحيح): Shohra Grey", context)
+        self.assertIn("Shohra Grey", reply)
 
     def test_negated_sweetness_survives_saving_and_filters_real_candidates(self):
         dry = self.product("Dry Breeze", ["fresh"])

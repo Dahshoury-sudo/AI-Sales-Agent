@@ -503,6 +503,8 @@ def may_name_a_perfume(text):
 # ordinary words. The caller pads the message with spaces first.
 _DESCRIBING = (
     "ريحته", "ريحتها", "ريحه",
+    # A sugary preference must not become a phonetic match for Shohra Grey.
+    "شوجري", "sugary",
     # Every inflection, because this dialect suffixes freely and a form nobody listed is a browse
     # request answered with one bottle's price. "نوتاته" is already in `_REFERENTIAL`; the possessive
     # singulars were the gap, and "عايز عطر نوتته خمره" is the shape that found it.

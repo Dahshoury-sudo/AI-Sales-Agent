@@ -11,7 +11,7 @@ from ..static_faq_service import normalize_arabic
 SCENT_KEYS = ("scent_tags", "excluded_scent_tags", "scent_match", "scent_open")
 TAG_ALIASES = {
     "fresh": ("fresh", "فريش", "منعش", "منعشه"),
-    "sweet": ("sweet", "gourmand", "سويت", "مسكر", "مسكره"),
+    "sweet": ("sweet", "sugary", "gourmand", "سويت", "شوجري", "مسكر", "مسكره"),
     "oud": ("oud", "عود", "عودي"),
     "woody": ("woody", "خشبي", "خشبيه"),
     "citrus": ("citrus", "citrusy", "حمضي", "حمضيه", "حمضيات"),
