@@ -217,7 +217,8 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
     lines = []
     from . import performance_policy
     from .scent_description import (describe_scent, scent_requested, scent_excluded, selected_occasion,
-                                    occasion_preference, request_texts, _notes_authorized)
+                                    occasion_preference, occasion_requested, requested_occasions,
+                                    request_texts, _notes_authorized)
     from .product_formatting import is_variant_available
     from products.occasions import OCCASION_DESCRIPTIONS
     product_names = [p.name for p in products]
@@ -252,8 +253,11 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
             facts.append("تركيزه " + product.perfume_type if product.perfume_type else "تركيزه مش مسجل عندي")
         if re.search(r"تقييم|reviews?|ratings?", text, re.I):
             facts.append("مش عندي تقييمات عملاء مسجلة")
-        if not wants_scent and re.search(r"مناسب|مناسبه|occasion", text, re.I):
-            occasion = selected_occasion(product.occasion, preferred)
+        if occasion_requested(text):
+            requested = requested_occasions(text)
+            occasion = selected_occasion(product.occasion, "; ".join(requested) or preferred_occasion)
+            if requested and occasion not in requested:
+                occasion = ""
             facts.append("مناسب " + OCCASION_DESCRIPTIONS[occasion] if occasion else "مناسبته محتاجة تأكيد")
         if re.search(r"موسم|صيف|شتا|season", text, re.I) and product.season:
             facts.append("موسمه " + product.season)

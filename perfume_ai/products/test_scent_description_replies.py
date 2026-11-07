@@ -6,10 +6,10 @@ from unittest.mock import Mock, patch
 from django.test import TestCase
 
 from products.models import Brand, Product, ProductVariant, Store
-from products.occasions import DAILY, WORK
+from products.occasions import ACTIVE, DAILY, WORK
 from products.services.ai.recommendation import recommend, recommendation_fit
 from products.services.ai.scent_recommendation import _record
-from products.services.price_reply import fallback_price_reply
+from products.services.price_reply import fallback_price_reply, requested_product_details
 from products.services.performance_policy import performance_turn
 from products.services.product_formatting import format_products, product_claim_facts
 from products.services.product_info import get_product_info
@@ -32,11 +32,10 @@ class ScentDescriptionReplyTests(TestCase):
         ProductVariant.objects.create(product=cls.product, volume=50, price="400.00")
 
     def assert_simple(self, reply):
-        for word in ("فريش", "حمضيات", "توابل", "اليومي"):
+        for word in ("فريش", "حمضيات", "توابل"):
             self.assertIn(word, reply)
-        for word in ("خشبي", "فانيليا", "Vanilla", "Amber", "عبير", "ثبات", "فوحان"):
+        for word in ("خشبي", "فانيليا", "Vanilla", "Amber", "عبير", "ثبات", "فوحان", "مناسب", "اليومي", "للشغل"):
             self.assertNotIn(word, reply)
-        self.assertLess(reply.index("توابل"), reply.index("اليومي"))
 
     def test_full_and_brief_context_use_model_tags_not_marketing_description(self):
         for brief in (False, True):
@@ -53,12 +52,11 @@ class ScentDescriptionReplyTests(TestCase):
         self.assertEqual(record["description_tags"], self.product.scent_tags[:3])
         self.assert_simple(record["scent_description"])
 
-    def test_recommendation_fallback_uses_first_three_and_preferred_occasion(self):
+    def test_recommendation_fallback_uses_first_three_without_preferred_occasion(self):
         self.assert_simple(recommendation_fit([self.product], {}))
         self.product.occasion = "Daily & Casual; Work & Office"
         reply = recommendation_fit([self.product], {"occasion": WORK})
-        self.assertIn("للشغل", reply)
-        self.assertNotIn("اليومي", reply)
+        self.assert_simple(reply)
 
     def test_recommendation_rejects_incomplete_description_then_uses_grounded_fallback(self):
         intent = {"scent_tags": ["fresh"]}
@@ -71,7 +69,7 @@ class ScentDescriptionReplyTests(TestCase):
         self.assert_simple(reply)
 
     def test_valid_description_needs_no_retry(self):
-        reply = "Test Breeze فريش ومنعش وفيه ريحة حمضيات وتوابل ومناسب للاستخدام اليومي."
+        reply = "Test Breeze فريش ومنعش وفيه ريحة حمضيات وتوابل."
         retry = Mock()
         actual, _, _ = _rephrased(reply, format_products([self.product]), [], self.store, retry,
                                   message="Test Breeze ريحته عاملة إيه؟")
@@ -133,18 +131,18 @@ class ScentDescriptionReplyTests(TestCase):
         reply = "Test Breeze فريش وحمضي ومتبل ومناسب للشغل والمكتب."
         retry = Mock()
         result, _, _ = _rephrased(reply, format_products([self.product]), [], self.store, retry,
-                                  message="Test Breeze ريحته إيه للشغل؟", preferred_occasion=DAILY)
+                                  message="Test Breeze ريحته إيه وهل مناسب للشغل؟", preferred_occasion=DAILY)
         retry.assert_not_called()
         self.assertEqual(result, reply)
 
-    def test_current_occasion_reaches_the_product_prompt(self):
+    def test_current_occasion_does_not_enter_the_prompt_scent_description(self):
         self.product.occasion = "Daily & Casual; Work & Office"
         with patch("products.services.product_info._named_in_message", return_value=[self.product]), \
              patch("products.services.product_info.chat", return_value="وصف مختصر"):
             _, context = get_product_info("Test Breeze ريحته إيه للشغل؟", [], self.store)
         description = context.split("Simple Scent Description:", 1)[1].splitlines()[0]
-        self.assertIn("للشغل", description)
-        self.assertNotIn("اليومي", description)
+        self.assert_simple(description)
+        self.assertIn("Occasion: Daily & Casual; Work & Office", context)
 
     def test_price_fallback_does_not_take_occasion_from_product_name(self):
         self.product.name = "Night Breeze"
@@ -172,9 +170,104 @@ class ScentDescriptionReplyTests(TestCase):
                                  message="قارن ريحة Test Breeze وSecond Choice")
         first, second = reply.split("Second Choice")
         self.assert_simple(first)
-        for word in ("مسكر", "عودي", "تقيل", "للشغل"):
+        for word in ("مسكر", "عودي", "تقيل"):
             self.assertIn(word, second)
         self.assertNotIn("حمضيات", second)
+        self.assertNotIn("للشغل", second)
+
+    def test_unsolicited_occasion_is_removed_after_retry_or_provider_failure(self):
+        context = format_products([self.product])
+        bad = "Test Breeze فريش ومنعش وفيه ريحة حمضيات وتوابل ومناسب للاستخدام اليومي."
+        for retry in (Mock(return_value=(bad, context)), Mock(side_effect=RuntimeError("provider unavailable"))):
+            with self.subTest(retry=retry):
+                reply, _, _ = _rephrased(bad, context, [], self.store, retry,
+                                         message="Test Breeze ريحته ايه؟")
+                self.assert_simple(reply)
+                retry.assert_called_once()
+
+    def test_explicit_occasion_details_are_independent_of_scent_details(self):
+        self.product.occasion = "Daily & Casual; Work & Office"
+        for question, wants_scent in (
+            ("Test Breeze ينفع للشغل؟", False),
+            ("Test Breeze مناسب لايه؟", False),
+            ("ايه المناسبات المناسبة ليه؟", False),
+            ("قولي المناسبات اللي ينفع ليها Test Breeze", False),
+            ("Test Breeze المناسبات ايه؟", False),
+            ("Is Test Breeze suitable for work?", False),
+            ("Would Test Breeze be suitable for work?", False),
+            ("ممكن ألبس Test Breeze للشغل؟", False),
+            ("Test Breeze ريحته ايه وينفع للشغل؟", True),
+            ("Describe Test Breeze and tell me if it is good for work", True),
+            ("Describe Test Breeze and its occasions", True),
+        ):
+            with self.subTest(question=question):
+                reply = "\n".join(requested_product_details([self.product], question))
+                self.assertIn("مناسب", reply)
+                self.assertIn("للشغل" if "work" in question or "للشغل" in question else "اليومي", reply)
+                self.assertEqual("حمضيات" in reply, wants_scent)
+
+    def test_recommendation_constraints_do_not_add_occasion_details(self):
+        self.product.occasion = "Daily & Casual; Work & Office"
+        for message in (
+            "رشحلي عطر مناسب للشغل", "Recommend a perfume suitable for work",
+            "What perfume is suitable for work?", "ايه العطر المناسب للشغل؟", "قولي عطر مناسب للشغل",
+        ):
+            with self.subTest(message=message):
+                reply = recommendation_fit([self.product], {"occasion": WORK}, message=message)
+                self.assert_simple(reply)
+
+    def test_summer_answers_use_season_facts_without_requiring_a_summer_occasion(self):
+        self.product.occasion = WORK
+        self.product.season = "Summer"
+        facts = product_claim_facts([self.product])
+        for message, reply in (
+            ("ينفع للصيف؟", "Test Breeze مناسب للصيف."),
+            ("موسمه ايه؟", "Test Breeze صيفي."),
+            ("Is it suitable for summer?", "Test Breeze is suitable for summer."),
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(product_claim_issues(reply, facts, message=message), [])
+        for message in ("ينفع للصيف؟", "ممكن ألبسه للصيف؟"):
+            with self.subTest(message=message):
+                details = "\n".join(requested_product_details([self.product], message))
+                self.assertIn("Summer", details)
+                self.assertNotIn("للشغل", details)
+                self.assertNotIn("مناسبته", details)
+                self.assertNotIn("تأكيد", details)
+        self.product.season = "Winter"
+        self.assertTrue(any(issue.startswith("season:") for issue in product_claim_issues(
+            "Test Breeze مناسب للصيف.", product_claim_facts([self.product]), message="ينفع للصيف؟",
+        )))
+        self.product.occasion = ACTIVE
+        self.product.season = "Summer"
+        self.assertIn("الجيم", "\n".join(requested_product_details([self.product], "ينفع للجيم؟")))
+
+    def test_requested_missing_or_unrecorded_suitability_needs_confirmation(self):
+        for occasion in ("", DAILY):
+            with self.subTest(occasion=occasion):
+                self.product.occasion = occasion
+                reply = "\n".join(requested_product_details([self.product], "ينفع للشغل؟"))
+                self.assertIn("تأكيد", reply)
+                self.assertNotIn("مناسب للشغل", reply)
+                self.assertEqual(product_claim_issues(
+                    "Test Breeze مناسبته للشغل محتاجة تأكيد.", product_claim_facts([self.product]),
+                    message="ينفع للشغل؟",
+                ), [])
+
+    def test_occasion_recovery_preserves_each_named_products_scope(self):
+        self.product.occasion = WORK
+        self.product.save(update_fields=["occasion"])
+        other = Product.objects.create(store=self.store, brand=self.brand, name="Second Choice", gender="unisex",
+                                       scent_tags=["sweet", "oud", "heavy"], occasion=DAILY)
+        context = format_products([self.product, other])
+        bad = "Test Breeze فيه قهوة. Second Choice فيه فانيليا."
+        reply, _, _ = _rephrased(bad, context, [], self.store, lambda hint: (bad, context),
+                                 message="Test Breeze ينفع للشغل وSecond Choice ريحته ايه؟")
+        first, second = reply.split("Second Choice")
+        self.assertIn("للشغل", first)
+        self.assertNotIn("حمضيات", first)
+        self.assertIn("عودي", second)
+        self.assertNotIn("مناسب", second)
 
     def test_recovery_keeps_performance_only_and_explicit_scent_opt_out(self):
         context = format_products([self.product])
@@ -215,7 +308,7 @@ class ScentDescriptionReplyTests(TestCase):
         self.product.save(update_fields=["middle_notes"])
         intent = {"scent_tags": ["fresh"]}
         search = search_products(intent, self.store)
-        expected = "Test Breeze فريش وحمضي ومتبل ومناسب للاستخدام اليومي. نوتاته Woody Notes وVanilla وAmber."
+        expected = "Test Breeze فريش وحمضي ومتبل. نوتاته Woody Notes وVanilla وAmber."
         draft = json.dumps({"product_ids": [self.product.pk], "reply": expected})
         with patch("products.services.ai.recommendation.chat", return_value=draft):
             reply, _ = recommend("رشحلي عطر فريش وقولي نوتاته", search["products"], store=self.store,
@@ -301,6 +394,6 @@ class ScentDescriptionReplyTests(TestCase):
         other = Product.objects.create(store=self.store, brand=self.brand, name="Second Choice", gender="unisex",
                                        scent_tags=["sweet", "oud", "heavy"], occasion=WORK)
         context = format_products([self.product, other])
-        expected = "Second Choice مسكر وعودي وتقيل ومناسب للشغل، وNo. 5 فريش وحمضي ومتبل ومناسب للاستخدام اليومي."
+        expected = "Second Choice مسكر وعودي وتقيل، وNo. 5 فريش وحمضي ومتبل."
         reply, _, _ = _rephrased(expected, context, [], self.store, lambda hint: ("", context), message="قارن ريحتهم")
         self.assertEqual(reply, expected)

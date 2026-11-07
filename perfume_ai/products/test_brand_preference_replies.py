@@ -45,7 +45,7 @@ class BrandPreferenceReplyTests(TestCase):
         search = self.search()
         history = [{"role": "assistant", "content": "Local Blend مناسب للمكتب. هتستخدمه فين؟"}]
         with patch("products.services.ai.recommendation.chat",
-                   return_value=self.selection("Fresh Choice ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي، وفوحانه قوي.")) as chat:
+                   return_value=self.selection("Fresh Choice ريحته فريش ومنعش وخشبي، وفوحانه قوي.")) as chat:
             reply, _ = recommend("للنهار وعايزه فواح", search["products"], history,
                                  store=self.store, intent=self.intent, search=search)
         payload = json.loads(chat.call_args.args[0][-1]["content"])
@@ -132,7 +132,7 @@ class BrandPreferenceReplyTests(TestCase):
         intent = {**self.intent, "requested_volume": 50, "max_price": 800, "recommendation_count": 1}
         search = search_products(intent, self.store)
         with patch("products.services.ai.recommendation.chat", return_value=self.selection(
-            "Fresh Choice ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي، وفوحانه قوي."
+            "Fresh Choice ريحته فريش ومنعش وخشبي، وفوحانه قوي."
         )) as chat:
             reply, _ = recommend("50 ملي تحت 800", search["products"], store=self.store, intent=intent, search=search)
         chat.assert_called_once()

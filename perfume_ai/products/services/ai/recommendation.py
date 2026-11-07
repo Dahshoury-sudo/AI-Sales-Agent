@@ -11,7 +11,7 @@ _FORMATTING_LIMIT = 12
 
 
 def recommendation_fit(products, intent, *, message=None, history=None):
-    """Selected scent labels and occasion, with requested performance once."""
+    """Selected scent labels and explicitly requested details, with performance once."""
     from ..scent_description import describe_scent
     from ..performance_policy import current_request, description
     from ..sales.recommendation_response import _choice_limit

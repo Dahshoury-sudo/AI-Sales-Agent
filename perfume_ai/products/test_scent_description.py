@@ -51,14 +51,14 @@ class ScentDescriptionTests(SimpleTestCase):
             with self.subTest(tag=tag):
                 self.assertIn(phrase, self.helper.describe_scent([tag]))
 
-    def test_rendering_limits_tags_and_places_one_saved_occasion_last(self):
+    def test_rendering_limits_tags_and_omits_saved_and_preferred_occasions(self):
         self.assertEqual(
             self.helper.describe_scent(["fresh", "woody", "sweet", "light"], f"{WORK}, {DAILY}"),
-            "ريحته فريش ومنعش وخشبي ومسكر، ومناسب للشغل والمكتب",
+            "ريحته فريش ومنعش وخشبي ومسكر",
         )
         self.assertEqual(
             self.helper.describe_scent(["sweet"], f"{WORK}, {DAILY}", preferred_occasion=DAILY),
-            "ريحته مسكر، ومناسب للاستخدام اليومي",
+            "ريحته مسكر",
         )
 
     def test_occasion_default_follows_recorded_order_and_longest_phrases(self):
@@ -115,16 +115,16 @@ class ScentDescriptionTests(SimpleTestCase):
             with self.subTest(question=question):
                 self.assertFalse(self.helper.scent_requested(question, product_names=("Alpha",)))
 
-    def test_valid_natural_description_accepts_saved_tags_and_chosen_occasion(self):
+    def test_valid_natural_description_accepts_saved_tags_without_occasion(self):
         self.assertEqual(self.helper.description_issues(
-            "Alpha ريحته فريش ومنعش، خشبي ومسكر ومناسب للشغل.", self.facts,
+            "Alpha ريحته فريش ومنعش، خشبي ومسكر.", self.facts,
             message="ريحته ايه؟",
         ), [])
 
     def test_missing_or_wrong_selected_tags_are_rejected(self):
         for reply in (
-            "Alpha ريحته فريش وخشبي ومناسب للشغل",
-            "Alpha ريحته فريش وخشبي ومسكي ومناسب للشغل",
+            "Alpha ريحته فريش وخشبي",
+            "Alpha ريحته فريش وخشبي ومسكي",
         ):
             with self.subTest(reply=reply):
                 issues = self.helper.description_issues(reply, self.facts, message="ريحته ايه؟")
@@ -135,37 +135,38 @@ class ScentDescriptionTests(SimpleTestCase):
         for extra in ("وخفيف", "ونضيف", "ودخاني"):
             with self.subTest(extra=extra):
                 self.assertTrue(self.helper.description_issues(
-                    "Alpha ريحته فريش وخشبي ومسكر " + extra + " ومناسب للشغل", self.facts,
+                    "Alpha ريحته فريش وخشبي ومسكر " + extra + "", self.facts,
                     message="ريحته عاملة ازاي؟",
                 ))
 
-    def test_wrong_missing_multiple_or_premature_occasion_are_rejected(self):
+    def test_unsolicited_occasions_are_rejected_in_any_description_position(self):
         for reply in (
-            "Alpha ريحته فريش وخشبي ومسكر",
+            "Alpha ريحته فريش وخشبي ومسكر ومناسب للشغل",
             "Alpha ريحته فريش وخشبي ومسكر ومناسب للجامعة",
             "Alpha ريحته فريش وخشبي ومسكر ومناسب للشغل وللجامعة",
             "Alpha مناسب للشغل وريحته فريش وخشبي ومسكر",
+            "Alpha ريحته فريش وخشبي ومسكر. ينفع للشغل.",
         ):
             with self.subTest(reply=reply):
                 self.assertTrue(self.helper.description_issues(reply, self.facts, message="اوصفهولي"))
 
-    def test_preferred_recorded_occasion_is_accepted(self):
+    def test_saved_occasion_does_not_require_an_occasion_in_the_description(self):
         self.assertEqual(self.helper.description_issues(
-            "Alpha ريحته فريش وخشبي ومسكر ومناسب للاستخدام اليومي", self.facts,
+            "Alpha ريحته فريش وخشبي ومسكر", self.facts,
             message="ريحته ايه؟", preferred_occasion=DAILY,
         ), [])
 
     def test_one_product_followup_may_omit_name(self):
         self.assertEqual(self.helper.description_issues(
-            "ريحته فريش وخشبي ومسكر ومناسب للشغل", self.facts,
+            "ريحته فريش وخشبي ومسكر", self.facts,
             message="ريحته ايه؟",
         ), [])
 
-    def test_comparison_cannot_borrow_other_products_tags_or_occasion(self):
+    def test_comparison_cannot_borrow_other_products_tags(self):
         facts = {**self.facts, "Beta": {"scent_tags": ["oud", "heavy"], "notes": ["", "", ""], "occasion": NIGHT_OUT}}
-        good = "Alpha ريحته فريش وخشبي ومسكر ومناسب للشغل. Beta ريحته عودي وتقيل ومناسب للسهرات."
+        good = "Alpha ريحته فريش وخشبي ومسكر. Beta ريحته عودي وتقيل."
         self.assertEqual(self.helper.description_issues(good, facts, message="قارن ريحتهم", required=True), [])
-        bad = "Alpha ريحته عودي وتقيل ومناسب للسهرات. Beta ريحته فريش وخشبي ومسكر ومناسب للشغل."
+        bad = "Alpha ريحته عودي وتقيل. Beta ريحته فريش وخشبي ومسكر."
         self.assertTrue(self.helper.description_issues(bad, facts, message="قارن ريحتهم", required=True))
 
     def test_fourth_tag_specific_question_remains_scoped(self):
@@ -177,7 +178,7 @@ class ScentDescriptionTests(SimpleTestCase):
         ), [])
 
     def test_unsolicited_recorded_vanilla_note_is_rejected_and_explicit_question_allowed(self):
-        reply = "Alpha ريحته فريش وخشبي ومسكر، وفيه فانيليا ومناسب للشغل"
+        reply = "Alpha ريحته فريش وخشبي ومسكر، وفيه فانيليا"
         self.assertTrue(self.helper.description_issues(reply, self.facts, message="ريحته ايه؟"))
         self.assertEqual(self.helper.description_issues(
             "أيوه Alpha فيه فانيليا", self.facts, message="فيه فانيليا؟",
@@ -186,7 +187,7 @@ class ScentDescriptionTests(SimpleTestCase):
     def test_family_smell_wording_does_not_require_ingredient_evidence(self):
         facts = {"Beta": {"scent_tags": ["fresh", "citrus", "floral"], "notes": ["", "", ""], "occasion": DAILY}}
         self.assertEqual(self.helper.description_issues(
-            "Beta فريش ومنعش وفيه ريحة حمضيات وزهور ومناسب للاستخدام اليومي", facts,
+            "Beta فريش ومنعش وفيه ريحة حمضيات وزهور", facts,
             message="ريحته ايه؟",
         ), [])
 
@@ -211,7 +212,7 @@ class ScentDescriptionTests(SimpleTestCase):
     def test_unattributed_multi_product_reply_is_not_guessed(self):
         facts = {**self.facts, "Beta": {"scent_tags": ["oud"], "notes": [], "occasion": DAILY}}
         self.assertTrue(self.helper.description_issues(
-            "ريحته فريش وخشبي ومسكر ومناسب للشغل", facts, message="قارن بينهم", required=True,
+            "ريحته فريش وخشبي ومسكر", facts, message="قارن بينهم", required=True,
         ))
 
     def test_actual_scent_prose_enforces_description_even_on_price_question(self):
@@ -235,35 +236,35 @@ class ScentDescriptionTests(SimpleTestCase):
 
     def test_tag_negation_cannot_count_as_selected_character(self):
         self.assertTrue(self.helper.description_issues(
-            "Alpha فريش وخشبي ومش مسكر ومناسب للشغل", self.facts,
+            "Alpha فريش وخشبي ومش مسكر", self.facts,
             message="ريحته ايه؟",
         ))
 
     def test_material_wording_requires_notes_permission_even_for_saved_oud(self):
         facts = {"Beta": {"scent_tags": ["oud"], "notes": ["Oud", "", ""], "occasion": DAILY}}
         self.assertEqual(self.helper.description_issues(
-            "Beta ريحته عود ومناسب للاستخدام اليومي", facts, message="ريحته ايه؟",
+            "Beta ريحته عود", facts, message="ريحته ايه؟",
         ), [])
         self.assertTrue(self.helper.description_issues(
-            "Beta فيه عود ومناسب للاستخدام اليومي", facts, message="ريحته ايه؟",
+            "Beta فيه عود", facts, message="ريحته ايه؟",
         ))
 
     def test_known_product_name_is_removed_from_reply_ingredient_checks(self):
         facts = {"Tobacco Vanille": {"scent_tags": ["sweet"], "notes": [], "occasion": DAILY}}
         self.assertEqual(self.helper.description_issues(
-            "Tobacco Vanille ريحته مسكر ومناسب للاستخدام اليومي", facts,
+            "Tobacco Vanille ريحته مسكر", facts,
             message="Tobacco Vanille ريحته ايه؟",
         ), [])
 
     def test_note_labels_do_not_substitute_for_a_selected_character_family(self):
         facts = {"Beta": {"scent_tags": ["floral"], "notes": ["Rose", "", ""], "occasion": DAILY}}
         self.assertTrue(self.helper.description_issues(
-            "Beta ريحته ورد ومناسب للاستخدام اليومي", facts, message="ريحته ايه؟",
+            "Beta ريحته ورد", facts, message="ريحته ايه؟",
         ))
 
     def test_selected_tag_coverage_accepts_natural_verbal_order(self):
         self.assertEqual(self.helper.description_issues(
-            "Alpha ريحته مسكر وخشبي وفريش ومناسب للشغل", self.facts,
+            "Alpha ريحته مسكر وخشبي وفريش", self.facts,
             message="ريحته ايه؟",
         ), [])
 
@@ -279,19 +280,19 @@ class ScentDescriptionTests(SimpleTestCase):
     def test_recorded_raw_note_cannot_leak_when_outside_known_aliases(self):
         facts = {"Beta": {"scent_tags": ["sweet"], "notes": ["Dragon Fruit", "Pink Lotus", ""], "occasion": DAILY}}
         self.assertTrue(self.helper.description_issues(
-            "Beta ريحته مسكر وفيه pink lotus ومناسب للاستخدام اليومي", facts,
+            "Beta ريحته مسكر وفيه pink lotus", facts,
             message="ريحته ايه؟",
         ))
 
     def test_unsolicited_negative_ingredient_claim_is_also_out_of_scope(self):
         self.assertTrue(self.helper.description_issues(
-            "Alpha فريش وخشبي ومسكر ومن غير فانيليا ومناسب للشغل", self.facts,
+            "Alpha فريش وخشبي ومسكر ومن غير فانيليا", self.facts,
             message="ريحته ايه؟",
         ))
 
     def test_negative_trait_clause_does_not_negate_following_positive_character(self):
         self.assertEqual(self.helper.description_issues(
-            "Alpha مش تقيل بس فريش وخشبي ومسكر ومناسب للشغل", self.facts,
+            "Alpha مش تقيل بس فريش وخشبي ومسكر", self.facts,
             message="ريحته ايه؟",
         ), [])
 
@@ -350,8 +351,8 @@ class ScentDescriptionTests(SimpleTestCase):
         facts = {"Alpha": {"scent_tags": ["fresh", "citrus", "light"],
                            "occasion": WORK, "notes": ["Woody Notes", "Vanilla"]}}
         for reply in (
-            "Alpha فريش وحمضي وخفيف ومناسب للشغل. نوتاته Woody Notes وVanilla.",
-            "Alpha نوتاته Woody Notes وVanilla وريحته فريش وحمضي وخفيف ومناسب للشغل.",
+            "Alpha فريش وحمضي وخفيف. نوتاته Woody Notes وVanilla.",
+            "Alpha نوتاته Woody Notes وVanilla وريحته فريش وحمضي وخفيف.",
         ):
             with self.subTest(reply=reply):
                 self.assertEqual(self.helper.description_issues(
@@ -362,7 +363,7 @@ class ScentDescriptionTests(SimpleTestCase):
         facts = {"Alpha": {"scent_tags": ["fresh"], "occasion": WORK, "notes": ["Vanilla"]},
                  "Beta": {"scent_tags": ["oud"], "occasion": NIGHT_OUT, "notes": ["Oud"]}}
         issues = self.helper.description_issues(
-            "Alpha فريش ومناسب للشغل ونوتاته فانيليا. وBeta نوتاته Oud وريحته عودي ومناسب للسهرات.",
+            "Alpha فريش ونوتاته فانيليا. وBeta نوتاته Oud وريحته عودي.",
             facts, message="Alpha ريحته ايه ونوتاته ايه وBeta ريحته ايه؟",
         )
         self.assertTrue(any(issue.startswith("description:Beta:") for issue in issues))
@@ -372,7 +373,7 @@ class ScentDescriptionTests(SimpleTestCase):
         facts = {"Alpha": {"scent_tags": ["fresh"], "occasion": WORK, "notes": ["Vanilla"]},
                  "Beta": {"scent_tags": ["oud"], "occasion": NIGHT_OUT, "notes": ["Oud"]}}
         self.assertEqual(self.helper.description_issues(
-            "Alpha نوتاته Vanilla. وBeta ريحته عودي ومناسب للسهرات.", facts,
+            "Alpha نوتاته Vanilla. وBeta ريحته عودي.", facts,
             message="Alpha نوتاته ايه وBeta ريحته ايه؟",
         ), [])
 
@@ -380,28 +381,153 @@ class ScentDescriptionTests(SimpleTestCase):
         facts = {"Alpha": {"scent_tags": ["fresh"], "occasion": WORK, "notes": ["Vanilla"]},
                  "Beta": {"scent_tags": ["oud"], "occasion": NIGHT_OUT, "notes": ["Oud"]}}
         self.assertEqual(self.helper.description_issues(
-            "Alpha فريش ومناسب للشغل ونوتاته Vanilla. وBeta ريحته عودي ومناسب للسهرات ونوتاته Oud.",
+            "Alpha فريش ونوتاته Vanilla. وBeta ريحته عودي ونوتاته Oud.",
             facts, message="Alpha وBeta ريحتهم ايه ونوتاتهم ايه؟",
         ), [])
 
     def test_attached_conjunction_preserves_reply_product_attribution(self):
         facts = {**self.facts, "Beta": {"scent_tags": ["oud", "heavy"], "occasion": NIGHT_OUT, "notes": []}}
         self.assertEqual(self.helper.description_issues(
-            "Alpha فريش وخشبي ومسكر ومناسب للشغل، وBeta عودي وتقيل ومناسب للسهرات.",
+            "Alpha فريش وخشبي ومسكر، وBeta عودي وتقيل.",
             facts, message="قارن ريحتهم",
         ), [])
 
     def test_recorded_occasion_must_be_positive_and_not_also_denied(self):
         for reply in (
             "Alpha فريش وخشبي ومسكر ومش مناسب للشغل.",
-            "Alpha فريش وخشبي ومسكر ومناسب للشغل بس مش مناسب للمكتب.",
+            "Alpha فريش وخشبي ومسكر بس مش مناسب للمكتب.",
+            "Alpha مش مناسب للشغل.",
         ):
             with self.subTest(reply=reply):
-                self.assertTrue(self.helper.description_issues(reply, self.facts, message="ريحته ايه؟"))
+                self.assertTrue(self.helper.description_issues(reply, self.facts, message="مناسب للشغل؟"))
+
+    def test_occasion_only_claims_require_a_current_question(self):
+        for message in ("سعره كام؟", "ثباته ايه؟", "فيه فانيليا؟", "هو خفيف؟"):
+            with self.subTest(message=message):
+                self.assertTrue(self.helper.description_issues(
+                    "Alpha مناسب للشغل.", self.facts, message=message,
+                ))
+
+    def test_explicit_occasion_questions_allow_recorded_suitability(self):
+        for message in (
+            "ينفع للشغل؟", "هو مناسب للشغل؟", "مناسب لإيه؟", "مناسبته إيه؟",
+            "البسه امتى؟", "Is it suitable for work?", "Is it good for the office?",
+            "What occasions is it good for?", "When should I wear it?", "Tell me its occasions",
+            "Would Alpha be suitable for work?", "ممكن ألبس Alpha للشغل؟",
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(self.helper.description_issues(
+                    "Alpha مناسب للشغل.", self.facts, message=message,
+                ), [])
+
+    def test_recommendation_occasion_preferences_do_not_authorize_suitability_prose(self):
+        for message in (
+            "رشحلي عطر للشغل", "رشحلي عطر مناسب للشغل", "عايز حاجة مناسبة للشغل",
+            "Recommend a perfume for work", "Recommend a perfume suitable for work",
+            "What perfume is suitable for work?", "ايه العطر المناسب للشغل؟", "قولي عطر مناسب للشغل",
+            "ريحته ايه للشغل؟",
+        ):
+            with self.subTest(message=message):
+                self.assertTrue(self.helper.description_issues(
+                    "Alpha فريش وخشبي ومسكر ومناسب للشغل.", self.facts,
+                    message=message, preferred_occasion=WORK, required=True,
+                ))
+
+    def test_combined_description_and_occasion_property_request_keeps_both_scopes(self):
+        self.assertEqual(self.helper.description_issues(
+            "Alpha ريحته فريش وخشبي ومسكر ومناسب للشغل.", self.facts,
+            message="Describe Alpha and its occasions",
+        ), [])
+
+    def test_previous_occasion_question_does_not_authorize_current_description(self):
+        self.assertTrue(self.helper.description_issues(
+            "Alpha فريش وخشبي ومسكر ومناسب للشغل.", self.facts,
+            message="ريحته ايه؟", preferred_occasion=WORK,
+            history=[{"role": "user", "content": "مناسب للشغل؟"}],
+        ))
+
+    def test_occasion_opt_out_does_not_authorize_an_occasion_answer(self):
+        for message in ("ريحته ايه من غير مناسبات؟", "Describe it without mentioning occasions"):
+            with self.subTest(message=message):
+                self.assertTrue(self.helper.description_issues(
+                    "Alpha فريش وخشبي ومسكر ومناسب للشغل.", self.facts, message=message,
+                ))
+
+    def test_authorized_notes_cannot_hide_unsolicited_occasion_claims(self):
+        self.assertTrue(self.helper.description_issues(
+            "Alpha نوتاته Vanilla ومناسب للشغل.", self.facts, message="نوتاته ايه؟",
+        ))
+
+    def test_occasion_permission_belongs_to_the_product_asked_about(self):
+        facts = {**self.facts, "Beta": {"scent_tags": ["oud"], "notes": [], "occasion": NIGHT_OUT}}
+        message = "Alpha مناسب للشغل وBeta ريحته ايه؟"
+        self.assertEqual(self.helper.description_issues(
+            "Alpha مناسب للشغل. Beta ريحته عودي.", facts, message=message,
+        ), [])
+        issues = self.helper.description_issues(
+            "Alpha مناسب للشغل. Beta ريحته عودي ومناسب للسهرات.", facts, message=message,
+        )
+        self.assertTrue(any(issue.startswith("description:Beta:") for issue in issues))
+        self.assertFalse(any(issue.startswith("description:Alpha:") for issue in issues))
+
+    def test_occasion_dimension_before_next_product_preserves_question_scope(self):
+        facts = {**self.facts, "Beta": {"scent_tags": ["oud"], "notes": [], "occasion": NIGHT_OUT}}
+        self.assertEqual(self.helper.description_issues(
+            "Alpha فريش وخشبي ومسكر. Beta مناسب للسهرات.", facts,
+            message="Alpha ريحته ايه ومناسبة Beta ايه؟",
+        ), [])
+
+    def test_occasion_claims_are_grounded_even_when_tags_are_missing(self):
+        facts = {"Beta": {"scent_tags": [], "notes": [], "occasion": WORK}}
+        self.assertTrue(self.helper.description_issues(
+            "Beta مناسب للسهرات.", facts, message="مناسب لايه؟",
+        ))
+        facts["Beta"]["occasion"] = ""
+        self.assertTrue(self.helper.description_issues(
+            "Beta مناسب للشغل.", facts, message="ينفع للشغل؟",
+        ))
+        self.assertEqual(self.helper.description_issues(
+            "Beta مناسبته محتاجة تأكيد.", facts, message="ينفع للشغل؟",
+        ), [])
+        self.assertTrue(self.helper.description_issues(
+            "Beta مش مناسب للشغل.", facts, message="ينفع للشغل؟",
+        ))
+
+    def test_missing_scent_does_not_authorize_an_occasion_claim(self):
+        facts = {"Beta": {"scent_tags": [], "notes": [], "occasion": WORK}}
+        for reply in (
+            "Beta وصف ريحته محتاج تأكيد ومناسب للشغل.",
+            "Beta وصف ريحته محتاج تأكيد. مناسبته محتاجة تأكيد.",
+        ):
+            with self.subTest(reply=reply):
+                self.assertTrue(self.helper.description_issues(reply, facts, message="ريحته ايه؟"))
+
+    def test_uncertain_suitability_is_scoped_to_an_explicit_question(self):
+        facts = {"Beta": {"scent_tags": [], "notes": [], "occasion": ""}}
+        reply = "Beta مناسبته للشغل محتاجة تأكيد."
+        self.assertEqual(self.helper.description_issues(reply, facts, message="ينفع للشغل؟"), [])
+        self.assertTrue(self.helper.description_issues(reply, facts, message="سعره كام؟"))
+
+    def test_occasion_words_in_product_names_do_not_authorize_suitability(self):
+        facts = {"Office Night": {"scent_tags": ["fresh"], "notes": [], "occasion": WORK}}
+        self.assertEqual(self.helper.description_issues(
+            "Office Night ريحته فريش.", facts, message="Office Night ريحته ايه؟",
+        ), [])
+        self.assertTrue(self.helper.description_issues(
+            "Office Night ريحته فريش ومناسب للشغل.", facts, message="Office Night ريحته ايه؟",
+        ))
+
+    def test_season_answers_and_preference_questions_are_not_occasion_claims(self):
+        for reply, message in (
+            ("Alpha فريش وخشبي ومسكر. موسمه الصيف.", "ريحته ايه وموسمه ايه؟"),
+            ("Alpha فريش وخشبي ومسكر. تحب تستخدمه للشغل ولا للخروج؟", "رشحلي عطر"),
+        ):
+            with self.subTest(reply=reply):
+                self.assertEqual(self.helper.description_issues(reply, self.facts, message=message), [])
 
     def test_valid_character_prose_is_rejected_when_description_was_excluded(self):
         self.assertTrue(self.helper.description_issues(
-            "Alpha فريش وخشبي ومسكر ومناسب للشغل وثباته ممتاز", self.facts,
+            "Alpha فريش وخشبي ومسكر وثباته ممتاز", self.facts,
             message="Alpha ثباته إيه من غير وصف ريحته؟",
         ))
 
@@ -424,18 +550,18 @@ class ScentDescriptionTests(SimpleTestCase):
                  "Beta": {"scent_tags": ["oud"], "occasion": NIGHT_OUT, "notes": ["Oud"]}}
         message = "Alpha ريحته ايه ونوتات Beta ايه؟"
         self.assertEqual(self.helper.description_issues(
-            "Alpha فريش ومناسب للشغل. Beta نوتاته Oud.", facts, message=message,
+            "Alpha فريش. Beta نوتاته Oud.", facts, message=message,
         ), [])
         self.assertTrue(self.helper.description_issues(
-            "Alpha فريش ومناسب للشغل ونوتاته Vanilla. Beta نوتاته Oud.", facts, message=message,
+            "Alpha فريش ونوتاته Vanilla. Beta نوتاته Oud.", facts, message=message,
         ))
 
     def test_dotted_catalog_name_preserves_comparison_attribution(self):
         facts = {"No. 5": {"scent_tags": ["fresh"], "occasion": WORK, "notes": []},
                  "Beta": {"scent_tags": ["sweet"], "occasion": NIGHT_OUT, "notes": []}}
         for reply in (
-            "No. 5 فريش ومناسب للشغل. Beta مسكر ومناسب للسهرات.",
-            "Beta مسكر ومناسب للسهرات، وNo. 5 فريش ومناسب للشغل.",
+            "No. 5 فريش. Beta مسكر.",
+            "Beta مسكر، وNo. 5 فريش.",
         ):
             with self.subTest(reply=reply):
                 self.assertEqual(self.helper.description_issues(reply, facts, message="قارن ريحتهم"), [])

@@ -126,13 +126,16 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
             for tag in claims.get("excluded_scent_tags", []):
                 if tag in row["scent_tags"]:
                     issues.append(f"scent:{name}:denied {tag}")
-            for clause in re.split(r"[\n.!؟?،;]+", character):
-                if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|not\s+suitable", clause):
-                    continue
-                if re.search(r"مناسب|ينفع|suitable", clause):
-                    for occasion in occasion_groups(clause):
-                        if not occasion_matches(row.get("occasion", ""), occasion):
-                            issues.append(f"occasion:{name}:{occasion}")
+            # Current-turn suitability is checked with its question scope by
+            # description_issues, including uncertainty and missing scent tags.
+            if message is None:
+                for clause in re.split(r"[\n.!؟?،;]+", character):
+                    if re.search(r"مش\s+(?:مناسب|بيناسب|ينفع)|not\s+suitable", clause):
+                        continue
+                    if re.search(r"مناسب|ينفع|suitable", clause):
+                        for occasion in occasion_groups(clause):
+                            if not occasion_matches(row.get("occasion", ""), occasion):
+                                issues.append(f"occasion:{name}:{occasion}")
         recorded = _claim_normalize(" ".join(row.get("notes", [])))
         for key, aliases in _NOTE_ALIASES.items():
             alias_pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"

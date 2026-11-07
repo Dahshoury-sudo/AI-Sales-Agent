@@ -159,15 +159,16 @@ class NearestSelectionTests(NearestCatalogMixin, TestCase):
         self.assertIn(second.name, reply)
         self.assertNotIn(winter.name, context)
 
-    def test_a_partial_match_is_valid_without_rewriting_its_actual_occasion(self):
+    def test_a_partial_match_is_valid_without_claiming_an_occasion_match(self):
         product = self.perfume("Night Breeze", season="Winter", occasion="Evening")
         (reply, _), model = self.generate(
             {"scent_tags": ["fresh", "woody"], "scent_match": "all", "season": "summer", "occasion": "work"},
-            {"product_ids": [product.pk], "reply": "Night Breeze: ريحته فريش ومنعش ومناسب للخروجات والسهرات."},
+            {"product_ids": [product.pk], "reply": "Night Breeze: ريحته فريش ومنعش."},
         )
         self.assertEqual(model.call_count, 1)
         self.assertIn(product.name, reply)
         self.assertNotIn("الشغل", reply)
+        self.assertNotIn("مناسب", reply)
         payload = json.loads(model.call_args.args[0][-1]["content"])
         self.assertIn("match", payload["eligible_products"][0])
         self.assertEqual(payload["eligible_products"][0]["match"]["matched_scent_tags"], ["fresh"])

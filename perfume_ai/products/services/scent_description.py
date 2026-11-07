@@ -62,6 +62,35 @@ _OCCASION_NEGATIVE = re.compile(
     r"(?<!\w)(?:و)?(?:مش|غير|لا|بدون|من غير|not|no|without)"
     r"(?:\s+(?:مناسب(?:ه)?|بيناسب|ينفع|صالح|suitable|suited|appropriate|good|for|the)){0,3}\s*$"
 )
+_OCCASION_SCOPE = re.compile(
+    r"(?<!\w)(?:[وبل]?ال|[وب])?(?:مناسب(?:ه|ته|تها|تهم|ات(?:ه|ها|هم)?)?|"
+    r"استخدام(?:ه|ها|هم)?|ينفع|بينفع|يناسب|بيناسب|البس(?:ه|ها)?|استخدم(?:ه|ها)|"
+    r"occasions?|suitability|suitable|suited|appropriate|wear|use|good\s+for)(?!\w)"
+)
+_OCCASION_QUERY = re.compile(
+    r"(?<!\w)(?:و)?(?:هل|ايه|لايه|لاي|امتي|فين|انهي|"
+    r"قول(?:لي|ي)|وضح(?:لي)?|اعرف|ممكن|what|which|when|where|tell\s+me|"
+    r"describe|explain|is|are|can|could|would|does)(?!\w)"
+)
+_OCCASION_DETAIL_REQUEST = re.compile(
+    r"(?<!\w)(?:و)?(?:قول(?:لي|ي)|وضح(?:لي)?|اعرف|هل|tell\s+me|"
+    r"(?:and|و)\s+(?:what|which|is|are|would|can)|"
+    r"(?:is|are|can|could|would|does)\s+(?:it|this|that|they|these|i))(?!\w)"
+)
+_SELECTION_REQUEST = re.compile(
+    r"(?<!\w)(?:و)?(?:رشح\w*|اقترح\w*|عايز(?:ه)?|عاوز(?:ه)?|"
+    r"recommend|suggest|find|want|need|looking\s+for|"
+    r"(?:what|which)\s+(?:perfumes?|fragrances?)|"
+    r"(?:ايه|انهي|اي|احسن|افضل|قوللي|قولي|هاتلي|وريني)\s+"
+    r"(?:(?:هو|هي|احسن|افضل)\s+)?(?:ال)?(?:عطر|عطور|برفان|برفانات|حاجه))(?!\w)"
+)
+_SEASON_OCCASION_ALIAS = re.compile(r"(?:[وبل]?ال|ولل|لل|[وبل])?صيف(?:ي)?|summer")
+_OCCASION_OPT_OUT = re.compile(
+    r"(?<!\w)(?:و)?(?:بلاش|بدون|من غير|(?:مش|لا)\s+(?:عايز(?:ه)?|عاوز(?:ه)?|تذكر|تقول)|"
+    r"without|no|don't|dont|do not)"
+    r"(?:\s+(?:تذكر|تقول|شرح|تفاصيل|ذكر|وصف|عن|mention(?:ing)?|describe|"
+    r"describing|details|about|the|any|its)){0,5}\s*$"
+)
 
 
 def _all_tags(tags):
@@ -101,7 +130,7 @@ def selected_occasion(recorded, preferred=None):
 
 
 def describe_scent(tags, occasion="", *, preferred_occasion=None):
-    """An unnamed Egyptian description, with one saved use and no full stop."""
+    """Scent labels only; occasion arguments remain for caller compatibility."""
     phrases = []
     for tag in selected_tags(tags):
         phrase = _PHRASES[tag]
@@ -115,10 +144,6 @@ def describe_scent(tags, occasion="", *, preferred_occasion=None):
             description = "ريحته " + description
     else:
         description = _FALLBACK
-    chosen = selected_occasion(occasion, preferred_occasion)
-    if chosen:
-        wording = "للاستخدام اليومي" if chosen == occasions.DAILY else occasions.OCCASION_DESCRIPTIONS[chosen]
-        description += "، ومناسب " + wording
     return description
 
 
@@ -138,6 +163,78 @@ def occasion_preference(message, *, product_names=(), saved=None):
         if category in positive:
             return category
     return selected_occasion(saved)
+
+
+def requested_occasions(message, *, product_names=()):
+    """Specific uses named in a question, excluding generic fields and seasons."""
+    text = _without_names(message, product_names)
+    categories = []
+    for category, start, end in _occasion_mentions(text):
+        phrase = text[start:end]
+        if _SEASON_OCCASION_ALIAS.fullmatch(phrase):
+            continue
+        if re.fullmatch(r"(?:و?ال|و)?مناسبات", phrase) and not re.search(
+            r"(?:مناسب(?:ه)?|ينفع|بينفع|يناسب|بيناسب)\s*$", text[:start],
+        ):
+            continue
+        if category not in categories:
+            categories.append(category)
+    return categories
+
+
+def occasion_requested(message, *, product_names=()):
+    """An explicit current question about use, not a selection preference."""
+    text = _without_names(message, product_names)
+    for match in _OCCASION_SCOPE.finditer(text):
+        before, after = text[:match.start()], text[match.end():]
+        if _OCCASION_OPT_OUT.search(before):
+            continue
+        selections = list(_SELECTION_REQUEST.finditer(before))
+        if selections and not _OCCASION_DETAIL_REQUEST.search(before[selections[-1].end():]):
+            continue
+        uses = requested_occasions(after)
+        if not uses and re.search(r"صيف|شتا|شتوي|ربيع|خريف|\b(?:summer|winter|spring|fall|autumn)\b", after) and not re.search(
+            r"مناسبات|occasions?", match.group(),
+        ):
+            continue
+        # "Suitable for men" or "good for you" is not an occasion question.
+        topic = bool(uses or _OCCASION_QUERY.search(after) or re.search(
+            r"مناسب(?:ته|تها|تهم|ات)|استخدام|occasions?|suitability|wear|البس", match.group(),
+        ))
+        if not topic:
+            continue
+        if _OCCASION_QUERY.search(text) or re.fullmatch(
+            r"\s*(?:(?:و|هو|هي|ده|دي|طب|طيب|هل|is|are|it|its|this|that|the)\s*)*", before,
+        ):
+            return True
+    return False
+
+
+def _occasion_claims(segment, recorded_notes=()):
+    """Attributable use claims, excluding ingredients, seasons and questions."""
+    prose = _normalize_prose(segment)
+    # Mask just the ingredient names: masking a whole notes answer could hide
+    # an appended suitability claim in "نوتاته Vanilla ومناسب للشغل".
+    for mention in reversed(list(_ingredient_mentions(prose, recorded_notes))):
+        prose = prose[:mention.start()] + " " * (mention.end() - mention.start()) + prose[mention.end():]
+    for clause in re.finditer(r"[^.!؟?\n؛;،,]+(?:[.!؟?\n؛;،,]|$)", prose):
+        text = _NORMALIZE(clause.group())
+        if clause.group().rstrip().endswith(("?", "؟")) and (
+            re.search(r"تحب|تفضل|عايز|عاوز|\b(?:want|prefer|looking)\b", text)
+            or not re.search(r"مناسب|ينفع|suitable|suited|good\s+for", text)
+        ):
+            continue
+        mentions = _occasion_mentions(text)
+        if not mentions and re.search(r"مناسب(?:ته|تها|اتهم)|المناسبه|\boccasions?\b", text):
+            yield "", False, True
+        for category, start, end in mentions:
+            # Summer is also an occasion alias, but seasonal claims belong to
+            # the existing season validator and the product's season field.
+            if _SEASON_OCCASION_ALIAS.fullmatch(text[start:end]):
+                continue
+            negative = bool(_OCCASION_NEGATIVE.search(text[max(0, start - 50):start]))
+            uncertain = bool(_UNCERTAIN.match(text[end:].lstrip()))
+            yield category, negative, uncertain
 
 
 def _note_aliases():
@@ -182,6 +279,11 @@ def scent_requested(message, *, product_names=()):
     text = _without_names(message, product_names)
     if _notes_authorized(text) and not re.search(
         r"ريحته|ريحتها|ريحتهم|الريحه|رايك|\b(?:scent|smells?|fragrance|opinion)\b", text,
+    ):
+        return False
+    if occasion_requested(text) and not re.search(
+        r"ريحته|ريحتها|ريحتهم|الريحه|رايك|تفاصيل|اوصف(?:ه|ها|هم)(?:ولي|لي)?|"
+        r"\b(?:scent|smells?|fragrance|opinion)\b|\bdescribe\s+and\b", text,
     ):
         return False
     return any(not _NOTE_OPT_OUT.search(text[max(0, match.start() - 70):match.start()])
@@ -230,7 +332,7 @@ def request_texts(message, product_names):
     for index in range(1, len(groups)):
         previous_end = groups[index - 1][-1].end()
         between = text[previous_end:starts[index]]
-        dimensions = [*_NOTE_SCOPE.finditer(between), *_SCENT_PROSE.finditer(between),
+        dimensions = [*_NOTE_SCOPE.finditer(between), *_OCCASION_SCOPE.finditer(between), *_SCENT_PROSE.finditer(between),
                       *_SCENT_SCOPE.finditer(between), *re.finditer(
                           r"(?<!\w)(?:و)?(?:ريحه|سعر|اسعار|ثبات|فوحان|اداء|تركيز|موسم|"
                           r"price|cost|longevity|projection|performance|availability|concentration|season)(?!\w)",
@@ -349,6 +451,18 @@ def description_issues(reply, facts, *, message=None, history=None,
             problems.append("the current question explicitly excludes a scent description")
         if segment and not allows_notes:
             problems.extend(_unsolicited_notes(segment, row.get("notes", ())))
+        occasion_claims = list(_occasion_claims(segment, row.get("notes", ())))
+        if occasion_claims and not occasion_requested(request_text):
+            problems.append("occasion suitability requires an explicit current question")
+        else:
+            saved_occasions = occasions.occasion_groups(row.get("occasion", ""))
+            for category, negative, uncertain in occasion_claims:
+                if uncertain:
+                    continue
+                if negative and category in saved_occasions:
+                    problems.append("do not deny a saved occasion: " + category)
+                elif category not in saved_occasions:
+                    problems.append("occasion is not recorded; do not invent it: " + category)
         if full_description:
             expected_tags = selected_tags(row.get("scent_tags"))
             positive = [(tag, start, end) for tag, start, end, negative in mentions if not negative]
@@ -362,18 +476,6 @@ def description_issues(reply, facts, *, message=None, history=None,
                 problems.append("character is not recorded; do not invent it")
             elif not _UNCERTAIN.search(segment):
                 problems.append("missing character needs an honest confirmation phrase")
-            occasion = selected_occasion(row.get("occasion", ""), preferred_occasion)
-            occasion_mentions = _occasion_mentions(character)
-            actual_occasions = list(dict.fromkeys(category for category, _, _ in occasion_mentions))
-            denied_occasions = {category for category, start, _ in occasion_mentions
-                                if _OCCASION_NEGATIVE.search(character[max(0, start - 50):start])}
-            if occasion:
-                if actual_occasions != [occasion] or occasion in denied_occasions:
-                    problems.append("use one saved occasion: " + occasion)
-                elif positive and occasion_mentions[0][1] < max(end for _, _, end in positive):
-                    problems.append("place the occasion after the character labels")
-            elif actual_occasions:
-                problems.append("occasion is not recorded; do not invent it")
         for problem in problems:
             issues.append(f"description:{name}: {problem}")
     return list(dict.fromkeys(issues))

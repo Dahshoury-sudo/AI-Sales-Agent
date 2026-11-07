@@ -486,7 +486,7 @@ def _missing_data_note(product):
 # the whole reason to buy, and nothing in the block said not to invent one.
 _WITHHELD_DATA_NOTE = (
     "⚠️ النوتات والموسم مش معروضين للعطر ده هنا: ممنوع تخترعهم. "
-    "لو محتاج توصف الريحة، استخدم أول 3 scent_tags والمناسبة المسجلة فقط؛ "
+    "لو محتاج توصف الريحة، استخدم أول 3 scent_tags فقط؛ المناسبة لسؤال صريح عنها بس. "
     "وجود وصف مختصر مش سبب تعيده في سؤال عن السعر أو الثبات."
 )
 
@@ -531,7 +531,7 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     """Render one product as a prompt block.
 
     brief=True drops stock status, out-of-stock sizes, notes and performance fields.
-    Character labels and the saved occasion remain available for requested descriptions.
+    Character labels describe scent; saved occasions are for explicit suitability questions.
     Two callers want it:
     `recommendation._format_products` for a perfume the customer has already had described, so
     the same scent sentence stops coming back every turn, and `identification_service` for a

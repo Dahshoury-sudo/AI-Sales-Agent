@@ -2138,7 +2138,7 @@ class UnifiedProductFormattingTests(TestCase):
             "Middle Notes: Pepper", "Base Notes: Ambroxan",
             "Scent Labels (character, not ingredients or performance): fresh, spicy",
             "Description Tags (first three only): fresh, spicy",
-            "Simple Scent Description: ريحته فريش ومنعش وفيه ريحة توابل، ومناسب للاستخدام اليومي",
+            "Simple Scent Description: ريحته فريش ومنعش وفيه ريحة توابل",
         ):
             self.assertIn(field, context)
         self.assertNotRegex(context, r"(?m)^Description:")
@@ -6822,9 +6822,9 @@ class SalesScenarioTests(TestCase):
             self.recommend_payload = json.loads(messages[-1]["content"])
             selected = self.recommend_payload["eligible_products"][:2]
             explanations = {
-                self.sauvage.name: "ريحته فريش ومنعش وخشبي ومناسب للاستخدام اليومي",
-                self.light.name: "ريحته فريش ومنعش وخفيف وخشبي ومناسب للخروجات والسهرات",
-                self.heavy.name: "ريحته عودي وتقيل ومناسب للخروجات والسهرات",
+                self.sauvage.name: "ريحته فريش ومنعش وخشبي",
+                self.light.name: "ريحته فريش ومنعش وخفيف وخشبي",
+                self.heavy.name: "ريحته عودي وتقيل",
                 self.vanilla.name: "فيه ريحة زهور ومسكر",
             }
             return json.dumps({"product_ids": [p["id"] for p in selected],
@@ -13461,7 +13461,7 @@ class FirstAskDeniesAndOffersTests(TestCase):
         self.assertIn("ممنوع ترد بنفي لوحده ومتعرضش حاجة", prompt)
 
     def test_the_alternatives_answer_the_accord_that_was_asked_for(self):
-        """Actual notes support accord ranking; saved tags and occasion supply description prose."""
+        """Actual notes support accord ranking; saved tags supply description prose."""
         for product, occasion in ((self.sport, "Office"), (self.bleu, "Casual")):
             product.scent_tags = ["fresh", "woody"]
             product.occasion = occasion
@@ -13472,8 +13472,7 @@ class FirstAskDeniesAndOffersTests(TestCase):
         self.assertIn("Olibanum", context)
         self.assertIn("Incense", context)
         self.assertEqual(context.count("Description Tags (first three only): fresh, woody"), 2)
-        for evidence in ("Occasion: Office", "Occasion: Casual", "مناسب للشغل والمكتب",
-                         "مناسب للاستخدام اليومي"):
+        for evidence in ("Occasion: Office", "Occasion: Casual", "Simple Scent Description: ريحته فريش ومنعش وخشبي"):
             self.assertIn(evidence, context)
         self.assertIn(context, prompt)
 
@@ -15003,7 +15002,7 @@ class AlternativesAnswerTheRequestTests(TestCase):
         self.assertIn("Olibanum", context)
         self.assertIn("Description Tags (first three only): fresh, citrus, woody", context)
         self.assertIn("Occasion: Office", context)
-        self.assertIn("مناسب للشغل والمكتب", context)
+        self.assertNotIn("مناسب للشغل والمكتب", context)
         self.assertNotIn("Untrusted catalog description", context)
         self.assertIn(context, prompt)
 
@@ -15017,7 +15016,7 @@ class AlternativesAnswerTheRequestTests(TestCase):
 
 
 class BriefBlockCannotInviteInventionTests(TestCase):
-    """Brief descriptions retain saved tags and occasions without inviting note invention.
+    """Brief contexts retain saved tags and occasions without inviting note invention.
 
     Notes, season and performance stay withheld. Free-text catalog descriptions cannot replace
     the saved scent labels, and only the first three labels supply ordinary description prose.
@@ -15057,7 +15056,7 @@ class BriefBlockCannotInviteInventionTests(TestCase):
     def test_the_recorded_occasion_remains_available_without_a_season_claim(self):
         brief = self._brief()
         self.assertIn("Occasion: Evening", brief)
-        self.assertIn("للخروجات والسهرات", brief)
+        self.assertNotIn("للخروجات والسهرات", brief)
         self.assertNotIn("Season:", brief)
         self.assertNotIn("Winter", brief)
 

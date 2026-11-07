@@ -18,7 +18,7 @@ from ..sales.scent_preferences import normalize_scent_intent
 from ..sales.scent_matching import fit_key, match_facts, order_candidates
 from ..sales.scent_selection import combined_budget_quotes, nearest_selection
 from ..sales.value import as_budget, eligible_variants
-from ..scent_description import describe_scent, selected_tags, selected_occasion
+from ..scent_description import describe_scent, selected_tags
 from ..static_faq_service import normalize_arabic
 
 
@@ -52,7 +52,6 @@ def _record(product, intent):
         "scent_tags": product.scent_tags, "gender": product.gender,
         "match": match_facts(product, intent),
         "description_tags": selected_tags(product.scent_tags),
-        "description_occasion": selected_occasion(product.occasion, intent.get("occasion")),
         "scent_description": describe_scent(product.scent_tags, product.occasion,
                                             preferred_occasion=intent.get("occasion")),
         "occasion": product.occasion, "season": product.season,
@@ -156,7 +155,7 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "Recommend directly even when the match is partial; do not say nothing fits or ask to relax scent, season, or occasion. "
         "Describe actual catalog facts, without claiming a different season or occasion matches the request. "
         "Describe every selected perfume in natural Egyptian Arabic using all its description_tags "
-        "(the first three saved scent_tags) followed by its description_occasion. "
+        "(the first three saved scent_tags), without appending an occasion or usage claim. "
         "If the customer explicitly excludes a scent description, omit it and keep the other requested facts. "
         "The supplied scent_description demonstrates the simple wording; no extra descriptors or fancy phrases. "
         "Ordinary prose is one or two short sentences; honor requests for more choices or complete details. "
@@ -170,7 +169,10 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "Performance preferences do not distinguish candidates, establish a quiet projection, or guarantee a requested duration. "
         "A shared scent style is not evidence that perfumes smell closely alike. Do not claim close similarity or a similarity percentage. "
         "Never invent popularity, guaranteed appeal, performance differences, product names or facts. "
-        "Describe occasion suitability only using each product's occasion_categories. "
+        "Mention occasion suitability only when the current customer explicitly asks about it for that perfume, "
+        "using its occasion_categories; unrecorded suitability needs confirmation. "
+        "A request to recommend something for work is a selection preference, not permission to describe occasions. "
+        "Saved occasion preferences and earlier questions do not authorize occasion wording. "
         "Respect preferred brands where possible and identify a different brand when choosing it. "
         "Use previous offers and current discussion for continuity; when asked for other choices, prefer an unoffered match. "
         "Do not repeat earlier sales sentences, ask for an occasion, or ask for a scent preference already supplied. "
