@@ -40,33 +40,32 @@ class Conversation1233RankingTests(TestCase):
                 self.assertTrue(entries[1].occasion_conflict)
                 self.assertIn("Evening", " ".join(entries[1].mismatches))
 
-    def test_occasion_is_required_while_projection_does_not_filter(self):
+    def test_occasion_orders_matches_while_projection_does_not_filter(self):
         offered = {p.name for p in (self.elite, self.dark, self.bonded)}
         results = search_products({"gender": "male", "occasion": "daytime", "projection": "strong",
                                    "longevity": "long-lasting", "scent_tags": ["fresh"]},
                                   self.store, keep=offered, offered=offered)
-        self.assertEqual(list(results["products"]), [self.bonded])
-        self.assertEqual(results["keeping"], [self.bonded.name])
+        self.assertEqual(list(results["products"]), [self.bonded, self.elite, self.dark])
+        self.assertEqual(results["keeping"], sorted(offered))
         self.assertIsNone(results["relax_key"])
-        self.assertNotIn(self.bonded.name, results["dropped"])
-        for product in (self.elite, self.dark):
-            self.assertIn("Evening", results["dropped"][product.name])
+        self.assertEqual(results["dropped"], {})
 
     def test_evening_request_also_reassesses_a_previous_daytime_suggestion(self):
         results = search_products(
             {"gender": "male", "occasion": "night"}, self.store,
             keep={self.bonded.name}, offered={self.bonded.name},
         )
-        self.assertEqual(results["keeping"], [])
-        self.assertIn("Casual/Office/Everyday", results["dropped"][self.bonded.name])
+        self.assertEqual(results["keeping"], [self.bonded.name])
+        self.assertEqual(results["dropped"], {})
         self.assertNotEqual(list(results["products"])[0], self.bonded)
 
-    def test_blank_occasion_cannot_satisfy_a_requested_occasion(self):
+    def test_blank_occasion_keeps_the_product_below_matching_occasions(self):
         unknown = self.product("Unknown occasion")
         result = search_products({"occasion": "morning"}, self.store, keep={unknown.name})
-        self.assertNotIn(unknown, result["products"])
-        self.assertEqual(result["keeping"], [])
-        self.assertIn("غير محددة", result["dropped"][unknown.name])
+        self.assertIn(unknown, result["products"])
+        self.assertEqual(list(result["products"])[0], self.bonded)
+        self.assertEqual(result["keeping"], [unknown.name])
+        self.assertEqual(result["dropped"], {})
 
     def test_matching_morning_catalogue_value_satisfies_daily_request(self):
         morning = self.product("Morning scent", occasion="Morning")

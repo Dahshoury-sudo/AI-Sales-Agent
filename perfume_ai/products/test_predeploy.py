@@ -107,10 +107,10 @@ class UnaffordableRecommendationTests(BugFixture):
         self.assertNotIn(self.a.name, reply)
         self.assertNotIn(self.b.name, reply)
         self.assertFalse(quote_evidence(context))
-        self.assertIn("max_price=offered", context)
+        self.assertEqual(context, "NO_BUDGET_MATCH")
         self.assertEqual(intent["max_price"], 500)
 
-    def test_relaxation_offer_keeps_size_and_scent_exclusions_until_accepted(self):
+    def test_budget_question_keeps_size_and_scent_exclusions(self):
         from products.services.conversation_service import merge_preferences
         intent = {"max_price": 500, "requested_volume": 90, "excluded_scent_tags": ["oud"]}
         reply, context = self.reply(intent)
@@ -118,7 +118,11 @@ class UnaffordableRecommendationTests(BugFixture):
         self.assertEqual(self.conv.preferences["requested_volume"], 90)
         self.assertEqual(self.conv.preferences["excluded_scent_tags"], ["oud"])
         self.assertEqual(self.conv.preferences["max_price"], 500)
-        self.assertIn("max_price=offered", context)
+        self.assertEqual(context, "NO_BUDGET_MATCH")
+        save_message(self.conv, "assistant", reply, context)
+        from products.services.sales.described import pending_relaxations
+        merged = merge_preferences(self.conv, {}, "اه", pending=pending_relaxations(self.conv))
+        self.assertEqual(merged["max_price"], 500)
 
     def test_unavailable_size_cannot_be_fixed_by_a_budget_relaxation(self):
         reply, context = self.reply({"max_price": 500, "requested_volume": 150})
@@ -139,7 +143,7 @@ class UnaffordableRecommendationTests(BugFixture):
     def test_total_budget_failure_never_quotes_affordable_individual_bottles(self):
         intent = {"max_price": 1000, "budget_scope": "total", "purchase_quantity": 2}
         reply, context = self.reply(intent)
-        self.assertIn("max_price=offered", context)
+        self.assertEqual(context, "NO_BUDGET_MATCH")
         self.assertNotIn(self.a.name, reply)
         self.assertFalse(quote_evidence(context))
 

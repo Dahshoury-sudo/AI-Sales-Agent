@@ -527,7 +527,7 @@ def _field_or_placeholder(value):
 
 
 def format_product(product, max_price=None, brief=False, show_prices=True,
-                   show_value_pick=True, line_mates=None, preferred_occasion=None):
+                   show_value_pick=True, line_mates=None, preferred_occasion=None, variant_intent=None):
     """Render one product as a prompt block.
 
     brief=True drops stock status, out-of-stock sizes, notes and performance fields.
@@ -548,6 +548,10 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
     with a verdict about *which size*. Leading with the size on every recommended perfume is
     how one injected line became the opening sentence of nearly every reply.
 
+    variant_intent restricts displayed purchase options for contextual alternatives
+    to the same eligible size, bottle type and budget used in selection. Omit it
+    for factual product questions that must show the requested catalog details.
+
     line_mates is the list of catalogue names on this perfume's line (see `_line_mate_note`),
     supplied by `format_products` because it takes a query the whole batch can share. Present on
     the brief block too: brief means the customer has heard of this perfume already, which is
@@ -562,7 +566,11 @@ def format_product(product, max_price=None, brief=False, show_prices=True,
         f"Simple Scent Description: {describe_scent(tags, product.occasion, preferred_occasion=preferred_occasion)}\n"
     )
     variants = list(product.variants.all())
-    available, out_of_stock = _size_lines(product, variants, max_price)
+    display_variants = variants
+    if variant_intent is not None:
+        from .sales.value import eligible_variants
+        display_variants = [v for v in eligible_variants(product, variant_intent) if v.volume > 0]
+    available, out_of_stock = _size_lines(product, display_variants, max_price)
 
     available_text = "\n".join(available) if available else "لا توجد أحجام متوفرة حالياً"
     brand_display = (
@@ -611,7 +619,7 @@ Occasion: {_field_or_placeholder(product.occasion)}
             # Identity before price: which perfume this is has to settle before the model
             # starts recommending a size of it.
             _line_mate_note(line_mates),
-            value_pick_note(product, variants, max_price)
+            value_pick_note(product, display_variants, max_price)
             if show_prices and show_value_pick else "",
             _exclusive_selling_note(product),
             _missing_data_note(product),
@@ -687,7 +695,7 @@ def _line_mates_for(products):
 
 
 def format_products(products, max_price=None, limit=None, brief=False, show_prices=True,
-                    show_value_pick=True, preferred_occasion=None):
+                    show_value_pick=True, preferred_occasion=None, variant_intent=None):
     """Render several products, optionally capped.
 
     The cap is a safety net on prompt size: callers should already be handing over
@@ -710,6 +718,7 @@ def format_products(products, max_price=None, limit=None, brief=False, show_pric
             show_prices=show_prices, show_value_pick=show_value_pick,
             line_mates=mates.get(product.name),
             preferred_occasion=preferred_occasion,
+            variant_intent=variant_intent,
         )
         for product in selected
     )

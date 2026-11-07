@@ -1,12 +1,13 @@
 """Choose catalog IDs from direct label matches and explain the selected perfumes."""
 
 import json
+import re
 
 from products.models import Product
 from products.occasions import OCCASIONS, occasion_groups
 from .prompts import get_system_prompt
 from ..product_formatting import (
-    ProductQuote, append_quotation, format_products,
+    append_quotation, format_products,
     monetary_claims, product_claim_facts, product_quotes, quote_context, render_quotes,
 )
 from ..reply_sanitizer import product_claim_issues
@@ -14,31 +15,42 @@ from ..performance_policy import EXCELLENT, STRONG, governed_reply, selection_pr
 from ..search_service import product_matches_request
 from ..sales import brand_response, described, naming, repetition
 from ..sales.scent_preferences import normalize_scent_intent
+from ..sales.scent_matching import fit_key, match_facts, order_candidates
+from ..sales.scent_selection import combined_budget_quotes, nearest_selection
 from ..sales.value import as_budget, eligible_variants
 from ..scent_description import describe_scent, selected_tags, selected_occasion
+from ..static_faq_service import normalize_arabic
 
 
 def no_match_reply(search=None):
-    if (search or {}).get("needs_occasion"):
-        from ..sales.occasion_preferences import CLARIFICATION
-        return CLARIFICATION, "OCCASION_REQUIRED"
     key = (search or {}).get("relax_key")
     questions = {
-        "scent_tags": "تحب نوسّع الاختيارات من غير الالتزام بطابع الريحة ده؟",
-        "excluded_scent_tags": "تحب نوسّع الاختيارات ونشيل شرط استبعاد طابع الريحة؟",
-        "occasion": "تحب نشوف نفس طابع الريحة من غير تقييد المناسبة؟",
-        "max_price": "تحب نوسّع البحث من غير حد للميزانية؟",
-        "brand": "تحب نشوف نفس المواصفات من براند تاني؟",
+        "max_price": "مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟",
+        "brand": "مش لاقي اختيار بنفس طابع الريحة من البراند المطلوب. تحب نشوف براند تاني؟",
     }
-    question = questions.get(key, "تحب تغيّر أنهي شرط في طلبك؟")
-    context = f"{described.PENDING_RELAX_MARKER} {key}=offered\n" if key else "NO_SCENT_MATCH"
-    return "مش لاقي ترشيح يطابق كل الشروط دي مع بعض. " + question, context
+    if key in questions:
+        context = f"{described.PENDING_RELAX_MARKER} {key}=offered\n" if key == "brand" else "NO_BUDGET_MATCH"
+        return questions[key], context
+    reason = (search or {}).get("no_match_reason")
+    blockers = {
+        "requested_volume": "الحجم المطلوب مش متاح مع طابع الريحة ده. تحب أنهي حجم تاني؟",
+        "bottle_type": "نوع الزجاجة المطلوب مش متاح مع طابع الريحة ده. تحب أنهي نوع زجاجة تاني؟",
+        "gender": "مش لاقي اختيار بنفس طابع الريحة للنوع اللي طلبته. فيه طابع ريحة تاني بتحبه؟",
+        "perfume_type": "مش لاقي اختيار بنفس طابع الريحة من الفئة المطلوبة. تحب أنهي فئة تانية؟",
+        "notes": "مش لاقي اختيار بنفس طابع الريحة بالمكونات اللي طلبتها. تحب تغيّر أنهي مكوّن مطلوب؟",
+        "purchase_quantity": "مش متاح العدد المطلوب من الاختيارات المناسبة. تحب كام زجاجة بدل كده؟",
+        "requirements": "مش لاقي اختيار متاح بنفس طابع الريحة بالمواصفات اللي حددتها. تحب تغيّر إيه في الطلب؟",
+    }
+    if reason in blockers:
+        return blockers[reason], "NO_ELIGIBLE_SCENT_MATCH"
+    return "مش لاقي عطر متاح بنفس طابع الريحة المطلوب. فيه طابع ريحة تاني بتحبه؟", "NO_SCENT_MATCH"
 
 
 def _record(product, intent):
     return {
         "id": product.pk, "name": product.name, "brand": product.brand.name,
         "scent_tags": product.scent_tags, "gender": product.gender,
+        "match": match_facts(product, intent),
         "description_tags": selected_tags(product.scent_tags),
         "description_occasion": selected_occasion(product.occasion, intent.get("occasion")),
         "scent_description": describe_scent(product.scent_tags, product.occasion,
@@ -56,23 +68,17 @@ def _current_candidates(candidates, intent, search, store):
     current = {p.pk: p for p in Product.objects.filter(store=store, pk__in=[p.pk for p in candidates])
                .select_related("brand", "store").prefetch_related("variants")}
     reference = search.get("reference_product")
-    return [current[p.pk] for p in candidates if p.pk in current and product_matches_request(
+    eligible = [current[p.pk] for p in candidates if p.pk in current and product_matches_request(
         current[p.pk], intent, store, blocked_brands=search.get("blocked_brands", ()),
         excluded_names=search.get("excluded_names", ()), reference_id=reference.pk if reference else None,
     )]
+    return order_candidates(eligible, intent, keep=search.get("keeping", ()), offered=search.get("offered", ()))
 
 
 def _quotes(selected, intent, message):
     budget = as_budget(intent.get("max_price"))
     if intent.get("budget_scope") == "total":
-        count = intent.get("purchase_quantity") or 2
-        if budget is None or len(selected) != count:
-            raise ValueError("Choose the requested bottle count within the combined budget.")
-        quotes = [ProductQuote.from_variant(min(eligible_variants(p, intent), key=lambda v: (v.price, v.pk)))
-                  for p in selected]
-        if sum(q.price for q in quotes) > budget:
-            raise ValueError("The selected bottles exceed the combined budget.")
-        return quotes
+        return combined_budget_quotes(selected, intent)
     allowed = {v.pk for p in selected for v in eligible_variants(p, intent) if v.volume > 0}
     # The merged request includes saved size and bottle choices. Re-parsing only
     # this message can mistake a reference name for packaging or lose those choices.
@@ -82,12 +88,12 @@ def _quotes(selected, intent, message):
     return quotes
 
 
-def _fallback(candidates, intent, message=None, history=None):
+def _fallback(candidates, intent, message=None, history=None, search=None):
     from ..sales.recommendation_response import _choice_limit
     limit = _choice_limit(intent)
-    if intent.get("budget_scope") == "total":
-        candidates = sorted(candidates, key=lambda p: min(v.price for v in eligible_variants(p, intent)))
-    selected = candidates[:limit]
+    search = search or {}
+    selected = nearest_selection(candidates, intent, limit, keep=search.get("keeping", ()),
+                                 offered=search.get("offered", ()))
     from .recommendation import recommendation_fit
     return selected, recommendation_fit(selected, intent, message=message, history=history)
 
@@ -118,6 +124,11 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
                           search=None, gender_unknown=False, repeat_hint="", *, chat):
     search = search or {}
     intent = selection_preferences(normalize_scent_intent(search.get("effective_intent") or intent))
+    # Preserve the customer's saved words, but expose the recommendation policy
+    # unambiguously to the model even for a legacy all-label request.
+    if intent.get("scent_tags"):
+        intent["scent_match"] = "any"
+    intent.pop("occasion_needs_clarification", None)
     candidates = _current_candidates(list(products), intent, search, store)
     if not candidates:
         return no_match_reply(search)
@@ -129,14 +140,21 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         minimum_prices = sorted(min(v.price for v in eligible_variants(p, intent) if v.volume > 0)
                                 for p in candidates)
         if len(minimum_prices) < count:
-            return no_match_reply(search)
+            return no_match_reply({**search, "no_match_reason": "purchase_quantity"})
         if sum(minimum_prices[:count]) > as_budget(intent.get("max_price")):
             return no_match_reply({**search, "relax_key": "max_price"})
     instructions = (
         "\nFor this recommendation return ONLY JSON: {\"product_ids\": [integer IDs], \"reply\": \"Egyptian Arabic\"}. "
         f"Choose between one and {count} perfumes from eligible_products; use their exact catalog names in reply. "
         "For a total purchase budget choose exactly the purchase_quantity of bottles within that combined budget. "
-        "Choose according to the customer's current preferences and the supplied facts. The list is in ID order, not relevance order. "
+        "One shared requested scent tag is sufficient; never require every requested tag, even for an AND/all request. "
+        "eligible_products is ordered by nearest fit: matching season FIRST, then more shared scent tags, then matching occasion. "
+        "Season and occasion differences or missing values do not disqualify a perfume. "
+        "Choose the nearest feasible options in that order; nearest_product_ids is a feasible default selection. "
+        "Do not skip a nearer feasible perfume for a cheaper one, a preferred brand, or an earlier suggestion. "
+        "Within equal fits, use preferred brands and conversation context. "
+        "Recommend directly even when the match is partial; do not say nothing fits or ask to relax scent, season, or occasion. "
+        "Describe actual catalog facts, without claiming a different season or occasion matches the request. "
         "Describe every selected perfume in natural Egyptian Arabic using all its description_tags "
         "(the first three saved scent_tags) followed by its description_occasion. "
         "If the customer explicitly excludes a scent description, omit it and keep the other requested facts. "
@@ -169,6 +187,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "no_longer_matching": search.get("dropped", {}),
         "gender_unknown": gender_unknown,
         "reference": {"name": reference.name, "scent_tags": reference.scent_tags} if reference else None,
+        "nearest_product_ids": [p.pk for p in nearest_selection(
+            candidates, intent, count, keep=search.get("keeping", ()), offered=search.get("offered", ()))],
     }
     messages = [{"role": "system", "content": get_system_prompt(store) + instructions}]
     messages.extend(history or [])
@@ -187,6 +207,10 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
             if any(pk not in available for pk in ids):
                 raise ValueError("Some chosen IDs are not currently eligible; choose only available matching products.")
             proposed = [available[pk] for pk in ids]
+            closest = nearest_selection(list(available.values()), intent, len(proposed),
+                                        keep=search.get("keeping", ()), offered=search.get("offered", ()))
+            if not closest or [fit_key(p, intent) for p in proposed] != [fit_key(p, intent) for p in closest]:
+                raise ValueError("Choose the nearest feasible perfumes in order: season, shared scent tags, then occasion.")
             draft = data.get("reply")
             if not isinstance(draft, str) or not draft.strip():
                 raise ValueError("Write a brief explanation naming the selected perfumes.")
@@ -195,6 +219,16 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
             allowed_names = chosen_names | ({reference.name} if reference else set())
             if not chosen_names <= mentioned or mentioned - allowed_names:
                 raise ValueError("Name every selected perfume and do not offer another perfume in the reply.")
+            named_order = naming.names_in(draft, [p.name for p in proposed])
+            by_name = {p.name: p for p in proposed}
+            if [fit_key(by_name[name], intent) for name in named_order] != [fit_key(p, intent) for p in closest]:
+                raise ValueError("Present the nearest perfume first, followed by the next nearest choice.")
+            text = normalize_arabic(draft)
+            if re.search(r"(?:مش لاقي|مفيش|لا يوجد|لم اجد).{0,90}(?:ترشيح|يطابق|يناسب|الشروط)|"
+                         r"(?:نغير|تغير|نوسع|نشيل|نخفف).{0,40}(?:المناسبه|الموسم|الشروط|طابع الريحه)|"
+                         r"(?:no|cannot find|can't find).{0,40}(?:match|fits)|"
+                         r"(?:relax|change).{0,40}(?:occasion|season|scent|preferences)", text):
+                raise ValueError("An eligible partial match exists. Recommend it directly without a no-match or relaxation message.")
             issues = product_claim_issues(draft, product_claim_facts(proposed), message=message,
                                           history=history, preferred_occasion=intent.get("occasion"),
                                           description_required=True)
@@ -226,7 +260,9 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         candidates = _current_candidates(candidates, intent, search, store)
         if not candidates:
             return no_match_reply(search)
-        selected, reply = _fallback(candidates, intent, message, history)
+        selected, reply = _fallback(candidates, intent, message, history, search)
+        if not selected:
+            return no_match_reply({**search, "relax_key": "max_price"})
     try:
         quotes = _quotes(selected, intent, message)
     except ValueError:

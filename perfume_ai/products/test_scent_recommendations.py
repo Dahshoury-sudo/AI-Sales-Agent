@@ -36,12 +36,12 @@ class ScentRecommendationTests(TestCase):
             result = recommend(message, search["products"], store=self.store, intent=intent, search=search)
         return result, model
 
-    def test_all_any_and_negative_labels_use_assigned_style(self):
+    def test_requested_and_negative_labels_use_assigned_style(self):
         fresh = self.make_product("Cedar Day", ["fresh"], top_notes="Vanilla")
         sweet = self.make_product("Amber Night", ["sweet"], top_notes="Bergamot")
         both = self.make_product("Mixed Mood", ["fresh", "sweet"])
         self.make_product("Unclassified", [], top_notes="Bergamot, Vanilla")
-        self.assertEqual(self.ids({"scent_tags": ["fresh", "sweet"]}), {both.pk})
+        self.assertEqual(self.ids({"scent_tags": ["fresh", "sweet"]}), {fresh.pk, sweet.pk, both.pk})
         self.assertEqual(self.ids({"scent_tags": ["fresh", "sweet"], "scent_match": "any"}), {fresh.pk, sweet.pk, both.pk})
         self.assertEqual(self.ids({"scent_tags": ["fresh"], "excluded_scent_tags": ["sweet"]}), {fresh.pk})
         self.assertEqual(self.ids({"scent_tags": ["sweet"]}), {sweet.pk, both.pk})
@@ -50,10 +50,10 @@ class ScentRecommendationTests(TestCase):
         office = self.make_product("Cedar Day", ["fresh"], occasion="Office, Formal, Daily")
         sport = self.make_product("Citrus Run", ["fresh"], occasion="Sport/Casual")
         night = self.make_product("Amber Night", ["fresh"], occasion="Evening")
-        self.assertEqual(self.ids({"scent_tags": ["fresh"], "occasion": "work"}), {office.pk})
-        self.assertEqual(self.ids({"scent_tags": ["fresh"], "occasion": "gym"}), {sport.pk})
-        self.assertEqual(self.ids({"scent_tags": ["fresh"], "occasion": "daytime"}), {office.pk, sport.pk})
-        self.assertNotIn(night.pk, self.ids({"scent_tags": ["fresh"], "occasion": "work"}))
+        for occasion, expected in (("work", [office, sport, night]), ("gym", [sport, office, night]),
+                                   ("daytime", [office, sport, night])):
+            self.assertEqual(list(search_products({"scent_tags": ["fresh"], "occasion": occasion},
+                                                 self.store)["products"]), expected)
 
     def test_scent_without_occasion_searches_all_matching_occasions(self):
         day = self.make_product("Cedar Day", ["fresh"])
@@ -106,10 +106,10 @@ class ScentRecommendationTests(TestCase):
     def test_reference_labels_replace_note_similarity_and_exclude_reference(self):
         reference = self.make_product("Cedar Day", ["fresh", "woody"], top_notes="Bergamot")
         alternative = self.make_product("Green Walk", ["fresh", "woody"], top_notes="Vanilla")
-        self.make_product("Citrus Run", ["fresh"], top_notes="Bergamot")
+        partial = self.make_product("Citrus Run", ["fresh"], top_notes="Bergamot")
         result = search_products({"similar_to": reference.name}, self.store)
         self.assertFalse(result["needs_scent_reference"])
-        self.assertEqual(set(result["products"].values_list("pk", flat=True)), {alternative.pk})
+        self.assertEqual(list(result["products"]), [alternative, partial])
         self.assertEqual(result["effective_intent"]["scent_tags"], ["fresh", "woody"])
         self.assertIsNone(result["similarity"])
 
@@ -124,17 +124,16 @@ class ScentRecommendationTests(TestCase):
         self.assertTrue(result["needs_scent_reference"])
         self.assertFalse(result["products"].exists())
 
-    def test_empty_match_asks_permission_to_relax_one_constraint(self):
+    def test_partial_match_recommends_without_asking_to_relax(self):
         self.make_product("Cedar Day", ["fresh"])
         intent = {"scent_tags": ["fresh", "sweet"], "occasion": "office", "max_price": 500}
         search = search_products(intent, self.store)
-        self.assertEqual(search["relax_key"], "scent_tags")
+        self.assertIsNone(search["relax_key"])
         with patch("products.services.ai.recommendation.chat") as model:
             reply, context = recommend("فريش وسويت للشغل", search["products"], store=self.store, intent=intent, search=search)
-        model.assert_not_called()
-        self.assertIn("؟", reply)
-        self.assertIn("scent_tags=offered", context)
-        self.assertNotIn("Cedar Day", reply)
+        self.assertIn("Cedar Day", reply)
+        self.assertNotIn("كل الشروط", reply)
+        self.assertNotIn("scent_tags=offered", context)
 
     def test_prices_are_rendered_from_eligible_variants(self):
         product = self.make_product("Cedar Day", ["fresh"], price=550)
@@ -214,9 +213,9 @@ class ScentRecommendationTests(TestCase):
                                                         "reply": "Cedar Day و Citrus Run طابعهم فريش."})
         self.assertEqual(model.call_count, 2)
         quotes = quote_evidence(context)["quotes"]
-        self.assertEqual({q["product_id"] for q in quotes}, {cheap.pk, cheap_two.pk})
+        self.assertEqual({q["product_id"] for q in quotes}, {second.pk, cheap.pk})
         self.assertLessEqual(sum(Decimal(q["price"]) for q in quotes), Decimal("600"))
-        self.assertIn("450.00", reply)
+        self.assertIn("600.00", reply)
 
     def test_only_selected_products_are_saved_as_offered(self):
         selected = self.make_product("Cedar Day", ["fresh"])

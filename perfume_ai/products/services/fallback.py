@@ -56,8 +56,12 @@ def _requested_fit(product, wanted):
 
 
 def suggest_alternatives(store, gender=None, max_price=None, exclude=None,
-                         limit=DEFAULT_LIMIT, notes=()):
+                         limit=DEFAULT_LIMIT, notes=(), *, intent=None):
     """Products worth offering instead, ordered by how safe a suggestion each is.
+
+    With saved preferences, use the same scent minimum, firm limits and nearest
+    selection as recommendation turns. Legacy calls without preferences retain
+    their existing discovery behavior.
 
     Deterministic, so the same conversation always produces the same fallback. Gender is
     honoured when known, widened to include unisex rather than treated as an exact match
@@ -69,6 +73,27 @@ def suggest_alternatives(store, gender=None, max_price=None, exclude=None,
     before — which is what keeps the router's repetition redirect and order_service's
     unresolved-product branch unchanged. Only product_info opts in.
     """
+    if intent:
+        from .search_service import search_products
+        from .sales.scent_selection import nearest_selection
+        from .sales.recommendation_response import _choice_limit
+
+        request = dict(intent)
+        if gender and not request.get("gender"):
+            request["gender"] = gender
+        if max_price is not None and request.get("max_price") is None:
+            request["max_price"] = max_price
+        request["exclude_names"] = list(dict.fromkeys([
+            *(request.get("exclude_names") or ()), *(p.name for p in exclude or ()),
+        ]))
+        result = search_products(request, store)
+        count = _choice_limit(request) if request.get("budget_scope") == "total" else limit
+        # The current message's ingredient affinity remains useful between equal
+        # scent fits. It neither supplies scent labels nor relaxes hard limits.
+        note_affinity = (lambda product: -_requested_fit(product, notes)) if notes else None
+        return nearest_selection(list(result["products"]), result["effective_intent"], count,
+                                 tie_breaker=note_affinity)
+
     from products.models import Product
 
     from .search_service import SELLABLE

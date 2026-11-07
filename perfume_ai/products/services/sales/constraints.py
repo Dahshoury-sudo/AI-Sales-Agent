@@ -298,23 +298,15 @@ def describe(intent):
     return phrases
 
 
-# The constraints `search_service.search_products` applies to `base` as hard ANDs. Notes and
-# budget are deliberately absent: those narrow `exact`, so they cannot be why a search returned
-# nothing *at all* — which is the one question `describe_filters` exists to answer. occasion,
-# longevity and projection are absent because they stopped being filters (see that function's
-# comment on why they were demoted to ranking signals).
-#
-# `exclude_brands` qualifies on exactly that test — it is applied to `base` as a hard AND and can
-# empty a search on its own, a customer ruling out our own blends in a catalogue that is mostly
-# own blends being the case. It is also the FIRST list-valued member of this tuple: see
-# `described.relax_offer_block`, which used to serialise every value with a bare `str()`.
+# Legacy marker vocabulary. Season remains readable in old pending offers, but
+# new offers and hard-limit descriptions omit both season and occasion.
 HARD_FILTER_KEYS = ("gender", "perfume_type", "season", "brand", "exclude_brands")
 
 
 def hard_filter_keys(intent):
     """Applicable hard keys; keep the constant as the allowed legacy marker vocabulary."""
     return tuple(key for key in HARD_FILTER_KEYS
-                 if key != "brand" or (intent or {}).get("brand_strict") is True)
+                 if key != "season" and (key != "brand" or (intent or {}).get("brand_strict") is True))
 
 
 def describe_filters(intent):
@@ -333,7 +325,7 @@ def describe_filters(intent):
         return []
 
     phrases = []
-    for table, key in ((_GENDER, "gender"), (_PERFUME_TYPE, "perfume_type"), (_SEASON, "season")):
+    for table, key in ((_GENDER, "gender"), (_PERFUME_TYPE, "perfume_type")):
         # Same carve-out as `describe`: "multiple" is the router asking which to start with,
         # not a stated preference, and search_products filters on it as a literal `gender`
         # value that matches no row — so it is not a constraint to offer relaxing either.

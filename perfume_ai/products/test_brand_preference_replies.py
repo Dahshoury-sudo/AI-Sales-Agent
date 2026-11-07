@@ -39,7 +39,7 @@ class BrandPreferenceReplyTests(TestCase):
     def selection(self, reply, *products):
         return json.dumps({"product_ids": [p.pk for p in (products or (self.better,))], "reply": reply})
 
-    def test_selection_discloses_brand_and_removes_stale_continuity(self):
+    def test_selection_discloses_brand_and_prefers_fit_over_continuity(self):
         self.local.occasion = "Evening"
         self.local.save(update_fields=["occasion"])
         search = self.search()
@@ -49,9 +49,9 @@ class BrandPreferenceReplyTests(TestCase):
             reply, _ = recommend("للنهار وعايزه فواح", search["products"], history,
                                  store=self.store, intent=self.intent, search=search)
         payload = json.loads(chat.call_args.args[0][-1]["content"])
-        self.assertEqual([p["id"] for p in payload["eligible_products"]], [self.better.pk])
-        self.assertNotIn(self.local.name, payload["under_discussion"])
-        self.assertIn(self.local.name, payload["no_longer_matching"])
+        self.assertEqual([p["id"] for p in payload["eligible_products"]], [self.better.pk, self.local.pk])
+        self.assertIn(self.local.name, payload["under_discussion"])
+        self.assertNotIn(self.local.name, payload["no_longer_matching"])
         self.assertIn("Fresh Choice من Dior", reply)
         self.assertIn("غير Perfamix", reply)
         self.assertEqual(chat.call_count, 1)

@@ -1,8 +1,9 @@
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, When
 
 from products.models import Brand, Product
 from .sales import naming
 from .sales.brand_preference import matches_brand, preferred_brand_name
+from .sales.scent_matching import matching_tags, order_candidates
 
 
 # Brand bottles are compounded to order; original bottles need a counted unit.
@@ -64,12 +65,8 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
     if perfume_type and (product.perfume_type or "").lower() != perfume_type:
         return "مش من الفئة اللي طلبها"
 
-    from .sales.scent_matching import occasion_matches, season_matches, note_matches
+    from .sales.scent_matching import note_matches
     from .sales.value import eligible_variants
-
-    season = intent.get("season")
-    if season and not season_matches(product.season, season):
-        return "مش لنفس الموسم اللي قاله"
 
     brand = intent.get("brand")
     if brand and intent.get("brand_strict") is True and not matches_brand(product, brand, product.store):
@@ -86,14 +83,12 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
             return "ده تركيب بتاعنا، وهو قال إنه عايز براندات أصلية"
         return f"من {product.brand.name}، والعميل قال إنه مش عايز البراند ده"
 
-    if not occasion_matches(product.occasion, intent.get("occasion")):
-        return f"المناسبة المسجلة له {product.occasion or 'غير محددة'}، مش المناسبة المطلوبة"
     if not product.scent_tags:
         return "طابع ريحته لسه مش متسجل"
     tags, wanted = set(product.scent_tags), set(intent.get("scent_tags") or ())
     if tags & set(intent.get("excluded_scent_tags") or ()):
         return "طابع ريحته من الأنواع اللي العميل استبعدها"
-    if wanted and (not (tags & wanted) if intent.get("scent_match") == "any" else not wanted <= tags):
+    if wanted and not matching_tags(product, intent):
         reference = intent.get("similar_to")
         return f"طابع ريحته مش مطابق لطابع {reference}" if reference else "طابع ريحته مش مطابق للطلب"
     if any(not note_matches(product, note) for note in intent.get("notes") or ()):
@@ -112,11 +107,9 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
 
 def product_matches_request(product, intent, store, *, blocked_brands=(), excluded_names=(), reference_id=None):
     """Reused after AI selection so changing stock or labels cannot license a stale offer."""
-    from .sales.scent_matching import occasion_matches, season_matches, note_matches
+    from .sales.scent_matching import note_matches
     from .sales.value import eligible_variants
 
-    if intent.get("occasion_needs_clarification"):
-        return False
     if store is None or product.store_id != store.pk or not product.is_active or not product.scent_tags:
         return False
     if product.pk == reference_id or product.brand_id in blocked_brands or product.name in excluded_names:
@@ -129,12 +122,10 @@ def product_matches_request(product, intent, store, *, blocked_brands=(), exclud
         return False
     if intent.get("brand") and intent.get("brand_strict") is True and not matches_brand(product, intent["brand"], store):
         return False
-    if not season_matches(product.season, intent.get("season")) or not occasion_matches(product.occasion, intent.get("occasion")):
-        return False
     tags, wanted = set(product.scent_tags), set(intent.get("scent_tags") or ())
     if tags & set(intent.get("excluded_scent_tags") or ()):
         return False
-    if wanted and (not (tags & wanted) if intent.get("scent_match") == "any" else not wanted <= tags):
+    if wanted and not matching_tags(product, intent):
         return False
     if any(not note_matches(product, note) for note in intent.get("notes") or ()):
         return False
@@ -144,9 +135,9 @@ def product_matches_request(product, intent, store, *, blocked_brands=(), exclud
 
 
 def search_products(intent, store=None, keep=(), offered=()):
-    """All eligible labeled perfumes. AI chooses from these; there are no scent scores."""
+    """All eligible labeled perfumes, ordered by the nearest permitted scent fit."""
     from .sales.scent_preferences import normalize_scent_intent
-    from .sales.occasion_preferences import normalize_occasion_updates, PENDING_KEY
+    from .sales.occasion_preferences import normalize_occasion_updates
     from .performance_policy import selection_preferences
 
     intent = selection_preferences(normalize_occasion_updates(normalize_scent_intent(intent)))
@@ -162,6 +153,7 @@ def search_products(intent, store=None, keep=(), offered=()):
             if not needs_reference:
                 inherited = [tag for tag in reference.scent_tags if tag not in (intent.get("excluded_scent_tags") or ())]
                 intent["scent_tags"] = list(dict.fromkeys([*inherited, *intent.get("scent_tags", [])]))
+                needs_reference = not intent["scent_tags"]
     blocked = blocked_brand_ids(intent.get("exclude_brands") or [], store)
     exclusions = list(intent.get("exclude_names") or [])
     if intent.get("exclude_name"):
@@ -172,7 +164,13 @@ def search_products(intent, store=None, keep=(), offered=()):
         p, intent, store, blocked_brands=blocked, excluded_names=excluded,
         reference_id=reference.pk if reference else None,
     )]
-    ordered = products.filter(pk__in=[p.pk for p in rows]).order_by("pk")
+    rows = order_candidates(rows, intent, keep=keep, offered=offered)
+    ordered = products.filter(pk__in=[p.pk for p in rows])
+    if rows:
+        ordered = ordered.order_by(Case(*[When(pk=p.pk, then=index) for index, p in enumerate(rows)],
+                                        output_field=IntegerField()))
+    else:
+        ordered = ordered.order_by("pk")
     surviving = set(keep or ()) & {p.name for p in rows}
     catalog_by_name = {p.name: p for p in catalog}
     dropped = {}
@@ -186,21 +184,29 @@ def search_products(intent, store=None, keep=(), offered=()):
     ))
     preferred = preferred_brand_name(intent.get("brand"), store)
     relax_key = None
-    if not rows and not needs_reference and not intent.get(PENDING_KEY):
-        for key in ("scent_tags", "occasion", "max_price", "excluded_scent_tags", "brand"):
+    no_match_reason = None
+    if not rows and not needs_reference:
+        for key in ("max_price", "brand", "requested_volume", "bottle_type", "gender", "perfume_type", "notes"):
             if not intent.get(key) or (key == "brand" and intent.get("brand_strict") is not True):
                 continue
             relaxed = {name: value for name, value in intent.items() if name != key}
             if any(product_matches_request(p, relaxed, store, blocked_brands=blocked,
                                            excluded_names=excluded, reference_id=reference.pk if reference else None)
                    for p in catalog):
-                relax_key = key
+                no_match_reason = key
+                if key in ("max_price", "brand"):
+                    relax_key = key
                 break
+        if no_match_reason is None:
+            no_match_reason = ("scent_tags" if intent.get("scent_tags") and not any(
+                matching_tags(p, intent) for p in catalog
+            ) else "requirements")
     return {
         "products": ordered, "alternatives": None, "similarity": None,
         "effective_intent": intent, "needs_scent_reference": needs_reference,
-        "needs_occasion": bool(intent.get(PENDING_KEY)),
+        "needs_occasion": False,
         "relax_key": relax_key,
+        "no_match_reason": no_match_reason,
         "reference_product": reference, "ranked": {},
         "keeping": sorted(surviving), "offered": sorted(offered or ()),
         "dropped": dropped,

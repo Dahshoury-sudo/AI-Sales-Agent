@@ -266,13 +266,14 @@ class OccasionRecommendationTests(TestCase):
         self.conversation = Conversation.objects.create(store=self.store)
         self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
 
-    def test_search_and_current_eligibility_use_exact_categories(self):
+    def test_search_prefers_exact_categories_without_restricting_eligibility(self):
         for category, product in self.products.items():
             intent = {"occasion": category, "scent_tags": ["fresh"]}
             result = search_products(intent, self.store)
-            self.assertEqual(list(result["products"]), [product])
+            self.assertEqual(list(result["products"])[0], product)
+            self.assertEqual(set(result["products"]), set(self.products.values()))
             for candidate in self.products.values():
-                self.assertEqual(product_matches_request(candidate, intent, self.store), candidate == product)
+                self.assertTrue(product_matches_request(candidate, intent, self.store))
 
     def test_legacy_products_remain_eligible_without_rewriting_data(self):
         product = self.products[ACTIVE]
@@ -283,30 +284,29 @@ class OccasionRecommendationTests(TestCase):
         product.refresh_from_db()
         self.assertEqual(product.occasion, "Sport/Casual")
 
-    def test_unknown_request_asks_for_occasion_without_relaxing_search(self):
+    def test_unknown_occasion_retains_scent_matches(self):
         intent = {"occasion": "unrecognized", "scent_tags": ["fresh"]}
         result = search_products(intent, self.store)
-        self.assertTrue(result["needs_occasion"])
-        self.assertFalse(result["products"].exists())
+        self.assertFalse(result["needs_occasion"])
+        self.assertEqual(set(result["products"]), set(self.products.values()))
         self.assertIsNone(result["relax_key"])
         with patch("products.services.ai.recommendation.chat") as model:
             reply, context = recommend("fresh for something else", result["products"], store=self.store,
                                        intent=intent, search=result)
-        model.assert_not_called()
-        self.assertEqual((reply, context), (CLARIFICATION, "OCCASION_REQUIRED"))
+        self.assertIn(self.products[DAILY].name, reply)
+        self.assertNotIn("OCCASION_REQUIRED", context)
 
-    def test_empty_category_match_keeps_existing_relaxation_flow(self):
+    def test_different_category_is_recommended_without_relaxation(self):
         Product.objects.exclude(pk=self.products[WORK].pk).update(is_active=False)
         intent = {"occasion": ROMANTIC, "scent_tags": ["fresh"]}
         result = search_products(intent, self.store)
-        self.assertFalse(result["products"].exists())
-        self.assertEqual(result["relax_key"], "occasion")
+        self.assertEqual(list(result["products"]), [self.products[WORK]])
+        self.assertIsNone(result["relax_key"])
         with patch("products.services.ai.recommendation.chat") as model:
             reply, context = recommend("fresh for a date", result["products"], store=self.store,
                                        intent=intent, search=result)
-        model.assert_not_called()
-        self.assertIn("occasion=offered", context)
-        self.assertNotIn(self.products[WORK].name, reply)
+        self.assertNotIn("occasion=offered", context)
+        self.assertIn(self.products[WORK].name, reply)
 
     def test_suitability_claims_use_the_same_categories_in_both_validators(self):
         for category, product in self.products.items():
@@ -334,16 +334,16 @@ class OccasionRecommendationTests(TestCase):
              patch("products.services.router.confident_catalogue_match", return_value=None), \
              patch("products.services.router.recommend", return_value=("اختيارك", "chosen")) as model:
             route("انت اختار", [], self.store, self.conversation)
-        self.assertEqual(list(model.call_args.args[1]), [self.products[WORK]])
+        self.assertEqual(list(model.call_args.args[1])[0], self.products[WORK])
+        self.assertEqual(set(model.call_args.args[1]), set(self.products.values()))
         self.assertEqual(model.call_args.kwargs["intent"]["occasion"], WORK)
 
-    def test_router_clarifies_failed_mapping_before_searching_or_recommending(self):
+    def test_router_recommends_scent_matches_despite_failed_occasion_mapping(self):
         with patch("products.services.router.classify", return_value="recommendation"), \
              patch("products.services.router.extract_intent", return_value={"occasion": "unrecognized", "scent_tags": ["fresh"]}), \
              patch("products.services.router.confident_catalogue_match", return_value=None), \
-             patch("products.services.router.search_products") as search, \
-             patch("products.services.router.recommend") as model:
+             patch("products.services.router.recommend", return_value=("Cedar Ease", "chosen")) as model:
             reply, context = route("recommend fresh unisex perfume", [], self.store, self.conversation)
-        self.assertEqual((reply, context), (CLARIFICATION, "OCCASION_REQUIRED"))
-        search.assert_not_called()
-        model.assert_not_called()
+        self.assertIn("Cedar Ease", reply)
+        self.assertEqual(context, "chosen")
+        self.assertEqual(set(model.call_args.args[1]), set(self.products.values()))

@@ -751,18 +751,24 @@ def _named_budget_hint(budget):
     )
 
 
-def _alternatives_budget_hint(budget):
+def _alternatives_budget_hint(budget, *, nearest=False):
     """The same markers on the fallback list, where the model *is* the one choosing.
 
     Separate from `_named_budget_hint` because the ❌ prohibition is correct here and wrong there —
     nobody named these perfumes, so declining to pitch an over-budget one is the right call. What
-    needs saying instead is what to do when the whole list is over budget: `suggest_alternatives`
-    only sorts in-budget first, it does not filter, so a stated budget under the cheapest thing in
-    the catalogue yields a list of ⚠️ and ❌ rows and an instruction (rule 4) to pitch from it.
+    Legacy suggestions only sort by budget. Contextual suggestions enforce the
+    saved limits and rank by scent fit, so their hint must preserve that ordering.
     Silence and an unmarked over-budget pitch are both worse than saying the number out loud.
     """
     if budget is None:
         return ""
+    if nearest:
+        return (
+            f"\nميزانية العميل {int(budget)} جنيه. البدائل مرتبة حسب أقرب طابع ريحة وموسم ومناسبة، "
+            "والأحجام المعروضة بتراعي الميزانية والحجم ونوع الزجاجة اللي طلبهم. ابدأ بالأقرب في القائمة؛ "
+            "متقدمش اختيار أبعد لمجرد إنه أرخص. لو سعر عليه ⚠️، اذكر سعره الحقيقي وجملة "
+            "\"أعلى حاجة بسيطة من ميزانيتك\"، من غير حساب فرق.\n"
+        )
     return (
         f"\n🔴 ميزانية العميل {int(budget)} جنيه، والبدائل فوق مرتبة بحيث اللي داخل الميزانية (✅) "
         "الأول — فابدأ بيه. ولو الحجم عليه ⚠️، قول سعره المكتوب وقول \"أعلى حاجة بسيطة من "
@@ -1250,6 +1256,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         numeric.product is not None or price_question(message, history, conversation)
     )
     quotes = product_quotes(products, message, budget, filter_budget=False) if quoting else []
+    quote_footer = None
     if quoting and not quotes:
         return "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً.", format_products(products)
 
@@ -1333,6 +1340,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # established, and made the reply impossible to reproduce.
         from .sales import gender as sales_gender
         from .sales import notes as sales_notes
+        alternative_intent = (getattr(conversation, "preferences", None) or {})
 
         # 🔴 Not on a turn that could not read the name. `deferring and not denied` is exactly the
         # NAME_UNREADABLE block, and on that turn there is no established absence to compensate for:
@@ -1355,17 +1363,22 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
                 # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
                 # Chanel (incense) sat in it unoffered.
                 notes=sales_notes.terms_in(message),
-                # An ordering tier, not a filter — the function sorts in-budget first and keeps the
-                # rest. That is the shape this branch needs: pitching a perfume above the stated
-                # number is a worse answer than pitching one below it, and pitching nothing is worse
-                # than both.
+                # Saved preferences make these firm purchase limits. Legacy
+                # calls without preferences retain their budget ordering.
                 max_price=budget,
+                intent=alternative_intent,
             )
 
         context = pending_block
         context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
         if alternatives:
             context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
+            combined_alternatives = alternative_intent.get("budget_scope") == "total"
+            if combined_alternatives:
+                from .sales.scent_selection import combined_budget_quotes
+                quotes = combined_budget_quotes(alternatives, alternative_intent)
+                quoting = True
+                quote_footer = f"إجمالي الـ{len(quotes)} زجاجات: {sum(q.price for q in quotes):f} جنيه."
             # Alternatives need their saved scent tags and occasions for ordinary descriptions.
             # Notes are evidence only for explicit ingredient questions, never a substitute for
             # missing scent tags or a reason to invent a note that the customer wants.
@@ -1376,7 +1389,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             preferred = occasion_preference(message, product_names=[p.name for p in alternatives],
                                              saved=(conversation.preferences or {}).get("occasion") if conversation else None)
             context += format_products(alternatives, max_price=budget, show_value_pick=False,
-                                        preferred_occasion=preferred)
+                                        show_prices=not combined_alternatives,
+                                        preferred_occasion=preferred, variant_intent=alternative_intent or None)
 
         # Which half of rule 4 goes in. The verdict is asked first and `alternatives` second,
         # because the two empty cases are empty for opposite reasons and must not borrow each
@@ -1415,7 +1429,13 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # Only when a list was actually rendered — with no alternatives there is nothing to
         # order, and a budget line about an empty list is a number with no referent.
         if alternatives:
-            instructions += _alternatives_budget_hint(budget)
+            instructions += _alternatives_budget_hint(budget, nearest=bool(alternative_intent))
+            if alternative_intent:
+                instructions += (
+                    "\nتاج ريحة واحد مشترك كفاية للترشيح. البدائل مرتبة حسب الموسم، ثم عدد التاجات المشتركة، "
+                    "ثم المناسبة؛ ابدأ بالأقرب. اختلاف الموسم أو المناسبة مش سبب ترفض الترشيح أو تسأل "
+                    "العميل يغير تفضيلاته. اوصف كل عطر بمعلوماته المسجلة من غير ادعاء تطابق مش موجود.\n"
+                )
 
     # Both branches above converge here, and a compliment can arrive on either: "اشتريت منكم امبيرو
     # وعجبني" resolves a real row, while praise for something we cannot place lands in the not-found
@@ -1433,7 +1453,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 
     if quoting:
         instructions += QUOTE_PROSE_INSTRUCTION
-        context = quote_context(context, quotes, append=True, max_price=budget, request=message)
+        context = quote_context(context, quotes, append=True, max_price=budget, request=message,
+                                footer=quote_footer)
 
     messages = [
         {

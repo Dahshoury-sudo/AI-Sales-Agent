@@ -56,6 +56,33 @@ def internal_draft_issues(reply):
     return []
 
 
+def _season_claim_issues(segment, recorded, name):
+    """Check affirmative seasonal suitability without treating a request as a claim."""
+    from .sales.scent_matching import season_matches
+
+    terms = {
+        "summer": r"summer|صيف(?:ي(?:ه)?)?",
+        "winter": r"winter|شت(?:اء?|وي(?:ه)?)",
+        "spring": r"spring|ربيع(?:ي(?:ه)?)?",
+        "fall": r"fall|autumn|خريف(?:ي(?:ه)?)?",
+    }
+    adjective = r"(?<!\w)[وف]?(?:صيفي|شتوي|ربيعي|خريفي)ه?(?!\w)"
+    suitability = r"(?<!\w)[وف]?(?:مناسبه?|بيناسب|يناسب|ينفع)(?!\w)|\b(?:suitable|suited|ideal|perfect|good|works?|best)\b"
+    issues = []
+    for clause in re.split(r"[\n.!؟?،;,]+|\b(?:بس|لكن|but)\b", segment):
+        if re.search(r"(?<!\w)(?:مش|غير|ليس|لا|not)\s+(?:مناسبه?|بيناسب|يناسب|ينفع|صيفي|شتوي|ربيعي|خريفي|suitable|suited|ideal|good|for)\b", clause):
+            continue
+        if not (re.search(suitability, clause) or re.search(adjective, clause)
+                or re.search(r"\b(?:summer|winter|spring|fall|autumn)\s+(?:perfume|fragrance|scent)\b", clause)):
+            continue
+        all_seasons = re.search(r"(?:كل|جميع)\s+(?:الفصول|المواسم)|\ball[ -]seasons?\b|\byear[ -]round\b", clause)
+        for season, words in terms.items():
+            mentioned = re.search(r"(?<!\w)(?:[وفب]?(?:ال|لل?|بال)?)?(?:" + words + r")(?!\w)", clause)
+            if (all_seasons or mentioned) and not season_matches(recorded, season):
+                issues.append(f"season:{name}:{season}")
+    return issues
+
+
 def product_claim_issues(reply, facts, *, request=None, context="", message=None,
                          history=None, preferred_occasion=None, description_required=False):
     """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
@@ -88,6 +115,7 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
         character = (_character_text(segment, row.get("notes", ()))
                      if message is not None and _notes_authorized(requests[product_name], row.get("notes", ()))
                      else segment)
+        issues += _season_claim_issues(segment, row.get("season", ""), name)
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches

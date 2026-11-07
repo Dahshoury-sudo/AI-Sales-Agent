@@ -46,7 +46,7 @@ class BrandPreferenceSearchTests(TestCase):
         self.mild.projection = "Strong"
         self.mild.save(update_fields=["projection"])
         result = search_products(self.intent, self.store, keep={self.strong.name}, offered={self.mild.name})
-        self.assertEqual(self.selected(result)[0], self.mild)
+        self.assertEqual(self.selected(result)[0], self.strong)
         self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
         self.assertEqual(result["keeping"], [self.strong.name])
 
@@ -100,19 +100,19 @@ class BrandPreferenceSearchTests(TestCase):
         self.assertEqual(result["cross_brand_ids"], [])
         self.assertFalse({unavailable.pk, inactive.pk, foreign.pk} & set(result.get("ranked", {})))
 
-    def test_soft_brand_keeps_gender_type_season_and_same_variant_requirements(self):
+    def test_soft_brand_keeps_hard_limits_and_prefers_matching_season(self):
         eligible = self.product("Eligible other brand", self.chanel, volume=90, price=800)
         self.product("Wrong gender", self.chanel, volume=90, gender="female")
         self.product("Wrong category", self.chanel, volume=90, perfume_type="oriental")
-        self.product("Wrong season", self.chanel, volume=90, season="Winter")
+        winter = self.product("Different season", self.chanel, volume=90, season="Winter")
         self.product("Over budget", self.chanel, volume=90, price=801)
         mismatched = self.product("Split variant eligibility", self.chanel, volume=50, price=500)
         ProductVariant.objects.create(product=mismatched, volume=90, price=800, bottle_type="original", stock=0)
         intent = {**self.intent, "season": "summer", "perfume_type": "western",
                   "requested_volume": 90, "bottle_type": "normal", "max_price": 800, "budget_strict": True}
         result = search_products(intent, self.store)
-        self.assertEqual(self.selected(result), [eligible])
-        self.assertEqual(result["cross_brand_ids"], [eligible.pk])
+        self.assertEqual(self.selected(result), [eligible, winter])
+        self.assertEqual(result["cross_brand_ids"], [eligible.pk, winter.pk])
 
     def test_no_match_does_not_offer_products_missing_a_required_ingredient(self):
         result = search_products({**self.intent, "notes": ["oud"]}, self.store, keep={self.mild.name})
@@ -148,9 +148,9 @@ class BrandPreferenceSearchTests(TestCase):
     def test_evening_perfume_cannot_win_daytime_request_on_brand_or_strength(self):
         evening = self.product("Evening blend", self.own, occasion="Evening", longevity="12 hours")
         result = search_products(self.intent, self.store, keep={evening.name})
-        self.assertEqual(set(self.selected(result)), {self.mild, self.strong})
-        self.assertNotIn(evening, self.selected(result))
-        self.assertIn("Evening", result["dropped"][evening.name])
+        self.assertEqual(self.selected(result), [self.mild, self.strong, evening])
+        self.assertEqual(result["keeping"], [evening.name])
+        self.assertEqual(result["dropped"], {})
 
     def test_no_signal_empty_result_still_has_brand_metadata(self):
         result = search_products({"gender": "female"}, self.store)

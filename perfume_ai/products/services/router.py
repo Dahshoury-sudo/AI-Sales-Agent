@@ -878,8 +878,16 @@ def _route(message, history=None, store=None, conversation=None):
         # Deterministic rather than order_by('?'), so a repeated conversation can be
         # replayed and the customer is not shown a random gender mix.
         from .fallback import suggest_alternatives
+        from .sales.value import eligible_variants
+        from .scent_description import describe_scent
 
-        random_products = suggest_alternatives(store)
+        saved_preferences = getattr(conversation, "preferences", None) or {}
+        random_products = suggest_alternatives(store, intent=saved_preferences)
+        total_quotes = []
+        if random_products and saved_preferences.get("budget_scope") == "total":
+            from .sales.scent_selection import combined_budget_quotes
+            total_quotes = combined_budget_quotes(random_products, saved_preferences)
+        quoted_variants = {quote.variant_id for quote in total_quotes}
         
         products_context = ""
         if random_products:
@@ -887,7 +895,10 @@ def _route(message, history=None, store=None, conversation=None):
             for p in random_products:
                 available_variants = []
                 has_original_bottle = False
-                for v in p.variants.all():
+                variants = eligible_variants(p, saved_preferences) if saved_preferences else p.variants.all()
+                for v in variants:
+                    if v.volume <= 0 or (total_quotes and v.pk not in quoted_variants):
+                        continue
                     if v.bottle_type == 'normal':
                         available_variants.append(f"{NORMAL_BOTTLE} {v.volume} ملي بـ {v.price} جنيه")
                     elif v.bottle_type == 'original' and (v.stock or 0) > 0:
@@ -895,24 +906,42 @@ def _route(message, history=None, store=None, conversation=None):
                         has_original_bottle = True
                 if available_variants:
                     original_bottle_status = "" if has_original_bottle else f" - (لا يوجد {ORIGINAL_BOTTLE})"
-                    products_list.append(f"• {p.name} ({', '.join(available_variants)}){original_bottle_status}")
+                    style = describe_scent(p.scent_tags, p.occasion, preferred_occasion=saved_preferences.get("occasion"))
+                    products_list.append(f"• {p.name} ({', '.join(available_variants)}){original_bottle_status}. {style}")
             if products_list:
-                products_context = "\n\n═══ منتجات متوفرة يمكنك اقتراحها (ممنوع تذكر أي منتج غيرهم) ═══\n" + "\n".join(products_list)
+                products_context = "\n\n═══ منتجات متوفرة يمكنك اقتراحها (ابدأ بالأقرب في القائمة، ممنوع تذكر أي منتج غيرهم) ═══\n" + "\n".join(products_list)
         
-        return handle_general(
-            f"""العميل بعتلي: "{message}"
+        if total_quotes:
+            from .product_formatting import QUOTE_PROSE_INSTRUCTION
+            products_context += QUOTE_PROSE_INSTRUCTION
+        redirect_prompt = f"""العميل بعتلي: "{message}"
 
 ⚠️ تنبيه هام: لقد استخدمت نفس العبارات أو الأفكار عدة مرات في ردودك السابقة.
 الرجاء تغيير أسلوبك تماماً واستخدام كلمات مختلفة.
 تفاعل مع رسالة العميل بشكل طبيعي ولكن بصياغة جديدة كلياً لتجنب التكرار.
-❌ ممنوع تذكر أي منتج أو سعر مش موجود في القائمة التالية.{products_context}""",
-            history, store
-        )
+❌ ممنوع تذكر أي منتج أو سعر مش موجود في القائمة التالية.{products_context}"""
+        response, context = handle_general(redirect_prompt, history, store)
+        if total_quotes:
+            from .product_formatting import quote_context
+            from .price_reply import compose_price_reply
+            footer = f"إجمالي الـ{len(total_quotes)} زجاجات: {sum(q.price for q in total_quotes):f} جنيه."
+            context = quote_context(context, total_quotes, append=True,
+                                    max_price=saved_preferences.get("max_price"), request=message, footer=footer)
+            quotation_context = context
+
+            def regenerate_alternatives(hint):
+                draft, _ = handle_general(redirect_prompt + hint, history, store)
+                return compose_price_reply(draft, quotation_context)
+
+            response, context = compose_price_reply(response, quotation_context)
+            response, context, _ = _rephrased(
+                response, context, history, store, regenerate_alternatives,
+                recommendation_intent=saved_preferences, recommendation_candidates=random_products,
+                message=message,
+            )
+        return response, context
 
     if request_type == "recommendation":
-        from .sales.occasion_preferences import CLARIFICATION, PENDING_KEY
-        if intent.get(PENDING_KEY):
-            return CLARIFICATION, "OCCASION_REQUIRED"
         if intent.get("requires_original_liquid"):
             return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
         if intent.get("similarity_needs_reference"):

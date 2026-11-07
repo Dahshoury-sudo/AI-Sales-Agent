@@ -40,7 +40,8 @@ these store conventions:
 | صابوني، صابونية، soapy | `clean` |
 | فانيليا، فانيلا، vanilla as a scent style | `sweet` |
 
-For example, **تبغي وحمضي** requires `smoky` and `citrus`.
+For example, **تبغي وحمضي** requests `smoky` and `citrus`; a perfume sharing
+either label is eligible, and matching both helps when the season fit is equal.
 **فريش ومش مسكر** requests `fresh` and excludes `sweet`.
 A vanilla style does not require a recorded vanilla ingredient; an explicit
 request such as **لازم يكون فيه فانيليا** does. The same distinction applies to
@@ -71,22 +72,47 @@ without choosing an occasion. **يا فريش يا خشبي** accepts either lab
   A stated choice or a saved choice for the same recipient skips this question.
   Explicit unisex is accepted, but a perfume name or "choose for me" does not
   establish gender. Other preferences are saved while waiting for the answer.
-- “Fresh and sweet for work” requires both labels and a matching recorded occasion.
-  “Fresh or sweet” accepts either label. Excluded labels remove a perfume.
+- “Fresh and sweet for work” accepts either label. This also applies to older
+  saved requests with `scent_match="all"`; the customer's full preference list
+  stays saved. Excluded labels still remove a perfume.
+- Season and occasion are preferences, not eligibility filters. After a perfume
+  shares at least one requested label, prefer a season match, then more shared
+  labels, then a matching occasion. A fresh summer perfume ranks above a fresh
+  and woody winter perfume for a fresh, woody, summer request. All assigned
+  labels participate, including labels beyond the three used in descriptions.
+- Missing season or occasion data earns no preference bonus. Existing season
+  aliases and “All Seasons” still count as matches. Equal fits use current
+  discussion, preferred brand, and previous offers. Contextual alternatives
+  also retain the current ingredient affinity between equal fits; ingredient
+  names do not supply scent labels. Product ID is the final deterministic tie-breaker.
 - Occasion is optional. After gender is known, an occasion-only request gets a scent-style question.
   A scent preference alone, or an explicit “any scent,” is enough to search.
 - Stock, gender, strict brand restrictions, requested size and bottle type,
-  budget, literal ingredients, and explicit performance requirements still apply.
+  budget, perfume category, and literal ingredients still apply.
   Approximate budgets retain the existing 20% allowance; explicit ceilings and
   combined budgets remain strict.
 - “Similar to X” uses X's assigned labels and excludes X itself. An unknown or
-  unlabeled reference gets a style question. Labels do not establish close similarity.
+  unlabeled reference gets a style question, as does a reference whose labels
+  have all been excluded without another wanted style. One permitted reference
+  label is enough. Labels do not establish close similarity.
 - The AI sees every eligible product and normally selects one or two. There is
-  no weighted scent ranking or cheapest-first candidate cutoff.
-- Selected IDs, current eligibility, claims, and quotations are checked in code.
-  An invalid answer gets one corrective retry, then a factual reply.
-- An empty result asks which requirement can change. Requirements stay in place
-  until the customer changes them or accepts a specific offered relaxation.
+  no cheapest-first candidate cutoff or ranking based on inferred ingredients.
+  Performance is uniform across the catalog and does not distinguish choices.
+- Selected IDs, current eligibility, nearest fit, claims, and quotations are
+  checked in code. An invalid answer gets one corrective retry, then a factual
+  reply using the same ordering. Combined budgets choose the nearest feasible
+  set of the requested number of bottles, rather than simply the cheapest set.
+  Contextual alternatives quote that exact affordable set of sizes and its
+  total; unsupported model prices go through the existing retry and factual recovery.
+- A partial match is recommended directly, without asking permission to relax
+  season, occasion, or additional wanted labels. Descriptions use the perfume's
+  actual labels and recorded occasion; differing preferences are not claimed
+  as matches. Seasonal suitability claims are checked against each perfume's
+  recorded season, including missing data. Contextual alternative suggestions
+  use these same selection rules.
+- Only a genuine lack of a shared scent style or an unmet firm requirement gets
+  a clarification. A known size or budget blocker is explained as such. The
+  agent does not automatically clear saved scent preferences or exclusions.
 
 ## Occasion categories
 
@@ -108,13 +134,14 @@ night does not also match nightlife. Occasion does not imply any scent labels.
 Older catalog values such as `Office`, `Evening`, and `Sport/Casual` are recognized
 when read; existing records do not need a migration. A perfume with multiple
 recognized occasions can match any of those categories. Blank or unrecognized
-catalog occasions cannot satisfy an occasion filter.
+catalog occasions receive no occasion preference bonus.
 
 When the customer leaves the occasion to the agent, it keeps an existing stated
 occasion or defaults to **Daily & Casual**. Choosing a scent, bottle size or one
 of the offered perfumes does not change the occasion. Omitting an occasion
 keeps the current optional behavior. An occasion the extractor cannot interpret
-gets a clarification question; it does not silently broaden the search.
+does not block a recommendation with a known scent preference. It earns no
+occasion bonus and cannot support a claim of suitability.
 
 ## Local experiment
 

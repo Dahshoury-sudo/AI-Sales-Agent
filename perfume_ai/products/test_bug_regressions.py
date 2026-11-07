@@ -718,7 +718,7 @@ class RecommendationBugTests(BugFixture):
             reply, context = recommend("", found["products"], intent=intent, store=self.store, search=found)
         chat.assert_not_called()
         self.assertIn("ميزاني", reply)
-        self.assertIn("max_price=offered", context)
+        self.assertEqual(context, "NO_BUDGET_MATCH")
         self.assertFalse(quote_evidence(context))
         self.assertNotIn("944", reply)
         self.assertNotIn("700", reply)

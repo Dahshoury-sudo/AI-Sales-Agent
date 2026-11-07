@@ -220,15 +220,20 @@ class CompleteCandidatePoolTests(TestCase):
         intent = {"scent_tags": ["fresh"]}
         first = list(search_products(intent, self.store)["products"])
         second = list(search_products(intent, self.store, keep={"Perfume 74"}, offered={"Perfume 0"})["products"])
-        self.assertEqual(first, second)
+        repeated = list(search_products(intent, self.store, keep={"Perfume 74"}, offered={"Perfume 0"})["products"])
+        self.assertEqual(second, repeated)
+        self.assertEqual(set(first), set(second))
         self.assertEqual(first[0].name, "Perfume 0")
         self.assertEqual(first[-1].name, "Perfume 74")
+        self.assertEqual(second[0].name, "Perfume 74")
+        self.assertEqual(second[-1].name, "Perfume 0")
 
     def test_no_match_does_not_fall_back_to_a_capped_alternative_list(self):
         result = search_products({"scent_tags": ["oud"]}, self.store)
         self.assertFalse(result["products"].exists())
         self.assertIsNone(result["alternatives"])
-        self.assertEqual(result["relax_key"], "scent_tags")
+        self.assertIsNone(result["relax_key"])
+        self.assertEqual(result["no_match_reason"], "scent_tags")
 
 
 class ExcludeNamesTests(TestCase):
@@ -5644,10 +5649,10 @@ class SimilaritySearchTests(TestCase):
         self.assertEqual(list(result["products"]), [match])
 
     def test_unknown_occasion_is_not_evidence_of_suitability(self):
-        self.perfume("Unknown Occasion", ["fresh"])
+        unknown = self.perfume("Unknown Occasion", ["fresh"])
         evening = self.perfume("Evening Choice", ["fresh"], occasion="Evening")
         result = search_products({"scent_tags": ["fresh"], "occasion": "evening"}, self.store)
-        self.assertEqual(list(result["products"]), [evening])
+        self.assertEqual(list(result["products"]), [evening, unknown])
 
     def test_reference_respects_budget_with_uniform_performance(self):
         reference = self.perfume("Sauvage", ["fresh"])
@@ -6175,15 +6180,15 @@ class NoMatchBranchStopsClaimingAListItNeverShowedTests(TestCase):
         reply, context, result = self.empty_turn({"scent_tags": ["fresh"], "max_price": 100})
         self.assertEqual(result["relax_key"], "max_price")
         self.assertIn("ميزاني", reply)
-        self.assertIn("max_price=offered", context)
+        self.assertEqual(context, "NO_BUDGET_MATCH")
         self.assertNotIn(self.eros.name, reply)
 
-    def test_an_impossible_combination_asks_which_condition_can_change(self):
+    def test_zero_scent_overlap_asks_for_a_different_style(self):
         reply, context, result = self.empty_turn({"gender": "female", "brand": "Missing House",
                                                  "brand_strict": True, "scent_tags": ["oud"]})
         self.assertIsNone(result["relax_key"])
         self.assertNotIn("PENDING_RELAX", context)
-        self.assertIn("أنهي شرط", reply)
+        self.assertIn("طابع ريحة تاني", reply)
 
     def test_excluding_all_eligible_names_never_reoffers_them(self):
         reply, _, result = self.empty_turn({"scent_tags": ["fresh"], "exclude_names": [self.eros.name, self.rose.name]})
@@ -8621,13 +8626,11 @@ class ConversationContinuityTests(TestCase):
         self.assertIn("Green Irish Tweed", note)
         self.assertIn("ممنوع تخترع سبب", note)
 
-    def test_an_affordable_perfume_is_never_blamed_on_price(self):
-        """The bug this fix reproduced one layer down: the budget branch had a fallback that
-        fired when the perfume *was* affordable, so one excluded on season was reported as
-        "مفيش منه حجم داخل ميزانيته" while its 50ml sat at 550 against an 800 budget."""
+    def test_an_affordable_season_mismatch_remains_eligible(self):
+        """A season mismatch neither deletes the scent match nor invents a budget blocker."""
         winter = Product.objects.create(
             store=self.store, brand=self.brand, name="Dior Homme Intense",
-            gender="male", season="Fall/Winter",
+            gender="male", season="Fall/Winter", scent_tags=["fresh"],
         )
         ProductVariant.objects.create(
             product=winter, volume=50, price=550, bottle_type="normal"
@@ -8638,9 +8641,9 @@ class ConversationContinuityTests(TestCase):
             store=self.store, keep={"Dior Homme Intense"},
         )
 
-        reason = results["dropped"]["Dior Homme Intense"]
-        self.assertIn("الموسم", reason)
-        self.assertNotIn("ميزاني", reason)
+        self.assertNotIn(winter.name, results["dropped"])
+        self.assertIn(winter, results["products"])
+        self.assertIn(winter.name, results["keeping"])
 
     def test_price_is_blamed_only_when_it_is_the_blocker(self):
         results = search_products(
@@ -10993,8 +10996,7 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
             "occasion": "sport", "notes": ["fresh"],
         }
         results = search_products(intent, store=self.store)
-        ranked = sales_ranking.rank(list(results["products"]), intent)
-        return [entry.product.name for entry in ranked]
+        return [product.name for product in results["products"]]
 
     def test_the_gym_match_outranks_the_cheaper_evening_perfume(self):
         # The real catalogue numbers from the conversation.
@@ -11004,9 +11006,9 @@ class GymRequestBeatsACheaperMismatchTests(TestCase):
 
         names = self._ranked_names()
 
-        self.assertIn("Acqua di Gio", names)
-        self.assertNotIn("Armani Code", names)
-        self.assertNotIn("Y Eau de Parfum", names)
+        self.assertEqual(names[0], "Acqua di Gio")
+        self.assertIn("Armani Code", names)
+        self.assertIn("Y Eau de Parfum", names)
 
     def test_the_only_sport_perfume_is_visible_on_a_tight_budget(self):
         """Invictus is the catalogue's only Sport perfume. At a 500 budget the strict filter
@@ -16773,17 +16775,22 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
         context, _, _ = self._alternatives_turn(budget=1200)
 
         self.assertIn(self.IN, context)
-        self.assertIn(self.FAR, context)
+        self.assertIn(self.NEAR, context)
+        self.assertNotIn(self.FAR, context)
+        self.assertNotIn("3800", context)
 
-    def test_an_all_over_budget_list_is_named_as_such_rather_than_pitched_silently(self):
-        """`suggest_alternatives` does not filter, so a budget under the cheapest thing in the
-        catalogue yields a list of ⚠️ and ❌ rows plus an instruction to pitch from it. Saying the
-        number out loud beats both silence and an unmarked over-budget pitch."""
-        _, prompt, _ = self._alternatives_turn(budget=1200)
-
-        self.assertIn("اللي داخل الميزانية (✅) الأول", prompt)
-        self.assertIn("لو كل البدائل عليها ⚠️ أو ❌", prompt)
-        self.assertIn("ممنوع تسكت وتسيبه من غير أي اقتراح", prompt)
+    def test_contextual_alternatives_do_not_pitch_an_all_over_budget_catalog(self):
+        for product in (self.eros, self.baccarat):
+            product.scent_tags = ["fresh"]
+            product.save(update_fields=["scent_tags"])
+        conversation = self._conversation(100)
+        with mock.patch("products.services.product_info.resolve_products", return_value=_absent("بلاك اوركيد")), \
+             mock.patch("products.services.product_info.confirm_unplaced", return_value=None), \
+             mock.patch("products.services.product_info.chat", return_value="العطر مش متاح"):
+            _, context = get_product_info("عندكو بلاك اوركيد؟", [], self.store, conversation)
+        self.assertNotIn("بدائل مقترحة", context)
+        self.assertNotIn(self.eros.name, context)
+        self.assertNotIn(self.baccarat.name, context)
 
     def test_no_budget_line_when_there_is_no_list_to_order(self):
         """A budget rule about an empty list is a number with no referent."""
@@ -18502,13 +18509,15 @@ class Conv973SaidItTwiceTests(TestCase):
     # ── the retry (router._rephrased) ───────────────────────────────────────────────
 
     def _verified_price_context(self):
-        """Repetition fixtures need the catalog evidence for their prices and occasions."""
+        """Repetition fixtures need catalog evidence for prices and suitability claims."""
         from products.services.product_formatting import format_products
         from products.occasions import ACTIVE, DAILY, FORMAL
-        for product, occasion in ((self.coco, FORMAL), (self.bloom, DAILY),
-                                  (self.light_blue, f"{DAILY}; {ACTIVE}")):
+        for product, occasion, season in ((self.coco, FORMAL, "All Seasons"),
+                                          (self.bloom, DAILY, "Spring"),
+                                          (self.light_blue, f"{DAILY}; {ACTIVE}", "Summer")):
             product.occasion = occasion
-            product.save(update_fields=["occasion"])
+            product.season = season
+            product.save(update_fields=["occasion", "season"])
         for product, price in ((self.coco, 1006), (self.chloe, 1058), (self.light_blue, 852)):
             ProductVariant.objects.get_or_create(product=product, volume=90,
                 defaults={"price": price, "bottle_type": "normal"})

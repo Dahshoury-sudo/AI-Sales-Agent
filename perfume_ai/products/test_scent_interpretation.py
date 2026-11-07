@@ -447,16 +447,16 @@ class ScentPreferenceFlowTests(TestCase):
         self.assertEqual(self.conversation.preferences["excluded_scent_tags"], ["sweet"])
         self.assertEqual(self.ids(result), {dry.pk})
 
-    def test_tobacco_citrus_request_selects_smoky_products_without_spicy_requirement(self):
+    def test_tobacco_citrus_request_prefers_smoky_overlap_without_requiring_spicy(self):
         wanted = self.product("Smoke Zest", ["smoky", "citrus"])
-        self.product("Pepper Zest", ["spicy", "citrus"])
-        self.product("Plain Zest", ["citrus"])
+        pepper = self.product("Pepper Zest", ["spicy", "citrus"])
+        plain = self.product("Plain Zest", ["citrus"])
         result = self.answer("تبغي وحمضي", {
             "scent_tags": ["spicy", "citrus"],
             "scent_evidence": [evidence("تبغي", "spicy"), evidence("حمضي", "citrus")],
         })
         self.assertEqual(set(result["scent_tags"]), {"smoky", "citrus"})
-        self.assertEqual(self.ids(result), {wanted.pk})
+        self.assertEqual(list(search_products(result, self.store)["products"]), [wanted, pepper, plain])
 
     def test_vanilla_style_and_literal_ingredient_produce_different_candidate_sets(self):
         caramel = self.product("Caramel Dessert", ["sweet"], "Caramel")
@@ -566,11 +566,11 @@ class ScentPreferenceFlowTests(TestCase):
         result = self.answer("800", {"max_price": 800})
         self.assertEqual(set(result["scent_tags"]), {"fresh", "clean"})
 
-    def test_and_or_matching_changes_eligible_products_after_preference_merge(self):
+    def test_and_or_wording_preserves_preferences_but_accepts_one_matching_tag(self):
         smoky = self.product("Smoke", ["smoky"])
         citrus = self.product("Citrus", ["citrus"])
         both = self.product("Smoke Citrus", ["smoky", "citrus"])
-        self.assertEqual(self.ids(self.answer("تبغي وحمضي")), {both.pk})
+        self.assertEqual(self.ids(self.answer("تبغي وحمضي")), {smoky.pk, citrus.pk, both.pk})
         result = self.answer("تبغي أو حمضي")
         self.assertEqual(result["scent_match"], "any")
         self.assertEqual(self.ids(result), {smoky.pk, citrus.pk, both.pk})
