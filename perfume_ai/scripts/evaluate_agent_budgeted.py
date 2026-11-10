@@ -256,7 +256,7 @@ def main():
         source = Store.objects.get(name="Perfamix")
         source_id = source.pk
         public_settings = StoreSettings.objects.filter(store=source).values(
-            "system_prompt", "business_facts", "payment_instructions", "bottle_image_url").first() or {}
+            "system_prompt", "business_facts", "promotions", "payment_instructions", "bottle_image_url").first() or {}
         fixtures = [(Brand, list(Brand.objects.filter(store=source).values())),
                     (Category, list(Category.objects.filter(store=source).values())),
                     (Product, list(Product.objects.filter(store=source).values())),

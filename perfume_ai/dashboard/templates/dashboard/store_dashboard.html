@@ -213,10 +213,29 @@
                      مهم: لازم اللي تكتبه هنا يطابق أحجام المنتجات الفعلية عندك. الأسئلة العامة
                     (زي "الأحجام المتاحة إيه؟") البوت يجاوبها من هنا، أما السؤال عن عطر بالاسم
                     فيجاوبه من بيانات المنتج — فلو الاتنين مختلفين، البوت هيناقض نفسه.
+                    <br>اكتب العروض والباندلز والخصومات في خانة العروض المنفصلة تحت.
                 </p></div><div class="settings-fields">
                 <div class="form-group">
-                    <label>حقائق خاصة بالستور</label>
+                    <label for="setting-business-facts">حقائق خاصة بالستور</label>
                     <textarea id="setting-business-facts" rows="6" placeholder="- الأحجام المتاحة: ...&#10;- طبيعة المنتجات: ...&#10;- الستور على أرض الواقع: ..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>لينك صورة الزجاجات والبوكس</label>
+                    <input type="url" id="setting-bottle-image-url" placeholder="https://... (سيبها فاضية لو مفيش صور)">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+            </div></div>
+
+            <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-tags" aria-hidden="true"></i> العروض والباندلز والخصومات</h3><p id="promotions-help">
+                    اكتب العروض الحالية هنا، مع اسم كل عرض ومحتوياته وأسعاره وشروطه.
+                    البوت هيعتمد على الخانة دي فقط لتفاصيل العروض.
+                    لو سيبتها فاضية، هيطلب تأكيد التفاصيل من خدمة العملاء.
+                </p></div><div class="settings-fields">
+                <div class="form-group">
+                    <label for="setting-promotions">العروض والباندلز والخصومات الحالية</label>
+                    <textarea id="setting-promotions" rows="8" aria-describedby="promotions-help" placeholder="اسم العرض أو الباندل: ...&#10;المحتويات والأحجام: ...&#10;السعر والشروط: ..."></textarea>
                 </div>
                 <div class="form-group">
                     <label for="setting-website-ordering">طلب العروض والباندلز من الموقع</label>
@@ -225,10 +244,6 @@
                         <option value="true">متاح</option>
                     </select>
                     <small id="website-ordering-help">اختار «متاح» فقط لو العميل يقدر يطلب العروض والباندلز من موقع متجرك. وقتها البوت هيعرض الموقع بجانب التحويل لخدمة العملاء.</small>
-                </div>
-                <div class="form-group">
-                    <label>لينك صورة الزجاجات والبوكس</label>
-                    <input type="url" id="setting-bottle-image-url" placeholder="https://... (سيبها فاضية لو مفيش صور)">
                 </div>
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
@@ -727,6 +742,7 @@ Check your DM, we replied!
                 document.getElementById('setting-system-prompt').value = settings.system_prompt || '';
                 document.getElementById('setting-payment-instructions').value = settings.payment_instructions || '';
                 document.getElementById('setting-business-facts').value = settings.business_facts || '';
+                document.getElementById('setting-promotions').value = settings.promotions || '';
                 document.getElementById('setting-website-ordering').value = settings.website_ordering_enabled === true ? 'true' : 'false';
                 document.getElementById('setting-bottle-image-url').value = settings.bottle_image_url || '';
                 document.getElementById('api-key-display').textContent = profile.store.api_key;
@@ -749,6 +765,7 @@ Check your DM, we replied!
                         system_prompt: document.getElementById('setting-system-prompt').value,
                         payment_instructions: document.getElementById('setting-payment-instructions').value,
                         business_facts: document.getElementById('setting-business-facts').value,
+                        promotions: document.getElementById('setting-promotions').value,
                         website_ordering_enabled: document.getElementById('setting-website-ordering').value === 'true',
                         bottle_image_url: document.getElementById('setting-bottle-image-url').value,
                     })

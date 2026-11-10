@@ -19,10 +19,21 @@ def normalize_arabic(text: str) -> str:
     return text
 
 
+def _matched_reply(faq, message):
+    # An old promotional FAQ identifies the topic, but its answer is no longer
+    # offer evidence. Withhold it from every consumer, including checkout FAQs.
+    # Import lazily: promotion_service also uses normalize_arabic.
+    from .promotion_service import blocks_checkout
+
+    if blocks_checkout(f"{faq.question}\n{faq.answer}"):
+        return {"promotion": True}
+    return {"answer": enforce_reply(normalize_bottle_wording(faq.answer), request_for(message))}
+
+
 def match_static_faq(message: str, store) -> dict | None:
     """
     يبحث في الأسئلة الثابتة للـ Store.
-    يرجع dict فيه {answer} لو لقى مطابقة.
+    يرجع dict فيه {answer} لو لقى مطابقة، أو {promotion: True} للعروض القديمة.
     يرجع None لو ملقاش.
     
     الخوارزمية:
@@ -52,12 +63,12 @@ def match_static_faq(message: str, store) -> dict | None:
             if '+' in keyword_group:
                 required_words = [w.strip() for w in keyword_group.split('+') if w.strip()]
                 if required_words and all(req_word in normalized_msg for req_word in required_words):
-                    return {"answer": enforce_reply(normalize_bottle_wording(faq.answer), request_for(message))}
+                    return _matched_reply(faq, message)
             else:
                 # Single keyword — only match on short messages (likely direct FAQ questions)
                 # to avoid false positives in longer conversational messages
                 word_count = len(normalized_msg.split())
                 if keyword_group and keyword_group in normalized_msg and word_count <= 5:
-                    return {"answer": enforce_reply(normalize_bottle_wording(faq.answer), request_for(message))}
+                    return _matched_reply(faq, message)
 
     return None

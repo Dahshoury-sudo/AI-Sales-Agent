@@ -10,9 +10,9 @@ from .sales import appreciation
 # persona forbids inventing prices, but that rule was competing with ~60 others, so
 # the prohibition is restated here where it is the only thing that matters.
 #
-# It bans inventing a price, not stating one: the promotion branch (router.py) routes
-# through here and asks the model to relay the store's configured offers, which carry
-# real prices in the Store Custom Instructions. A blanket ban would gag that reply.
+# Store promotion details and fulfilment fees can be known without product rows.
+# Offer prices come only from the dedicated promotions section; legacy facts and
+# custom instructions must not reintroduce stale offers in a general response.
 #
 # The last bullet asks the customer to confirm the name rather than promising to check.
 # This branch runs with no product rows and no extractor call, so it is structurally the
@@ -24,7 +24,8 @@ NO_PRODUCT_DATA_GUARD = """
 
 🔴🔴 مفيش أي بيانات منتجات مبعوتة لك في الرسالة دي:
 - ❌ ممنوع تذكر سعر أو اسم عطر من ذاكرتك أو من دمك. ولا رقم واحد.
-- ✅ مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً فوق في تعليمات الستور أو حقائق الستور — بالنص وبدون تغيير.
+- ✅ مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً في قسم «العروض والباندلز والخصومات الحالية» — بالنص وبدون تغيير. لو التفاصيل مش موجودة فيه، محتاجة تأكيد من خدمة العملاء؛ متاخدهاش من حقائق الستور أو التعليمات الخاصة أو الأسئلة الشائعة أو المحادثات القديمة.
+- مصاريف الشحن وشروط الدفع من معلومات الستور المخصصة ليها فقط، من غير اختراع أرقام.
 - أي سعر أو اسم عطر مش مكتوب فوق = ممنوع تقوله. لو العميل سأل عن سعر عطر معين، اسأله يتأكد من اسم العطر ويكتبه تاني. ❌ ومتقولوش إنه مش متوفر (إحنا مش شايفين الكتالوج هنا)، ❌ ومتوعدهوش إنك هتراجع وترد عليه (مفيش حد بيراجع بعد الرد ده).
 """
 

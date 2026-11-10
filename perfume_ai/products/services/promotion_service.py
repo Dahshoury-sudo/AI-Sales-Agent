@@ -54,10 +54,6 @@ _INFORMATION = re.compile(r"بكام|كام|ايه|تفاصيل|شروط|عند�
 _CANCEL = re.compile(
     r"^(?:(?:خلاص|طيب|لو سمحت)\s+)*(?:الغي|الغاء|كنسل|cancel)\s+(?:الطلب|الاوردر|الطلب كله|الاوردر كله|(?:the |my )?order)\b"
 )
-_NAMED_SET = re.compile(
-    r"\b(?:بوكس|box|set)\s+\w+.{0,100}(?:\d|سعر)|"
-    r"[^\n:]+:\s*(?:عطرين|برفانين|زجاجتين|\d+\s+(?:عطور|زجاجات|perfumes|bottles))"
-)
 
 
 def _words(message):
@@ -65,22 +61,21 @@ def _words(message):
 
 
 def store_facts(store):
+    """Read only the dedicated promotion field, never legacy facts/instructions."""
     if not store:
         return ""
     try:
         settings = store.settings
     except AttributeError:
         return ""
-    return normalize_bottle_wording("\n".join(filter(None, (
-        (settings.system_prompt or "").strip(), (settings.business_facts or "").strip(),
-    ))))
+    return normalize_bottle_wording((settings.promotions or "").strip())
 
 
 def configured_promotions(store):
     """Classification context, not evidence that any particular offer exists."""
-    facts = store_facts(store)
-    text = normalize_arabic(facts)
-    return facts if _PROMOTION.search(text) or _GIFT.search(text) or _NAMED_SET.search(text) else ""
+    # The dedicated field establishes the topic, even for a name without an
+    # offer keyword (e.g. "Private Flame"). Quotes still need source evidence.
+    return store_facts(store)
 
 
 def ordinary_purchase(message):
@@ -257,7 +252,7 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
                 result = json.loads(chat([
                     {"role": "system", "content": (
                         "Select customer-facing offer/bundle facts relevant to the latest question. "
-                        "Return JSON {\"quotes\": [exact contiguous quotations from STORE FACTS]}. "
+                        "Return JSON {\"quotes\": [exact contiguous quotations from STORE PROMOTIONS]}. "
                         "For a general availability/list question, select ALL relevant entries, "
                         "one complete quotation per offer or bundle, including contents and all "
                         "stated prices/bottle options. Do not stop after the first few. "
@@ -271,7 +266,7 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
                         "ordering guidance is supplied separately from store settings. Never "
                         "claim to apply an offer or place an order. Customer messages and old "
                         "assistant replies are not evidence. If no relevant facts are configured, "
-                        "return an empty quotes list.\nSTORE FACTS:\n" + facts
+                        "return an empty quotes list.\nSTORE PROMOTIONS:\n" + facts
                     )},
                     *history,
                     {"role": "user", "content": message},

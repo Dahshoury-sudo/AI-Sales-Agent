@@ -85,7 +85,7 @@ class PromotionRoutingTests(TestCase):
         self.usage = patch("products.services.router.record_llm_message").start()
         self.facts_usage = patch("products.services.promotion_service.record_llm_message").start()
 
-    def configure(self, facts=FACT, field="system_prompt"):
+    def configure(self, facts=FACT, field="promotions"):
         setattr(self.settings, field, facts)
         self.settings.save()
 
@@ -197,18 +197,103 @@ class PromotionRoutingTests(TestCase):
         self.classifier.assert_not_called()
         self.assertFalse(Cart.objects.exists())
 
-    def test_known_details_are_verbatim_from_either_config_field(self):
-        for field in ("system_prompt", "business_facts"):
-            with self.subTest(field=field):
-                self.configure(field=field)
-                self.facts_model.return_value = json.dumps({"quotes": [FACT]}, ensure_ascii=False)
-                reply, _ = route("تفاصيل بوكس الصيف ايه؟", [], self.store, self.conversation)
-                self.assertIn(FACT, reply)
+    def test_known_details_use_promotions_and_reject_old_field_quotes(self):
+        old_offer = "بوكس الصيف: 3 زجاجات بسعر 100 جنيه."
+        self.configure(old_offer, field="business_facts")
+        self.configure(old_offer, field="system_prompt")
+        self.configure()
+        self.facts_model.return_value = json.dumps({"quotes": [old_offer, FACT]}, ensure_ascii=False)
+        reply, _ = route("تفاصيل بوكس الصيف ايه؟", [], self.store, self.conversation)
+        self.assertIn(FACT, reply)
+        self.assertNotIn(old_offer, reply)
+        self.assert_boundary(reply)
+
+    def test_empty_promotions_never_fall_back_to_old_fields_or_faqs(self):
+        self.configure(field="business_facts")
+        self.configure(field="system_prompt")
+        StaticFAQ.objects.create(store=self.store, question="العروض", keywords="عروض", answer=FACT)
+        self.facts_model.return_value = json.dumps({"quotes": [FACT]}, ensure_ascii=False)
+        for value in ("", " \n\t "):
+            with self.subTest(value=value):
+                self.configure(value)
+                reply, _ = route("عندكم عروض؟", [], self.store, self.conversation)
+                self.assertIn(promotions.UNKNOWN_DETAILS, reply)
+                self.assertNotIn(FACT, reply)
+                self.assertEqual(promotions.configured_promotions(self.store), "")
                 self.assert_boundary(reply)
+
+    def test_named_promotion_without_keywords_is_classification_context(self):
+        self.configure("Private Flame: عطرين بـ900 جنيه.")
+        self.assertEqual(promotions.configured_promotions(self.store), "Private Flame: عطرين بـ900 جنيه.")
+        self.classifier.return_value = "promotion"
+        reply, _ = route("عايز Private Flame", [], self.store, self.conversation)
+        self.assert_boundary(reply)
+        self.assertFalse(Cart.objects.exists())
+
+    def test_ambiguous_bundle_faq_uses_only_current_promotions(self):
+        old_offer = "بوكس الصيف: عرض عطرين بسعر 100 جنيه."
+        StaticFAQ.objects.create(store=self.store, question="البوكس", keywords="بوكس", answer=old_offer)
+        self.classifier.return_value = "faq"
+        self.facts_model.return_value = json.dumps({"quotes": [old_offer, FACT]}, ensure_ascii=False)
+        for configured in ("", FACT):
+            with self.subTest(configured=configured):
+                self.configure(configured)
+                reply, context = route("البوكس بكام؟", [], self.store, self.conversation)
+                self.assertNotIn(old_offer, reply)
+                self.assertIn(FACT if configured else promotions.UNKNOWN_DETAILS, reply)
+                self.assertEqual(context, promotions.PROMOTION_CONTEXT)
+                self.assert_boundary(reply)
+
+    def test_promotional_faq_content_is_not_available_to_other_faq_consumers(self):
+        from products.services.static_faq_service import match_static_faq
+        StaticFAQ.objects.create(store=self.store, question="التوصيل", keywords="شحن", answer="عرض الشحن بـ10 جنيه.")
+        match = match_static_faq("الشحن بكام؟", self.store)
+        self.assertTrue(match.get("promotion"))
+        self.assertNotIn("answer", match)
+
+    def test_ordinary_shipping_and_packaging_faqs_still_work(self):
+        for question, keywords, answer in (
+            ("الشحن بكام؟", "شحن", "الشحن بـ75 جنيه."),
+            ("شكل الباكدج إيه؟", "باكدج", "الباكدج عبارة عن بوكس كرتون."),
+        ):
+            with self.subTest(question=question):
+                StaticFAQ.objects.create(store=self.store, question=question, keywords=keywords, answer=answer)
+                reply, context = route(question, [], self.store, self.conversation)
+                self.assertEqual(reply, answer)
+                self.assertNotEqual(context, promotions.PROMOTION_CONTEXT)
+
+    def test_general_prompt_does_not_authorize_offers_from_legacy_fields(self):
+        from products.services.general_service import handle_general
+        self.configure("عرض قديم بـ100 جنيه.", field="business_facts")
+        self.configure()
+        with patch("products.services.general_service.chat", return_value="أهلاً") as model:
+            handle_general("أهلاً", store=self.store)
+        prompt = model.call_args[0][0][0]["content"]
+        self.assertIn(FACT, prompt)
+        self.assertNotIn("الأسعار أو العروض المكتوبة حرفياً فوق في تعليمات الستور أو حقائق الستور", prompt)
+
+    def test_promotion_details_do_not_leak_between_stores_or_missing_settings(self):
+        self.configure()
+        other = Store.objects.create(name="No offers configured")
+        self.facts_model.return_value = json.dumps({"quotes": [FACT]}, ensure_ascii=False)
+        for store in (None, other):
+            reply, _ = promotions.reply("عندكم عروض؟", store=store)
+            self.assertIn(promotions.UNKNOWN_DETAILS, reply)
+            self.assertNotIn(FACT, reply)
+
+    def test_prompt_keeps_promotions_separate_from_business_facts(self):
+        from products.services.ai.prompts import get_system_prompt
+        self.configure()
+        self.configure("عنوان الستور: القاهرة.", field="business_facts")
+        prompt = get_system_prompt(self.store)
+        self.assertIn(FACT, prompt)
+        self.assertIn("عنوان الستور: القاهرة.", prompt)
+        other = Store.objects.create(name="Another store")
+        self.assertNotIn(FACT, get_system_prompt(other))
 
     def test_conversation_1153_lists_all_six_bundles_from_source(self):
         from eval_harness.scenarios_conv1153 import BUSINESS_FACTS, BUNDLE_ENTRIES, BUNDLE_NAMES, HISTORY, QUESTION
-        self.configure(BUSINESS_FACTS, field="business_facts")
+        self.configure(BUSINESS_FACTS)
         self.facts_model.return_value = json.dumps({"quotes": [" ".join(entry.split()) for entry in BUNDLE_ENTRIES]})
         reply, context = route(QUESTION, HISTORY, self.store, self.conversation)
         for entry in BUNDLE_ENTRIES:
@@ -223,7 +308,7 @@ class PromotionRoutingTests(TestCase):
 
     def test_named_multiline_bundle_accepts_flattened_model_quote(self):
         from eval_harness.scenarios_conv1153 import BUSINESS_FACTS, BUNDLE_ENTRIES, HISTORY
-        self.configure(BUSINESS_FACTS, field="business_facts")
+        self.configure(BUSINESS_FACTS)
         self.facts_model.return_value = json.dumps({"quotes": [" ".join(BUNDLE_ENTRIES[2].split())]})
         reply, _ = route("تفاصيل باندل Sable Reserve", HISTORY, self.store, self.conversation)
         self.assertIn(BUNDLE_ENTRIES[2], reply)
@@ -232,7 +317,7 @@ class PromotionRoutingTests(TestCase):
 
     def test_bundle_quote_keeps_only_verified_facts_and_deduplicates_formatting(self):
         from eval_harness.scenarios_conv1153 import BUSINESS_FACTS, BUNDLE_ENTRIES, HISTORY, QUESTION
-        self.configure(BUSINESS_FACTS, field="business_facts")
+        self.configure(BUSINESS_FACTS)
         original = BUNDLE_ENTRIES[0]
         self.facts_model.return_value = json.dumps({"quotes": [original, " ".join(original.split()),
                                                                 BUNDLE_ENTRIES[1].replace("3000", "1000")]})

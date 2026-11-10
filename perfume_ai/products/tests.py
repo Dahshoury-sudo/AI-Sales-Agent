@@ -1216,8 +1216,9 @@ class PerStorePromptFactsTests(TestCase):
 
         custom = "الصور خاصة بزجاجات البراند بتاعنا بس."
         facts = "زجاجة البراند الخاصة بينا أو زجاجة أوريجينال. السائل تركيب."
+        offer = "عرض الباندل: زجاجة البراند الخاصة بينا أو زجاجة أوريجينال."
         config = StoreSettings.objects.create(
-            store=self.store, system_prompt=custom, business_facts=facts,
+            store=self.store, system_prompt=custom, business_facts=facts, promotions=offer,
             bottle_image_url="https://example.com/bottles.jpg",
         )
         for text in (get_system_prompt(self.store), store_facts(self.store)):
@@ -1229,6 +1230,7 @@ class PerStorePromptFactsTests(TestCase):
         config.refresh_from_db()
         self.assertEqual(config.system_prompt, custom)
         self.assertEqual(config.business_facts, facts)
+        self.assertEqual(config.promotions, offer)
 
     def test_bottle_selection_does_not_become_an_exclusive_perfume_request(self):
         for field in ("brand", "exclude_brands"):
@@ -4202,7 +4204,7 @@ class RouterBranchPromptTests(TestCase):
         self.store = Store.objects.create(name="Perfamix Test")
         StoreSettings.objects.create(
             store=self.store,
-            system_prompt="عروضنا: بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه",
+            promotions="عروضنا: بوكس الصيف اشتري 3 حجم 90 مل عليهم 1 هدية 3000 جنيه",
         )
         self.conversation = Conversation.objects.create(store=self.store)
 

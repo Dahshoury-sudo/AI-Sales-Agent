@@ -181,7 +181,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     if store:
         config = StoreSettings.objects.filter(store=store).first()
         if config:
-            sources += [config.business_facts or "", config.payment_instructions or ""]
+            sources += [config.business_facts or "", config.promotions or "", config.payment_instructions or ""]
         sources += list(StaticFAQ.objects.filter(store=store, is_active=True).values_list("answer", flat=True))
     sources += [m.get("content", "") for m in history or [] if m.get("role") == "user"]
     if evidence.get("budget") is not None:
@@ -691,8 +691,14 @@ def _route(message, history=None, store=None, conversation=None):
         return sales_constraints.formulation_reply(), "ORIGINAL_LIQUID_REQUIRED"
     if "نوع السائل" in normalized or "مصنع" in normalized:
         formulation = match_static_faq("العطور اصليه ولا تركيب", store)
-        explanation = formulation["answer"] if formulation else "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل."
+        explanation = (formulation or {}).get("answer", "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل.")
         return explanation + "\n\nاسم مصنع الزيت تحديدًا محتاج تأكيد من الفريق.", ""
+    faq_match = match_static_faq(message, store)
+    if faq_match and faq_match.get("promotion"):
+        if (not regular_purchase and not promotion_service.cancelling_order(message)
+                and not requests_human(message) and request_type != "handoff"):
+            return promotion_service.reply(message, promotion_history, store, usage_recorded=request_type is not None)
+        faq_match = None
     from products.models import Cart
     active_cart = Cart.objects.filter(conversation=conversation).first() if conversation else None
     from .objection_service import is_price_dispute, handle_price_dispute
@@ -709,7 +715,7 @@ def _route(message, history=None, store=None, conversation=None):
         for fragment in re.split(r"[.؟?\n]", message):
             if re.search(r"شحن|توصيل|بتوصل|بتفتح|مواعيد", fragment) and not re.search(r"\d{7}", fragment):
                 faq = match_static_faq(fragment.strip(), store)
-                if faq:
+                if faq and "answer" in faq:
                     reply += "\n\n" + faq["answer"]
                 else:
                     answer, _ = handle_general(fragment.strip(), history, store)
@@ -721,7 +727,6 @@ def _route(message, history=None, store=None, conversation=None):
                 cart.quote = {**cart.quote, "summary_hash": hashlib.sha256(reply.encode()).hexdigest()}
                 cart.save(update_fields=["quote"])
         return reply, context
-    faq_match = match_static_faq(message, store)
     if faq_match and request_type in (None, "faq", "greeting") and not accepted_prices and not gender_followup:
         return faq_match["answer"], ""
 

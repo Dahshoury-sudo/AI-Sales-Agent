@@ -76,6 +76,16 @@ class StoreSettings(models.Model):
         ),
     )
 
+    # The sole source for current offers, bundles, discounts, and their terms.
+    promotions = models.TextField(
+        blank=True,
+        default="",
+        help_text=(
+            "العروض والباندلز والخصومات الحالية: الأسماء، المحتويات، الأسعار والشروط. "
+            "لو فاضية، البوت هيطلب تأكيد التفاصيل من خدمة العملاء."
+        ),
+    )
+
     # Comment Auto-Reply
     comment_reply_messages = models.TextField(
         blank=True,

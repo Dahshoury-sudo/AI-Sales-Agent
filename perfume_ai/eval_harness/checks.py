@@ -475,6 +475,7 @@ def build_ground_truth(store):
         store_text = " ".join([
             settings_row.system_prompt or "",
             settings_row.business_facts or "",
+            settings_row.promotions or "",
             settings_row.payment_instructions or "",
         ])
     except Exception:

@@ -9,6 +9,57 @@ from unittest.mock import patch
 from products.models import Store, StoreSettings
 
 
+class PromotionSettingsTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="promotions-owner")
+        self.store = Store.objects.create(name="Offers store", owner=self.owner)
+        self.settings = StoreSettings.objects.create(
+            store=self.store, business_facts="عنوان الستور: القاهرة.",
+        )
+        self.other = StoreSettings.objects.create(store=Store.objects.create(name="Other store"))
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(self.owner)}")
+        self.url = reverse("dashboard-api-settings")
+
+    def test_existing_and_new_settings_start_with_empty_promotions(self):
+        self.assertEqual(self.client.get(self.url).data.get("promotions"), "")
+        self.settings.delete()
+        self.assertEqual(self.client.get(self.url).data.get("promotions"), "")
+
+    def test_round_trip_multiline_promotions_is_store_scoped(self):
+        for offers in ("بوكس الصيف: 3 عطور بـ3000 جنيه.\n\nهدية 50 مل مع العرض.",
+                       "عرض الشتاء: عطرين بـ900 جنيه.", ""):
+            with self.subTest(offers=offers):
+                response = self.client.put(self.url, {
+                    "promotions": offers, "store_id": self.other.store_id,
+                }, format="json")
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(self.client.get(self.url).data.get("promotions"), offers)
+                self.settings.refresh_from_db()
+                self.other.refresh_from_db()
+                self.assertEqual(self.settings.business_facts, "عنوان الستور: القاهرة.")
+                self.assertEqual(getattr(self.other, "promotions", None), "")
+
+    def test_omitting_promotions_preserves_saved_offers(self):
+        self.client.put(self.url, {"promotions": "عرض الصيف بـ900 جنيه."}, format="json")
+        self.client.put(self.url, {"business_facts": "العنوان الجديد"}, format="json")
+        self.assertEqual(self.client.get(self.url).data.get("promotions"), "عرض الصيف بـ900 جنيه.")
+
+    def test_old_offer_text_is_not_migrated_on_read(self):
+        self.settings.business_facts = "عرض قديم بـ100 جنيه."
+        self.settings.system_prompt = "باندل قديم بـ200 جنيه."
+        self.settings.save()
+        data = self.client.get(self.url).data
+        self.assertEqual(data.get("promotions"), "")
+        self.assertEqual(data["business_facts"], "عرض قديم بـ100 جنيه.")
+        self.assertEqual(data["system_prompt"], "باندل قديم بـ200 جنيه.")
+
+    def test_promotion_settings_require_owner_authentication(self):
+        self.client.credentials()
+        self.assertEqual(self.client.get(self.url).status_code, 401)
+        self.assertEqual(self.client.put(self.url, {"promotions": "offer"}, format="json").status_code, 401)
+
+
 class WebsiteOrderingSettingsTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username="website-owner")

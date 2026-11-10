@@ -52,7 +52,7 @@ def main():
             cursor.execute("SET TRANSACTION READ ONLY")
         source = Store.objects.get(name="Perfamix")
         public_settings = StoreSettings.objects.filter(store=source).values(
-            "system_prompt", "business_facts", "payment_instructions", "bottle_image_url").first() or {}
+            "system_prompt", "business_facts", "promotions", "payment_instructions", "bottle_image_url").first() or {}
         brands = list(Brand.objects.filter(store=source).values())
         categories = list(Category.objects.filter(store=source).values())
         products = list(Product.objects.filter(store=source).values())

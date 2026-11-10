@@ -59,7 +59,7 @@ def evaluate(*, only_1153=False):
         scenarios = [scenario for scenario in scenarios if scenario[0] == "conv1153"]
     for name, facts, turns in scenarios:
         store = Store.objects.create(name=f"Promotion evaluation {name}")
-        StoreSettings.objects.create(store=store, business_facts=facts)
+        StoreSettings.objects.create(store=store, promotions=facts)
         conversation = Conversation.objects.create(store=store)
         if name == "conv1153":
             for row in HISTORY:

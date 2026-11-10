@@ -206,6 +206,7 @@ def store_facts():
         settings_row = store.settings
         for label, value in (
             ("business_facts", settings_row.business_facts),
+            ("promotions (sole source for current offers)", settings_row.promotions),
             ("custom instructions", settings_row.system_prompt),
             ("payment instructions", settings_row.payment_instructions),
         ):

@@ -262,15 +262,18 @@ class Conversation1069Tests(BugFixture):
         from products.services.product_formatting import product_price_issues
         from products.services.router import _rephrased
         config = self.store.settings
-        config.business_facts = "الشحن 75 جنيه. عرض خصم 100 جنيه."
+        config.business_facts = "الشحن 75 جنيه."
+        config.promotions = "عرض خصم 100 جنيه."
         config.save()
         reply = "الشحن 75 جنيه. عرض خصم 100 جنيه. ميزانيتك 900 جنيه."
         retry = Mock(return_value=(reply, ""))
         final, _, _ = _rephrased(reply, "", [{"role": "user", "content": "ميزانيتي 900 جنيه"}], self.store, retry)
         self.assertEqual(reply, final)
         retry.assert_not_called()
-        self.assertTrue(product_price_issues("الشحن 100 جنيه", [], monetary_sources=[config.business_facts]))
-        self.assertTrue(product_price_issues("Afnan 9PM 90 ملي بـ75 جنيه", [self.b], monetary_sources=[config.business_facts]))
+        monetary_sources = [config.business_facts, config.promotions]
+        self.assertTrue(product_price_issues("الشحن 100 جنيه", [], monetary_sources=monetary_sources))
+        self.assertTrue(product_price_issues("Afnan 9PM 90 ملي بـ75 جنيه", [self.b], monetary_sources=monetary_sources))
+        self.assertTrue(product_price_issues("Afnan 9PM 90 ملي بـ100 جنيه", [self.b], monetary_sources=monetary_sources))
 
     def test_quote_evidence_cannot_swap_variant_relationships(self):
         from products.services.product_formatting import ProductQuote, quote_context, quote_evidence, product_price_issues
