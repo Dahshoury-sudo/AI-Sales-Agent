@@ -4,7 +4,7 @@ import re
 from . import absence
 from .bottle_wording import ORIGINAL_BOTTLE, BOTTLE_DIFFERENCE
 from .product_resolver import CARRIED_HOUSE, UNVERIFIED, confirm_unplaced, resolve_products
-from .product_formatting import format_products
+from .product_formatting import format_products, money
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .performance_policy import governed_reply, performance_only_question
@@ -52,9 +52,61 @@ def _named_in_message(message, store):
         match = naming.match_product(naming.arabic_span(message), store, products=candidates)
         return [match] if match and match.is_active else []
     found = naming.mentioned_in(message, candidates)
+    # "Club de Nuit Intense" contains La Nuit's only identifying token; a Latin name that says more
+    # than the row is a different perfume, left to the resolver and the absence checks (S09).
+    found = [p for p in found if not naming.latin_disagreement(message, p)]
     return [p for p in found if not any(
         p != other and naming.tokens(p.name) < naming.tokens(other.name) for other in found
     )]
+
+
+_PLAIN_EDITION = re.compile(r"(?<!\w)(?:العادي|عادي|الاساسي|الكلاسيك|regular|classic|plain)(?!\w)", re.I)
+
+
+def offered_extensions(products, message, store, conversation):
+    """A short name for the perfume on the table means that perfume.
+
+    "طب Black XS ده سويت للسهرات ولا فريش أكتر؟" right after Black XS L'Exces was offered asked about
+    L'Exces; the exact catalogue match answered with the plain Black XS's tags instead (simulation
+    S14 round 2, t7). Only a name we did not just offer is widened, only into the one offered name that
+    extends it, and never when the customer says they mean the plain edition.
+    """
+    if conversation is None or not products:
+        return products
+    from .static_faq_service import normalize_arabic
+    from .sales import naming
+    text = normalize_arabic(message or "")
+    # Only with a pointer ("Black XS ده"): "Sauvage بكام؟" after Sauvage Elixir was offered may well
+    # mean the original.
+    if _PLAIN_EDITION.search(text) or not re.search(r"(?<!\w)(?:ده|دي|دا|ديه|this)(?!\w)", text):
+        return products
+    offered = sales_described.offered_in_order(conversation, store)
+    named = {product.name for product in products}
+    widened = []
+    for product in products:
+        longer = [] if product.name in offered else [
+            name for name in offered if naming.tokens(product.name) < naming.tokens(name)]
+        replacement = _products_named(longer, store) if len(longer) == 1 and longer[0] not in named else []
+        widened.extend(replacement or [product])
+    return widened
+
+
+def _subject_names(text, names):
+    """The perfumes a message is about, leaving out comparison objects.
+
+    "إيه اللي يميزه عن Stronger With You Oud؟" is about the other perfume; read as singling Stronger
+    With You Oud out, the next "فيه منه زجاجة أوريجينال؟" answered for the wrong one (simulation S05).
+    """
+    from .sales import naming
+    lowered = (text or "").lower()
+    found = []
+    for name in naming.names_in(text or "", names):
+        index = lowered.find(name.lower())
+        before = naming.normalize_product_name(text[:index]) if index >= 0 else ""
+        if re.search(r"(?<!\w)(?:عن|من|زي|شبه|بدل|غير|مع|بين|وبين)\s*$", before):
+            continue
+        found.append(name)
+    return found
 
 
 def _absent_9pm_name(message, store, catalogue):
@@ -157,6 +209,21 @@ def _referent_from_conversation(message, store, conversation):
         ))
         if not offered:
             return []
+
+    if len(offered) > 1 and not several and not re.search(
+            r"اختار|انهي|مين\s+فيهم|احسن|افضل|انسب|بينهم|فيهم", naming.normalize_product_name(message)):
+        # "سعره كام؟" right after the customer singled out one of two offered perfumes ("طب K By
+        # Dolce مفيهوش عود؟") is about that one. Our nameless follow-up left both on the table, and
+        # the reply mixed their facts — one perfume's musk was attributed to the other (S10 replay 3).
+        recent = conversation.messages.filter(role="user").order_by("-created_at", "-pk") \
+            .values_list("content", flat=True)[:3]
+        for earlier in recent:
+            singled = _subject_names(earlier or "", offered)
+            if len(singled) == 1:
+                offered = singled
+                break
+            if singled:
+                break
 
     from products.models import Product
 
@@ -805,7 +872,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         return f"تقصد أنهي عطر: {choices}؟", "NUMERIC_NAME_UNRESOLVED"
     if numeric.product is not None and not numeric.product.is_active:
         return f"{numeric.product.name} مش متاح حالياً.", "NUMERIC_NAME_UNAVAILABLE"
-    products = [numeric.product] if numeric.product is not None else _named_in_message(message, store)
+    products = [numeric.product] if numeric.product is not None else offered_extensions(
+        _named_in_message(message, store), message, store, conversation)
     occasion_reference = occasion_reference_requested(message) if not products else ""
     if occasion_reference:
         products = _occasion_referents(occasion_reference, store, conversation, history)
@@ -978,7 +1046,11 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # — `named_but_unresolved` is fixed above this line and an empty answer cannot change it — but
     # there is no reason to pay for it.
     praised = appreciation.detect(message, history=history)
-    if not products and not resolver_ran and not numeric_absent_name and not praised:
+    # Only a compliment with nothing asked can skip resolution. "ذوقك حلو، فيه منه زجاجة أورجينال؟"
+    # is praise AND a question about a perfume; skipping left both offered rows in play and the
+    # reply quoted the other perfume's original price (simulation S05 replay 2, t5).
+    pure_praise = praised and not re.search(r"[؟?]", message or "")
+    if not products and not resolver_ran and not numeric_absent_name and not pure_praise:
         products = resolve_products(message, history, store, conversation)
         resolution = products
 
@@ -1378,7 +1450,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
                 from .sales.scent_selection import combined_budget_quotes
                 quotes = combined_budget_quotes(alternatives, alternative_intent)
                 quoting = True
-                quote_footer = f"إجمالي الـ{len(quotes)} زجاجات: {sum(q.price for q in quotes):f} جنيه."
+                quote_footer = f"إجمالي الـ{len(quotes)} زجاجات: {money(sum(q.price for q in quotes))} جنيه."
             # Alternatives need saved scent tags; occasions answer explicit suitability questions.
             # Notes are evidence only for explicit ingredient questions, never a substitute for
             # missing scent tags or a reason to invent a note that the customer wants.

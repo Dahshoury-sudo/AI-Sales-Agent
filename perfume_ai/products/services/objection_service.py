@@ -30,7 +30,7 @@ from .ai.prompts import get_system_prompt
 from .performance_policy import governed_reply
 from .product_formatting import (format_products, is_variant_available, factual_description,
     ProductQuote, product_quotes, render_quotes, quote_context, quote_evidence,
-    requested_quote_options, monetary_claims, append_quotation, QUOTE_PROSE_INSTRUCTION)
+    requested_quote_options, monetary_claims, append_quotation, QUOTE_PROSE_INSTRUCTION, money)
 from .product_resolver import resolve_products
 from .sales import stage as sales_stage
 from .sales.objection import PLAYBOOK
@@ -372,6 +372,20 @@ def _requests_objection_prices(message):
     return False
 
 
+def _price_floor(store, conversation=None):
+    """The cheapest sellable bottle in the store, for the customer's saved gender when known."""
+    from products.models import Product
+    if store is None:
+        return None
+    gender = ((getattr(conversation, "preferences", None) or {}).get("gender")) if conversation else None
+    products = Product.objects.filter(store=store, is_active=True).prefetch_related("variants")
+    if gender in ("male", "female", "unisex"):
+        products = products.filter(gender=gender)
+    prices = [variant.price for product in products for variant in product.variants.all()
+              if variant.volume > 0 and is_variant_available(variant)]
+    return min(prices) if prices else None
+
+
 @governed_reply
 def handle_objection(message, objection, history=None, store=None, conversation=None, retry_hint=""):
     """Reply to a customer objection or complaint, addressing it before selling.
@@ -387,8 +401,21 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     see it.
     """
     guidance = PLAYBOOK.get(objection.kind, "")
-    if objection.kind == "thinking" and not re.search(r"[?؟]|بكام|سعر|فيه ايه|ثبات|عنوان|احجام|ملي", message):
-        return "تمام، خد وقتك.", "CUSTOMER_DEFERRED"
+    from .sales.appreciation import closes_conversation
+    # "تمام، هفكر في الـ Cigar عشان سعره مناسب. تسلم يا باشا" gives a reason and closes; its "سعر" is
+    # not a price question, and the model answered with a smaller-size pitch (simulation S09 round 2, t8).
+    closing = closes_conversation(message) and not re.search(r"[?؟]", message)
+    if objection.kind == "thinking" and (closing or not re.search(
+            r"[?؟]|بكام|سعر|فيه ايه|ثبات|عنوان|احجام|ملي", message)):
+        from .sales.appreciation import thanks_or_praise
+        # Praise or thanks beside "هفكر" deserves its acknowledgement (simulation S01 t7).
+        return ("تسلم، خد وقتك." if thanks_or_praise(message) else "تمام، خد وقتك."), "CUSTOMER_DEFERRED"
+    from .static_faq_service import normalize_arabic
+    if (objection.kind in ("price", "expensive", "budget") and not re.search(r"[?؟]", message)
+            and re.search(r"(?<!\w)(?:هفكر|افكر|هشوف|اشوف|افكرها|هفكرها)(?!\w)", normalize_arabic(message))):
+        # "غالي أوي كده 😅 هفكر وأشوف" defers; answered with a smaller-size pitch and a defence of the price,
+        # the customer was not given the space they asked for (simulation S09 round 2 full 2, t6).
+        return "حقك يا فندم، خد وقتك. ولو حابب أدورلك على حاجة قريبة في ميزانية أقل، قولي.", "CUSTOMER_DEFERRED"
     stage = sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
 
     # Only the perfumes actually under discussion, so the reply stays on the customer's
@@ -401,6 +428,11 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     products = _named_in_message(message, store)
     if not products and "9pm" in naming.tokens(message):
         return get_product_info(message, history, store, conversation)
+    if not products and not naming.may_name_a_perfume(message):
+        # Nothing in the message names a perfume, so it is about the one on the table. Asked first,
+        # the resolver placed Aventus from the history for a question about Layton (simulation S02
+        # round 2 full 4, t6).
+        products = _referent_from_conversation(message, store, conversation)
     products = products or resolve_products(message, history, store, conversation)
     if not products:
         products = _referent_from_conversation(message, store, conversation)
@@ -408,7 +440,16 @@ def handle_objection(message, objection, history=None, store=None, conversation=
         return _price_gap_reply(products, message, store)
     budget = stated_budget(conversation)
     context = format_products(products[:2], max_price=budget) if products else ""
-    quoting = bool(products) and _requests_objection_prices(message)
+    floor = _price_floor(store, conversation) if objection.kind in ("price", "expensive", "budget") else None
+    nothing_in_budget = floor is not None and budget is not None and floor > budget
+    # "غالي عليا" at 700 when nothing costs under 750 (simulation S11): the honest answer is the
+    # nearest real prices, rendered by code from budget-filtered quotes, never typed by the model.
+    # "هي في حدود ١٠٠٠؟ وهفكر أطلبه" asks whether the price fits; without quotes the model said the price
+    # was not available to it (simulation S07 round 2 batch 3, t4).
+    from .product_formatting import FITS_BUDGET_QUESTION
+    from .sales.naming import normalize_product_name
+    quoting = bool(products) and (_requests_objection_prices(message) or nothing_in_budget
+                                  or bool(FITS_BUDGET_QUESTION.search(normalize_product_name(message))))
     shown_context = context if quoting else format_products(
         products[:2], max_price=budget, show_prices=False, show_value_pick=False,
     )
@@ -422,6 +463,12 @@ def handle_objection(message, objection, history=None, store=None, conversation=
             guidance += "\nمفيش اختيار أصغر وأقل تكلفة للاعتراض ده؛ ممنوع تعرض حجم أصغر أو عينة."
         if any(is_store_exclusive(product) for product in products[:2]):
             guidance += "\nالعطر الحصري تصميم الستور؛ اشرح جودة الزيوت من الحقائق فقط، من غير تشبيه ريحته بأوريجنال."
+        if nothing_in_budget:
+            guidance += ("\nمفيش أي عطر عندنا سعره تحت ميزانيته؛ أقرب الأسعار هتتكتب تحت ردك. قوله ده "
+                         "بصراحة وبهدوء في جملة، من غير أرقام ومن غير دفاع عام عن السعر.")
+        elif floor is not None and budget is not None:
+            guidance += ("\nفيه عطور عندنا في حدود ميزانيته؛ لو اللي بيتكلم عنه أغلى، اعرض إنك ترشحله "
+                         "حاجة في حدود ميزانيته من غير ما تذكر أسعار.")
 
     sequence = _SEQUENCE
     if not sales_stage.closing_allowed(stage):
@@ -451,9 +498,74 @@ def handle_objection(message, objection, history=None, store=None, conversation=
         "\nجاوب على الاعتراض نفسه في جملة أو جملتين. العميل مسألش عن مبلغ دلوقتي؛ "
         "ممنوع تسرد أسعار أو تعمل عنوان باسم العطر. استخدم حقائق الستور فقط لتبرير التكلفة.\n")
     response = chat(messages, profile="converse")
+    if nothing_in_budget:
+        response = without_value_defence(response)
+        # Whether the perfume being quoted is itself the cheapest we sell: only then is "this is our
+        # lowest price" true of the quote rendered under the sentence.
+        quoted = [variant.price for product in products[:2] for variant in product.variants.all()
+                  if variant.volume > 0 and is_variant_available(variant)]
+        at_floor = bool(quoted) and min(quoted) == floor
+        asks_cheaper = bool(re.search(r"ارخص|اقل\s+(?:من|سعر|حاجه)|\bcheaper\b", normalize_arabic(message)))
+        if not asks_cheaper or at_floor:
+            response = _nothing_in_budget_reply(message, response, store, history, at_floor=at_floor,
+                                                asks_cheaper=asks_cheaper)
     if quoting:
         context = quote_context(context, product_quotes(products[:2], message, budget), append=True, max_price=budget,
                                 request=message)
         from .price_reply import compose_price_reply
         return compose_price_reply(response, context)
     return append_quotation(response, context), context
+
+
+_RESTATES_THE_FLOOR = re.compile(r"مفيش|مافيش|مش\s+(?:موجود|متاح)|اعلي\s+من\s+ميزاني|اقل\s+من\s+ميزاني|تحت\s+ميزاني|عندك\s+حق")
+
+
+NOTHING_IN_BUDGET = "فعلاً عندك حق، مفيش عندنا حاجة في حدود ميزانيتك أو أقل منها حاليًا"
+NOTHING_CHEAPER = "مفيش حاجة أرخص منه عندنا حاليًا"
+
+
+def _nothing_in_budget_reply(message, response, store, history, *, at_floor, asks_cheaper=False):
+    """The price objection's answer when nothing in the store fits the budget, stated from the data.
+
+    Left to the model it came out as "مفيش عندنا اختيار أقل من ميزانيتك" (which leaves "at exactly
+    700" open and never says the quoted price is the cheapest), and "الشحن 60؟ كده الإجمالي 810، غالي
+    عليا" got only "فاهم إن مصاريف الشحن زوّدت الإجمالي عليك" (simulation S11 round 2 full 6, t2 and
+    t5; both criteria unmet). The floor and the store's shipping answer are facts: the code says
+    them, and the model's sentences that restate them are dropped.
+
+    No amount is written here. The quote rendered under this sentence carries the price, and the
+    price checker rejects any amount in the prose beside it: a first version with "700" and "750" in
+    it was thrown out by `router._rephrased` and the customer got the bare price block (S11 round 2
+    batch 5, t2). The earlier "مفيش حاجة أرخص من 750 جنيه" line was failing the same way.
+    """
+    from .static_faq_service import normalize_arabic
+    said = "\n".join(row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant")
+    lowest = "، وده أقل سعر عندنا." if at_floor else "."
+    line = (NOTHING_CHEAPER + "؛ ده أقل سعر عندنا.") if asks_cheaper else NOTHING_IN_BUDGET + lowest
+    if line in said:
+        line = "زي ما قلتلك، ده أقل سعر عندنا ومفيش حاجة أقل منه حاليًا." if at_floor \
+            else "زي ما قلتلك، مفيش عندنا حاجة في حدود ميزانيتك حاليًا."
+    if re.search(r"شحن|اجمالي|المجموع", normalize_arabic(message or "")):
+        from .order_service import flat_shipping_fee, shipping_answer
+        shipping = shipping_answer(store) if flat_shipping_fee(store) is not None else ""
+        if shipping:
+            line += " " + shipping.rstrip(" .") + "، ومفيش عندي شحن أقل من كده."
+    kept = [sentence for sentence in re.split(r"(?<=[.!؟?])\s+|\n+", response or "")
+            if sentence.strip() and not _RESTATES_THE_FLOOR.search(normalize_arabic(sentence))
+            and not re.search(r"شحن", sentence)]
+    return " ".join([line, *kept])
+
+
+_VALUE_DEFENCE = re.compile(r"زيوت|جود[هة]|خامات|قريب[هة]?\s+من\s+(?:ال)?[أا]وري?جي?نال|بسعر\s+[أا]وفر|تطابق|يستاهل|تستاهل")
+
+
+def without_value_defence(response):
+    """The reply minus its generic price defence, for a budget nothing in the store fits.
+
+    The guidance forbids the defence there, and the model still wrote "بنستخدم زيوت عطرية بجودة
+    عالية… بسعر أوفر" (simulation S11, round 2). The honest answer is the budget and the nearest
+    real price, which the code-rendered quote carries.
+    """
+    kept = [sentence for sentence in re.split(r"(?<=[.!؟?])\s+|\n+", response or "")
+            if sentence.strip() and not _VALUE_DEFENCE.search(sentence)]
+    return " ".join(kept) or response

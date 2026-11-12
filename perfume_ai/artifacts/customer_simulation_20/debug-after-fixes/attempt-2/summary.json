@@ -1,0 +1,452 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006927810",
+    "api_calls": 18
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.008050930",
+    "api_calls": 23
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 4,
+      "question_quality": 4,
+      "knows_when_to_stop": 5,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'Blue Jeans\nريحته فريش ومنعش ومسكر وفيه ريحة حمضيات.\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\n\nPha'",
+      "judge score understanding_accuracy=5",
+      "judge score memory=4",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=5",
+      "judge score commerce_correctness=5",
+      "judge turn 4 high memory: It did not act on the customer's latest request for one sweet perfume for his brother; the customer had to repeat the correction.",
+      "judge turn 6 high memory: The customer had rejected those exact suggestions and said he did not know perfume names. Repeating them ignored both the rejection and the clear sweet preferen",
+      "judge turn 8 high memory: Both suggestions are sweet-tagged, but the assistant forgot the customer's retained preference for a fresh perfume for himself and proposed two sweet perfumes i"
+    ],
+    "cost_usd": "0.021705355",
+    "api_calls": 35
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 10,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003252685",
+    "api_calls": 12
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 4,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score knows_when_to_stop=4",
+      "judge score commerce_correctness=4",
+      "judge turn 5 critical commerce: The quoted price is wrong and unsupported; the database lists the original 100ml variant at 2400 EGP.",
+      "judge turn 6 high stop: The customer explicitly deferred completing the order, but the assistant pushed for checkout details. No order was created, but it advanced the sale when the cu",
+      "criterion unmet: Original-bottle availability answered from the variant data only."
+    ],
+    "cost_usd": "0.014657675",
+    "api_calls": 31
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "pass",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.010056900",
+    "api_calls": 45
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.007834580",
+    "api_calls": 27
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 10,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004934210",
+    "api_calls": 18
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 3,
+      "memory": 2,
+      "question_quality": 2,
+      "knows_when_to_stop": 8,
+      "naturalness": 5,
+      "emotional_handling": 3,
+      "commerce_correctness": 2
+    },
+    "reasons": [
+      "judge score understanding_accuracy=3",
+      "judge score memory=2",
+      "judge score question_quality=2",
+      "judge score naturalness=5",
+      "judge score emotional_handling=3",
+      "judge score commerce_correctness=2",
+      "judge turn 2 high question: The customer had already written the name clearly; asking them to write it again needlessly repeats supplied information.",
+      "judge turn 3 high memory: After the customer repeats and clarifies the exact name, the assistant again responds about La Nuit instead.",
+      "judge turn 6 high memory: The customer had already named the reference multiple times; asking for it again disregards that clear information.",
+      "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+      "criterion unmet: Handles the customer's irritation without canned apologies."
+    ],
+    "cost_usd": "0.006013000",
+    "api_calls": 24
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 6,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 4,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score emotional_handling=4",
+      "judge turn 3 high memory: The assistant repeats both perfumes instead of honoring «حاجة تانية», worsening the customer's concern that they may regret choosing one.",
+      "judge turn 6 high understanding: The customer explicitly rejects spices and asks for another recommendation; the assistant sends them to test the same unsuitable option instead.",
+      "judge turn 9 high memory: The customer has just asked for another perfume, but the assistant returns to BMW and suggests a purchase size rather than answering the request.",
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.020974380",
+    "api_calls": 43
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 3,
+      "question_quality": 4,
+      "knows_when_to_stop": 3,
+      "naturalness": 5,
+      "emotional_handling": 4,
+      "commerce_correctness": 3
+    },
+    "reasons": [
+      "turn 2 high over_budget_offer: quoted [1375.0, 1000.0] against a stated budget of 700",
+      "turn 8 critical repeated_reply: 100% identical to an earlier reply: 'راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيز'",
+      "judge score understanding_accuracy=4",
+      "judge score memory=3",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=3",
+      "judge score naturalness=5",
+      "judge score emotional_handling=4",
+      "judge score commerce_correctness=3",
+      "judge turn 2 high commerce: العميل قال إن السعر غالٍ وطلب الأرخص، لكن الرد أعاد المنتج نفسه وعرض أحجامًا أغلى، دون معالجة حد الميزانية أو استخدام صيغة السعر القريب.",
+      "judge turn 8 high memory: العميل أكد صراحةً الطلب على 810، لكن المساعد تجاهل ذلك وكرر ملخصًا ناقصًا وسؤال التأكيد.",
+      "judge turn 9 critical commerce: قدّم 750 كإجمالي رغم أن الشحن 60 والإجمالي 810، كما تجاهل موافقة العميل الصريحة على 810."
+    ],
+    "cost_usd": "0.018820950",
+    "api_calls": 40
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.010112195",
+    "api_calls": 31
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 9,
+      "knows_when_to_stop": 8,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "turn 4 high over_budget_offer: quoted [1375.0, 1625.0, 1000.0] against a stated budget of 800",
+      "judge score commerce_correctness=5",
+      "judge turn 4 high commerce: The customer had stated a budget around 800 EGP, and the 50ml option at 750 EGP fit it. The unsolicited 1000 EGP and original-bottle prices exceed that budget.",
+      "criterion unmet: Respects the ~800 budget once stated (750 options); shipping 60 from store facts."
+    ],
+    "cost_usd": "0.009790735",
+    "api_calls": 26
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 7,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 8 high memory: The customer had explicitly said they did not want something too heavy; Kalemat is tagged heavy and the assistant describes it as heavy.",
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.017669590",
+    "api_calls": 43
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 4,
+      "question_quality": 4,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge score memory=4",
+      "judge score question_quality=4",
+      "judge turn 5 high memory: The customer had already said he wanted a men's fragrance and explicitly signals he is returning to his own purchase. The assistant forgets both the supplied ge",
+      "judge turn 6 high question: The customer names the two options, confirms he wants a men's fragrance, and asks which is better. Woody was already established; this question re-asks for a kn",
+      "criterion unmet: Returning to his own purchase restores his woody men's preference and recalls the earlier suggestion"
+    ],
+    "cost_usd": "0.014579375",
+    "api_calls": 33
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 5,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge score question_quality=5"
+    ],
+    "cost_usd": "0.011877015",
+    "api_calls": 27
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.001996465",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 2,
+      "naturalness": 5,
+      "emotional_handling": 5,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=2",
+      "judge score naturalness=5",
+      "judge score emotional_handling=5",
+      "judge score commerce_correctness=4",
+      "judge turn 1 critical accuracy: The available facts support that the store's perfumes are تركيب, but do not support these claimed categories or special Perfamix mixes.",
+      "judge turn 5 high stop: She declined further help, reiterated that she only wanted approximate prices, and said thanks. The assistant neither answered the price question nor stopped th",
+      "criterion unmet: Gives space to browse; no pressure or closing questions.",
+      "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+    ],
+    "cost_usd": "0.006954635",
+    "api_calls": 14
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 5,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 7 high unsupported_promise: follow_up: 'هيتواصل معاك'",
+      "judge score memory=5",
+      "judge score question_quality=5",
+      "judge turn 1 high commerce: The customer also requested one Bleu de Chanel 50ml, but the assistant omitted it without asking. The customer had not yet removed it.",
+      "judge turn 3 high memory: The customer had specified 90ml in turn 1. Re-asking ignores information already provided and delays the order.",
+      "judge turn 4 high commerce: The customer had already changed the quantity to one, and turn 4 only confirmed the size. Showing three units is an incorrect cart state.",
+      "judge turn 4 high question: The customer had just answered 90ml in the preceding turn, so repeating the same question is unnecessary.",
+      "judge turn 7 high commerce: The assistant promises a follow-up without confirming a transfer to the team; the supported handoff rule does not establish that this order will receive a follo",
+      "criterion unmet: The summary shows the correct item and total (1000 plus the store's shipping fee, if the summary inc"
+    ],
+    "cost_usd": "0.010812950",
+    "api_calls": 30
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 4,
+      "knows_when_to_stop": 5,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=5",
+      "judge score naturalness=5"
+    ],
+    "cost_usd": "0.003157445",
+    "api_calls": 8
+  }
+]

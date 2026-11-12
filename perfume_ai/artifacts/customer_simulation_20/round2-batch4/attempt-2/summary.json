@@ -1,0 +1,45 @@
+[
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 2,
+    "ended_by": null,
+    "scores": null,
+    "reasons": [
+      "error: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}",
+      "judge unavailable: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+    ],
+    "cost_usd": "0.033520050",
+    "api_calls": 9
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 1,
+    "ended_by": null,
+    "scores": null,
+    "reasons": [
+      "error: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}",
+      "turn 1 critical crash: turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update ",
+      "turn 1 critical empty_reply: the customer received no reply",
+      "judge unavailable: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+    ],
+    "cost_usd": "0.027360125",
+    "api_calls": 4
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 1,
+    "ended_by": null,
+    "scores": null,
+    "reasons": [
+      "error: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}",
+      "turn 1 critical crash: turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update ",
+      "turn 1 critical empty_reply: the customer received no reply",
+      "judge unavailable: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+    ],
+    "cost_usd": "0.027445125",
+    "api_calls": 4
+  }
+]

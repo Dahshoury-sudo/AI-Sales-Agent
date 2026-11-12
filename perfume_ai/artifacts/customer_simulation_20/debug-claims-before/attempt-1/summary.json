@@ -1,0 +1,56 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": null,
+    "reasons": [
+      "turn 4 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+      "judge unavailable: None"
+    ],
+    "cost_usd": "0.005133185",
+    "api_calls": 26
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": null,
+    "reasons": [
+      "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+      "turn 4 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+      "judge unavailable: None"
+    ],
+    "cost_usd": "0.010945270",
+    "api_calls": 39
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": null,
+    "reasons": [
+      "turn 8 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Bleu de Chanel (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بدي'",
+      "judge unavailable: None"
+    ],
+    "cost_usd": "0.007446525",
+    "api_calls": 32
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": null,
+    "reasons": [
+      "turn 5 critical repeated_reply: 100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'",
+      "turn 7 high unsupported_promise: follow_up: 'هسأل و'",
+      "judge unavailable: None"
+    ],
+    "cost_usd": "0.005831645",
+    "api_calls": 23
+  }
+]

@@ -1,0 +1,378 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006794270",
+    "api_calls": 22
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 6 high understanding: The customer explicitly asked whether the 2000 EGP price for Layton was for the store bottle or the original. The assistant switched to Aventus, so it failed to"
+    ],
+    "cost_usd": "0.007984730",
+    "api_calls": 26
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.004604120",
+    "api_calls": 16
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00113751",
+    "api_calls": 11
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 6,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge turn 7 high stop: العميل أكد أنه سيرسل البيانات عندما يكون جاهزًا، ومع ذلك أعاد المساعد طلب تفاصيل الإتمام وكرر ملخص السلة، فضغط على عميل يؤجل المتابعة."
+    ],
+    "cost_usd": "0.010135010",
+    "api_calls": 26
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.011194880",
+    "api_calls": 28
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.007723175",
+    "api_calls": 27
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "fail",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: The explicit work-suitability question is answered from each perfume's stored occasion."
+    ],
+    "cost_usd": "0.00317156",
+    "api_calls": 19
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 8,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge turn 4 high memory: The recommendations reflect fruit but drop the customer's explicit smoky preference, so they do not address the requested scent profile.",
+      "criterion unmet: Handles the customer's irritation without canned apologies."
+    ],
+    "cost_usd": "0.005847720",
+    "api_calls": 24
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006900670",
+    "api_calls": 17
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.015176440",
+    "api_calls": 30
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008231775",
+    "api_calls": 28
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 6,
+      "knows_when_to_stop": 8,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [],
+    "cost_usd": "0.005877615",
+    "api_calls": 22
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 10,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge turn 7 critical accuracy: The stored facts provide scent tags but do not establish that the sweet aspect is more prominent than the leather aspect.",
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.015273890",
+    "api_calls": 35
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 8,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 7
+    },
+    "reasons": [],
+    "cost_usd": "0.017821605",
+    "api_calls": 34
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 7,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge score question_quality=5",
+      "criterion unmet: Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-ho"
+    ],
+    "cost_usd": "0.009884145",
+    "api_calls": 32
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.000811075",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002668245",
+    "api_calls": 10
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.007359850",
+    "api_calls": 27
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002918650",
+    "api_calls": 6
+  }
+]

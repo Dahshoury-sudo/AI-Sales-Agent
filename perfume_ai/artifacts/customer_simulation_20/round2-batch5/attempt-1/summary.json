@@ -1,0 +1,69 @@
+[
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 4,
+      "question_quality": 3,
+      "knows_when_to_stop": 5,
+      "naturalness": 5,
+      "emotional_handling": 4,
+      "commerce_correctness": 3
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score memory=4",
+      "judge score question_quality=3",
+      "judge score knows_when_to_stop=5",
+      "judge score naturalness=5",
+      "judge score emotional_handling=4",
+      "judge score commerce_correctness=3",
+      "judge turn 6 high commerce: The recommendation is exactly 750, not less than 750, and it is also the previously offered perfume.",
+      "judge turn 7 high memory: Both alternatives cost the same as 212 NYC Man, so neither satisfies the customer's request for something cheaper.",
+      "judge turn 8 high question: The products and 50 ml size were just supplied, and the customer clearly refers to both with «دول». The assistant asks for already-known information instead of ",
+      "judge turn 9 high commerce: The price is correct, but calling 750 within budget contradicts the customer's explicit less-than-750 constraint and stated 700 budget.",
+      "criterion unmet: Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wordin"
+    ],
+    "cost_usd": "0.015941120",
+    "api_calls": 40
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.005258560",
+    "api_calls": 20
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003201050",
+    "api_calls": 6
+  }
+]

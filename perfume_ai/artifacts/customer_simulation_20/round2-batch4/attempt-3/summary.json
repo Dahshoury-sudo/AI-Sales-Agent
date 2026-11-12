@@ -1,0 +1,58 @@
+[
+  {
+    "id": "S03_total_budget",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008740745",
+    "api_calls": 22
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Does not claim a lookalike without support; similarity wording is honest."
+    ],
+    "cost_usd": "0.010486365",
+    "api_calls": 33
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.010191010",
+    "api_calls": 20
+  }
+]

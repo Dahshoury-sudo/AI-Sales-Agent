@@ -139,7 +139,7 @@ class ScentRecommendationTests(TestCase):
         product = self.make_product("Cedar Day", ["fresh"], price=550)
         intent = {"scent_tags": ["fresh"], "max_price": 500}
         (reply, context), model = self.generate(intent, {"product_ids": [product.pk], "reply": "Cedar Day: ريحته فريش ومنعش."})
-        self.assertIn("550.00", reply)
+        self.assertIn("550 جنيه", reply)
         self.assertIn("أعلى حاجة بسيطة من ميزانيتك", reply)
         self.assertEqual(quote_evidence(context)["quotes"][0]["product_id"], product.pk)
         self.assertEqual(model.call_count, 1)
@@ -215,7 +215,7 @@ class ScentRecommendationTests(TestCase):
         quotes = quote_evidence(context)["quotes"]
         self.assertEqual({q["product_id"] for q in quotes}, {second.pk, cheap.pk})
         self.assertLessEqual(sum(Decimal(q["price"]) for q in quotes), Decimal("600"))
-        self.assertIn("600.00", reply)
+        self.assertIn("600 جنيه", reply)
 
     def test_only_selected_products_are_saved_as_offered(self):
         selected = self.make_product("Cedar Day", ["fresh"])

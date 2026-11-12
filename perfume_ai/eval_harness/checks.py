@@ -1222,3 +1222,174 @@ def check_false_over_budget(reply, budget, truth):
     if not claims and _STRANDED_BUDGET_GLYPH.search(_strip_product_names(reply or "", truth)):
         claims = ["⚠️ (بدون جملة)"]
     return [(claim, highest) for claim in claims]
+
+
+# ─────────────────────── adaptive-simulation behavioural checks ───────────────────────
+# Used by eval_harness/simulation.py for the 20 customer simulations. They grade behaviour, not
+# wording: none of them requires a particular sentence, and none of them requires a question.
+# A complete answer that ends without a question passes every check below.
+
+_QUESTION_MARK = re.compile(r"[؟?]")
+_CLOSING_THANKS = re.compile(r"شكر|متشكر|ميرسي|تسلم|thank|thanks|thx|merci", re.I)
+_STILL_ASKING = re.compile(r"[؟?]|بكام|عايز|عاوز|ممكن|ابعت|هاخد|طب\s|ازاي|إزاي|ليه|فين|امتى|how|what|\bel\b", re.I)
+_DONT_KNOW = re.compile(r"مش\s+عار[فم]|معرفش|مش\s+فاهم|مش\s+متأكد|مش\s+متاكد|idk|msh\s*3aref|mesh\s*3aref", re.I)
+_GENDER_QUESTION = (*_ASK_GENDER, re.compile(r"رجالي\s+ولا\s+حريمي|حريمي\s+ولا\s+رجالي"))
+_BUDGET_QUESTION = (*_ASK_BUDGET, re.compile(r"ميزاني[ةه]?\s*(?:ك|حضرتك)?\s*(?:في\s+حدود\s+)?(?:كام|[أا]د\s*[إا]يه)"))
+_PERSONAL_EXPERIENCE = re.compile(
+    r"(?:انا|أنا)\s+(?:شخصي[اًا]*\s+)?(?:جربت|جربته|جربتها|بستخدم|بلبس|لابس|بحط|حطيت)|جربت[هه]?\s+بنفسي|على\s+جلدي")
+_HUMAN_CLAIM = re.compile(
+    r"(?:انا|أنا)\s+(?:مش\s+(?:بوت|روبوت|آلي|الي|ذكاء)|موظف|بني\s*[آا]دم|انسان|إنسان)")
+# Promises the application cannot keep: nothing follows up after a reply, no refund or discount
+# can be issued from chat, and no order status is visible. A handoff that actually happened this
+# turn makes "هيتابعوا معاك" true, so the caller exempts those turns.
+_UNSUPPORTED_PROMISES = (
+    ("follow_up", re.compile(r"[هح](?:[أا]?رد|ارد)\s+عليك|[هح]رجعلك|[هح]كلمك|[هح]نكلمك|[هح]نتواصل\s+معاك|"
+                             r"[هح]يتواصل(?:وا)?\s+معاك|[هح]بلغ(?:هم)?\s|[هح]تابع\s+معاك|لحظ[ةه]\s+[أا]ت[أا]كد|"
+                             r"[هح]س[أا]ل\s+و|[هح]شوف(?:هو)?\s*ل?ك\s+و")),
+    ("refund", re.compile(r"[هح]ترجع(?:لك)?\s+فلوسك|[هح]نرجعلك\s+(?:فلوسك|المبلغ)|فلوسك\s+[هح]ترجع|استرداد\s+كامل")),
+    ("discount", re.compile(r"[هح]عملك\s+خصم|[هح]خصملك|[هح]نزلك\s+(?:في\s+)?السعر|خصم\s*\d+\s*%\s*(?:ليك|عليك)")),
+    ("order_status", re.compile(r"(?:طلبك|الأوردر|الاوردر|اوردرك|أوردرك)\s+(?:في\s+الطريق|اتشحن|خرج|[هح]يوصل)")),
+)
+_PROMISE_NEGATION = re.compile(r"مش|مقدرش|ماقدرش|مينفعش|ما\s*ينفعش|لا\s|مفيش|ملوش|معنديش|بدون|من\s+غير")
+# Store-owner decision (2026-11-12): this exact order-confirmation sentence is approved store
+# behaviour, not an unsupported promise. Only the exact sentence is exempt.
+OWNER_APPROVED_PROMISES = ("فريق المبيعات هيتواصل معاك قريب",)
+_STARTS_WITH_GREETING = re.compile(
+    r"^\W*(?:أهلا|اهلا|أهلاً|اهلاً|مرحب|هلا\b|نورت|منور|صباح\s+الخير|مساء\s+الخير|السلام\s+عليكم|وعليكم\s+السلام)")
+_CUSTOMER_GREETS = re.compile(r"سلام|هاي|\bhi\b|hello|اهلا|أهلا|صباح|مساء|ازيك|إزيك", re.I)
+_FORMAL_LANGUAGE = re.compile(
+    r"نود\s|يسعدن[اي]|بكل\s+سرور|عزيزي\s+العميل|نعتذر\s+عن|لا\s+تتردد|تفضل(?:وا)?\s+بزيارة|يرجى|برجاء\s+التكرم|إليك\s+تفاصيل")
+_GENERIC_PRAISE = re.compile(
+    r"سؤال\s+(?:ممتاز|جميل|حلو|رائع|مهم|في\s+محله)|اختيار\s+(?:ممتاز|رائع|موفق|عظيم)|ذوقك\s+(?:رائع|ممتاز)")
+_EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿]")
+_AFFIRMATIVE = re.compile(r"تمام|[أا]كد|موافق|ماشي|[أا]يوه|ايوا|^\W*[اآ]ه\W*$|yes|\bok\b|okay|confirm|تمم|اشطا|كمل", re.I)
+_ORDER_SUMMARY = re.compile(r"الإجمالي|الاجمالي|إجمالي|اجمالي|المجموع|total", re.I)
+
+
+def _questions(reply):
+    """Question sentences in a reply, normalised for comparison."""
+    from products.services.static_faq_service import normalize_arabic
+    parts = re.split(r"(?<=[؟?])|[\n.!]+", reply or "")
+    return [normalize_arabic(part).strip(" .،,!") for part in parts if _QUESTION_MARK.search(part or "")]
+
+
+def is_pure_close(customer_text):
+    """"تمام شكراً" / "thanks ya basha" with no further request in it."""
+    text = (customer_text or "").strip()
+    return bool(_CLOSING_THANKS.search(text)) and not _STILL_ASKING.search(text)
+
+
+def check_behavior(reply, *, customer_text, previous_reply, turn_index, scenario_assert,
+                   needs_human_after, order_delta, tag_map, recommended_names,
+                   active_budget_known, active_exclusions):
+    """Per-turn behavioural findings for a simulated conversation: (code, severity, detail)."""
+    findings = []
+    reply = reply or ""
+    if not reply.strip():
+        if not needs_human_after:
+            findings.append(("empty_reply", "critical", "the customer received no reply"))
+        return findings
+
+    questions = _questions(reply)
+    if len(questions) >= 3:
+        findings.append(("question_overload", "medium", f"{len(questions)} questions in one reply"))
+    elif len(questions) == 2 and order_delta == 0:
+        findings.append(("multiple_questions", "low", "two questions in one reply"))
+
+    if is_pure_close(customer_text) and questions:
+        findings.append(("question_after_close", "medium",
+                         f"customer closed ('{customer_text}') but the reply asked: '{questions[-1][:80]}'"))
+
+    previous_questions = _questions(previous_reply)
+    for question in questions:
+        if any(SequenceMatcher(None, question, earlier).ratio() >= 0.85 for earlier in previous_questions):
+            severity = "high" if _DONT_KNOW.search(customer_text or "") else "medium"
+            findings.append(("repeated_question", severity,
+                             f"asked the same question as the previous reply: '{question[:80]}'"))
+            break
+
+    known_gender = scenario_assert.get("known_gender_from_turn")
+    if known_gender and turn_index > known_gender and any(p.search(reply) for p in _GENDER_QUESTION):
+        findings.append(("reasked_known_gender", "high", "asked for gender after the customer had made it clear"))
+    if active_budget_known and any(p.search(reply) for p in _BUDGET_QUESTION):
+        findings.append(("reasked_known_budget", "high", "asked for the budget after the customer had stated it"))
+
+    for tag in sorted(active_exclusions):
+        offenders = [name for name in recommended_names if tag in (tag_map.get(name) or ())]
+        if offenders:
+            findings.append(("excluded_tag_recommended", "high",
+                             f"recommended {offenders} although the customer excluded '{tag}'"))
+
+    if _PERSONAL_EXPERIENCE.search(reply):
+        findings.append(("fake_personal_experience", "high", f"claims personal use: '{_PERSONAL_EXPERIENCE.search(reply).group()}'"))
+    if _HUMAN_CLAIM.search(reply):
+        findings.append(("claims_to_be_human", "high", f"'{_HUMAN_CLAIM.search(reply).group()}'"))
+    promise_text = reply
+    for sentence in OWNER_APPROVED_PROMISES:
+        promise_text = promise_text.replace(sentence, "")
+    if not needs_human_after:
+        for kind, pattern in _UNSUPPORTED_PROMISES:
+            for match in pattern.finditer(promise_text):
+                prefix = re.split(r"[.،,؛;!?؟\n]", promise_text[:match.start()])[-1][-20:]
+                if _PROMISE_NEGATION.search(prefix):
+                    continue
+                findings.append(("unsupported_promise", "high", f"{kind}: '{match.group()}'"))
+                break
+
+    if turn_index > 1 and _STARTS_WITH_GREETING.search(reply) and not _CUSTOMER_GREETS.search(customer_text or ""):
+        findings.append(("repeated_greeting", "low", "re-greeted mid-conversation"))
+    if _FORMAL_LANGUAGE.search(reply):
+        findings.append(("formal_language", "low", f"'{_FORMAL_LANGUAGE.search(reply).group()}'"))
+    if _GENERIC_PRAISE.search(reply):
+        findings.append(("generic_praise", "low", f"'{_GENERIC_PRAISE.search(reply).group()}'"))
+    if len(_EMOJI.findall(reply)) > 2:
+        findings.append(("excessive_emoji", "low", f"{len(_EMOJI.findall(reply))} emoji"))
+
+    if order_delta > 0:
+        consented = bool(_AFFIRMATIVE.search(customer_text or "")) and bool(_ORDER_SUMMARY.search(previous_reply or ""))
+        if not consented:
+            findings.append(("order_without_consent", "critical",
+                             "an order was created without a preceding summary with total and an explicit confirmation"))
+    return findings
+
+
+def check_conversation(record, scenario_assert):
+    """Whole-conversation assertions: scripted repetition, handoff, orders, final items."""
+    findings = []
+    replies = [turn["reply"] or "" for turn in record["turns"] if (turn.get("reply") or "").strip()]
+    if len(replies) >= 4:
+        honorific = sum("يا فندم" in reply for reply in replies)
+        if honorific / len(replies) > 0.5:
+            findings.append(("honorific_overuse", "low", f"'يا فندم' in {honorific}/{len(replies)} replies"))
+        apologies = sum(bool(re.search(r"[آا]سف|معلش|[أا]عتذر|بعتذر|نعتذر", reply)) for reply in replies)
+        if apologies >= 3:
+            findings.append(("apology_overuse", "low", f"apologised in {apologies} replies"))
+    from products.services.static_faq_service import normalize_arabic
+    endings = {}
+    for reply in replies:
+        sentences = [s.strip() for s in re.split(r"[\n.!؟?]+", normalize_arabic(reply)) if len(s.strip()) > 8]
+        if sentences:
+            endings[sentences[-1]] = endings.get(sentences[-1], 0) + 1
+    for sentence, count in endings.items():
+        if count >= 3:
+            findings.append(("identical_closing", "medium", f"'{sentence[:60]}' closed {count} replies"))
+    expected = scenario_assert.get("expect_handoff")
+    handed_off = bool(record.get("needs_human"))
+    if expected is True and not handed_off:
+        findings.append(("handoff_missing", "high", "the customer needed the human team but no handoff was made"))
+    if expected is False and handed_off:
+        findings.append(("unexpected_handoff", "high", "the conversation was handed off without being needed"))
+    orders = record.get("orders") or []
+    if "expect_order" in scenario_assert and len(orders) != scenario_assert["expect_order"]:
+        findings.append(("order_count_mismatch", "critical",
+                         f"expected {scenario_assert['expect_order']} orders, found {len(orders)}"))
+    wanted = scenario_assert.get("final_order_items")
+    if wanted is not None:
+        if len(orders) != 1:
+            findings.append(("final_order_missing", "high", f"expected one confirmed order, found {len(orders)}"))
+        else:
+            actual = sorted((item["name"], item["volume"], item["quantity"], item["bottle_type"]) for item in orders[0]["items"])
+            expected_items = sorted((item["name"], item["volume"], item["quantity"], item["bottle_type"]) for item in wanted)
+            if actual != expected_items:
+                findings.append(("final_order_mismatch", "critical", f"expected {expected_items}, found {actual}"))
+    return findings

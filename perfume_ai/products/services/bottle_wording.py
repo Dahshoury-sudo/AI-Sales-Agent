@@ -27,7 +27,9 @@ _STORE = re.compile(
 _ORIGINAL = re.compile(
     _BOTTLE + r"(?:(?:ب(?:نفس\s+)?شكل|شكل)\s+)?(?:ال|ل)?[أاإآ]وري?جي?نال\b"
 )
-_REJECTED = re.compile(r"(?:مش\s+(?:عايز[ةه]?|عاوز[ةه]?|محتاج[ةه]?)|بلاش|من غير|بدون|لا اريد)\s*$")
+# A bare "مش" rejects too: "سعر Aventus الأصلي 100 ملي، مش زجاجة الستور" read as a store-bottle request
+# left 100 ml + store bottle, which does not exist, and an in-stock original was denied (S02 final 2, t6).
+_REJECTED = re.compile(r"(?:مش(?:\s+(?:عايز[ةه]?|عاوز[ةه]?|محتاج[ةه]?|في))?|بلاش|من غير|بدون|لا اريد)\s*$")
 
 
 def normalize_bottle_wording(text):
@@ -38,11 +40,16 @@ def normalize_bottle_wording(text):
     """
     if not text:
         return text
+
+    def label(match, kind):
+        # "زجاجة اوريجنال بنفس شكل زجاجة البراند" is the brand's own bottle shape; rewritten as the
+        # store bottle it said the original bottle looks like ours (simulation S16 round 2 full 5, t1).
+        if kind == "normal" and "البراند" in match.group() and re.search(r"شكل\s*$", match.string[:match.start()]):
+            return match.group().rstrip() + " الأصلي"
+        return match["prefix"] + bottle_label(kind, plural=match["ending"] == "ات")
+
     for pattern, kind in ((_STORE, "normal"), (_ORIGINAL, "original")):
-        text = pattern.sub(
-            lambda match: match["prefix"] + bottle_label(kind, plural=match["ending"] == "ات"),
-            text,
-        )
+        text = pattern.sub(lambda match: label(match, kind), text)
     return text
 
 

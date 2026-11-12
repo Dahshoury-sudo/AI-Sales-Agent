@@ -1,0 +1,1169 @@
+{
+  "id": "S06_indecisive",
+  "title": "Indecisive customer repeatedly saying مش عارف",
+  "persona": "indecisive",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايزة برفان بس بصراحة مش عارفة أختار إيه",
+      "reply": "محتاج برفان رجالي ولا حريمي؟",
+      "seconds": 148.8,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": false,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "occasion_delegated": true,
+        "recommendation_mode": "refinement"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "recommendation_mode": "refinement",
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "occasion": "Daily & Casual",
+        "scent_open": false
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "GENDER_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "حريمي ليا، بس مش عارفة ذوقي أوي 😅",
+      "reply": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "seconds": 3.17,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "recommendation_mode": "refinement",
+        "gender": "female"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "recommendation_mode": "refinement",
+        "gender": "female",
+        "scent_open": false,
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "مش عارفة والله 😅 ممكن تقوليلي أمثلة؟",
+      "reply": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "seconds": 3.26,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false,
+        "gender": "female",
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "repeated_question",
+          "high",
+          "asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "مش عارفة والله 😅 ممكن أمثلة على كل نوع؟",
+      "reply": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "seconds": 3.1,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false,
+        "gender": "female",
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "repeated_question",
+          "high",
+          "asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "مش عارفة والله 😅 أنا بحب الحاجات الرقيقة اللي فيها ورد، مش تقيلة",
+      "reply": "Cassilia فيها ريحة زهور وفواكه وخفيفة. Her فيها ريحة فواكه وزهور ومسكر.",
+      "seconds": 6.34,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "فيها ورد",
+            "tags": [
+              "floral"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "رقيقة",
+            "tags": [
+              "light"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "مش تقيلة",
+            "tags": [
+              "heavy"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "avoid_traits": [
+          "heavy"
+        ]
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": [],
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": false,
+        "clear_preferences": [],
+        "avoid_traits": [
+          "heavy"
+        ],
+        "gender": "female",
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Cassilia",
+          "Her",
+          "Bloom",
+          "Jumana",
+          "Power of You",
+          "Pink",
+          "Fantasy Bloom",
+          "Viva la Juicy",
+          "Lolita",
+          "Lady Pink",
+          "Miss Dior Cherie",
+          "Moon Sparkle",
+          "Yara Candy",
+          "Yara",
+          "212 Sexy Women",
+          "L'Eau d'Issey",
+          "Olympea",
+          "Euphoria",
+          "Elie Saab",
+          "Party",
+          "Paris Hilton",
+          "Prada Paradox",
+          "Bright Crystal",
+          "Body",
+          "Black Opium",
+          "Bombshell",
+          "Poison Girl",
+          "J'adore",
+          "Bamboo",
+          "Rush",
+          "Good Girl Supreme",
+          "Girl of Now",
+          "Divine",
+          "Addict",
+          "Roberto Cavalli",
+          "Rumba",
+          "Scandal by Night",
+          "So Scandal!",
+          "Si",
+          "Si Passion Red",
+          "Chance",
+          "Fantasy",
+          "Crystal Noir",
+          "Flowerbomb",
+          "Fleur Musc",
+          "Very Sexy Now",
+          "Crazy in love",
+          "Coco Mademoiselle",
+          "Vanilla 28",
+          "La Belle",
+          "La Vie Est Belle",
+          "La Nuit",
+          "Libre",
+          "Lady Million",
+          "Roses Vanille",
+          "Coco Vanille",
+          "Wild Cherry",
+          "My Way",
+          "Mon Guerlain",
+          "Mid night",
+          "Poudree",
+          "Rouge",
+          "Hugo Woman",
+          "Weekend for Women",
+          "Accento",
+          "Baccarat Rouge 540",
+          "Delina",
+          "Fleur Narcotique",
+          "The Only one",
+          "White Oud",
+          "Oud Bouquet",
+          "Oud Madawi",
+          "Amour",
+          "Divine Kiss",
+          "Honey Scent",
+          "Veloura",
+          "Velvet Sugar",
+          "Lollipop",
+          "Fruity Twist",
+          "Golden Vanilla"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [],
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n\nName (الاسم الصحيح): Her\nBrand: Burberry\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, floral, sweet\nDescription Tags (first three only): fruity, floral, sweet\nSimple Scent Description: فيه ريحة فواكه وزهور ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Strawberry, Raspberry, Blackberry, Sour Cherry, Black Currant, Mandarin Orange, Lemon\nMiddle Notes: Violet, Jasmine\nBase Notes: Musk, Vanilla, Cashmeran, Woody Notes, Amber, Oakmoss, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia",
+        "Her"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "مش عارفة برضه، الاتنين حلوين 😅",
+      "reply": "ممكن تجربي Cassilia، فيها ريحة زهور وفواكه وخفيفة، أو Her من Burberry، فيها ريحة فواكه وزهور ومسكر.",
+      "seconds": 9.09,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "avoid_traits": [
+          "heavy"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Cassilia",
+          "Her",
+          "Bloom",
+          "Jumana",
+          "Power of You",
+          "Pink",
+          "Fantasy Bloom",
+          "Viva la Juicy",
+          "Lolita",
+          "Lady Pink",
+          "Miss Dior Cherie",
+          "Moon Sparkle",
+          "Yara Candy",
+          "Yara",
+          "212 Sexy Women",
+          "L'Eau d'Issey",
+          "Olympea",
+          "Euphoria",
+          "Elie Saab",
+          "Party",
+          "Paris Hilton",
+          "Prada Paradox",
+          "Bright Crystal",
+          "Body",
+          "Black Opium",
+          "Bombshell",
+          "Poison Girl",
+          "J'adore",
+          "Bamboo",
+          "Rush",
+          "Good Girl Supreme",
+          "Girl of Now",
+          "Divine",
+          "Addict",
+          "Roberto Cavalli",
+          "Rumba",
+          "Scandal by Night",
+          "So Scandal!",
+          "Si",
+          "Si Passion Red",
+          "Chance",
+          "Fantasy",
+          "Crystal Noir",
+          "Flowerbomb",
+          "Fleur Musc",
+          "Very Sexy Now",
+          "Crazy in love",
+          "Coco Mademoiselle",
+          "Vanilla 28",
+          "La Belle",
+          "La Vie Est Belle",
+          "La Nuit",
+          "Libre",
+          "Lady Million",
+          "Roses Vanille",
+          "Coco Vanille",
+          "Wild Cherry",
+          "My Way",
+          "Mon Guerlain",
+          "Mid night",
+          "Poudree",
+          "Rouge",
+          "Hugo Woman",
+          "Weekend for Women",
+          "Accento",
+          "Baccarat Rouge 540",
+          "Delina",
+          "Fleur Narcotique",
+          "The Only one",
+          "White Oud",
+          "Oud Bouquet",
+          "Oud Madawi",
+          "Amour",
+          "Divine Kiss",
+          "Honey Scent",
+          "Veloura",
+          "Velvet Sugar",
+          "Lollipop",
+          "Fruity Twist",
+          "Golden Vanilla"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "Cassilia",
+        "Her"
+      ],
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n\nName (الاسم الصحيح): Her\nBrand: Burberry\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, floral, sweet\nDescription Tags (first three only): fruity, floral, sweet\nSimple Scent Description: فيه ريحة فواكه وزهور ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Strawberry, Raspberry, Blackberry, Sour Cherry, Black Currant, Mandarin Orange, Lemon\nMiddle Notes: Violet, Jasmine\nBase Notes: Musk, Vanilla, Cashmeran, Woody Notes, Amber, Oakmoss, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia",
+        "Her"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "هو الأولاني كان إيه تاني؟ 😅",
+      "reply": "كان Cassilia، طابعه زهري وفاكهي وخفيف.",
+      "seconds": 8.3,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light",
+          "floral"
+        ],
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "أنا محتارة أكتر من الأول 😅 خلاص اختارلي انت",
+      "reply": "فاهمة إنك محتارة أكتر دلوقتي 😅 خلّيني أختارلك، بس قوليلي تفضّليها أخف ولا أقوى؟",
+      "seconds": 14.96,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": {
+        "kind": "cant_choose",
+        "matched": [
+          "محتار",
+          "محتاره"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": true,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "occasion_delegated": true,
+        "recommendation_mode": "refinement"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": true,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "recommendation_mode": "refinement",
+        "scent_tags": [],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "avoid_traits": [
+          "heavy"
+        ]
+      },
+      "pending_relax": {},
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": true,
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 9,
+      "user": "أخف أكيد، عايزاها مناسبة كل يوم ومش تقيلة",
+      "reply": "Cassilia: فيه ريحة زهور وفواكه وخفيف.",
+      "seconds": 6.69,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "أخف",
+            "tags": [
+              "light"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "مش تقيلة",
+            "tags": [
+              "heavy"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "avoid_traits": [
+          "heavy"
+        ],
+        "occasion_text": "كل يوم",
+        "occasion": "Daily & Casual"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "avoid_traits": [
+          "heavy"
+        ],
+        "occasion": "Daily & Casual",
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Cassilia"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "Cassilia",
+        "Her"
+      ],
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia"
+      ],
+      "claim_checks": [
+        {
+          "draft": "Cassilia هي اختياري ليكي؛ طابعها زهري وفاكهي وخفيف، فهتكون أقرب للي بتحبيه للاستخدام اليومي.",
+          "issues": [
+            "description:Cassilia: occasion suitability requires an explicit current question"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 10,
+      "user": "تمام هختار Cassilia وأطلبه بعدين، شكراً 😊",
+      "reply": "ولا يهمك، خدي وقتك يا فندم.",
+      "seconds": 2.51,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "avoid_traits": [
+          "heavy"
+        ],
+        "excluded_scent_tags": [
+          "heavy"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "repeated_question",
+      "high",
+      "asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'"
+    ],
+    [
+      "repeated_question",
+      "high",
+      "asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'"
+    ],
+    [
+      "identical_closing",
+      "medium",
+      "'بتحب الفريش، الخشبي، العود، ولا المسكر' closed 3 replies"
+    ]
+  ],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "gender": "female",
+    "occasion": "Daily & Casual",
+    "scent_open": false,
+    "scent_tags": [
+      "light"
+    ],
+    "scent_match": "all",
+    "avoid_traits": [
+      "heavy"
+    ],
+    "excluded_scent_tags": [
+      "heavy"
+    ]
+  },
+  "seconds": 218.0,
+  "judge": null,
+  "verdict": "fail",
+  "verdict_reasons": [
+    "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+    "turn 4 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+    "judge unavailable: None"
+  ],
+  "usage": {
+    "api_calls": 39,
+    "by_role": {
+      "seller": {
+        "calls": 30,
+        "cost_usd": "0.009911145"
+      },
+      "simulator": {
+        "calls": 9,
+        "cost_usd": "0.001034125"
+      },
+      "judge": {
+        "calls": 0,
+        "cost_usd": "0"
+      }
+    },
+    "prompt_tokens": 216223,
+    "cached_tokens": 152577,
+    "completion_tokens": 3244,
+    "reasoning_tokens": 989,
+    "cost_usd": "0.010945270",
+    "api_seconds": 71.0,
+    "failed_calls": []
+  }
+}

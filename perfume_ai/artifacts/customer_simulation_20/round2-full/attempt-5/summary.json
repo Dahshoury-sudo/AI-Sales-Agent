@@ -1,0 +1,395 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004947140",
+    "api_calls": 16
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 5,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge score knows_when_to_stop=5",
+      "judge turn 4 high accuracy: The assistant retracts an accurate stored note and claims it was a mistake, even though the database lists vanilla in Aventus's base notes.",
+      "judge turn 8 high stop: The customer is closing the conversation and has already understood the تركيب distinction; the assistant responds with an unsolicited promotional script rather "
+    ],
+    "cost_usd": "0.007911780",
+    "api_calls": 28
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 3
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score commerce_correctness=3",
+      "judge turn 4 critical commerce: This gives the customer an incorrect all-in total and falsely says there is no shipping charge.",
+      "judge turn 5 high memory: The assistant had already proposed store bottles at 50ml, and the customer said they would take them as offered.",
+      "judge turn 6 high memory: The assistant re-asks for a size that was already specified in the recommendation and accepted by the customer.",
+      "judge turn 7 critical commerce: In response to a direct question about whether the total remains 1500, the assistant again omits mandatory shipping and confirms an incorrect all-in total.",
+      "criterion unmet: Never presents a pair whose combined price exceeds 1600 as fitting; totals are arithmetically correc"
+    ],
+    "cost_usd": "0.009935500",
+    "api_calls": 28
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00101367",
+    "api_calls": 10
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009536110",
+    "api_calls": 25
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 8,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge turn 5 high question: The customer had already said she likes delicate scents that are not heavy, making the lighter-or-stronger question unnecessary."
+    ],
+    "cost_usd": "0.010518960",
+    "api_calls": 26
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 7 critical repeated_reply: 100% identical to an earlier reply: 'Cassilia\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.'",
+      "judge score question_quality=5",
+      "judge turn 2 critical accuracy: الزهور والفواكه والخفة موجودة ضمن وسوم العطر، لكن كونه «مش حلو زيادة» غير مذكور في حقائق المنتج؛ وهذا تأكيد لصفة غير مدعومة.",
+      "judge turn 4 high question: العميل قال منذ البداية إنه لا يعرف ما تحبه خطيبته، ثم طلب خيارًا آخر؛ السؤال عن اسم عطر مرجعي غير عملي ويكرر استكشافًا لا يساعد على التوصية.",
+      "judge turn 6 high commerce: العميل يسأل تحديدًا عن الاستبدال؛ الرد يكرر المنتج والسعر ولا يجيب عن شرط مهم قبل أن يقرر الشراء.",
+      "judge turn 7 high commerce: يتجاهل السؤال مرة أخرى، ويكرر حرفيًا رد turn 6 رغم أن العميل أعاد سؤاله بوضوح.",
+      "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented.",
+      "criterion unmet: Asks at most one high-value question before recommending."
+    ],
+    "cost_usd": "0.007834165",
+    "api_calls": 33
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004466420",
+    "api_calls": 20
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "criterion unmet: Does not claim a lookalike without support; similarity wording is honest."
+    ],
+    "cost_usd": "0.008325695",
+    "api_calls": 31
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008087820",
+    "api_calls": 18
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 8,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.015793120",
+    "api_calls": 36
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008355405",
+    "api_calls": 28
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008691975",
+    "api_calls": 21
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.012167525",
+    "api_calls": 34
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge turn 6 high memory: It loses the distinction between shopping for himself and for his mother, and recommends two women's perfumes for him.",
+      "criterion unmet: Mother's request is scoped separately (female, floral/powdery, soft) and does not inherit the custom",
+      "criterion unmet: At the late turn the woody/men's preference is still honoured after leaving the recent-message windo"
+    ],
+    "cost_usd": "0.017462725",
+    "api_calls": 35
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.005817725",
+    "api_calls": 25
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.000918075",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Gives space to browse; no pressure or closing questions."
+    ],
+    "cost_usd": "0.003251285",
+    "api_calls": 11
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.007223075",
+    "api_calls": 26
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003093025",
+    "api_calls": 6
+  }
+]

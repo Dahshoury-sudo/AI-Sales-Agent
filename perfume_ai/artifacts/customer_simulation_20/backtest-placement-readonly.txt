@@ -1,0 +1,106 @@
+session read-only: transaction_read_only=on default_transaction_read_only=on
+
+================ existing Arabic placement guard (code unchanged) ================
+examined 329 single-product Arabic placements across 3 stores
+  skipped 139: no Arabic-only span
+  skipped 6: placed row no longer active
+
+FLAGGED 7 (2.1% of turns)
+  [991] KNOWN BAD ✅ 'طب الترامل'
+      span='الترامل' -> 'traml'  placed="Terre d'Hermes" 0.353  best='Ultra Male' 0.714  2nd=0.462  gap=0.253  M=5  cov=1.000
+  [1021] KNOWN BAD ✅ 'موجود الترامل'
+      span='الترامل' -> 'traml'  placed="Terre d'Hermes" 0.353  best='Ultra Male' 0.714  2nd=0.462  gap=0.253  M=5  cov=1.000
+  [1021] KNOWN BAD ✅ 'التر امل'
+      span='التر امل' -> 'traml'  placed="Terre d'Hermes" 0.353  best='Ultra Male' 0.714  2nd=0.462  gap=0.253  M=5  cov=1.000
+  [1035] KNOWN BAD ✅ 'موجود الترامل'
+      span='الترامل' -> 'traml'  placed="Terre d'Hermes" 0.353  best='Ultra Male' 0.714  2nd=0.462  gap=0.253  M=5  cov=1.000
+  [1080] review ⚠️ 'خمره'
+      span='خمره' -> 'khmrh'  placed='Le Male' 0.182  best='Khamrah' 0.833  2nd=0.625  gap=0.208  M=5  cov=1.000
+  [1251] review ⚠️ 'عندكو برادا ؟'
+      span='برادا' -> 'brada'  placed='Prada Paradox' 0.471  best='Baraonda' 0.769  2nd=0.545  gap=0.224  M=5  cov=1.000
+  [1035] KNOWN BAD ✅ 'بقول الترا ميل'
+      span='الترا ميل' -> 'tramyl'  placed="Terre d'Hermes" 0.333  best='Ultra Male' 0.667  2nd=0.545  gap=0.121  M=5  cov=0.833
+
+flag rate per store — catalogue size is the variable that moves it:
+  store 5: 45 rows, 161 placements, 0 flagged (0.0%)
+  store 10: 188 rows, 155 placements, 6 flagged (3.9%)
+  store 1: 251 rows, 13 placements, 1 flagged (7.7%)
+
+frontier — the 8 placements closest to the coverage line (of 60 that reach it):
+  [1122] cov=0.700 M=7   'بكام سوفاج يا ريس'
+      placed='Dior Sauvage'  best='Rosalia'
+  [1180] cov=0.700 M=7   'بكام سوفاج يا ريس'
+      placed='Dior Sauvage'  best='Rosalia'
+  [556] cov=0.667 M=6   'سوفاج ده مسكر ؟'
+      placed='Dior Sauvage'  best='Ambero'
+  [1080] cov=0.667 M=6   'صوره للعطر'
+      placed='Oud Wood'  best='Lauren'
+  [795] cov=0.625 M=5   'طب عندكو الكساندريا 2 ؟'
+      placed='Stronger With You'  best='Scandal'
+  [913] cov=0.625 M=5   'في منه ازايز اوريجنلا ؟'
+      placed='Light Blue'  best='Bare Vanilla'
+  [991] cov=0.625 M=5   'برفيوم يو'
+      placed='Y Eau de Parfum'  best='Yum Yum'
+  [1080] cov=0.625 M=5   'استورنجر'
+      placed='Stronger With You'  best='Strong Me'
+
+  worst correct placement 0.700  |  _MIN_COVERAGE 0.7  |  tightest true positive 0.833
+  🔴 _MIN_COVERAGE is no longer inside that margin — re-fit it before shipping.
+
+❌ known-bad turns the rule did NOT flag:
+     'في التراميل ؟'
+   (2 known-bad turns are no longer in the corpus: 'عندكو الترا ميل ؟', 'عندكو الترامل')
+⚪ 'ڤيرزاتشي ايروس' is NOT in the corpus — this check proved nothing (conv772 — Eros is stocked; the phonetic winner is a different row)
+✅ 'متاح سترينجر وذ يو انتنسلي' not flagged (conv723 — correctly placed; best IS the pick at cov 0.778)
+✅ 'عندكو سترينجر وذ يو انتنسلي' not flagged (conv727 — same, the other spelling in the suite)
+
+⚠️  2 flag(s) above are NOT known-bad. Each one is either a defect nobody reported or a false positive; read the reply before shipping a threshold.
+
+ℹ️  2 known wrong placement(s) still slip through, as documented in `_disagreement`. Not a failure — recall is not what this rule claims:
+     'انااا بتكلم دلوقتي سعر سترينجر وذ يو انتنسلي عامل كام'
+     'انااا عله سترينجر وذ يو انتنسلي'
+
+thresholds in force: cov>=0.7 gap>=0.1 pick<=0.75*best chars>=5
+backtest_placement.main() exit status: 1
+
+================ new Latin check: placements the guard would now question ================
+examined 25 stored single-product placements whose message has Latin letters
+would ask the narrow confirm call on 7 (28.0%)
+  [726] '9pm night out متاح'
+      placed='Afnan 9PM' latin run='9pm night out'
+  [726] 'عايزه النوع 9pm night out القزاز السوداء'
+      placed='Afnan 9PM' latin run='9pm night out'
+  [1058] 'عايز اعرف تفاصيل عن ultra male'
+      placed='Le Male' latin run='ultra male'
+  [1058] 'Ultra Male'
+      placed='Le Male' latin run='Ultra Male'
+  [1090] 'Bundle stronger with you'
+      placed='Stronger With You' latin run='Bundle stronger with you'
+  [1114] 'Offer stronger with u how much perfume'
+      placed='Stronger With You' latin run='Offer stronger with u how much perfume'
+  [1264] 'Lacost essential'
+      placed='Essential' latin run='Lacost essential'
+
+================ new Latin check: deterministic name matches it would drop ================
+checked 48 stored customer messages with a deterministic Latin match
+matches the new check drops: 10
+  [460] 'قارن بين Club de Nuit وSauvage.'
+      dropped='La Nuit' latin run='Club de Nuit'
+  [777] "I'll dig into the settings and hooks that gate Bash. Let me gather the relevant config first.  ● Skill(update-config) Su"
+      dropped='White' latin run='which is itself a useful data point. Let me test Bash directly while reading the remaining config.    Listed 1 directory'
+  [790] 'هل Dior Homme Sport فيه بخور؟'
+      dropped='Sport' latin run='Dior Homme Sport'
+  [1071] 'فية black phantom by Kilian بس تركيب'
+      dropped='Phantom' latin run='black phantom by Kilian'
+  [1014] 'طيب عطر pink queen'
+      dropped='Pink' latin run='pink queen'
+  [1071] 'فية side effect by Kilian تركيب'
+      dropped='Side Effect' latin run='side effect by Kilian'
+  [1058] 'عايز اعرف تفاصيل عن ultra male'
+      dropped='Le male la perfume' latin run='ultra male'
+  [1058] 'Ultra Male'
+      dropped='Le male la perfume' latin run='Ultra Male'
+  [1264] 'Lacost essential'
+      dropped='Essential' latin run='Lacost essential'
+  [1281] 'السلام عليكم، كنت عايز أطلب زجاجة برفان تركيب مستوحى من عطر (Allure Homme Sport من Chanel). عايزها حجم [اكتب الحجم مثلاً'
+      dropped='Sport' latin run='Allure Homme Sport'

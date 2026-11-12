@@ -93,7 +93,7 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
         return f"طابع ريحته مش مطابق لطابع {reference}" if reference else "طابع ريحته مش مطابق للطلب"
     if any(not note_matches(product, note) for note in intent.get("notes") or ()):
         return "المكونات المسجلة مش بتطابق النوتات المطلوبة"
-    if any(note_matches(product, note) for note in intent.get("avoid_notes") or ()):
+    if any(note_matches(product, note) for note in avoided_notes(intent)):
         return "فيه نوتات العميل استبعدها"
     variants = [v for v in eligible_variants(product, {**intent, "max_price": None}) if v.volume > 0]
     if not variants:
@@ -129,9 +129,24 @@ def product_matches_request(product, intent, store, *, blocked_brands=(), exclud
         return False
     if any(not note_matches(product, note) for note in intent.get("notes") or ()):
         return False
-    if any(note_matches(product, note) for note in intent.get("avoid_notes") or ()):
+    if any(note_matches(product, note) for note in avoided_notes(intent)):
         return False
     return any(v.volume > 0 for v in eligible_variants(product, intent))
+
+
+# A material the customer excluded is excluded as an ingredient as well as a label: "مش عايز مسك"
+# still brought BMW, For Him and CK One, labelled fresh and citrus but with musk in their notes
+# (simulation S10, final runs 1 and 2).
+_MATERIAL_TAGS = {"musky": ("musk",), "oud": ("oud",), "leather": ("leather",)}
+
+
+def avoided_notes(intent):
+    notes = list(intent.get("avoid_notes") or ())
+    for tag in intent.get("excluded_scent_tags") or ():
+        for material in _MATERIAL_TAGS.get(tag, ()):
+            if material not in notes:
+                notes.append(material)
+    return notes
 
 
 def search_products(intent, store=None, keep=(), offered=()):

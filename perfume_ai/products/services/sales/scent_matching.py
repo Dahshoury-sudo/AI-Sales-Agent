@@ -27,17 +27,41 @@ def fit_key(product, intent):
     return (-int(facts["season_match"]), -len(facts["matched_scent_tags"]), -int(facts["occasion_match"]))
 
 
+# Notes a customer who refused sweetness reads as sweet. Ranking only: labels alone decide whether a
+# perfume is eligible (a fresh-labelled perfume with vanilla stays a fresh perfume), but among equal
+# label fits one without these comes first. "مش عايز حاجة مسكرة" was offered Fresh Vibe, whose top
+# notes include Sweet Orange, ahead of perfumes with none (simulation S10 round 2 batch 2, t6-t8).
+# Amber is left out: it sits in the base of most fresh perfumes.
+SWEET_MATERIALS = ("vanilla", "tonka", "caramel", "honey", "praline", "sugar", "candy", "chocolate",
+                   "cocoa", "toffee", "marshmallow", "sweet orange")
+
+
+def has_sweet_notes(product):
+    return any(note_matches(product, material) for material in SWEET_MATERIALS)
+
+
+def is_uncommon(product):
+    """Niche, ultra niche, or the store's own blend: what "حاجة مميزة ومش منتشرة" asks for."""
+    from .value import is_store_exclusive
+    return product.perfume_type in ("niche", "ultra_niche", "store_own_made") or is_store_exclusive(product)
+
+
 def order_candidates(products, intent, *, keep=(), offered=(), tie_breaker=None):
     from .brand_preference import matches_brand
 
     new_goal = intent.get("recommendation_mode") == "new_goal"
     keeping = set(keep or ()) if not new_goal else set()
     seen = set(offered or ()) if not new_goal else set()
+    avoid_sweet = "sweet" in (intent.get("excluded_scent_tags") or ())
+    # "عايز حاجة مميزة ومش منتشرة" was answered with a mainstream Armani beside a niche Xerjoff
+    # (simulation S05 round 2 full 3, t3): among equal label fits, niche and the store's own come first.
+    uncommon = bool(intent.get("wants_uncommon"))
 
     def order(product):
         preferred = not intent.get("brand") or matches_brand(product, intent["brand"], product.store)
-        return (*fit_key(product, intent), product.name not in keeping, not preferred,
-                product.name in seen, tie_breaker(product) if tie_breaker else 0, product.pk)
+        return (*fit_key(product, intent), avoid_sweet and has_sweet_notes(product),
+                uncommon and not is_uncommon(product), product.name not in keeping,
+                not preferred, product.name in seen, tie_breaker(product) if tie_breaker else 0, product.pk)
 
     return sorted(products, key=order)
 

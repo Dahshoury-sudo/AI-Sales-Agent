@@ -105,6 +105,7 @@ QUOTE_PROSE_INSTRUCTION = (
     "ولو طلب تفاصيل، جاوبه على قد طلبه. "
     "لو السؤال عن السعر أو الأحجام بس، متضيفش وصف للعطر أو سؤال متابعة. لا تكتب أسعار منتجات أو أحجام؛ "
     "الأسعار والأحجام هتتضاف تلقائياً بعد ردك. لا تنقل أي سعر من المحادثة. "
+    "السعر معروف ومتأكد منه؛ متقولش إن السعر محتاج تأكيد أو مش معروف. "
     "من غير مقدمة توافر أو إعادة اسم العطر؛ لو طلب تفاصيل، ابدأ تفاصيل كل عطر باسمه مرة واحدة "
     "كعنوان مستقل، وبعده التفاصيل المطلوبة بدون تكرار الاسم.\n"
 )
@@ -131,9 +132,29 @@ class ProductQuote:
         return {**asdict(self), "price": str(self.price)}
 
 
+# Bottle volumes a bare number can name. "سوفاج 90 بكام؟" and "والـ50؟" are how customers ask for a
+# size; requiring "ملي" after the number quoted every size instead (simulation S04, S08, S11).
+_BOTTLE_SIZES = frozenset({30, 50, 60, 75, 80, 90, 100, 110, 125, 150, 200})
+_NOT_A_SIZE_BEFORE = re.compile(
+    r"(?:حدود|ميزاني\w*|لحد|معايا|معاي|سعر\w*|تحت|فوق|اقل\s+من|اكتر\s+من|around|budget|under|max|ب)\s*$")
+
+
+def money(value):
+    """A price as a seller says it: 1000, not 1000.00. A real fraction stays exact."""
+    value = Decimal(value)
+    return str(int(value)) if value == value.to_integral_value() else f"{value:f}"
+
+
 def requested_quote_options(message):
     text = naming.normalize_product_name(message)
     sizes = [int(n) for n in re.findall(r"(?<!\d)(\d+)\s*(?:ملي|مل|ml)\b", text)]
+    if not sizes:
+        for match in re.finditer(r"(?<![\d.,])(\d{2,3})(?![\d.,%])", text):
+            value = int(match.group(1))
+            if (value in _BOTTLE_SIZES
+                    and not re.match(r"\s*(?:جنيه|جنيها|ج\b|egp\b|le\b|pounds?\b)", text[match.end():])
+                    and not _NOT_A_SIZE_BEFORE.search(text[:match.start()])):
+                sizes.append(value)
     bottle = explicit_bottle_type(text)
     if bottle is None and re.search(r"اوريجينال|اوريجنال|اورجينال|original", text):
         bottle = "original"
@@ -175,7 +196,7 @@ def render_quotes(quotes, max_price=None, *, include_name=True):
             parts = []
             for quote in group:
                 quantity = f" × {quote.quantity}" if quote.quantity != 1 else ""
-                part = f"{quote.volume} ملي{quantity} بـ{quote.price * quote.quantity:f} جنيه"
+                part = f"{quote.volume} ملي{quantity} بـ{money(quote.price * quote.quantity)} جنيه"
                 if max_price is not None and budget_tier(quote.price, max_price) == "near":
                     # Keep the warning beside its own size, including within a group.
                     part += (". أعلى حاجة بسيطة من ميزانيتك" if len(group) == 1
@@ -223,21 +244,43 @@ def append_quotation(reply, context):
     return reply
 
 
+FITS_BUDGET_QUESTION = re.compile(
+    r"(?:في|ف|جوه|داخل|ضمن)\s+(?:حدود|ميزانيت|الميزانيه)|(?:يدخل|ينفع|يجي)\s+(?:في|ب|ف)ـ?\s*(?:ال)?(?:\d|الف|الفين|ميزاني)"
+    r"|within\s+(?:my\s+)?budget|\bunder\s+\d")
+
+
 def price_question(message, history=None, conversation=None):
     from .sales.followups import accepts_price_offer
     if accepts_price_offer(message, history, conversation):
         return True
     text = naming.normalize_product_name(message)
-    if re.search(r"بكام|سعر|اسعار|ثمن|احجام|حجم|\d+\s*(?:ملي|مل|ml)\b", text):
+    if re.search(r"بكام|سعر|اسعار|ثمن", text):
+        return True
+    # "هو ينفع في حدود الألف؟" asks whether the price fits a budget, which only its quote answers; left
+    # to prose, the model said the price was unavailable while it sat in the context (S07 round 2, t6-t7).
+    if FITS_BUDGET_QUESTION.search(text):
+        return True
+    # A size named inside a question about the scent is the subject, not a price request:
+    # "الـ90 ملي ده فريش فعلاً ومش تقيل؟" was answered with a bare price block (S10 replay t4).
+    asks_attribute = re.search(r"ريح|فريش|منعش|تقيل|خفيف|مسكر|سويت|خشبي|زهري|ثبات|فوحان|مكونات|نوت", text)
+    if re.search(r"احجام|حجم|\d+\s*(?:ملي|مل|ml)\b", text) and not asks_attribute:
+        return True
+    # "فيه منه زجاجة أورجينال؟" asks whether a variant exists, which is answered by its quote. Left
+    # to prose, the model copied another perfume's original price (simulation S05 replay 2, t5).
+    if re.search(r"(?:زجاج|ازاز)\S*\s+(?:ال)?(?:اوريجنال|اوريجينال|اورجينال|اورجنال|اوريجنل)|\boriginal\s+bottle",
+                 text) and not asks_attribute:
         return True
     from .sales.described import ordinal_position
-    if ordinal_position(message) is not None:
+    asks_other = re.search(r"متوفر|موجود|عندك|ثبات|فوحان|مكونات|ريح|نوت", text)
+    # "الاولانى ريحته عامله ازاى" after a shipping-fee reply asked about smell, not price (S12 t4).
+    if ordinal_position(message) is not None and not asks_other:
         if conversation is not None:
             latest = conversation.messages.filter(role="assistant", delivery_status="sent").order_by("-created_at", "-pk").first()
             if latest and monetary_claims(latest.content):
                 return True
-    # Bare continuations inherit the customer's most recent price question.
-    if not re.search(r"متوفر|موجود|عندك|ثبات|فوحان|مكونات|ريح", text):
+    # Bare continuations ("والتاني؟", "و90؟") inherit the customer's most recent price question. A full
+    # new question does not: "أنهي واحد فيهم أحلى للصيف؟" got unrequested price blocks (S13 t4).
+    if len(text.split()) <= 3 and not re.search(r"متوفر|موجود|عندك|ثبات|فوحان|مكونات|ريح", text):
         previous = next((m.get("content", "") for m in reversed(history or []) if m.get("role") == "user"), "")
         return bool(re.search(r"بكام|سعر|اسعار|ثمن", previous))
     return False
@@ -253,6 +296,25 @@ def monetary_claims(text):
     return [(m.start(), m.end(), Decimal((m['prefix'] or m['currency']).replace(",", "").replace("٬", "").replace("٫", ".")))
             for m in _MONEY.finditer(normalized)
             if not (m['prefix'] and re.match(r"\s*(?:ملي|مل|ml)\b", normalized[m.end():]))]
+
+
+# The store-wide price range ("الأسعار بتبدأ من 450 لحد 1200") lives in the owner's business facts,
+# usually written as bare numbers. Owner decision 2026-11-12: those facts are its only source, and a
+# browsing customer asked for it four times without an answer (simulation S18).
+_RANGE_WORDS = ("اسعار", "بتبدا", "تبدا", "رينج", "range")
+# The exchange policy's own fees ("150ج للبوكس الجديد"): restated without the word شحن in the same
+# clause, a correct answer to "لو مجاش على ذوقها؟" failed as an unattributed price, and the fallback
+# asked which perfume and size the customer wanted priced (simulation S07 round 2, t3-t4).
+_EXCHANGE_WORDS = ("استبدال", "استبدل", "تبديل", "بوكس", "علبه", "استرجاع", "ترجيع", "مرتجع")
+
+
+def _source_amounts(fragment, category):
+    amounts = [m[2] for m in monetary_claims(fragment)]
+    # Both are written by the owner as bare figures ("من اول 450 لحد 1200", "+ 150ج للبوكس الجديد").
+    if category in (_RANGE_WORDS, _EXCHANGE_WORDS):
+        text = naming.normalize_product_name(fragment)
+        amounts += [Decimal(n) for n in re.findall(r"(?<![\d.,])(\d{2,6})(?![\d.,]|\s*(?:مل|ملي|ml|%))", text)]
+    return amounts
 
 
 def product_price_issues(reply, products, *, evidence=None, monetary_sources=(), catalogue=None):
@@ -289,9 +351,12 @@ def product_price_issues(reply, products, *, evidence=None, monetary_sources=(),
             # promotion, budget, deposit or total), never as a product price.
             scope = clause[:end]
             category = next((words for words in (("شحن", "توصيل"), ("خصم", "عرض"), ("ميزاني",),
-                            ("اجمالي", "مجموع"), ("عربون", "مقدم")) if any(word in scope for word in words)), None)
+                            ("اجمالي", "مجموع"), ("عربون", "مقدم"), _RANGE_WORDS, _EXCHANGE_WORDS)
+                             if any(word in scope for word in words)), None)
+            if category is None and any(word in clause for word in _EXCHANGE_WORDS):
+                category = _EXCHANGE_WORDS  # "بتدفع 150 جنيه للبوكس الجديد": the subject follows the fee
             if category and not mentioned and any(any(word in naming.normalize_product_name(fragment) for word in category)
-                    and amount in [m[2] for m in monetary_claims(fragment)]
+                    and amount in _source_amounts(fragment, category)
                     for source in monetary_sources for fragment in re.split(r"[\n؛;]|(?<!\d)[.،]|[.،](?!\d)", source)):
                 continue
             sizes, bottle = requested_quote_options(scope)
@@ -316,6 +381,9 @@ def product_claim_facts(products):
         "scent_tags": getattr(p, "scent_tags", []),
         "longevity": EXCELLENT, "projection": STRONG,
         "season": p.season or "", "occasion": p.occasion or "",
+        "original_sizes": sorted({v.volume for v in p.variants.all()
+                                  if v.bottle_type == "original" and v.volume > 0 and is_variant_available(v)}),
+        "sizes": sorted({v.volume for v in p.variants.all() if v.volume > 0 and is_variant_available(v)}),
     } for p in products}
 
 

@@ -1,0 +1,392 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006286590",
+    "api_calls": 16
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge turn 8 high commerce: The size and price are supported for an original bottle, but the customer explicitly distinguishes original from تركيب. Calling it an “الأوريجنال” bottle withou"
+    ],
+    "cost_usd": "0.010748485",
+    "api_calls": 33
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.005283565",
+    "api_calls": 19
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003296005",
+    "api_calls": 13
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Does not ask for a budget; shows niche or store-exclusive options with supported differentiators."
+    ],
+    "cost_usd": "0.009639325",
+    "api_calls": 24
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 8,
+      "knows_when_to_stop": 5,
+      "naturalness": 7,
+      "emotional_handling": 7,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score knows_when_to_stop=5",
+      "judge turn 5 high understanding: The original pair in turn 3 was Her followed by Bloom, but the assistant reordered them in turn 4. Guessing Bloom risks giving the wrong answer to 'الأولاني'.",
+      "judge turn 6 high understanding: The customer explicitly says 'اختارلي انت', but the assistant compares both again and leaves the decision to her, increasing rather than reducing her indecision",
+      "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+      "criterion unmet: Remembers the earlier options correctly when she asks about 'الأولاني'.",
+      "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+    ],
+    "cost_usd": "0.012051115",
+    "api_calls": 29
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge turn 4 critical accuracy: The configured facts establish that all perfumes are تركيب and that original-style bottles are available for some perfumes, but do not establish Cassilia's spec"
+    ],
+    "cost_usd": "0.004418860",
+    "api_calls": 20
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003531145",
+    "api_calls": 17
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.010771925",
+    "api_calls": 29
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 5,
+      "question_quality": 8,
+      "knows_when_to_stop": 7,
+      "naturalness": 7,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score memory=5",
+      "judge turn 6 high memory: The assistant had just said in turn 5 that sweetness in 212 VIB Man was not confirmed, but repeats it after the customer specifically asks for a guaranteed opti",
+      "judge turn 7 high understanding: The customer repeats the same constraint after expressing frustration, but the reply again lists options without addressing that their sweetness is unconfirmed.",
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.019885725",
+    "api_calls": 42
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge turn 3 critical accuracy: The database lists both 50ml and 90ml sizes for 212 NYC Man. Claiming that only the 50ml size is available is false."
+    ],
+    "cost_usd": "0.014140345",
+    "api_calls": 31
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008205520",
+    "api_calls": 28
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008339310",
+    "api_calls": 19
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.016913045",
+    "api_calls": 38
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 5,
+      "question_quality": 8,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge turn 5 high memory: Black XS L'Exces was not suggested earlier; the customer explicitly asked what had been recommended for him.",
+      "criterion unmet: Returning to his own purchase restores his woody men's preference and recalls the earlier suggestion"
+    ],
+    "cost_usd": "0.015090710",
+    "api_calls": 33
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 9,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge score question_quality=5"
+    ],
+    "cost_usd": "0.004281760",
+    "api_calls": 19
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00206077",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002995650",
+    "api_calls": 10
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 8,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008293610",
+    "api_calls": 29
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002987275",
+    "api_calls": 6
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 7,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009215385",
+    "api_calls": 31
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "turn 5 critical repeated_reply: 100% identical to an earlier reply: '212 NYC Man ليك، و212 Sexy man لـأخوك.\n\n212 NYC Man\nريحته فريش ومنعش وفيه ريحة حمضيات ومسكي.\nزجاجة ا'"
+    ],
+    "cost_usd": "0.008297990",
+    "api_calls": 30
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009311005",
+    "api_calls": 29
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.007094235",
+    "api_calls": 26
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 7,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 3 high understanding: Neither perfume's first three stored scent tags include smoky or fruity, so these recommendations do not address the customer's explicit scent preference."
+    ],
+    "cost_usd": "0.009264030",
+    "api_calls": 21
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": null,
+    "reasons": [
+      "turn 8 critical over_budget_total: stated a total of [750.0] against a budget of 700 without acknowledgement",
+      "turn 9 critical over_budget_total: stated a total of [750.0] against a budget of 700 without acknowledgement",
+      "judge unavailable: APITimeoutError: Request timed out."
+    ],
+    "cost_usd": "0.029427810",
+    "api_calls": 35
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.012476915",
+    "api_calls": 29
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004216830",
+    "api_calls": 12
+  }
+]

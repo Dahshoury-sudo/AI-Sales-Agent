@@ -159,6 +159,13 @@ class Meter:
                 entry = {"scenario": getattr(self.local, "scenario", "unknown"), "model": model,
                          "reasoning_effort": effort, "max_completion_tokens": maximum,
                          "reserved_usd": reservation, "status": "in_flight"}
+                # Optional labels for a shared multi-phase ledger (scripts/simulate_customers.py).
+                for label in ("role", "phase", "run_id"):
+                    value = getattr(self.local, label, None) or getattr(self, label, None)
+                    if value is not None:
+                        entry[label] = value
+                if getattr(self, "run_id", None):
+                    entry["started_utc"] = datetime.now(timezone.utc).isoformat()
                 self.calls.append(entry)
                 self.save()
             started = time.monotonic()
@@ -190,6 +197,14 @@ class Meter:
                     self.condition.notify_all()
                 if usage.prompt_tokens > upper_input or cost > reservation:
                     raise BudgetStop("Provider usage exceeded conservative reservation")
+                if invalid == "empty_output":
+                    # Still paid and raised, but as the application's own EmptyCompletion, which
+                    # `ai.client.chat` retries once instead of failing the turn.
+                    try:
+                        from products.services.ai.client import EmptyCompletion
+                    except ImportError:
+                        EmptyCompletion = ValueError
+                    raise EmptyCompletion("Invalid evaluation response: " + invalid)
                 if invalid:
                     raise ValueError("Invalid evaluation response: " + invalid)
                 return response

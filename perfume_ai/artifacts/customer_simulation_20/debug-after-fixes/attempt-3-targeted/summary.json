@@ -1,0 +1,171 @@
+[
+  {
+    "id": "S05_premium",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 3,
+      "question_quality": 3,
+      "knows_when_to_stop": 2,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 8 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Alexandria II (100ml) بـ 2400 جنيه\nالمجموع: 2400 جنيه.\n\nمحتاج أعرف نوع ال'",
+      "judge score understanding_accuracy=5",
+      "judge score memory=3",
+      "judge score question_quality=3",
+      "judge score knows_when_to_stop=2",
+      "judge score naturalness=5",
+      "judge turn 6 high memory: انتقل إلى عطر آخر رغم أن العميل اختار Alexandria II، وسأل عن نوع زجاجة سبق أن سأل عنها في سياق Alexandria II، رغم تأجيله إكمال الطلب.",
+      "judge turn 7 high memory: بعد التصحيح الصريح، أعاد السؤال عن العطر الخطأ ونوع الزجاجة، متجاهلًا أيضًا طلب العميل تأجيل إكمال البيانات.",
+      "judge turn 8 high stop: كرر الرد والسؤال الخاطئ بعد أن أكد العميل اختياره وأجّل إكمال البيانات؛ هذا إلحاح غير مناسب بدل إنهاء المحادثة.",
+      "criterion unmet: Does not ask for a budget; shows niche or store-exclusive options with supported differentiators."
+    ],
+    "cost_usd": "0.012079070",
+    "api_calls": 28
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge turn 7 high understanding: The reference was clear from the immediately preceding exchange; the customer asked the assistant to choose, not to clarify the options.",
+      "judge turn 8 high memory: The assistant replaced Jumana with Power of You, an option not in the comparison the customer requested, and still did not choose one.",
+      "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+      "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+    ],
+    "cost_usd": "0.016484520",
+    "api_calls": 44
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 7,
+      "question_quality": 5,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 6,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "turn 8 high unsupported_product_claim: scent:212 vib man:leather",
+      "turn 8 high unsupported_product_claim: scent:212 vib man:woody",
+      "judge score understanding_accuracy=5",
+      "judge score question_quality=5",
+      "judge score commerce_correctness=4",
+      "judge turn 4 critical accuracy: البيانات لا تذكر المسك ضمن وسوم أو نوتات K By Dolce؛ ذكره هنا ادعاء منتج غير مسند.",
+      "judge turn 5 critical accuracy: كرر ادعاء المسك غير المدعوم عن K By Dolce، ووافق على وصف خاطئ لما قاله سابقًا بدل تصحيح الالتباس. كما لم يتحقق مما إذا كانت التوصية قد خالفت استبعاد العود أو ال",
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.021198990",
+    "api_calls": 43
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 4,
+      "question_quality": 3,
+      "knows_when_to_stop": 6,
+      "naturalness": 5,
+      "emotional_handling": 6,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "turn 5 high unsupported_promise: follow_up: 'هيتواصل معاك'",
+      "judge score memory=4",
+      "judge score question_quality=3",
+      "judge score naturalness=5",
+      "judge score commerce_correctness=5",
+      "judge turn 5 high commerce: The assistant promises a future follow-up without confirming a transfer.",
+      "judge turn 5 high memory: The customer had already named 212 NYC Man, 50 ml, and was asking about the order total.",
+      "judge turn 6 high memory: This repeats the previous turn's question despite the customer restating the perfume, size, and order number.",
+      "criterion unmet: Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wordin",
+      "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence.",
+      "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and an explicit "
+    ],
+    "cost_usd": "0.020816865",
+    "api_calls": 33
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008340905",
+    "api_calls": 17
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009575125",
+    "api_calls": 24
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "judge score commerce_correctness=5",
+      "judge turn 1 critical accuracy: The supplied facts do not establish that the store stocks western, eastern, or niche categories, or a distinct Perfamix-special-blends range. These are unsuppor"
+    ],
+    "cost_usd": "0.007651300",
+    "api_calls": 13
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 6,
+      "naturalness": 4,
+      "emotional_handling": 6,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score naturalness=4",
+      "judge turn 7 high memory: The selection was already clear from turn 6, and the customer asked a direct total calculation after supplying their details. The assistant neither answers nor "
+    ],
+    "cost_usd": "0.00538655",
+    "api_calls": 1
+  }
+]

@@ -28,8 +28,12 @@ def _normal(text):
 
 _LONGEVITY = re.compile(
     r"(?<!\w)(?:[وفب]?ال|[وف])?(?:ثبات\w*|ثابت\w*|اثبت\w*|(?:ب[يت]|[يت])ثبت\w*|"
+    # "بيقعد قد إيه؟" is the everyday way to ask how long a perfume lasts (simulation S16).
+    r"(?:ب[يت]|[يت]|ه[يت])قعد\w*|"
     r"يدوم\w*|بيدوم\w*|تدوم\w*|بيستمر\w*|longevity|lasting|lasts?|lasted)(?!\w)"
 )
+_FIXED_PRICE = re.compile(
+    r"(?<!\w)(?:[وب]?ال)?(?:سعر\w*|اسعار\w*|تمن(?:ه|ها)?(?!\w))\s+(?:\S+\s+)?ثابت\w*|ثابت\w*\s+(?:علي\s+)?(?:\d+|السعر)")
 _PROJECTION = re.compile(
     r"(?<!\w)(?:[وفب]?ال|[وف])?(?:فوحان\w*|فواح\w*|انتشار(?:ه|ها|هم)?|"
     r"projection|sillage|projects?)(?!\w)"
@@ -43,15 +47,23 @@ _DURATION_PREFIX = re.compile(
     r"(?:(?:اكتر|اكثر|اقل) من|حوالي|لمده|تقريبا|من|more than|less than|about|around|up to)\s*$"
 )
 _QUANTITY_QUESTION = re.compile(
-    rf"(?<!\w)(?:كام|كم|قد ايه|قد اي|لمده|مدته|بالساعات|بالارقام|رقم|ارقام)(?!\w)|"
+    # "قولّي تقدير عملي… عشان أعرف مدة تقريبية" asks for the duration in other words (S16 round 2 full 4, t5).
+    rf"(?<!\w)(?:كام|كم|قد ايه|قد اي|لمده|مدته|مده\s+تقريبيه|تقدير\s+عملي|بالساعات|بالارقام|رقم|ارقام)(?!\w)|"
     r"\b(?:how (?:long|many)|duration|in hours|number)\b"
 )
+# "ملي" as a word or after a number: inside "عمليًا" it read "يعني عمليًا بيقعد قد إيه؟" as a size
+# question and dropped longevity (simulation S16 round 2 full 4, t4).
 _OTHER_TIME = re.compile(
     r"شحن|توصيل|دليفري|مواعيد|بتفتح|بتقفل|بنوصل|بنتواصل|بنرد|خدمه|استلام|"
-    r"تحويل|دفع|سعر|جنيه|خصم|حجم|ملي|\bمل\b|هاتف|تليفون|تلفون|"
+    r"تحويل|دفع|سعر|جنيه|خصم|حجم|(?<!\w)ملي(?!\w)|\dملي|\bمل\b|هاتف|تليفون|تلفون|"
     r"shipping|delivery|opening|payment|support|refund|price|cost|size|volume|\bml\b|phone"
 )
 _PERFUME = re.compile(r"عطر|عطور|برفان|برفيوم|بيرفيوم|ريحته|ريحتها|perfume|fragrance|scent")
+# What makes a stated duration a request ("عايز حاجة تثبت 12 ساعة", "بيثبت 48 ساعة؟"), read per clause.
+_ASKS = re.compile(r"[?؟]|(?<!\w)(?:عايز\w*|عاوز\w*|محتاج\w*|نفسي|ياريت|هل|قول(?:ي|لي)?|اقل حاجه)(?!\w)|"
+                   r"\b(?:want|need|does|can|will|at least)\b")
+# A clause runs to sentence punctuation or an emoji, which closes a thought as often as a full stop.
+_CLAUSE = re.compile(r"[^.!?؟\n\U0001F300-\U0001FAFF☀-➿]+[.!?؟\n\U0001F300-\U0001FAFF☀-➿]*")
 
 
 @dataclass(frozen=True)
@@ -98,31 +110,47 @@ def request_for(message, history=None):
     # Post text supplies context, not a customer request to quote hours.
     message = str(message or "").rsplit("[تعليق العميل]:", 1)[-1]
     text = re.sub(r"[\u064B-\u065F\u0670ـ]", "", _normal(message))
+    # "الـ٨ ساعات" loses its tatweel above and glues the digit to "ال"; the duration patterns then
+    # never match, and an honest hours answer was rejected as unsolicited (simulation S16 replay t7).
+    text = re.sub(r"(?<!\w)((?:[وبلف])?ال)(?=\d)", r"\1 ", text)
+    # "لو السعر ثابت قولّي بصراحة" asks whether the price is fixed; read as longevity it got "ثباته
+    # ممتاز" twice (simulation S11 round 2 full 5, t3-t4).
+    text = _FIXED_PRICE.sub(" ", text)
     longevity, projection = bool(_LONGEVITY.search(text)), bool(_PROJECTION.search(text))
     if _PERFORMANCE.search(text):
         longevity = projection = True
     quantities = list(_QUANTITY_QUESTION.finditer(text))
     measures = list(_DURATION.finditer(text))
     if measures:
-        # A report of a previous experience is not a request for a new hour claim.
-        asks_duration = bool(re.search(
-            r"[?؟]|عايز|عاوز|محتاج|نفسي|ياريت|هل|قول|اقل حاجه|\b(?:want|need|does|can|will|at least)\b",
-            text,
-        ) or re.match(r"\s*(?:طيب\s+|طب\s+)?(?:بيثبت|بتثبت|يثبت|تثبت|بيدوم|يدوم|longevity|lasts?)\b", text)
-                        or _DURATION.fullmatch(text.strip(" .!")))
+        # A report of a previous experience is not a request for a new hour claim, and neither is a
+        # figure the customer expects to be told: in "أكيد هتقولي 48 ساعة زي الكل 🙄 طب ده الثبات بيختلف
+        # حسب نوع العطر؟" the question mark belongs to another clause (simulation S16 round 2, t5). So
+        # the request has to be in the clause that carries the figure.
+        clauses = [match.group() for match in _CLAUSE.finditer(text)]
+        asks_duration = bool(any(_DURATION.search(clause) and _ASKS.search(clause) for clause in clauses)
+                             or re.match(r"\s*(?:طيب\s+|طب\s+)?(?:بيثبت|بتثبت|يثبت|تثبت|بيدوم|يدوم|longevity|lasts?)\b", text)
+                             or _DURATION.fullmatch(text.strip(" .!")))
         if asks_duration:
             quantities.extend(measures)
     quantity = bool(quantities)
     if not longevity and not projection and quantity and not _OTHER_TIME.search(text):
+        # The latest message of each side: "قولّي تقدير عملي… مدة تقريبية" follows the customer's own
+        # "بيقعد قد إيه؟", with our non-answer in between (simulation S16 round 2 full 4, t5).
+        seen_roles = set()
         for item in reversed(history or []):
             previous = _normal(item.get("content", ""))
             if not previous.strip() or re.fullmatch(r"[\s.!؟?]*(?:تمام|ماشي|طيب|اوكي|ok|okay)[\s.!؟?]*", previous):
                 continue
-            longevity = bool(_LONGEVITY.search(previous))
-            projection = bool(_PROJECTION.search(previous))
+            role = item.get("role")
+            if role in seen_roles:
+                continue
+            seen_roles.add(role)
+            longevity = longevity or bool(_LONGEVITY.search(previous))
+            projection = projection or bool(_PROJECTION.search(previous))
             if _PERFORMANCE.search(previous):
                 longevity = projection = True
-            break
+            if len(seen_roles) >= 2:
+                break
         if not longevity and not projection and (
             re.search(rf"{_UNIT}|مدته|بيفضل|بيقعد|بيمسك|\bhow long\b", text) or _PERFUME.search(text)
         ):

@@ -1,0 +1,12 @@
+{
+  "run_id": "20261111T203429Z-a0781e",
+  "phase": "debug-claims-before",
+  "conversations": 4,
+  "passed": 0,
+  "failed": 4,
+  "incomplete": 0,
+  "api_calls": 120,
+  "run_cost_usd": "0.029356625",
+  "cumulative_spent_usd": "0.342621340",
+  "remaining_usd": "2.657378660"
+}

@@ -1,0 +1,614 @@
+{
+  "id": "S07_gift",
+  "title": "Gift buyer who does not know the recipient's taste",
+  "persona": "gift_buyer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات",
+      "reply": "ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.",
+      "seconds": 78.39,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "scent_evidence": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "occasion_text": "هدية لخطيبتي",
+        "occasion": "Date Night & Romantic",
+        "recommendation_mode": "new_goal",
+        "gender": "female"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "occasion": "Date Night & Romantic",
+        "recommendation_mode": "new_goal",
+        "clear_preferences": [
+          "similar_to",
+          "similar_to_notes"
+        ],
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Date Night & Romantic"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "هي هادية وكلاسيك وبتشتغل في بنك، ومش بتحب الحاجات المسكرة أوي.. ترشحلي إيه؟",
+      "reply": "Body: فيه ريحة زهور وفواكه ومسكي.\nChance: فيه ريحة زهور وبودرة ومسكي.",
+      "seconds": 7.0,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_evidence": [
+          {
+            "text": "مش بتحب الحاجات المسكرة أوي",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false,
+        "occasion": "Work & Office"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false,
+        "occasion": "Work & Office",
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Body",
+          "Chance",
+          "Fleur Musc",
+          "Coco Mademoiselle",
+          "My Way",
+          "Poudree",
+          "L'Eau d'Issey",
+          "Paris Hilton",
+          "Bright Crystal",
+          "Bombshell",
+          "J'adore",
+          "Bloom",
+          "Crystal Noir",
+          "Cassilia",
+          "Hugo Woman",
+          "Weekend for Women",
+          "Accento",
+          "Fleur Narcotique",
+          "Symphony",
+          "White Oud",
+          "Oud Madawi"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [],
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Body\nBrand: Burberry\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, musky\nDescription Tags (first three only): floral, fruity, musky\nSimple Scent Description: فيه ريحة زهور وفواكه ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Peach, Wormwood, Freesia\nMiddle Notes: Rose, Sandalwood, Iris\nBase Notes: Cashmere Wood, Musk, Vanilla, Amber\n\n-------------------------\n\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Body",
+        "Chance"
+      ],
+      "claim_checks": [
+        {
+          "draft": "ممكن **Chance** من Chanel، ريحته فيها زهور وبودرة ومسكي، أو **Fleur Musc** من Narciso Rodriguez، فيه ريحة زهور ومسكي ونضيف. الاتنين مناسبين للشغل ومش موصوفين إنهم مسكرين.",
+          "issues": [
+            "description:Fleur Musc: occasion suitability requires an explicit current question"
+          ]
+        },
+        {
+          "draft": "ممكن تختار Body من Burberry، ريحته فيها زهور وفواكه ومسكي، أو Chance من Chanel، فيه ريحة زهور وبودرة ومسكي. الاتنين مناسبين للشغل في البنك.",
+          "issues": [
+            "description:Chance: occasion suitability requires an explicit current question"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "طب أنهي واحدة فيهم أخف ومش مسكرة؟ ولو مجاتش على ذوقها أعمل إيه؟",
+      "reply": "الاتنين فيهم ريحة زهور ومسكي، بس Chance فيه كمان ريحة بودرة، وBody فيه فواكه؛ فـChance أقرب لطلبها من غير ما أقدر أضمن إنه هيعجبها. ولو ماجاش على ذوقها، سياسة الاستبدال خلال يومين من الاستلام، لكن العطر لازم يكون مقفول بالسوليفان عشان ينفع استبداله أو استرجاعه.",
+      "seconds": 6.7,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": {
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "gender": "female",
+        "occasion": "Work & Office"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Body\nBrand: Burberry\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, musky\nDescription Tags (first three only): floral, fruity, musky\nSimple Scent Description: فيه ريحة زهور وفواكه ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Peach, Wormwood, Freesia\nMiddle Notes: Rose, Sandalwood, Iris\nBase Notes: Cashmere Wood, Musk, Vanilla, Amber\n\n-------------------------\n\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Chance",
+        "Body"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "تمام، Chance شكله أنسب. هتعجبها أكيد؟",
+      "reply": "مقدرش أضمن إنها هتعجبها، بس هي أقرب لذوقها الهادي والكلاسيك؛ فيها ريحة زهور وبودرة ومسكي.",
+      "seconds": 2.39,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "تمام كده طمنتني شوية، هفكر أطلب Chance وأشوف بس الميزانية هتكون مناسبة؟",
+      "reply": "فاهمك، خدي وقتك وفكري براحتك؛ سعر Chance بيتحدد حسب الحجم ونوع الزجاجة، فلو حبيتي تعرفي السعر ابعتيلي الحجم اللي في بالك.",
+      "seconds": 3.48,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "طب في حجم صغير يناسب ميزانية لحد ١٠٠٠؟",
+      "reply": "Chance\nأيوه، فيه حجم 50 ملي يناسب ميزانيتك، وكمان حجم 90 ملي داخلها.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.",
+      "seconds": 5.12,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": {
+        "max_price": 1000.0,
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "gender": "female",
+        "occasion": "Work & Office"
+      },
+      "pending_relax": {},
+      "stage": "purchase_intent",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "max_price": 1000.0,
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1074, \"variant_id\": 2920, \"name\": \"Chance\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1074, \"variant_id\": 2919, \"name\": \"Chance\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Chance\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": \"1000.0\", \"request\": \"طب في حجم صغير يناسب ميزانية لحد ١٠٠٠؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1074, \"variant_id\": 2920, \"name\": \"Chance\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1074, \"variant_id\": 2919, \"name\": \"Chance\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": \"1000.0\", \"request\": \"طب في حجم صغير يناسب ميزانية لحد ١٠٠٠؟\", \"sections\": [{\"product_id\": 1074, \"name\": \"Chance\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Chance"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "حلو، هفكر في الـ50 ملي بقى. ولو طلبته أقدر أستبدله لو مجاش على ذوقها؟",
+      "reply": "لو ماجاش على ذوقها، ينفع الاستبدال خلال يومين من الاستلام بشرط تفضل الزجاجة مقفولة بالسوليفان؛ والـ50 ملي اختيار مناسب كبداية.",
+      "seconds": 10.34,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "max_price": 1000.0,
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تمام، هفكر أطلب الـ50 ملي، تسلم 🙏",
+      "reply": "تمام، خدي وقتك وفكري براحتك، وتسلمي.",
+      "seconds": 7.65,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Work & Office",
+        "max_price": 1000.0,
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Chance\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Chanel) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, powdery, musky\nDescription Tags (first three only): floral, powdery, musky\nSimple Scent Description: فيه ريحة زهور وبودرة ومسكي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Jasmine, Iris\nBase Notes: Patchouli, Musk, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "gender": "female",
+    "occasion": "Work & Office",
+    "max_price": 1000.0,
+    "scent_open": false,
+    "excluded_scent_tags": [
+      "sweet"
+    ]
+  },
+  "seconds": 130.1,
+  "judge_prompt": "SCENARIO S07_gift: Gift buyer who does not know the recipient's taste\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.\n- Does not promise she will love it (no مضمون / هتعجبها أكيد).\n- Return/exchange question answered from the store's configured policy only; nothing invented.\n- Asks at most one high-value question before recommending.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات\n[internal] route=recommendation stage=None saved_preferences={\"gender\": \"female\", \"occasion\": \"Date Night & Romantic\"}\n[internal] merged_intent={\"occasion\": \"Date Night & Romantic\", \"recommendation_mode\": \"new_goal\", \"clear_preferences\": [\"similar_to\", \"similar_to_notes\"], \"gender\": \"female\"}\nASSISTANT: ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.\n\n--- TURN 2 ---\nCUSTOMER: هي هادية وكلاسيك وبتشتغل في بنك، ومش بتحب الحاجات المسكرة أوي.. ترشحلي إيه؟\n[internal] route=recommendation stage=recommendation saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"excluded_scent_tags\": [\"sweet\"], \"occasion\": \"Work & Office\", \"gender\": \"female\"}\n[internal] shortlist=['Body', 'Chance', 'Fleur Musc', 'Coco Mademoiselle', 'My Way', 'Poudree', \"L'Eau d'Issey\", 'Paris Hilton']\nASSISTANT: Body: فيه ريحة زهور وفواكه ومسكي.\nChance: فيه ريحة زهور وبودرة ومسكي.\n\n--- TURN 3 ---\nCUSTOMER: طب أنهي واحدة فيهم أخف ومش مسكرة؟ ولو مجاتش على ذوقها أعمل إيه؟\n[internal] route=product_info stage=recommendation saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"excluded_scent_tags\": [\"sweet\"], \"gender\": \"female\", \"occasion\": \"Work & Office\"}\nASSISTANT: الاتنين فيهم ريحة زهور ومسكي، بس Chance فيه كمان ريحة بودرة، وBody فيه فواكه؛ فـChance أقرب لطلبها من غير ما أقدر أضمن إنه هيعجبها. ولو ماجاش على ذوقها، سياسة الاستبدال خلال يومين من الاستلام، لكن العطر لازم يكون مقفول بالسوليفان عشان ينفع استبداله أو استرجاعه.\n\n--- TURN 4 ---\nCUSTOMER: تمام، Chance شكله أنسب. هتعجبها أكيد؟\n[internal] route=product_info stage=recommendation saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: مقدرش أضمن إنها هتعجبها، بس هي أقرب لذوقها الهادي والكلاسيك؛ فيها ريحة زهور وبودرة ومسكي.\n\n--- TURN 5 ---\nCUSTOMER: تمام كده طمنتني شوية، هفكر أطلب Chance وأشوف بس الميزانية هتكون مناسبة؟\n[internal] route=product_info stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: فاهمك، خدي وقتك وفكري براحتك؛ سعر Chance بيتحدد حسب الحجم ونوع الزجاجة، فلو حبيتي تعرفي السعر ابعتيلي الحجم اللي في بالك.\n\n--- TURN 6 ---\nCUSTOMER: طب في حجم صغير يناسب ميزانية لحد ١٠٠٠؟\n[internal] route=product_info stage=purchase_intent saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"max_price\": 1000.0, \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"max_price\": 1000.0, \"excluded_scent_tags\": [\"sweet\"], \"gender\": \"female\", \"occasion\": \"Work & Office\"}\nASSISTANT: Chance\nأيوه، فيه حجم 50 ملي يناسب ميزانيتك، وكمان حجم 90 ملي داخلها.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\n\n--- TURN 7 ---\nCUSTOMER: حلو، هفكر في الـ50 ملي بقى. ولو طلبته أقدر أستبدله لو مجاش على ذوقها؟\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"max_price\": 1000.0, \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: لو ماجاش على ذوقها، ينفع الاستبدال خلال يومين من الاستلام بشرط تفضل الزجاجة مقفولة بالسوليفان؛ والـ50 ملي اختيار مناسب كبداية.\n\n--- TURN 8 ---\nCUSTOMER: تمام، هفكر أطلب الـ50 ملي، تسلم 🙏\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Work & Office\", \"max_price\": 1000.0, \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: تمام، خدي وقتك وفكري براحتك، وتسلمي.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Accento | brand=Xerjoff | gender=female | type=niche | season=All Seasons | scent_tags=floral,fruity,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pineapple, Hyacinth | mid=Iris, Pink Pepper, Jasmine | base=Musk, Vetiver, Amber, Vanilla, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Bloom | brand=Gucci | gender=female | type=western | season=Summer | scent_tags=floral,fresh,clean | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Jasmine | mid=Tuberose | base=Rangoon Creeper | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Body | brand=Burberry | gender=female | type=western | season=Winter | scent_tags=floral,fruity,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Peach, Wormwood, Freesia | mid=Rose, Sandalwood, Iris | base=Cashmere Wood, Musk, Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bombshell | brand=Victoria's Secret | gender=female | type=western | season=Summer | scent_tags=fruity,floral,citrus | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Passionfruit, Grapefruit, Pineapple, Tangerine, Big Strawberry | mid=Peony, Vanilla Orchid, Red Berries, Jasmine, Lily of the Valley | base=Musk, Woody Notes, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bright Crystal | brand=Versace | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Pomegranate, Yuzu, Frosted Accord | mid=Peony, Magnolia, Lotus | base=Musk, Amber, Mahogany | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Cassilia | brand=Cassilia | gender=female | type=western | season=Summer | scent_tags=floral,fruity,light | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Mandarin Orange, Red Currant | mid=Peony, Rose, Jasmine, Lily of the Valley | base=White Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Chance | brand=Chanel | gender=female | type=western | season=Summer | scent_tags=floral,powdery,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Jasmine, Iris | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | scent_tags=floral,citrus,woody | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange, Mandarin Orange, Bergamot, Orange Blossom | mid=Jasmine, Rose, Mimosa, Ylang-Ylang | base=Patchouli, Vetiver, Tonka Bean, Vanilla, Musk, Opoponax | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Crystal Noir | brand=Versace | gender=female | type=western | season=Winter | scent_tags=floral,spicy,woody | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pepper, Ginger, Cardamom | mid=Coconut, Gardenia, Orange Blossom, Peony | base=Sandalwood, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Fleur Musc | brand=Narciso Rodriguez | gender=female | type=western | season=Summer | scent_tags=floral,musky,clean | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Rose, Peony, Musk | base=Patchouli, Amber, Violet | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Fleur Narcotique | brand=Ex Nihilo | gender=female | type=niche | season=Summer | scent_tags=floral,musky,fruity | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Litchi, Bergamot, Peach | mid=Peony, Orange Blossom, Jasmine, Petalia | base=Musk, Moss, Woody Notes | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Hugo Woman | brand=Hugo Boss | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Boysenberry, Italian Mandarin, Grass | mid=Jasmine, Black Tea, Plum, Iris | base=Amber, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- J'adore | brand=Dior | gender=female | type=western | season=All Seasons | scent_tags=floral,fruity,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pear, Melon, Magnolia, Peach, Mandarin Orange, Bergamot | mid=Jasmine, Lily of the Valley, Tuberose, Freesia, Orchid, Plum, Rose | base=Musk, Vanilla, Blackberry, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- L'Eau d'Issey | brand=Issey Miyake | gender=female | type=western | season=Summer | scent_tags=floral,aquatic,clean | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Lotus, Melon, Freesia, Rose Water, Rose, Calone, Cyclamen | mid=Lily, Water Peony, Carnation, Lily of the Valley | base=Exotic Woods, Tuberose, Amber, Sandalwood, Musk, Osmanthus, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- My Way | brand=Armani | gender=female | type=western | season=Summer | scent_tags=floral,musky,clean | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange Blossom, Bergamot | mid=Tuberose, Indian Jasmine | base=Madagascar Vanilla, White Musk, Virginian Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Oud Madawi | brand=Arabian Oud | gender=female | type=oriental | season=Summer | scent_tags=fruity,floral,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Peach, Apple Blossom | mid=Pineapple Blossom | base=Wild Rose, Musk, Patchouli | sizes: brand 50ml=950EGP; brand 90ml=1250EGP\n- Paris Hilton | brand=Paris Hilton | gender=female | type=western | season=Summer | scent_tags=floral,fruity,musky | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Melon, Apple, Peach | mid=Freesia, Mimosa, Lily of the Valley, Jasmine, Lily, Tuberose | base=Musk, Ylang-Ylang, Sandalwood, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Poudree | brand=Narciso Rodriguez | gender=female | type=western | season=All Seasons | scent_tags=powdery,musky,floral | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bulgarian Rose, Jasmine, Orange Blossom | mid=Musk | base=Vetiver, Cedar, Coumarin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Symphony | brand=Louis Vuitton | gender=female | type=niche | season=Summer | scent_tags=fresh,citrus,clean | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Grapefruit, Bergamot | mid=Ginger | base=Mate, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2600EGP stock=100\n- Weekend for Women | brand=Burberry | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Mignonette, Mandarin Orange, Sage | mid=Nectarine, Blue Hyacinth, Peach Blossom, Rose Hip, Iris, Red Cyclamen, Violet Root | base=Musk, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- White Oud | brand=Arabian Oud | gender=female | type=oriental | season=All Seasons | scent_tags=oud,woody,floral | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Bergamot, Orange, Saffron | mid=White Rose, Jasmine, Patchouli | base=White Oud, White Musk, Sandalwood, Amber | sizes: brand 50ml=950EGP; brand 90ml=1250EGP\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 4
+    },
+    "criteria": [
+      {
+        "criterion": "Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.",
+        "met": true,
+        "evidence": "turns 1–4: treats the perfume as a gift for the female recipient and uses her stated preferences to recommend Chance."
+      },
+      {
+        "criterion": "Does not promise she will love it (no مضمون / هتعجبها أكيد).",
+        "met": true,
+        "evidence": "turns 3–4: explicitly says it cannot guarantee she will like it."
+      },
+      {
+        "criterion": "Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "met": false,
+        "evidence": "turns 3 and 7: adds a sealed-cellophane condition to exchange generally; turn 3 also says return is possible. The configured policy specifies exchange terms and limits sealed-bottle returns to original-style bottles."
+      },
+      {
+        "criterion": "Asks at most one high-value question before recommending.",
+        "met": true,
+        "evidence": "turn 1: asks one accessible preference question with a fallback; turn 2 recommends after the customer adds useful preferences."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 3,
+        "severity": "critical",
+        "category": "commerce",
+        "expected": "State the configured exchange policy: exchange within two days, with the applicable shipping and box costs or free exchange in-store. Do not promise a return for Chance; returns are only specified for original-style bottles kept sealed.",
+        "actual": "«سياسة الاستبدال خلال يومين من الاستلام، لكن العطر لازم يكون مقفول بالسوليفان عشان ينفع استبداله أو استرجاعه.»",
+        "why": "This invents a sealed-cellophane requirement for ordinary exchanges and implies a return is available for Chance, although the configured policy limits returns to sealed original-style bottles."
+      },
+      {
+        "turn": 7,
+        "severity": "critical",
+        "category": "commerce",
+        "expected": "Give the configured exchange terms and avoid presenting a sealed-cellophane condition as applying to Chance generally.",
+        "actual": "«ينفع الاستبدال خلال يومين من الاستلام بشرط تفضل الزجاجة مقفولة بالسوليفان»",
+        "why": "Repeats the unsupported sealed-bottle condition and omits the configured exchange costs or free in-store option."
+      },
+      {
+        "turn": 5,
+        "severity": "low",
+        "category": "naturalness",
+        "expected": "Address the buyer using masculine forms, consistent with his «عايز» phrasing.",
+        "actual": "«خدي وقتك وفكري براحتك»",
+        "why": "The assistant switches to feminine forms when speaking to the male buyer."
+      },
+      {
+        "turn": 8,
+        "severity": "low",
+        "category": "naturalness",
+        "expected": "Close using masculine forms for the buyer.",
+        "actual": "«خدي وقتك وفكري براحتك، وتسلمي.»",
+        "why": "Repeats the feminine address despite the buyer's masculine phrasing."
+      }
+    ],
+    "deterministic_review": [],
+    "summary": "The assistant makes a suitable, recipient-focused recommendation, avoids guaranteeing the gift will be liked, and respects the buyer's decision to keep thinking. Its serious failure is giving incorrect exchange/return conditions twice; it also uses feminine forms when addressing the male buyer."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "judge score commerce_correctness=4",
+    "judge turn 3 critical commerce: This invents a sealed-cellophane requirement for ordinary exchanges and implies a return is available for Chance, although the configured policy limits returns ",
+    "judge turn 7 critical commerce: Repeats the unsupported sealed-bottle condition and omits the configured exchange costs or free in-store option.",
+    "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented."
+  ],
+  "usage": {
+    "api_calls": 32,
+    "by_role": {
+      "seller": {
+        "calls": 24,
+        "cost_usd": "0.006184930"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.000922775"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.00305017"
+      }
+    },
+    "prompt_tokens": 189904,
+    "cached_tokens": 145660,
+    "completion_tokens": 6524,
+    "reasoning_tokens": 4321,
+    "cost_usd": "0.010157875",
+    "api_seconds": 95.6,
+    "failed_calls": []
+  }
+}

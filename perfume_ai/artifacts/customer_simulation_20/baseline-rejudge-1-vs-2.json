@@ -1,0 +1,863 @@
+{
+  "S01_beginner": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 6.6,
+      "min_score": 4,
+      "det_high": 2,
+      "judge_high": 2,
+      "reasons": [
+        "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "turn 4 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "judge score question_quality=4",
+        "judge score naturalness=5",
+        "judge score emotional_handling=5",
+        "judge turn 3 high question: This repeats the exact question the customer could not answer instead of simplifying or helping them choose.",
+        "judge turn 4 high understanding: The assistant repeats the same jargon after the customer explicitly says they do not understand, worsening the frustration.",
+        "criterion unmet: When the customer says مش عارف, offers accessible choices or concrete examples instead of repeating "
+      ],
+      "cost": "0.00372592",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 6.7,
+      "min_score": 3,
+      "det_high": 2,
+      "judge_high": 2,
+      "reasons": [
+        "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "turn 4 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "judge score question_quality=3",
+        "judge score naturalness=5",
+        "judge turn 3 high question: This repeats the exact question the customer has just shown he cannot answer.",
+        "judge turn 4 high question: The assistant repeats the same jargon-heavy question instead of adapting to the customer's confusion.",
+        "criterion unmet: When the customer says مش عارف, offers accessible choices or concrete examples instead of repeating "
+      ],
+      "cost": "0.00384067",
+      "calls": 1
+    }
+  },
+  "S02_enthusiast": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 8.0,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [
+        "criterion unmet: Notes are quoted only from the stored top/middle/base notes; nothing invented."
+      ],
+      "cost": "0.00191605",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 7.6,
+      "min_score": 5,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=5"
+      ],
+      "cost": "0.001999045",
+      "calls": 1
+    }
+  },
+  "S03_total_budget": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 4.6,
+      "min_score": 4,
+      "det_high": 2,
+      "judge_high": 5,
+      "reasons": [
+        "turn 5 critical repeated_reply: 100% identical to an earlier reply: 'مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟'",
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=4",
+        "judge score question_quality=4",
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=5",
+        "judge score commerce_correctness=4",
+        "judge turn 3 high question: لم يشرح سبب عدم إمكانية شراء الثلاثة ضمن 1600، وأعاد سؤال العميل عن الميزانية رغم أنه حددها بوضوح.",
+        "judge turn 5 critical accuracy: القول بعدم وجود اختيار مناسب غير صحيح؛ توجد عطور رجالية بطابع حلو بسعر 750 جنيهًا، ويمكن أن يكون مجموع زجاجتين 1500 جنيه.",
+        "judge turn 6 high memory: كرر الرد وطلب تغيير الميزانية بعد أن أكد العميل مرة أخرى أنه لن يتجاوز 1600، مع استمرار الادعاء الخاطئ بعدم وجود اختيار حلو مناسب.",
+        "judge turn 7 high memory: حوّل الاختيارين إلى عطرين حلوين، متجاهلًا أن العميل يريد الفريش لنفسه والحلو لأخيه.",
+        "judge turn 8 high memory: إصدار 212 Sexy man كان قد اقترحه المساعد في turn 7، واختيار العميل له لأخيه لا يترك مرجعًا غامضًا في هذا السياق.",
+        "criterion unmet: Does not re-ask the budget or gender.",
+        "criterion unmet: For three bottles within 1600, explains the specific limitation (three 750 bottles = 2250) and asks "
+      ],
+      "cost": "0.005783795",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 3.9,
+      "min_score": 3,
+      "det_high": 2,
+      "judge_high": 6,
+      "reasons": [
+        "turn 5 critical repeated_reply: 100% identical to an earlier reply: 'مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟'",
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=3",
+        "judge score question_quality=3",
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=5",
+        "judge score emotional_handling=5",
+        "judge score commerce_correctness=3",
+        "judge turn 3 high question: It does not answer the direct total question, omits the required arithmetic limitation, and re-asks for a budget the customer already supplied.",
+        "judge turn 5 critical accuracy: Sweet options are available at 750, so the claim that no option fits the stated total budget is false; it also repeats the rejected request to raise the budget.",
+        "judge turn 6 critical accuracy: This repeats the false claim despite the customer restating the exact budget and request; stocked sweet 750-pound options can fit in a two-bottle total under 16",
+        "judge turn 7 high memory: The price fits, but it forgets the stated fresh preference for the customer and offers two sweet options instead of the requested mix.",
+        "judge turn 8 high memory: It re-asks about gender-specific identification despite the male context, asks about a size after the 50 ml offer, and does not answer the direct total question",
+        "judge turn 9 critical commerce: The response omits the selected 212 Sexy man and gives a 750-pound subtotal instead of the requested total for both products.",
+        "criterion unmet: Never presents a pair whose combined price exceeds 1600 as fitting; totals are arithmetically correc",
+        "criterion unmet: Does not re-ask the budget or gender.",
+        "criterion unmet: For three bottles within 1600, explains the specific limitation (three 750 bottles = 2250) and asks "
+      ],
+      "cost": "0.005607545",
+      "calls": 1
+    }
+  },
+  "S04_busy_price": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 3,
+      "mean_score": 9.6,
+      "min_score": 7,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [
+        "turn 2 critical repeated_reply: 96% identical to an earlier reply: 'Sauvage\nمتوفر يا فندم.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\nزجاجة '"
+      ],
+      "cost": "0.001004045",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 3,
+      "mean_score": 9.3,
+      "min_score": 7,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [
+        "turn 2 critical repeated_reply: 96% identical to an earlier reply: 'Sauvage\nمتوفر يا فندم.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\nزجاجة '"
+      ],
+      "cost": "0.001720795",
+      "calls": 1
+    }
+  },
+  "S05_premium": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.6,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge score knows_when_to_stop=4",
+        "judge turn 7 high stop: العميل قال صراحةً إنه سيكمل الأوردر بعدين، لكن المساعد بدأ خطوات استكماله وطلب بيانات كثيرة. لم يُنشئ طلبًا فعليًا، لكن دفع البيع في توقيت غير مناسب.",
+        "criterion unmet: Praise acknowledged briefly without generic flattery or a forced close."
+      ],
+      "cost": "0.003913795",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.6,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge score knows_when_to_stop=4",
+        "judge turn 7 high stop: العميل قال صراحةً إنه سيكمل الأوردر لاحقًا؛ طلب بيانات checkout فورًا ضغط غير مناسب. لم يُنشأ طلب فعلي، لذا ليست مخالفة إنشاء طلب دون موافقة.",
+        "criterion unmet: Praise acknowledged briefly without generic flattery or a forced close."
+      ],
+      "cost": "0.003488545",
+      "calls": 1
+    }
+  },
+  "S06_indecisive": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 5.6,
+      "min_score": 3,
+      "det_high": 1,
+      "judge_high": 3,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=3",
+        "judge score question_quality=4",
+        "judge score commerce_correctness=5",
+        "judge turn 5 high memory: لم يحل الإشارة إلى الخيار السابق رغم أن ترتيب الخيارين واضح من السياق.",
+        "judge turn 6 high question: رد غير متعلق بطلب الاختيار، وكرر سؤال التوضيح نفسه بدل اتخاذ الخطوة المطلوبة.",
+        "judge turn 7 high memory: اختار عطرًا جديدًا خارج الخيارين المقصودين، رغم أن مرجع «واحد فيهم» واضح.",
+        "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+        "criterion unmet: Remembers the earlier options correctly when she asks about 'الأولاني'.",
+        "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+      ],
+      "cost": "0.00307192",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 5.4,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 3,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=4",
+        "judge score question_quality=4",
+        "judge score commerce_correctness=5",
+        "judge turn 5 high memory: The reference is clear from the immediately preceding Her/Bloom options; the fallback misunderstands the request and makes the customer clarify.",
+        "judge turn 6 high question: It repeats the prior reply and its clarification question even though the customer has clarified that she wants the assistant to choose.",
+        "judge turn 7 high memory: The customer says «واحد فيهم», referring to Her and Bloom. Introducing Billie Eilish ignores the existing options and causes her to correct the assistant.",
+        "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+        "criterion unmet: Remembers the earlier options correctly when she asks about 'الأولاني'.",
+        "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+      ],
+      "cost": "0.00321317",
+      "calls": 1
+    }
+  },
+  "S07_gift": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 5.6,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 1,
+      "reasons": [
+        "turn 6 high unsupported_promise: follow_up: 'هسأل و'",
+        "judge score understanding_accuracy=5",
+        "judge score question_quality=4",
+        "judge score naturalness=5",
+        "judge score commerce_correctness=4",
+        "judge turn 6 high commerce: The policy is already configured, and the assistant promises to ask and reply without confirming a supported handoff. It also repeats the price the customer alr",
+        "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "criterion unmet: Asks at most one high-value question before recommending."
+      ],
+      "cost": "0.00462567",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 5.6,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 2,
+      "reasons": [
+        "turn 6 high unsupported_promise: follow_up: 'هسأل و'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=5",
+        "judge score question_quality=4",
+        "judge score commerce_correctness=4",
+        "judge turn 3 high memory: Amour's stored scent tags include sweet, directly conflicting with the recipient's stated preference for something not too sweet.",
+        "judge turn 6 high commerce: The policy is already configured, so saying the assistant will ask and reply is an unsupported follow-up promise; the exchange question remains unanswered.",
+        "criterion unmet: Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.",
+        "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "criterion unmet: Asks at most one high-value question before recommending."
+      ],
+      "cost": "0.00440892",
+      "calls": 1
+    }
+  },
+  "S08_compare": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.3,
+      "min_score": 3,
+      "det_high": 1,
+      "judge_high": 3,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=4",
+        "judge score question_quality=3",
+        "judge turn 4 high memory: The customer explicitly repeats “أنهي واحد فيهم” in reference to the three perfumes and adds fresh/woody as a preference. Recommending two unrelated perfumes lo",
+        "judge turn 5 high understanding: The reference and requested attribute are clear from the conversation. Asking the customer to specify the property again is an unnecessary failure to resolve th",
+        "judge turn 6 high understanding: Even after the customer spells out the three perfumes and repeats the work question, the assistant repeats the same irrelevant clarification instead of answerin",
+        "criterion unmet: The explicit work-suitability question is answered from each perfume's stored occasion."
+      ],
+      "cost": "0.00367267",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.0,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 3,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score understanding_accuracy=5",
+        "judge score memory=4",
+        "judge score question_quality=4",
+        "judge turn 4 high understanding: The customer again asks which of the three originally named perfumes suits work. The assistant switches to two different perfumes instead of answering that comp",
+        "judge turn 5 high understanding: The reference is clear from the conversation, and the customer is asking the same work-suitability question. The generic clarification does not address it.",
+        "judge turn 6 high understanding: The customer explicitly names all three perfumes and repeats the work question, but the assistant repeats the same irrelevant clarification instead of answering",
+        "criterion unmet: The explicit work-suitability question is answered from each perfume's stored occasion."
+      ],
+      "cost": "0.00363542",
+      "calls": 1
+    }
+  },
+  "S09_unavailable": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 3.0,
+      "min_score": 1,
+      "det_high": 0,
+      "judge_high": 4,
+      "reasons": [
+        "judge score understanding_accuracy=2",
+        "judge score memory=2",
+        "judge score question_quality=1",
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=4",
+        "judge score emotional_handling=4",
+        "judge score commerce_correctness=4",
+        "judge turn 3 high memory: It re-asks for information the customer has already supplied and still avoids the direct question.",
+        "judge turn 5 high memory: It again asks the customer to repeat the exact name, despite multiple clear repetitions.",
+        "judge turn 6 high understanding: It responds about a different perfume and does not answer the customer's repeated availability question.",
+        "judge turn 7 high commerce: It acknowledges the mix-up and names stocked options, but never confirms the requested perfume is unavailable; in context, the recommendations also imply simila",
+        "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+        "criterion unmet: Does not claim a lookalike without support; similarity wording is honest."
+      ],
+      "cost": "0.003453045",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 2.6,
+      "min_score": 1,
+      "det_high": 0,
+      "judge_high": 3,
+      "reasons": [
+        "judge score understanding_accuracy=2",
+        "judge score memory=1",
+        "judge score question_quality=1",
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=3",
+        "judge score emotional_handling=2",
+        "judge score commerce_correctness=5",
+        "judge turn 3 high memory: أعاد طلب الاسم بعد أن كتبه العميل بوضوح في الدور السابق.",
+        "judge turn 5 high memory: طلب الاسم مرة أخرى رغم أن العميل كتبه عدة مرات، بما فيها الدور السابق.",
+        "judge turn 6 high understanding: خلط بين اسم العطر المطلوب وLa Nuit، فكانت الإجابة عن منتج مختلف.",
+        "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+        "criterion unmet: Does not claim a lookalike without support; similarity wording is honest.",
+        "criterion unmet: Handles the customer's irritation without canned apologies."
+      ],
+      "cost": "0.004059795",
+      "calls": 1
+    }
+  },
+  "S10_dislikes": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 5,
+      "mean_score": 8.0,
+      "min_score": 6,
+      "det_high": 1,
+      "judge_high": 1,
+      "reasons": [
+        "turn 1 high excluded_tag_recommended: recommended ['212 Sexy man', 'Black XS'] although the customer excluded 'sweet'",
+        "judge turn 1 high understanding: Both recommended perfumes are tagged sweet, directly violating the customer's stated preference.",
+        "criterion unmet: No recommendation includes a perfume tagged sweet or oud once the customer excluded them."
+      ],
+      "cost": "0.003986545",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 5,
+      "mean_score": 8.0,
+      "min_score": 6,
+      "det_high": 1,
+      "judge_high": 1,
+      "reasons": [
+        "turn 1 high excluded_tag_recommended: recommended ['212 Sexy man', 'Black XS'] although the customer excluded 'sweet'",
+        "judge turn 1 high commerce: العطران موصوفان في قاعدة البيانات بأنهما sweet؛ الترشيح خالف استبعادًا صريحًا من أول رسالة.",
+        "criterion unmet: No recommendation includes a perfume tagged sweet or oud once the customer excluded them."
+      ],
+      "cost": "0.003740795",
+      "calls": 1
+    }
+  },
+  "S11_all_constraints": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 3.6,
+      "min_score": 3,
+      "det_high": 7,
+      "judge_high": 5,
+      "reasons": [
+        "turn 4 critical repeated_reply: 100% identical to an earlier reply: '212 NYC Man\nالـ50 ملي أعلى حاجة بسيطة من ميزانيتك.\nزجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه (أع'",
+        "turn 8 critical repeated_reply: 90% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × 212 NYC Man (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 9 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × 212 NYC Man (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=3",
+        "judge score question_quality=3",
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=4",
+        "judge score emotional_handling=4",
+        "judge score commerce_correctness=3",
+        "judge turn 5 critical commerce: المجموع المعلن خاطئ لأنه يستبعد رسوم الشحن المعروفة، كما لم يجب عن سؤال الشحن المباشر.",
+        "judge turn 6 critical commerce: كرر مجموعًا غير صحيح باستبعاد الشحن.",
+        "judge turn 7 high memory: أعاد السؤال عن المنتج والحجم رغم أنهما معروفان في سلة الطلب، ولم يجب عن سؤال العميل. كما أن الرد احتوى سؤالين متتابعين.",
+        "judge turn 8 high question: كرر طلب الرقم البديل بعد أن قال العميل إنه لا يملكه، ولم يجب عن إمكانية استخدام الرقم الأساسي، واستمر في عرض مجموع ناقص.",
+        "judge turn 9 high stop: لم يتجاوب مع سؤال تأكيد الطلب، وكرر طلب الرقم البديل رغم رفضه الواضح، كما أبقى المجموع الخاطئ. لم ينشئ الطلب، لكن لم يقدّم خطوة تأكيد صحيحة أيضًا.",
+        "criterion unmet: Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wordin",
+        "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence.",
+        "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and an explicit "
+      ],
+      "cost": "0.004527545",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 3.1,
+      "min_score": 2,
+      "det_high": 7,
+      "judge_high": 4,
+      "reasons": [
+        "turn 8 critical repeated_reply: 90% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × 212 NYC Man (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 9 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × 212 NYC Man (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=2",
+        "judge score question_quality=2",
+        "judge score knows_when_to_stop=3",
+        "judge score naturalness=4",
+        "judge score emotional_handling=4",
+        "judge score commerce_correctness=3",
+        "judge turn 5 critical commerce: The customer directly asked for shipping, but the assistant omitted it and presented the product price as the total. It repeats that incomplete total in later c",
+        "judge turn 7 high memory: The assistant had the selected fragrance and size in the conversation and should have answered the question about the phone number instead of re-asking for the ",
+        "judge turn 8 high memory: The customer had just said there was no alternate number. Repeating the requirement without addressing whether the primary number is enough ignores the correcti",
+        "judge turn 9 high memory: It repeats a field the customer has twice said they cannot provide and ignores the confirmation question. The earlier summary also omitted shipping, so the orde",
+        "criterion unmet: Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wordin",
+        "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence.",
+        "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and an explicit "
+      ],
+      "cost": "0.005697295",
+      "calls": 1
+    }
+  },
+  "S12_short_refs": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 7.6,
+      "min_score": 5,
+      "det_high": 2,
+      "judge_high": 1,
+      "reasons": [
+        "turn 2 critical crash: turn 2 raised ValueError: Invalid evaluation response: empty_output",
+        "turn 2 critical empty_reply: the customer received no reply",
+        "judge score commerce_correctness=5",
+        "judge turn 2 critical accuracy: لم يتلقَّ العميل أي إجابة على سؤال السعر، وهو إخفاق حاسم في التعامل مع طلب شراء مباشر.",
+        "criterion unmet: 'التانى' / 'الاولانى' resolve to the right previously offered perfume; genuinely ambiguous reference"
+      ],
+      "cost": "0.002469795",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 8.3,
+      "min_score": 6,
+      "det_high": 2,
+      "judge_high": 1,
+      "reasons": [
+        "turn 2 critical crash: turn 2 raised ValueError: Invalid evaluation response: empty_output",
+        "turn 2 critical empty_reply: the customer received no reply",
+        "judge turn 2 critical commerce: The customer received no answer to a direct price question; this also leaves the reference unresolved at that turn.",
+        "criterion unmet: 'التانى' / 'الاولانى' resolve to the right previously offered perfume; genuinely ambiguous reference"
+      ],
+      "cost": "0.002367545",
+      "calls": 1
+    }
+  },
+  "S13_mixed_language": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 0.9,
+      "min_score": 0,
+      "det_high": 6,
+      "judge_high": 7,
+      "reasons": [
+        "turn 2 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 3 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 4 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 5 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 6 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 8 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "judge score understanding_accuracy=1",
+        "judge score memory=0",
+        "judge score question_quality=0",
+        "judge score knows_when_to_stop=0",
+        "judge score naturalness=1",
+        "judge score emotional_handling=2",
+        "judge score commerce_correctness=2",
+        "judge turn 1 high understanding: The customer had already specified a men’s perfume.",
+        "judge turn 2 high memory: This repeats a question whose answer the customer just supplied.",
+        "judge turn 3 high memory: The assistant again asks for already-known information and ignores the request.",
+        "judge turn 4 high understanding: The customer explicitly says he already stated “rigali”; the assistant repeats the same question instead of correcting course.",
+        "judge turn 5 high memory: The customer points out that the bot is stuck, but the assistant repeats the same question yet again.",
+        "judge turn 6 high commerce: The customer supplies a budget and repeats the request, but the assistant does not acknowledge either.",
+        "judge turn 8 high stop: The customer says they do not know the names and says thanks; the assistant repeats a question already answered instead of stopping.",
+        "criterion unmet: Understands the Franco/English mix and replies naturally in Egyptian Arabic (light mirroring accepta",
+        "criterion unmet: Respects the ~800 budget once stated (750 options); shipping 60 from store facts.",
+        "criterion unmet: The joke gets a light natural reaction or is simply let pass, with no forced humour and no 'مش فاهم'"
+      ],
+      "cost": "0.00247242",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 0.7,
+      "min_score": 0,
+      "det_high": 6,
+      "judge_high": 8,
+      "reasons": [
+        "turn 2 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 3 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 4 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 5 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 6 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "turn 8 high reasked_known_gender: asked for gender after the customer had made it clear",
+        "judge score understanding_accuracy=1",
+        "judge score memory=0",
+        "judge score question_quality=0",
+        "judge score knows_when_to_stop=0",
+        "judge score naturalness=1",
+        "judge score emotional_handling=2",
+        "judge score commerce_correctness=1",
+        "judge turn 1 high understanding: The customer already specified men's; asking again blocks the actual request.",
+        "judge turn 2 high memory: The assistant repeats the same question after the customer explicitly says \"rigali\" again.",
+        "judge turn 3 high memory: It again asks for gender already supplied and ignores the fresh summer request.",
+        "judge turn 4 high understanding: The customer says they already stated men's, but the assistant repeats the exact same question.",
+        "judge turn 5 high emotion: The customer points out that the bot is stuck; the assistant neither corrects itself nor responds to the request.",
+        "judge turn 6 high commerce: The assistant ignores both the request and the newly stated budget, repeating a question whose answer is already known.",
+        "judge turn 7 high question: The customer already specified 50ml. Asking for the perfume name could be useful, but asking again for the size is unnecessary and the reply does not answer the",
+        "judge turn 8 high stop: The customer says they do not know perfume names and thanks the assistant; the reply repeats the gender question instead of closing.",
+        "criterion unmet: Understands the Franco/English mix and replies naturally in Egyptian Arabic (light mirroring accepta",
+        "criterion unmet: Respects the ~800 budget once stated (750 options); shipping 60 from store facts."
+      ],
+      "cost": "0.00388867",
+      "calls": 1
+    }
+  },
+  "S14_mind_change_long": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 6.6,
+      "min_score": 3,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [
+        "turn 9 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score question_quality=3",
+        "judge score naturalness=5",
+        "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+      ],
+      "cost": "0.004709795",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 7.3,
+      "min_score": 5,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=5",
+        "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+      ],
+      "cost": "0.004476545",
+      "calls": 1
+    }
+  },
+  "S15_self_and_other": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 5.0,
+      "min_score": 2,
+      "det_high": 1,
+      "judge_high": 5,
+      "reasons": [
+        "turn 5 critical repeated_reply: 94% identical to an earlier reply: 'لـماما، 212 Sexy Women فيه ريحة زهور ومسكر وفيه ريحة بودرة. وL'Eau d'Issey فيه ريحة زهور وريحته بحري'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=2",
+        "judge score question_quality=3",
+        "judge turn 5 high memory: The customer said to return to his own purchase, but the assistant repeated the recommendations for his mother.",
+        "judge turn 6 high memory: Even after the customer explicitly clarified that Aventus and K By Dolce were for himself, the assistant recommended women's perfumes instead of honoring his me",
+        "judge turn 7 high memory: The assistant continues recommending women's perfumes despite the earlier context identifying this as the customer's own men's purchase.",
+        "judge turn 8 high question: The customer had already specified a men's woody perfume for himself, with an outing occasion and a 1000 EGP budget. Asking which gender to start with re-asks s",
+        "judge turn 9 high question: The customer just said to start with men's and repeated the request; the assistant asks the same gender question again instead of recommending.",
+        "criterion unmet: Returning to his own purchase restores his woody men's preference and recalls the earlier suggestion",
+        "criterion unmet: At the late turn the woody/men's preference is still honoured after leaving the recent-message windo"
+      ],
+      "cost": "0.005098045",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 5.0,
+      "min_score": 2,
+      "det_high": 1,
+      "judge_high": 5,
+      "reasons": [
+        "turn 5 critical repeated_reply: 94% identical to an earlier reply: 'لـماما، 212 Sexy Women فيه ريحة زهور ومسكر وفيه ريحة بودرة. وL'Eau d'Issey فيه ريحة زهور وريحته بحري'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=2",
+        "judge score question_quality=3",
+        "judge turn 5 high memory: The customer clearly says to return to his own purchase; the assistant instead repeats the recommendations for his mother.",
+        "judge turn 6 high memory: The customer explicitly clarifies this is for himself and names the earlier men's suggestions, but both recommendations are women's perfumes.",
+        "judge turn 7 high memory: The assistant again recommends women's fragrances and does not restore the customer's stated men's preference.",
+        "judge turn 8 high question: The customer already specified a men's perfume for himself; asking which gender is unnecessary and delays the requested recommendation.",
+        "judge turn 9 high question: The customer says to start with men's and restates the recommendation request, yet the assistant asks for gender again.",
+        "criterion unmet: Returning to his own purchase restores his woody men's preference and recalls the earlier suggestion",
+        "criterion unmet: At the late turn the woody/men's preference is still honoured after leaving the recent-message windo"
+      ],
+      "cost": "0.005350295",
+      "calls": 1
+    }
+  },
+  "S16_skeptic": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 5.9,
+      "min_score": 3,
+      "det_high": 2,
+      "judge_high": 2,
+      "reasons": [
+        "turn 4 critical repeated_reply: 100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'",
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score question_quality=3",
+        "judge score naturalness=5",
+        "judge score emotional_handling=5",
+        "judge turn 5 high question: العميل سأل صراحة عن الثبات، لذا طلب تحديد المواصفة يعيد السؤال الذي أجاب عنه العميل بالفعل ولا يساعده.",
+        "judge turn 6 high question: كرر الرد والسؤال نفسيهما بعد توضيح العميل المقصود، بدل الإجابة عن مدة الثبات.",
+        "criterion unmet: Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-ho"
+      ],
+      "cost": "0.00249367",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 5.3,
+      "min_score": 3,
+      "det_high": 2,
+      "judge_high": 2,
+      "reasons": [
+        "turn 4 critical repeated_reply: 100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'",
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=5",
+        "judge score question_quality=3",
+        "judge score naturalness=5",
+        "judge score emotional_handling=4",
+        "judge turn 5 high understanding: The customer clearly asked about longevity and even named the 48-hour claim skeptically. The assistant withholds the supported answer and asks what specificatio",
+        "judge turn 6 high question: The customer has explicitly clarified that they mean approximate duration on skin, but the assistant repeats the same refusal and clarification request.",
+        "criterion unmet: Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-ho"
+      ],
+      "cost": "0.00200842",
+      "calls": 1
+    }
+  },
+  "S17_order_complaint": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.7,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.001156295",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.7,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.000765045",
+      "calls": 1
+    }
+  },
+  "S18_browser": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 6,
+      "mean_score": 4.1,
+      "min_score": 3,
+      "det_high": 1,
+      "judge_high": 2,
+      "reasons": [
+        "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "judge score understanding_accuracy=4",
+        "judge score memory=5",
+        "judge score question_quality=3",
+        "judge score knows_when_to_stop=3",
+        "judge score naturalness=5",
+        "judge score emotional_handling=5",
+        "judge score commerce_correctness=4",
+        "judge turn 3 high question: It repeats the exact question from turn 2 after the customer has already said she does not know.",
+        "judge turn 5 high stop: The customer declined the handoff, restated that she only wanted approximate prices, and said thanks; the assistant repeats its explanation and prompts a purcha",
+        "criterion unmet: Gives space to browse; no pressure or closing questions.",
+        "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+      ],
+      "cost": "0.002156045",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 6,
+      "mean_score": 3.9,
+      "min_score": 2,
+      "det_high": 1,
+      "judge_high": 2,
+      "reasons": [
+        "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+        "judge score understanding_accuracy=3",
+        "judge score memory=4",
+        "judge score question_quality=2",
+        "judge score knows_when_to_stop=3",
+        "judge score naturalness=5",
+        "judge score commerce_correctness=4",
+        "judge turn 3 high question: It repeats the exact question after the customer said she was unsure and ignores both current questions. The configured approximate range was available: 450–120",
+        "judge turn 5 high stop: This pushes a purchase after the customer declined the transfer, reiterated that she only wanted prices, and said «تمام شكراً». It also still fails to provide t",
+        "criterion unmet: Gives space to browse; no pressure or closing questions.",
+        "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+      ],
+      "cost": "0.001460295",
+      "calls": 1
+    }
+  },
+  "S19_ready_buyer_edits": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 4.6,
+      "min_score": 2,
+      "det_high": 3,
+      "judge_high": 6,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 7 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 8 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "conversation high final_order_missing: expected one confirmed order, found 0",
+        "judge score understanding_accuracy=5",
+        "judge score memory=3",
+        "judge score question_quality=3",
+        "judge score naturalness=4",
+        "judge score commerce_correctness=2",
+        "judge turn 1 critical commerce: The customer requested two Sauvage and one Bleu de Chanel, but the assistant silently omitted Bleu de Chanel and presented 2000 EGP as the order total.",
+        "judge turn 3 high memory: The assistant reverted the confirmed quantity from one to two, requiring the customer to correct it again.",
+        "judge turn 3 high question: The customer had already selected the store bottle in this turn and specified 90ml in turn 1; the bottle-type question had also just been answered.",
+        "judge turn 6 high memory: The customer explicitly said they had no alternate number and asked to continue with the provided number, but the assistant repeated the same requirement.",
+        "judge turn 7 high memory: After the customer restated that there was no alternate number and asked to proceed with the primary number, the assistant again gave the same refusal.",
+        "judge turn 8 high commerce: The customer explicitly asked to confirm the order with the primary number. The assistant neither confirmed nor created the order, and the customer cancelled at",
+        "criterion unmet: Cart edits are applied exactly: final order is one Sauvage 90 ml store bottle only.",
+        "criterion unmet: Order is created only after the summary and the explicit confirmation."
+      ],
+      "cost": "0.004191295",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 3.9,
+      "min_score": 2,
+      "det_high": 3,
+      "judge_high": 4,
+      "reasons": [
+        "turn 6 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 7 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "turn 8 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.'",
+        "conversation high final_order_missing: expected one confirmed order, found 0",
+        "judge score understanding_accuracy=5",
+        "judge score memory=3",
+        "judge score question_quality=3",
+        "judge score knows_when_to_stop=5",
+        "judge score naturalness=4",
+        "judge score emotional_handling=5",
+        "judge score commerce_correctness=2",
+        "judge turn 1 high understanding: The customer requested two Sauvage and one Bleu de Chanel, but the assistant silently omitted Bleu de Chanel.",
+        "judge turn 3 high memory: The assistant reverted the quantity from one to two, repeated the answered bottle-type question, and asked for a size the customer had already supplied.",
+        "judge turn 6 high question: The customer said they had no alternate number and asked to continue with the primary number; the assistant repeated the same requirement at turns 6–8.",
+        "judge turn 8 high commerce: Despite the explicit request to confirm using the primary number, the assistant made no progress and the conversation ended with no order.",
+        "criterion unmet: Cart edits are applied exactly: final order is one Sauvage 90 ml store bottle only.",
+        "criterion unmet: Order is created only after the summary and the explicit confirmation."
+      ],
+      "cost": "0.003848045",
+      "calls": 1
+    }
+  },
+  "S20_pushy_discount": {
+    "artifacts/customer_simulation_20/baseline/rejudged": {
+      "verdict": "fail",
+      "turns": 4,
+      "mean_score": 6.9,
+      "min_score": 5,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge score naturalness=5"
+      ],
+      "cost": "0.002140295",
+      "calls": 1
+    },
+    "artifacts/customer_simulation_20/baseline/rejudged-2": {
+      "verdict": "fail",
+      "turns": 4,
+      "mean_score": 6.6,
+      "min_score": 5,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge score naturalness=5"
+      ],
+      "cost": "0.002382545",
+      "calls": 1
+    }
+  }
+}

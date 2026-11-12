@@ -19,9 +19,22 @@ _LEGACY_LIMITATION = (
     "والهدايا الترويجية مش بقدر أعمله هنا؛ ده لازم يتم مع فريق خدمة العملاء."
 )
 INVITATION = "تحب أحولك لمندوب يساعدك؟"
+# The same offer in other words, for a turn that follows an unanswered invitation: a checkout attempt
+# still needs an offer it can say yes to, but the identical question every turn is what customers
+# noticed (simulation S03, S18, S20).
+REPEAT_INVITATION = "تحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟"
 WEBSITE_ORDERING = "وتقدر كمان تطلب الباندلز والعروض مباشرة من موقعنا."
 DECLINED = "لو حابب تشتري عطور بالسعر العادي من غير العرض، قولي."
 UNKNOWN_DETAILS = "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء."
+NO_MORE_DETAILS = "ده كل المكتوب عندي عن العرض؛ حسابه وتطبيقه بيتم مع فريق خدمة العملاء."
+NO_MORE_DETAILS_AGAIN = "مفيش عندي أي تفاصيل تانية عن العرض غير اللي قلتهالك."
+# "أكدلي الأوردر دلوقتي" with nothing chosen and no delivery details got the opening boundary reply
+# again, word for word, and never said why nothing could be confirmed (simulation S20 round 2, t3).
+NOTHING_TO_CONFIRM = "مقدرش أأكد أوردر لسه، لأننا ما حددناش العطور ولا بيانات التوصيل."
+PLAYFUL_ACK = "هههه فكرة حلوة 😄"
+PLAYFUL_CLOSE = "ولو حابب تعرف العروض الحالية، قولي."
+_PLAYFUL = re.compile(r"😂|🤣|😆|😁|(?<!\w)ه{3,}(?!\w)")
+_CONFIRM_ORDER = re.compile(r"(?<!\w)(?:اكد|ثبت)|\bconfirm\b")
 
 # Word boundaries matter: اعرض / معروض and a perfume's "gift" occasion are not
 # promotions. Packaging words alone are not enough either.
@@ -50,7 +63,10 @@ _CHECKOUT = re.compile(
     r"اطلب|اطلبه|اشتري|اشتريه|هاخد|هاتلي|ضيف|سجل|نفذ|طبق|اكد|اكده|خلي|"
     r"\b(?:order|buy|add|checkout|confirm|apply|deliver|my name|my address|my phone|take it)\b"
 )
-_INFORMATION = re.compile(r"بكام|كام|ايه|تفاصيل|شروط|عندك|فيه|في |سعر|ريح|ثبات|فوحان|شحن|توصيل|مواعيد|\b(?:what|which|how|details|price|any|have|smell|shipping)\b")
+# "اسعار"/"رينج": "لا عادي، كنت بهزر… طب مفيش رينج للأسعار؟" was read as a bare decline and got the
+# offer script again instead of an answer (simulation S18 t5).
+_INFORMATION = re.compile(r"بكام|كام|ايه|تفاصيل|شروط|عندك|فيه|في |سعر|اسعار|رينج|ريح|ثبات|فوحان|شحن|توصيل|مواعيد|"
+                          r"\b(?:what|which|how|details|price|prices|range|any|have|smell|shipping)\b")
 _CANCEL = re.compile(
     r"^(?:(?:خلاص|طيب|لو سمحت)\s+)*(?:الغي|الغاء|كنسل|cancel)\s+(?:الطلب|الاوردر|الطلب كله|الاوردر كله|(?:the |my )?order)\b"
 )
@@ -227,13 +243,37 @@ def _bundle_overview(message, facts):
     return entries
 
 
-def reply(message, history=None, store=None, *, explain=True, usage_recorded=False):
+def _open_invitation(history):
+    """The invitation in our latest boundary reply (the one carrying the limitation), if any.
+
+    It stays open across the customer's questions about the offer until they accept or decline it.
+    """
+    for row in reversed(history or []):
+        if row.get("role") == "agent":
+            return None
+        content = row.get("content", "") if row.get("role") == "assistant" else ""
+        if any(limitation in content for limitation in (LIMITATION, _LEGACY_LIMITATION)):
+            return next((text for text in (REPEAT_INVITATION, INVITATION) if text in content), None)
+    return None
+
+
+def _has_order_lines(conversation):
+    from products.models import Cart
+    cart = Cart.objects.filter(conversation=conversation).first()
+    return bool(cart and (cart.items.exists() or cart.pending_items))
+
+
+def reply(message, history=None, store=None, *, explain=True, usage_recorded=False, conversation=None):
     """Extract quotations, not generated promises; append the boundary in code.
 
     The model can choose relevant configured facts, but cannot supply new prices
     or prose. On missing/invalid evidence the response admits uncertainty.
     """
     history = history or []
+    if (conversation is not None and _CONFIRM_ORDER.search(normalize_arabic(message or ""))
+            and not _has_order_lines(conversation)):
+        closing = REPEAT_INVITATION if _open_invitation(history) == INVITATION else INVITATION
+        return "\n\n".join((NOTHING_TO_CONFIRM, LIMITATION, closing)), PROMOTION_CONTEXT
     declined = declined_transfer(message, history)
     for row in reversed(history):
         if row.get("role") == "assistant" and any(
@@ -278,5 +318,43 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
             except (OpenAIError, ValueError, TypeError, AttributeError):
                 pass
         details = ("تفاصيل العرض:\n" + "\n".join(quotes)) if quotes else UNKNOWN_DETAILS
-    closing = DECLINED if declined else INVITATION
-    return "\n\n".join(filter(None, (details, LIMITATION, website_ordering_reply(store), closing))), PROMOTION_CONTEXT
+        if _open_invitation(history) and not declined and information_requested(message) \
+                and not checkout_requested(message):
+            # A question about the offer while our invitation is still open. New details go out with
+            # the boundary as usual (the invitation reworded below); with nothing new to say, the
+            # limitation and the offer are not sent again (S03 t5-t6 got the identical reply twice).
+            recent = "\n".join(row.get("content", "") for row in history[-6:] if row.get("role") == "assistant")
+            fresh = [quote for quote in quotes if quote not in recent]
+            if not fresh:
+                return (NO_MORE_DETAILS_AGAIN if NO_MORE_DETAILS in recent else NO_MORE_DETAILS), PROMOTION_CONTEXT
+            details = "تفاصيل العرض:\n" + "\n".join(fresh)
+    last_clause = re.split(r"[؟?.!\n]", normalize_arabic(message or ""))[-1]
+    if declined:
+        closing = DECLINED
+    elif re.search(r"شكر|متشكر|ميرسي|تسلم|مع السلامه|\bbye\b|thanks?", last_clause) and not checkout_requested(last_clause):
+        # "لو اشتريت كل حاجة هتعملولي خصم؟ 😂 تمام شكراً" ends on thanks; a transfer question there
+        # pushed a browsing customer who had just closed (simulation S18 round 2, t5).
+        closing = "ولو احتجت حاجة أنا موجود."
+    elif (_PLAYFUL.search(message or "") and not _CONFIRM_ORDER.search(normalize_arabic(message or ""))
+          and not (conversation is not None and _has_order_lines(conversation))):
+        # "لو اشتريت كل حاجة هتعملولي خصم؟ 😂" from a customer who is only browsing: a transfer
+        # question there is a sales push the joke never asked for (simulation S18 round 2 full 5, t4).
+        # (`checkout_requested` reads the joke's own "اشتريت" as a purchase, so the cart decides.)
+        closing = PLAYFUL_CLOSE
+    elif _open_invitation(history) == INVITATION:
+        closing = REPEAT_INVITATION
+    else:
+        closing = INVITATION
+    text = "\n\n".join(filter(None, (details, LIMITATION, website_ordering_reply(store), closing)))
+    if _PLAYFUL.search(message or "") and not _CONFIRM_ORDER.search(normalize_arabic(message or "")):
+        # "ولو اشتريت كل حاجة هتعملولي خصم؟ 😂" is a joke; answered with the procedure alone it read as
+        # taken literally (simulation S18 round 2 full 2, t4). The boundary stays; the tone is met first.
+        text = PLAYFUL_ACK + "\n\n" + text
+    sent = {row.get("content", "").strip() for row in history if row.get("role") == "assistant"}
+    if text.strip() in sent:
+        # The invitation alternates only against the latest reply, so a third boundary turn came out
+        # identical to the first (simulation S20 round 2, t3). Never send the same reply twice.
+        other = {INVITATION: REPEAT_INVITATION, REPEAT_INVITATION: INVITATION}.get(closing, closing)
+        details = "" if details == UNKNOWN_DETAILS else details
+        text = "\n\n".join(filter(None, (details, LIMITATION, website_ordering_reply(store), other)))
+    return text, PROMOTION_CONTEXT

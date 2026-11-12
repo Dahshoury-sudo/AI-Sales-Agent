@@ -1,0 +1,162 @@
+{
+  "id": "S11_all_constraints",
+  "title": "Budget, occasion, scent and exclusion in one message",
+  "persona": "hard_budget",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز رجالي للشغل في حدود 700 جنيه ومش مسكر",
+      "reply": "",
+      "seconds": 21.55,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": {
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "max_price": 700.0,
+        "budget_strict": false,
+        "scent_open": false
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": 700,
+      "active_exclusions": [
+        "sweet"
+      ],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "crash",
+          "critical",
+          "turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+        ],
+        [
+          "empty_reply",
+          "critical",
+          "the customer received no reply"
+        ]
+      ],
+      "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+    }
+  ],
+  "findings": [
+    [
+      "crash",
+      "critical",
+      "turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+    ],
+    [
+      "empty_reply",
+      "critical",
+      "the customer received no reply"
+    ]
+  ],
+  "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}",
+  "ended_by": null,
+  "seconds": 21.9,
+  "judge_prompt": "SCENARIO S11_all_constraints: Budget, occasion, scent and exclusion in one message\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Does not ask again for budget, occasion, gender or the sweet exclusion.\n- Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wording; does not call a 750 bottle within budget.\n- 'غالي عليا' is addressed with the known budget and real options, not a generic defence.\n- Checkout: correct item/price/shipping; order placed only after a summary with total and explicit confirmation.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز رجالي للشغل في حدود 700 جنيه ومش مسكر\n[internal] route=faq stage=None saved_preferences={}\n[internal] merged_intent={\"excluded_scent_tags\": [\"sweet\"], \"max_price\": 700.0}\nASSISTANT: (no reply)\n[deterministic findings] [[\"crash\", \"critical\", \"turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}\"], [\"empty_reply\", \"critical\", \"the customer received no reply\"]]\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n(no catalogue perfume was named in this conversation)\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "error": "RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "error: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}",
+    "turn 1 critical crash: turn 1 raised RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update ",
+    "turn 1 critical empty_reply: the customer received no reply",
+    "judge unavailable: RateLimitError: Error code: 429 - {'error': {'message': 'Your project has reached its configured enforced spend limit. Update your limit at https://platform.openai.com/settings/proj_2MePO54ZFmVW3VFzw5NsYElS/limits.', 'type': 'insufficient_quota', 'param': None, 'code': 'project_spend_limit_exceeded'}}"
+  ],
+  "usage": {
+    "api_calls": 4,
+    "by_role": {
+      "seller": {
+        "calls": 2,
+        "cost_usd": "0.011017625"
+      },
+      "simulator": {
+        "calls": 1,
+        "cost_usd": "0.00162"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.0148075"
+      }
+    },
+    "prompt_tokens": 0,
+    "cached_tokens": 0,
+    "completion_tokens": 0,
+    "reasoning_tokens": 0,
+    "cost_usd": "0.027445125",
+    "api_seconds": 0,
+    "failed_calls": [
+      {
+        "scenario": "S11_all_constraints",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "none",
+        "max_completion_tokens": 2048,
+        "reserved_usd": "0.003516",
+        "status": "uncertain_charged_maximum",
+        "role": "seller",
+        "phase": "round2-batch4",
+        "run_id": "20261112T031524Z-3db2f0",
+        "started_utc": "2026-11-12T03:15:49.778010+00:00",
+        "cost_usd": "0.003516"
+      },
+      {
+        "scenario": "S11_all_constraints",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "none",
+        "max_completion_tokens": 2048,
+        "reserved_usd": "0.007501625",
+        "status": "uncertain_charged_maximum",
+        "role": "seller",
+        "phase": "round2-batch4",
+        "run_id": "20261112T031524Z-3db2f0",
+        "started_utc": "2026-11-12T03:15:50.198870+00:00",
+        "cost_usd": "0.007501625"
+      },
+      {
+        "scenario": "S11_all_constraints",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "none",
+        "max_completion_tokens": 2048,
+        "reserved_usd": "0.00162",
+        "status": "uncertain_charged_maximum",
+        "role": "simulator",
+        "phase": "round2-batch4",
+        "run_id": "20261112T031524Z-3db2f0",
+        "started_utc": "2026-11-12T03:15:50.620136+00:00",
+        "cost_usd": "0.00162"
+      },
+      {
+        "scenario": "S11_all_constraints",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "high",
+        "max_completion_tokens": 25000,
+        "reserved_usd": "0.0148075",
+        "status": "uncertain_charged_maximum",
+        "role": "judge",
+        "phase": "round2-batch4",
+        "run_id": "20261112T031524Z-3db2f0",
+        "started_utc": "2026-11-12T03:15:50.965273+00:00",
+        "cost_usd": "0.0148075"
+      }
+    ]
+  }
+}

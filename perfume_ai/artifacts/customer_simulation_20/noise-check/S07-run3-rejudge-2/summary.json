@@ -1,0 +1,23 @@
+[
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "judge score commerce_correctness=5",
+      "judge turn 4 critical accuracy: The facts establish that all perfumes are تركيب and that original-style bottles are available for some perfumes, but they do not say whether Cassilia has one. T"
+    ],
+    "cost_usd": "0.00161384",
+    "api_calls": 1
+  }
+]

@@ -7,7 +7,7 @@ from products.models import Product
 from products.occasions import OCCASIONS, occasion_groups
 from .prompts import get_system_prompt
 from ..product_formatting import (
-    append_quotation, format_products,
+    append_quotation, format_products, money,
     monetary_claims, product_claim_facts, product_quotes, quote_context, render_quotes,
 )
 from ..reply_sanitizer import product_claim_issues
@@ -44,6 +44,30 @@ def no_match_reply(search=None):
     if reason in blockers:
         return blockers[reason], "NO_ELIGIBLE_SCENT_MATCH"
     return "مش لاقي عطر متاح بنفس طابع الريحة المطلوب. فيه طابع ريحة تاني بتحبه؟", "NO_SCENT_MATCH"
+
+
+# The existing no-budget-match marker: other code and tests already read it.
+TOTAL_BUDGET_INFEASIBLE = "NO_BUDGET_MATCH"
+
+
+def total_budget_limit_reply(count, minimum_prices, budget):
+    """Say what does not fit a combined budget, with its real numbers, and what would.
+
+    The generic "مش لاقي اختيار… تحب تحدد ميزانية تانية؟" went out three times to a customer who
+    had already refused to raise 1600 for three bottles that cost at least 2250 (simulation S03).
+    """
+    cheapest = sum(minimum_prices[:count])
+    fits = 0
+    while fits < len(minimum_prices) and sum(minimum_prices[:fits + 1]) <= budget:
+        fits += 1
+    reply = (f"أرخص {count} زجاجات بالطابع ده إجماليهم {money(cheapest)} جنيه، "
+             f"وده أعلى من {money(budget)} جنيه.")
+    if fits:
+        smaller = "زجاجة واحدة" if fits == 1 else f"{fits} زجاجات"
+        reply += f" تحب نخليها {smaller} في نفس الميزانية، ولا نزود الميزانية؟"
+    else:
+        reply += " تحب نزود الميزانية؟"
+    return reply, TOTAL_BUDGET_INFEASIBLE
 
 
 def _record(product, intent):
@@ -109,7 +133,7 @@ def _compose_selection(reply, selected, intent, message, store):
         rendered = render_quotes(quotes, budget)
         footer = None
         if intent.get("budget_scope") == "total":
-            footer = f"إجمالي الـ{len(quotes)} زجاجات: {sum(q.price for q in quotes):f} جنيه."
+            footer = f"إجمالي الـ{len(quotes)} زجاجات: {money(sum(q.price for q in quotes))} جنيه."
             rendered += "\n" + footer
         context = quote_context(context, quotes, append=True, max_price=budget, rendered=rendered,
                                 request=message, footer=footer)
@@ -141,7 +165,7 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         if len(minimum_prices) < count:
             return no_match_reply({**search, "no_match_reason": "purchase_quantity"})
         if sum(minimum_prices[:count]) > as_budget(intent.get("max_price")):
-            return no_match_reply({**search, "relax_key": "max_price"})
+            return total_budget_limit_reply(count, minimum_prices, as_budget(intent.get("max_price")))
     instructions = (
         "\nFor this recommendation return ONLY JSON: {\"product_ids\": [integer IDs], \"reply\": \"Egyptian Arabic\"}. "
         f"Choose between one and {count} perfumes from eligible_products; use their exact catalog names in reply. "

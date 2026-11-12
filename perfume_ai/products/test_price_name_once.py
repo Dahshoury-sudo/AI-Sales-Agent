@@ -58,7 +58,7 @@ class PriceNameOnceTests(TestCase):
         reply, context, _ = self.info("Stronger With You بكام؟", "عندنا Stronger With You متوفر.")
         self.assertEqual(reply.count(self.a.name), 1)
         self.assertNotIn("متوفر", reply)
-        for fact in ("123.45", "180.00", "299.99", "زجاجة الستور الخاصة بينا", "زجاجة اوريجنال"):
+        for fact in ("123.45", "180 جنيه", "299.99", "زجاجة الستور الخاصة بينا", "زجاجة اوريجنال"):
             self.assertIn(fact, reply)
         self.assert_grounded(reply, context, [self.a])
 

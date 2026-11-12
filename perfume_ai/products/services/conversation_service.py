@@ -1,6 +1,7 @@
 from datetime import timedelta
 from contextlib import contextmanager
 import hashlib
+import re
 import threading
 import uuid
 from django.db import transaction
@@ -489,6 +490,88 @@ def _contradicted_keys(intent, message):
     return frozenset(contradicted)
 
 
+# Who the perfume is for. Preferences used to be one flat profile, so "وكمان عايز حاجة لماما"
+# overwrote the customer's own men's/woody profile and "نرجع لبتاعي" kept recommending his mother's
+# floral women's perfumes (simulation S15). Each recipient now keeps its own profile.
+_SELF_RECIPIENT = re.compile(r"(?<!\w)(?:ليا|لنفسي|[لو]?بتاعي|عشاني|for\s+me|for\s+myself)(?!\w)")
+_OTHER_RECIPIENTS = {
+    "mother": ("ماما", "مامتي", "امي", "والدتي"), "father": ("بابا", "ابويا", "والدي"),
+    "brother": ("اخويا",), "sister": ("اختي",), "fiancee": ("خطيبتي",), "fiance": ("خطيبي",),
+    "wife": ("مراتي", "زوجتي"), "husband": ("جوزي", "زوجي"), "son": ("ابني",), "daughter": ("بنتي",),
+    "friend": ("صاحبي", "صاحبتي"),
+}
+_OTHER_RECIPIENT = re.compile(
+    r"(?<!\w)(?:ل|عشان\s+|علشان\s+)(" + "|".join(w for words in _OTHER_RECIPIENTS.values() for w in words) + r")(?!\w)")
+
+
+_RECIPIENT_GENDER = {"mother": "female", "father": "male", "brother": "male", "sister": "female",
+                     "fiancee": "female", "fiance": "male", "wife": "female", "husband": "male",
+                     "son": "male", "daughter": "female"}
+_BARE_RECIPIENT = re.compile(
+    r"(?<!\w)و?(" + "|".join(w for words in _OTHER_RECIPIENTS.values() for w in words) + r")(?!\w)")
+_RECIPIENT_REQUEST = re.compile(r"(?<!\w)(?:ترشيح|رشح\w*|ترشح\w*|عايز|عاوز|محتاج|هديه)(?!\w)")
+
+
+def recipient_of(message):
+    """"self", another recipient's key, or None when the message does not say (or says both)."""
+    from .static_faq_service import normalize_arabic
+
+    text = normalize_arabic(message or "")
+    other = _OTHER_RECIPIENT.search(text)
+    if not other and _RECIPIENT_REQUEST.search(text):
+        # "وماما مش عارفة اسم عطر، عندك ترشيح ورد هادي؟" names her without "ل" (S15 replay t6).
+        other = _BARE_RECIPIENT.search(text)
+    own = _SELF_RECIPIENT.search(text)
+    if other and own:
+        # "Aventus شكله مناسب ليا، وكمان عايز حاجة لماما" settles his pick and then asks for hers; read
+        # as saying both, nothing switched and his mother's profile inherited his woody men's taste
+        # (simulation S15 round 2 full 5, t3). The recipient after the last request word is the one
+        # being shopped for.
+        requests = [match.start() for match in _RECIPIENT_REQUEST.finditer(text)]
+        last = requests[-1] if requests else -1
+        if own.start() < last < other.start():
+            return next(key for key, words in _OTHER_RECIPIENTS.items() if other.group(1) in words)
+        if other.start() < last < own.start():
+            return "self"
+        return None
+    if other:
+        return next(key for key, words in _OTHER_RECIPIENTS.items() if other.group(1) in words)
+    return "self" if own else None
+
+
+def _switch_recipient(conversation, message, state):
+    """Park the current recipient's profile and return the target's saved one, or None."""
+    target = recipient_of(message)
+    current = state.get("recipient", "self")
+    if not target or target == current:
+        return None
+    profiles = dict(state.get("recipient_profiles") or {})
+    profiles[current] = dict(conversation.preferences or {})
+    restored = dict(profiles.pop(target, None) or {})
+    # What was on the table for the recipient being left, so "نرجع لبتاعي، كنت قلت إيه أحسن واحد ليا؟"
+    # can be answered from it; a fresh search offered a perfume never mentioned (S15 round 2 full 3, t5).
+    try:
+        from .sales import described as sales_described
+        offered = sales_described.offered_in_order(conversation, conversation.store)
+    except Exception:
+        offered = []
+    if offered:
+        state["recipient_offers"] = {**(state.get("recipient_offers") or {}), current: list(offered[:3])}
+    # "واحد ليا وواحد لأخويا… رجالي" — a brother is male, and switching to his empty profile asked
+    # "رجالي ولا حريمي؟" again (simulation S03 round 2, t4). A combined budget covers the whole
+    # purchase, so it follows the customer to the next recipient.
+    if target in _RECIPIENT_GENDER and not restored.get("gender"):
+        restored["gender"] = _RECIPIENT_GENDER[target]
+    current_preferences = conversation.preferences or {}
+    if current_preferences.get("budget_scope") == "total":
+        for key in ("max_price", "budget_scope", "budget_strict", "purchase_quantity"):
+            if key in current_preferences and key not in restored:
+                restored[key] = current_preferences[key]
+    state["recipient_profiles"] = profiles
+    state["recipient"] = target
+    return restored
+
+
 def _is_set(value):
     """A preference the customer actually expressed, as opposed to an empty slot.
 
@@ -538,6 +621,25 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     from .sales.reference import prepare_similarity, STATE_KEY
     prepared = prepare_similarity(conversation, merged, message, history, store)
     merged, saved = prepared.intent, prepared.preferences
+    if conversation is not None:
+        left_behind = dict(conversation.preferences or {})
+        restored = _switch_recipient(conversation, message, prepared.sales_state)
+        if restored is not None:
+            # The recipient change is handled here, so the extractor's blanket reset must not wipe
+            # the profile being restored.
+            saved = restored
+            merged.pop("reset_preferences", None)
+            # The extractor reads the last eight messages, so the profile being left reaches the
+            # next recipient through it: his "خشبي" came back on his mother's floral request
+            # (simulation S15 round 2 full 5, t3). A label carries over only when this message says it.
+            from .sales.scent_preferences import explicit_scent_updates
+            stated = explicit_scent_updates(message)
+            for key in ("scent_tags", "excluded_scent_tags"):
+                previous = set(left_behind.get(key) or ()) - set(restored.get(key) or ())
+                for source in (merged, fresh_scent):
+                    if isinstance(source.get(key), list) and previous:
+                        source[key] = [tag for tag in source[key]
+                                       if tag not in previous or tag in (stated.get(key) or ())]
     from .sales import gender as sales_gender
     merged = sales_gender.sanitize_updates(merged, message, store or getattr(conversation, "store", None))
     saved = {key: value for key, value in saved.items() if key not in replaced}

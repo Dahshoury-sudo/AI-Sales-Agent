@@ -1,0 +1,23 @@
+[
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "judge score commerce_correctness=5",
+      "judge turn 4 critical commerce: The facts confirm that all perfumes are تركيب and that original bottles exist for some perfumes, but do not establish whether Cassilia has an original bottle. T"
+    ],
+    "cost_usd": "0.00134934",
+    "api_calls": 1
+  }
+]

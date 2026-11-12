@@ -86,9 +86,27 @@ def chat(messages, profile="converse", response_format=None):
     if response_format:
         kwargs["response_format"] = response_format
 
-    response = client.chat.completions.create(**kwargs)
+    content = _complete(kwargs)
+    if not content.strip():
+        # An empty completion is a provider fault, not an answer; the turn that met one had no reply
+        # at all (simulation S12 t5, S15 t7). One retry. A second empty answer goes back to the
+        # callers, which already have their own fallbacks for a blank draft.
+        content = _complete(kwargs)
+    return content
 
-    return response.choices[0].message.content
+
+class EmptyCompletion(ValueError):
+    """The provider answered with no text. A wrapped transport (the evaluation budget meter) raises
+    this instead of returning the empty completion; `chat` treats both the same way."""
+
+
+def _complete(kwargs):
+    try:
+        response = client.chat.completions.create(**kwargs)
+    except EmptyCompletion:
+        return ""
+    content = response.choices[0].message.content if response.choices else None
+    return content if isinstance(content, str) else ""
 
 
 def test():

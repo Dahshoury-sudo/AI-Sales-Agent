@@ -1,0 +1,391 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 10,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004892615",
+    "api_calls": 16
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Price question gets the actual variant price directly."
+    ],
+    "cost_usd": "0.008187535",
+    "api_calls": 27
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 5,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge turn 4 high memory: The customer said to keep two and asked whether the original pair totaled 1500. The assistant replaced the already-recommended 212 pair without being asked, ove"
+    ],
+    "cost_usd": "0.009753875",
+    "api_calls": 28
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002559080",
+    "api_calls": 11
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009134115",
+    "api_calls": 24
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 7,
+      "question_quality": 6,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge turn 7 high memory: The two options were established in the preceding turns, and «اختارلي انت» was a clear request for the assistant to select one.",
+      "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+      "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+    ],
+    "cost_usd": "0.016298590",
+    "api_calls": 39
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.006764855",
+    "api_calls": 25
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "fail",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "criterion unmet: The explicit work-suitability question is answered from each perfume's stored occasion."
+    ],
+    "cost_usd": "0.003801925",
+    "api_calls": 16
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 6,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 6 high stop: بعد قوله «هفكر وأشوف»، واصل المساعد معالجة الاعتراض بعرض حجم أصغر بدل ترك مساحة للعميل."
+    ],
+    "cost_usd": "0.008055665",
+    "api_calls": 27
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 7,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.014313365",
+    "api_calls": 28
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 8,
+      "naturalness": 4,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score naturalness=4",
+      "judge turn 5 high memory: The product, size, and price were already established, and the customer asked about shipping. The assistant re-asks supplied details and does not answer the cur",
+      "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence."
+    ],
+    "cost_usd": "0.013303410",
+    "api_calls": 34
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.011403700",
+    "api_calls": 31
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.008818295",
+    "api_calls": 22
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.013534160",
+    "api_calls": 34
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 7,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 6,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Mother's request is scoped separately (female, floral/powdery, soft) and does not inherit the custom"
+    ],
+    "cost_usd": "0.019391845",
+    "api_calls": 35
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 6,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score commerce_correctness=4",
+      "judge turn 5 critical commerce: The supplied Sauvage catalogue lists an original 100 ml bottle only. Availability in multiple sizes for this specific perfume is unsupported.",
+      "judge turn 7 critical accuracy: The facts describe original-style/original bottles but do not establish that the bottle itself is genuinely from Dior. This overstates authenticity in response "
+    ],
+    "cost_usd": "0.006980805",
+    "api_calls": 29
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00088627",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+    ],
+    "cost_usd": "0.004628670",
+    "api_calls": 11
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008055695",
+    "api_calls": 27
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002438150",
+    "api_calls": 6
+  }
+]

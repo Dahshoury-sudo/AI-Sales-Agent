@@ -164,10 +164,20 @@ def detect(message, history=None):
 
     for kind, phrases in _PATTERNS:
         hits = tuple(phrase for phrase in phrases if phrase in normalized)
+        if kind == "price" and hits == ("مش قادر",) and not _CANNOT_AFFORD.search(normalized):
+            # "لو مش قادر تضمن إنه مش مسكر رشحلي حاجة تانية" is "if YOU can't guarantee", not "I
+            # can't afford it"; read as price it sent the customer to the store twice (S10 replay 2).
+            continue
         if hits:
             return Objection(kind=kind, matched=hits, past_purchase=past_purchase)
 
     return None
+
+
+import re as _re
+
+# "مش قادر" as affordability: bare, or followed by paying/buying, never by another verb.
+_CANNOT_AFFORD = _re.compile(r"مش قادر(?:\s*(?:$|[.،,!؟?]|ادفع|اشتري|اجيب|اخد|علي|على|عليه)|\s+خالص)")
 
 
 # What each objection needs in front of it before any selling happens. These are prompt

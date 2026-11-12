@@ -176,9 +176,19 @@ def database_facts(names):
             + (f" stock={v.stock}" if v.bottle_type == "original" else "")
             for v in product.variants.all()
         )
+        # The variant list is the whole catalogue record. Without saying so, a perfume with no
+        # original variant read as "unknown" beside the store fact that some perfumes have original
+        # bottles, and the seller's correct "مش متوفر منه زجاجة اوريجنال" was graded critical in three
+        # gradings of one transcript (simulation S07 round 2 full 3, t4). The seller's own product row
+        # states the same fact.
+        if not any(v.bottle_type == "original" and (v.stock or 0) > 0 for v in product.variants.all()):
+            sizes += " | original bottle: NONE available for this perfume"
         lines.append(
             f"- {product.name} | brand={product.brand.name} | gender={product.gender} | "
             f"type={product.perfume_type} | season={product.season or 'NOT RECORDED'} | "
+            # The store's scent descriptions come from these tags (first three, in order), so a
+            # judge without them reads every correct description as invented.
+            f"scent_tags={','.join(product.scent_tags or []) or 'NOT RECORDED'} | "
             f"occasion={product.occasion or 'NOT RECORDED'} | "
             f"longevity={EXCELLENT} | "
             f"projection={STRONG} | "
@@ -216,6 +226,13 @@ def store_facts():
         pass
     for faq in store.static_faqs.filter(is_active=True):
         parts.append(f"[StaticFAQ: {faq.question}]\n{catalog_text(faq.answer.strip())}")
+    # The seller prompt carries this line, computed from every active product row (genders,
+    # perfume types, price range per bottle). Without it the judge marked the store's real
+    # assortment as invented (simulation S18 attempt 3, t1).
+    from products.services.ai.prompts import _catalogue_overview
+    overview = _catalogue_overview(store).strip()
+    if overview:
+        parts.append(f"[catalogue overview computed from all active product rows]\n{overview}")
     return "\n\n".join(parts) or "(none configured)"
 
 
@@ -303,6 +320,154 @@ def _worker(record, findings):
         return judge_one(record, findings)
     finally:
         connection.close()
+
+
+# ───────────────────── adaptive customer simulations (scenarios_customer_20) ─────────────────────
+SIMULATION_RUBRIC = """
+You grade a complete chat between a customer and an Egyptian perfume store's sales assistant
+(a bot). You are a strict senior sales manager and QA reviewer. Grade ONLY the assistant.
+
+Judge every assistant turn using ONLY what the customer had said up to and including that turn.
+Never fault a turn for not knowing something the customer revealed later.
+
+What good looks like:
+- Chooses the right next move for the current message: answer, clarify, recommend, compare,
+  address an objection, continue checkout, or finish. Answers the customer's current question
+  before advancing the sale; never forces a fixed sales sequence.
+- Asks a question only when the answer would materially change the recommendation or is needed
+  to complete the request; one focused question at a time. Never re-asks something already
+  supplied. A complete answer may end WITHOUT a question — never penalise the absence of a
+  question. When the customer says "مش عارف", offers accessible choices or an example instead of
+  repeating the same question.
+- Remembers preferences, budgets, exclusions, rejected suggestions, selected products and the
+  pending question, including after many turns; the latest explicit preference wins; corrections
+  are accepted immediately; preferences are scoped to the right recipient (self vs gift/another
+  person). Short replies ("التاني", "آه", a size) are interpreted in context; a genuinely ambiguous
+  reference is clarified rather than guessed.
+- Relaxed, natural Egyptian Arabic matching the customer's tone; brief by default. No repeated
+  greetings, constant "يا فندم", generic praise, unnecessary recaps, emoji spam, formal
+  customer-service language, or identical closing lines. No fake personal experience, no claim to
+  be human.
+- Proportionate to the situation: direct answers to direct price/availability questions; space for
+  browsers; only missing checkout details for ready buyers; brief natural acknowledgement of
+  praise (praise is NOT order consent); a concrete correction when the assistant itself made a
+  mistake; acknowledgement plus the supported handoff for service complaints; calm, non-arguing
+  handling of anger/insults (a brief respectful boundary only for persistent abuse); jokes and
+  sarcasm read in context without forced humour; adapts when mood changes. No repetitive apologies
+  or canned sympathy. No promises the store system cannot keep (refunds, discounts, order-status
+  updates, follow-ups, call-backs). Transferring to the human team IS a supported action: once the
+  assistant confirms a transfer, "the team will follow up" is true.
+- Usually one or two suitable options; explains the relevant difference using supported facts.
+  Honors budgets and exclusions; if nothing meets the constraints, says what specifically does not
+  fit and asks which constraint to relax. Order is placed only after a summary with total and an
+  explicit confirmation; a price question, praise or a size choice is not consent.
+
+Store policies the assistant MUST follow (these are correct behaviour, not failures):
+- Every liquid is تركيب (inspired); original bottles exist for some perfumes; only the store's
+  configured similarity figure may be quoted.
+- Performance: every stocked perfume is described as excellent longevity / strong projection;
+  "أكتر من 8 ساعات" only when the CURRENT message asks for duration; never 12/24/48-hour guarantees,
+  never ranking by performance.
+- Scent descriptions come from the perfume's first three stored scent tags; occasion suitability
+  is mentioned only when the customer explicitly asks about it; notes only when explicitly asked,
+  and only stored notes.
+- A size within 20% over an approximate budget may be offered with the fixed wording
+  "أعلى حاجة بسيطة من ميزانيتك" without stating the difference.
+- The store requires a men's/women's choice before recommending; asking it ONCE when it is
+  genuinely unknown is acceptable.
+- The assistant cannot apply offers, bundles, coupons or discounts; in this store system those are
+  fulfilled by the human team, so explaining that and offering a transfer is supported behaviour
+  (repeating the same transfer offer every turn is not). Configured promotions may be quoted.
+- The store owner has approved the order-confirmation sentence "فريق المبيعات هيتواصل معاك قريب":
+  once an order is confirmed, telling the customer the sales team will contact them about it is
+  true store behaviour, not an unsupported promise.
+- A claim is supported only if it appears in DATABASE FACTS or STORE-CONFIGURED FACTS. A perfume
+  absent from DATABASE FACTS that the assistant says is not stocked was searched in the whole
+  catalogue: the denial is correct and must come with one or two named stocked alternatives.
+
+Severity:
+- critical: invented price/product/fact, wrong total, order created without consent, false denial
+  of a stocked perfume, false promise of refund/discount/status.
+- high: violated a stated exclusion or budget, forgot or overrode a confirmed preference,
+  re-asked supplied information, wrong reference resolution, mishandled complaint/handoff,
+  pushed a sale on a closing/browsing customer, repeated the same question after "مش عارف".
+- medium: an unnecessary or badly timed question, a scripted/irrelevant reply, missed
+  acknowledgement, too long, unnatural register.
+- low: minor style issues.
+
+Do not reward fluent prose. A friendly reply with an invented fact or a wrong order FAILS.
+The deterministic findings listed were produced by code; confirm or dismiss each one explicitly in
+"deterministic_review" (dismiss only with a concrete reason, e.g. the number was the customer's
+own phone number).
+
+Return ONLY JSON:
+{
+  "scores": {"understanding_accuracy": 0-10, "memory": 0-10, "question_quality": 0-10,
+             "knows_when_to_stop": 0-10, "naturalness": 0-10, "emotional_handling": 0-10,
+             "commerce_correctness": 0-10},
+  "criteria": [{"criterion": "<copied>", "met": true|false|null, "evidence": "turn N: ..."}],
+  "issues": [{"turn": N, "severity": "critical|high|medium|low", "category": "understanding|memory|question|stop|naturalness|emotion|commerce|accuracy",
+              "expected": "...", "actual": "quote the reply", "why": "..."}],
+  "deterministic_review": [{"turn": N, "code": "...", "verdict": "confirmed|dismissed", "reason": "..."}],
+  "summary": "two sentences"
+}
+"""
+
+
+def build_simulation_prompt(record, scenario):
+    from products.models import Product, Store
+    from products.services.sales.naming import names_in
+
+    store = Store.objects.get(name="Perfamix")
+    catalogue_names = list(Product.objects.filter(store=store, is_active=True).values_list("name", flat=True))
+    mentioned = set()
+    for turn in record["turns"]:
+        mentioned.update(names_in(f"{turn['user']}\n{turn['reply'] or ''}", catalogue_names))
+        mentioned.update((turn.get("search") or {}).get("matched") or [])
+    parts = [
+        f"SCENARIO {record['id']}: {scenario['title']}",
+        "SUCCESS CRITERIA (judge each one, using only what was revealed by then):",
+        *[f"- {item}" for item in scenario["success"]],
+        "", "═══ CONVERSATION ═══",
+    ]
+    for turn in record["turns"]:
+        intent = {k: v for k, v in (turn.get("merged_intent") or {}).items()
+                  if v not in (None, [], False, "", {}) and k not in ("scent_evidence",)}
+        parts.append(f"\n--- TURN {turn['n']} ---")
+        parts.append(f"CUSTOMER: {turn['user']}")
+        parts.append(f"[internal] route={turn.get('classification')} stage={turn.get('stage')} "
+                     f"saved_preferences={json.dumps(turn.get('saved_preferences') or {}, ensure_ascii=False)[:600]}")
+        if intent:
+            parts.append(f"[internal] merged_intent={json.dumps(intent, ensure_ascii=False)[:600]}")
+        if (turn.get("search") or {}).get("matched") is not None:
+            parts.append(f"[internal] shortlist={turn['search']['matched'][:8]}")
+        if turn["cart"]["items"] or turn["orders"]:
+            # `Order.total_price` is the items total; shipping is charged per the store's shipping
+            # policy, as the summary says ("(من غير الشحن)"). Labelled so it is not read as the bill.
+            orders = [{("items_total_excluding_shipping" if key == "total_price" else key): value
+                       for key, value in order.items()} for order in turn["orders"]]
+            parts.append(f"[internal] cart={json.dumps(turn['cart']['items'], ensure_ascii=False)} "
+                         f"orders={json.dumps(orders, ensure_ascii=False)}")
+        if turn.get("needs_human_after"):
+            parts.append("[internal] conversation is now handed off to the human team")
+        parts.append(f"ASSISTANT: {turn['reply'] or '(no reply)'}")
+        if turn.get("findings"):
+            parts.append(f"[deterministic findings] {json.dumps(turn['findings'], ensure_ascii=False)}")
+    conversation_findings = [f for f in record["findings"] if not any(
+        list(f) in [list(x) for x in t.get("findings", [])] for t in record["turns"])]
+    parts += [
+        "", f"[conversation-level deterministic findings] {json.dumps(conversation_findings, ensure_ascii=False)}",
+        "", "═══ DATABASE FACTS ═══", database_facts(mentioned),
+        "", "═══ STORE-CONFIGURED FACTS ═══", store_facts(),
+    ]
+    return "\n".join(parts)
+
+
+def parse_simulation_verdict(text):
+    verdict = json.loads(text)
+    if not isinstance(verdict, dict) or not isinstance(verdict.get("scores"), dict):
+        raise ValueError("judge returned no scores")
+    return verdict
 
 
 def main():

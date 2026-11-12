@@ -160,6 +160,10 @@ def compose_price_reply(reply, context):
     subject = names[0] if len(names) == 1 else None
     ambiguous, outside = False, []
     pure_price = _price_only(evidence["request"], names)
+    # "طب سعر الـ90 من Aventus كام؟" after a notes discussion got the whole notes list above the price,
+    # and the price question counted as not answered directly (simulation S02 round 2 full 2, t7).
+    from .scent_description import _NORMALIZE, _notes_authorized
+    notes_unrequested = not _notes_authorized(_NORMALIZE(evidence["request"]))
     if not pure_price:
         # Split whole sentences (never decimal prices), and explicit name clauses.
         separator = r"\n+|(?<!\d)[.!?؟;]+\s*|[.!?؟;]+(?!\d)\s*"
@@ -186,6 +190,9 @@ def compose_price_reply(reply, context):
                 continue
             if _redundant_quotation_clause(clause):
                 continue
+            if notes_unrequested and re.match(r"(?:و)?(?:ال)?(?:نوتات(?:ه|ها)?|نوتس)(?!\w)|(?:top|base|middle)?\s*notes?\b",
+                                              naming.normalize_product_name(clause), re.I):
+                continue
             if clause:
                 if matches and ambiguous and pattern.search(clause):
                     outside.append(clause)
@@ -195,11 +202,20 @@ def compose_price_reply(reply, context):
                 else:
                     details[subject].append(clause.rstrip(".") + ".")
     budget = Decimal(evidence["budget"]) if evidence.get("budget") is not None else None
+    # "سوفاج 90 بكام؟ ومتوفر؟" asks two things, and the bare "متوفر" clause is dropped above as a
+    # repeat of the quotation; when it was all the prose said, the second answer vanished
+    # (simulation S04 final t1). A quoted variant is in stock and matches the requested size and
+    # bottle by construction (`product_quotes`), so the code states it.
+    asks_available = re.search(r"متوفر|موجود|متاح|عندك|available|in stock",
+                                naming.normalize_product_name(evidence["request"]), re.I)
     sections, display = [], []
     for (product_id, name), current in groups.items():
         rows = render_quotes(current, budget, include_name=False)
+        lines = details[name]
+        if asks_available and not any(re.search(r"متوفر|متاح|موجود", line) for line in lines):
+            lines = ["متوفر.", *lines]
         sections.append({"product_id": product_id, "name": name, "text": rows})
-        display.append("\n".join([name, *details[name], rows]))
+        display.append("\n".join([name, *lines, rows]))
     if outside:
         display.append("\n".join(outside))
     if evidence.get("footer"):
@@ -218,11 +234,12 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
     from . import performance_policy
     from .scent_description import (describe_scent, scent_requested, scent_excluded, selected_occasion,
                                     occasion_preference, occasion_requested, requested_occasions,
-                                    request_texts, _notes_authorized)
+                                    request_texts, _notes_authorized, asked_attribute_answers, LAYER_QUESTION)
     from .product_formatting import is_variant_available
     from products.occasions import OCCASION_DESCRIPTIONS
     product_names = [p.name for p in products]
     requests = request_texts(message, product_names)
+    fits_occasion = {}
     for product in products:
         text = requests[product.name]
         preferred = occasion_preference(text, saved=preferred_occasion)
@@ -230,11 +247,24 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
         wants_scent = not scent_excluded(text) and (description_required or scent_requested(text))
         request = performance_policy.request_for(text, history)
         facts = []
+        # With a description already given, only the ingredients asked about are answered: "رشحلي حاجة
+        # مش مسكرة ولا فيها عود" got each perfume's full notes list (simulation S10 round 2, t4/t8).
+        direct = [] if scent_excluded(text) else asked_attribute_answers(text, product, traits=not wants_scent)
         if wants_scent:
             facts.append(describe_scent(product.scent_tags, product.occasion, preferred_occasion=preferred))
-        if wants_notes:
+        if direct:
+            facts.extend(direct)
+        elif wants_notes:
             notes = [n for n in (product.top_notes, product.middle_notes, product.base_notes) if n]
-            facts.append("نوتاته " + "، ".join(notes) if notes else "نوتاته محتاجة تأكيد")
+            layers = [(label, value) for label, value in (("الـTop Notes", product.top_notes),
+                                                           ("الـMiddle Notes", product.middle_notes),
+                                                           ("الـBase Notes", product.base_notes)) if value]
+            if LAYER_QUESTION.search(text) and len(layers) == 3:
+                # "فلفل في الـbase؟ اللي أعرفه إنه في الـtop" asks which layer; one unlabelled list of
+                # every note could not answer it (simulation S02 round 2, t4).
+                facts.append(". ".join(f"{label}: {value}" for label, value in layers))
+            else:
+                facts.append("نوتاته " + "، ".join(notes) if notes else "نوتاته محتاجة تأكيد")
         if include_performance and (request.longevity or request.projection):
             facts.append(performance_policy.description(request, longevity=request.longevity, projection=request.projection))
         if re.search(r"متوفر|موجود|متاح|عندك|available|availability|in stock", text, re.I):
@@ -253,18 +283,50 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
             facts.append("تركيزه " + product.perfume_type if product.perfume_type else "تركيزه مش مسجل عندي")
         if re.search(r"تقييم|reviews?|ratings?", text, re.I):
             facts.append("مش عندي تقييمات عملاء مسجلة")
-        if occasion_requested(text):
+        # The scoped text has lost its question mark; with one perfume the raw message is the same scope.
+        # "Wanted by Night تقيل أوي ولا ينفع للسهرات؟" got the heaviness and not the evening answer
+        # (simulation S14 round 2 full 3, t7). `description_issues` reads it the same way.
+        if occasion_requested(text) or (len(products) == 1 and message
+                                        and occasion_requested(message, product_names=product_names)):
             requested = requested_occasions(text)
             occasion = selected_occasion(product.occasion, "; ".join(requested) or preferred_occasion)
             if requested and occasion not in requested:
                 occasion = ""
-            facts.append("مناسب " + OCCASION_DESCRIPTIONS[occasion] if occasion else "مناسبته محتاجة تأكيد")
+            if occasion:
+                facts.append("مناسب " + OCCASION_DESCRIPTIONS[occasion])
+                fits_occasion.setdefault(occasion, []).append(product.name)
+            elif len(products) > 1:
+                # Choosing among several for one occasion: each one's recorded occasion is the answer.
+                # "ومناسبته للشغل والمكتب محتاجة تأكيد" for Sauvage and Eros read as no answer (simulation
+                # S08 round 2 full 4, t2).
+                from products.occasions import OCCASIONS, occasion_groups
+                recorded = [c for c in OCCASIONS if c in occasion_groups(product.occasion or "")]
+                if recorded:
+                    facts.append("مناسبته المسجلة " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded))
+            else:
+                # Asked about an occasion the perfume is not recorded for, the recorded one is the
+                # honest answer; "مناسبته محتاجة تأكيد" read as if nothing were known (S06 replay t5).
+                from products.occasions import OCCASIONS, occasion_groups
+                recorded = [c for c in OCCASIONS if c in occasion_groups(product.occasion or "")]
+                asked = " و".join(OCCASION_DESCRIPTIONS[c] for c in requested if c in OCCASION_DESCRIPTIONS)
+                if recorded:
+                    # The store rule stands (an unrecorded use needs confirmation), and the recorded
+                    # use is still worth saying.
+                    facts.append("مناسبته المسجلة " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded)
+                                 + (f"، ومناسبته {asked} محتاجة تأكيد" if asked else ""))
+                else:
+                    facts.append("مناسبته محتاجة تأكيد")
         if re.search(r"موسم|صيف|شتا|season", text, re.I) and product.season:
             facts.append("موسمه " + product.season)
         if facts:
             lines.append(product.name + ": " + ". ".join(facts) + ".")
         elif description_required:
             lines.append(product.name + ".")
+    if len(products) > 1 and len(fits_occasion) == 1:
+        # "أنهي فيهم أنسب للشغل؟" asks for the one that fits; it opens the answer (S08 round 2 full 4, t2).
+        occasion, names = next(iter(fits_occasion.items()))
+        if len(names) < len(products):
+            lines.insert(0, f"الأنسب {OCCASION_DESCRIPTIONS[occasion]}: " + " و".join(names) + ".")
     return lines
 
 

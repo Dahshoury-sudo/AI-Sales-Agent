@@ -208,7 +208,29 @@ def _disagreement(text, pick, store, products):
     return span, ranking, (best_score, second_score, pick_score, matched_chars, coverage)
 
 
-def _verify_placement(message, resolved, store, products):
+def _confirm_latin_placement(run, pick, store, products):
+    """A Latin name that says more than the placed row: confirm a shortlist, or withdraw the pick."""
+    wanted = {word for word in naming.latin_words(run) if word not in naming.LATIN_FILLER}
+    overlap = []
+    for row in products:
+        if row.pk == pick.pk:
+            continue
+        shared = wanted & set(naming.latin_words(row.name))
+        if shared:
+            overlap.append((len(shared), row.name, row))
+    shortlist = [pick] + [row for _, _, row in sorted(overlap, key=lambda item: (-item[0], item[1]))[:2]]
+    try:
+        answer = confirm_placement(run, shortlist, store)
+    except Exception:
+        logger.exception("placement: confirming Latin %r failed; withholding rather than pricing", run)
+        return [], (run,), ()
+    if answer is None:
+        logger.info("placement: Latin %r is not %r; reporting it unplaced", run, pick.name)
+        return [], (), (run,)
+    return [answer], (), ()
+
+
+def _verify_placement(message, resolved, store, products, accounted=()):
     """Second-guess a placement the customer's letters do not support. `(resolved, ambiguous)`.
 
     The symmetric half of `_unplaced_names` above, and it exists because the two channels were not
@@ -242,14 +264,37 @@ def _verify_placement(message, resolved, store, products):
 
     ❌ The phonetic winner is never substituted for the model's pick. That is the "اوداورا" →
     *Dark Aura* behaviour removed from the loop below, and it is worse than either honest outcome.
+
+    Returns `(resolved, ambiguous, withdrawn)`. `withdrawn` is the Latin case only: a name the
+    customer typed outright in Latin letters that the confirmer says is none of the shortlist. It is
+    not ambiguous — the letters are plain — so it joins `unplaced`, where the absence checks (with
+    their own confirming call) decide whether to deny it. Asking to retype a correctly typed name was
+    the other failure there (simulation S09).
     """
+    if resolved and _HAS_LATIN.search(message or ""):
+        # Every placed row is checked against a Latin name, not only a single placement: "Club de
+        # Nuit Intense" once came back as 1 Million AND 1 Million Elixir (simulation S09 round 2).
+        vocabulary = {word for row in products for word in naming.latin_words(row.name)}
+        kept, ambiguous, withdrawn = [], [], []
+        for pick in resolved:
+            others = tuple(row.name for row in resolved if row.pk != pick.pk)
+            run = naming.latin_disagreement(message, pick, tuple(accounted) + others, vocabulary)
+            if not run:
+                kept.append(pick)
+                continue
+            placed, unsure, gone = _confirm_latin_placement(run, pick, store, products)
+            kept += [row for row in placed if row not in kept]
+            ambiguous += [span for span in unsure if span not in ambiguous]
+            withdrawn += [span for span in gone if span not in withdrawn]
+        if ambiguous or withdrawn or [row.pk for row in kept] != [row.pk for row in resolved]:
+            return kept, tuple(ambiguous), tuple(withdrawn)
     if len(resolved) != 1:
-        return resolved, ()
+        return resolved, (), ()
 
     pick = resolved[0]
     disagreement = _disagreement(message, pick, store, products)
     if not disagreement:
-        return resolved, ()
+        return resolved, (), ()
 
     span, ranking, scores = disagreement
     best = ranking[0][2]
@@ -273,14 +318,14 @@ def _verify_placement(message, resolved, store, products):
         answer = confirm_placement(span, shortlist, store)
     except Exception:
         logger.exception("placement: confirming %r failed; withholding rather than pricing", span)
-        return [], (span,)
+        return [], (span,), ()
 
     if answer is None:
         logger.info("placement: %r not confirmed; withholding and asking", span)
-        return [], (span,)
+        return [], (span,), ()
 
     logger.info("placement: %r corrected from %r to %r", span, pick.name, answer.name)
-    return [answer], ()
+    return [answer], (), ()
 
 
 def confident_catalogue_match(message, store, products=None):
@@ -568,7 +613,10 @@ Output format MUST be valid JSON:
     # touched. See `_verify_placement`.
     ambiguous = ()
     if verify:
-        resolved, ambiguous = _verify_placement(message, resolved, store, products)
+        resolved, ambiguous, withdrawn = _verify_placement(message, resolved, store, products, accounted=unplaced)
+        if withdrawn:
+            unplaced = list(unplaced) + [name for name in _unplaced_names(withdrawn, message, store, products)
+                                         if name not in unplaced]
 
     _log_outcome(message, resolved, unplaced, failed, ambiguous)
     return Resolution(resolved, unplaced, failed=failed, ambiguous=ambiguous)
@@ -807,7 +855,9 @@ def confirm_placement(span, shortlist, store=None):
         return None
 
     listing = "\n".join(f"- {product.name}" for product in shortlist)
-    prompt = f"""A customer wrote a perfume name in Arabic letters. Our extractor read it as one of the perfumes below, but the letters the customer actually typed look closer to a different one. We need to know which they meant before we quote a price, because quoting the wrong perfume's price by name is worse than asking.
+    prompt = f"""A customer wrote a perfume name, in Arabic or Latin letters. Our extractor read it as one of the perfumes below, but the letters the customer actually typed look closer to a different one, or say more than it does. We need to know which they meant before we quote a price, because quoting the wrong perfume's price by name is worse than asking.
+
+When the name is written in Latin letters, compare the words themselves: a name that adds words the listed perfume does not have is a different perfume ("Club de Nuit Intense" is neither "La Nuit" nor "Jazz Club"), and then the answer is NONE.
 
 The perfumes it could be:
 {listing}

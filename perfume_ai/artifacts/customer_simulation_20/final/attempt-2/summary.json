@@ -1,0 +1,451 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004837390",
+    "api_calls": 16
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 9,
+      "knows_when_to_stop": 5,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "turn 5 critical wrong_variant_price: Aventus: quoted 2000 for the requested variant; expected []",
+      "judge score knows_when_to_stop=5",
+      "judge score commerce_correctness=4",
+      "judge turn 5 critical commerce: The customer explicitly corrected the variant, but the assistant repeated the store-bottle price instead of answering about the original bottle.",
+      "judge turn 6 critical commerce: Aventus original 100ml is listed with stock 100, so this is a false denial of an available product.",
+      "criterion unmet: Price question gets the actual variant price directly."
+    ],
+    "cost_usd": "0.009410685",
+    "api_calls": 26
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 3,
+      "memory": 4,
+      "question_quality": 3,
+      "knows_when_to_stop": 3,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 2
+    },
+    "reasons": [
+      "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'تفاصيل العرض:\n1- اشتري برفانين 90 ملي وخد التالت هدية\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابع'",
+      "judge score understanding_accuracy=3",
+      "judge score memory=4",
+      "judge score question_quality=3",
+      "judge score knows_when_to_stop=3",
+      "judge score naturalness=5",
+      "judge score commerce_correctness=2",
+      "judge turn 4 high commerce: أكد خطأً أن العرض يناسب الميزانية الصارمة 1600، رغم أن سعر الزجاجتين المدفوعتين 90 ملي يتجاوزها.",
+      "judge turn 6 high commerce: كرر الرد حرفيًا ولم يجب عن سؤال الإجمالي أو يوضح أن العرض يتجاوز الميزانية، فترك ادعاءه السابق بأن العرض يناسب 1600 دون تصحيح.",
+      "judge turn 7 high commerce: نفذ التحويل الذي طلبه العميل، لكنه تجاهل شرطه بأن يتأكد أولًا من ملاءمة الثلاث زجاجات للميزانية، ولم يصحح المعلومة السعرية.",
+      "criterion unmet: For three bottles within 1600, explains the specific limitation (three 750 bottles = 2250) and asks "
+    ],
+    "cost_usd": "0.011974955",
+    "api_calls": 19
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00140652",
+    "api_calls": 14
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "criterion unmet: Does not ask for a budget; shows niche or store-exclusive options with supported differentiators."
+    ],
+    "cost_usd": "0.011114805",
+    "api_calls": 26
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 6,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge turn 6 high memory: The customer explicitly clarified the two options as Her and Bloom, but the assistant substituted Billie Eilish and still did not choose one.",
+      "judge turn 7 high understanding: In context, “أنهي واحدة” refers to Her and Bloom. The assistant introduced a different perfume instead of resolving the choice between the options already under",
+      "criterion unmet: Does not repeat the same question after مش عارف; offers accessible choices or picks for her when ask",
+      "criterion unmet: Does not dump more options; narrows to one when she says اختارلي انت."
+    ],
+    "cost_usd": "0.015334400",
+    "api_calls": 37
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "conversation high unexpected_handoff: the conversation was handed off without being needed",
+      "judge score commerce_correctness=4",
+      "judge turn 3 critical commerce: حوّل شرطًا خاصًا بطلبات الزجاجات ذات الشكل الأوريجينال إلى شرط عام، فقدم معلومة سياسة غير مدعومة وقد تؤثر على قرار الشراء.",
+      "judge turn 4 high accuracy: قاعدة البيانات توفر السعرين، لذا لم يجب عن سؤال السعر المباشر وادعى عدم توفر معلومة موجودة، ثم عرض تحويلًا غير لازم.",
+      "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented."
+    ],
+    "cost_usd": "0.003728270",
+    "api_calls": 15
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004532335",
+    "api_calls": 17
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score understanding_accuracy=4",
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge turn 1 high question: العميل ذكر الاسم كاملًا بالفعل؛ طلب إعادة كتابته سؤال غير لازم ويؤخر الإجابة المباشرة.",
+      "judge turn 4 high memory: اختار عطرًا ثالثًا بدل المقارنة المطلوبة، وLa Nuit مصنف حريمي رغم أن العميل حدد أن الاختيار رجالي.",
+      "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+      "criterion unmet: Does not claim a lookalike without support; similarity wording is honest.",
+      "criterion unmet: Handles the customer's irritation without canned apologies."
+    ],
+    "cost_usd": "0.008051860",
+    "api_calls": 27
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 7,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.007008995",
+    "api_calls": 16
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 7,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 6 high unsupported_promise: follow_up: 'هيتواصل معاك'",
+      "judge turn 6 high commerce: No transfer to the human team was confirmed, so this is an unsupported follow-up promise.",
+      "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence.",
+      "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and explicit con"
+    ],
+    "cost_usd": "0.013510700",
+    "api_calls": 29
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "turn 5 critical crash: turn 5 raised ValueError: Invalid evaluation response: empty_output",
+      "turn 5 critical empty_reply: the customer received no reply",
+      "judge score commerce_correctness=5",
+      "judge turn 5 critical commerce: The customer received no answer to a direct price inquiry, preventing the conversation from continuing."
+    ],
+    "cost_usd": "0.006524115",
+    "api_calls": 18
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006634325",
+    "api_calls": 17
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 6,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge turn 7 high memory: The assistant treated a question about Pure XS's leather facet as a preference for leather scents, did not answer the Pure XS question, and shifted away from th",
+      "criterion unmet: The latest explicit preference wins (sweet for evenings, budget 1500) over the earlier fresh / 1000.",
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.010447690",
+    "api_calls": 31
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 7 critical crash: turn 7 raised ValueError: Invalid evaluation response: empty_output",
+      "turn 7 critical empty_reply: the customer received no reply",
+      "turn 9 critical repeated_reply: 100% identical to an earlier reply: 'Aventus\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه، و50 ملي بـ1400 جنيه.\nزجاجة اوريجنال 100 ملي بـ2'",
+      "judge turn 7 critical commerce: The customer received no answer to a direct price question."
+    ],
+    "cost_usd": "0.015884050",
+    "api_calls": 39
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.008178355",
+    "api_calls": 23
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00090341",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 5,
+      "knows_when_to_stop": 5,
+      "naturalness": 6,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score question_quality=5",
+      "judge score knows_when_to_stop=5",
+      "judge turn 5 high stop: كرر ردًا لا يجيب عن سؤال السعر، ثم دفعها للشراء بعد أن أكدت أنها تتصفح فقط.",
+      "criterion unmet: Gives space to browse; no pressure or closing questions.",
+      "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+    ],
+    "cost_usd": "0.006859890",
+    "api_calls": 15
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 5,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "turn 6 high unsupported_promise: follow_up: 'هيتواصل معاك'",
+      "judge score memory=5",
+      "judge score question_quality=5",
+      "judge score commerce_correctness=5",
+      "judge turn 1 high understanding: The customer requested Sauvage and Bleu de Chanel, but the assistant's cart and summary omit Bleu de Chanel without explanation.",
+      "judge turn 3 high memory: The assistant regresses the quantity from one to two despite the prior correction, and repeats the bottle-type question after the customer has already answered ",
+      "judge turn 6 high commerce: The assistant promises a team follow-up but does not confirm that it transferred the case; follow-up promises are not otherwise supported.",
+      "criterion unmet: The summary shows the correct item and total (1000 plus the store's shipping fee, if the summary inc"
+    ],
+    "cost_usd": "0.008970230",
+    "api_calls": 25
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "fail",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 7,
+      "question_quality": 4,
+      "knows_when_to_stop": 4,
+      "naturalness": 4,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 2 high unsupported_product_claim: note:ombre leather:vanilla",
+      "turn 2 high unsupported_product_claim: note:ombre leather:tobacco",
+      "turn 3 high unsupported_product_claim: note:ombre leather:vanilla",
+      "turn 3 high unsupported_product_claim: note:ombre leather:tobacco",
+      "turn 3 critical repeated_reply: 99% identical to an earlier reply: 'تفاصيل العرض:\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\nعروض الار'",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=4",
+      "judge score naturalness=4",
+      "criterion unmet: Refuses to confirm an order with no products or contact details; no order created."
+    ],
+    "cost_usd": "0.004176295",
+    "api_calls": 7
+  }
+]

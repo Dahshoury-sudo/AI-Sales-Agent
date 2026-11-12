@@ -1,0 +1,152 @@
+[
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 6,
+      "question_quality": 3,
+      "knows_when_to_stop": 4,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score question_quality=3",
+      "judge score knows_when_to_stop=4",
+      "judge score commerce_correctness=4",
+      "judge turn 3 high commerce: It skips both parts of the customer's direct question and introduces a three-bottle promotion without clarifying that its two 90 ml bottles alone total 2000 at ",
+      "judge turn 4 high commerce: The customer repeats the budget question, but the assistant again avoids the arithmetic and repeats the promotion and transfer offer instead.",
+      "criterion unmet: For three bottles within1600, explains the specific limitation (three 750 bottles =2250) and asks wh"
+    ],
+    "cost_usd": "0.003643700",
+    "api_calls": 15
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge turn 3 high commerce: The assistant overgeneralizes a conditional policy and gives the customer an unsupported restriction on exchange.",
+      "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented."
+    ],
+    "cost_usd": "0.007387780",
+    "api_calls": 27
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 9,
+      "knows_when_to_stop": 3,
+      "naturalness": 7,
+      "emotional_handling": 5,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 6 critical repeated_reply: 100% identical to an earlier reply: '212 VIB Man: فيه ريحة توابل وفريش ومنعش وفيه ريحة حمضيات. مفيش عود ضمن نوتاته المسجلة.\nBmw: فيه ريحة'",
+      "judge score knows_when_to_stop=3",
+      "judge score emotional_handling=5",
+      "judge turn 6 high memory: This is the same pair of recommendations as turn 4, despite the customer's repeated request for certainty and the assistant's admission in turn 5 that it could ",
+      "judge turn 7 high emotion: The customer explicitly complains about repetition and restates the certainty requirement. The assistant changes the names but does not acknowledge the complain",
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi",
+      "criterion unmet: Adapts when the customer calms down; brief natural acknowledgement of thanks."
+    ],
+    "cost_usd": "0.018865150",
+    "api_calls": 44
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.008348670",
+    "api_calls": 19
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 8,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 9 high understanding: The customer explicitly requested a sweet evening recommendation that is not too heavy; the assistant treated the message as a closing instead of answering.",
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.015967375",
+    "api_calls": 38
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 4,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge score question_quality=4"
+    ],
+    "cost_usd": "0.008501910",
+    "api_calls": 24
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.007054940",
+    "api_calls": 24
+  }
+]

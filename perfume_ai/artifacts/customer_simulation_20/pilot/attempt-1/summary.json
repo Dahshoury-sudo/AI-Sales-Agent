@@ -1,0 +1,53 @@
+[
+  {
+    "id": "S04_busy_price",
+    "verdict": "fail",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "turn 2 critical repeated_reply: 92% identical to an earlier reply: 'Sauvage\nأيوه، متوفر يا فندم.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\n'"
+    ],
+    "cost_usd": "0.005257525",
+    "api_calls": 14
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 3,
+      "question_quality": 2,
+      "knows_when_to_stop": 3,
+      "naturalness": 4,
+      "emotional_handling": 3,
+      "commerce_correctness": 2
+    },
+    "reasons": [
+      "turn 5 critical repeated_reply: 100% identical to an earlier reply: '🛍️ الطلب لحد دلوقتي:\n- 1 × 212 NYC Man (50ml) بـ 750 جنيه\nالمجموع: 750 جنيه.\n\nولسه ناقص رقم بديل.'",
+      "judge score understanding_accuracy=4",
+      "judge score memory=3",
+      "judge score question_quality=2",
+      "judge score knows_when_to_stop=3",
+      "judge score naturalness=4",
+      "judge score emotional_handling=3",
+      "judge score commerce_correctness=2",
+      "judge turn 3 critical commerce: The customer directly asked about shipping, but the assistant omitted the 60 EGP charge and stated an incorrect total.",
+      "judge turn 4 high memory: The customer had just explicitly said «مفيش رقم بديل», but the assistant treats it as missing and required.",
+      "judge turn 5 high memory: It repeats the prior reply verbatim after the customer again said there is no alternative number and asked to continue.",
+      "judge turn 6 high question: The assistant acknowledges the customer's instructions but still insists on the same unnecessary detail after being corrected multiple times."
+    ],
+    "cost_usd": "0.015684160",
+    "api_calls": 29
+  }
+]

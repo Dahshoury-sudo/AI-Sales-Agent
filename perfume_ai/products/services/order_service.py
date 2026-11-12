@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 import hashlib
 import uuid
@@ -72,6 +73,15 @@ def _merge_lines(cart, data):
         if entry.get("bottle_type") not in (None, "normal", "original"):
             raise ValueError("Invalid bottle_type")
         target = next((x for x in lines if entry.get("line_id") and x["line_id"] == entry["line_id"]), None)
+        if (target is not None and isinstance(target.get("name"), str)
+                and target["name"].casefold() != entry["name"].casefold()
+                and any(x is not target and isinstance(x.get("name"), str)
+                        and x["name"].casefold() == entry["name"].casefold() for x in lines)):
+            # The extractor re-used a pending line's id for a perfume another line already holds;
+            # applied, the unanswered "سوفاج بلو شانيل" line became a phantom second Sauvage and the
+            # corrected quantity flipped back to 2 (simulation S19 t2-t4). The line keeps its name.
+            entry = {k: v for k, v in entry.items() if k != "name"}
+            entry["name"] = target["name"]
         same_name = [x for x in lines if x["name"].casefold() == entry["name"].casefold() and x["line_id"] not in touched]
         if target is None and len(same_name) == 1:
             target = same_name[0]
@@ -141,9 +151,24 @@ def _summary_was_shown(conversation, cart, items=None):
     return conversation.messages.filter(pk=quote["message_id"], role="assistant", delivery_status="sent").exists()
 
 
-def _quote_summary(conversation, cart, items):
+# "عايز زجاجة الستور العادية مش الخاصة", "عدلها للعادية": the customer read "الخاصة بينا" (ours) as
+# "special" and asked for the regular bottle, which every line already was; the identical summary went
+# out three times and the order was never confirmed (simulation S19 round 2 batch 2, t6-t9).
+_ASKS_REGULAR_BOTTLE = re.compile(r"(?:ال|لل)عاديه|زجاجه\s+(?:ال)?(?:ستور\s+|استور\s+)?(?:ال)?عاديه|(?<!\w)ال?خاصه(?!\s+بينا)")
+
+
+def _bottle_note(message, items):
+    from .static_faq_service import normalize_arabic
+    if items and all(item["bottle_type"] == "normal" for item in items) \
+            and _ASKS_REGULAR_BOTTLE.search(normalize_arabic(message or "")):
+        return (f"{NORMAL_BOTTLE} هي الزجاجة العادية عندنا، والطلب عليها فعلًا؛ "
+                f"الاختيار التاني الوحيد هو {ORIGINAL_BOTTLE}.")
+    return ""
+
+
+def _quote_summary(conversation, cart, items, note=""):
     """Persist the exact cart/prices awaiting approval and render its public summary."""
-    summary = "راجع معايا تفاصيل الطلب:\n\n"
+    summary = (note + "\n\n" if note else "") + "راجع معايا تفاصيل الطلب:\n\n"
     summary += f"الاسم: {cart.customer_name}\n"
     summary += f"الموبايل: {cart.customer_phone}\n"
     if cart.secondary_phone:
@@ -153,13 +178,136 @@ def _quote_summary(conversation, cart, items):
         bottle_disp = bottle_label(item['bottle_type'])
         summary += f"- {item['quantity']} × {item['variant'].product.name} ({item['variant'].volume}ml) - {bottle_disp} (السعر: {item['price'] * item['quantity']} جنيه)\n"
     total = sum((item['price'] * item['quantity'] for item in items), Decimal('0'))
-    summary += f"\n💰 الإجمالي: {total} جنيه.\n"
+    # The total is the items only; saying so, and quoting the store's own shipping answer, keeps
+    # the customer from reading 750 as the amount due (simulation S11 t5-t9).
+    from .product_formatting import money
+    from .static_faq_service import match_static_faq
+    shipping = (match_static_faq("مصاريف الشحن بكام", conversation.store) or {}).get("answer") if conversation else None
+    summary += f"\n💰 الإجمالي: {money(total)} جنيه" + (" (من غير الشحن).\n🚚 " + shipping.strip() + "\n" if shipping else ".\n")
+    # The amount due, when the store's shipping answer is one flat fee and no free-shipping offer can
+    # apply to this total: the judge read "750 + 60" without "810" as a summary missing its total
+    # (simulation S11 round 2 batch 2, t7).
+    fee = flat_shipping_fee(conversation.store) if (shipping and conversation) else None
+    threshold = _free_shipping_threshold(conversation.store) if fee is not None else None
+    if fee is not None and (threshold is None or total <= threshold):
+        summary += f"الإجمالي مع الشحن: {money(total + fee)} جنيه.\n"
     summary += _over_budget_warning(conversation, items)
     summary += "\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟"
     cart.quote = {"token": uuid.uuid4().hex, "digest": _fingerprint(cart, items),
                   "summary_hash": hashlib.sha256(summary.encode()).hexdigest()}
     cart.save(update_fields=["quote"])
     return summary
+
+
+def shipping_answer(store):
+    from .static_faq_service import match_static_faq
+    return ((match_static_faq("مصاريف الشحن بكام", store) or {}).get("answer") or "").strip() if store else ""
+
+
+def flat_shipping_fee(store):
+    """The store's shipping fee when its own shipping answer states exactly one amount, else None.
+
+    "60 جنيه لجميع محافظات مصر" is one flat fee. An answer quoting two amounts (per region, or a
+    free-shipping threshold) is not, and no total is ever computed from it.
+    """
+    from .product_formatting import monetary_claims
+    amounts = {amount for _, _, amount in monetary_claims(shipping_answer(store))}
+    return amounts.pop() if len(amounts) == 1 else None
+
+
+def shipping_line(store, total):
+    """What shipping adds to an items-only total, from the store's own facts; "" when not stated.
+
+    "إجمالي الـ2 زجاجات: 1500 جنيه، من غير مصاريف الشحن" answered "ومفيش أي مصاريف تانية؟" and was
+    read as "no shipping charge", and the running cart total confirmed 1500 again with the 60 EGP
+    fee left out (simulation S03 round 2 full 5, t4 and t7).
+    """
+    from .product_formatting import money
+    fee = flat_shipping_fee(store) if store else None
+    if fee is None:
+        return ""
+    total = Decimal(total)
+    threshold = _free_shipping_threshold(store)
+    if threshold is not None and total > threshold:
+        return (f"المبلغ ده من غير الشحن؛ الشحن {money(fee)} جنيه، والعروض الحالية فيها شحن مجاني "
+                f"لأي أوردر فوق {money(threshold)} جنيه.")
+    return f"وفيه مصاريف شحن {money(fee)} جنيه، فالإجمالي مع الشحن {money(total + fee)} جنيه."
+
+
+def _free_shipping_threshold(store):
+    """The order total above which a configured offer makes shipping free ("الشحن مجاني لاي اوردر
+    فوق ال ١٥٠٠"), or None. Above it the bot states no shipping-inclusive total: offers are applied
+    by the team, not here."""
+    from .promotion_service import configured_promotions
+    from .static_faq_service import normalize_arabic
+    text = normalize_arabic(configured_promotions(store) or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    match = re.search(r"شحن\s+(?:ال)?مجاني[^\n\d]*(\d[\d,]*)", text)
+    return Decimal(match.group(1).replace(",", "")) if match else None
+
+
+def _due_totals(conversation):
+    """Item totals this customer was shown: the open cart's first, then live orders, newest first."""
+    if conversation is None or getattr(conversation, "pk", None) is None:
+        return [], []
+    totals, products = [], {}
+    cart = Cart.objects.filter(conversation=conversation).first()
+    if cart:
+        items = list(cart.items.select_related("variant__product"))
+        if items:
+            totals.append(sum((item.variant.price * item.quantity for item in items), Decimal("0")))
+            products.update((item.variant.product_id, item.variant.product) for item in items)
+    for order in (Order.objects.filter(conversation=conversation).exclude(status="cancelled")
+                  .order_by("-id").prefetch_related("items__variant__product")):
+        totals.append(order.total_price)
+        products.update((item.variant.product_id, item.variant.product) for item in order.items.all() if item.variant)
+    return totals, list(products.values())
+
+
+def checkout_evidence(conversation):
+    """This customer's own cart and orders as price evidence for a model reply: (products, lines).
+
+    The general branch has no product rows, so a reply restating the customer's own order failed
+    the price check: "أكدته خلاص، 212 NYC Man الـ50" after confirmation was answered "تقصد أنهي
+    عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟" (simulation S11, four runs). These figures
+    come from the database, so they are evidence; the total with shipping only for a flat fee.
+    """
+    from .product_formatting import money
+    totals, products = _due_totals(conversation)
+    fee = flat_shipping_fee(conversation.store) if totals else None
+    lines = [f"الاجمالي {money(total)} جنيه" for total in totals]
+    if fee is not None:
+        lines += [f"الاجمالي بالشحن {money(total + fee)} جنيه" for total in totals]
+    return products, lines
+
+
+_ASKS_TOTAL = re.compile(r"اجمالي|مجموع|الحساب|كله\s*(?:ب)?كام|\btotal\b", re.I)
+
+
+def amount_with_shipping(conversation, fragment):
+    """"الإجمالي 810 بالشحن صح؟" answered from the checkout's own numbers, or None.
+
+    The fragment used to go to the general branch, which knows no order: its 810 failed the price
+    check and an order confirmation ended in "تقصد أنهي عطر وحجم؟" (simulation S11 attempt 3, t5).
+    The items total is the open cart's, else the latest live order's; shipping is added only when
+    the store's own answer states one flat fee, otherwise that answer is quoted as it stands.
+    """
+    from .product_formatting import money
+    from .sales.naming import normalize_product_name
+    text = normalize_product_name(fragment)
+    if not _ASKS_TOTAL.search(text):
+        return None
+    totals, _ = _due_totals(conversation)
+    if not totals:
+        return None
+    total = totals[0]
+    fee = flat_shipping_fee(conversation.store)
+    if fee is None:
+        shipping = shipping_answer(conversation.store)
+        return f"الطلب {money(total)} جنيه من غير الشحن." + (f"\n{shipping}" if shipping else "")
+    grand = total + fee
+    stated = {Decimal(n) for n in re.findall(r"(?<![\d.])\d+(?![\d.])", text)}
+    lead = "أيوه، " if grand in stated else ("لأ، " if any(n >= total and n != grand for n in stated) else "")
+    return f"{lead}الطلب {money(total)} جنيه + الشحن {money(fee)} جنيه = {money(grand)} جنيه."
 
 
 def _cart_context(cart):
@@ -506,6 +654,27 @@ def _already_asked_for_details(conversation):
     return any(marker in (previous or "") for marker in _DETAILS_ASK_MARKERS)
 
 
+_NO_SECONDARY_PHONE = re.compile(
+    r"(?:مفيش|معنديش|ماعنديش|مش\s+معايا|مش\s+عندي|مليش|ماليش|no|don'?t\s+have)\s+(?:\S+\s+){0,2}?"
+    r"(?:بديل|تاني|تانيه|اخر|غيره|other|second|alternative)|"
+    r"(?:الاساسي|رقم\s+واحد|الرقم\s+ده)\s+(?:بس|وبس)|(?:كمل|اكد)\S*\s+(?:\S+\s+){0,2}?(?:بالرقم|بالاساسي)"
+)
+
+
+def _secondary_phone_declined(conversation, message):
+    """Remember, once said, that the customer has no alternate number."""
+    from .static_faq_service import normalize_arabic
+    state = dict(conversation.sales_state or {})
+    if state.get("secondary_phone_declined"):
+        return True
+    if not _NO_SECONDARY_PHONE.search(normalize_arabic(message or "")):
+        return False
+    state["secondary_phone_declined"] = True
+    Conversation.objects.filter(pk=conversation.pk).update(sales_state=state)
+    conversation.sales_state = state
+    return True
+
+
 def _short_missing(name, phone, secondary_phone, address):
     """The same list of missing fields, without repeating the long-form instructions."""
     parts = []
@@ -564,7 +733,37 @@ def _house_choice_question(brand, store):
     return f"من {brand.name} عندنا {listed}. تحب أنهي واحد وحجم؟"
 
 
-def _cart_recap(conversation, items_to_create, total_price):
+_TAKES_AS_QUOTED = re.compile(
+    r"(?<!\w)(?:كده|كدا|زي\s+ما\s+(?:هم|هما|هو|هي|قلت|قولت|رشحت\w*)|اللي\s+(?:قلت|قولت|رشحت)\w*)(?!\w)")
+
+
+def _single_quoted_variant(conversation, product, message):
+    """The one size and bottle we last quoted for `product`, when the customer takes it as quoted.
+
+    "تمام، هاخدهم كده" after each perfume was quoted as "زجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه" was
+    asked the bottle type and then the size of both, two turns re-asking what the quote had settled
+    (simulation S03 round 2 full 5, t5-t6). Only an exact quotation of one variant settles it; a
+    quote listing two sizes still gets the question.
+    """
+    from .static_faq_service import normalize_arabic
+    from .product_formatting import quote_evidence
+    if conversation is None or getattr(conversation, "pk", None) is None \
+            or not _TAKES_AS_QUOTED.search(normalize_arabic(message or "")):
+        return None
+    contexts = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                .order_by("-created_at", "-pk").values_list("internal_context", flat=True)[:3])
+    for context in contexts:
+        records = [record for record in quote_evidence(context).get("quotes", [])
+                   if record.get("product_id") == product.pk]
+        if records:
+            if len(records) != 1:
+                return None
+            return next((variant for variant in product.variants.all()
+                         if variant.pk == records[0].get("variant_id")), None)
+    return None
+
+
+def _cart_recap(conversation, items_to_create, total_price, message=None):
     """One line naming what is in the cart and what it comes to, above a details request.
 
     Three reasons it exists, all from evaluation scenario F1, where the details request went out
@@ -592,6 +791,14 @@ def _cart_recap(conversation, items_to_create, total_price):
         for item in items_to_create
     )
     recap = f"🛍️ الطلب لحد دلوقتي:\n{lines}\nالمجموع: {total_price:.0f} جنيه.\n"
+    # "والإجمالي يفضل 1500؟" was confirmed at 1500 with the 60 EGP shipping left out (simulation S03
+    # round 2 full 5, t7). A shipping question is answered by `router._with_side_answers` instead.
+    from .sales.naming import normalize_product_name
+    asked = normalize_product_name(message or "")
+    if _ASKS_TOTAL.search(asked) and not re.search(r"شحن|توصيل", asked):
+        shipping = shipping_line(getattr(conversation, "store", None), total_price)
+        if shipping:
+            recap += shipping + "\n"
     recap += _over_budget_warning(conversation, items_to_create)
     return recap + "\n"
 
@@ -627,7 +834,7 @@ def handle_order(message, history, store, conversation):
         and not promotion_service.ordinary_purchase(message)
         and not promotion_service.cancelling_order(message)
     ):
-        return promotion_service.reply(message, promotion_history, store, explain=False)
+        return promotion_service.reply(message, promotion_history, store, conversation=conversation, explain=False)
 
     from .static_faq_service import normalize_arabic
     from .sales.constraints import original_liquid_update, formulation_reply
@@ -689,7 +896,7 @@ Rules:
    🚨 CRITICAL: an empty saved cart means any order visible in the history is ALREADY CLOSED and paid for. Do NOT pull products out of the history to refill it. Return [] unless the customer names a perfume in their LATEST message OR points at one with a demonstrative/ordinal, in which case resolve it against the "PERFUMES YOU JUST OFFERED" list below — that list is the perfumes of the CURRENT conversation, not of a finished order.
    For each product extract "bottle_type" ("original" for {ORIGINAL_BOTTLE}/أوريجينال/زجاجة بشكل الأوريجينال, "normal" for {NORMAL_BOTTLE}/زجاجة الستور/زجاجة البراند/تركيب/زجاجة الاستور/زجاجة المحل). Bottle choice is packaging only, not a request for a different perfume or the store's exclusive creations.
    CRITICAL: if the customer has not chosen a bottle type and none is saved, return null for it.
-6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Otherwise, return false.
+6. "is_confirmed": true ONLY IF the assistant in the previous message summarized the full order (including total price) AND the user explicitly agreed/confirmed in their latest message (e.g. "تمام", "اكد الطلب", "توكلنا على الله", "ايوة"). ALSO, if the assistant asked "ولا في حاجة حابب تعدلها؟" and the user replies with "لا", "لا شكرا", or "لا تمام" (meaning they don't want to modify), this is a confirmation to proceed, so return true. Confirming while restating the shown total plus the shipping fee the summary lists (e.g. "أكد على 810" after a 750 total and 60 shipping) approves that same summary, so return true. Otherwise, return false.
 7. "cart_cleared": true ONLY IF the customer's latest message asks to remove or drop product(s) AND that leaves the cart EMPTY (e.g. the saved cart held one perfume and they said "شيله" or "مش عايزه"). If they removed one perfume out of several, return false and simply omit that perfume from "products". If they said nothing about removing anything, return false.
    ⚠️ This matters: an empty "products" list normally means the extractor lost track, and the saved cart is restored. "cart_cleared": true is how you say the cart is empty ON PURPOSE.
 
@@ -819,11 +1026,29 @@ Return valid JSON in this exact format:
             if not product and not Product.objects.filter(store=store, name__iexact=p_name).exists():
                 exact, partial = naming.candidates(p_name, store)
                 candidates = exact or partial
+                if len(candidates) > 1 and conversation is not None:
+                    # "212 Sexy" right after we offered 212 Sexy man is not ambiguous to the customer
+                    # (simulation S03 t8). Only a single offered match settles it.
+                    from .sales.described import offered_ever
+                    offered = offered_ever(conversation, store)
+                    narrowed = [candidate for candidate in candidates if candidate.name in offered]
+                    if len(narrowed) == 1:
+                        candidates = narrowed
+                        product = Product.objects.prefetch_related('variants').get(pk=narrowed[0].pk)
                 if len(candidates) > 1:
                     p_data["ambiguous_name"] = True
                     options = "، ".join(candidate.name for candidate in candidates)
                     raise _LineProblem((f"اسم {p_name} ينطبق على أكتر من إصدار. تقصد أنهي واحد: {options}؟", ""))
-                product = resolve_product(message=p_name, store=store)
+                if not product:
+                    product = resolve_product(message=p_name, store=store)
+                    if (product is not None and p_data.get("line_id") in saved_line_ids
+                            and any(other is not p_data and isinstance(other, dict)
+                                    and str(other.get("name") or "").casefold() == product.name.casefold()
+                                    for other in products_data)):
+                        # A saved line whose own name never matched a perfume must not be resolved
+                        # into one another line already holds: the merged "سوفاج بلو شانيل" became a
+                        # second Sauvage and the corrected quantity flipped back (S19 round 2, t2-t4).
+                        product = None
             # The extractor may name a perfume the customer never typed, having resolved a
             # demonstrative against an earlier turn. That is usually right, and it stays right here —
             # except when the customer's own letters name something we have deactivated, in which
@@ -880,6 +1105,11 @@ Return valid JSON in this exact format:
                 variants = list(product.variants.all())
                 if not variants:
                     raise _LineProblem((f'{product.name}: مفيش أحجام متاحة حالياً.', ''))
+                if not req_volume and not p_data.get('bottle_type'):
+                    quoted = _single_quoted_variant(conversation, product, message)
+                    if quoted is not None:
+                        req_volume = p_data['volume'] = quoted.volume
+                        p_data['bottle_type'] = quoted.bottle_type
                 bottle_type = p_data.get('bottle_type')
                 available_normal = [v for v in variants if v.bottle_type == 'normal']
                 available_original = [v for v in variants if v.bottle_type == 'original' and (v.stock or 0) > 0]
@@ -1079,11 +1309,23 @@ Return valid JSON in this exact format:
         if product_missing_fields:
             details.append("وبالنسبة لباقي الاختيارات، محتاج أعرف " +
                            " و ".join(product_missing_fields) + "؟")
-        return _cart_recap(conversation, items_to_create, total_price) + "\n".join(details), context_str
+        return _cart_recap(conversation, items_to_create, total_price, message) + "\n".join(details), context_str
+
+    if house_questions:
+        # A house line beside carted perfumes was left pending in silence and the customer was sent on
+        # to contact details: "2 سوفاج 90 ملي وواحد بلو دي شانيل" arrived as Sauvage plus a merged
+        # "سوفاج بلو شانيل", read as the house Chanel, and was never asked about (simulation S19 t1).
+        details = [_house_choice_question(brand, store) for brand in house_questions]
+        if product_missing_fields:
+            details.append("وبالنسبة لباقي الاختيارات، محتاج أعرف " + " و ".join(product_missing_fields) + "؟")
+        return _cart_recap(conversation, items_to_create, total_price, message) + "\n".join(details), context_str
 
     # 2. Check for missing product details FIRST (size, bottle type, quantity)
     if product_missing_fields:
-        recap = _cart_recap(conversation, items_to_create, total_price)
+        recap = _cart_recap(conversation, items_to_create, total_price, message)
+        if re.search(r"بعدين|لما\s+اكون\s+جاهز|مش\s+دلوقتي|\blater\b", normalize_arabic(message)):
+            # "هكمل الأوردر بعدين" three times got the same bottle question three times (S05 replay 3).
+            return recap + "تمام، لما تحب تكمل الطلب قولي ونكمل التفاصيل.", context_str
         missing_text = " ولا ".join(product_missing_fields) if len(product_missing_fields) == 1 else " و ".join(product_missing_fields)
         # If it's just one product and they're missing size, ask with the perfume's REAL
         # sizes and acknowledge whatever else they just told us. The old line was a
@@ -1109,18 +1351,21 @@ Return valid JSON in this exact format:
     # echoed must count as missing, not as a contact number.
     phone = phone if _looks_like_phone(phone) else None
     secondary_phone = secondary_phone if _looks_like_phone(secondary_phone) else None
+    # A customer without a second number can say so once; the requirement used to have no way
+    # out, so "معنديش رقم بديل" got "ولسه ناقص رقم بديل." until the buyer gave up (S11, S19).
+    no_secondary = _secondary_phone_declined(conversation, message)
 
     personal_missing_fields = []
     if not name:
         personal_missing_fields.append("الاسم")
 
     if not phone and not secondary_phone:
-        personal_missing_fields.append("رقم الموبايل الأساسي ورقم بديل")
+        personal_missing_fields.append("رقم الموبايل الأساسي" if no_secondary else "رقم الموبايل الأساسي ورقم بديل")
     elif not phone:
         personal_missing_fields.append("رقم الموبايل الأساسي")
-    elif not secondary_phone:
-        personal_missing_fields.append("رقم موبايل بديل")
-        
+    elif not secondary_phone and not no_secondary:
+        personal_missing_fields.append("رقم موبايل بديل (لو مفيش، قولي ونكمل بالأساسي)")
+
     if not address:
         personal_missing_fields.append("العنوان بالتفصيل: المحافظة، المنطقة، الشارع، رقم المنزل وأي علامة مميزة")
 
@@ -1132,11 +1377,23 @@ Return valid JSON in this exact format:
         # three replies identical in evaluation scenario F1, and re-reading the same
         # instruction is not what a customer who just answered something else needs.
         if _already_asked_for_details(conversation):
-            ask = f"ولسه ناقص {_short_missing(name, phone, secondary_phone, address)}."
+            ask = f"ولسه ناقص {_short_missing(name, phone, secondary_phone or no_secondary, address)}."
         if any(word in normalize_arabic(message).split() for word in ("قلت", "قولت", "قلتلك", "قولتلك")):
             ask = ("الاختيارات والكمية متسجلة زي ما طلبت. باقي بس "
-                   + _short_missing(name, phone, secondary_phone, address) + ".")
-        return _cart_recap(conversation, items_to_create, total_price) + ask, context_str
+                   + _short_missing(name, phone, secondary_phone or no_secondary, address) + ".")
+        if re.search(r"بعدين|لما\s+(?:اكون|ابقي|ابقى|يبقي|اجهز|افضي|اقرر)|مش\s+دلوقتي|\blater\b", normalize_arabic(message)):
+            # "هاخده. هكمل الأوردر بعدين" got the full details demand (simulation S05 t6).
+            # "الطلب محفوظ" read as an order that exists; only the cart does (judge, simulation S03 round 2
+            # batch 2, t9).
+            ask = ("تمام، اختياراتك محفوظة في السلة. لما تكون جاهز ابعتلي "
+                   + _short_missing(name, phone, secondary_phone or no_secondary, address) + ".")
+            previous = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                        .order_by("-created_at", "-pk").values_list("content", flat=True).first() or "")
+            if "اختياراتك محفوظة في السلة" in previous:
+                # "هبعتلك البيانات لما أبقى جاهز أكمل" after that was already said got the recap and the
+                # details request again, which pressed a customer who had deferred (S05 round 2 full 4, t7).
+                return "تمام يا فندم، مستنيك.", context_str
+        return _cart_recap(conversation, items_to_create, total_price, message) + ask, context_str
 
     # A true is_confirmed only counts if the customer was actually shown the total
     # first. Without this, one spurious true creates the order and moves stock on a
@@ -1145,9 +1402,9 @@ Return valid JSON in this exact format:
     if strict_budget and _over_budget_warning(conversation, items_to_create):
         cart.quote = {}
         cart.save(update_fields=["quote"])
-        return _cart_recap(conversation, items_to_create, total_price), context_str
+        return _cart_recap(conversation, items_to_create, total_price, message), context_str
     if not is_confirmed or not _summary_was_shown(conversation, cart, items_to_create):
-        return _quote_summary(conversation, cart, items_to_create), context_str
+        return _quote_summary(conversation, cart, items_to_create, note=_bottle_note(message, items_to_create)), context_str
 
     # All details collected and confirmed! Let's process the order.
     return create_order_in_db(store, name, phone, secondary_phone, address, total_price, items_to_create, context_str, conversation, quote_token=cart.quote.get("token"))
@@ -1225,7 +1482,7 @@ def create_order_in_db(store, name, phone, secondary_phone, address, total_price
                     return f"الكمية دي من {variant.product.name} مش متاحة دلوقتي. نراجع الكمية؟", context_str
             total_price = sum((item["price"] * item["quantity"] for item in items_to_create), Decimal("0"))
             order = Order.objects.create(store=store, customer_name=name, customer_phone=phone,
-                secondary_phone=secondary_phone, shipping_address=address, total_price=total_price,
+                secondary_phone=secondary_phone or "", shipping_address=address, total_price=total_price,
                 status="pending", conversation=conversation, checkout_token=quote_token, notification_pending=True)
             for item in items_to_create:
                 OrderItem.objects.create(order=order, variant=item["variant"], quantity=item["quantity"],

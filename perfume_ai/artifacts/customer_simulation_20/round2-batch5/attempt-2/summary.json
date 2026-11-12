@@ -1,0 +1,23 @@
+[
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 6,
+      "knows_when_to_stop": 7,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 8 critical repeated_reply: 100% identical to an earlier reply: 'راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيز'",
+      "judge turn 8 high commerce: The customer had already received the summary and total, then explicitly confirmed. Asking for confirmation again delays checkout and fails to act on the custom"
+    ],
+    "cost_usd": "0.015551170",
+    "api_calls": 33
+  }
+]

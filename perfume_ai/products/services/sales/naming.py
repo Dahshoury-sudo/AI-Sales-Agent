@@ -299,6 +299,23 @@ _REFERENTIAL = frozenset({
     # Quantifiers and ordinals.
     "كل", "واحد", "واحده", "لوحده", "لوحدها", "الاتنين", "التلاته", "التاني",
     "الاول", "الاولاني", "الاولي", "الثاني", "الثانيه", "الاخير", "الاخيره", "بعض", "تاني", "تانيه",
+    # Authenticity and value talk. "طب إزاي ده بـ1000 والأصلي بآلاف؟ إيه اللي بشتريه بالظبط؟" names no
+    # perfume, yet read as an unreadable name and was asked to retype it (simulation S16 round 2, t2).
+    "اصلي", "اصليه", "تقليد", "تركيب", "تركيبه", "مستوحي", "مستوحاه", "الاف", "بالاف", "الوف",
+    "بشتري", "بشتريه", "اشتري", "هشتري", "بالظبط", "بالضبط", "بالتحديد",
+    # The skeptic's general questions: "يعني زي الأصلي 100%؟ وبتقعد قد إيه بجد؟ متقوليش كلام بياعين",
+    # "أنا لسه بسأل بشكل عام، مش اسم عطر معين" — both answered "retype the name" (S16 round 2 full 3).
+    "بيقعد", "بتقعد", "يقعد", "تقعد", "بيثبت", "بتثبت", "قد", "متقوليش", "متقولش", "هتقولي", "بياعين",
+    "بياع", "كلام", "زي", "اكيد", "بسال", "بسأل", "بشكل", "عام", "عامه", "معين", "معينه", "اسم", "انا",
+    "ساعه", "ساعات", "الكل", "صراحه", "بصراحه",
+    # "2000 للـ90؟ ده سعر الستور بتاعكم ولا الأصلي؟ وبالنسبة للـnotes لسه مش مقتنع…" names no perfume;
+    # the resolver was asked and placed Aventus, while Layton was the perfume on the table (S02 round 2
+    # full 4, t6).
+    "مقتنع", "مقتنعه", "بالنسبه", "شويه", "بتاعكم", "بتاعتكم", "هفكر", "افكر", "notes", "note", "الستور",
+    "ستور", "فيها", "فيه", "مش", "سعري",
+    # "لا، قولّي تقدير عملي حتى لو مش مضمون. مش عايز أحوّل لحد تاني عشان أعرف مدة تقريبية." (S16 full 4, t5)
+    "تقدير", "مده", "مضمون", "احول", "لو", "عملي", "عمليا", "حتي", "عشان", "تقريبيه", "تقريبي", "تقريبا",
+    "لحد", "حد",
 # A message that only chases, or only points, names nothing — so the gate must not fire on either.
 }) | _CHASING | _PLURAL_POINTERS
 
@@ -408,6 +425,9 @@ def _is_filler(token):
         # "90 ملي", "50" — a size, not a name. Names carrying digits ("Afnan 9PM",
         # "XJ 1861 Naxos") tokenise with their words attached, so this cannot swallow one.
         or probe.isdigit()
+        # "بـ1000", "ب750ج", "للـ90", "الـ50": a price or size with its preposition attached is no
+        # more a name than "1000"; a bare "للـ"/"الـ" is the preposition alone.
+        or re.fullmatch(r"(?:بـ?|للـ?|الـ?|لـ)\d+(?:ج|جنيه|ملي|مل)?|(?:لل|ال|ب|ل)ـ", probe) is not None
         for probe in _probe_forms(token)
     )
 
@@ -1016,25 +1036,36 @@ def house_mentioned_alone(text, store, products=None):
     a real product name. The order extractor resolves each line separately, so the record of *which
     words were a house* has to survive into that loop; this is that record.
 
-    A mention counts as bare when nothing but filler follows it: "امبيرو سترونجر" is the perfume
-    Stronger With You, said through its house, and must not become a question — "سترونجر" follows
-    the alias, so it does not fire. "سوفاج امبيرو" fires, because "امبيرو" has nothing after it.
+    A mention counts as bare when it is the whole of its order line: "امبيرو سترونجر" is the
+    perfume Stronger With You, said through its house, and must not become a question. Lines are
+    cut at sizes, counts and conjunctions, so "وواحد امبيرو 50 ملي" is a line of its own.
+
+    Reading the span as one sequence instead fired on any house that ended the message, and Arabic
+    puts the house last in a name as often as first: "عايز 2 سوفاج 90 ملي وواحد بلو دي شانيل 50
+    ملي" turned the Bleu de Chanel line into "which Chanel?" and lost its 50 ml (simulation S19
+    round 2, t1).
     """
     words = identifying_tokens(text)
     if not words:
         return None
-    ordered = [token for token in arabic_span(text).split() if token in words]
+    lines = [arabic_span(part).split() for part in _ORDER_LINE_BREAK.split(normalize_arabic(text or ""))]
+    lines = [line for line in lines if line]
 
     for alias in sorted(_HOUSE_ALIASES, key=lambda alias: len(identifying_tokens(alias)), reverse=True):
         alias_tokens = identifying_tokens(alias)
         if not alias_tokens or not alias_tokens <= words:
             continue
-        positions = [index for index, token in enumerate(ordered) if token in alias_tokens]
-        if positions and positions[-1] == len(ordered) - 1:
+        if any(line[-1] in alias_tokens and set(line) <= alias_tokens for line in lines):
             brand = house_for_span(alias, store, products=products)
             if brand is not None:
                 return brand
     return None
+
+
+# Where one order line ends and the next begins: a size, a count, a comma, or a joining و.
+_ORDER_LINE_BREAK = re.compile(
+    r"\d+\s*(?:ml|مل|ملي|مللي)(?!\w)|(?<!\w)\d+(?!\w)|(?<!\w)و?(?:واحد|واحده|اتنين|تلاته|كمان)(?!\w)"
+    r"|[,،+\n]|(?<!\w)و\s|(?<=\s)و(?=\w)", re.I)
 
 
 def names_a_bare_brand(name, store, products=None):
@@ -1155,6 +1186,77 @@ def mentioned_in(text, products):
     return found
 
 
+# A Latin name is read, not sounded out. When the run of Latin words around a product's name also
+# carries words that the name and its house do not, the customer named a different perfume: "عندكو
+# Club de Nuit Intense؟" matched La Nuit on its one identifying token "nuit" and was answered "La
+# Nuit: متوفر." (simulation S09, every run). Flanker words alone ("Intense", "Elixir") stay with the
+# line-mates warning; English/Franco filler and Franco words written with digits never count.
+_LATIN_RUN = re.compile(r"[A-Za-z0-9][A-Za-z0-9'’&.-]*(?:[ \t]+[A-Za-z0-9][A-Za-z0-9'’&.-]*)*")
+_LATIN_WORD = re.compile(r"[A-Za-z0-9][A-Za-z0-9'’&-]*")
+LATIN_FILLER = frozenset({
+    "a", "an", "and", "any", "are", "available", "b", "bas", "bkam", "bottle", "buy", "by", "da",
+    "de", "des", "di", "do", "du", "eau", "edp", "edt", "eh", "el", "for", "get", "have", "how", "i",
+    "il", "in", "is", "it", "kam", "keda", "kda", "la", "law", "le", "les", "like", "lw", "me", "ml",
+    "msh", "much", "my", "need", "of", "or", "parfum", "perfume", "please", "pls", "pour", "price",
+    "same", "similar", "size", "smell", "tab", "tamam", "the", "this", "tmam", "to", "w", "wala",
+    "want", "what", "with", "ya", "you", "your", "ana", "enta", "inta", "fe", "fi", "mn", "men",
+    # Promotion words around a name ("Bundle stronger with you", "Offer stronger with u") — the
+    # production backtest's two false triggers.
+    "bundle", "bundles", "offer", "offers", "deal", "deals", "discount", "promo", "u",
+    # Perfume talk around a name, never part of one: "طب والـ Layton top/middle/base بتاعته إيه؟" and
+    # "Layton notes إيه؟" disagreed with Layton on "top"/"notes", the row was dropped, and the customer
+    # was offered the team for notes we hold (simulation S02 round 2 full 6, t3). Scent adjectives and
+    # "original" are deliberately absent: "Light Blue" and "Original Santal" are names.
+    "note", "notes", "top", "middle", "heart", "base", "dry", "down", "drydown", "opening", "accord",
+    "accords", "longevity", "projection", "sillage", "performance", "lasting", "tester", "sample",
+    "decant", "review", "reviews", "vs", "versus", "stock", "sizes", "prices", "info", "details",
+    "about", "tell", "which", "more", "than", "better",
+})
+_FLANKER_WORDS = frozenset({"intense", "intensely", "elixir", "extreme", "absolu", "absolute", "sport",
+                            "cologne", "edition", "limited", "prive", "privee", "exclusive"})
+
+
+def latin_words(text):
+    return [word.lower().strip("'’-&.") for word in _LATIN_WORD.findall(text or "")]
+
+
+def latin_disagreement(text, product, accounted=(), vocabulary=None):
+    """The Latin run in `text` that names more than `product` does, else "".
+
+    `accounted` holds names already reported elsewhere (the resolver's unplaced list, the other
+    placed rows), whose words are not counted against this product. `vocabulary` is the store's
+    perfume-name words: a run sharing NO word with the product disagrees with it when at least two
+    of its words are perfume-name words ("Club de Nuit Intense" placed as 1 Million, simulation
+    S09 round 2), which keeps Franco chatter around a referent from ever counting.
+    """
+    house = getattr(getattr(product, "brand", None), "name", "") or ""
+    own = [word for word in latin_words(f"{product.name} {house}") if word]
+    elsewhere = {word for name in accounted for word in latin_words(name)}
+
+    def same(word, mine):
+        # A clipped spelling of a long word ("Lacost" for Lacoste) is that word.
+        return _similar_enough(word, mine) or (
+            min(len(word), len(mine)) >= 5 and abs(len(word) - len(mine)) <= 2
+            and (word.startswith(mine) or mine.startswith(word)))
+
+    for found in _LATIN_RUN.finditer(text or ""):
+        run = found.group()
+        # A reference is not a request: "عايز حاجه شبه Baccarat Rouge بس مش هي" names what the
+        # customer wants something LIKE, never the row we place.
+        lead_in = normalize_arabic(text[max(0, found.start() - 16):found.start()])
+        if re.search(r"(?:شبه|زي|مثل|بدل|غير|similar\s+to|like|instead\s+of)\s*$", lead_in):
+            continue
+        words = [word for word in latin_words(run) if word and word not in LATIN_FILLER]
+        shared = [word for word in words if any(same(word, mine) for mine in own)]
+        extra = [word for word in words if word not in shared and word not in elsewhere and len(word) >= 3
+                 and not re.search(r"\d", word)]
+        if shared and any(word not in _FLANKER_WORDS for word in extra):
+            return run.strip()
+        if not shared and vocabulary and sum(word in vocabulary for word in extra) >= 2:
+            return run.strip()
+    return ""
+
+
 def names_in(text, names):
     """Which of `names` the text actually says, in order of first appearance.
 
@@ -1182,12 +1284,21 @@ def names_in(text, names):
     if not haystack:
         return []
 
+    def bounded(start, end):
+        # A name is a whole Latin word run: "Passionfruit, Spices … Leather" in a notes list said the
+        # perfumes Si, Pi and Her (simulation S10 round 2, t4). An Arabic letter glued on ("وSauvage")
+        # is the conjunction and still counts as a boundary.
+        latin = re.compile(r"[a-z0-9]")
+        return ((start == 0 or not latin.match(haystack[start - 1]))
+                and (end >= len(haystack) or not latin.match(haystack[end])))
+
     longest_first = sorted((name for name in names if name), key=len, reverse=True)
     found, remaining = [], set(longest_first)
     position = 0
     while position < len(haystack) and remaining:
         for name in longest_first:
-            if name in remaining and haystack.startswith(name.lower(), position):
+            if (name in remaining and haystack.startswith(name.lower(), position)
+                    and bounded(position, position + len(name))):
                 found.append(name)
                 remaining.discard(name)
                 position += len(name)

@@ -48,9 +48,14 @@ UNISEX_WORDS = (
 # — the router uses this to decide whether asking is still worth a turn.
 ALL_WORDS = MALE_WORDS + FEMALE_WORDS + UNISEX_WORDS
 
+# Franco-Arabic spellings are category words too: "rigali" went unrecognised and the scripted gender
+# question was sent seven times in one conversation (simulation S13).
+_FRANCO_MALE = ("rigali", "regali", "rgali", "rigaly", "regaly", "ragali", "rigale", "regale", "rigalii")
+_FRANCO_FEMALE = ("7arimi", "harimi", "7arimy", "harimy", "7areemy", "7aremy", "7arime", "harime", "banati")
 _CATEGORIES = {
-    "male": ("male", "men", "mens", "men's", "رجالي", "رجاليه", "للرجال", "رجاله", "ولادي", "شبابي"),
-    "female": ("female", "women", "womens", "women's", "ladies", "حريمي", "حريميه", "نسائي", "نسائيه", "بناتي"),
+    "male": ("male", "men", "mens", "men's", "رجالي", "رجاليه", "للرجال", "رجاله", "ولادي", "شبابي", *_FRANCO_MALE),
+    "female": ("female", "women", "womens", "women's", "ladies", "حريمي", "حريميه", "نسائي", "نسائيه", "بناتي",
+               *_FRANCO_FEMALE),
     "unisex": UNISEX_WORDS,
 }
 _RECIPIENTS = {

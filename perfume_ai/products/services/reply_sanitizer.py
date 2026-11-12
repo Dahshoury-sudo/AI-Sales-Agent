@@ -37,6 +37,10 @@ _NOTE_ALIASES = {
     "praline": ("praline", "برالين", "بريلين"),
     "cardamom": ("cardamom", "هيل", "حبهان"),
     "sandalwood": ("sandalwood", "صندل"), "vetiver": ("vetiver", "فيتيفر"),
+    # Layer questions (top/middle/base) name these most (simulation S02).
+    "pepper": ("pepper", "فلفل"), "bergamot": ("bergamot", "برغموت", "برجموت"),
+    "apple": ("apple", "تفاح"), "pineapple": ("pineapple", "اناناس"),
+    "birch": ("birch", "بتولا"), "oakmoss": ("oakmoss", "طحلب"),
 }
 
 
@@ -96,9 +100,16 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
         if re.search(r"(?:عطر|برفان|عطور)\s+(?:رجالي\s+|حريمي\s+)?(?:اصلي|اصليه)|براندات\s+اصليه", clause):
             if not re.search(r"(?:مش|غير|لا|مفيش)\s+(?:متوفر\s+)?(?:عندنا\s+)?(?:عطر|برفان|عطور|براندات)", clause):
                 issues.append("authenticity: زجاجة الأوريجينال لا تعني سائل أصلي")
+        # "الزجاجة نفسها أصلية من Dior" — the store only says some perfumes are filled into original
+        # bottles; that the bottle is genuinely the brand's is not recorded (simulation S16 round 2 full 2, t7).
+        if re.search(r"(?:زجاج|ازاز)\S*\s+(?:\S+\s+){0,2}(?:اصليه|اصلي)\s+(?:من|بتاعه|بتاعت)\s+\S", clause) \
+                and not re.search(r"(?<!\w)(?:مش|غير|مو)\s+(?:\S+\s+){0,1}(?:اصليه|اصلي)", clause):
+            issues.append("authenticity: زجاجة الأوريجينال بشكل زجاجة البراند؛ مش مسجل إنها أصلية من البراند نفسه")
     for popularity in re.finditer(r"معظم الناس|اغلب الناس|مش منتشر|مش موجود عند حد|مضمون هيعجب|\bنادره?\b", text):
         if not re.search(r"ماقدرش|مقدرش|مش متاكد|مش مؤكد", text[max(0, popularity.start()-35):popularity.start()]):
             issues.append("popularity: لا توجد بيانات شعبية أو ضمان إعجاب")
+    issues += _similarity_claim_issues(reply, facts or {})
+    issues += _retraction_issues(reply, facts or {})
     if not facts:
         return issues
     segments = _attributed_segments(reply, facts)
@@ -116,6 +127,27 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
                      if message is not None and _notes_authorized(requests[product_name], row.get("notes", ()))
                      else segment)
         issues += _season_claim_issues(segment, row.get("season", ""), name)
+        # "متاح لسوفاج كمان زجاجة اوريجنال بأحجام مختلفة" when one original size is stocked (S16 round 2
+        # full 2, t5).
+        if "original_sizes" in row and len(row["original_sizes"]) <= 1 and re.search(
+                r"(?:اوري?جي?نال|original)\S*\s+(?:\S+\s+){0,2}(?:ب|في)?\s*(?:ال)?احجام\s+(?:مختلفه|كتير|متعدده|كذا)",
+                segment):
+            issues.append(f"sizes:{name}: the original bottle is stocked in "
+                          f"{len(row['original_sizes'])} size(s) only")
+        # "المتاح منه هو الحجم ده بس" about 212 NYC Man, stocked in 50 and 90 ml (S11 round 2 full 3, t3).
+        if len(row.get("sizes") or ()) > 1 and re.search(
+                r"(?:المتاح|متاح|موجود|عندنا)\s+(?:منه\s+)?(?:هو\s+)?(?:الحجم\s+ده|حجم\s+واحد)\s+بس|"
+                r"مفيش\s+(?:منه\s+)?غير\s+(?:الحجم\s+ده|حجم\s+واحد)|(?:حجم|الحجم)\s+واحد\s+بس", segment):
+            issues.append(f"sizes:{name}: stocked in {len(row['sizes'])} sizes")
+        # "Cassilia… ومش حلو زيادة": the catalogue records the labels a perfume has, never the ones it
+        # lacks, so "not sweet" is an inference from a missing tag, which the owner ruled out (round 2;
+        # simulation S07 round 2 full 5, t2). Said with a hedge it is the honest form and passes.
+        # Scoped like `description_issues`' unrecorded-trait check: only with the current message,
+        # i.e. in the reply pipeline; a legacy direct call keeps its original scope.
+        for clause in re.split(r"[.!؟?\n]", segment) if message is not None else ():
+            if _NOT_SWEET.search(clause) and not _NOT_SWEET_HEDGE.search(clause):
+                issues.append(f"scent:{name}:not sweet is not recorded; a missing label is not a negative")
+                break
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches
@@ -139,16 +171,136 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
         recorded = _claim_normalize(" ".join(row.get("notes", [])))
         for key, aliases in _NOTE_ALIASES.items():
             alias_pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"
+            is_recorded = any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases)
             for claim in re.finditer(alias_pattern, segment):
                 before = segment[max(0, claim.start() - 28):claim.start()]
+                after = segment[claim.end():claim.end() + 40]
+                if is_recorded:
+                    # A recorded note is not absent: "Aventus مفيهوش فانيليا" when its stored base
+                    # lists vanilla. (A note called a mistake is `_retraction_issues`.)
+                    denied = (re.search(r"(?:مش|بدون|من\s+غير|مفيهوش|مفيهاش|ملوش|مالوش|خالي\s+من|مفيش|مافيش)\s+"
+                                        r"(?:\S+\s+){0,2}$", before) and not re.search(r"مش\s+(?:بس|لوحد)", before)) \
+                        or re.match(r"\s*(?:\S+\s+)?(?:مش|مو|غير|ملوش|مالوش)\s+(?:موجود|مذكور|مسجل|متسجل|ضمن)", after)
+                    # "الفانيليا مش ضمن الـTop Notes، هي في الـBase" places the note; it does not deny it.
+                    if denied and not re.search(r"(?<![a-z])(?:top|middle|heart|base|dry)|افتتاحي|قلب|قاعد", after):
+                        issues.append(f"note:{name}:denied {key}, which is in the stored notes")
+                        continue
                 style_tag = {"musk": "musky"}.get(key, key)
                 if style_tag in row.get("scent_tags", []) and re.search(r"(?:طابع(?:ه|ها)?|ستايل|ريحته|ريحتها|style|scent)\s*$", before):
                     continue
-                if re.search(r"مش|بدون|من غير|مفيهوش|مفيش|مافيش|ولا|بتحب|تحب", before):
+                if re.search(r"مش|بدون|من غير|مفيهوش|مفيهاش|ملوش|مالوش|خالي|مفيش|مافيش|ولا|بتحب|تحب", before):
+                    continue
+                # Arabic also negates with a predicate after the ingredient: "الـCardamom مش موجود
+                # ضمن النوتات المسجلة" is the honest denial, and rejecting it left the customer
+                # with a repeated flat list (simulation S02 t6-t7).
+                if re.match(r"\s*(?:\S+\s+)?(?:مش|مو|غير|ملوش|مالوش)\s+(?:موجود|مذكور|مسجل|متسجل|ضمن|في|فيه|فيها)", after):
+                    continue
+                # "عنبر رمادي" is ambergris, a different recorded material from amber (S02 t2).
+                if key == "amber" and re.match(r"\s*(?:ال)?رمادي", after) and "ambergris" in recorded:
                     continue
                 if not any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
                     issues.append(f"note:{name}:{key}")
+        issues += _note_layer_issues(segment, row.get("notes") or [], name)
     return list(dict.fromkeys(issues))
+
+
+# Admitting a mistake. "مش غلط" and "ما غلطتش" stand by the statement and are not retractions.
+_RETRACTION = re.compile(r"بالغلط|(?<!مش )(?<!مفيش )(?<!\w)غلط(?:ت|ه)?(?:\s+مني)?(?!\w)|كان\s+غلط|سهو|اعتذر\w*")
+
+
+def _retraction_issues(reply, facts):
+    """A recorded note called a mistake.
+
+    "معاك حق؛ أنا ذكرت الفانيليا في قاعدة Aventus بالغلط" withdrew a note Aventus's stored base does
+    list, after the customer said it was not in the perfume they know (simulation S02 round 2 full 5,
+    t4). Checked per sentence, because the note may come before the perfume's name.
+    """
+    if not facts:
+        return []
+    issues = []
+    rows = {_claim_normalize(name): row for name, row in facts.items()}
+    for sentence in re.split(r"[.!؟?\n]", _claim_normalize(reply)):
+        if not _RETRACTION.search(sentence):
+            continue
+        named = [name for name in rows if name and re.search(r"(?<![a-z0-9])" + re.escape(name) + r"(?![a-z0-9])", sentence)]
+        if not named and len(rows) == 1:
+            named = list(rows)
+        for name in named:
+            recorded = _claim_normalize(" ".join(rows[name].get("notes") or []))
+            for key, aliases in _NOTE_ALIASES.items():
+                mentioned = re.search(r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])",
+                                      sentence)
+                if mentioned and any(re.search(r"(?<!\w)" + re.escape(a) + r"(?!\w)", recorded) for a in aliases):
+                    issues.append(f"retraction:{name}:{key} is in the stored notes; it was not a mistake")
+    return issues
+
+
+_NOT_SWEET = re.compile(
+    r"(?<!\w)و?(?:مش|مو|غير)\s+(?:ال)?(?:حلو|حلوه|مسكر\w*|سكري|سويت|sweet)(?!\w)"
+    r"|(?:مفيهوش|مفيهاش|من\s+غير|بدون|خالي\s+من)\s+(?:اي\s+)?(?:سكر|حلاوه|سكريات|سويت)(?!\w)")
+_NOT_SWEET_HEDGE = re.compile(
+    r"مقدرش|ماقدرش|معنديش|مش\s+عندي|مفيش\s+بيانات|محتاج\s+تاكيد|ضمن\s+تصنيف|"
+    r"مش\s+(?:متاكد|مؤكد|موكد|متسجل|مسجل|مذكور)")
+
+
+_SIMILARITY_WORDS = re.compile(r"اقرب|الاقرب|شبه|قريب\s+من|قريبه\s+من|زي\s+ريح|similar|closer|closest")
+_HEDGE = re.compile(r"مقدرش|ماقدرش|مش\s+(?:متاكد|مؤكد|موكد|متسجل|مسجل)|معنديش|مش\s+عندي|مفيش\s+بيانات|محتاج\s+تاكيد")
+
+
+def _similarity_claim_issues(reply, facts):
+    """A likeness asserted toward a perfume we hold no data for.
+
+    "Aventus أقرب لـ Club de Nuit" compared a stocked perfume with one we had just said we do not
+    carry, with nothing recorded to compare (simulation S09 round 2, t7).
+    """
+    known = {_claim_normalize(name) for name in facts}
+    issues = []
+    for clause in re.split(r"[.!؟?\n]", _claim_normalize(reply)):
+        if not _SIMILARITY_WORDS.search(clause) or _HEDGE.search(clause):
+            continue
+        from .sales.naming import LATIN_FILLER
+        for run in re.findall(r"[a-z0-9][a-z0-9'’&.-]*(?:\s+[a-z0-9][a-z0-9'’&.-]*)*", clause):
+            run = run.strip()
+            words = [word for word in re.findall(r"[a-z]+", run) if word not in LATIN_FILLER and len(word) >= 3]
+            if words and not any(run in name or name in run for name in known):
+                issues.append("similarity: no recorded data compares a perfume with " + run)
+    return issues
+
+
+# Which layer a clause speaks about. The dry down is the base.
+_LAYER_WORDS = ((0, r"top|افتتاحي\w*"), (1, r"middle|heart|قلب"), (2, r"base|قاعد\w*|dry\s*-?\s*down|دراي\s*داون"))
+
+
+def _note_layer_issues(segment, layers, name):
+    """A note placed in a layer it is not stored in, or a layer described by scent labels.
+
+    "أيوه، معاك حق إن الفلفل موجود في الـTop Notes" agreed with the customer while Layton's pepper is
+    stored in the base, and "الـdry down طابعه خشبي وفيه ريحة فواكه ودخان" described the dry down
+    with labels instead of its stored base notes (simulation S02 round 2, t4 and t7).
+    """
+    if len(layers) != 3:
+        return []
+    stored = [_claim_normalize(layer or "") for layer in layers]
+    issues = []
+    for clause in re.split(r"[.!؟?\n،;]+", segment):
+        named = {index for index, pattern in _LAYER_WORDS
+                 if re.search(r"(?<![a-z])(?:[وبل]?ال|الـ|ال ـ)?(?:" + pattern + r")", clause)}
+        if len(named) != 1 or re.search(r"(?<!\w)(?:مش|مو|غير|مفيش|مافيش|ملوش|not|isn't)(?!\w)", clause):
+            continue
+        layer = next(iter(named))
+        if re.search(r"طابع\w*|ستايل|(?<!\w)ريح(?:ه|ته|تها)(?!\w)", clause):
+            from .sales.scent_preferences import explicit_scent_updates
+            if explicit_scent_updates(clause, for_claims=True).get("scent_tags"):
+                issues.append(f"note-layer:{name}:the layer is described only by its stored notes")
+        for key, aliases in _NOTE_ALIASES.items():
+            pattern = r"(?<![\w])(?:[وبل]?ال|[وب])?(?:" + "|".join(map(re.escape, aliases)) + r")(?![\w])"
+            if not re.search(pattern, clause):
+                continue
+            homes = [index for index, text in enumerate(stored)
+                     if any(re.search(r"(?<!\w)" + re.escape(alias) + r"(?!\w)", text) for alias in aliases)]
+            if homes and layer not in homes:
+                issues.append(f"note-layer:{name}:{key} is stored in another layer")
+    return issues
 
 
 # Each pattern matches a whole trailing question, including the whitespace before it,

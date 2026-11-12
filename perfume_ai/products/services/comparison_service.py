@@ -120,11 +120,30 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     repetition check of any kind — and instruction 5 below *requires* the closing frame
     "أنا أرشحلك X أكتر لأن…", the same frame conversation 973 repeated across four replies.
     """
-    from .product_info import _named_in_message, _referent_from_conversation
-    matches = _named_in_message(message, store)
+    from .product_info import _named_in_message, _referent_from_conversation, offered_extensions
+    matches = offered_extensions(_named_in_message(message, store), message, store, conversation)
+    if not matches:
+        # "خلاص اختارلي انت" / "أنهي فيهم؟" names nothing: the perfumes on the table are the subject.
+        # Asking the resolver first returned one row and ended in "retype the name" (S06 replay 3).
+        on_table = _referent_from_conversation(message, store, conversation)
+        if len(on_table) >= 2:
+            matches = on_table
+        elif len(on_table) == 1:
+            # One referent is still a perfume to compare: the other on the table is added below
+            # instead of dropping it and ending in "retype the name" (simulation S06 round 2 full 2, t7).
+            matches = list(on_table)
     if len(matches) < 2:
         resolved = resolve_products(message, history, store, conversation)
         matches += [p for p in resolved if p.pk not in {m.pk for m in matches}]
+    if len(matches) == 1 and conversation is not None:
+        # "إيه اللي يميز Alexandria II عن التاني؟" names one perfume and points at the only other one
+        # on the table; with one row it fell through to a one-perfume description (S05 final 2, t4).
+        from products.models import Product
+        from .sales.described import offered_in_order
+        others = [name for name in offered_in_order(conversation, store) if name != matches[0].name]
+        other = Product.objects.filter(store=store, name=others[0]).first() if len(others) == 1 else None
+        if other is not None:
+            matches.append(other)
     if not matches:
         matches = _referent_from_conversation(message, store, conversation)
 
@@ -161,17 +180,17 @@ def compare_products(message, history=None, store=None, conversation=None, retry
 ═══ طلب العميل ═══
 {message}
 
-═══ بيانات العطرين من قاعدة البيانات ═══
+═══ بيانات العطور اللي بيقارن بينها من قاعدة البيانات ═══
 {context}
 
 ═══ تعليمات المقارنة ═══
-1. جاوب بجملة أو جملتين مصري طبيعي، بفارق مفيد لكل عطر حسب سؤاله؛ من غير مقدمة أو إعادة تلخيص الطلب. الوصف العام لريحة كل عطر يتبع قاعدة التاجات فقط في الخط الأحمر 6؛ السؤال عن صفة معينة يسمح تستخدم كل تاجاته، والنوتات للمكونات المطلوبة صراحة فقط. لو طلب تفاصيل أكتر، جاوب على كلها بنفس القاعدة. استخدم أسماء العطور من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
+1. جاوب بجملة أو جملتين مصري طبيعي، بفارق مفيد لكل عطر حسب سؤاله، وغطي كل العطور اللي بيسأل عنها (3 عطور زي اتنين)؛ ولو سأل أنهي أنسب لمناسبة (شغل، سهرة، خروج…) قول المناسبة المسجلة لكل عطر منهم، حتى اللي مش مناسب؛ من غير مقدمة أو إعادة تلخيص الطلب. الوصف العام لريحة كل عطر يتبع قاعدة التاجات فقط في الخط الأحمر 6؛ السؤال عن صفة معينة يسمح تستخدم كل تاجاته، والنوتات للمكونات المطلوبة صراحة فقط. لو طلب تفاصيل أكتر، جاوب على كلها بنفس القاعدة. استخدم أسماء العطور من البيانات أعلاه فقط. الاسم اللي العميل ذكره من غير بيانات عنه لا يجوز وصف ريحته أو ترجيحه.
 2. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). ادمج الفروقات المهمة بس في كلام طبيعي.
 3. اذكر فقط الفروقات اللي بتفرق فعلاً في قرار الشراء (زي الريحة والمناسبة). الثبات ممتاز والفوحان قوي لكل اختياراتنا، ومش أساس لترجيح عطر على التاني.
 4. ❌ ممنوع تماماً تذكر أي أسعار أو أحجام أو معلومات عن التوفر في المقارنة.
 5. رجّح واحد فقط لو بياناته بتدعم الترجيح حسب طلب العميل. لو البيانات مش كفاية قول إنك مش قادر تجزم؛ ممنوع تخمّن الحلاوة من النوتات أو تجبر المقارنة على فائز.
 6. العميل لسه بيوازن بين اختيارين ومختارش — ممنوع تقفل البيعة في الرد ده. سؤال واحد بس لو فيه تفضيل ناقص فعلاً هيغير الإجابة؛ من غير سؤال ختامي لازم ولا إعادة سؤال جاوب عليه.
-7. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
+7. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه. سؤال جانبي عن سياسة الستور (استبدال، شحن، دفع) جاوبه من إجابات الستور المعتمدة في التعليمات العامة بدقة.
 8. ❌ ممنوع تذكر أي منتج تاني مش في المقارنة.
 {retry_hint}"""
     })
@@ -179,4 +198,8 @@ def compare_products(message, history=None, store=None, conversation=None, retry
     if quoting:
         messages[-1]["content"] += QUOTE_PROSE_INSTRUCTION
     response = chat(messages, profile="converse")
+    # Recorded after the call, so the model never sees it: the reply may name these in Arabic,
+    # and the next "أنهي فيهم؟" must still find them on the table (simulation S08 final t2).
+    from .sales.described import COMPARED_MARKER
+    context += "\n" + COMPARED_MARKER + " " + " | ".join(p.name for p in matches)
     return compose_price_reply(response, context) if quoting else (response, context)

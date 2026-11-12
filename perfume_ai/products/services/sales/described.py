@@ -200,8 +200,26 @@ def supported_offered_names(content, context, names):
     said = names_in(content, names)
     if _is_cart_context(context):
         return said
+    # A comparison may name its perfumes in Arabic ("بلو دي شانيل وسوفاج وإيروس"), which
+    # `names_in` cannot read, so the follow-up "أنهي فيهم أنسب للشغل؟" found nothing on the table
+    # and went through the gender and scent gates to two unrelated perfumes (simulation S08 final).
+    said += [name for name in compared_names(context, names) if name not in said]
     supported = _context_offered_names(context, names)
     return [name for name in said if name in supported]
+
+
+# Written by comparison_service under the injected rows, after the model call: the perfumes a
+# comparison reply was about, in whatever script the reply named them.
+COMPARED_MARKER = "COMPARED_PRODUCTS:"
+
+
+def compared_names(context, names):
+    names = set(names)
+    for line in (context or "").splitlines():
+        if line.upper().startswith(COMPARED_MARKER):
+            return [name for name in (part.strip() for part in line[len(COMPARED_MARKER):].split("|"))
+                    if name in names]
+    return []
 
 
 def _withdrawn_names(content, context, names):
@@ -413,6 +431,10 @@ def offered_ever(conversation, store):
 def ordinal_position(message):
     """Return a requested list position; None means no ordinal was used."""
     text = normalize_arabic(message or "")
+    # "أنا محتارة أكتر من الأول… اختارلي انت" is "than before", not "the first one"; read as an ordinal,
+    # the pick between the two on the table became a one-perfume lookup (simulation S06 round 2 full 2, t7).
+    text = re.sub(r"(?<!\w)(?:اكتر|اكثر|اقل|احسن|اوحش|ازيد|اصعب|اسهل)\s+من\s+الاول(?!\w)|(?<!\w)زي\s+الاول(?!\w)",
+                  " ", text)
     for pattern, position in (
         (r"(?:الاولاني|الاولى|الاولي|الاول|اول واحده?)", 0),
         (r"(?:التانيه?|الثانيه?|تاني واحده?)", 1),
@@ -446,7 +468,13 @@ def ordinal_products(conversation, store, turns=8):
         if len(ordered) > 1:
             current = ordered
         elif said and (not current or not set(said).issubset(current)):
-            current = ordered
+            if len(current) == 1 and len(ordered) == 1 and ordered[0] not in current:
+                # One more perfume offered on its own after another single offer ("فيه اختيار تاني
+                # رقيق؟") extends the list instead of replacing it, so "الأولاني" still means the
+                # first; replaced, it answered with Cassilia's row for Her (simulation S06 final t7).
+                current = current + ordered
+            else:
+                current = ordered
     return current
 
 
@@ -515,15 +543,18 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
             return ordered
         return []
 
-    latest = (
+    latest, latest_context = (
         conversation.messages.filter(role="assistant", delivery_status="sent")
         .order_by("-created_at")
-        .values_list("content", flat=True)
+        .values_list("content", "internal_context")
         .first()
-    )
+    ) or ("", "")
     from .naming import names_in
 
     ordered = names_in(latest, names)
+    # An Arabic-named comparison is ordered as compared, not alphabetically, so "الأولاني" after
+    # "الفرق بين بلو دي شانيل وسوفاج وإيروس" is Bleu de Chanel.
+    ordered += [name for name in compared_names(latest_context, names) if name not in ordered]
     remaining = set(names) - set(ordered)
 
     # Whatever is under discussion from the older reply but absent from the latest one sorts

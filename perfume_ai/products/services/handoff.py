@@ -147,6 +147,34 @@ def handoff_offer_reply(message, history):
         return False
     if re.fullmatch(r"(?:مش عايز|مش محتاج|بلاش)(?: شكرا)?", rest):
         return False
+    if approval and _PICK_WORDS.search(rest) and not _HUMAN_TOPIC.search(rest):
+        # "تمام، Chance شكله أقربلها.. هتعجبها أكيد؟" agreed with the recommendation and asked about
+        # it; read as yes to a side offer of the team, it ended the sale in a transfer (simulation S07).
+        return False
+    if _WALKS_AWAY.search(rest) and not _HUMAN_TOPIC.search(rest):
+        # "ماشي خلاص، مش هطلب حاجة. سيبك" gives up on the purchase; its "ماشي" was read as yes to
+        # "تحب أحولك لمندوب؟" and the conversation was handed to staff for follow-up after a clear
+        # close (simulation S20 round 2 full 6, t5).
+        return False
     if approval or _DO_IT.match(text):
         return True
     return None
+
+
+# Giving up on the purchase: "مش هطلب حاجة", "سيبك", "انسى".
+_WALKS_AWAY = re.compile(
+    r"مش (?:هطلب|هاطلب|هشتري|هاخد|طالب)(?:\s|$)|مش (?:عايز|عاوز|محتاج)(?:ه)? (?:حاجه|اي حاجه|اطلب|اشتري)|"
+    r"(?:^|\s)سيبك(?:\s|$)|(?:^|\s)سيبني(?:\s|$)|(?:^|\s)انسي(?:\s|$)")
+
+
+def walks_away(message):
+    """The customer drops the purchase and asks nothing: "ماشي خلاص، مش هطلب حاجة. سيبك"."""
+    return bool(_WALKS_AWAY.search(_words(message))) and not re.search(r"[؟?]", message or "")
+
+
+# Talk about the pick itself after "تمام" ("Chance شكله أقربلها.. هتعجبها أكيد؟"). Latin words are not
+# read as names here: "yes, and ask them about the price" is an acceptance with a question for the team.
+_PICK_WORDS = re.compile(r"هتعجب|هيعجب|تعجبها|يعجبها|شكله|اقرب|انسب|ريحت|هاخده|هاخدها")
+# ...unless what follows is about the team or the transfer: "تمام بس هو هيكلمني امتى؟".
+_HUMAN_TOPIC = re.compile(r"حول|كلم|مندوب|فريق|موظف|بشري|خدمه|هيقول|هيكلم|هيرد|هيتواصل|"
+                          r"\b(?:human|agent|team|call|transfer|connect)\b")

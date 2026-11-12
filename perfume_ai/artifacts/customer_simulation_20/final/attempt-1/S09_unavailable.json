@@ -1,0 +1,265 @@
+{
+  "id": "S09_unavailable",
+  "title": "Unavailable perfume and request for a similar alternative",
+  "persona": "clone_hunter",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عندكو Club de Nuit Intense؟",
+      "reply": "La Nuit: متوفر.",
+      "seconds": 144.41,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): La Nuit\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): sweet, fruity, floral\nDescription Tags (first three only): sweet, fruity, floral\nSimple Scent Description: ريحته مسكر وفيه ريحة فواكه وزهور\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pear, Bergamot, Tangerine\nMiddle Notes: Vanilla Orchid, Black Rose, Passionfruit, Strawberry\nBase Notes: Patchouli, Praline, Incense, Litchi, Vanilla, Caramel, Coffee, Coumarin, Licorice, Papyrus\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "La Nuit"
+      ],
+      "claim_checks": [
+        {
+          "draft": "مش لاقي اسم Club de Nuit Intense واضح عندي يا فندم، ممكن تكتبهولي تاني عشان أتأكد من العطر المقصود؟",
+          "issues": [
+            "description:La Nuit: occasion suitability requires an explicit current question"
+          ]
+        },
+        {
+          "draft": "مش متأكد حضرتك تقصد أنهي عطر باسم Club de Nuit Intense؛ ممكن تكتبلي الاسم تاني؟",
+          "issues": [
+            "description:La Nuit: occasion suitability requires an explicit current question"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "لا قصدي Club de Nuit Intense، مش La Nuit.. متوفر ولا لأ؟",
+      "reply": "Club de Nuit Intense اسم مختلف عن La Nuit. اكتبلي الاسم تاني أو وضّحلي أنهي إصدار تقصد عشان أتأكد من العطر المقصود.",
+      "seconds": 2.72,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): La Nuit\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): sweet, fruity, floral\nDescription Tags (first three only): sweet, fruity, floral\nSimple Scent Description: ريحته مسكر وفيه ريحة فواكه وزهور\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pear, Bergamot, Tangerine\nMiddle Notes: Vanilla Orchid, Black Rose, Passionfruit, Strawberry\nBase Notes: Patchouli, Praline, Incense, Litchi, Vanilla, Caramel, Coffee, Coumarin, Licorice, Papyrus\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "هو Club de Nuit Intense نفسه، مش La Nuit.. مش عارف متوفر عندكو ولا لأ؟",
+      "reply": "Club de Nuit Intense اسم مختلف عن La Nuit، ومحتاج تأكيد من فريق خدمة العملاء عشان أأكدلك توفره. تحب أحولك ليهم؟",
+      "seconds": 2.7,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): La Nuit\nBrand: Lancome\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Lancome) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): sweet, fruity, floral\nDescription Tags (first three only): sweet, fruity, floral\nSimple Scent Description: ريحته مسكر وفيه ريحة فواكه وزهور\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pear, Bergamot, Tangerine\nMiddle Notes: Vanilla Orchid, Black Rose, Passionfruit, Strawberry\nBase Notes: Patchouli, Praline, Incense, Litchi, Vanilla, Caramel, Coffee, Coumarin, Licorice, Papyrus\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "آه حولني ليهم عشان أعرف متوفر ولا لأ",
+      "reply": "حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك.",
+      "seconds": 0.02,
+      "handoff_active_before": false,
+      "needs_human_after": true,
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "unexpected_handoff",
+      "high",
+      "the conversation was handed off without being needed"
+    ]
+  ],
+  "error": null,
+  "ended_by": "handoff",
+  "needs_human": true,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 153.5,
+  "judge_prompt": "SCENARIO S09_unavailable: Unavailable perfume and request for a similar alternative\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers one or two named stocked alternatives.\n- Does not claim a lookalike without support; similarity wording is honest.\n- Handles the customer's irritation without canned apologies.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عندكو Club de Nuit Intense؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: La Nuit: متوفر.\n\n--- TURN 2 ---\nCUSTOMER: لا قصدي Club de Nuit Intense، مش La Nuit.. متوفر ولا لأ؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: Club de Nuit Intense اسم مختلف عن La Nuit. اكتبلي الاسم تاني أو وضّحلي أنهي إصدار تقصد عشان أتأكد من العطر المقصود.\n\n--- TURN 3 ---\nCUSTOMER: هو Club de Nuit Intense نفسه، مش La Nuit.. مش عارف متوفر عندكو ولا لأ؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: Club de Nuit Intense اسم مختلف عن La Nuit، ومحتاج تأكيد من فريق خدمة العملاء عشان أأكدلك توفره. تحب أحولك ليهم؟\n\n--- TURN 4 ---\nCUSTOMER: آه حولني ليهم عشان أعرف متوفر ولا لأ\n[internal] route=None stage=None saved_preferences={}\n[internal] conversation is now handed off to the human team\nASSISTANT: حولت المحادثة لفريق خدمة العملاء، وهما هيتابعوا معاك.\n\n[conversation-level deterministic findings] [[\"unexpected_handoff\", \"high\", \"the conversation was handed off without being needed\"]]\n\n═══ DATABASE FACTS ═══\n- La Nuit | brand=Lancome | gender=female | type=western | season=Winter | scent_tags=sweet,fruity,floral | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Bergamot, Tangerine | mid=Vanilla Orchid, Black Rose, Passionfruit, Strawberry | base=Patchouli, Praline, Incense, Litchi, Vanilla, Caramel, Coffee, Coumarin, Licorice, Papyrus | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور؛ زجاجة الستور الخاصة بينا من 750 لـ 2000 جنيه؛ زجاجة اوريجنال لبعض العطور من 1250 لـ 3500 جنيه. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 3,
+      "memory": 3,
+      "question_quality": 2,
+      "knows_when_to_stop": 7,
+      "naturalness": 5,
+      "emotional_handling": 4,
+      "commerce_correctness": 3
+    },
+    "criteria": [
+      {
+        "criterion": "States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers one or two named stocked alternatives.",
+        "met": false,
+        "evidence": "turn 1: Replies with “La Nuit: متوفر” instead of answering about Club de Nuit Intense. Turns 2–3 still do not state that Club de Nuit Intense is unavailable or offer alternatives."
+      },
+      {
+        "criterion": "Does not claim a lookalike without support; similarity wording is honest.",
+        "met": true,
+        "evidence": "turns 1–4: No unsupported lookalike or similarity claim is made."
+      },
+      {
+        "criterion": "Handles the customer's irritation without canned apologies.",
+        "met": false,
+        "evidence": "turns 2–3: The customer repeats the exact perfume name, but the assistant asks them to repeat or clarify it, then defers the answer to customer service instead of addressing the correction."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 1,
+        "severity": "high",
+        "category": "understanding",
+        "expected": "Answer whether Club de Nuit Intense is stocked; if not, clearly say so and offer a stocked alternative.",
+        "actual": "La Nuit: متوفر.",
+        "why": "This answers about a different perfume and does not address the product the customer named."
+      },
+      {
+        "turn": 2,
+        "severity": "high",
+        "category": "question",
+        "expected": "Use the already-provided name, Club de Nuit Intense, and answer its availability.",
+        "actual": "اكتبلي الاسم تاني أو وضّحلي أنهي إصدار تقصد عشان أتأكد من العطر المقصود.",
+        "why": "The customer had already supplied the exact name and corrected the La Nuit mix-up; asking them to repeat or clarify it is unnecessary."
+      },
+      {
+        "turn": 3,
+        "severity": "medium",
+        "category": "commerce",
+        "expected": "State that Club de Nuit Intense is not in the catalogue and offer a named stocked alternative rather than deferring a catalogue lookup.",
+        "actual": "Club de Nuit Intense اسم مختلف عن La Nuit، ومحتاج تأكيد من فريق خدمة العملاء عشان أأكدلك توفره. تحب أحولك ليهم؟",
+        "why": "The assistant still does not answer availability or offer an alternative, and unnecessarily sends the customer to the team for a fact available from the catalogue."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 4,
+        "code": "unexpected_handoff",
+        "verdict": "dismissed",
+        "reason": "The customer explicitly accepted the transfer and asked to be connected to the team; confirming that transfer is supported. The unnecessary offer to transfer instead of answering occurred in turn 3 and is noted separately."
+      }
+    ],
+    "summary": "The assistant repeatedly fails to answer the availability question, first substituting La Nuit and then asking for information the customer already gave. The eventual handoff is valid because the customer explicitly requested it, but it does not remedy the missed unavailable-product answer or the lack of alternatives."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "conversation high unexpected_handoff: the conversation was handed off without being needed",
+    "judge score understanding_accuracy=3",
+    "judge score memory=3",
+    "judge score question_quality=2",
+    "judge score naturalness=5",
+    "judge score emotional_handling=4",
+    "judge score commerce_correctness=3",
+    "judge turn 1 high understanding: This answers about a different perfume and does not address the product the customer named.",
+    "judge turn 2 high question: The customer had already supplied the exact name and corrected the La Nuit mix-up; asking them to repeat or clarify it is unnecessary.",
+    "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+    "criterion unmet: Handles the customer's irritation without canned apologies."
+  ],
+  "usage": {
+    "api_calls": 11,
+    "by_role": {
+      "seller": {
+        "calls": 7,
+        "cost_usd": "0.001766240"
+      },
+      "simulator": {
+        "calls": 3,
+        "cost_usd": "0.0002660"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.001702545"
+      }
+    },
+    "prompt_tokens": 66745,
+    "cached_tokens": 52701,
+    "completion_tokens": 3015,
+    "reasoning_tokens": 1937,
+    "cost_usd": "0.003734785",
+    "api_seconds": 37.6,
+    "failed_calls": []
+  }
+}

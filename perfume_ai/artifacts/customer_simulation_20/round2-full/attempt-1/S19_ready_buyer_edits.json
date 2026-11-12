@@ -1,0 +1,527 @@
+{
+  "id": "S19_ready_buyer_edits",
+  "title": "Ready-to-buy customer changes quantities and removes an item",
+  "persona": "ready_buyer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أطلب 2 سوفاج 90 ملي وواحد بلو دي شانيل 50 ملي",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 2 × Sauvage (90ml) بـ 2000 جنيه\nالمجموع: 2000 جنيه.\n\nمن Chanel عندنا Allure Homme Sport و Bleu de Chanel و Bleu de Chanel Exclusive و Chance و Coco Mademoiselle و Egosta Platinum. تحب أنهي واحد وحجم؟",
+      "seconds": 76.33,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [
+          {
+            "name": "Sauvage",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 2,
+            "price": "1000.00"
+          }
+        ],
+        "pending": [
+          {
+            "name": "سوفاج بلو شانيل",
+            "volume": null,
+            "line_id": "6650e7541a14489c947d86e06d5dbd08",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 2 (2000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage",
+        "Allure Homme Sport",
+        "Bleu de Chanel",
+        "Bleu de Chanel Exclusive",
+        "Chance",
+        "Coco Mademoiselle",
+        "Egosta Platinum"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "لا خلي السوفاج واحد بس",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nلسه محتاج أتأكد من: 1 × سوفاج بلو شانيل. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟",
+      "seconds": 8.58,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [
+          {
+            "name": "Sauvage",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "1000.00"
+          }
+        ],
+        "pending": [
+          {
+            "name": "سوفاج بلو شانيل",
+            "volume": null,
+            "line_id": "6650e7541a14489c947d86e06d5dbd08",
+            "quantity": 1
+          }
+        ],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 1 (1000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "وشيل البلو دي شانيل",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nناقصني للطلب الاسم و رقم الموبايل الأساسي ورقم بديل و العنوان بالتفصيل: المحافظة، المنطقة، الشارع، رقم المنزل وأي علامة مميزة.",
+      "seconds": 5.7,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [
+          {
+            "name": "Sauvage",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "1000.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 1 (1000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "كريم سامي، 01011223344، العنوان 12 شارع مصدق، الدقي، الجيزة",
+      "reply": "🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.",
+      "seconds": 4.71,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [
+          {
+            "name": "Sauvage",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "1000.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "shipping_address"
+        ]
+      },
+      "orders": [],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 1 (1000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "معنديش رقم بديل، كمل بالرقم ده",
+      "reply": "راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيزة\n\nالطلب:\n- 1 × Sauvage (90ml) - زجاجة الستور الخاصة بينا (السعر: 1000.00 جنيه)\n\n💰 الإجمالي: 1000 جنيه (من غير الشحن).\n🚚 مصاريف الشحن 60 جنيه لجميع محافظات مصر\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+      "seconds": 7.15,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [
+          {
+            "name": "Sauvage",
+            "volume": 90,
+            "bottle_type": "normal",
+            "quantity": 1,
+            "price": "1000.00"
+          }
+        ],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "checkout",
+        "contact_fields": [
+          "customer_name",
+          "customer_phone",
+          "shipping_address"
+        ]
+      },
+      "orders": [],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 1 (1000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "تمام أكد",
+      "reply": "طلبك اتأكد يا فندم، ورقمه #2.\nفريق المبيعات هيتواصل معاك قريب.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.",
+      "seconds": 7.97,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "order",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 1,
+        "reply_kind": "checkout",
+        "contact_fields": []
+      },
+      "orders": [
+        {
+          "id": 2,
+          "status": "pending",
+          "total_price": "1000.00",
+          "customer_name": "كريم سامي",
+          "items": [
+            {
+              "name": "Sauvage",
+              "volume": 90,
+              "quantity": 1,
+              "bottle_type": "normal",
+              "price": "1000.00"
+            }
+          ]
+        }
+      ],
+      "context": "Sauvage (90 ملي) (زجاجة الستور الخاصة بينا) x 1 (1000.00 EGP)",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "excessive_emoji",
+          "low",
+          "3 emoji"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "تمام هحول العربون وابعتلكم السكرين شوت",
+      "reply": "تمام يا فندم، ابعت سكرين شوت التحويل هنا بعد ما تحوّل العربون.",
+      "seconds": 2.27,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 1,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [
+        {
+          "id": 2,
+          "status": "pending",
+          "total_price": "1000.00",
+          "customer_name": "كريم سامي",
+          "items": [
+            {
+              "name": "Sauvage",
+              "volume": 90,
+              "quantity": 1,
+              "bottle_type": "normal",
+              "price": "1000.00"
+            }
+          ]
+        }
+      ],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تمام",
+      "reply": "تمام.",
+      "seconds": 3.9,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "requested_volume": 90
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 1,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [
+        {
+          "id": 2,
+          "status": "pending",
+          "total_price": "1000.00",
+          "customer_name": "كريم سامي",
+          "items": [
+            {
+              "name": "Sauvage",
+              "volume": 90,
+              "quantity": 1,
+              "bottle_type": "normal",
+              "price": "1000.00"
+            }
+          ]
+        }
+      ],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "excessive_emoji",
+      "low",
+      "3 emoji"
+    ]
+  ],
+  "error": null,
+  "ended_by": "customer",
+  "needs_human": false,
+  "orders": [
+    {
+      "id": 2,
+      "status": "pending",
+      "total_price": "1000.00",
+      "customer_name": "كريم سامي",
+      "items": [
+        {
+          "name": "Sauvage",
+          "volume": 90,
+          "quantity": 1,
+          "bottle_type": "normal",
+          "price": "1000.00"
+        }
+      ]
+    }
+  ],
+  "final_preferences": {
+    "requested_volume": 90
+  },
+  "seconds": 127.6,
+  "judge_prompt": "SCENARIO S19_ready_buyer_edits: Ready-to-buy customer changes quantities and removes an item\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Cart edits are applied exactly: final order is one Sauvage 90 ml store bottle only.\n- The summary shows the correct item and total (1000 plus the store's shipping fee, if the summary includes shipping).\n- Order is created only after the summary and the explicit confirmation.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أطلب 2 سوفاج 90 ملي وواحد بلو دي شانيل 50 ملي\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[{\"name\": \"Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 2, \"price\": \"1000.00\"}] orders=[]\nASSISTANT: 🛍️ الطلب لحد دلوقتي:\n- 2 × Sauvage (90ml) بـ 2000 جنيه\nالمجموع: 2000 جنيه.\n\nمن Chanel عندنا Allure Homme Sport و Bleu de Chanel و Bleu de Chanel Exclusive و Chance و Coco Mademoiselle و Egosta Platinum. تحب أنهي واحد وحجم؟\n\n--- TURN 2 ---\nCUSTOMER: لا خلي السوفاج واحد بس\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[{\"name\": \"Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}] orders=[]\nASSISTANT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nلسه محتاج أتأكد من: 1 × سوفاج بلو شانيل. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟\n\n--- TURN 3 ---\nCUSTOMER: وشيل البلو دي شانيل\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[{\"name\": \"Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}] orders=[]\nASSISTANT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nناقصني للطلب الاسم و رقم الموبايل الأساسي ورقم بديل و العنوان بالتفصيل: المحافظة، المنطقة، الشارع، رقم المنزل وأي علامة مميزة.\n\n--- TURN 4 ---\nCUSTOMER: كريم سامي، 01011223344، العنوان 12 شارع مصدق، الدقي، الجيزة\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[{\"name\": \"Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}] orders=[]\nASSISTANT: 🛍️ الطلب لحد دلوقتي:\n- 1 × Sauvage (90ml) بـ 1000 جنيه\nالمجموع: 1000 جنيه.\n\nولسه ناقص رقم بديل.\n\n--- TURN 5 ---\nCUSTOMER: معنديش رقم بديل، كمل بالرقم ده\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[{\"name\": \"Sauvage\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}] orders=[]\nASSISTANT: راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيزة\n\nالطلب:\n- 1 × Sauvage (90ml) - زجاجة الستور الخاصة بينا (السعر: 1000.00 جنيه)\n\n💰 الإجمالي: 1000 جنيه (من غير الشحن).\n🚚 مصاريف الشحن 60 جنيه لجميع محافظات مصر\n\nكل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟\n\n--- TURN 6 ---\nCUSTOMER: تمام أكد\n[internal] route=order stage=None saved_preferences={\"requested_volume\": 90}\n[internal] cart=[] orders=[{\"id\": 2, \"status\": \"pending\", \"items_total_excluding_shipping\": \"1000.00\", \"customer_name\": \"كريم سامي\", \"items\": [{\"name\": \"Sauvage\", \"volume\": 90, \"quantity\": 1, \"bottle_type\": \"normal\", \"price\": \"1000.00\"}]}]\nASSISTANT: طلبك اتأكد يا فندم، ورقمه #2.\nفريق المبيعات هيتواصل معاك قريب.\n\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n[deterministic findings] [[\"excessive_emoji\", \"low\", \"3 emoji\"]]\n\n--- TURN 7 ---\nCUSTOMER: تمام هحول العربون وابعتلكم السكرين شوت\n[internal] route=faq stage=discovery saved_preferences={\"requested_volume\": 90}\n[internal] cart=[] orders=[{\"id\": 2, \"status\": \"pending\", \"items_total_excluding_shipping\": \"1000.00\", \"customer_name\": \"كريم سامي\", \"items\": [{\"name\": \"Sauvage\", \"volume\": 90, \"quantity\": 1, \"bottle_type\": \"normal\", \"price\": \"1000.00\"}]}]\nASSISTANT: تمام يا فندم، ابعت سكرين شوت التحويل هنا بعد ما تحوّل العربون.\n\n--- TURN 8 ---\nCUSTOMER: تمام\n[internal] route=faq stage=discovery saved_preferences={\"requested_volume\": 90}\n[internal] cart=[] orders=[{\"id\": 2, \"status\": \"pending\", \"items_total_excluding_shipping\": \"1000.00\", \"customer_name\": \"كريم سامي\", \"items\": [{\"name\": \"Sauvage\", \"volume\": 90, \"quantity\": 1, \"bottle_type\": \"normal\", \"price\": \"1000.00\"}]}]\nASSISTANT: تمام.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Allure Homme Sport | brand=Chanel | gender=male | type=western | season=Summer | scent_tags=citrus,fresh,aquatic | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Orange, Sea Notes, Aldehydes, Blood Mandarin | mid=Pepper, Neroli, Cedar | base=Tonka Bean, Vanilla, White Musk, Amber, Elemi Resin, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | scent_tags=woody,citrus,fresh | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Grapefruit, Lemon, Mint, Pink Pepper | mid=Ginger, Nutmeg, Jasmine | base=Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bleu de Chanel Exclusive | brand=Chanel | gender=male | type=western | season=All Seasons | scent_tags=woody,fresh,citrus | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Lemon Zest, Bergamot, Mint, Artemisia | mid=Lavender, Pineapple, Geranium, Green Notes | base=Sandalwood, Cedar, Amberwood, Iso E Super, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1800EGP stock=100\n- Chance | brand=Chanel | gender=female | type=western | season=Summer | scent_tags=floral,powdery,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Jasmine, Iris | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | scent_tags=floral,citrus,woody | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange, Mandarin Orange, Bergamot, Orange Blossom | mid=Jasmine, Rose, Mimosa, Ylang-Ylang | base=Patchouli, Vetiver, Tonka Bean, Vanilla, Musk, Opoponax | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Egosta Platinum | brand=Chanel | gender=male | type=western | season=Summer | scent_tags=woody,fresh,floral | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Lavender, Rosemary, Neroli, Petitgrain | mid=Geranium, Clary Sage, Galbanum, Jasmine | base=Oakmoss, Vetiver, Cedar, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,fresh | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Bergamot, Pepper | mid=Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi | base=Ambroxan, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 6,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "criteria": [
+      {
+        "criterion": "Cart edits are applied exactly: final order is one Sauvage 90 ml store bottle only.",
+        "met": true,
+        "evidence": "turn 2: Cart is updated to one Sauvage 90 ml; turns 3–6 continue with that item only, and the created order contains one Sauvage 90 ml store bottle."
+      },
+      {
+        "criterion": "The summary shows the correct item and total (1000 plus the store's shipping fee, if the summary includes shipping).",
+        "met": true,
+        "evidence": "turn 5: Summary lists one Sauvage 90 ml for 1000 جنيه, explicitly says that amount excludes shipping, and separately states the 60 جنيه shipping fee."
+      },
+      {
+        "criterion": "Order is created only after the summary and the explicit confirmation.",
+        "met": true,
+        "evidence": "turn 5: Assistant presents the summary and asks whether to confirm; turn 6: Customer explicitly says «تمام أكد», after which the order is created."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 1,
+        "severity": "high",
+        "category": "understanding",
+        "expected": "Recognize the requested Bleu de Chanel 50 ml and add it or clarify only a genuinely missing detail.",
+        "actual": "«من Chanel عندنا ... Bleu de Chanel ... تحب أنهي واحد وحجم؟»",
+        "why": "The customer had already specified Bleu de Chanel and 50 ml, so this re-asks supplied information and fails to carry the second requested item forward."
+      },
+      {
+        "turn": 2,
+        "severity": "high",
+        "category": "understanding",
+        "expected": "Refer to the previously requested Bleu de Chanel 50 ml accurately while asking whether the customer wants to keep or remove it.",
+        "actual": "«لسه محتاج أتأكد من: 1 × سوفاج بلو شانيل. ممكن تكتب الاسم كامل، أو تحب تشيله من الطلب؟»",
+        "why": "It confuses the product name by combining Sauvage and Bleu de Chanel, then asks for a name already supplied. The customer later clearly removes Bleu de Chanel, and the final cart is correct."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 6,
+        "code": "excessive_emoji",
+        "verdict": "confirmed",
+        "reason": "The reply uses three emojis (📌, ⚠️, 💳), matching the deterministic finding; this is a minor style issue."
+      }
+    ],
+    "summary": "The final cart and order are correct, and the order is created only after the customer explicitly confirms the presented summary. The main failures are the unnecessary re-asking and misnaming of the already specified Bleu de Chanel item before the customer removes it."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "judge turn 1 high understanding: The customer had already specified Bleu de Chanel and 50 ml, so this re-asks supplied information and fails to carry the second requested item forward.",
+    "judge turn 2 high understanding: It confuses the product name by combining Sauvage and Bleu de Chanel, then asks for a name already supplied. The customer later clearly removes Bleu de Chanel, "
+  ],
+  "usage": {
+    "api_calls": 28,
+    "by_role": {
+      "seller": {
+        "calls": 19,
+        "cost_usd": "0.005944245"
+      },
+      "simulator": {
+        "calls": 8,
+        "cost_usd": "0.001103125"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.002961825"
+      }
+    },
+    "prompt_tokens": 98596,
+    "cached_tokens": 52507,
+    "completion_tokens": 7628,
+    "reasoning_tokens": 5559,
+    "cost_usd": "0.010009195",
+    "api_seconds": 107.5,
+    "failed_calls": []
+  }
+}

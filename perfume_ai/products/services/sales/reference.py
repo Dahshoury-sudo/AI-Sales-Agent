@@ -15,7 +15,8 @@ _SIMILAR = re.compile(
     r"similar\s+to|alternative\s+to|same\s+(?:vibe|style|notes(?:\s+as)?)|something\s+like)(?!\w)"
 )
 _NEGATIVE = re.compile(
-    r"(?:مش\s+(?:عايز(?:ه)?|طالب|محتاج|لازم)|من\s+غير|بلاش|"
+    # "مش فارق شبه أنهي عطر" withdraws the reference like "مش لازم يبقى شبه 212" does (S11 round 2 batch 5, t5).
+    r"(?:مش\s+(?:عايز(?:ه)?|طالب|محتاج|لازم|فارق|مهم)|من\s+غير|بلاش|"
     r"don['’]?t\s+want|do\s+not\s+want|not\s+looking\s+for|no)"
     r"(?:\s+\w+){0,4}\s*$|(?:مش|not)\s*$"
 )
@@ -44,17 +45,32 @@ def similarity_requested(message):
 
 
 def _scent_analogy(text, cue):
+    # "زي الأصلي 100% ولا لأ؟" asks about authenticity, not for a perfume like another one; read as a
+    # likeness request it went to the gender question and "تقصد عطر شبه أنهي عطر؟" (simulation S16
+    # round 2 batch 3, t3-t4).
     return cue.group() in {"زي", "شبه", "similar to", "something like"} and bool(re.match(
-        r"\s+(?:ال)?(?:حلويات|حلو[ىي]|سكريات|فانيليا|ورد|زهور|اخشاب|خشب|فواكه|desserts|sweets)\b",
+        r"\s+(?:ال)?(?:حلويات|حلو[ىي]|سكريات|فانيليا|ورد|زهور|اخشاب|خشب|فواكه|desserts|sweets|"
+        r"اصلي|اصل|اوريجينال|اورجينال|اوريجنال|براند|ماركه|the\s+original|original)\b",
         text[cue.end():],
     ))
+
+
+def _taste_reference(text, cue):
+    # "في حاجة تانية قريبة من ذوقها؟" asks for her taste, not for a perfume like another one; read as
+    # a likeness request it got "تقصد عطر شبه أنهي عطر أو إصدار؟" (simulation S07 round 2 full 5, t4).
+    if re.match(r"\s*(?:ل|ب)?(?:ال)?(?:ذوق|طبع|شخصي)|\s*اللي\s+(?:بت|بي|ب|ت|ي)?حب", text[cue.end():]):
+        return True
+    # "طب في بديل أرخص شوية ويكون فريش؟" asks for another option, not for a perfume like a named one;
+    # it got "تقصد عطر شبه أنهي عطر أو إصدار؟" twice (simulation S11 round 2 batch 5, t4-t5).
+    return cue.group() == "بديل" and bool(re.match(
+        r"\s+(?:ارخص|اقل|اغلي|احسن|افضل|تاني|مناسب|كويس|حلو|في\s+حدود)", text[cue.end():]))
 
 
 def _affirmative_cues(text):
     matches = []
     negated = None
     for match in _SIMILAR.finditer(text):
-        if _scent_analogy(text, match):
+        if _scent_analogy(text, match) or _taste_reference(text, match):
             continue
         joined_negative = negated is not None and re.search(
             r"\b(?:او|or)\s*$", text[negated.end():match.start()],
@@ -76,7 +92,7 @@ def _withdrawn(message):
     text = _normalized(message)
     return bool(_WITHDRAW.search(text)) or any(
         _NEGATIVE.search(text[:match.start()]) for match in _SIMILAR.finditer(text)
-        if not _scent_analogy(text, match)
+        if not _scent_analogy(text, match) and not _taste_reference(text, match)
     )
 
 
@@ -334,6 +350,20 @@ def _confirmed_spoken_reference(message, candidate, store):
     return product if getattr(confirmed, "pk", None) == product.pk else None
 
 
+def _after_denial(conversation):
+    """Whether our latest reply said the perfume the customer named is not stocked.
+
+    "للأسف العطر ده مش موجود عندنا. كبدائل متوفرة: 1 Million" then "طب عندك حاجة شبهه؟": "شبهه" is the
+    missing perfume, not the one alternative we listed; resolved to 1 Million it searched for 1 Million
+    lookalikes and ignored the "سموكي وفاكهة" said next (simulation S09 round 2 batch 4, t2-t3).
+    """
+    if conversation is None or getattr(conversation, "pk", None) is None:
+        return False
+    latest = (conversation.messages.filter(role="assistant", delivery_status="sent")
+              .order_by("-created_at", "-pk").values_list("internal_context", flat=True).first())
+    return "ABSENCE_DENIED" in (latest or "")
+
+
 def prepare_similarity(conversation, intent, message=None, history=None, store=None):
     """Validate fresh/remembered references; the caller persists the returned state."""
     fresh = dict(intent or {})
@@ -371,7 +401,7 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
         from products.models import Product
         names = list(Product.objects.filter(store=store).values_list("name", flat=True)) if store else []
         targets = _catalogue_targets(message, names, store)
-        if not targets and _anaphoric_request(message):
+        if not targets and _anaphoric_request(message) and not _after_denial(conversation):
             targets = _recent_targets(previous, store, [candidate] if candidate else [],
                                       owned=bool(re.search(r"عندي|اشتريت|own", _normalized(message))))
         if len(targets) == 1 and _source_supports(message, targets[0], store, previous):

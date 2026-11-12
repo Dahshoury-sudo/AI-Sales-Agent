@@ -21,7 +21,10 @@ import re
 def original_liquid_update(message):
     """A requirement about the liquid is independent of the bottle or designer house."""
     text = normalize_arabic(message or "")
-    if re.search(r"(?:مش عايز|مش عاوزه|بلاش|لا اريد)\s+(?:اي\s+)?تركيب|(?:الاصلي|اصلي)\s+مش\s+تركيب|براندات اصليه|original perfume", text):
+    # "أنا كنت بسأل عن الأصلي مش التركيب" carries the article; without it the original bottle's price went
+    # out with no word that the liquid in it is تركيب too (simulation S02 round 2 full 3, t8).
+    if re.search(r"(?:مش عايز|مش عاوزه|بلاش|لا اريد)\s+(?:اي\s+)?(?:ال)?تركيب|(?:الاصلي|اصلي)\s+مش\s+(?:ال)?تركيب|"
+                 r"براندات اصليه|original perfume", text):
         return True
     if re.search(r"(?:موافق|ماشي|تمام|خلاص|عايز)\s+(?:علي\s+)?(?:ال)?تركيب|تركيب\s+(?:تمام|عادي|ماشي)", text):
         return False
@@ -40,6 +43,37 @@ def preference_reversal(message):
     return bool(re.search(r"غيرت رايي|غيرت رائي|بدل الصيف|بدل الشتا", normalize_arabic(message or "")))
 
 
+# A budget stated in so many words. Only the recommendation branch ran preference extraction, so
+# "والميزانية خليها لحد 1500" inside a product question was never saved (simulation S14 t4).
+_BUDGET_STATEMENT = re.compile(
+    r"(?:ميزاني\w*|في\s+حدود|حدود|لحد|معايا|معاي|budget|around|max)\D{0,15}?(?<![\d.,])(\d{3,5})"
+    # A sentence-ending period is not a decimal point: "والميزانية خليها لحد 1500. طب…" was never
+    # saved, so the old 1000 kept filtering the recommendations (simulation S14 final 2, t5).
+    r"(?![\d,]|\.\d|\s*(?:مل|ملي|ml)\b)"
+)
+
+
+def stated_preference_updates(message):
+    """Durable preferences a customer states while asking about something else.
+
+    Deliberately narrow and model-free: an exclusion said with a negator ("مش بحب العود خالص") and a
+    budget said with a budget word. Positive scent words are left alone, because on these turns they
+    are usually a question about a perfume ("فيه عود؟"), not a wish.
+    """
+    from .scent_preferences import explicit_scent_updates
+    updates = {}
+    excluded = explicit_scent_updates(message).get("excluded_scent_tags")
+    if excluded:
+        updates["excluded_scent_tags"] = list(excluded)
+    text = normalize_arabic(message or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    budget = _BUDGET_STATEMENT.search(text)
+    if budget and int(budget[1]) >= 100:
+        updates["max_price"] = float(budget[1])
+        updates.update({key: value for key, value in explicit_updates(message).items()
+                        if key in ("budget_strict", "budget_scope", "purchase_quantity")})
+    return updates
+
+
 def explicit_updates(message):
     """Literal constraints remain authoritative even if extraction omits them."""
     text = normalize_arabic(message or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
@@ -53,9 +87,17 @@ def explicit_updates(message):
     bottle = explicit_bottle_type(text)
     if bottle:
         updates["bottle_type"] = bottle
-    if any(x in text for x in ("حد اقصي", "حد اقصى", "مش هقدر ازود", "مش هقدر ازود", "مش هقدر أزود", "بالظبط", "بالضبط", "at most", "maximum")):
+    if any(x in text for x in ("حد اقصي", "حد اقصى", "مش هقدر ازود", "مش هقدر ازود", "مش هقدر أزود", "at most", "maximum")) \
+            or re.search(r"\d+\s*(?:جنيه|ج)?\s*(?:بالظبط|بالضبط)", text):
+        # "بالظبط" makes a budget strict only when it qualifies an amount ("معايا 700 بالظبط").
+        # "الـ50 بكام بالظبط؟" asks for an exact price, and reading it as strict blocked the order
+        # summary after the customer had accepted 750 (simulation S11 replay t5-t7).
         updates["budget_strict"] = True
-    if any(x in text for x in ("للاتنين", "الاتنين مع بعض", "اجمالي", "combined", "total budget")):
+    # "اجمالي" names a combined BUDGET only beside a budget word. "تمام أكد، والإجمالي 810 شامل
+    # الشحن" confirms an order total, and reading it as a strict 810... budget blocked the order
+    # against the customer's earlier 700 (simulation S11 replay 2, t9).
+    if any(x in text for x in ("للاتنين", "الاتنين مع بعض", "combined", "total budget")) or (
+            "اجمالي" in text and re.search(r"ميزاني|معايا|معاي|حدود|budget", text)):
         updates.update(budget_scope="total", budget_strict=True)
         if "اتنين" in text or "للاتنين" in text:
             updates["purchase_quantity"] = 2
@@ -64,6 +106,14 @@ def explicit_updates(message):
         amounts = re.findall(r"(?<![\d.,])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:جنيه|egp)\b", text)
         if len(amounts) == 1:
             updates["max_price"] = float(amounts[0].replace(",", ""))
+    # "لو عايز 3 بنفس الـ1600 ينفع؟" asks about a count within the same money. Left to the
+    # extractor it was read as 3 in one run and ignored in the next, which re-sent the two-bottle
+    # answer word for word (simulation S03 replay 2 vs final t3). The router restores the earlier
+    # quantity when the count does not fit (TOTAL_BUDGET_INFEASIBLE).
+    count = re.search(r"(?:لو\s+(?:عايز|عاوز|عايزه|عاوزه|خدت|اخدت|هاخد)\s+|ينفع\s+)([2-9])"
+                      r"(?![\d.]|\s*(?:مل|ملي|ml|جنيه|ج(?!\w)|%))[^.؟?\n]{0,30}?(?:بنفس|في\s+نفس|في\s+حدود|بحدود)", text)
+    if count:
+        updates["purchase_quantity"] = int(count[1])
     if any(x in text for x in ("مش لازم يكون نادر", "عادي لو منتشر", "مش مهم يكون نادر")):
         updates["wants_uncommon"] = False
     if any(x in text for x in ("انسي الشروط", "انسي الميزانيه", "سيبك من الشروط", "الغي الشروط", "شروط جديده", "سيبك من طلبي", "مش نفس الشروط")):

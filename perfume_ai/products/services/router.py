@@ -66,6 +66,112 @@ def _wants_a_human(message):
     return any(phrase in (message or "") for phrase in _ASKED_FOR_HUMAN)
 
 
+from contextvars import ContextVar
+# The conversation whose turn `route` is answering, for one reply only (the pattern
+# performance_policy uses). `_rephrased` checks drafts from general call sites that never
+# received it, and the customer's own cart and orders are price evidence there.
+_TURN_CONVERSATION = ContextVar("perfume_turn_conversation", default=None)
+
+# A choice among the perfumes already on the table, as opposed to a request for new ones.
+# Applied to normalize_arabic output.
+import re as _re
+_CHOICE_AMONG_DISCUSSED = _re.compile(
+    r"(?<!\w)(?:فيهم|منهم|بينهم|من\s+(?:ال)?(?:اتنين|تلاته|التلاته|ثلاثه)|of\s+them|between\s+them)(?!\w)")
+_WANTS_OTHERS = _re.compile(r"(?<!\w)(?:غيرهم|غير\s+دول|تاني(?:ين)?|تانيه|جديد|other|others|else)(?!\w)")
+# "خلاص اختارلي انت" while two options are on the table asks for one of them; read as a scent
+# delegation it discarded her floral preference and brought a sweet perfume (S06 replay t8).
+_DELEGATES_CHOICE = _re.compile(r"(?<!\w)(?:اختار(?:لي|يلي)|انت\s+اختار|انتي\s+اختاري|(?:علي|على)\s+ذوقك)(?!\w)")
+_COMPARES_WITH_THE_OTHER = _re.compile(
+    r"(?<!\w)(?:ال)?(?:يميز|فرق|بيفرق|يفرق|احسن|افضل|اخف|اتقل|اهدي|اقوي|ارخص|اغلي)\w*[^؟?.]{0,40}?"
+    r"(?<!\w)(?:عن|من|و|وبين|بين)\s*(?:ال)?(?:تاني|تانيه|اولاني|اولانيه|اخر|اخري)(?!\w)")
+_PICK_WORDS = _re.compile(r"(?<!\w)(?:انهي|مين|انسب|احسن|احلي|افضل|اختار\w*)(?!\w)")
+# An explicit request for a different option, narrower than _WANTS_OTHERS: a bare "اي تاني؟" keeps
+# continuity with what is on the table.
+# Turning down everything on the table: "ولا واحد فيهم واضح إنه مش مسكر!", "أنا مش عايز حاجة حلاوتها مش
+# مؤكدة! رشحلي…", "ما ترشحليش حاجة حلاوتها مش مؤكدة". The same two perfumes came back after each
+# (simulation S10 round 2 batch 2, t3, t5, t8).
+_REJECTS_THE_TABLE = _re.compile(
+    r"ولا\s+واحد[ه]?\s+في(?:هم|هن)|الاتنين\s+مش\s+واضح|(?:ما\s+)?ترشحليش|متترشحليش|"
+    r"مش\s+عايز\s+(?:اي\s+)?حاج(?:ه|ات)\s+\S+\s+مش\s+(?:مؤكد|موكد|متاكد|واضح)")
+_RECOMMEND_VERB = _re.compile(r"(?<!\w)و?(?:رشح\w*|ترشح\w*|اقترح\w*|تقترح\w*)(?!\w)|\b(?:recommend|suggest)\b")
+_ASKS_FOR_OTHERS = _re.compile(
+    r"حاج(?:ه|ات)\s+تاني(?:ه)?|تاني\s+حاج(?:ه|ات)|غيرهم|غير\s+دول|(?:اختيار|ترشيح)(?:ات)?\s+تاني(?:ه)?|"
+    r"something\s+else|other\s+(?:ones?|options?)")
+# "مش عايزه، رشحلي…" turns down the perfume we were just talking about. The pronoun must close the
+# phrase: "مش عايزه حاجة مسكرة" is a woman saying what she does not want, not a rejection.
+_REJECTS_IT = _re.compile(
+    r"(?<!\w)(?:مش|مبقتش)\s+(?:عايز|عاوز|حاب|حابب)(?:ه|ها|هم)(?=\s*(?:[،,.!؟?]|$|خالص|تاني|ده|دي|و\s))"
+    r"|(?<!\w)بلاش\s+(?:ده|دي|دا|هو|هي)(?!\w)|(?<!\w)مش\s+عاجب(?:ني|اني)(?!\w)")
+
+
+def _rejected_subject(message, conversation, store):
+    """The perfume(s) a "مش عايزه" in this message refers to: the subject of our latest reply.
+
+    S10 round 2, t6: told 212 VIB Man's sweetness was unconfirmed, the customer answered "طيب طالما
+    الحلاوة مش مؤكدة مش عايزه، رشحلي حاجة مضمونة…" and got 212 VIB Man again first.
+    """
+    from .static_faq_service import normalize_arabic
+    match = _REJECTS_IT.search(normalize_arabic(message or ""))
+    if not match or conversation is None:
+        return []
+    latest = sales_described.offered_in_order(conversation, store, latest_only=True)
+    plural = match.group().rstrip().endswith("هم")
+    return latest if len(latest) == 1 or (plural and latest) else []
+
+
+# A question about a combined total or about fitting more bottles in it.
+# Explicit buying words keep a total question in checkout ("هاخدهم الاتنين، الإجمالي كام؟").
+_PURCHASE_WORDS = _re.compile(r"(?<!\w)(?:هاخد\w*|اطلب\w*|اشتري\w*|هشتري\w*|احجز\w*|اكد\w*|كمل\s+الطلب)(?!\w)")
+
+
+_KEEPS_THE_COUNT = _re.compile(r"(?<!\w)خلي(?:ها|هم|هوم)\s+(?:اتنين|2|تلاته|3|واحده|1|زجاجتين)(?!\w)")
+
+
+def _asked_to_keep_the_count(history):
+    """Our latest reply asked whether to keep fewer bottles within the same combined budget."""
+    latest = next((row.get("content", "") for row in reversed(history or []) if row.get("role") == "assistant"), "")
+    return "تحب نخليها" in latest and "في نفس الميزانية" in latest
+
+
+def _count_within_total(message, conversation):
+    """A question about the total or a bottle count, asked under a saved combined budget."""
+    from .static_faq_service import normalize_arabic
+    return bool(conversation is not None and (conversation.preferences or {}).get("budget_scope") == "total"
+                and _TOTAL_QUESTION.search(normalize_arabic(message or "")))
+
+
+def _total_question_needs_recommendation(request_type, normalized, conversation, active_cart):
+    """With a combined budget, "الإجمالي كده كام؟ ولو عايز 3 بنفس الـ1600 ينفع؟" needs the flow that
+    computes totals and feasibility; product info may not state a total, so it answered with bare
+    price blocks four turns running (simulation S03 replay t3-t7). The classifier also sent it to
+    checkout ("تحب تطلب أنهي عطر؟", S03 final 2 t3), and the empty cart that turn created then blocked
+    the re-route on the next question: an empty cart is not a cart in use.
+    """
+    cart_in_use = active_cart is not None and (active_cart.items.exists() or bool(active_cart.pending_items))
+    return bool(request_type in ("product_info", "faq", "comparison", "order") and conversation is not None
+                and not cart_in_use and (conversation.preferences or {}).get("budget_scope") == "total"
+                and _TOTAL_QUESTION.search(normalized) and not _PURCHASE_WORDS.search(normalized))
+_TOTAL_QUESTION = _re.compile(
+    r"(?<!\w)و?(?:الاجمالي|اجمالي|المجموع|كله\s+بكام|(?:الاتنين|التلاته|التلات)\s+(?:هيطلعوا|هيبقوا|هيكونوا|بكام|كام)|"
+    r"ينفع\s+\d+|لو\s+(?:عايز\s+)?\d+\s+(?:بنفس|في\s+نفس))")
+
+# Hesitation that a usable recommendation answers better than a diagnostic question. Price
+# objections and complaints about a past purchase keep their own handling.
+_SOFT_OBJECTIONS = frozenset({"not_sure", "cant_choose", "rejected", "wont_like"})
+
+
+def _actionable_request(intent, message):
+    """Does this recommendation turn carry enough to act on: a preference or an explicit ask?"""
+    import re
+    from .sales.scent_preferences import has_scent_preference
+    from .static_faq_service import normalize_arabic
+    intent = intent or {}
+    return bool(
+        has_scent_preference(intent) or intent.get("max_price") or intent.get("occasion")
+        or re.search(r"رشح|ترشح|اقترح|اختار(?:لي|يلي)|انت\s+اختار|recommend|suggest", normalize_arabic(message or ""))
+    )
+
+
 def _finalize(reply, stage):
     """Post-process a generated reply according to the stage it was produced in.
 
@@ -124,8 +230,27 @@ def handle_general(message, history=None, store=None, stage=sales_stage.DISCOVER
 
 
 
+_CHALLENGE = _re.compile(r"(?<!\w)(?:ليه|ازاي|انت|انتي|مش\s+انت)\s+(?:\S+\s+)?(?:قلت|قولت|بتقول|كتبت|قلتلي|قولتلي)(?!\w)")
+_ADMITS_MISTAKE = _re.compile(
+    r"بالغلط|(?<!مش )(?<!\w)غلطت(?!\w)|غلط(?:ه)?\s+مني|كان\s+غلط|اعتذر\w*\s+عن\s+(?:الغلط|اللخبط)")
+
+
+def _challenge_retraction_issues(reply, message):
+    """A mistake admitted because the customer questioned what we said.
+
+    "طيب ليه قلت مفيش حاجة تحت 700؟" got "معاك حق، أنا غلطت لما قلت مفيش حاجة تحت 700" while nothing
+    under 700 is stocked (simulation S11 round 2 batch 4, t3). The retry is told to check the earlier
+    statement against the data and explain it.
+    """
+    from .static_faq_service import normalize_arabic
+    if not message or not _CHALLENGE.search(normalize_arabic(message)) or not _ADMITS_MISTAKE.search(normalize_arabic(reply or "")):
+        return []
+    return ["retraction: العميل بيسأل ليه قلت كده؛ راجع الكلام اللي اتقال على البيانات واشرحه منها، "
+            "ومتقولش إنه كان غلط إلا لو البيانات بتقول كده"]
+
+
 def _rephrased(reply, context, history, store, regenerate, *, recommendation_intent=None,
-               recommendation_candidates=None, message=None, preferred_occasion=None):
+               recommendation_candidates=None, message=None, preferred_occasion=None, budget=None):
     """One targeted regeneration when a draft repeats a sentence we already said.
 
     `_is_repetitive` above compares whole replies at 0.7 and is the right guard for a branch that
@@ -175,7 +300,8 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             scoped_message = "" if message is not None else None
         return product_claim_issues(draft, facts, context=draft_context, message=scoped_message,
                                     history=history, preferred_occasion=preferred_occasion,
-                                    description_required=recommendation_intent is not None)
+                                    description_required=recommendation_intent is not None) \
+            + _challenge_retraction_issues(draft, message)
     from products.models import StoreSettings, StaticFAQ
     sources = []
     if store:
@@ -184,12 +310,18 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             sources += [config.business_facts or "", config.promotions or "", config.payment_instructions or ""]
         sources += list(StaticFAQ.objects.filter(store=store, is_active=True).values_list("answer", flat=True))
     sources += [m.get("content", "") for m in history or [] if m.get("role") == "user"]
+    # The customer's own cart and orders, read from the database: the general branch has no
+    # product rows, so a reply restating a confirmed order's price used to fail here.
+    from .order_service import checkout_evidence
+    checkout_products, checkout_lines = checkout_evidence(_TURN_CONVERSATION.get())
+    sources += checkout_lines
+    price_rows = rows + [p for p in checkout_products if p not in rows]
     if evidence.get("budget") is not None:
         sources.append("ميزانية " + evidence["budget"] + " جنيه")
     if evidence and not evidence.get("append"):
         sources.append(context)
     issues = (claims(reply, context)
-              + product_price_issues(reply, rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
+              + product_price_issues(reply, price_rows, evidence=evidence, monetary_sources=sources, catalogue=catalogue)
               + composition_issues(reply, context))
     prose = quotation_prose(reply, evidence)
     repeats = repetition.repeated_sentences(prose, history, store=store)
@@ -215,7 +347,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             raise
         retried, retried_context = "", context
     remaining = claims(retried, retried_context) + product_price_issues(
-        retried, rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
+        retried, price_rows, evidence=quote_evidence(retried_context), monetary_sources=sources, catalogue=catalogue)
     remaining += composition_issues(retried, retried_context)
     if remaining or (issues and not (retried or "").strip()):
         if evidence.get("sections"):
@@ -238,13 +370,16 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             selected = [p for p in offer_rows if p.pk in ids or p.name in mentioned]
             if not selected and len(offer_rows) == 1 and not sales_naming.names_in(reply, [p.name for p in catalogue]):
                 selected = offer_rows
-            quotes = product_quotes(selected)
+            from .sales.value import as_budget
+            # Without quote evidence the fallback used to render every size, so "غالي عليا" against
+            # a 700 budget was answered with 1000 and 1375 (simulation S11 replay 2, t2). Keep the
+            # requested size/bottle and the stated budget.
+            budget = as_budget(evidence.get("budget")) or as_budget(budget)
+            quotes = product_quotes(selected, message or "", budget)
             variant_ids = {q.get("variant_id") for q in evidence.get("quotes", [])}
             if variant_ids:
-                quotes = [q for q in quotes if q.variant_id in variant_ids]
+                quotes = [q for q in product_quotes(selected) if q.variant_id in variant_ids]
             if quotes:
-                from .sales.value import as_budget
-                budget = as_budget(evidence.get("budget"))
                 fallback = render_quotes(quotes, max_price=budget)
                 if recommendation_intent is not None:
                     from .ai.recommendation import recommendation_fit
@@ -261,6 +396,24 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
                     if details:
                         fallback = "\n".join(details) + "\n\n" + fallback
                 return fallback, quote_context(context, quotes, max_price=budget), repeats
+            from .product_formatting import price_question
+            # A message naming a perfume ("أكدته خلاص، Sauvage الـ90") still gets "which perfume and size?".
+            if message and not offer_rows and not price_question(message, history, None) \
+                    and not _re.search(r"[A-Za-z]{3,}", message):
+                # "طب ولو مجاش على ذوقها أعمل إيه؟" asked about the exchange policy and got "تقصد أنهي عطر
+                # وحجم؟… أقولك السعر" twice (simulation S07 round 2, t3-t4). With no perfume involved and
+                # no price asked, only the sentences carrying an unsupported figure are dropped.
+                draft = retried if (retried or "").strip() else reply
+                left = remaining if (retried or "").strip() else issues
+                flagged = {match.group(1) for issue in left if (match := _re.match(r"price: (\d+)", issue))}
+                if flagged and all(issue.startswith("price:") for issue in left):
+                    kept = [sentence for sentence in _re.split(r"(?<=[.!؟?])\s+|\n+", draft or "")
+                            if sentence.strip() and not any(_re.search(r"(?<!\d)" + amount + r"(?!\d)", sentence)
+                                                            for amount in flagged)]
+                    if kept:
+                        return _not_a_repeat(" ".join(kept), message, history), context, repeats
+                return _not_a_repeat("المعلومة دي محتاجة تأكيد من فريق خدمة العملاء. تحب أحولك ليهم؟",
+                                     message, history), context, repeats
             return "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟", context, repeats
         if any(i.startswith("authenticity:") for i in remaining or issues):
             return sales_constraints.formulation_reply(), context, repeats
@@ -273,24 +426,66 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             selected = [by_name[name] for name in mentioned]
             requested_names = sales_naming.names_in(message or "", list(by_name))
             selected += [by_name[name] for name in requested_names if by_name[name] not in selected]
-            if not selected and len(offer_rows) == 1 and not any(
+            # The turn's own product rows are what an indirect question ("الأولاني كان إيه؟",
+            # "قارنلي بينهم") is about, even when the rejected draft named neither of them.
+            if not selected and 0 < len(offer_rows) <= 2 and not any(
                 marker in (context or "") for marker in ("ABSENCE_DENIED", "NAME_UNREADABLE")
             ):
                 selected = offer_rows
         if (recommendation_intent or {}).get("recommendation_mode") == "new_goal":
             selected = offer_rows[:limit]
+        denied = "ABSENCE_DENIED" in (context or "")
+        if denied and recommendation_intent is None and not selected:
+            selected = offer_rows[:2]
         if recommendation_intent is not None:
             from .ai.recommendation import recommendation_fit
             fallback = recommendation_fit(selected, recommendation_intent, message=message, history=history)
+        elif denied and selected:
+            # The named perfume was confirmed absent and the rows are alternatives. Answered "متوفر"
+            # line by line, the fallback read as if the alternatives were the perfume asked about and
+            # dropped the denial (simulation S09 round 2, t1). The denial stays; the alternatives are
+            # described from their labels.
+            lines = requested_product_details(selected, "", history=history, description_required=True)
+            lines = lines or [f"{product.name}: {factual_description(product)}." for product in selected]
+            fallback = "للأسف العطر ده مش موجود عندنا. كبدائل متوفرة:\n" + "\n".join(lines)
         else:
             lines = requested_product_details(selected, message, preferred_occasion=preferred_occasion, history=history)
             if message is None and not lines:
                 # Preserve legacy callers that have not supplied a question.
                 lines = [f"{product.name}: {factual_description(product)}." for product in selected]
+            if not lines and selected:
+                # A general question about a named perfume ("إيه اللي يميزه؟", "قارنلي") requests no
+                # single attribute, so the old fallback rendered nothing and sent "ماقدرش أأكد
+                # المعلومة دي" in nine baseline turns (simulation S02, S05, S06, S08, S14). The
+                # supported answer is the perfume's own tag description.
+                lines = requested_product_details(selected, message, preferred_occasion=preferred_occasion,
+                                                  history=history, description_required=True)
+                lines = lines or [f"{product.name}: {factual_description(product)}." for product in selected]
             fallback = "\n".join(lines)
-        if fallback and any(i.startswith("popularity:") for i in remaining or issues):
-            fallback += " ماقدرش أجزم بمدى انتشار العطور دي."
-        return append_quotation(fallback or "ماقدرش أأكد المعلومة دي عن العطر. ممكن تحدد المواصفة اللي بتسأل عنها؟", context), context, repeats
+            if len(selected) == 2 and lines and _ASKS_TO_CHOOSE.search(sales_naming.normalize_product_name(message or "")):
+                # A pick or a difference was asked for; the two descriptions alone repeated an
+                # earlier reply almost word for word and chose nothing (simulation S13 final 1, t4).
+                fallback += "\n" + _label_difference(*selected)
+                if _DELEGATES_CHOICE.search(sales_naming.normalize_product_name(message or "")):
+                    fallback += "\n" + _pick_for_customer(*selected, _TURN_CONVERSATION.get())
+        if not fallback and not selected:
+            # The store's performance policy covers every stocked perfume, so a general longevity
+            # question has a supported answer with no product row at all (simulation S16 t5-t6).
+            from .performance_policy import current_request, description
+            request = current_request()
+            if request.longevity or request.projection:
+                text = description(request, longevity=request.longevity, projection=request.projection)
+                fallback = "كل عطورنا " + text.replace("ثباته ", "ثباتها ").replace("فوحانه ", "فوحانها ") + "."
+        if any(i.startswith("popularity:") for i in remaining or issues):
+            fallback = (fallback + " ماقدرش أجزم بمدى انتشار العطور دي.") if fallback else (
+                "معنديش بيانات عن الأكتر مبيعاً، بس أقدر أرشحلك حسب الريحة اللي بتحبها.")
+        if not fallback:
+            # With product rows the doubt is which perfume; with none, the honest answer is the
+            # team, which is a transfer this system can actually make (simulation S16 replay t7).
+            fallback = ("تقصد أنهي عطر بالظبط؟" if offer_rows else
+                        "المعلومة دي محتاجة تأكيد من فريق خدمة العملاء. تحب أحولك ليهم؟")
+        fallback = _not_a_repeat(fallback, message, history)
+        return append_quotation(fallback, context), context, repeats
     # A generator that returns nothing usable is not an improvement. `chat` can come back empty on a
     # provider error, and `reply_sanitizer`'s bail-rather-than-empty rule exists because a blank
     # reply is the one outcome worse than a flawed one.
@@ -530,7 +725,7 @@ def _escalate_absent_name(conversation, store, context, message, history):
         conversation.needs_human = True
         conversation.save()
         notify_handoff(conversation)
-        return
+        return True
 
     if denied:
         create_notification(
@@ -589,6 +784,715 @@ def _handoff(message, history, store, conversation):
     return HANDOFF_CONFIRMATION, ""
 
 
+_PRICE_RANGE_QUESTION = _re.compile(
+    r"(?:الاسعار|اسعاركم|اسعارك|اسعاركو)[^؟?.]{0,30}?(?:بتبدا|تبدا|بتبتدي|من\s+كام|كام|تقريبا|عامله|رينج)"
+    r"|(?:رينج|range)\s+(?:لل|ال)?(?:اسعار|prices?)|price\s+range")
+
+
+def _store_price_range(message, store, conversation=None):
+    """"الأسعار بتبدأ من كام تقريبًا؟" answered with the owner's own sentence from the business facts.
+
+    Owner decision (2026-11-12): the range lives in the business facts only. The model would not
+    state it, answering "مش متاح عندي سعر بداية مؤكد" four times to a browsing customer (S18).
+    """
+    from products.models import Cart, StoreSettings
+    from .static_faq_service import normalize_arabic
+    from .product_info import _named_in_message
+    if store is None:
+        return ""
+    cart = Cart.objects.filter(conversation=conversation).first() if conversation is not None else None
+    if cart is not None and (cart.items.exists() or cart.pending_items):
+        return ""
+    if not _PRICE_RANGE_QUESTION.search(normalize_arabic(message or "")) or _named_in_message(message, store):
+        return ""
+    facts = StoreSettings.objects.filter(store=store).values_list("business_facts", flat=True).first() or ""
+    for line in facts.splitlines():
+        text = line.strip(" -•*\t")
+        if "اسعار" in normalize_arabic(text) and _re.search(r"\d", text):
+            return text if text.endswith((".", "!", "؟")) else text + "."
+    return ""
+
+
+# "أنا بحب الفريش للشغل، وأخويا بيحب السويت" marks the speaker with أنا (simulation S03 round 2 batch 2, t2).
+_SELF_MARK = _re.compile(r"(?<!\w)(?:ليا|لي|لنفسي|عشاني|بتاعي|انا|اني)(?!\w)")
+
+
+def _per_recipient_scents(message):
+    """{"self": [tags], "brother": [tags]} when one message gives each person their own scent.
+
+    "الفريش ليا للشغل، والسويت لأخويا للخروج" was merged into one fresh-and-sweet request, and
+    both perfumes came back fresh and sweet, four turns running (simulation S03).
+    """
+    from .conversation_service import _BARE_RECIPIENT, _OTHER_RECIPIENT, _OTHER_RECIPIENTS
+    from .scent_description import _tag_mentions
+    from .static_faq_service import normalize_arabic
+    by_word = {word: key for key, words in _OTHER_RECIPIENTS.items() for word in words}
+    pairs = {}
+    for segment in _re.split(r"[،,.!؟?\n]|\s+و(?=\S)", normalize_arabic(message or "")):
+        # Within one person's clause the recipient may be its subject: "وأخويا بيحب السويت" (S03 round 2
+        # batch 2, t2), not only "لأخويا".
+        other = _OTHER_RECIPIENT.search(segment) or _BARE_RECIPIENT.search(segment)
+        recipient = by_word.get(other.group(1)) if other else ("self" if _SELF_MARK.search(segment) else None)
+        tags = [tag for tag, _, _, negative in _tag_mentions(segment) if not negative]
+        if recipient and tags:
+            pairs.setdefault(recipient, [])
+            pairs[recipient] += [tag for tag in tags if tag not in pairs[recipient]]
+    if len(pairs) == 2 and len({tuple(sorted(tags)) for tags in pairs.values()}) == 2:
+        return pairs
+    return {}
+
+
+_RECIPIENT_LABELS = {"brother": "أخوك", "sister": "أختك", "mother": "مامتك", "father": "باباك", "wife": "مراتك",
+                     "husband": "جوزك", "fiancee": "خطيبتك", "fiance": "خطيبك", "son": "ابنك", "daughter": "بنتك",
+                     "friend": "صاحبك"}
+
+
+def Conversation_sales_state(conversation, state):
+    from products.models import Conversation
+    Conversation.objects.filter(pk=conversation.pk).update(sales_state=state)
+    conversation.sales_state = state
+
+
+def _pair_recommendation(message, pair, intent, history, store, conversation):
+    """One perfume per person from their own scent, recommended together; None if one is missing.
+
+    Each person's search excludes the other's distinctive scent, so "fresh for me, sweet for my
+    brother" cannot come back as two perfumes that are each fresh and sweet (simulation S03).
+    """
+    from .search_service import search_products
+    from .sales.value import as_budget
+    chosen = []
+    share = {}
+    total = as_budget(intent.get("max_price")) if intent.get("budget_scope") == "total" else None
+    if total:
+        # Each person's search gets an even share of a combined budget; searched with the whole 1600,
+        # one pick could take a 1400 bottle and leave nothing that fits beside it.
+        share = {"max_price": float(total / len(pair)), "budget_scope": "per_item"}
+    from products.models import Product
+    from .search_service import product_matches_request
+    from .static_faq_service import normalize_arabic
+    normalized = normalize_arabic(message or "")
+    # "خليهم 2، بس كده الإجمالي 1500؟" keeps the pair on the table; searched again, the already-offered
+    # picks ranked last and a different pair replaced the customer's (simulation S03 round 2 full 2, t4).
+    # A pick stays while that person's scent is the same and nobody asked for other options.
+    state = dict((conversation.sales_state or {}) if conversation is not None else {})
+    picks = {} if (_ASKS_FOR_OTHERS.search(normalized) or _REJECTS_THE_TABLE.search(normalized)) \
+        else dict(state.get("recipient_picks") or {})
+    for recipient, tags in pair.items():
+        others = {tag for key, other in pair.items() if key != recipient for tag in other} - set(tags)
+        person = {**intent, **share, "scent_tags": list(tags), "scent_match": "any", "scent_open": False,
+                  "excluded_scent_tags": sorted((set(intent.get("excluded_scent_tags") or ()) - set(tags)) | others),
+                  "exclude_names": sorted(set(intent.get("exclude_names") or ()) | {p.name for _, p in chosen}),
+                  "purchase_quantity": 1, "recommendation_count": 1, "similar_to": None}
+        kept = picks.get(recipient) or {}
+        previous = Product.objects.filter(store=store, name=kept.get("name"), is_active=True).first() \
+            if kept.get("name") and sorted(kept.get("tags") or ()) == sorted(tags) else None
+        if previous is not None and previous.name not in person["exclude_names"] \
+                and product_matches_request(previous, person, store):
+            chosen.append((recipient, previous))
+            continue
+        found = list(search_products(person, store, offered=sales_described.offered_ever(conversation, store))
+                     ["products"][:1])
+        if not found:
+            return None
+        chosen.append((recipient, found[0]))
+    if conversation is not None:
+        state["recipient_picks"] = {recipient: {"name": product.name, "tags": list(pair[recipient])}
+                                    for recipient, product in chosen}
+        Conversation_sales_state(conversation, {**(conversation.sales_state or {}), **state})
+    tags = sorted({tag for values in pair.values() for tag in values})
+    combined = {**intent, "scent_tags": tags, "scent_match": "any", "scent_open": False, "similar_to": None,
+                "excluded_scent_tags": sorted(set(intent.get("excluded_scent_tags") or ()) - set(tags)),
+                "purchase_quantity": max(2, int(intent.get("purchase_quantity") or 2)), "recommendation_count": 2}
+    products = [product for _, product in chosen]
+    response, context = recommend(message, products, history, store=store, intent=combined,
+                                  search={"effective_intent": combined, "products": products}, gender_unknown=False)
+    owners = dict(chosen)
+    if "self" in owners and len(owners) == 2:
+        other_key = next(key for key in owners if key != "self")
+        label = _RECIPIENT_LABELS.get(other_key)
+        if label and owners["self"].name in response and owners[other_key].name in response:
+            response = f"{owners['self'].name} ليك، و{owners[other_key].name} لـ{label}.\n\n" + response
+    stage = sales_stage.derive("recommendation", message, combined, None, history)
+    return _finalize(response, stage), context
+
+
+def _total_only_if_repeat(response, normalized, history, store=None):
+    """A total question that would resend the same recommendation gets the total line alone.
+
+    "الإجمالي كده كام بالظبط؟" re-ran the recommendation and sent the identical block again, three times
+    in one conversation (simulation S03 round 2, t4, t5, t7). The line says what shipping adds, from
+    the store's own facts: "1500 جنيه، من غير مصاريف الشحن" answered "ومفيش أي مصاريف تانية؟" and was
+    read as "no shipping" (S03 round 2 full 5, t4).
+    """
+    keeps_count = bool(_KEEPS_THE_COUNT.search(normalized or "") or _re.search(r"شحن", normalized or ""))
+    if not response or not (_TOTAL_QUESTION.search(normalized or "") or keeps_count):
+        return response
+    recent = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    if not any(SequenceMatcher(None, response, earlier).ratio() >= 0.9 for earlier in recent):
+        return response
+    total = next((line.strip() for line in response.splitlines() if line.strip().startswith("إجمالي ال")), "")
+    if not total:
+        return response
+    from .order_service import shipping_line
+    amounts = _re.findall(r"(\d+(?:\.\d+)?)\s*جنيه", total)
+    shipping = shipping_line(store, amounts[-1]) if amounts else ""
+    line = total.rstrip(".") + (". " + shipping if shipping else "، والمبلغ ده من غير مصاريف الشحن.")
+    # "خلاص خليهم اتنين، بس مش هزود عن 1600 بالشحن" re-sent the identical pair block (simulation S03
+    # round 2 batch 4, t5): the count is kept, so the picks are named once and the total follows.
+    owners = response.splitlines()[0].strip()
+    if keeps_count and not _TOTAL_QUESTION.search(normalized or "") and " ليك، و" in owners:
+        return "تمام، " + owners + "\n" + line
+    return line
+
+
+_CHEAPER = _re.compile(r"ارخص|اقل\s+(?:من|سعر|حاجه)|\bcheaper\b|\bless\s+expensive\b")
+_REPEAT_COMPLAINT = _re.compile(r"بتكرر|بتعيد|كررت|عيدت|نفس\s+(?:الترشيحات|الكلام|الحاجات|العطور|الاختيارات)")
+
+
+def _repeats_recent(response, history):
+    recent = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    return any(SequenceMatcher(None, response, earlier).ratio() >= 0.9 for earlier in recent)
+
+
+def _nothing_cheaper(response, normalized, history, products, store, conversation):
+    """"يعني مفيش أي حاجة أرخص من 750؟" answered directly when the same perfumes would come back.
+
+    The question re-ran the recommendation and resent the earlier block word for word (simulation S11
+    round 2 batch 2, t5). When the perfumes it would offer already sit at the store's lowest price for
+    this customer, the answer is that nothing is cheaper, with their price.
+    """
+    if not response or not _CHEAPER.search(normalized or ""):
+        return response
+    recent = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    if not any(SequenceMatcher(None, response, earlier).ratio() >= 0.9 for earlier in recent):
+        return response
+    from .objection_service import _price_floor
+    from .product_formatting import is_variant_available, money
+    floor = _price_floor(store, conversation)
+    by_name = {product.name: product for product in products}
+    named = [by_name[name] for name in sales_naming.names_in(response, list(by_name))]
+    cheapest = [min(((v.price, v.volume) for v in product.variants.all() if v.volume > 0 and is_variant_available(v)),
+                    default=None) for product in named]
+    if floor is None or not named or any(item is None or item[0] != floor for item in cheapest):
+        return response
+    volumes = {volume for _, volume in cheapest}
+    size = f" للـ{volumes.pop()} ملي" if len(volumes) == 1 else ""
+    return (f"{' و'.join(product.name for product in named)} بـ{money(floor)} جنيه{size}، ودي أقل أسعار عندنا؛ "
+            "مفيش حاجة أرخص منها حاليًا.")
+
+
+def _nothing_cheaper_exists(message, normalized, history, conversation, store):
+    """The direct answer to a cheaper question when the price in question is already our lowest.
+
+    With 750 the lowest price for this customer: "طب في بديل أرخص شوية؟" got "تقصد عطر شبه أنهي عطر؟"
+    twice, "رشحلي… أقل من 750" got the same 750 perfume, "مفيش حاجة أرخص منه؟" got two more at 750,
+    and "دول برضه بـ750؟ مفيش حاجة أرخص؟" got "تقصد أنهي عطر وحجم؟" (simulation S11 round 2 batch 5,
+    t4-t8). The price asked about is the one the customer states, else the lowest we quoted lately;
+    when nothing in the store is below it, that is the answer on every route.
+    """
+    if not store or not _CHEAPER.search(normalized or "") or len(_re.findall(r"[؟?]", message or "")) > 1:
+        return ""
+    from decimal import Decimal
+    from .objection_service import _price_floor
+    from .product_formatting import money
+    floor = _price_floor(store, conversation)
+    if floor is None:
+        return ""
+    stated = [Decimal(n) for n in _re.findall(r"(?<![\d.])(\d{3,5})(?![\d.]|\s*(?:ملي|مل|ml))", normalized)]
+    replies = [row.get("content", "") for row in (history or []) if row.get("role") == "assistant"]
+    quoted = [Decimal(n) for reply in replies[-2:] for n in _re.findall(r"بـ?\s*(\d{3,5})\s*جنيه", reply)]
+    reference = min(stated) if stated else (min(quoted) if quoted else None)
+    if reference is None or floor < reference:
+        return ""
+    line = f"مفيش حاجة أرخص من {money(floor)} جنيه عندنا حاليًا؛ ده أقل سعر عندنا."
+    if any(line in reply for reply in replies[-3:]):
+        return (f"زي ما قلتلك، {money(floor)} جنيه هو أقل سعر عندنا ومفيش أرخص منه حاليًا. "
+                "لو حابب تكمل بيه قولي، ولو محتاج تفكر خد وقتك.")
+    return line
+
+
+_GUARANTEE = _re.compile(r"(?<!\w)(?:تضمن\w*|مضمون\w*|ضامن\w*|يضمن\w*)(?!\w)")
+
+
+def _guarantee_note(response, products, intent, normalized):
+    """"رشحلي حاجة تضمن إنها مش مسكرة": say what can and cannot be guaranteed, from the data.
+
+    S10 round 2 full 3, t6-t7: each such demand got options whose sweetness was unconfirmed, with no
+    word that no guarantee is possible (owner decision 4 forbids inferring "not sweet"). The recorded
+    facts that do bear on it are the classification and the notes.
+    """
+    if not response or not _GUARANTEE.search(normalized or "") \
+            or "sweet" not in set((intent or {}).get("excluded_scent_tags") or ()):
+        return response
+    from .sales.scent_matching import has_sweet_notes
+    by_name = {product.name: product for product in products}
+    clean = [by_name[name] for name in sales_naming.names_in(response, list(by_name))
+             if "sweet" not in (by_name[name].scent_tags or ()) and not has_sweet_notes(by_name[name])]
+    head = "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي."
+    if clean:
+        head += (" " + " و".join(product.name for product in clean)
+                 + ": الحلاوة مش ضمن تصنيفها، ومفيش فانيليا ولا عسل في نوتاتها.")
+    return head + "\n\n" + response + "\n\nولو عايز تطمن أكتر، جربها في الستور قبل ما تطلب."
+
+
+_RECALL = _re.compile(r"كنت\s+(?:قلت|قولت|قلتلي|قولتلي|رشحت\w*|اقترحت\w*)|(?:رشحت|اقترحت)(?:لي|هولي)?\s+(?:ايه|انهي)|"
+                      r"كان\s+ايه\s+(?:اللي|الي)\s+(?:رشحته|قلته|قولته)")
+
+
+def _recalled_offer(message, conversation, store):
+    """"نرجع لبتاعي، كنت قلت إيه أحسن واحد ليا؟" answered from what was offered to that recipient.
+
+    A fresh search offered Black XS L'Exces, which nobody had mentioned (simulation S15 round 2 full 3, t5).
+    """
+    from .static_faq_service import normalize_arabic
+    if conversation is None or not _RECALL.search(normalize_arabic(message or "")):
+        return None
+    state = conversation.sales_state or {}
+    names = (state.get("recipient_offers") or {}).get(state.get("recipient", "self"))
+    if not names:
+        return None
+    from .price_reply import requested_product_details
+    from .product_formatting import format_products
+    from .product_info import _products_named
+    products = _products_named(names, store)
+    lines = requested_product_details(products, "", description_required=True)
+    if not lines:
+        return None
+    return "كنت رشحتلك " + " و".join(p.name for p in products) + ":\n" + "\n".join(lines), format_products(products)
+
+
+def _uncommon_note(response, products, intent):
+    """For "حاجة مميزة ومش منتشرة", say which offered perfume is niche or the store's own, from the data.
+
+    S05 round 2 full 3, t3: asked "إيه اللي يميز ترشيحك؟", the reply gave only scent labels, never that
+    Alexandria II is niche — the one recorded fact that answers the request.
+    """
+    if not response or not (intent or {}).get("wants_uncommon") or _re.search(r"نيش|حصري|niche", response):
+        return response
+    from .sales.scent_matching import is_uncommon
+    from .sales.value import is_store_exclusive
+    by_name = {product.name: product for product in products}
+    lines = []
+    for name in sales_naming.names_in(response, list(by_name)):
+        product = by_name[name]
+        if is_store_exclusive(product) or product.perfume_type == "store_own_made":
+            lines.append(f"{name} تركيب حصري بتاعنا.")
+        elif is_uncommon(product):
+            label = {"niche": "النيش", "ultra_niche": "الألترا نيش"}.get(product.perfume_type, "النيش")
+            lines.append(f"{name} من فئة {label}.")
+    return response + ("\n\n" + " ".join(lines) if lines else "")
+
+
+_OTHER_THAN_PERFORMANCE = _re.compile(r"بكام|سعر|ريح|نوت|طابع|مكونات|متوفر|موجود|حجم|زجاج|شحن|توصيل|اصلي|تركيب|"
+                                     r"رشح|ترشح")
+
+
+def _store_performance_answer(message, store, normalized):
+    """A performance question about no named perfume gets the store policy, which covers them all.
+
+    "طب بيقعد قد إيه بجد؟" was answered "ثباتها ممتاز" without the hours the policy gives for an explicit
+    duration question, then "محتاجة تأكيد… تحب أحولك؟" (simulation S16 round 2 full 4, t3-t4).
+    """
+    from .performance_policy import current_request, description
+    from .product_info import _named_in_message
+    performance = current_request()
+    # "ثبات سوفاج قد ايه؟" (a name in Arabic letters) and "ثباته قد ايه؟" (its longevity) are about one
+    # perfume, which the resolver places; only a question about none gets the store-wide answer.
+    if not (performance.longevity or performance.projection) or _named_in_message(message, store) \
+            or _OTHER_THAN_PERFORMANCE.search(normalized or "") or sales_naming.may_name_a_perfume(message) \
+            or _re.search(r"(?:ثبات|فوحان|ريحت)(?:ه|ها|هم)(?!\w)", normalized or ""):
+        return None
+    text = description(performance, longevity=performance.longevity, projection=performance.projection)
+    return "كل عطورنا " + text.replace("ثباته ", "ثباتها ").replace("فوحانه ", "فوحانها ") + "."
+
+
+def _recently_denied(conversation, turns=4):
+    """Whether one of our last replies told the customer a named perfume is not stocked."""
+    if conversation is None:
+        return False
+    contexts = conversation.messages.filter(role="assistant", delivery_status="sent").order_by(
+        "-created_at", "-pk").values_list("internal_context", flat=True)[:turns]
+    return any("ABSENCE_DENIED" in (context or "") for context in contexts)
+
+
+def _closer_to_a_missing_perfume(message, normalized, conversation, store):
+    """The honest line for "أنهي واحد فيهم أقرب لـ Club de Nuit؟" about a perfume we do not stock.
+
+    It got the two price blocks and nothing else, which the judge read as picking the first one
+    without support (simulation S09 round 2 batch 4 attempt 3, t5). Nothing recorded compares our
+    perfumes with one we hold no data for, so the reply says that before anything else.
+    """
+    if not store or not _re.search(r"اقرب|اشبه|شبه|قريب", normalized or "") or not _re.search(r"[A-Za-z]{3}", message or ""):
+        return ""
+    from products.models import Product
+    names = list(Product.objects.filter(store=store, is_active=True).values_list("name", flat=True))
+    for run in _re.findall(r"[A-Za-z][A-Za-z'’&.-]*(?:\s+[A-Za-z][A-Za-z'’&.-]*)*", message or ""):
+        words = [word for word in _re.findall(r"[a-z]+", run.lower())
+                 if word not in sales_naming.LATIN_FILLER and len(word) >= 3]
+        if words and not sales_naming.names_in(run, names) and _recently_denied(conversation, turns=8):
+            return f"معنديش بيانات عن ريحة {run.strip()} أقارن بيها، فمقدرش أقول أنهي أقرب له."
+    return ""
+
+
+def _not_a_repeat(fallback, message, history):
+    """A fallback that says again what a recent reply already said is replaced, not resent.
+
+    "طب هو قريب من Club de Nuit فعلًا؟" and then "خلاص هفكر شوية، تسلم" both got the same Ultra Male
+    description back word for word (simulation S09 round 2, t6-t7). A closing message gets a short
+    close; anything else gets one honest line instead of the same block.
+    """
+    recent = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    if not fallback or not any(SequenceMatcher(None, fallback, earlier).ratio() >= 0.9 for earlier in recent):
+        return fallback
+    from .sales.appreciation import closes_conversation, thanks_or_praise
+    if closes_conversation(message) or (thanks_or_praise(message) and not _re.search(r"[؟?]", message or "")):
+        return "تمام، خد وقتك، ولو احتجت حاجة أنا موجود."
+    return "ده كل اللي متسجل عندي عن ده؛ أي تفاصيل أكتر محتاجة تأكيد من فريق خدمة العملاء."
+
+
+_ASKS_TO_CHOOSE = _re.compile(
+    r"(?<!\w)(?:انهي|مين|احسن|افضل|انسب|احلي|اقوي|اخف|الفرق|فرق|يميز|اختار\w*|anhy|anhi|a7san|a7la|which|better|"
+    r"difference|vs)(?!\w)", _re.IGNORECASE)
+
+
+def _label_difference(first, second):
+    """What separates two perfumes, from their saved labels only."""
+    from .scent_description import _PHRASES, selected_tags
+    mine, theirs = selected_tags(first.scent_tags), selected_tags(second.scent_tags)
+    only_first = [_PHRASES[tag] for tag in mine if tag not in theirs and tag in _PHRASES]
+    only_second = [_PHRASES[tag] for tag in theirs if tag not in mine and tag in _PHRASES]
+    if not only_first and not only_second:
+        return "طابعهم المسجل متقارب جداً، فالفرق الأساسي بينهم في السعر والحجم."
+    parts = []
+    if only_first:
+        parts.append(f"{first.name} " + " و".join(only_first))
+    if only_second:
+        parts.append(f"{second.name} " + " و".join(only_second))
+    return "الفرق في الطابع المسجل: " + "، و".join(parts) + "."
+
+
+def _pick_for_customer(first, second, conversation):
+    """"اختارلي انت": one of the two, by the saved preferences, the first one shown on a tie.
+
+    The fallback answered "خلاص اختارلي انت" with both descriptions and their difference, leaving the
+    choice with an undecided customer again (simulation S06 round 2 full 3, t6).
+    """
+    from .scent_description import describe_scent
+    preferences = (conversation.preferences or {}) if conversation is not None else {}
+    wanted = set(preferences.get("scent_tags") or ())
+    avoided = set(preferences.get("excluded_scent_tags") or ())
+
+    def fit(product):
+        tags = set(product.scent_tags or ())
+        return len(tags & wanted) - len(tags & avoided)
+    pick = second if fit(second) > fit(first) else first
+    return f"لو هختارلك: {pick.name}؛ {describe_scent(pick.scent_tags, '')}."
+
+
+def _thanked(message, reply, history):
+    """Praise beside a question gets a short thanks before the answer, whatever wrote the answer.
+
+    The persona asks the model to thank first, but a draft replaced by a fallback loses it: "تمام،
+    ذوقك حلو. إيه اللي يميزه…؟" got the comparison and no word about the praise (simulation S05).
+    """
+    from .sales.appreciation import detect
+    if not reply or not detect(message, history) or _re.search(r"تسلم|شكر|ميرسي|مبسوط|يسعدني|بيسعدني", reply):
+        return reply
+    return "تسلم يا فندم.\n\n" + reply
+
+
+# "الشحن بياخد قد إيه؟" asks how long delivery takes; no keyword of the store's delivery-time FAQ
+# matched it, and the bare "شحن" keyword answered the fee instead (simulation S14 round 2, t5).
+_DELIVERY_TIME = _re.compile(
+    r"(?:شحن|توصيل|يوصل|بيوصل|هيوصل|الاوردر)[^؟?\n]*(?:قد ايه|اد ايه|كام يوم|كام ايام|امتي|مده|بياخد وقت)"
+    r"|(?:قد ايه|اد ايه|كام يوم|كام ايام)[^؟?\n]*(?:شحن|توصيل|يوصل)")
+_GREETING_FRAGMENT = _re.compile(r"^\W*و?(?:السلام|سلام|ازيك|اهلا|هاي|مرحبا|صباح|مساء|hi|hello)", _re.I)
+# "ينفع أبدلها؟", "لو مجاش على ذوقها أعمل إيه؟": the exchange policy, which a model paraphrase got
+# wrong ("لو العطر زجاجة ستور خاصة، ينفع استبداله", simulation S07 round 2, t5). Asked as a question,
+# so a cart swap ("عايز ابدل السوفاج بالبلو") is not read as one.
+_EXCHANGE_QUESTION = _re.compile(
+    r"(?:ينفع|ممكن|هل|اقدر|نقدر)\s+(?:\S+\s+){0,2}(?:ا|ن|ي|ت)?(?:بدل|رجع|استبدل|ترجع)\w*"
+    r"|مج(?:ا|ت)ش\s+علي\s+ذوق|مطلع(?:ت)?ش\s+علي\s+ذوق|مع?جب(?:ها|هو|ني|ناش)ش|معجبتهاش")
+
+
+def _strict_faq_match(text, store):
+    """`match_static_faq` with whole-word keywords, for one question cut out of a longer message.
+
+    A short fragment lets single keywords match, and they match as substrings: "إيه الفرق اللي
+    بيدفعني أشتريه" hit the payment FAQ through the "دفع" inside "بيدفعني" (simulation S16 round 2 full
+    3, t2). Each keyword part must stand as a word, with at most an article or و/ب/ل in front.
+    """
+    from products.models import StaticFAQ
+    from .static_faq_service import _matched_reply, normalize_arabic
+    if not store:
+        return None
+    normalized = normalize_arabic(text or "")
+    for faq in StaticFAQ.objects.filter(store=store, is_active=True).order_by("-priority", "id"):
+        for keyword in (normalize_arabic(k.strip()) for k in (faq.keywords or "").split(",") if k.strip()):
+            parts = [part.strip() for part in keyword.split("+") if part.strip()]
+            if parts and all(_re.search(r"(?<!\w)(?:[وبل]?ال|لل|[وبل])?" + _re.escape(part) + r"(?!\w)", normalized)
+                             for part in parts):
+                return _matched_reply(faq, text)
+    return None
+
+
+def _faq_lookup(text, store, strict=False):
+    """The store FAQ entry for one question, with delivery-time and exchange paraphrases the
+    keywords miss."""
+    from .static_faq_service import match_static_faq, normalize_arabic
+    normalized = normalize_arabic(text or "")
+    # One question only: "أنهي فيهم أخف؟ ولو مجتش على ذوقها أعمل إيه؟" must still reach the comparison;
+    # `_faq_answers` looks up each question of a longer message on its own.
+    single = len([part for part in _re.split(r"[؟?\n]+", normalized) if part.strip()]) <= 1
+    for pattern, canonical in ((_DELIVERY_TIME, "مدة التوصيل"), (_EXCHANGE_QUESTION, "استبدال")):
+        if single and pattern.search(normalized):
+            found = match_static_faq(canonical, store)
+            if found and found.get("answer"):
+                return found
+    return _strict_faq_match(text, store) if strict else match_static_faq(text, store)
+
+
+# What else a message may ask or request beside a store-policy question. Without one of these, the
+# rest is a remark ("هفكر أطلبه إن شاء الله") and the policy answer is the whole reply.
+_ASKS_SOMETHING_ELSE = _re.compile(
+    r"(?<!\w)(?:بكام|كام|سعر\w*|ايه|ازاي|فين|امتي|ليه|مين|انهي|هل|عندك|عندكم|عايز\w*|عاوز\w*|محتاج\w*|"
+    r"رشح\w*|ترشح\w*|ترشيح\w*|قارن\w*|قولي|وريني|ابعت\w*|اختار\w*)(?!\w)"
+    r"|(?:في|فيه)\s+حاجه|الفرق|احسن|انسب|ريحت\w*|نوتات|ثبات\w*|فوحان\w*")
+
+
+_FIXED_PRICE_QUESTION = _re.compile(
+    r"(?:السعر|سعر\w*|التمن)\s+(?:\S+\s+)?ثابت|(?:يطلع|هيطلع|فيه|في|هيبقي|هيكون)\s+(?:\S+\s+)?زياد\w*|"
+    r"هيزيد|بيزيد|مصاريف\s+(?:تانيه|زياده|اضافيه|خفيه)|رسوم\s+(?:تانيه|زياده|اضافيه)")
+
+
+def _fixed_price_note(message, store):
+    """"لو السعر ثابت قولّي بصراحة… مش عايز يطلع فيه زيادة" answered from the store's own facts.
+
+    It was read as a longevity question and got "ثباته ممتاز" twice, with the concern itself never
+    answered (simulation S11 round 2 full 5, t3-t4). The order is charged the catalogue price; the
+    only addition the store states is shipping.
+    """
+    from .static_faq_service import normalize_arabic
+    if not _FIXED_PRICE_QUESTION.search(normalize_arabic(message or "")):
+        return ""
+    from .order_service import flat_shipping_fee, _free_shipping_threshold
+    from .product_formatting import money
+    fee = flat_shipping_fee(store) if store else None
+    if fee is None:
+        return "السعر ده ثابت زي ما هو، والزيادة الوحيدة عليه هي مصاريف الشحن."
+    threshold = _free_shipping_threshold(store)
+    free = f"، والشحن مجاني لأي أوردر فوق {money(threshold)} جنيه" if threshold is not None else ""
+    return f"السعر ده ثابت زي ما هو، ومفيش أي زيادة عليه غير مصاريف الشحن {money(fee)} جنيه{free}."
+
+
+_SKIN_OR_CLOTHES = _re.compile(r"(?<!\w)(?:علي|ع)\s*(?:ال)?(?:جلد|بشره|هدوم|لبس|ملابس)(?!\w)")
+# Worded without "الثبات": the performance-policy enforcer rewrites any clause that carries it.
+SKIN_OR_CLOTHES_ANSWER = "المعلومة دي مش مسجلة عندي: المدة مش محدد فيها إذا كانت على الجلد ولا على الهدوم، فمقدرش أأكدلك أنهي فيهم."
+SKIN_OR_CLOTHES_AGAIN = ("زي ما قلتلك، المعلومة دي مش مسجلة عندي. لو مهم تتأكد منها قبل ما تقرر، "
+                         "تحب أحولك لفريق خدمة العملاء؟")
+
+
+def _skin_or_clothes_answer(normalized, history):
+    """"الثبات ده على الجلد ولا الهدوم؟": the store's performance policy does not say which.
+
+    It got "اكتبلي اسم العطر تاني… عشان أتأكد من المقصود" and then "ده كل اللي متسجل عندي عن ده"
+    (simulation S16 round 2 full 6, t4-t5; question quality 4). The honest answer is that it is not
+    recorded; asked again, the team is offered instead of the same sentence.
+    """
+    from .static_faq_service import normalize_arabic
+    if not _SKIN_OR_CLOTHES.search(normalized or ""):
+        return ""
+    replies = [row.get("content", "") for row in (history or []) if row.get("role") == "assistant"]
+    about_longevity = _re.search(r"ثبات|ثابت|يثبت|يقعد|ساع", normalized) or (
+        replies and _re.search(r"ثبات|ساعات", normalize_arabic(replies[-1])))
+    if not about_longevity:
+        return ""
+    return SKIN_OR_CLOTHES_AGAIN if any(SKIN_OR_CLOTHES_ANSWER in reply for reply in replies[-3:]) \
+        else SKIN_OR_CLOTHES_ANSWER
+
+
+_RETYPE_THE_NAME = _re.compile(
+    r"(?:[اأ]كتب\w*|قول\w*|[اإ]بعت\w*)\s+(?:لي\s+)?(?:[اإ]سم\s+العطر|[اإ]سمه|ال[اإ]سم)\s+(?:تاني|مر[ةه]\s+تاني[ةه])")
+
+
+def _without_retype_request(response, message, context):
+    """Drop "اكتبلي اسمه تاني" when the customer never named a perfume.
+
+    "وبيفضل ثابت قد إيه بجد؟" got the store's answer and then "بس عشان أجاوبك عن عطر بعينه اكتبلي
+    اسمه تاني يا فندم" (simulation S16 round 2 full 5, t3; again in full 6, t4): "تاني" presumes a
+    name that was never given. A turn on which a name could not be read (its context says so), or a
+    message in Latin letters or one that says "اسمه", keeps the request.
+    """
+    if not response or not _RETYPE_THE_NAME.search(response) or _re.search(r"[A-Za-z]{3}|[اإ]سمه", message or "") \
+            or any(marker in (context or "") for marker in ("NAME_UNREADABLE", "ABSENCE_DENIED", "PENDING_LOOKUP")):
+        return response
+    kept = []
+    for sentence in _re.split(r"(?<=[.!؟?])\s+|\n+", response):
+        ask = _RETYPE_THE_NAME.search(sentence)
+        if not ask:
+            kept.append(sentence)
+            continue
+        comma = max(sentence.rfind("،", 0, ask.start()), sentence.rfind(",", 0, ask.start()))
+        head = sentence[:comma].strip() if comma > 0 else ""
+        if len(head.split()) >= 3:
+            kept.append(head + ".")
+    return " ".join(kept).strip() or response
+
+
+_STRENGTH_CHOICE = _re.compile(
+    r"(?:اخف|خفيف\w*|هادي\w*|ناعم\w*|رقيق\w*)\s+(?:\S+\s+)?ولا\s+(?:اقوي|اتقل|اجمد|تقيل\w*|قوي\w*)"
+    r"|(?:اقوي|اتقل|اجمد|تقيل\w*|قوي\w*)\s+(?:\S+\s+)?ولا\s+(?:اخف|خفيف\w*|هادي\w*|ناعم\w*)")
+
+
+def _without_answered_strength_question(response, preferences):
+    """Drop a "أخف ولا أقوى؟" question once the customer has said how strong she wants it.
+
+    "بحب الحاجات الرقيقة اللي فيها ورد ومش تقيلة" was asked "تحبي الحاجة أخف ولا أقوى شوية؟" two turns
+    later (simulation S06 round 2 full 5, t5).
+    """
+    from .static_faq_service import normalize_arabic
+    prefs = preferences or {}
+    stated = ({"light", "heavy"} & (set(prefs.get("scent_tags") or ()) | set(prefs.get("excluded_scent_tags") or ())
+                                     | set(prefs.get("avoid_traits") or ())))
+    if not stated or not response:
+        return response
+    kept = _re.sub(r"[^.!؟?\n]*[؟?]",
+                   lambda m: "" if _STRENGTH_CHOICE.search(normalize_arabic(m.group())) else m.group(), response)
+    kept = _re.sub(r"[ \t]+\n", "\n", kept).strip()
+    return kept or response
+
+
+def _is_exchange_question(normalized):
+    """An exchange-policy question, not a return to an earlier option or a size swap.
+
+    "ينفع نرجع للأولاني؟" goes back to a perfume and "ينفع أبدل الـ50 بالـ90؟" swaps a size; neither asks
+    what the store does with a bottle that did not suit.
+    """
+    return bool(_EXCHANGE_QUESTION.search(normalized)) and not _re.search(
+        r"(?:رجع|ترجع)\w*\s+(?:ل(?!و(?:\s|$))\S|علي\s)|بدل\w*\s+(?:\S+\s+){0,3}ب(?:ال|ـ)?\S", normalized)
+
+
+def _policy_answer(answer, history):
+    """The store's policy answer, shortened when it already went out in full.
+
+    The exchange policy asked about again got the whole text again, and an identical reply after
+    that (simulation S07 round 2 full 5, t3-t7). A repeat gets the exchange lines alone, quoted
+    as written; a third ask, the first of them.
+    """
+    from .static_faq_service import normalize_arabic
+    recent = [row.get("content", "") for row in (history or [])[-8:] if row.get("role") == "assistant"]
+    if not any(answer in earlier for earlier in recent):
+        return answer
+    lines = [line.strip() for line in answer.splitlines()
+             if _re.search(r"استبدال|استرجاع", normalize_arabic(line)) and not line.strip().endswith(":")]
+    for brief in (("زي ما قلتلك:\n" + "\n".join(lines)) if lines else "",
+                  ("زي ما قلتلك، " + lines[0]) if lines else ""):
+        if brief and not any(brief in earlier for earlier in recent):
+            return brief
+    return answer
+
+
+def _policy_side_questions(message, store, history=None):
+    """(store answers, the rest of the message, whether the rest asks anything) for exchange and
+    delivery questions.
+
+    "طب هتعجبها أكيد؟ ولو مجتش على ذوقها أعمل إيه؟" sent the exchange half to the model, which narrowed
+    a condition of the policy into a rule for every bottle (simulation S07 round 2 batch 3, t3). The
+    store's own answer is given verbatim; the model answers the rest.
+
+    Split by clause, not only by "؟": "تمام، هفكر في الـ50 ملي وأطلبه إن شاء الله، بس ينفع أبدله لو
+    مجاش على ذوقها؟" is one question mark, went to the price branch whole, and got the 50 ml price
+    twice with the exchange question unanswered (simulation S07 round 2 full 5, t5-t7). The other
+    clauses of a policy sentence ("والميزانية لحد 1000") stay in the rest.
+    """
+    from .static_faq_service import normalize_arabic
+    sentences = [part.strip() for part in _re.split(r"(?<=[؟?])\s*|(?<=[.!])\s+|\n+", message or "") if part.strip()]
+    answers, rest, asks = [], [], False
+    for sentence in sentences:
+        clauses = [clause.strip() for clause in _re.split(r"[،,]+|\s+(?=(?:بس|لكن)\s)", sentence) if clause.strip()]
+        kept = []
+        for index, clause in enumerate(clauses):
+            normalized = normalize_arabic(clause)
+            found = (_faq_lookup(clause, store)
+                     if _is_exchange_question(normalized) or _DELIVERY_TIME.search(normalized) else None)
+            answer = ((found or {}).get("answer") or "").strip()
+            if answer:
+                if answer not in answers:
+                    answers.append(answer)
+                continue
+            kept.append(clause)
+            if _ASKS_SOMETHING_ELSE.search(normalized) or (
+                    index == len(clauses) - 1 and _re.search(r"[؟?]\s*$", sentence)):
+                asks = True
+        if kept:
+            rest.append("، ".join(kept))
+    if not answers:
+        return [], message, True
+    return [_policy_answer(answer, history) for answer in answers], " ".join(rest), asks
+
+
+def _faq_answers(message, store, whole):
+    """Answer every store question in the message, in the order asked.
+
+    "طب الشحن بياخد قد إيه؟ والدفع عند الاستلام متاح؟" got the payment answer alone: one keyword
+    match ended the turn and the delivery-time question went unanswered (simulation S14 round 2, t5).
+    """
+    fragments = [part.strip() for part in _re.split(r"[؟?\n]+", message or "") if part.strip()]
+    if len(fragments) < 2:
+        return whole
+    answers = []
+    for fragment in fragments:
+        if _GREETING_FRAGMENT.search(fragment):
+            continue
+        answer = ((_faq_lookup(fragment, store, strict=True) or {}).get("answer") or "").strip()
+        if answer and all(answer not in earlier for earlier in answers):
+            answers.append(answer)
+    if whole and all(whole.strip() not in earlier for earlier in answers):
+        answers.append(whole.strip())
+    return "\n\n".join(answers) if answers else whole
+
+
+def _with_side_answers(message, reply, history, store, conversation):
+    """Answer a shipping/hours question asked alongside a checkout step, after the order reply."""
+    import hashlib
+    import re
+    from .static_faq_service import match_static_faq
+    from products.models import Cart
+    from .order_service import amount_with_shipping, shipping_answer
+    order_reply = reply
+    for fragment in re.split(r"[.؟?\n]", message or ""):
+        if re.search(r"شحن|توصيل|بتوصل|بتفتح|مواعيد", fragment) and not re.search(r"\d{7}", fragment):
+            # "الإجمالي 810 بالشحن صح؟" is about this order's sum, which only the checkout knows.
+            total = amount_with_shipping(conversation, fragment)
+            if total:
+                if total not in reply:
+                    reply += "\n\n" + total
+                continue
+            # A fee question ("والشحن كده 60؟") is the store's shipping answer. Sent to the general
+            # model as a bare fragment, it never saw the details given in the same message and asked
+            # for the name, phone and address again under the summary (simulation S11 final t4).
+            fee = shipping_answer(store) if re.search(r"شحن|توصيل", fragment) and re.search(
+                r"\d|بكام|كام|مصاريف|سعر|فلوس", fragment) else ""
+            if fee:
+                if fee not in reply:
+                    reply += "\n\n" + fee
+                continue
+            faq = _faq_lookup(fragment.strip(), store)
+            if faq and "answer" in faq:
+                if faq["answer"] not in reply:
+                    reply += "\n\n" + faq["answer"]
+            else:
+                answer, _ = handle_general(fragment.strip(), history, store)
+                reply += "\n\n" + answer
+    if reply != order_reply and conversation is not None:
+        cart = Cart.objects.filter(conversation=conversation).first()
+        if cart and cart.quote.get("summary_hash") == hashlib.sha256(order_reply.encode()).hexdigest():
+            cart.quote = {**cart.quote, "summary_hash": hashlib.sha256(reply.encode()).hexdigest()}
+            cart.save(update_fields=["quote"])
+    return reply
+
+
 def _is_goodbye_loop(history):
     """
     Detect if the user is repeating 'سلام' or goodbye messages.
@@ -613,6 +1517,14 @@ def _is_goodbye_loop(history):
 
 def route(message, history=None, store=None, conversation=None):
     """Apply the performance policy to every route, including scripted replies."""
+    token = _TURN_CONVERSATION.set(conversation)
+    try:
+        return _route_with_policy(message, history, store, conversation)
+    finally:
+        _TURN_CONVERSATION.reset(token)
+
+
+def _route_with_policy(message, history, store, conversation):
     with performance_turn(message, history):
         reply, context = _route(message, history, store, conversation)
         cleaned = enforce_reply(reply, context=context)
@@ -645,6 +1557,13 @@ def _route(message, history=None, store=None, conversation=None):
     handoff_reply = handoff_offer_reply(message, offer_history)
     if handoff_reply is True:
         return _handoff(message, history, store, conversation)
+    from .handoff import walks_away
+    if handoff_reply is False and walks_away(message) and has_handoff_offer(offer_history) \
+            and not requests_human(message):
+        # "ماشي خلاص، مش هطلب حاجة. سيبك" after our transfer offer: the customer is leaving. A short
+        # close, before the offers flow can answer the declined transfer with another sales line
+        # (simulation S20 round 2 full 6, t5).
+        return "تمام يا فندم، ولو احتجت أي حاجة أنا موجود.", ""
 
     # Offers must be checked before phone/address edits, FAQs, catalogue lookup,
     # and price objections. Those paths cannot fulfill promotional purchases.
@@ -658,7 +1577,12 @@ def _route(message, history=None, store=None, conversation=None):
     if promotion_request or (promotion_pending and not regular_purchase
                              and promotion_service.declined_transfer(message, promotion_history)
                              and not promotion_service.information_requested(message)):
-        return promotion_service.reply(message, promotion_history, store)
+        from .sales.appreciation import closes_conversation
+        if not promotion_request and closes_conversation(message):
+            # "لا مش دلوقتي… تمام شكراً" declined the transfer and closed; the offer script went
+            # out again regardless (simulation S18 t5).
+            return "تمام، ولو احتجت حاجة أنا موجود.", ""
+        return promotion_service.reply(message, promotion_history, store, conversation=conversation)
 
     # Classify ambiguous offer names/context before the active-cart shortcut.
     # Reuse the result below and bill a message once, regardless of the path.
@@ -666,8 +1590,14 @@ def _route(message, history=None, store=None, conversation=None):
     if not regular_purchase and not promotion_service.cancelling_order(message) and (promotion_pending or promotion_facts):
         record_llm_message(store)
         request_type = classify(message, promotion_history, promotion_context=promotion_facts)
+        if request_type == "promotion" and not promotion_pending and _count_within_total(message, conversation) \
+                and not promotion_service.blocks_checkout(message, promotion_history, store):
+            # "طب لو عايز 3 بنفس الـ1600 ينفع؟" names no offer; read against "اشتري برفانين وخد التالت
+            # هدية" it got the offer script twice and never the arithmetic (simulation S03 round 2
+            # batch 3, t3-t4). A count within a combined budget is the totals flow's question.
+            request_type = "recommendation"
         if request_type == "promotion" or (request_type == "order" and promotion_pending):
-            return promotion_service.reply(message, promotion_history, store, usage_recorded=True)
+            return promotion_service.reply(message, promotion_history, store, conversation=conversation, usage_recorded=True)
         if request_type == "handoff" and handoff_reply is not False and has_handoff_offer(offer_history):
             return _handoff(message, history, store, conversation)
 
@@ -693,11 +1623,27 @@ def _route(message, history=None, store=None, conversation=None):
         formulation = match_static_faq("العطور اصليه ولا تركيب", store)
         explanation = (formulation or {}).get("answer", "شكل الزجاجة واسم العطر لوحدهم مش دليل على مين صنع السائل.")
         return explanation + "\n\nاسم مصنع الزيت تحديدًا محتاج تأكيد من الفريق.", ""
-    faq_match = match_static_faq(message, store)
+    price_range = _store_price_range(message, store, conversation)
+    if price_range:
+        return price_range, ""
+    faq_match = _faq_lookup(message, store)
+    from .sales.appreciation import closes_conversation
+    if faq_match and closes_conversation(message) and not re.search(r"[؟?]", message or ""):
+        # "كده النوتات دي للتركيبة عندكم… هفكر وأقارن شوية، شكراً" restates what it understood and
+        # closes; the "تركيب" keyword sent the whole authenticity pitch to a customer leaving
+        # (simulation S02 round 2 full 5, t8). The closing branch answers it.
+        faq_match = None
     if faq_match and faq_match.get("promotion"):
         if (not regular_purchase and not promotion_service.cancelling_order(message)
                 and not requests_human(message) and request_type != "handoff"):
-            return promotion_service.reply(message, promotion_history, store, usage_recorded=request_type is not None)
+            return promotion_service.reply(message, promotion_history, store, conversation=conversation, usage_recorded=request_type is not None)
+        faq_match = None
+    if faq_match and faq_match.get("answer") and any(
+            entry.get("role") == "assistant" and faq_match["answer"].strip() in (entry.get("content") or "")
+            for entry in history):
+        # A keyword hit is not proof the customer wants the same canned text again: "إزاي ده بـ1000
+        # والأصلي بآلاف؟" got the authenticity answer verbatim twice (S16 t2/t4). The model has the
+        # FAQ facts in its prompt and answers the actual question instead.
         faq_match = None
     from products.models import Cart
     active_cart = Cart.objects.filter(conversation=conversation).first() if conversation else None
@@ -711,24 +1657,19 @@ def _route(message, history=None, store=None, conversation=None):
         if request_type is None:
             record_llm_message(store)
         reply, context = handle_order(message, history, store, conversation)
-        order_reply = reply
-        for fragment in re.split(r"[.؟?\n]", message):
-            if re.search(r"شحن|توصيل|بتوصل|بتفتح|مواعيد", fragment) and not re.search(r"\d{7}", fragment):
-                faq = match_static_faq(fragment.strip(), store)
-                if faq and "answer" in faq:
-                    reply += "\n\n" + faq["answer"]
-                else:
-                    answer, _ = handle_general(fragment.strip(), history, store)
-                    reply += "\n\n" + answer
-        if reply != order_reply:
-            import hashlib
-            cart = Cart.objects.filter(conversation=conversation).first()
-            if cart and cart.quote.get("summary_hash") == hashlib.sha256(order_reply.encode()).hexdigest():
-                cart.quote = {**cart.quote, "summary_hash": hashlib.sha256(reply.encode()).hexdigest()}
-                cart.save(update_fields=["quote"])
-        return reply, context
+        return _with_side_answers(message, reply, history, store, conversation), context
     if faq_match and request_type in (None, "faq", "greeting") and not accepted_prices and not gender_followup:
-        return faq_match["answer"], ""
+        answer = _faq_answers(message, store, faq_match["answer"])
+        # "والميزانية خليها لحد 1500. والتوصيل بياخد قد إيه؟" got the delivery answer and lost the new
+        # budget: this early return skipped the stated-preference merge below (simulation S14 round 2
+        # batch 2, t6).
+        stated = sales_constraints.stated_preference_updates(message) if conversation is not None else {}
+        if stated:
+            merge_preferences(conversation, stated, None, history=history, store=store)
+            if stated.get("max_price"):
+                from .product_formatting import money
+                answer = f"تمام، الميزانية بقت لحد {money(stated['max_price'])} جنيه.\n\n" + answer
+        return answer, ""
 
     # --- Goodbye loop detection ---
     if _is_goodbye_loop(history):
@@ -761,7 +1702,13 @@ def _route(message, history=None, store=None, conversation=None):
             # The classifier resolves longer acceptances. An older handoff in
             # history must not suppress this fresh invitation and acceptance.
             return _handoff(message, history, store, conversation)
-    if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff", "promotion"):
+    from .sales.appreciation import closes_conversation as _closes
+    # "تمام، هاجي أشمه في الفرع الأول وأقرر بعدين. شكراً" uses الأول as "first", not "the first one";
+    # read as an ordinal, the customer's goodbye got the first perfume's description (simulation S10
+    # round 2 batch 3, t10).
+    closing_turn = _closes(message) and not _re.search(r"[؟?]", message or "")
+    if sales_described.ordinal_position(message) is not None and request_type not in ("order", "order_cancel", "handoff", "promotion") \
+            and not closing_turn:
         request_type = "product_info"
     if accepted_prices and request_type not in ("order_cancel", "handoff", "promotion"):
         request_type = "product_info"
@@ -771,7 +1718,49 @@ def _route(message, history=None, store=None, conversation=None):
         request_type = "product_info"
     from .sales.request_updates import request_mode
     recommendation_mode = "refinement" if gender_followup else request_mode(message, history, store)
+    if closing_turn and request_type != "recommendation":
+        # "كده النوتات دي للتركيبة عندكم مش نوتات رسمية… هفكر وأقارن شوية، شكراً" read as a new goal
+        # and was sent to a fresh search (simulation S02 round 2 full 5, t8). A goodbye is not a request.
+        recommendation_mode = ""
     if recommendation_mode and request_type in ("recommendation", "product_info", "faq", "order", "out_of_domain"):
+        request_type = "recommendation"
+    from .sales.scent_answers import question_pending as scent_question_pending
+    choosing = (
+        (request_type == "recommendation" and (_CHOICE_AMONG_DISCUSSED.search(normalized)
+                                               or (_DELEGATES_CHOICE.search(normalized)
+                                                   and not scent_question_pending(history))))
+        # "أنهي واحد فيهم أحلى للصيف؟" classified as a product question still asks to pick (S13 t4).
+        or (request_type == "product_info" and _CHOICE_AMONG_DISCUSSED.search(normalized)
+            and _PICK_WORDS.search(normalized))
+        # "إيه اللي يميز Alexandria II عن التاني؟" compares a named perfume with the other one on the
+        # table; product info described Alexandria II alone (simulation S05 final 2 and replay, t4).
+        or (request_type in ("product_info", "recommendation") and _COMPARES_WITH_THE_OTHER.search(normalized))
+    )
+    from .conversation_service import recipient_of
+    # A request for someone else in the same message ("وكمان عايز حاجة لماما") is a new recommendation,
+    # not a choice among this customer's options (S15 replay t3).
+    if choosing and conversation is not None and recipient_of(message) in (None, "self") \
+            and not _WANTS_OTHERS.search(normalized) and len(sales_described.under_discussion(conversation, store)) >= 2:
+        # "أنهي فيهم أنسب للشغل؟" asks about the perfumes on the table. Sent to recommendation it
+        # went through the gender and scent questions to two unrelated perfumes (S08 t2-t4), and
+        # "اختارلي واحد فيهم" got a third perfume (S06 t7).
+        request_type = "comparison"
+    if _total_question_needs_recommendation(request_type, normalized, conversation, active_cart):
+        request_type = "recommendation"
+    if request_type == "order" and _KEEPS_THE_COUNT.search(normalized) and _asked_to_keep_the_count(history) \
+            and not (active_cart is not None and (active_cart.items.exists() or active_cart.pending_items)):
+        # "خليهم اتنين، بس التاني مش المفروض يبقى سويت لأخويا؟" answers "تحب نخليها 2 زجاجات في نفس
+        # الميزانية، ولا نزود الميزانية؟"; sent to checkout it carted a perfume nobody chose and asked
+        # its bottle type for four turns (simulation S03 round 2 batch 2, t4-t7).
+        request_type = "recommendation"
+    side_products = []
+    if (request_type == "product_info" and conversation is not None and _ASKS_FOR_OTHERS.search(normalized)
+            and _RECOMMEND_VERB.search(normalized)):
+        # "طب رشحلي تاني حاجة كده، وريحة Pure XS الجلدية دي عاملة إزاي؟" asks for a new pick and about a
+        # perfume on the table; product info answered the second half only (simulation S14 round 2
+        # batch 2, t7). The pick is the recommendation; the named perfume's labels follow it.
+        from .product_info import _named_in_message
+        side_products = _named_in_message(message, store)
         request_type = "recommendation"
     if not active_cart and re.fullmatch(r"\s*[0-9٠-٩]{2,6}\s*(?:جنيه|ج)?\s*", message):
         reference = numeric_reference(message, store, conversation, history)
@@ -818,10 +1807,35 @@ def _route(message, history=None, store=None, conversation=None):
     # the turn simply falls through to the behaviour it had before. It outranks the
     # classification because "غالي" arrives labelled faq or product_info, and answering
     # those as ordinary questions is the defend-instead-of-address bug.
+    if conversation is not None and request_type in (
+            "product_info", "comparison", "faq", "greeting", "identification", "out_of_domain"):
+        # Only recommendation turns ran preference extraction, so "وعلى فكرة مش بحب العود خالص" or
+        # "والميزانية خليها لحد 1500" said inside a question was lost (simulation S14 t2/t4).
+        # Deterministic and narrow; no message is passed so a question cannot become a wish.
+        stated = sales_constraints.stated_preference_updates(message)
+        if stated:
+            merge_preferences(conversation, stated, None, history=history, store=store)
+
+    if request_type in ("recommendation", "product_info", "comparison", "faq", "greeting") \
+            and not _wants_a_human(message):
+        nothing_cheaper = _nothing_cheaper_exists(message, normalized, history, conversation, store)
+        if nothing_cheaper:
+            return nothing_cheaper, ""
+
+    fresh = {}
+    previous_quantity = (conversation.preferences or {}).get("purchase_quantity") if conversation else None
+    recommendation_policy = []
     if request_type == "recommendation":
         from .sales.scent_preferences import has_scent_preference
-        from .sales.scent_answers import PREFERENCE_QUESTION
+        from .sales.scent_answers import next_question as next_scent_question
 
+        # "تمام، والشحن بياخد قد إيه؟ طب رشحلي كمان حاجة سويت" left the delivery question unanswered
+        # twice (simulation S14 round 2 batch 3, t4-t5): the store's answer follows the recommendation.
+        recommendation_policy, message, asks_more = _policy_side_questions(message, store, history)
+        if recommendation_policy and not asks_more:
+            # "ينفع أبدله لو مجاش على ذوقها؟ هفكر أطلبه" asks the policy and nothing else (S07 round 2 full 5).
+            return "\n\n".join(recommendation_policy), ""
+        normalized = normalize_arabic(message)
         fresh = extract_intent(message, history, store)
         supplied_style = has_scent_preference({key: value for key, value in fresh.items() if key != "similar_to"})
         previous_context = (conversation.messages.filter(role="assistant", delivery_status="sent")
@@ -837,11 +1851,43 @@ def _route(message, history=None, store=None, conversation=None):
         if intent.get("gender") == "multiple":
             return sales_gender.MULTIPLE_QUESTION, "MULTIPLE_RECIPIENTS"
         if not sales_gender.canonical(intent.get("gender")):
+            if _recently_denied(conversation) and _re.search(r"مفيش|مش\s+موجود|شبه|زي|قريب", normalized):
+                # "يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟" got the bare gender question, with no answer to
+                # "يعني مفيش؟" and no word for the irritation (simulation S09 round 2 full 4, t2). Nothing
+                # recorded describes the missing perfume, so no likeness is promised: "أقدر ألاقيلك حاجة
+                # قريبة منه" failed the honest-similarity criterion (S09 round 2 full 5, t2).
+                return ("أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها، بس أقدر أرشحلك من المتاح "
+                        "على حسب الريحة اللي بتحبها. " + sales_gender.QUESTION, sales_gender.REQUIRED_MARKER)
             return sales_gender.QUESTION, sales_gender.REQUIRED_MARKER
+
+    if request_type in ("product_info", "faq", "greeting", "comparison", "out_of_domain"):
+        skin_or_clothes = _skin_or_clothes_answer(normalized, history)
+        if skin_or_clothes:
+            return skin_or_clothes, ""
+    if request_type in ("product_info", "faq", "greeting", "comparison"):
+        # Before the objection path: "تمام أميل لـ Fleur Musc، هفكر أطلبه إن شاء الله. بس لو مجاش على ذوقها
+        # ينفع أبدله؟" was read as a "thinking" objection and the model paraphrased the exchange policy
+        # without its fees or the free in-store exchange (simulation S07 round 2 full 6, t5).
+        policy_alone, _, asks_more = _policy_side_questions(message, store, history)
+        if policy_alone and not asks_more:
+            return "\n\n".join(policy_alone), ""
 
     objection = None
     if request_type in OBJECTION_ELIGIBLE and not _wants_a_human(message):
         objection = sales_objection.detect(message, history)
+        from .sales.scent_preferences import explicit_scent_updates
+        stated_style = {key: value for key, value in explicit_scent_updates(message).items() if value}
+        if (objection is not None and request_type == "recommendation" and objection.kind == "thinking"
+                and _RECOMMEND_VERB.search(normalized)):
+            # "طب رشحلي حاجة سويت للسهرات بس مش تقيلة أوي، وأنا هفكر في Wanted by Night كمان" asks for a
+            # new pick; its "هفكر" is about another perfume, and the reply was "تمام، خد وقتك." (simulation
+            # S14 round 2 batch 3, t9).
+            objection = None
+        if (objection is not None and request_type == "recommendation" and not objection.is_complaint
+                and objection.kind in _SOFT_OBJECTIONS and _actionable_request({**fresh, **stated_style}, message)):
+            # "مش متأكد… هي هادية ومش بتحب المسكر.. ترشحلي حاجة؟" carries everything needed to
+            # recommend; the objection branch answered it by asking for a perfume name (S07 t2).
+            objection = None
 
     if objection is not None:
         reply, context = handle_objection(
@@ -856,6 +1902,7 @@ def _route(message, history=None, store=None, conversation=None):
                 message, objection, history, store, conversation, retry_hint=hint
             ),
             message=message,
+            budget=(conversation.preferences or {}).get("max_price") if conversation else None,
         )
         stage = (
             sales_stage.COMPLAINT if objection.is_complaint else sales_stage.OBJECTION
@@ -877,7 +1924,11 @@ def _route(message, history=None, store=None, conversation=None):
     semantic_rep = _detect_semantic_repetition(history)
     text_rep = _count_recent_repetitions(history)
     
-    if request_type != "recommendation" and (text_rep >= 3 or semantic_rep >= 3):
+    # Not a checkout message: after four near-identical price answers, "خلاص هاخد الـ50 من الأولاني،
+    # الشحن بكام؟" was redirected to the general model, which asked for contact details while the cart
+    # stayed empty, and the next turn asked "تحب تطلب أنهي عطر؟" (simulation S11 round 2 batch 4, t6-t7).
+    # The order flow holds the cart and is not what was repeating.
+    if request_type not in ("recommendation", "order", "order_cancel") and (text_rep >= 3 or semantic_rep >= 3):
         # Bot has been repeating itself — force a conversation redirect
         # Fetch real products from DB to prevent hallucination when suggesting alternatives.
         # Deterministic rather than order_by('?'), so a repeated conversation can be
@@ -929,7 +1980,8 @@ def _route(message, history=None, store=None, conversation=None):
         if total_quotes:
             from .product_formatting import quote_context
             from .price_reply import compose_price_reply
-            footer = f"إجمالي الـ{len(total_quotes)} زجاجات: {sum(q.price for q in total_quotes):f} جنيه."
+            from .product_formatting import money
+            footer = f"إجمالي الـ{len(total_quotes)} زجاجات: {money(sum(q.price for q in total_quotes))} جنيه."
             context = quote_context(context, total_quotes, append=True,
                                     max_price=saved_preferences.get("max_price"), request=message, footer=footer)
             quotation_context = context
@@ -949,16 +2001,76 @@ def _route(message, history=None, store=None, conversation=None):
     if request_type == "recommendation":
         if intent.get("requires_original_liquid"):
             return sales_constraints.formulation_reply(message, followup=True), "ORIGINAL_LIQUID_REQUIRED"
+        from products.models import Product
+        reference = intent.get("similar_to")
+        stocked_reference = bool(reference) and Product.objects.filter(
+            store=store, name__iexact=str(reference), is_active=True).exists()
+        absent_reference = _recently_denied(conversation) and not stocked_reference
+        described = []
+        if absent_reference:
+            from .scent_description import _tag_mentions
+            described = list(dict.fromkeys(tag for tag, _, _, negative in _tag_mentions(normalized) if not negative))
+        # With no likeness word either: "رجالي، اللي عاجبني في Club de Nuit ريحته فيها سموكي وفاكهة"
+        # describes the missing perfume, so the wish parser leaves it alone, and the scent question went
+        # out right after the customer had answered it (simulation S09 round 2 batch 4 attempt 3, t3).
+        if absent_reference and (intent.get("similarity_needs_reference") or reference
+                                 or _re.search(r"شبه|زي|قريب|نفس\s+(?:الريحه|الستايل)", normalized)
+                                 or (described and not has_scent_preference(intent))):
+            # The reference is a perfume we just confirmed we do not stock, so it has no data to
+            # compare with: "قريبة من ريحته" got "تقصد عطر شبه أنهي واحد: 1 Million ولا…؟" (our own
+            # alternatives), and "ريحته فيها سموكي وفاكهة" was asked for again (simulation S09).
+            if not described:
+                return ("العطر ده مش عندنا فمعنديش بياناته أقارن بيها؛ قولي ريحته عاملة إزاي "
+                        "(سموكي، فواكه، خشبي، فريش، مسكر…) وأرشحلك الأقرب ليها من عندنا."), "SIMILARITY_NEEDS_PROFILE"
+            intent = {**intent, "scent_tags": described, "scent_match": "any", "scent_open": False,
+                      "similarity_needs_reference": False, "similar_to": None}
+            if conversation is not None:
+                # Kept for the next turn: "فيه حاجة تانية؟" must not ask for the scent again.
+                merge_preferences(conversation, {"scent_tags": described, "scent_match": "any", "scent_open": False},
+                                  None, history=history, store=store)
         if intent.get("similarity_needs_reference"):
             candidates = intent.get("similarity_candidates") or []
             question = "تقصد عطر شبه أنهي واحد: " + " ولا ".join(candidates) + "؟" if candidates else "تقصد عطر شبه أنهي عطر أو إصدار؟"
-            return question, "SIMILARITY_NEEDS_REFERENCE"
+            asked = next((row.get("content", "") for row in reversed(history or []) if row.get("role") == "assistant"), "")
+            if question.strip() != asked.strip():
+                return question, "SIMILARITY_NEEDS_REFERENCE"
+            # Asked once already and not answered with a name: the same question again helps nobody
+            # (simulation S11 round 2 batch 5, t5). The rest of the request is recommended on.
+            intent = {**intent, "similarity_needs_reference": False}
+        recalled = _recalled_offer(message, conversation, store)
+        if recalled is not None:
+            return recalled
+        pair = _per_recipient_scents(message)
+        if conversation is not None:
+            state = dict(conversation.sales_state or {})
+            if pair:
+                state["recipient_scents"] = pair
+                Conversation_sales_state(conversation, state)
+            elif state.get("recipient_scents") and int(intent.get("purchase_quantity") or 0) == 2:
+                pair = dict(state["recipient_scents"])
+        if pair:
+            response = _pair_recommendation(message, pair, intent, history, store, conversation)
+            if response is not None:
+                return (_total_only_if_repeat(response[0], normalized, history, store)
+                        + "".join("\n\n" + a for a in recommendation_policy)), response[1]
         if not has_scent_preference(intent):
-            return PREFERENCE_QUESTION, "SCENT_PREFERENCE_REQUIRED"
+            return next_scent_question(message, history), "SCENT_PREFERENCE_REQUIRED"
 
-        keep = sales_described.under_discussion(conversation, store) - sales_described.moved_past(conversation, store)
+        on_table = sales_described.under_discussion(conversation, store)
+        keep = on_table - sales_described.moved_past(conversation, store)
         if sales_constraints.preference_reversal(message) or intent.get("recommendation_mode") == "new_goal":
             keep = set()
+        demands_guarantee = bool(_GUARANTEE.search(normalized)
+                                 and "sweet" in set(intent.get("excluded_scent_tags") or ()))
+        if on_table and (_ASKS_FOR_OTHERS.search(normalized) or _REJECTS_THE_TABLE.search(normalized)
+                         or demands_guarantee):
+            # "ترشحلي حاجة تانية" got the same two perfumes back (simulation S10 replay 2, t3).
+            keep = set()
+            intent = {**intent, "exclude_names": sorted(set(intent.get("exclude_names") or ()) | set(on_table))}
+        rejected = _rejected_subject(message, conversation, store)
+        if rejected:
+            keep = set(keep) - set(rejected)
+            intent = {**intent, "exclude_names": sorted(set(intent.get("exclude_names") or ()) | set(rejected))}
         results = search_products(intent, store, keep=keep, offered=sales_described.offered_ever(conversation, store))
         if results.get("needs_scent_reference"):
             return "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟", "SIMILARITY_NEEDS_PROFILE"
@@ -966,10 +2078,61 @@ def _route(message, history=None, store=None, conversation=None):
             message, results["products"], history, store=store, intent=intent, search=results,
             gender_unknown=False,
         )
+        from .ai.scent_recommendation import TOTAL_BUDGET_INFEASIBLE
+        if (context == TOTAL_BUDGET_INFEASIBLE and intent.get("budget_scope") == "total"
+                and conversation is not None and previous_quantity
+                and intent.get("purchase_quantity") != previous_quantity):
+            # A quantity that does not fit was a question ("لو عايز 3 بنفس الـ1600 ينفع؟"), not an
+            # agreement; keeping it made every later turn fail the same way (simulation S03 t5-t7).
+            from products.models import Conversation
+            restored = {**(conversation.preferences or {}), "purchase_quantity": previous_quantity}
+            Conversation.objects.filter(pk=conversation.pk).update(preferences=restored)
+            conversation.preferences = restored
+        if (response and context != TOTAL_BUDGET_INFEASIBLE and not _TOTAL_QUESTION.search(normalized)
+                and not _CHEAPER.search(normalized) and _repeats_recent(response, history)):
+            # "رشحلي حاجة تكون متأكد إنها مش مسكرة" got the pair from two turns earlier word for word
+            # (simulation S10 round 2 batch 3, t6). The same request earns the next perfumes, not the
+            # same block again.
+            shown = sales_naming.names_in(response, [p.name for p in results["products"]])
+            if shown:
+                retry_intent = {**intent, "exclude_names": sorted(set(intent.get("exclude_names") or ()) | set(shown))}
+                retry = search_products(retry_intent, store, keep=set(),
+                                        offered=sales_described.offered_ever(conversation, store))
+                if retry.get("products"):
+                    response, context = recommend(message, retry["products"], history, store=store,
+                                                  intent=retry_intent, search=retry, gender_unknown=False)
+                    results, intent = retry, retry_intent
+        if response and _REPEAT_COMPLAINT.search(normalized) and not _repeats_recent(response, history):
+            # "إنت كده بتكرر نفس الترشيحات!" got new names with no word about the complaint (S10 t7).
+            response = "حقك عليا. دي اختيارات تانية:\n\n" + response
         stage = sales_stage.derive(request_type, message, intent, objection, history)
-        return _finalize(response, stage), context
+        response = _nothing_cheaper(response, normalized, history, results["products"], store, conversation)
+        response = _uncommon_note(response, results["products"], intent)
+        response = _guarantee_note(response, results["products"], intent, normalized)
+        if side_products and response:
+            from .price_reply import requested_product_details
+            details = requested_product_details(side_products, message, history=history, description_required=True)
+            if details:
+                response = response + "\n\n" + "\n".join(details)
+        return (_finalize(_total_only_if_repeat(response, normalized, history, store), stage)
+                + "".join("\n\n" + a for a in recommendation_policy)), context
 
     elif request_type == "product_info":
+        if closing_turn and not _re.search(r"\d", message or ""):
+            # "خلاص هختار Bloom… هطلبه بعدين، شكراً" decides and closes; it got Bloom's description
+            # again (simulation S06 round 2 full 3, t7).
+            return "تمام يا فندم، ولما تحب تطلبه ابعتلي.", ""
+        # Only with no perfume on the table: a follow-up about the one under discussion keeps its own,
+        # named answer (`performance_only_question`).
+        performance_answer = (_store_performance_answer(message, store, normalized)
+                              if not sales_described.offered_in_order(conversation, store) else None)
+        if performance_answer:
+            return performance_answer, ""
+        policy, message, asks_more = _policy_side_questions(message, store, history)
+        if policy and not asks_more:
+            # "تمام، هفكر في الـ50 ملي وأطلبه، بس ينفع أبدله لو مجاش على ذوقها؟" got the 50 ml price twice
+            # and no answer (simulation S07 round 2 full 5, t6-t7).
+            return "\n\n".join(policy), ""
         response, context = get_product_info(message, history, store, conversation)
 
         # The one deterministic guard on the phrase this whole change exists to remove. Rules alone
@@ -1019,14 +2182,30 @@ def _route(message, history=None, store=None, conversation=None):
 
         # After the retry, so a deferral the retry introduced or removed is judged on the context
         # actually being sent.
-        _escalate_absent_name(conversation, store, context, message, history)
+        if _escalate_absent_name(conversation, store, context, message, history) is True:
+            # The conversation is now with staff and the bot goes silent; say so instead of
+            # leaving the customer waiting on an unanswered repeat (simulation S03 t7).
+            response = response + "\n\n" + HANDOFF_CONFIRMATION
+
+        response = _without_answered_strength_question(
+            response, conversation.preferences if conversation is not None else None)
+        response = _without_retype_request(response, message, context)
+        fixed_price = _fixed_price_note(message, store)
+        if fixed_price and fixed_price not in response:
+            response = response.rstrip() + "\n" + fixed_price
+        missing = _closer_to_a_missing_perfume(message, normalized, conversation, store)
+        if missing and "معنديش بيانات" not in response:
+            response = missing + "\n\n" + response
 
         # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
         # is a factual question and may not.
         stage = sales_stage.derive(request_type, message, None, objection, history)
-        return _finalize(response, stage), context
+        return _finalize(_thanked(message, response, history), stage) + "".join("\n\n" + a for a in policy), context
 
     elif request_type == "comparison":
+        policy, message, asks_more = _policy_side_questions(message, store, history)
+        if policy and not asks_more:
+            return "\n\n".join(policy), ""
         response, context = compare_products(message, history, store, conversation)
 
         # The first repetition check of any kind on this branch. It needs one more than most: its
@@ -1045,12 +2224,33 @@ def _route(message, history=None, store=None, conversation=None):
         # the owner needs told about. Escalating in both places rather than once after the chain
         # keeps the other dozen branches' `return`s untouched; these two are the only callers of
         # `get_product_info`.
-        _escalate_absent_name(conversation, store, context, message, history)
+        if _escalate_absent_name(conversation, store, context, message, history) is True:
+            # The conversation is now with staff and the bot goes silent; say so instead of
+            # leaving the customer waiting on an unanswered repeat (simulation S03 t7).
+            response = response + "\n\n" + HANDOFF_CONFIRMATION
+
+        missing = _closer_to_a_missing_perfume(message, normalized, conversation, store)
+        if missing and "معنديش بيانات" not in response:
+            response = missing + "\n\n" + response
 
         # Still weighing two options — differentiate, do not close.
-        return _finalize(response, sales_stage.COMPARISON), context
+        return (_finalize(_thanked(message, response, history), sales_stage.COMPARISON)
+                + "".join("\n\n" + a for a in policy)), context
 
     elif request_type in ["greeting", "faq"]:
+        from .sales.appreciation import closes_conversation
+        if closes_conversation(message) and not _re.search(r"[؟?]", message or ""):
+            # "تمام، هفكر في الـ Cigar عشان سعره مناسب. تسلم يا باشا" got a smaller-size pitch
+            # (simulation S09 round 2, t8). A customer who is closing gets a short close.
+            return "العفو يا فندم، ولو احتجت أي حاجة أنا موجود.", ""
+        from .performance_policy import current_request, description
+        from .product_info import _named_in_message
+        performance = current_request()
+        if (performance.longevity or performance.projection) and not _named_in_message(message, store):
+            # The store's performance policy covers every perfume. "طب بيقعد قد إيه بجد؟" got "محتاجة
+            # تأكيد من فريق خدمة العملاء، تحب أحولك؟" and an unneeded handoff (simulation S16 round 2).
+            text = description(performance, longevity=performance.longevity, projection=performance.projection)
+            return "كل عطورنا " + text.replace("ثباته ", "ثباتها ").replace("فوحانه ", "فوحانها ") + ".", ""
         return handle_general(message, history, store)
 
     elif request_type == "musk_mix_product":
@@ -1068,12 +2268,15 @@ def _route(message, history=None, store=None, conversation=None):
         )
 
     elif request_type == "promotion":
-        return promotion_service.reply(message, promotion_history, store, usage_recorded=True)
+        return promotion_service.reply(message, promotion_history, store, conversation=conversation, usage_recorded=True)
 
     elif request_type == "order":
         if not conversation:
             return "ابدأ محادثة جديدة عشان أسجلك الطلب.", ""
-        return handle_order(message, history, store, conversation)
+        # The classifier route skipped the side answers the regex checkout route gives, so
+        # "خلاص هاخد الـ50. الشحن بكام؟" got the cart and no shipping answer (simulation S11 t5).
+        reply, context = handle_order(message, history, store, conversation)
+        return _with_side_answers(message, reply, history, store, conversation), context
         
     elif request_type == "order_cancel":
         if conversation:

@@ -1,0 +1,425 @@
+{
+  "id": "S16_skeptic",
+  "title": "Skeptical about authenticity, price, longevity and claims",
+  "persona": "authenticity_worrier",
+  "turns": [
+    {
+      "n": 1,
+      "user": "البرفانات دي أصلي ولا تقليد؟",
+      "reply": "فاهم قلقك من الأصالة؛ العطور عندنا تركيب مستوحى من الماركات العالمية، والتطابق بيوصل لـ95%. ومتاح لبعض العطور زجاجات اوريجنال بالشكل، لكن العطر نفسه بيكون تركيب من عندنا.",
+      "seconds": 239.12,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "authenticity_doubt",
+        "matched": [
+          "تقليد",
+          "اصلي ولا"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "يعني تركيب مش أصلي، طب إزاي ده بـ1000 والأصلي بآلاف؟",
+      "reply": "العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات اوريجنال بالظبط!",
+      "seconds": 1.03,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "طب بيقعد قد إيه بجد؟ متقوليش كلام بياعين، أكيد هتقولي 48 ساعة زي الكل 🙄",
+      "reply": "فاهم إنك عايز إجابة واقعية؛ ثبات عطورنا ممتاز، وأكتر من 8 ساعات، وفوحانها قوي.",
+      "seconds": 2.29,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "أكتر من ٨ ساعات دي على الجلد ولا الهدوم؟ يعني زي الأصلي ١٠٠٪ ولا لأ؟",
+      "reply": "كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها قوي.",
+      "seconds": 10.36,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: أكتر من ٨ ساعات دي على الجلد ولا الهدوم؟ يعني زي الأصلي ١٠٠٪ ولا لأ؟\nNAME_UNREADABLE\nمش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد منه في الكتالوج.\n🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. 🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [
+        {
+          "draft": "ثباته أكتر من 8 ساعات، لكن ماعنديش معلومة مؤكدة إذا كان المدة دي على الجلد ولا الهدوم. والتطابق بيوصل لـ95%، مش 100%.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        },
+        {
+          "draft": "ثباته أكتر من 8 ساعات، لكن ماقدرش أحدد إذا كان على الجلد ولا الهدوم. والتطابق بيوصل لـ95%، مش 100%.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "طب الـ٨ ساعات دي على الجلد ولا الهدوم؟ وبصراحة يعني زي الأصلي ١٠٠٪ ولا لأ؟",
+      "reply": "ممكن تكتبلي اسم العطر تاني أو بطريقة تانية عشان أتأكد إنت تقصد أنهي عطر؟",
+      "seconds": 4.77,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: أكتر من ٨ ساعات دي على الجلد ولا الهدوم؟ يعني زي الأصلي ١٠٠٪ ولا لأ؟\nNAME_UNREADABLE\nمش واضح العميل بيقصد أنهي عطر بالظبط — الاسم اللي كتبه مش متأكدين منه، ومقدرناش نتأكد منه في الكتالوج.\n🔴 ممنوع تقول إنه مش موجود عندنا — إحنا مش عارفين، والنفي هنا غلط زي التأكيد. 🔴 وممنوع توعده تراجع وترجعله — مفيش حد بيراجع. اطلب منه يكتب الاسم تاني.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "أنا لسه ماحددتش عطر، بس بسأل بشكل عام: الـ٨ ساعات على الجلد ولا الهدوم؟ وعايز إجابة صريحة، مش زي الأصلي ١٠٠٪ صح؟",
+      "reply": "العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات اوريجنال بالظبط!",
+      "seconds": 1.06,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "repeated_reply",
+          "critical",
+          "100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "تمام، يعني مش ١٠٠٪. طب الـ٨ ساعات دي على الجلد ولا الهدوم؟",
+      "reply": "تقصد أنهي عطر بالظبط؟",
+      "seconds": 4.53,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [
+        {
+          "draft": "مدة الثبات أكتر من 8 ساعات، لكن مش محدد إذا كانت على الجلد ولا الهدوم؛ محتاجة تأكيد من فريق خدمة العملاء.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        },
+        {
+          "draft": "الثبات أكتر من 8 ساعات، لكن مش محدد إذا كان على الجلد ولا الهدوم؛ المعلومة دي محتاجة تأكيد من فريق خدمة العملاء، وأقدر أحوّلك ليهم لو حابب.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "لسه ماحددتش عطر، بس واضح إنك مش هتديني إجابة عامة. هفكر وأرجعلك.",
+      "reply": "تمام، خد وقتك.",
+      "seconds": 1.25,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "CUSTOMER_DEFERRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "repeated_reply",
+      "critical",
+      "100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'"
+    ]
+  ],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 274.5,
+  "judge_prompt": "SCENARIO S16_skeptic: Skeptical about authenticity, price, longevity and claims\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- States honestly that every liquid is تركيب; relays only the store-configured similarity figure without saying 100% or مضمون.\n- Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-hour guarantee; sarcasm handled calmly.\n- Price justification uses store facts, not performance claims.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: البرفانات دي أصلي ولا تقليد؟\n[internal] route=product_info stage=objection saved_preferences={}\nASSISTANT: فاهم قلقك من الأصالة؛ العطور عندنا تركيب مستوحى من الماركات العالمية، والتطابق بيوصل لـ95%. ومتاح لبعض العطور زجاجات اوريجنال بالشكل، لكن العطر نفسه بيكون تركيب من عندنا.\n\n--- TURN 2 ---\nCUSTOMER: يعني تركيب مش أصلي، طب إزاي ده بـ1000 والأصلي بآلاف؟\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات اوريجنال بالظبط!\n\n--- TURN 3 ---\nCUSTOMER: طب بيقعد قد إيه بجد؟ متقوليش كلام بياعين، أكيد هتقولي 48 ساعة زي الكل 🙄\n[internal] route=faq stage=discovery saved_preferences={}\nASSISTANT: فاهم إنك عايز إجابة واقعية؛ ثبات عطورنا ممتاز، وأكتر من 8 ساعات، وفوحانها قوي.\n\n--- TURN 4 ---\nCUSTOMER: أكتر من ٨ ساعات دي على الجلد ولا الهدوم؟ يعني زي الأصلي ١٠٠٪ ولا لأ؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها قوي.\n\n--- TURN 5 ---\nCUSTOMER: طب الـ٨ ساعات دي على الجلد ولا الهدوم؟ وبصراحة يعني زي الأصلي ١٠٠٪ ولا لأ؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: ممكن تكتبلي اسم العطر تاني أو بطريقة تانية عشان أتأكد إنت تقصد أنهي عطر؟\n\n--- TURN 6 ---\nCUSTOMER: أنا لسه ماحددتش عطر، بس بسأل بشكل عام: الـ٨ ساعات على الجلد ولا الهدوم؟ وعايز إجابة صريحة، مش زي الأصلي ١٠٠٪ صح؟\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات اوريجنال بالظبط!\n[deterministic findings] [[\"repeated_reply\", \"critical\", \"100% identical to an earlier reply: 'العطور بتاعتنا كلها \\\"عطور تركيب\\\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'\"]]\n\n--- TURN 7 ---\nCUSTOMER: تمام، يعني مش ١٠٠٪. طب الـ٨ ساعات دي على الجلد ولا الهدوم؟\n[internal] route=faq stage=discovery saved_preferences={}\nASSISTANT: تقصد أنهي عطر بالظبط؟\n\n--- TURN 8 ---\nCUSTOMER: لسه ماحددتش عطر، بس واضح إنك مش هتديني إجابة عامة. هفكر وأرجعلك.\n[internal] route=faq stage=objection saved_preferences={}\nASSISTANT: تمام، خد وقتك.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n(no catalogue perfume was named in this conversation)\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 6,
+      "question_quality": 3,
+      "knows_when_to_stop": 9,
+      "naturalness": 5,
+      "emotional_handling": 6,
+      "commerce_correctness": 8
+    },
+    "criteria": [
+      {
+        "criterion": "States honestly that every liquid is تركيب; relays only the store-configured similarity figure without saying 100% or مضمون.",
+        "met": true,
+        "evidence": "turn 1: Clarifies that the perfume itself is تركيب and gives the configured 95% figure. No assistant turn claims 100% or مضمون."
+      },
+      {
+        "criterion": "Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-hour guarantee; sarcasm handled calmly.",
+        "met": true,
+        "evidence": "turn 3: The customer explicitly asks how long it lasts; the assistant says more than 8 hours, makes no 48-hour guarantee, and responds calmly to the sarcasm."
+      },
+      {
+        "criterion": "Price justification uses store facts, not performance claims.",
+        "met": true,
+        "evidence": "turn 2: The assistant refers to the تركيب nature, configured similarity figure, and oil quality to explain the lower price; it makes no longevity or performance-based price claim."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 4,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Answer whether the stated duration is for skin or clothes, and whether the similarity is 100%; if the store has no surface-specific detail, say so plainly and give the configured similarity figure.",
+        "actual": "كل عطورنا ثباتها أكتر من 8 ساعات، وفوحانها قوي.",
+        "why": "This repeats the duration claim but leaves both direct questions unanswered."
+      },
+      {
+        "turn": 5,
+        "severity": "medium",
+        "category": "question",
+        "expected": "Answer the general skin-versus-clothes and similarity questions without requesting a perfume name.",
+        "actual": "ممكن تكتبلي اسم العطر تاني أو بطريقة تانية عشان أتأكد إنت تقصد أنهي عطر؟",
+        "why": "The customer is asking generally, so a specific perfume name is not needed; “تاني” also implies they had already named one."
+      },
+      {
+        "turn": 6,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Respond to the clarified general question, particularly the skin-versus-clothes part, and state plainly that the configured similarity is 95%, not 100%.",
+        "actual": "العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات اوريجنال بالظبط!",
+        "why": "It gives the 95% figure, but repeats an earlier promotional reply and still does not answer whether the duration applies to skin or clothes."
+      },
+      {
+        "turn": 7,
+        "severity": "high",
+        "category": "question",
+        "expected": "Answer the general surface question; do not ask for a specific perfume after the customer has explicitly said they have not chosen one.",
+        "actual": "تقصد أنهي عطر بالظبط؟",
+        "why": "The customer has already clarified that this is a general question, so this repeats an unnecessary clarification and ignores that correction."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 6,
+        "code": "repeated_reply",
+        "verdict": "confirmed",
+        "reason": "The reply repeats the earlier turn 2 response verbatim, despite the customer's clarified question."
+      }
+    ],
+    "summary": "The assistant correctly disclosed that the perfume is تركيب, used the configured 95% figure, and handled the duration question and sarcasm calmly. It repeatedly failed to answer the customer's skin-versus-clothes question and kept asking for a perfume name after the customer clarified that the question was general."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'العطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق'",
+    "judge score understanding_accuracy=5",
+    "judge score question_quality=3",
+    "judge score naturalness=5",
+    "judge turn 7 high question: The customer has already clarified that this is a general question, so this repeats an unnecessary clarification and ignores that correction."
+  ],
+  "usage": {
+    "api_calls": 27,
+    "by_role": {
+      "seller": {
+        "calls": 19,
+        "cost_usd": "0.007260560"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.00089485"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.00213042"
+      }
+    },
+    "prompt_tokens": 142374,
+    "cached_tokens": 84373,
+    "completion_tokens": 4612,
+    "reasoning_tokens": 2858,
+    "cost_usd": "0.010285830",
+    "api_seconds": 71.9,
+    "failed_calls": []
+  }
+}

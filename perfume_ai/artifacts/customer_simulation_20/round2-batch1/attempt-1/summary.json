@@ -1,0 +1,170 @@
+[
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 5,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 4 high reasked_known_gender: asked for gender after the customer had made it clear",
+      "turn 6 critical repeated_reply: 94% identical to an earlier reply: 'Blue Jeans\nريحته فريش ومنعش ومسكر وفيه ريحة حمضيات.\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\n\nPha'",
+      "judge score memory=5",
+      "judge score question_quality=5",
+      "judge turn 4 high memory: The customer had already said in turn 1 that both perfumes were for men; this repeats known information and stalls the recommendation.",
+      "judge turn 5 high memory: The brother's exclusion of fresh from turn 4 remains relevant, but the proposed pair consists of perfumes tagged fresh and sweet. For example, 212 NYC Man and 2",
+      "criterion unmet: Does not re-ask the budget or gender."
+    ],
+    "cost_usd": "0.023578235",
+    "api_calls": 32
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score commerce_correctness=4",
+      "judge turn 7 critical accuracy: This falsely claims the price is unavailable even though the supplied catalogue lists both prices; it also fails to answer the repeated budget question."
+    ],
+    "cost_usd": "0.010014690",
+    "api_calls": 29
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 3,
+      "memory": 3,
+      "question_quality": 4,
+      "knows_when_to_stop": 2,
+      "naturalness": 3,
+      "emotional_handling": 3,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "turn 6 critical repeated_reply: 99% identical to an earlier reply: 'Ultra Male ريحته مسكر وفيه ريحة فواكه وتوابل.'",
+      "turn 7 critical repeated_reply: 100% identical to an earlier reply: 'Ultra Male: ريحته مسكر وفيه ريحة فواكه وتوابل.'",
+      "judge score understanding_accuracy=3",
+      "judge score memory=3",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=2",
+      "judge score naturalness=3",
+      "judge score emotional_handling=3",
+      "judge turn 3 high memory: أعاد سؤالًا عن العطر المرجعي رغم أن العميل ذكر Club de Nuit في turn 1 وكرره في turn 2.",
+      "criterion unmet: States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers",
+      "criterion unmet: Does not claim a lookalike without support; similarity wording is honest.",
+      "criterion unmet: Handles the customer's irritation without canned apologies."
+    ],
+    "cost_usd": "0.010044280",
+    "api_calls": 32
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 8,
+      "naturalness": 7,
+      "emotional_handling": 7,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score commerce_correctness=4",
+      "judge turn 5 critical commerce: The recorded order total does not match the total the customer explicitly approved.",
+      "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and explicit con"
+    ],
+    "cost_usd": "0.014673455",
+    "api_calls": 25
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 8,
+      "question_quality": 4,
+      "knows_when_to_stop": 4,
+      "naturalness": 7,
+      "emotional_handling": 6,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=4",
+      "judge score commerce_correctness=5",
+      "judge turn 5 high stop: The customer was browsing and had already closed the exchange; the transfer question unnecessarily continued the sale.",
+      "criterion unmet: Gives space to browse; no pressure or closing questions.",
+      "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+    ],
+    "cost_usd": "0.007324255",
+    "api_calls": 16
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 4,
+      "question_quality": 5,
+      "knows_when_to_stop": 8,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score memory=4",
+      "judge score question_quality=5",
+      "judge turn 1 high understanding: The customer had already named Bleu de Chanel and specified 50 ml. The assistant failed to add it and asked for information already supplied; the requested item",
+      "judge turn 3 high question: The customer had specified 90 ml in turn 1. Asking again was unnecessary and led to a later quantity error.",
+      "judge turn 4 high memory: The assistant reverted the quantity from one to two despite the explicit correction in turn 2. It repeated this incorrect quantity in the summaries in turns 5 a",
+      "criterion unmet: The summary shows the correct item and total (1000 plus the store's shipping fee, if the summary inc"
+    ],
+    "cost_usd": "0.011292035",
+    "api_calls": 30
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 8,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.003224325",
+    "api_calls": 7
+  }
+]

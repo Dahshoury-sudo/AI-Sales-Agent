@@ -1723,7 +1723,10 @@ class UnknownVersusUnclearTests(TestCase):
     def test_base_prompt_separates_not_knowing_from_not_understanding(self):
         prompt = get_system_prompt(self.store)
 
-        self.assertIn("هسأل وأرد عليك", prompt)
+        # Not knowing is answered by saying the team must confirm, never by promising a follow-up
+        # nothing in this system sends (customer simulation S07 t6: "هسأل وأرد عليك يا فندم").
+        self.assertIn("محتاجة تأكيد من فريق خدمة العملاء", prompt)
+        self.assertNotIn('قول "هسأل وأرد عليك', prompt)
         # The persona was reworded during consolidation; the distinction it protects
         # is unchanged — "مش فاهم" is only for genuinely unintelligible messages,
         # never for a clear question whose answer the bot does not have.
@@ -7097,12 +7100,15 @@ class SalesScenarioTests(TestCase):
         prompt, _ = self._route_recommendation("عايز برفان لمراتي هدية بس مش عارف هي بتحب إيه", {"gender": "female"})
         self.assertEqual(prompt, "")
         self.assertEqual(self.last_context, "SCENT_PREFERENCE_REQUIRED")
-        self.assertIn("بتحب الفريش، الخشبي، العود، ولا المسكر؟", self.last_reply)
+        # A buyer who just said they do not know her taste gets everyday choices, not the category
+        # list they cannot answer (customer simulation S07 t1).
+        from products.services.sales.scent_answers import SIMPLE_PREFERENCE_QUESTION
+        self.assertEqual(self.last_reply, SIMPLE_PREFERENCE_QUESTION)
 
     def test_f_only_one_style_question_is_asked(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})
-        self.assertEqual(self.last_reply.count("بتحب الفريش"), 1)
-        self.assertIn("المسكر", self.last_reply)
+        self.assertEqual(self.last_reply.count("؟"), 1)
+        self.assertIn("مسكرة", self.last_reply)
 
     def test_f_unknown_gift_taste_never_gets_a_guaranteed_product(self):
         self._route_recommendation("عايز هدية لمراتي مش عارف ذوقها", {"gender": "female"})

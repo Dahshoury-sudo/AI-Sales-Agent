@@ -154,7 +154,7 @@ class Conversation1337ReplyTests(TestCase):
                 self.assertEqual(reply, expected)
         self.assertEqual(described.offered_in_order(self.conversation, self.store), ["Alexandria II"])
         reply, _ = self.product_turn("بكام؟")
-        for fact in ("Alexandria II", "1400.00", "2000.00", "2400.00"):
+        for fact in ("Alexandria II", "1400 جنيه", "2000 جنيه", "2400 جنيه"):
             self.assertIn(fact, reply)
         self.assertEqual(reply.count("Alexandria II"), 1)
 
@@ -206,7 +206,7 @@ class Conversation1337ReplyTests(TestCase):
 
     def test_explicit_smaller_size_price_only_quotes_the_requested_size(self):
         reply, context = self.objection_turn("غالي، الـ50 ملي بكام؟", "ممكن تبدأ بالحجم ده.")
-        self.assertIn("50 ملي بـ1400.00 جنيه", reply)
+        self.assertIn("50 ملي بـ1400 جنيه", reply)
         self.assertNotIn("2000", reply)
         self.assertNotIn("2400", reply)
         self.assertEqual([row["volume"] for row in quote_evidence(context)["quotes"]], [50])
@@ -221,7 +221,7 @@ class Conversation1337ReplyTests(TestCase):
         ):
             with self.subTest(message=message):
                 reply, context = self.objection_turn(message, "فعلاً عندك حق، بنستخدم زيوت غالية.")
-                self.assertIn("50 ملي بـ1400.00 جنيه", reply)
+                self.assertIn("50 ملي بـ1400 جنيه", reply)
                 self.assertEqual([row["volume"] for row in quote_evidence(context)["quotes"]], [50])
 
     def test_causal_only_requests_do_not_quote_prices(self):

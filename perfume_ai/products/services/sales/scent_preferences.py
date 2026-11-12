@@ -9,21 +9,23 @@ from ..static_faq_service import normalize_arabic
 
 
 SCENT_KEYS = ("scent_tags", "excluded_scent_tags", "scent_match", "scent_open")
+# The English words in Arabic letters are aliases too: "فيها سموكي وفاكهة" kept fruit and lost smoky,
+# and both recommendations ignored it (simulation S09 round 2 full 4, t4).
 TAG_ALIASES = {
     "fresh": ("fresh", "فريش", "منعش", "منعشه"),
     "sweet": ("sweet", "sugary", "gourmand", "سويت", "شوجري", "مسكر", "مسكره"),
     "oud": ("oud", "عود", "عودي"),
-    "woody": ("woody", "خشبي", "خشبيه"),
+    "woody": ("woody", "خشبي", "خشبيه", "وودي", "خشب"),
     "citrus": ("citrus", "citrusy", "حمضي", "حمضيه", "حمضيات"),
-    "floral": ("floral", "زهري", "زهريه", "زهور"),
-    "fruity": ("fruity", "فاكهي", "فاكهيه", "فاكهه", "فواكه"),
-    "spicy": ("spicy", "متبل", "متبله", "توابل"),
+    "floral": ("floral", "زهري", "زهريه", "زهور", "فلورال"),
+    "fruity": ("fruity", "فاكهي", "فاكهيه", "فاكهه", "فواكه", "فروتي"),
+    "spicy": ("spicy", "متبل", "متبله", "توابل", "سبايسي"),
     "musky": ("musky", "مسكي", "مسكيه"),
     "clean": ("clean", "نضيف", "نضيفه", "نظيف", "نظيفه", "نظافه", "صابوني", "صابونيه", "soapy"),
     "powdery": ("powdery", "بودري", "بودريه", "بودره"),
-    "smoky": ("smoky", "smokey", "دخاني", "دخانيه", "دخان", "تبغي", "تبغيه"),
-    "leather": ("leather", "leathery", "جلدي", "جلديه"),
-    "aquatic": ("aquatic", "مائي", "مائيه", "بحري", "بحريه"),
+    "smoky": ("smoky", "smokey", "دخاني", "دخانيه", "دخان", "تبغي", "تبغيه", "سموكي"),
+    "leather": ("leather", "leathery", "جلدي", "جلديه", "ليذر"),
+    "aquatic": ("aquatic", "مائي", "مائيه", "بحري", "بحريه", "اكواتيك"),
     "light": ("light", "خفيف", "خفيفه"),
     "heavy": ("heavy", "تقيل", "تقيله"),
 }
@@ -38,12 +40,23 @@ _REQUEST_ALIASES = {**_ALIASES, **{alias: "sweet" if note == "vanilla" else "smo
 _NEGATIVE = re.compile(
     r"(?<!\w)(?:و)?(?:مش|بلاش|بدون|من غير|غير|لا|ولا|مبحبش|ما\s+بحبش|بكره|"
     r"not|no|without|avoid|except|don't|dont|do\s+not|dislike|hate)"
-    r"(?:\s+(?:عايز(?:ه|ها)?|عاوز(?:ه|ها)?|بحب|احب|حابه|بفضل|(?:ال)?حاج(?:ه|ات)|يكون|تكون|ريحه|"
-    r"want|like|prefer|something|anything|a|an|it|to|be|too|very|overly)){0,6}\s*$"
+    r"(?:\s+(?:عايز(?:ه|ها)?|عاوز(?:ه|ها)?|بحب|احب|بتحب|بيحب|تحب|يحب|حابه|بفضل|بتفضل|بيفضل|"
+    r"(?:ال)?حاج(?:ه|ات)|يكون|تكون|ريحه|اي|"
+    r"want|like|prefer|something|anything|any|a|an|it|to|be|too|very|overly)){0,6}\s*$"
 )
+# A seller's description negates within its clause in many more ways than a customer request
+# ("من غير تاج دخاني", "ومش مسجل إنه تقيل"). Reading those as positive claims rejected correct
+# drafts until the reply fell back to a non-answer (simulation S02 t1, S08 t3).
+_CLAIM_NEGATOR = re.compile(r"(?<!\w)[وف]?(?:مش|مفيش|من غير|بدون|غير|ملوش|مالوش|مفيهوش|مفيهاش|"
+                            r"not|no|without|isn't|never)(?!\w)")
 _CONNECTOR = re.compile(r"(?:(?:[,،]\s*)?(?:و|او|ولا|and|or|nor)|[,،])\s*")
 _LITERAL = re.compile(r"(?:فيه|فيها|مفيهوش|مفيهاش|يحتوي\s+علي|نوت(?:ه|ات)(?:ه)?|مكونات(?:ه)?|"
                       r"contains?|ingredients?|notes?(?:\s+of|\s*:))\s*$")
+# "حاجة فيها فواكه", "عطر فيه توابل", "الريحة اللي فيها سموكي وفاكهة": a wanted kind of perfume said
+# with "فيه". For a label with no tracked ingredient behind it the wish was dropped, the model's own
+# tag with it, and "بحب الريحة اللي فيها سموكي وفاكهة" was asked the scent question again (simulation
+# S09 round 2 batch 4, t3). A generic noun must lead; "Aventus فيه سموكي؟" asks about a perfume.
+_WISH_LITERAL = re.compile(r"(?<!\w)(?:(?:ال)?حاج(?:ه|ات)|(?:ال)?عطر|(?:ال)?برفان|(?:ال)?ريحه|اللي|يكون|تكون)\s+(?:فيه|فيها)\s*$")
 _ALTERNATIVE = re.compile(r"(?<!\w)(?:او|ولا|or)(?!\w)")
 _EITHER = re.compile(r"(?<!\w)يا\s+(?:ال)?$")
 _VAGUE_SCENT_WORDS = frozenset({
@@ -65,6 +78,55 @@ _STYLE_TERMS.update(alias for alias, tag in _ALIASES.items()
                     if tag in {"fresh", "sweet", "clean", "woody", "floral", "fruity", "spicy", "powdery", "aquatic", "light", "heavy"})
 
 
+# A trait word whose clause opens with a perfume or a pointer to one describes that perfume; it is
+# not a wish. "و212 VIB تقيل وتوابله كتير.. مش ده اللي طلبته" saved heavy as a WANTED label over the
+# customer's own "مش تقيلة" (simulation S10 final 1, t6), and "Pure XS فيه جلد؟" saved leather
+# (S14 final 2, t7). The subject is a short Latin name (Franco words mix letters and digits and are
+# not names) or a pointer, followed by at most two words before the trait.
+_LATIN_SUBJECT = r"[A-Za-z0-9][A-Za-z0-9'’&.-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'’&.-]*){0,3}"
+_POINTER_SUBJECT = r"(?:ده|دي|دا|ديه|هو|هي|الاولاني|التاني|ريحته|ريحتها)"
+# "يعني ريحته حمضيات وخشب أكتر؟" is a question about the perfume just described; without يعني as a
+# lead-in it saved citrus as a wish (simulation S14 round 2, t3).
+# "طب والـ Black XS حلاوته واضحة ولا التوابل…" puts an article before the name (S14 round 2 batch 2, t5).
+# "وريحة Pure XS الجلدية دي عاملة إزاي؟" names the smell of a perfume; read as a wish once the turn
+# became a recommendation, it saved leather (S14 round 2 batch 2, t7).
+_DESCRIBED = re.compile(r"^\s*(?:(?:و|بس|طب|طيب|اما|لكن|يعني|هل)\s*)?(?:(?:ريحه|ريحة|طابع|ستايل)\s+(?=[A-Za-z0-9]))?"
+                        r"(?:و?الـ?\s*(?=[A-Za-z0-9]))?"
+                        r"(?:(?P<latin>" + _LATIN_SUBJECT + r")|" + _POINTER_SUBJECT
+                        + r")(?P<rest>(?:\s+\S+)*)\s*$")
+# The whole clause after such a subject describes it ("طب Black XS ريحته مسكرة أكتر ولا التوابل
+# باينة؟" excluded spicy through its "ولا", S14 final 2 t5), until a wish or a contrast starts.
+# "هي بتحب الحاجات الخفيفة ومش المسكرة أوي" is the recipient's taste, not a perfume described through
+# a pointer: without بتحب/بيحب the fiancée's light and not-sweet were dropped (S07 round 2 batch 2, t2).
+_WISH = re.compile(r"(?<!\w)(?:عايز|عاوز|عايزه|عاوزه|بحب|بتحب|بيحب|تحب|يحب|بتفضل|بيفضل|محتاج|محتاجه|نفسي|بدور|"
+                   r"بفضل|بس|لكن|بدل|حاجه|حاجات)(?!\w)")
+
+
+# English requests are Latin too ("no oud or sweet", "I want a sugary perfume"): a Latin subject
+# counts only when it holds a word that is not request grammar or a scent word.
+_SUBJECT_STOPWORDS = frozenset({
+    "a", "an", "and", "any", "anything", "avoid", "bit", "but", "do", "dont", "don't", "except", "for",
+    "fragrance", "hate", "dislike", "i", "i'm", "im", "is", "it", "it's", "its", "just", "less", "like",
+    "little", "love", "more", "need", "no", "not", "one", "only", "or", "perfume", "prefer", "really",
+    "scent", "smell", "smells", "so", "something", "that", "the", "this", "too", "very", "want",
+    "with", "without", "would", "me", "my", "please", "also",
+})
+
+
+def _describes_a_perfume(before):
+    clause = re.split(r"[.!؟?\n؛;،,]", before)[-1]
+    match = _DESCRIBED.match(clause)
+    if not match or _WISH.search(match.group("rest") or ""):
+        return False
+    subject = match.group("latin")
+    if subject is None:
+        return True  # a pointer: ده / هو / ريحته
+    words = [word.lower() for word in re.findall(r"[A-Za-z0-9][A-Za-z0-9'’&.-]*", subject)]
+    if any(re.search(r"[a-z]\d|\d[a-z]", word) for word in words):
+        return False  # Franco Arabic ("7aga fresh"), not a perfume name
+    return any(word not in _SUBJECT_STOPWORDS and word not in _ALIASES for word in words)
+
+
 @dataclass(frozen=True)
 class _Mention:
     start: int
@@ -72,6 +134,9 @@ class _Mention:
     tags: tuple
     polarity: str
     note: str | None = None
+    # The model quoted this whole phrase as evidence and stated its polarity, so a neighbouring
+    # phrase's negation must not spread into it ("مش عايزها تقيلة، حاجة هادية").
+    stated: bool = False
 
 
 def _mentions(text, *, for_claims=False):
@@ -82,18 +147,35 @@ def _mentions(text, *, for_claims=False):
     for match in re.finditer(pattern, text):
         before = text[:match.start()]
         connector = re.sub(r"ال$", "", text[previous.end:match.start(1)].strip()).strip() if previous else ""
-        connected = bool(previous and _CONNECTOR.fullmatch(connector))
+        # An adjective that directly follows another trait shares its negation: "ومش خشبية تقيلة"
+        # saved heavy as WANTED next to an excluded woody (simulation S10 round 2, t3).
+        connected = bool(previous and (_CONNECTOR.fullmatch(connector)
+                                       or (not connector and previous.polarity == "negative")))
         tag = aliases[match[1]]
         literal = _LITERAL.search(before)
         negative = bool(_NEGATIVE.search(before) or (connected and previous.polarity == "negative"))
+        if for_claims and not negative:
+            negative = bool(_CLAIM_NEGATOR.search(re.split(r"[.!؟?\n؛;،,]", before)[-1]))
         polarity = "negative" if negative else "positive"
         if literal or (connected and previous.polarity.startswith("literal_")):
             negative = bool((literal and (literal[0].strip() in ("مفيهوش", "مفيهاش")
                                           or _NEGATIVE.search(before[:literal.start()])))
                             or (connected and previous.polarity == "literal_negative"))
             polarity = "literal_negative" if negative else "literal_positive"
+            # Oud, leather and musk are ingredients as well as labels: "عايز عطر فيه عود" stays an
+            # ingredient requirement (`test_literal_ingredients_do_not_add_a_style_requirement`).
+            if (not for_claims and not negative and literal and _MATERIAL_NAMES.get(match[1]) is None
+                    and tag not in ("oud", "leather", "musky") and _WISH_LITERAL.search(before)):
+                polarity = "positive"
         elif (_REPLACED.search(before) or re.search(r"فوحان(?:ه)?\s*$|projection\s*$", before)
+              # "أنا مش بسأل على العود بس، قلتلك مش عايز حاجة مسكرة!" names oud as a topic; read as a
+              # wish it moved oud from excluded to wanted (simulation S10 round 2 full 2, t4).
+              or re.search(r"(?:بسال|بتسال|اسال|سالت|سالتك|هسال|بسالك|بكلم|بتكلم)\s+(?:علي|عن)\s*(?:ال)?$", before)
               or (tag in ("light", "heavy") and re.search(r"(?:ال)?خروجات\s*$|(?:workouts?|outings?)\s*$", before))):
+            polarity = "ignored"
+        # Only an Arabic trait word after the subject: the real shape is mixed script ("212 VIB
+        # تقيل"), while an English request ("recommend a fresh unisex perfume") is Latin throughout.
+        if not for_claims and re.match(r"[؀-ۿ]", match[1]) and _describes_a_perfume(before):
             polarity = "ignored"
         # Keep the conjunction outside the span so phrase-level reconciliation
         # can join this alias to a preceding phrase understood by the model.
@@ -102,7 +184,7 @@ def _mentions(text, *, for_claims=False):
     return found
 
 
-def _summarize(text, mentions):
+def _summarize(text, mentions, *, literal_exclusions=False):
     # Source order resolves a customer's correction within the same message.
     stances = {}
     ingredients = {}
@@ -110,6 +192,7 @@ def _summarize(text, mentions):
     for mention in sorted(mentions, key=lambda item: (item.start, item.end)):
         connector = re.sub(r"ال$", "", text[previous.end:mention.start].strip()).strip() if previous else ""
         if (previous and previous.polarity == "negative" and mention.polarity == "positive"
+                and not mention.stated
                 and previous.end <= mention.start and _CONNECTOR.fullmatch(connector)):
             mention = replace(mention, polarity="negative")
         if mention.polarity in ("positive", "negative"):
@@ -117,6 +200,11 @@ def _summarize(text, mentions):
                 stances[tag] = mention
         elif mention.note and mention.polarity.startswith("literal_"):
             ingredients[mention.note] = mention.polarity
+        elif literal_exclusions and mention.polarity == "literal_negative":
+            # "ولا فيها عود": a refused scent label with no tracked ingredient behind it. Dropping it
+            # also discarded the model's own exclusion, so oud vanished from simulation S10 turn 1.
+            for tag in mention.tags:
+                stances[tag] = replace(mention, polarity="negative")
         previous = mention
     positive = [tag for tag, mention in stances.items() if mention.polarity == "positive"]
     negative = [tag for tag, mention in stances.items() if mention.polarity == "negative"]
@@ -143,7 +231,7 @@ def _summarize(text, mentions):
 
 def explicit_scent_updates(message, *, for_claims=False):
     text = normalize_arabic(message or "")
-    return _summarize(text, _mentions(text, for_claims=for_claims))
+    return _summarize(text, _mentions(text, for_claims=for_claims), literal_exclusions=not for_claims)
 
 
 def _valid_tags(value):
@@ -264,7 +352,12 @@ def reconcile_scent_intent(intent, message, *, require_evidence=False):
                         # A known word can be part of a longer scent phrase, such
                         # as "زهور بيضا". Keep its meaning, but use the complete
                         # source span when carrying negation into a joined scent.
-                        polarity = "negative" if _NEGATIVE.search(text[:start]) else mention.polarity
+                        # The model's negative stands when its own quoted phrase carries the
+                        # negator before the word ("مش عايز أي حاجة مسكرة"); the local
+                        # grammar is a fixed filler list and cannot read every such phrase.
+                        stated_negative = polarity == "negative" and _CLAIM_NEGATOR.search(text[start:mention.start])
+                        polarity = ("negative" if _NEGATIVE.search(text[:start]) or stated_negative
+                                    else mention.polarity)
                         scoped_known[index] = replace(scoped_known[index], end=max(scoped_known[index].end, end),
                                                       polarity=polarity)
                 continue
@@ -273,8 +366,8 @@ def reconcile_scent_intent(intent, message, *, require_evidence=False):
             if _LITERAL.search(text[:start]) or _REPLACED.search(text[:start]):
                 replaced_tags.update(tags)
                 continue
-            model_mentions.append(_Mention(start, end, tuple(tags), polarity))
-    updates = _summarize(text, [*model_mentions, *scoped_known])
+            model_mentions.append(_Mention(start, end, tuple(tags), polarity, stated=True))
+    updates = _summarize(text, [*model_mentions, *scoped_known], literal_exclusions=True)
     touched = replaced_tags | {tag for mention in known for tag in mention.tags}
     for key in ("scent_tags", "excluded_scent_tags"):
         base = [] if require_evidence else [tag for tag in result.get(key, []) if tag not in touched]

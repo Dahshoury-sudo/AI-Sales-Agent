@@ -1,0 +1,20 @@
+[
+  {
+    "id": "S18_browser",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.00142778",
+    "api_calls": 1
+  }
+]

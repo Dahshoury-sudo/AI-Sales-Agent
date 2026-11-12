@@ -1,0 +1,527 @@
+{
+  "id": "S09_unavailable",
+  "title": "Unavailable perfume and request for a similar alternative",
+  "persona": "clone_hunter",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عندكو Club de Nuit Intense؟",
+      "reply": "للأسف العطر ده مش موجود عندنا. كبدائل متوفرة:\n1 Million: فيه ريحة توابل وريحته جلدية ومسكر.",
+      "seconds": 89.98,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندكو Club de Nuit Intense؟\nABSENCE_DENIED\nالعطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة متأكدين منها مش تخمين.\n🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من البدائل اللي بتعرضها عليه في نفس الرد.\n\n═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): 1 Million\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, leather, sweet\nDescription Tags (first three only): spicy, leather, sweet\nSimple Scent Description: فيه ريحة توابل وريحته جلدية ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Grapefruit, Mint, Blood Orange\nMiddle Notes: Cinnamon, Spicy Notes, Rose\nBase Notes: Amber, Leather, Woody Notes, Indian Patchouli\n\n-------------------------\n\nName (الاسم الصحيح): 1 Million Absolutely Gold\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): leather, heavy, oud\nDescription Tags (first three only): leather, heavy, oud\nSimple Scent Description: ريحته جلدية وتقيل وعودي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Mandarin Orange\nMiddle Notes: Rose\nBase Notes: Agarwood (Oud), Leather, Amber\n\n-------------------------\n\nName (الاسم الصحيح): 1 Million Elixir\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1475.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): sweet, floral, fruity\nDescription Tags (first three only): sweet, floral, fruity\nSimple Scent Description: ريحته مسكر وفيه ريحة زهور وفواكه\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Davana\nMiddle Notes: Damask Rose, Osmanthus, Cedar\nBase Notes: Vanilla Absolute, Tonka Bean, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "1 Million"
+      ],
+      "claim_checks": [
+        {
+          "draft": "للأسف Club de Nuit Intense مش موجود عندنا. ممكن تشوف 1 Million، وده عطر تاني مختلف؛ ريحته فيها توابل وطابع جلدي وحلاوة.",
+          "issues": [
+            "description:1 Million: use the first three saved labels: spicy, leather, sweet"
+          ]
+        },
+        {
+          "draft": "لأ يا فندم، Club de Nuit Intense مش موجود عندنا، آسف. ممكن تشوف 1 Million، وده عطر تاني مختلف؛ ريحته فيها توابل وجلد وحلاوة. أو 1 Million Absolutely Gold، وده مختلف برضه وطابعه جلدي وتقيل وعودي.",
+          "issues": [
+            "description:1 Million: unsolicited ingredient جلد",
+            "description:1 Million: use the first three saved labels: spicy, leather, sweet"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟",
+      "reply": "أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها، بس أقدر أرشحلك من المتاح على حسب الريحة اللي بتحبها. محتاج برفان رجالي ولا حريمي؟",
+      "seconds": 3.59,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "scent_evidence": [],
+        "similar_to": "Club de Nuit Intense",
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "similar_to": "1 Million",
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "recommendation_mode": "new_goal"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "similar_to": "1 Million"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "GENDER_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "رجالي، بحب الريحة اللي فيها سموكي وفاكهة",
+      "reply": "Pure XS: فيه ريحة توابل ومسكر وريحته جلدية. رجالي.\nMan in Black: فيه ريحة توابل وريحته جلدية ومسكر. رجالي.",
+      "seconds": 9.18,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [],
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "سموكي",
+            "tags": [
+              "smoky"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "فاكهة",
+            "tags": [
+              "fruity"
+            ],
+            "polarity": "positive"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": "Club de Nuit Intense",
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "male"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [],
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "male",
+        "similar_to": "1 Million"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Pure XS",
+          "Man in Black",
+          "L'Homme Ideal Extreme",
+          "212 Sexy man",
+          "Black XS",
+          "Gold",
+          "Wanted by Night",
+          "Invictus Victory",
+          "Euphoria Men",
+          "Bad Boy",
+          "Pi",
+          "Boss Orange",
+          "Bitter Peach",
+          "Tobacco Vanille",
+          "Ultra Male",
+          "Le male la perfume",
+          "Le male Elixir",
+          "Joop",
+          "Gentleman",
+          "Spice Bomb",
+          "Stronger With You Intensely",
+          "Stronger With You Tobacco",
+          "Stronger With You Sandalwood",
+          "Stronger With You Leather",
+          "Uomo",
+          "1 Million Prive",
+          "Althair",
+          "Angel share",
+          "Baraonda",
+          "Herod",
+          "Jazz Club",
+          "Kalan",
+          "Naxos",
+          "Side Effect",
+          "Blonde Amber",
+          "Scent Aura",
+          "Dark Aura",
+          "212 VIB Man",
+          "Code Ultimate",
+          "Wanted",
+          "Euphoria Intense",
+          "Pasha de Cartier",
+          "Blue Jeans",
+          "Terre d'Hermes",
+          "Tuxedo",
+          "Ombre Leather",
+          "Black Orchid",
+          "Vanilla Sex",
+          "Lost Cherry",
+          "La beaul Intense",
+          "Le male Lover",
+          "Guilty Black",
+          "Drakkar Noir",
+          "The One for Men",
+          "Declaration",
+          "Dior Homme",
+          "Stronger With You Absolutely",
+          "Stronger With You Oud",
+          "Stronger With You Amber",
+          "Stronger With You Freeze",
+          "Scandal Pour Homme",
+          "Sauvage",
+          "Sauvage Elixir",
+          "Silver Scent",
+          "Phantom",
+          "Eros",
+          "Dylan Blue",
+          "Fahrenheit",
+          "Lapidus",
+          "Essential",
+          "Man Blue",
+          "Explorer",
+          "Harsh Lahab",
+          "Hugo Boss",
+          "1 Million Absolutely Gold",
+          "1 Million Golden Oud",
+          "1 Million Royal",
+          "1 Million Elixir",
+          "One Man Show",
+          "Interlude",
+          "God of Fire",
+          "Imagination",
+          "Imperial Valley",
+          "Layton",
+          "Lord Gorg",
+          "Pegasus",
+          "wasal",
+          "Alf Layla Wa Layla",
+          "Arabians Tonka",
+          "Ameer Al Oud",
+          "Khashab Oud",
+          "Sultan Al Otoor",
+          "Shohra Grey",
+          "Badee Al Oud",
+          "Oud Madawi Gold",
+          "Kalemat",
+          "Black Code",
+          "Elite",
+          "Spicy Oud"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "1 Million"
+      ],
+      "saved_preferences": {
+        "gender": "male",
+        "scent_open": false,
+        "similar_to": "1 Million"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, sweet, leather\nDescription Tags (first three only): spicy, sweet, leather\nSimple Scent Description: فيه ريحة توابل ومسكر وريحته جلدية\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\n\n-------------------------\n\nName (الاسم الصحيح): Man in Black\nBrand: Bvlgari\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, leather, sweet\nDescription Tags (first three only): spicy, leather, sweet\nSimple Scent Description: فيه ريحة توابل وريحته جلدية ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Spices, Rum, Tobacco\nMiddle Notes: Leather, Iris, Tuberose\nBase Notes: Tonka Bean, Guaiac Wood, Benzoin\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Pure XS",
+        "Man in Black"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟",
+      "reply": "Pure XS\nالصفة دي مش مؤكدة في طابعه المسجل.\nوصفه المسجل: فيه ريحة توابل ومسكر وجلدية.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\nMan in Black\nالصفة دي مش مؤكدة في طابعه المسجل.\nوصفه المسجل: فيه ريحة توابل وجلدية ومسكر.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.",
+      "seconds": 7.42,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "comparison",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "male",
+        "scent_open": false,
+        "similar_to": "1 Million"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Pure XS\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, sweet, leather\nDescription Tags (first three only): spicy, sweet, leather\nSimple Scent Description: فيه ريحة توابل ومسكر وريحته جلدية\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Ginger, Green Accord, Thyme, Bergamot, Grapefruit\nMiddle Notes: Vanilla, Cinnamon, Leather, Liquor, Apple\nBase Notes: Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli\n\n-------------------------\n\nName (الاسم الصحيح): Man in Black\nBrand: Bvlgari\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, leather, sweet\nDescription Tags (first three only): spicy, leather, sweet\nSimple Scent Description: فيه ريحة توابل وريحته جلدية ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Spices, Rum, Tobacco\nMiddle Notes: Leather, Iris, Tuberose\nBase Notes: Tonka Bean, Guaiac Wood, Benzoin\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 934, \"variant_id\": 2572, \"name\": \"Pure XS\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 934, \"variant_id\": 2571, \"name\": \"Pure XS\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 934, \"variant_id\": 2573, \"name\": \"Pure XS\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}, {\"product_id\": 957, \"variant_id\": 2630, \"name\": \"Man in Black\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 957, \"variant_id\": 2629, \"name\": \"Man in Black\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 957, \"variant_id\": 2631, \"name\": \"Man in Black\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}], \"append\": true, \"text\": \"Pure XS\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\\n\\nMan in Black\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\", \"budget\": null, \"request\": \"طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟\"}\nCOMPARED_PRODUCTS: Pure XS | Man in Black\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 934, \"variant_id\": 2572, \"name\": \"Pure XS\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 934, \"variant_id\": 2571, \"name\": \"Pure XS\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 934, \"variant_id\": 2573, \"name\": \"Pure XS\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}, {\"product_id\": 957, \"variant_id\": 2630, \"name\": \"Man in Black\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 957, \"variant_id\": 2629, \"name\": \"Man in Black\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 957, \"variant_id\": 2631, \"name\": \"Man in Black\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\\n\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\", \"budget\": null, \"request\": \"طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟\", \"sections\": [{\"product_id\": 934, \"name\": \"Pure XS\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\"}, {\"product_id\": 957, \"name\": \"Man in Black\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\"}], \"ambiguous_prose\": true}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 934, \"variant_id\": 2572, \"name\": \"Pure XS\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 934, \"variant_id\": 2571, \"name\": \"Pure XS\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 934, \"variant_id\": 2573, \"name\": \"Pure XS\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}, {\"product_id\": 957, \"variant_id\": 2630, \"name\": \"Man in Black\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 957, \"variant_id\": 2629, \"name\": \"Man in Black\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 957, \"variant_id\": 2631, \"name\": \"Man in Black\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\\n\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\", \"budget\": null, \"request\": \"طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 934, \"variant_id\": 2572, \"name\": \"Pure XS\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 934, \"variant_id\": 2571, \"name\": \"Pure XS\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 934, \"variant_id\": 2573, \"name\": \"Pure XS\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}, {\"product_id\": 957, \"variant_id\": 2630, \"name\": \"Man in Black\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 957, \"variant_id\": 2629, \"name\": \"Man in Black\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 957, \"variant_id\": 2631, \"name\": \"Man in Black\", \"volume\": 100, \"bottle_type\": \"original\", \"quantity\": 1, \"price\": \"1500.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\\n\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\", \"budget\": null, \"request\": \"طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟\", \"sections\": [{\"product_id\": 934, \"name\": \"Pure XS\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\"}, {\"product_id\": 957, \"name\": \"Man in Black\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Pure XS",
+        "Man in Black"
+      ],
+      "claim_checks": [
+        {
+          "draft": "Pure XS\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\nMan in Black\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\nمش قادر أجزم أنهي أقرب للسموكي والفواكه؛ طابع الاتنين المسجل فيه توابل وجلد وحلاوة، والسموكي والفواكه مش مؤكدين في طابعهم",
+          "issues": [
+            "description:Man in Black: unsolicited ingredient جلد",
+            "scent:man in black:fruity",
+            "scent:man in black:smoky"
+          ]
+        },
+        {
+          "draft": "Pure XS\nأقرب لطلبك من ناحية الفاكهة، لكن طابعه المسجل مش سموكي.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\nMan in Black\nطابعه فيه توابل وجلد وحلاوة، لكن السموكي والفاكهي مش مؤكدين فيه.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.",
+          "issues": [
+            "description:Pure XS: an unrecorded trait is not confirmed absent; say it is not confirmed: smoky",
+            "description:Man in Black: unsolicited ingredient جلد",
+            "scent:pure xs:fruity",
+            "scent:man in black:smoky",
+            "scent:man in black:fruity"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "تمام هفكر فيهم، تسلم",
+      "reply": "تسلم، خد وقتك.",
+      "seconds": 1.12,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "male",
+        "scent_open": false,
+        "similar_to": "1 Million"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "CUSTOMER_DEFERRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "customer",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "gender": "male",
+    "scent_open": false,
+    "similar_to": "1 Million"
+  },
+  "seconds": 117.7,
+  "judge_prompt": "SCENARIO S09_unavailable: Unavailable perfume and request for a similar alternative\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers one or two named stocked alternatives.\n- Does not claim a lookalike without support; similarity wording is honest.\n- Handles the customer's irritation without canned apologies.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عندكو Club de Nuit Intense؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: للأسف العطر ده مش موجود عندنا. كبدائل متوفرة:\n1 Million: فيه ريحة توابل وريحته جلدية ومسكر.\n\n--- TURN 2 ---\nCUSTOMER: يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟\n[internal] route=recommendation stage=None saved_preferences={\"similar_to\": \"1 Million\"}\n[internal] merged_intent={\"similar_to\": \"1 Million\", \"recommendation_mode\": \"new_goal\"}\nASSISTANT: أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها، بس أقدر أرشحلك من المتاح على حسب الريحة اللي بتحبها. محتاج برفان رجالي ولا حريمي؟\n\n--- TURN 3 ---\nCUSTOMER: رجالي، بحب الريحة اللي فيها سموكي وفاكهة\n[internal] route=recommendation stage=recommendation saved_preferences={\"gender\": \"male\", \"scent_open\": false, \"similar_to\": \"1 Million\"}\n[internal] merged_intent={\"gender\": \"male\", \"similar_to\": \"1 Million\"}\n[internal] shortlist=['Pure XS', 'Man in Black', \"L'Homme Ideal Extreme\", '212 Sexy man', 'Black XS', 'Gold', 'Wanted by Night', 'Invictus Victory']\nASSISTANT: Pure XS: فيه ريحة توابل ومسكر وريحته جلدية. رجالي.\nMan in Black: فيه ريحة توابل وريحته جلدية ومسكر. رجالي.\n\n--- TURN 4 ---\nCUSTOMER: طب أنهي واحد فيهم أقرب للسموكي والفواكه؟ وسعره كام؟\n[internal] route=product_info stage=comparison saved_preferences={\"gender\": \"male\", \"scent_open\": false, \"similar_to\": \"1 Million\"}\nASSISTANT: Pure XS\nالصفة دي مش مؤكدة في طابعه المسجل.\nوصفه المسجل: فيه ريحة توابل ومسكر وجلدية.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\nMan in Black\nالصفة دي مش مؤكدة في طابعه المسجل.\nوصفه المسجل: فيه ريحة توابل وجلدية ومسكر.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\nزجاجة اوريجنال 100 ملي بـ1500 جنيه.\n\n--- TURN 5 ---\nCUSTOMER: تمام هفكر فيهم، تسلم\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"male\", \"scent_open\": false, \"similar_to\": \"1 Million\"}\nASSISTANT: تسلم، خد وقتك.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- 1 Million | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=spicy,leather,sweet | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Grapefruit, Mint, Blood Orange | mid=Cinnamon, Spicy Notes, Rose | base=Amber, Leather, Woody Notes, Indian Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- 1 Million Absolutely Gold | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=leather,heavy,oud | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Mandarin Orange | mid=Rose | base=Agarwood (Oud), Leather, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- 1 Million Elixir | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=sweet,floral,fruity | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Apple, Davana | mid=Damask Rose, Osmanthus, Cedar | base=Vanilla Absolute, Tonka Bean, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1475EGP stock=100\n- 1 Million Golden Oud | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=oud,spicy,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Nutmeg, Saffron, Black Pepper, Bergamot | mid=Iris, Gurjan Balsam, Patchouli, Sandalwood | base=Agarwood (Oud), Leather, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1550EGP stock=100\n- 1 Million Prive | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=spicy,heavy,sweet | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Blood Mandarin | mid=Tobacco, Myrrh | base=Tonka Bean, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- 1 Million Royal | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=woody,spicy,citrus | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom, Tangerine, Bergamot | mid=Lavender, Sage, Violet Leaf | base=Benzoin, Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- 212 Sexy man | brand=Carolina Herrera | gender=male | type=western | season=Winter | scent_tags=sweet,woody,spicy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Mandarin Orange, Bergamot, Green Notes | mid=Pepper, Flowers, Cardamom | base=Vanilla, Bourbon Vanilla, Sandalwood, Guaiac Wood, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- 212 VIB Man | brand=Carolina Herrera | gender=male | type=western | season=Winter | scent_tags=spicy,fresh,citrus | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Lime, Caviar, Pepper, Ginger, Passionfruit | mid=Spices, Vodka, Gin, Mint | base=Amber, Leather, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1400EGP stock=100\n- Alf Layla Wa Layla | brand=Agmal | gender=male | type=niche | season=Winter | scent_tags=oud,spicy,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Spices, Floral Notes, Citrus | mid=Rose, Cypriol Oil, Woody Notes | base=Agarwood (Oud), Musk, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Althair | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=sweet,spicy,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Orange Blossom, Bergamot, Cinnamon | mid=Bourbon Vanilla, Elemi | base=Guaiacwood, Ambrox, Praline, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Ameer Al Oud | brand=Arabian Oud | gender=male | type=oriental | season=Winter | scent_tags=woody,oud,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Agarwood (Oud), Woody Notes | mid=Vanilla, Sugar | base=Agarwood (Oud), Sandalwood, Herbal Notes | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Angel share | brand=By Kilian | gender=male | type=niche | season=Winter | scent_tags=sweet,woody,spicy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Cognac, Cinnamon | mid=Tonka Bean, Oak | base=Praline, Vanilla, Sandalwood | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=3000EGP stock=100\n- Arabians Tonka | brand=Montale | gender=male | type=oriental | season=Winter | scent_tags=sweet,oud,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Saffron, Bergamot | mid=Agarwood (Oud), Bulgarian Rose | base=Tonka Bean, Sugar Cane, Amber, White Musk, Oakmoss | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Bad Boy | brand=Carolina Herrera | gender=male | type=western | season=Winter | scent_tags=spicy,sweet,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Black Pepper, White Pepper, Bergamot | mid=Sage, Cedar | base=Tonka Bean, Cocoa, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Badee Al Oud | brand=Lattafa | gender=male | type=oriental | season=Winter | scent_tags=oud,spicy,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Saffron, Nutmeg, Lavender | mid=Agarwood (Oud), Patchouli | base=Agarwood (Oud), Patchouli, Musk | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Baraonda | brand=Nasomatto | gender=male | type=niche | season=Winter | scent_tags=spicy,sweet,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Whiskey, Rum, Cinnamon | mid=Rose, Dried Fruits | base=Woody Notes, Amber, Musk, Ambrette | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Bitter Peach | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=sweet,fruity,spicy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Peach, Blood Orange, Cardamom, Heliotrope | mid=Rum, Cognac, Davana, Jasmine | base=Indonesian Patchouli Leaf, Vanilla, Sandalwood, Tonka Bean, Cashmeran, Benzoin, Styrax, Labdanum, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1660EGP stock=100\n- Black Code | brand=Perfamix | gender=male | type=store_own_made | season=All Seasons | scent_tags=spicy,woody,fresh | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Cardamom | mid=Lavender, Cedarwood, Bergamot | base=Caraway, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Black Orchid | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=floral,woody,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon | mid=Orchid, Lotus Wood, Fruity Notes, Spices | base=Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Black XS | brand=Paco Rabanne | gender=male | type=western | season=Summer | scent_tags=spicy,sweet,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Lemon, Sage | mid=Praline, Cinnamon, Tolu Balsam, Black Cardamom | base=Brazilian Rosewood, Patchouli, Black Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Blonde Amber | brand=Blonde | gender=male | type=niche | season=Winter | scent_tags=sweet,spicy,woody | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Rum, Olibanum, Bitter Orange, Cardamom, Pink Pepper, Ginger, Bergamot, Grapefruit | mid=Dried Fruits, White Tobacco, Sandalwood, Tuberose, Saffron, Osmanthus, Orris, Jasmine | base=Tonka Bean, Myrrh, Vanilla, Labdanum, Patchouli, Musk, Cedar, Vetiver | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Blue Jeans | brand=Versace | gender=male | type=western | season=Summer | scent_tags=fresh,sweet,citrus | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Citruses, Bergamot, Juniper, Anise, Brazilian Rosewood, Basil | mid=Lavender, Rose, Carnation, Heliotrope, Jasmine, Geranium, Sage, Fir, Lily of the Valley | base=Vanilla, Tonka Bean, Sandalwood, Iris, Musk, Amber, Vetiver, Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Boss Orange | brand=Hugo Boss | gender=male | type=western | season=Summer | scent_tags=fruity,spicy,sweet | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Red Apple, Coriander | mid=Incense, Sichuan Pepper | base=Vanilla, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Code Ultimate | brand=Armani | gender=male | type=western | season=Winter | scent_tags=woody,sweet,citrus | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Grapefruit, Mandarin Orange, Star Anise | mid=Cedar, Olive Blossom, Cypress, Heliotrope | base=Tonka Bean, Vanilla, Guaiac Wood, Leather, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Dark Aura | brand=Perfamix | gender=male | type=store_own_made | season=Winter | scent_tags=sweet,smoky,spicy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Citruses | mid=Praline, Black Cardamom, Incense | base=Tobacco, Vanilla, Black Amber, Leather, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Declaration | brand=Cartier | gender=male | type=western | season=All Seasons | scent_tags=spicy,citrus,woody | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bitter Orange, Caraway, Birch, Bergamot, Coriander, Mandarin Orange, Neroli, Artemisia | mid=Guatemalan Cardamom, Pepper, Ginger, Iris, Juniper, Cinnamon, Orris Root, Jasmine | base=Tahitian Vetiver, Tea, Cedar, Leather, Oakmoss, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Dior Homme | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bergamot, Pink Pepper, Elemi | mid=Atlas Cedar, Cashmere Wood, Patchouli | base=Iso E Super, Haitian Vetiver, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Drakkar Noir | brand=Guy Laroche | gender=male | type=western | season=Winter | scent_tags=woody,fresh,spicy | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Lavender, Lemon, Bergamot, Rosemary, Mint, Lemon Verbena, Basil, Artemisia | mid=Juniper, Coriander, Cinnamon, Wormwood, Carnation, Angelica, Jasmine | base=Oakmoss, Leather, Fir, Pine Tree Needles, Sandalwood, Vetiver, Patchouli, Cedar, Amber, Resins | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Dylan Blue | brand=Versace | gender=male | type=western | season=Summer | scent_tags=aquatic,fresh,spicy | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Grapefruit, Fig Leaf, Water Notes | mid=Black Pepper, Violet Leaf, Patchouli, Papyrus, Ambroxan | base=Incense, Musk, Tonka Bean, Saffron | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Elite | brand=Perfamix | gender=male | type=store_own_made | season=Winter | scent_tags=fresh,spicy,citrus | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Grapefruit, Mint | mid=Cardamom, Lavender, Cinnamon | base=Amber, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Eros | brand=Versace | gender=male | type=western | season=Summer | scent_tags=fresh,sweet,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Essential | brand=Lacoste | gender=male | type=western | season=Summer | scent_tags=spicy,woody,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Cassia, Bergamot, Tangerine, Tomato Leaf | mid=Pepper, Rose | base=Sandalwood, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Euphoria Intense | brand=Calvin Klein | gender=male | type=western | season=Winter | scent_tags=woody,spicy,heavy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Ginger, Pepper | mid=Black Basil, Sage, Vetiver, Cedar | base=Labdanum, Amber, Patchouli, Agarwood (Oud), Myrrh | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Euphoria Men | brand=Calvin Klein | gender=male | type=western | season=Winter | scent_tags=woody,spicy,leather | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Ginger, Pepper | mid=Black Basil, Sage, Cedar | base=Amber, Suede, Brazilian Redwood, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Explorer | brand=Montblanc | gender=male | type=western | season=All Seasons | scent_tags=woody,fresh,spicy | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bergamot, Pink Pepper, Clary Sage | mid=Haitian Vetiver, Leather | base=Ambroxan, Akigalawood, Indonesian Patchouli Leaf, Cacao Pod | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1550EGP stock=100\n- Fahrenheit | brand=Dior | gender=male | type=western | season=Winter | scent_tags=floral,woody,leather | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Nutmeg Flower, Lavender, Cedar, Chamomile, Mandarin Orange, Hawthorn, Bergamot, Lemon | mid=Violet Leaf, Nutmeg, Cedar, Sandalwood, Honeysuckle, Carnation, Jasmine, Lily of the Valley | base=Leather, Vetiver, Musk, Amber, Patchouli, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Gentleman | brand=Givenchy | gender=male | type=western | season=Winter | scent_tags=spicy,powdery,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Black Pepper, Lavender, Bergamot | mid=Orris, Cloves, Cinnamon | base=Black Vanilla Husk, Tolu Balsam, Tonka Bean, Benzoin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- God of Fire | brand=God of Fire | gender=male | type=niche | season=Summer | scent_tags=woody,fruity,sweet | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Mango, Ginger, Lemon, Red Berries | mid=Coumarin, Jasmine, Cedar | base=Musk, Amber, Agarwood (Oud), Cypriol Oil | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2000EGP stock=100\n- Gold | brand=Zara | gender=male | type=western | season=Winter | scent_tags=woody,spicy,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Lemon, Bergamot, Cinnamon | mid=Praline, Cardamom, Lavender | base=Amber, Ebony Wood, Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Guilty Black | brand=Gucci | gender=male | type=western | season=All Seasons | scent_tags=fresh,woody,spicy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Lavender, Green Coriander | mid=Green Notes, Orange Blossom, Neroli | base=Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Harsh Lahab | brand=Al ezz | gender=male | type=western | season=Winter | scent_tags=spicy,heavy,oud | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Saffron, Black Pepper | mid=Rose, Cedar, Patchouli | base=Agarwood (Oud), Amber, Vanilla, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=2000EGP stock=100\n- Herod | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=smoky,sweet,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cinnamon, Pepperwood | mid=Tobacco Leaf, Incense, Osmanthus, Labdanum | base=Vanilla, Iso E Super, Cedar, Musk, Cypriol Oil, Vetiver | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=3000EGP stock=100\n- Hugo Boss | brand=Hugo Boss | gender=male | type=western | season=All Seasons | scent_tags=woody,fruity,spicy | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Apple, Plum, Lemon, Bergamot, Oakmoss, Geranium | mid=Cinnamon, Mahogany, Carnation | base=Vanilla, Sandalwood, Cedar, Vetiver, Olive Tree | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Imagination | brand=Louis Vuitton | gender=male | type=niche | season=Summer | scent_tags=citrus,fresh,spicy | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Citron, Calabrian Bergamot, Sicilian Orange | mid=Nigerian Ginger, Neroli, Ceylon Cinnamon | base=Chinese Black Tea, Ambroxan, Olibanum, Guaiac Wood | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2500EGP stock=100\n- Imperial Valley | brand=Gissah | gender=male | type=niche | season=Winter | scent_tags=woody,oud,leather | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Sicilian Davana, Italian Bergamot, Pink Pepper | mid=White Amber, African Rosemary, Agarwood (Oud) | base=Musk, Leather, Haitian Vetiver | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2340EGP stock=100\n- Interlude | brand=Amouage | gender=male | type=niche | season=Winter | scent_tags=heavy,smoky,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Oregano, Pepper, Bergamot | mid=Incense, Opoponax, Amber, Labdanum | base=Leather, Agarwood (Oud), Sandalwood, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Invictus Victory | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pink Pepper, Lemon | mid=Olibanum, Lavender | base=Vanilla, Tonka Bean, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Jazz Club | brand=Maison Martin Margiela | gender=male | type=niche | season=Winter | scent_tags=sweet,smoky,spicy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pink Pepper, Neroli, Lemon | mid=Rum, Java Vetiver Oil, Clary Sage | base=Tobacco Leaf, Vanilla Bean, Styrax | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Joop | brand=Joop! | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,floral | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Orange Blossom, Mandarin Orange, Bergamot, Amalfi Lemon | mid=Cinnamon, Heliotrope, Jasmine, Cardamom, Lily of the Valley | base=Vanilla, Tonka Bean, Sandalwood, Patchouli, Honey, Tobacco, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Kalan | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=spicy,sweet,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Spices, Blood Orange, Black Pepper | mid=Lavender, Orange Blossom | base=Woody Notes, Moss, White Sandalwood, Tonka Bean, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Kalemat | brand=Arabian Oud | gender=male | type=oriental | season=Winter | scent_tags=sweet,heavy,musky | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Blueberry, Anise | mid=Cashmere Wood, Floral Notes, Rosemary | base=Amber, Honey, Musk | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Khashab Oud | brand=Arabian Oud | gender=male | type=oriental | season=Winter | scent_tags=woody,oud,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom, Saffron | mid=Cedar, Sandalwood, Patchouli | base=Agarwood (Oud), Amber, Musk | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- L'Homme Ideal Extreme | brand=Guerlain | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,leather | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Almond, Pink Pepper, Bergamot | mid=Plum, Cinnamon, Heliotrope | base=Tobacco, Leather, Patchouli, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- La beaul Intense | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,woody,fruity | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pineapple, Iris, Cypress, Ginger | mid=Coconut, Woody Notes | base=Tonka Bean, Sandalwood, Amber, Ambergris | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Lapidus | brand=Ted Lapidus | gender=male | type=western | season=Winter | scent_tags=woody,fruity,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pineapple, Lavender, Artemisia, Juniper Berries, Lemon, Basil, Bergamot | mid=Honey, Incense, Pine Tree, Rose, Brazilian Rosewood, Jasmine, Caraway, Orris Root, Lily of the Valley, Petitgrain | base=Tobacco, Patchouli, Oakmoss, Amber, Musk, Sandalwood, Tonka Bean, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Layton | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=fruity,woody,sweet | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Apple, Bergamot, Lavender | mid=Jasmine, Violet, Geranium | base=Vanilla, Pepper, Guaiac Wood, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Le male Elixir | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Lavender, Mint | mid=Vanilla, Benzoin | base=Honey, Tonka Bean, Tobacco | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1500EGP stock=100\n- Le male Lover | brand=Jean Paul Gaultier | gender=male | type=western | season=Summer | scent_tags=sweet,musky,citrus | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=White Pepper, Finger Lime | mid=Ambergris, Musk | base=Vanilla, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Le male la perfume | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,powdery | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cardamom | mid=Lavender, Iris | base=Vanilla, Oriental Notes, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1570EGP stock=100\n- Lord Gorg | brand=Lord Gorg | gender=male | type=niche | season=Winter | scent_tags=woody,sweet,clean | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Brandy | mid=Shaving Soap | base=Tonka Bean, Woody Notes, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Lost Cherry | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=fruity,sweet,floral | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Black Cherry, Cherry Liqueur, Bitter Almond | mid=Turkish Rose, Jasmine Sambac | base=Peru Balsam, Roasted Tonka Bean, Sandalwood, Cedar, Vetiver, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Man Blue | brand=Mercedes-Benz | gender=male | type=western | season=Summer | scent_tags=fresh,citrus,spicy | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Pepper | mid=Lavender, Tonka Bean | base=Amber, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Man in Black | brand=Bvlgari | gender=male | type=western | season=Winter | scent_tags=spicy,leather,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Spices, Rum, Tobacco | mid=Leather, Iris, Tuberose | base=Tonka Bean, Guaiac Wood, Benzoin | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Naxos | brand=Xerjoff | gender=male | type=niche | season=Winter | scent_tags=sweet,spicy,smoky | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Lavender, Bergamot, Lemon | mid=Cinnamon, Honey, Jasmine | base=Tobacco, Vanilla, Tonka Bean | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Ombre Leather | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=leather,woody,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- One Man Show | brand=Jacques Bogart | gender=male | type=western | season=Winter | scent_tags=woody,spicy,fresh | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Basil, Bergamot, Artemisia, Caraway, Galbanum, Brazilian Rosewood | mid=Pine Tree Needles, Carnation, Nutmeg, Patchouli, Spices, Vetiver, Geranium, Labdanum, Rose, Jasmine | base=Oakmoss, Leather, Cedar, Styrax, Castoreum, Sandalwood, Amber, Tonka Bean, Coconut, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Oud Madawi Gold | brand=Arabian Oud | gender=male | type=oriental | season=Winter | scent_tags=oud,sweet,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom, Red Berries, Bitter Orange | mid=Tonka Bean, Pineapple, Jasmine | base=Vanilla, Patchouli, Amber, Agarwood (Oud) | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Pasha de Cartier | brand=Cartier | gender=male | type=western | season=All Seasons | scent_tags=woody,fresh,spicy | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Lavender, Mint, Caraway, Anise, Mandarin Orange | mid=Coriander, Brazilian Rosewood | base=Oakmoss, Sandalwood, Patchouli, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Pegasus | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=sweet,woody,powdery | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Heliotrope, Cumin, Bergamot | mid=Bitter Almond, Lavender, Jasmine | base=Vanilla, Sandalwood, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Phantom | brand=Paco Rabanne | gender=male | type=western | season=All Seasons | scent_tags=fresh,sweet,citrus | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Lavender, Lemon Zest, Amalfi Lemon | mid=Lavender, Apple, Smoke, Earthy Notes, Patchouli | base=Vanilla, Lavender, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1400EGP stock=100\n- Pi | brand=Givenchy | gender=male | type=western | season=Winter | scent_tags=sweet,woody,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Mandarin Orange, Tarragon, Rosemary, Basil | mid=Anise, Neroli, Geranium, Lily of the Valley | base=Vanilla, Almond, Tonka Bean, Benzoin, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Pure XS | brand=Paco Rabanne | gender=male | type=western | season=Winter | scent_tags=spicy,sweet,leather | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Ginger, Green Accord, Thyme, Bergamot, Grapefruit | mid=Vanilla, Cinnamon, Leather, Liquor, Apple | base=Myrrh, Sugar, Cedar, Woody Notes, Cashmeran, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,fresh | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Bergamot, Pepper | mid=Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi | base=Ambroxan, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sauvage Elixir | brand=Dior | gender=male | type=western | season=Winter | scent_tags=spicy,woody,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Grapefruit, Cinnamon, Nutmeg, Cardamom | mid=Lavender | base=Licorice, Sandalwood, Amber, Patchouli, Haitian Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Scandal Pour Homme | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,woody,citrus | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Clary Sage, Mandarin Orange | mid=Caramel, Tonka Bean | base=Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Scent Aura | brand=Perfamix | gender=male | type=store_own_made | season=Winter | scent_tags=leather,woody,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Mandarin Orange | mid=Ginger, Lavender, Rose | base=Leather, Woody Notes, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Shohra Grey | brand=Arabian Oud | gender=male | type=oriental | season=All Seasons | scent_tags=woody,spicy,oud | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Bergamot, Lavender, Pink Pepper | mid=Cardamom, Geranium, Patchouli | base=Cedar, Amber, Agarwood (Oud), Musk | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Side Effect | brand=Initio | gender=male | type=niche | season=Winter | scent_tags=sweet,smoky,spicy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Cinnamon, Bark | mid=Tobacco, Rum | base=Vanilla, Saffron, Sandalwood, Hedione | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Silver Scent | brand=Jacques Bogart | gender=male | type=western | season=Winter | scent_tags=fresh,spicy,woody | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange Blossom, Lemon | mid=Lavender, Cardamom, Nutmeg, Coriander, Rosemary, Geranium | base=Litchi, Tonka Bean, Teak Wood, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1250EGP stock=100\n- Spice Bomb | brand=Viktor & Rolf | gender=male | type=western | season=Winter | scent_tags=spicy,heavy,leather | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pink Pepper, Elemi, Bergamot, Grapefruit | mid=Cinnamon, Saffron, Paprika | base=Tobacco, Leather, Vetiver, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Spicy Oud | brand=Perfamix | gender=male | type=store_own_made | season=Winter | scent_tags=oud,floral,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Rose, Jasmine, Lily of the Valley | mid=Saffron, Agarwood (Oud) | base=Musk, Amber, Agarwood (Oud) | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Stronger With You Absolutely | brand=Armani | gender=male | type=western | season=Winter | scent_tags=sweet,woody,heavy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Rum, Elemi, Bergamot | mid=Lavender, Davana | base=Chestnut, Madagascar Vanilla, Cedar, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Stronger With You Amber | brand=Armani | gender=male | type=western | season=Winter | scent_tags=sweet,woody | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Lavender | mid=Amber | base=Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Stronger With You Freeze | brand=Armani | gender=male | type=western | season=Summer | scent_tags=fresh,citrus,spicy | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Lime, Ginger, Mandarin Orange, Apple | mid=Lavender, Cardamom, Bourbon Geranium, Sage | base=Amberwood, Glace Chestnut, Marron Glace, Bourbon Vanilla, Guaiac Wood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1600EGP stock=100\n- Stronger With You Intensely | brand=Armani | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,heavy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pink Pepper, Juniper, Violet | mid=Toffee, Cinnamon, Lavender, Sage | base=Vanilla, Tonka Bean, Amber, Suede | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1450EGP stock=100\n- Stronger With You Leather | brand=Armani | gender=male | type=western | season=Winter | scent_tags=leather,spicy,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Elemi, Chestnut, Spices | mid=Lavender, Sage | base=Leather, Vanilla, Oud, Guaiac Wood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1650EGP stock=100\n- Stronger With You Oud | brand=Armani | gender=male | type=western | season=Winter | scent_tags=oud,sweet,woody | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Lavender | mid=Agarwood (Oud) | base=Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Stronger With You Sandalwood | brand=Armani | gender=male | type=western | season=Winter | scent_tags=woody,spicy,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Saffron | mid=Lavender, Chestnut | base=Sandalwood, Vanilla, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1665EGP stock=100\n- Stronger With You Tobacco | brand=Armani | gender=male | type=western | season=Winter | scent_tags=spicy,sweet,smoky | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pink Pepper, Black Pepper, Cardamom, Elemi, Sage | mid=Tobacco, Cinnamon Leaf, Chestnut, Chili Pepper | base=Bourbon Vanilla, Amber, Guaiac Wood, Benzoin | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sultan Al Otoor | brand=Arabian Oud | gender=male | type=oriental | season=Winter | scent_tags=spicy,oud,woody | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Saffron, Cinnamon, Nutmeg | mid=Rose, Sandalwood, Cedar | base=Agarwood (Oud), Amber, Musk | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Terre d'Hermes | brand=Hermes | gender=male | type=western | season=All Seasons | scent_tags=woody,citrus,spicy | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange, Grapefruit | mid=Pepper, Pelargonium, Flint | base=Vetiver, Cedar, Patchouli, Benzoin | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- The One for Men | brand=Dolce & Gabbana | gender=male | type=western | season=Winter | scent_tags=spicy,woody,citrus | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Grapefruit, Coriander, Basil | mid=Ginger, Cardamom, Orange Blossom | base=Tobacco, Amber, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Tobacco Vanille | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=sweet,smoky,spicy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Tobacco Leaf, Spicy Notes | mid=Tobacco Blossom, Vanilla, Cacao, Tonka Bean, Ginger | base=Dried Fruits, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1650EGP stock=100\n- Tuxedo | brand=Yves Saint Laurent | gender=male | type=western | season=Winter | scent_tags=floral,spicy,woody | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Violet Leaf, Bergamot, Coriander | mid=Rose, Black Pepper, Lily of the Valley | base=Patchouli, Ambergris, Bourbon Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Ultra Male | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,fruity,spicy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pear, Lavender, Mint, Bergamot, Lemon | mid=Cinnamon, Clary Sage, Caraway | base=Black Vanilla Husk, Amber, Patchouli, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1500EGP stock=100\n- Uomo | brand=Valentino | gender=male | type=western | season=Winter | scent_tags=leather,sweet,woody | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Bergamot, Myrtle | mid=Hazelnut, Chocolate, Roasted Coffee Beans | base=Leather, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Vanilla Sex | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=sweet,heavy,powdery | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Bitter Almond | mid=Vanilla, Floral Notes | base=Vanilla Absolute, Ultravanil, Tonka Bean, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1650EGP stock=100\n- Wanted | brand=Azzaro | gender=male | type=western | season=All Seasons | scent_tags=fresh,spicy,woody | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Lemon, Ginger, Lavender, Mint | mid=Apple, Juniper, Guatemalan Cardamom, Geranium | base=Tonka Bean, Amberwood, Haitian Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Wanted by Night | brand=Azzaro | gender=male | type=western | season=Winter | scent_tags=spicy,sweet,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Mandarin Orange, Lavender, Lemon | mid=Fruity Notes, Incense, Red Cedar, Cumin | base=Tobacco, Vanilla, Cedar, Leather, Benzoin, Iso E Super, Cypress, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- wasal | brand=Widian | gender=male | type=niche | season=Winter | scent_tags=floral,spicy,oud | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom, Black Pepper, Saffron | mid=Rose, Geranium, Floral Notes | base=Agarwood (Oud), Amber, Sandalwood, Vanilla, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 7,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "criteria": [
+      {
+        "criterion": "States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers one or two named stocked alternatives.",
+        "met": true,
+        "evidence": "turn 1: Says the perfume is not available and offers 1 Million, which is stocked."
+      },
+      {
+        "criterion": "Does not claim a lookalike without support; similarity wording is honest.",
+        "met": true,
+        "evidence": "turn 2: Says there is no data to compare its scent and does not claim an alternative is a lookalike."
+      },
+      {
+        "criterion": "Handles the customer's irritation without canned apologies.",
+        "met": true,
+        "evidence": "turn 2: Confirms directly that the perfume is unavailable and moves to finding a suitable alternative; no canned apology."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 3,
+        "severity": "high",
+        "category": "understanding",
+        "expected": "Use the customer's stated preference for smoky and fruity scents to select relevant options, or explain that no single option matches both and offer suitable alternatives by preference.",
+        "actual": "Pure XS: فيه ريحة توابل ومسكر وريحته جلدية. رجالي. Man in Black: فيه ريحة توابل وريحته جلدية ومسكر. رجالي.",
+        "why": "Neither perfume's first three stored scent tags include smoky or fruity, so these recommendations do not address the customer's explicit scent preference."
+      },
+      {
+        "turn": 4,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Answer which of the two is closer, or say neither is supported as smoky/fruity and suggest a better-matching option. Then give the requested price.",
+        "actual": "For both perfumes: الصفة دي مش مؤكدة في طابعه المسجل. ... followed by the size prices.",
+        "why": "The prices are correct, and the assistant is transparent about the scent data, but it does not answer which one is closer or help the customer find an alternative matching smoky and fruity."
+      },
+      {
+        "turn": 2,
+        "severity": "low",
+        "category": "naturalness",
+        "expected": "Acknowledge the unavailability without repetitive phrasing.",
+        "actual": "أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها...",
+        "why": "The response is direct and not a canned apology, but repeating للأسف after turn 1 is slightly repetitive."
+      }
+    ],
+    "deterministic_review": [],
+    "summary": "The assistant correctly stated that Club de Nuit Intense is unavailable, offered a stocked alternative, and handled the customer's irritation without a canned apology. Its main miss was recommending and comparing perfumes that do not match the customer's stated smoky-and-fruity preference, although the quoted prices were accurate and it stopped appropriately when the customer said they would think about it."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "judge turn 3 high understanding: Neither perfume's first three stored scent tags include smoky or fruity, so these recommendations do not address the customer's explicit scent preference."
+  ],
+  "usage": {
+    "api_calls": 21,
+    "by_role": {
+      "seller": {
+        "calls": 15,
+        "cost_usd": "0.005433930"
+      },
+      "simulator": {
+        "calls": 5,
+        "cost_usd": "0.0004929"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.0033372"
+      }
+    },
+    "prompt_tokens": 166810,
+    "cached_tokens": 117008,
+    "completion_tokens": 3954,
+    "reasoning_tokens": 2237,
+    "cost_usd": "0.009264030",
+    "api_seconds": 69.7,
+    "failed_calls": []
+  }
+}

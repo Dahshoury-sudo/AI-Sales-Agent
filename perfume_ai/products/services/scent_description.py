@@ -25,7 +25,9 @@ _BY_TAG_ALIAS = {
     _NORMALIZE(alias): tag for tag, aliases in TAG_ALIASES.items() for alias in aliases
 }
 _TAG_PATTERN = re.compile(
-    r"(?<!\w)(?:[وبل]?ال|[وب])?(?P<alias>"
+    # "ف" joins a contrast clause ("أما Alexandria II فخشبي"); without it the label went unread and
+    # a correct description was rejected (simulation S05 replay t4).
+    r"(?<!\w)(?:[وبلف]?ال|[وبف])?(?P<alias>"
     + "|".join(re.escape(alias) for alias in sorted(_BY_TAG_ALIAS, key=len, reverse=True))
     + r")(?!\w)"
 )
@@ -33,7 +35,12 @@ _NOTE_SCOPE = re.compile(
     r"(?<!\w)(?:[وبل]?ال|[وب])?(?:نوت(?:ه|ات|س)?(?:ه|ها|هم|هن)?|مكونات(?:ه|ها|هم|هن)?|"
     r"تركيب(?:ه|ته|تها)|افتتاحي(?:ه|ته)|قلب|قاعد(?:ه|ته)|طبقات|"
     r"notes?|ingredients?|composition|opening|drydown|layers?)(?!\w)|"
-    r"\b(?:top|middle|base|heart)\s+notes?\b|\bcontains?\b|بيحتوي\s+علي"
+    r"(?<![a-z])(?:top|middle|base|heart)\s+notes?\b|\bcontains?\b|بيحتوي\s+علي|"
+    # "الـ top/middle/base بتاعته إيه؟" and "الـ dry down" name the note layers without the word
+    # "notes"; the stored notes they ask for were rejected as unsolicited (simulation S02 t4).
+    # Normalising drops the tatweel, so "الـdry down" arrives as "الdry down": a Latin layer word may
+    # follow an Arabic article with no word boundary (S02 round 2, t7).
+    r"(?<![a-z])(?:top|middle|base|heart)\s*(?:/|,|و|and)?\s*(?:top|middle|base|heart)\b|(?<![a-z])dry\s*-?\s*down\b"
 )
 _SCENT_SCOPE = re.compile(
     r"(?:ريح(?:ه|ته|تها|تهم)|ريحتهم|ريحتها|الريحه)\s*(?:عامل(?:ه)?\s*)?(?:ايه|ازاي|كيف)|"
@@ -57,14 +64,24 @@ _NOTE_OPT_OUT = re.compile(
     r"(?:\s+(?:عايز(?:ه)?|عاوز(?:ه)?|تذكر|تقول|تفاصيل|شرح|وصف|want|mention|"
     r"tell|explain|details|about|the|any|a|scent|smell|fragrance)){0,5}\s*$"
 )
-_UNCERTAIN = re.compile(r"محتاج(?:ه)?\s+تاكيد|مش\s+(?:مسجل|متاكد|معروف)|غير\s+(?:مسجل|متوفر)|ماقدرش|مقدرش|لا\s+توجد|not\s+(?:recorded|known)|needs?\s+confirmation")
+_UNCERTAIN = re.compile(r"محتاج(?:ه)?\s+تاكيد|مش\s+(?:مسجل|متسجل|متاكد|مؤكد|موكد|معروف)|غير\s+(?:مسجل|متوفر)|ماقدرش|مقدرش|لا\s+توجد|not\s+(?:recorded|known)|needs?\s+confirmation")
+# Owner decision (2026-11-12): a trait missing from the saved labels is unknown, not absent, so
+# "لا، مش مسكر" about a perfume with no sweet label is an inference (simulation S07 t5). The one
+# exception is a recorded opposite: a perfume labelled light is not heavy.
+_OPPOSITE_TAGS = {"heavy": {"light"}, "light": {"heavy"}}
+# Character words no saved label can support: warm, sharp, soft, luxurious, cool. "Body… ممكن يكون
+# أدفى في طابعه" (simulation S07 t3) and "التوابل فيه دافية، مش حادة" (S14 t5) were the judge's
+# critical invented claims; the checker had no word for them, so they passed.
+_UNLABELLED_CHARACTER = re.compile(
+    r"(?<!\w)[وف]?(?:ال)?(?:دافي|دافيه|دافئ|دافئه|ادفي|ادفا|ادفئ|دفا|دفء|حاد|حاده|ناعم|ناعمه|انعم|"
+    r"فخم|فخمه|افخم|بارد|بارده|ابرد|warm|warmer|sharp|soft|softer|cozy|luxurious)(?!\w)")
 _OCCASION_NEGATIVE = re.compile(
     r"(?<!\w)(?:و)?(?:مش|غير|لا|بدون|من غير|not|no|without)"
     r"(?:\s+(?:مناسب(?:ه)?|بيناسب|ينفع|صالح|suitable|suited|appropriate|good|for|the)){0,3}\s*$"
 )
 _OCCASION_SCOPE = re.compile(
     r"(?<!\w)(?:[وبل]?ال|[وب])?(?:مناسب(?:ه|ته|تها|تهم|ات(?:ه|ها|هم)?)?|"
-    r"استخدام(?:ه|ها|هم)?|ينفع|بينفع|يناسب|بيناسب|البس(?:ه|ها)?|استخدم(?:ه|ها)|"
+    r"استخدام(?:ه|ها|هم)?|ينفع|بينفع|يناسب|بيناسب|انسب|البس(?:ه|ها)?|استخدم(?:ه|ها)|"
     r"occasions?|suitability|suitable|suited|appropriate|wear|use|good\s+for)(?!\w)"
 )
 _OCCASION_QUERY = re.compile(
@@ -205,7 +222,10 @@ def occasion_requested(message, *, product_names=()):
             continue
         if _OCCASION_QUERY.search(text) or re.fullmatch(
             r"\s*(?:(?:و|هو|هي|ده|دي|طب|طيب|هل|is|are|it|its|this|that|the)\s*)*", before,
-        ):
+        ) or re.search(r"[؟?]", str(message or "")):
+            # A suitability phrase inside a question sentence is a question whatever precedes it.
+            # "طب وإيروس ينفع للشغل ولا تقيل؟" names the perfume in Arabic, which `_without_names`
+            # cannot strip, and the answer was rejected as unrequested (simulation S08 t3).
             return True
     return False
 
@@ -233,7 +253,9 @@ def _occasion_claims(segment, recorded_notes=()):
             if _SEASON_OCCASION_ALIAS.fullmatch(text[start:end]):
                 continue
             negative = bool(_OCCASION_NEGATIVE.search(text[max(0, start - 50):start]))
-            uncertain = bool(_UNCERTAIN.match(text[end:].lstrip()))
+            # A hedge later in the same clause covers every use named before it: "للاستخدام اليومي
+            # والكاجوال محتاجة تأكيد" names two aliases before its "محتاجة تأكيد".
+            uncertain = bool(_UNCERTAIN.search(text[end:]))
             yield category, negative, uncertain
 
 
@@ -400,6 +422,100 @@ def _character_text(segment, recorded=()):
     return "".join(masked)
 
 
+# Labels that are also a material. "مفيهوش عود" is a statement about the stored notes, so it is
+# supported when notes are recorded and none of them is that material.
+_MATERIAL_NOTES = {"oud": ("oud", "agarwood", "عود"), "musky": ("musk", "مسك"), "leather": ("leather", "جلد")}
+
+
+def _absence_in_notes(row, tag):
+    words = _MATERIAL_NOTES.get(tag)
+    notes = " ".join(str(note) for note in (row.get("notes") or ()) if note).lower()
+    return bool(words and notes.strip()) and not any(word in notes for word in words)
+
+
+_PROMINENCE = re.compile(r"(?:هو\s+|هي\s+)?(?:اوضح|اقوي|الغالب|غالب|طاغي|طاغيه|ابرز|باين\s+اكتر|واضح\s+اكتر)(?!\w)")
+
+
+# A question that names a note layer: "الـtop", "base", "الـdry down", "الافتتاحية", "القاعدة".
+LAYER_QUESTION = re.compile(r"(?<![a-z])(?:top|middle|heart|base)(?![a-z])|dry\s*-?\s*down|دراي\s*داون|افتتاحي|قاعد")
+
+
+# A trait asked about by name gets its noun in the answer only when that noun is not itself a
+# label alias: "التوابل مش مؤكدة" would read back to the claim checker as a spicy claim.
+_TRAIT_NOUNS = {"sweet": "الحلاوة", "fresh": "الانتعاش", "woody": "ريحة الخشب", "heavy": "التقل",
+                "light": "الخفة"}
+# A trait the customer is asking for ("وعايز حاجة مسكرة") is a wish, not a question about this perfume.
+_TRAIT_WISH = re.compile(r"(?<!\w)و?(?:عايز|عاوز|عايزه|عاوزه|محتاج|محتاجه|بحب|بدور|نفسي|رشح\w*|اقترح\w*|"
+                         r"want|need|looking|recommend|suggest)(?!\w)[^.،,]*$")
+
+
+def asked_attribute_answers(text, product, *, traits=True):
+    """Direct answers for the ingredients and traits a yes/no question names, or `[]`.
+
+    "212 VIB Man فيه عود أو ريحته مسكرة؟" got every recorded note and no answer to either question,
+    so the customer had to ask again (simulation S10 round 2, t4). An ingredient is answered from
+    the stored notes. A trait is answered from the saved labels, and one the labels do not record
+    is unconfirmed, never absent (owner decision 4, 2026-11-12).
+    """
+    text = _NORMALIZE(text or "")
+    from .reply_sanitizer import _NOTE_ALIASES
+    recorded = [field for field in (product.top_notes, product.middle_notes, product.base_notes) if field]
+    tags = _all_tags(product.scent_tags)
+    answers, materials = [], set()
+    if recorded and not _NOTE_SCOPE.search(text):
+        known = _note_aliases()
+        for match in _ingredient_mentions(text, recorded):
+            # "ورد" (rose) begins with the letter of the conjunction: stripped blindly it became "رد",
+            # and the reply said "مفيش رد ضمن نوتاته" (simulation S15 round 2 full 2, t3).
+            raw = match.group()
+            stripped = re.sub(r"^(?:[وبل]?ال|[وب])", "", raw)
+            word = raw if raw in known and stripped not in known else stripped
+            if _NOTE_OPT_OUT.search(text[max(0, match.start() - 40):match.start()]):
+                continue
+            aliases = next((values for values in _NOTE_ALIASES.values()
+                            if word in {_NORMALIZE(value) for value in values}), (word,))
+            materials.update(tag for tag, names in _MATERIAL_NOTES.items()
+                             if any(_NORMALIZE(name) in {_NORMALIZE(a) for a in aliases} for name in names))
+            homes = [(label, value) for label, value in (("الـTop Notes", product.top_notes),
+                                                          ("الـMiddle Notes", product.middle_notes),
+                                                          ("الـBase Notes", product.base_notes))
+                     if value and any(re.search(r"(?<!\w)" + re.escape(_NORMALIZE(alias)) + r"(?!\w)", _NORMALIZE(value))
+                                      for alias in aliases)]
+            if not homes:
+                answers.append(f"مفيش {word} ضمن نوتاته المسجلة")
+            elif LAYER_QUESTION.search(text):
+                # "فلفل في الـbase؟ اللي أعرفه إنه في الـtop": the layer it is recorded in is the answer,
+                # whatever layer the customer believed (simulation S02 round 2, t4).
+                answers.append(f"{word} مسجل عندنا في {homes[0][0]}: {homes[0][1]}")
+            else:
+                answers.append(f"فيه {word} في نوتاته")
+    for tag, start, _end, _negative in (_tag_mentions(text) if traits else ()):
+        if tag in materials or _TRAIT_WISH.search(text[max(0, start - 40):start]):
+            continue
+        if tag in tags:
+            answers.append(f"طابعه المسجل {_PHRASES[tag]}")
+        elif tag in _MATERIAL_NOTES:
+            # A material label ("ريحته عودي؟") the labels lack is answered from the notes, as an
+            # ingredient would be.
+            word = _MATERIAL_NOTES[tag][-1]
+            present = any(re.search(r"(?<!\w)" + re.escape(_NORMALIZE(name)) + r"(?!\w)", _NORMALIZE(" ".join(recorded)))
+                          for name in _MATERIAL_NOTES[tag])
+            if recorded:
+                answers.append(f"فيه {word} في نوتاته" if present else f"مفيش {word} ضمن نوتاته المسجلة")
+        else:
+            noun = _TRAIT_NOUNS.get(tag, "الصفة دي")
+            answers.append(f"{noun} مش مؤكدة في طابعه المسجل")
+    answers = list(dict.fromkeys(answers))
+    if answers and any("مش مؤكدة" in answer for answer in answers) and tags:
+        answers.append("وصفه المسجل: " + describe_scent(tags).replace("ريحته ", ""))
+    asked_traits = {tag for tag, _, _, _ in _tag_mentions(text)} if traits else set()
+    if len(asked_traits) >= 2 and re.search(r"(?<!\w)(?:ولا|او|اكتر|اوضح|اقوي|غالب\w*)(?!\w)", text):
+        # "ريحته سويت قوي ولا التوابل والخشب أوضح؟" asks which trait leads; the labels say which ones
+        # are there, not which is stronger (simulation S14 round 2 full 4, t5/t7).
+        answers.append("ومقدرش أحدد أنهي أوضح فيهم من البيانات اللي عندي")
+    return answers
+
+
 def _unsolicited_notes(segment, recorded):
     issues = []
     if _NOTE_SCOPE.search(segment) and not _UNCERTAIN.search(segment):
@@ -447,12 +563,36 @@ def description_issues(reply, facts, *, message=None, history=None,
             required or wants_scent or (actual_prose and not trait_only and not note_only)
         )
         problems = []
+        for word in _UNLABELLED_CHARACTER.finditer(character):
+            if not _UNCERTAIN.search(character[max(0, word.start() - 40):word.end() + 40]):
+                problems.append("character beyond the saved labels is not recorded: " + word.group())
+                break
+        recorded = set(row.get("scent_tags") or ())
+        for tag, start, end, negative in mentions:
+            if (negative and tag not in recorded and not (_OPPOSITE_TAGS.get(tag, set()) & recorded)
+                    and not _absence_in_notes(row, tag)
+                    and not _UNCERTAIN.search(character[max(0, start - 40):end + 40])):
+                problems.append("an unrecorded trait is not confirmed absent; say it is not confirmed: " + tag)
+            # The other half of owner decision 4: a label that IS recorded is not "unconfirmed". "الجلدية
+            # مش مؤكدة في طابعه… والتوابل مش مؤكدة" about Pure XS, labelled leather and spicy
+            # (simulation S14 round 2 batch 3, t6).
+            if tag in recorded and not negative and _UNCERTAIN.match(character[end:end + 30].lstrip()):
+                problems.append("a recorded label is stated as unconfirmed; it is recorded: " + tag)
+            # "المسكر أوضح في طابعه، والجلدي موجود كمان": the labels say which traits are there, not
+            # which leads (simulation S14 round 2 full 4, t7, critical).
+            if _PROMINENCE.match(character[end:end + 20].lstrip()) \
+                    and not _UNCERTAIN.search(character[max(0, start - 40):end + 60]):
+                problems.append("which trait is stronger is not recorded: " + tag)
         if excludes_scent and actual_prose and not trait_only:
             problems.append("the current question explicitly excludes a scent description")
         if segment and not allows_notes:
             problems.extend(_unsolicited_notes(segment, row.get("notes", ())))
         occasion_claims = list(_occasion_claims(segment, row.get("notes", ())))
-        if occasion_claims and not occasion_requested(request_text):
+        # The scoped request text is normalised without its question mark; when nothing was scoped
+        # (one subject, or a name written in Arabic), the raw message still carries it.
+        asked_occasion = occasion_requested(request_text) or (
+            request_text == _NORMALIZE(message) and occasion_requested(message, product_names=product_names))
+        if occasion_claims and not asked_occasion:
             problems.append("occasion suitability requires an explicit current question")
         else:
             saved_occasions = occasions.occasion_groups(row.get("occasion", ""))
@@ -461,7 +601,9 @@ def description_issues(reply, facts, *, message=None, history=None,
                     continue
                 if negative and category in saved_occasions:
                     problems.append("do not deny a saved occasion: " + category)
-                elif category not in saved_occasions:
+                elif category not in saved_occasions and not (negative and saved_occasions):
+                    # A denial of an unrecorded use ("مناسبته المسجلة الخروجات، مش الشغل") is true,
+                    # and rejecting it left the customer with a non-answer (simulation S08 t3).
                     problems.append("occasion is not recorded; do not invent it: " + category)
         if full_description:
             expected_tags = selected_tags(row.get("scent_tags"))

@@ -1,0 +1,85 @@
+[
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 6,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 5
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score commerce_correctness=5",
+      "judge turn 6 high question: It ignores the explicit total question and asks for a size already specified in the immediately preceding recommendation, where both bottles were quoted at 50 m",
+      "judge turn 8 high commerce: The customer asked whether the pair costs 1500; that is not explicit consent to order. The assistant moved into checkout and requested personal and delivery det"
+    ],
+    "cost_usd": "0.016268155",
+    "api_calls": 30
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003697705",
+    "api_calls": 16
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.009382410",
+    "api_calls": 36
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 8,
+      "knows_when_to_stop": 5,
+      "naturalness": 6,
+      "emotional_handling": 6,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 6 high unsupported_promise: follow_up: 'هيتواصل معاك'",
+      "judge score knows_when_to_stop=5",
+      "judge turn 6 high commerce: The assistant confirms the order but does not say it has transferred the conversation to the team; the follow-up claim is therefore unsupported.",
+      "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence."
+    ],
+    "cost_usd": "0.013418955",
+    "api_calls": 33
+  }
+]

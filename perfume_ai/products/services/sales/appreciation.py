@@ -19,6 +19,7 @@ also bypass `ai.classifier`'s rule that a named past purchase must load real pro
 the guard against describing a perfume from memory.
 """
 
+import re
 from dataclasses import dataclass
 
 from . import naming, objection
@@ -35,6 +36,9 @@ _PHRASES = (
     "تسلم ايدك", "تسلم ايديك", "ربنا يكرمك", "من احسن العطور", "احسن عطر",
     "مبسوط بيه", "مبسوط بالعطر", "الناس بتسال عليه", "كلهم سالوني",
     "هاجي تاني", "هطلب تاني", "هكرر", "بشكركم", "شغلكم حلو", "تعاملكم حلو",
+    # Praise of the seller rather than a perfume ("ذوقك حلو", S05 t6; "ترشيحاتك عجباني", S01 t7).
+    "ذوقك حلو", "ذوقك جميل", "ذوقك عالي", "ذوقك تحفه", "ترشيحاتك عجباني", "ترشيحاتك حلوه",
+    "ترشيحك حلو", "ترشيحك عجبني", "عجبني ترشيحك", "انت شاطر", "حضرتك شاطر", "مفيد جدا",
 )
 
 # 🔴 Negated praise is a complaint, and thanking someone for one is the worst possible reply.
@@ -105,6 +109,22 @@ def detect(message, history=None):
 # 🔴 Thanks and nothing else — no question, not even "أنهي عطر؟". That is the store owner's explicit
 # call: asking which perfume it was reads as working the customer for a lead when they were only
 # being nice. We accept never learning which perfume they meant.
+_CLOSING_WORDS = re.compile(r"شكر|متشكر|ميرسي|تسلم|مع السلامه|باي|\bbye\b|thanks?|thx", re.I)
+_STILL_ASKING = re.compile(r"[؟?]|بكام|عايز|عاوز|ممكن|ابعت|هاخد|اطلب|ازاي|ليه|فين|امتي|how|what|\bel\b", re.I)
+
+
+def thanks_or_praise(message):
+    """Any thanks or praise, even beside an objection such as "هفكر"."""
+    text = normalize_arabic(message or "")
+    return bool(_CLOSING_WORDS.search(text) or any(phrase in text for phrase in _PHRASES))
+
+
+def closes_conversation(message):
+    """"تمام شكراً" / "لا شكراً، كنت بتفرج بس": thanks or goodbye with nothing new asked."""
+    text = normalize_arabic(message or "")
+    return bool(_CLOSING_WORDS.search(text)) and not _STILL_ASKING.search(text)
+
+
 RULES = """
 العميل بيمدح العطر أو بيشكرك:
 - اشكره في جملة قصيرة مصرية طبيعية، زي "تسلم يا فندم، مبسوطين إنه عجبك." من غير إيموجي أو مبالغة أو إعادة وصف العطر وأداءه.

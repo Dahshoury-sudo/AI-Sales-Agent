@@ -1,0 +1,237 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "turn 6 high unknown_latin_token: 'dry' is not part of any catalogue product or brand name",
+      "turn 6 high unknown_latin_token: 'down.' is not part of any catalogue product or brand name"
+    ],
+    "cost_usd": "0.007620735",
+    "api_calls": 26
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 5,
+      "question_quality": 4,
+      "knows_when_to_stop": 5,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "judge score memory=5",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=5",
+      "judge score naturalness=5",
+      "judge score commerce_correctness=4",
+      "judge turn 4 high understanding: Phantom had not been selected, and this does not answer the customer's correction about the brother's scent preference.",
+      "judge turn 7 high understanding: The customer had selected the 212 fragrances; asking about Phantom is a wrong reference and an irrelevant checkout question.",
+      "judge turn 9 critical commerce: The internal order list is empty and the customer has not provided the delivery details; the reply makes an unsupported order-status claim."
+    ],
+    "cost_usd": "0.017748440",
+    "api_calls": 31
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 6,
+      "memory": 6,
+      "question_quality": 4,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 7,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "turn 4 critical repeated_reply: 100% identical to an earlier reply: 'تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟'",
+      "judge score question_quality=4",
+      "judge score commerce_correctness=4",
+      "judge turn 4 high memory: This repeats the same irrelevant question after the customer explicitly clarified that they were asking about exchange.",
+      "judge turn 5 critical commerce: The two-day window and customized-mix exclusion are supported, but «زجاجة ستور خاصة» is not a configured eligible category and the answer overstates eligibility",
+      "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented.",
+      "criterion unmet: Asks at most one high-value question before recommending."
+    ],
+    "cost_usd": "0.013610425",
+    "api_calls": 31
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.006679070",
+    "api_calls": 23
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 10,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 3,
+      "question_quality": 3,
+      "knows_when_to_stop": 6,
+      "naturalness": 4,
+      "emotional_handling": 4,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "turn 4 high unsupported_product_claim: scent:212 vib man:leather",
+      "turn 4 high unsupported_product_claim: scent:212 vib man:woody",
+      "turn 8 high unsupported_product_claim: scent:fresh vibe:sweet",
+      "turn 8 high unsupported_product_claim: note:white:amber",
+      "turn 8 high unsupported_product_claim: note:white:musk",
+      "judge score understanding_accuracy=4",
+      "judge score memory=3",
+      "judge score question_quality=3",
+      "judge score naturalness=4",
+      "judge score emotional_handling=4",
+      "judge score commerce_correctness=4",
+      "judge turn 3 high memory: The customer had already rejected both and now requires clearly non-sweet options. Repeating them does not concretely correct the recommendation."
+    ],
+    "cost_usd": "0.028326575",
+    "api_calls": 47
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 6,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "turn 5 critical repeated_reply: 100% identical to an earlier reply: '212 NYC Man\nريحته فريش ومنعش وفيه ريحة حمضيات ومسكي.\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه. أعل'",
+      "judge score naturalness=5",
+      "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and explicit con"
+    ],
+    "cost_usd": "0.018153310",
+    "api_calls": 36
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 10
+    },
+    "reasons": [
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.013409865",
+    "api_calls": 35
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "fail",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "judge score question_quality=5",
+      "criterion unmet: Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-ho"
+    ],
+    "cost_usd": "0.009487920",
+    "api_calls": 27
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 3,
+      "memory": 2,
+      "question_quality": 4,
+      "knows_when_to_stop": 2,
+      "naturalness": 3,
+      "emotional_handling": 2,
+      "commerce_correctness": 3
+    },
+    "reasons": [
+      "turn 6 critical repeated_reply: 100% identical to an earlier reply: 'راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيز'",
+      "turn 7 critical repeated_reply: 100% identical to an earlier reply: 'راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيز'",
+      "turn 8 critical repeated_reply: 100% identical to an earlier reply: 'راجع معايا تفاصيل الطلب:\n\nالاسم: كريم سامي\nالموبايل: 01011223344\nالعنوان: 12 شارع مصدق، الدقي، الجيز'",
+      "turn 9 critical false_denial: told the customer 'Sauvage' is not available, but it is active in the catalogue with a sellable bottle",
+      "conversation high final_order_missing: expected one confirmed order, found 0",
+      "judge score understanding_accuracy=3",
+      "judge score memory=2",
+      "judge score question_quality=4",
+      "judge score knows_when_to_stop=2",
+      "judge score naturalness=3",
+      "judge score emotional_handling=2",
+      "judge score commerce_correctness=3"
+    ],
+    "cost_usd": "0.009452665",
+    "api_calls": 29
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002873025",
+    "api_calls": 6
+  }
+]

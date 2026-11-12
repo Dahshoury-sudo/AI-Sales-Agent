@@ -1,0 +1,846 @@
+{
+  "id": "S07_gift",
+  "title": "Gift buyer who does not know the recipient's taste",
+  "persona": "gift_buyer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات",
+      "reply": "بتحب الفريش، الخشبي، العود، ولا المسكر؟",
+      "seconds": 362.41,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "female"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "مش متأكد بصراحة، هي هادية وكلاسيك ومش بتحب الحاجات المسكرة أوي.. ترشحلي حاجة آمنة كهدية؟",
+      "reply": "فاهم حيرتك، خصوصًا إنها هدية ومش عارف ذوقها بالظبط. أقدر أضيّق الاختيار لحاجة هادية وكلاسيك ومش مسكرة، بس عشان أرشح عطر مناسب محتاج أعرف اسم العطر اللي بتفكر فيه أو أراجعلك اختيار من الستور.",
+      "seconds": 15.6,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": {
+        "kind": "not_sure",
+        "matched": [
+          "مش متاكد"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [],
+        "scent_evidence": [
+          {
+            "text": "مش بتحب الحاجات المسكرة أوي",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "scent_match": "all"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [],
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "scent_match": "all",
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "sweet"
+        ],
+        "scent_match": "all"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "طب رشحلي إنت حاجة من الستور تكون آمنة ومناسبة لذوقها، ولو مجتش على ذوقها أعمل إيه؟",
+      "reply": "ممكن Amour، بس بصراحة ريحته فيها فواكه ومسكر وزهور، فمش هقدر أضمن إنها هتعجبها. لو مجتش على ذوقها، اكتبلي وهنشوف إيه المتاح بخصوص الاستبدال.",
+      "seconds": 6.11,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": true,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": null
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_open": true,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": null,
+        "scent_tags": [],
+        "scent_match": "all",
+        "gender": "female",
+        "brand_strict": false,
+        "excluded_scent_tags": []
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Amour",
+          "Divine Kiss",
+          "Honey Scent",
+          "Rose Tobacco",
+          "Veloura",
+          "Velvet Sugar",
+          "Lollipop",
+          "Fruity Twist",
+          "Golden Vanilla",
+          "212 Sexy Women",
+          "Sexy Graffiti",
+          "L'Eau d'Issey",
+          "Olympea",
+          "Euphoria",
+          "Elie Saab",
+          "Party",
+          "Paris Hilton",
+          "Prada Paradox",
+          "Bright Crystal",
+          "Body",
+          "Her",
+          "Black Opium",
+          "Bombshell",
+          "Poison Girl",
+          "Billie Eilish",
+          "Pink Sugar",
+          "J'adore",
+          "Bamboo",
+          "Bloom",
+          "Rush",
+          "Good Girl Supreme",
+          "Goddess",
+          "Jumana",
+          "Girl of Now",
+          "Khamrah",
+          "Khamrah Qahwa",
+          "Divine",
+          "Addict",
+          "Roberto Cavalli",
+          "Oud",
+          "Rumba",
+          "Power of You",
+          "Scandal by Night",
+          "So Scandal!",
+          "Sweet Coffin",
+          "Si",
+          "Si Passion Red",
+          "Chance",
+          "Pink",
+          "Fantasy",
+          "Fantasy Bloom",
+          "Crystal Noir",
+          "Flowerbomb",
+          "Fleur Musc",
+          "Very Sexy Now",
+          "Viva la Juicy",
+          "Cassilia",
+          "Crazy in love",
+          "Coco Mademoiselle",
+          "Vanilla 28",
+          "La Belle",
+          "La Vie Est Belle",
+          "La Nuit",
+          "Lolita",
+          "Libre",
+          "Lady Pink",
+          "Lady Million",
+          "Roses Vanille",
+          "Coco Vanille",
+          "Wild Cherry",
+          "My Way",
+          "Miss Dior Cherie",
+          "Mon Guerlain",
+          "Moon Sparkle",
+          "Mid night",
+          "Poudree",
+          "Rouge",
+          "Hugo Woman",
+          "Weekend for Women",
+          "Yara Candy",
+          "Yara",
+          "Accento",
+          "Baccarat Rouge 540",
+          "Delina",
+          "Erba Pura",
+          "Fleur Narcotique",
+          "The Only one",
+          "Symphony",
+          "Bianco Latte",
+          "White Oud",
+          "Oud Bouquet",
+          "Oud Madawi"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [],
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": true,
+        "scent_match": "all",
+        "brand_strict": false
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Amour\nBrand: ⭐ عطر تركيب حصري خاص بالمتجر\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a store-exclusive perfume (NOT a global brand). If asked, say EXACTLY: \"ده عطر من تصميمنا وابتكارنا إحنا يا فندم، فمفيش منه زجاجة اوريجنال.\"\nSales note: ده عطر تركيب حصري من تصميم الستور، مش موجود عند أي حد تاني. لو العميل طلب نيش أو حاجة مميزة أو مختلفة — ده هو ردك، ممنوع تقول مفيش.\nGender: female\nPerfume Type: من صنع المتجر\nSeason: Summer\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, sweet, floral\nDescription Tags (first three only): fruity, sweet, floral\nSimple Scent Description: فيه ريحة فواكه ومسكر وفيه ريحة زهور\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Raspberry, Mint\nMiddle Notes: Rose\nBase Notes: Vanilla, Amber, White Musk\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Amour"
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "طب ممكن ترشحلي حاجة أخف ومش مسكرة؟ وهتعجبها أكيد؟",
+      "reply": "Cassilia اختيار خفيف بطابع زهري وفاكهي، بس فيها فواكه ومش هقدر أضمن إنها هتعجبها أكيد.\n\nCassilia من Cassilia، براند تاني غير Perfamix.",
+      "seconds": 7.15,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "أخف",
+            "tags": [
+              "light"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "مش مسكرة",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "brand_strict": false,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Cassilia"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "Amour"
+      ],
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "brand_strict": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia",
+        "Si"
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟",
+      "reply": "Cassilia\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.",
+      "seconds": 5.6,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "brand_strict": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Cassilia\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟\", \"sections\": [{\"product_id\": 1083, \"name\": \"Cassilia\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\"}], \"ambiguous_prose\": false}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟\", \"sections\": [{\"product_id\": 1083, \"name\": \"Cassilia\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "طب الـ50 ملي دي ينفع أبدلها لو مجتش على ذوقها؟",
+      "reply": "Cassilia\nهسأل وأرد عليك يا فندم، لأن سياسة الاستبدال محتاجة تأكيد من الفريق.\nزجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.",
+      "seconds": 4.68,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "brand_strict": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Cassilia\\nزجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب الـ50 ملي دي ينفع أبدلها لو مجتش على ذوقها؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\", \"budget\": null, \"request\": \"طب الـ50 ملي دي ينفع أبدلها لو مجتش على ذوقها؟\", \"sections\": [{\"product_id\": 1083, \"name\": \"Cassilia\", \"text\": \"زجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia"
+      ],
+      "findings": [
+        [
+          "unsupported_promise",
+          "high",
+          "follow_up: 'هسأل و'"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "تمام، هستنى تأكيدك. طب ريحتها خفيفة فعلًا ومش مسكرة أوي؟",
+      "reply": "أيوه، ريحتها خفيفة وفيها زهور وفواكه، ومش مسكرة أوي.",
+      "seconds": 5.33,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "brand_strict": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تمام كده طمنتني، هفكر أطلب الـ50 ملي. شكراً ليك",
+      "reply": "ولا يهمك، خدي وقتك في التفكير، والـ50 ملي حجم مناسب كبداية لو حابة تجربيها.",
+      "seconds": 7.28,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "brand": "STORE_BRAND_EXCLUSIVE",
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "brand_strict": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "unsupported_promise",
+      "high",
+      "follow_up: 'هسأل و'"
+    ]
+  ],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "brand": "STORE_BRAND_EXCLUSIVE",
+    "gender": "female",
+    "scent_open": false,
+    "scent_tags": [
+      "light"
+    ],
+    "scent_match": "all",
+    "brand_strict": false,
+    "excluded_scent_tags": [
+      "sweet"
+    ]
+  },
+  "seconds": 424.6,
+  "judge_prompt": "SCENARIO S07_gift: Gift buyer who does not know the recipient's taste\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.\n- Does not promise she will love it (no مضمون / هتعجبها أكيد).\n- Return/exchange question answered from the store's configured policy only; nothing invented.\n- Asks at most one high-value question before recommending.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات\n[internal] route=recommendation stage=None saved_preferences={\"gender\": \"female\"}\n[internal] merged_intent={\"gender\": \"female\"}\nASSISTANT: بتحب الفريش، الخشبي، العود، ولا المسكر؟\n\n--- TURN 2 ---\nCUSTOMER: مش متأكد بصراحة، هي هادية وكلاسيك ومش بتحب الحاجات المسكرة أوي.. ترشحلي حاجة آمنة كهدية؟\n[internal] route=recommendation stage=objection saved_preferences={\"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"sweet\"], \"scent_match\": \"all\"}\n[internal] merged_intent={\"scent_tags\": [\"sweet\"], \"scent_match\": \"all\", \"gender\": \"female\"}\nASSISTANT: فاهم حيرتك، خصوصًا إنها هدية ومش عارف ذوقها بالظبط. أقدر أضيّق الاختيار لحاجة هادية وكلاسيك ومش مسكرة، بس عشان أرشح عطر مناسب محتاج أعرف اسم العطر اللي بتفكر فيه أو أراجعلك اختيار من الستور.\n\n--- TURN 3 ---\nCUSTOMER: طب رشحلي إنت حاجة من الستور تكون آمنة ومناسبة لذوقها، ولو مجتش على ذوقها أعمل إيه؟\n[internal] route=recommendation stage=recommendation saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": true, \"scent_match\": \"all\", \"brand_strict\": false}\n[internal] merged_intent={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"scent_open\": true, \"scent_match\": \"all\", \"gender\": \"female\"}\n[internal] shortlist=['Amour', 'Divine Kiss', 'Honey Scent', 'Rose Tobacco', 'Veloura', 'Velvet Sugar', 'Lollipop', 'Fruity Twist']\nASSISTANT: ممكن Amour، بس بصراحة ريحته فيها فواكه ومسكر وزهور، فمش هقدر أضمن إنها هتعجبها. لو مجتش على ذوقها، اكتبلي وهنشوف إيه المتاح بخصوص الاستبدال.\n\n--- TURN 4 ---\nCUSTOMER: طب ممكن ترشحلي حاجة أخف ومش مسكرة؟ وهتعجبها أكيد؟\n[internal] route=recommendation stage=recommendation saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"brand_strict\": false, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"scent_tags\": [\"light\"], \"excluded_scent_tags\": [\"sweet\"], \"scent_match\": \"all\", \"gender\": \"female\"}\n[internal] shortlist=['Cassilia']\nASSISTANT: Cassilia اختيار خفيف بطابع زهري وفاكهي، بس فيها فواكه ومش هقدر أضمن إنها هتعجبها أكيد.\n\nCassilia من Cassilia، براند تاني غير Perfamix.\n\n--- TURN 5 ---\nCUSTOMER: طب Cassilia دي حلوة، سعرها كام؟ وميزانيتي لحد ١٠٠٠.. ولو مجتش على ذوقها أقدر أبدلها؟\n[internal] route=product_info stage=purchase_intent saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"brand_strict\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: Cassilia\nزجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.\n\n--- TURN 6 ---\nCUSTOMER: طب الـ50 ملي دي ينفع أبدلها لو مجتش على ذوقها؟\n[internal] route=product_info stage=purchase_intent saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"brand_strict\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: Cassilia\nهسأل وأرد عليك يا فندم، لأن سياسة الاستبدال محتاجة تأكيد من الفريق.\nزجاجة الستور الخاصة بينا 50 ملي بـ750.00 جنيه.\n[deterministic findings] [[\"unsupported_promise\", \"high\", \"follow_up: 'هسأل و'\"]]\n\n--- TURN 7 ---\nCUSTOMER: تمام، هستنى تأكيدك. طب ريحتها خفيفة فعلًا ومش مسكرة أوي؟\n[internal] route=product_info stage=recommendation saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"brand_strict\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: أيوه، ريحتها خفيفة وفيها زهور وفواكه، ومش مسكرة أوي.\n\n--- TURN 8 ---\nCUSTOMER: تمام كده طمنتني، هفكر أطلب الـ50 ملي. شكراً ليك\n[internal] route=faq stage=objection saved_preferences={\"brand\": \"STORE_BRAND_EXCLUSIVE\", \"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"brand_strict\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: ولا يهمك، خدي وقتك في التفكير، والـ50 ملي حجم مناسب كبداية لو حابة تجربيها.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- 212 Sexy Women | brand=Carolina Herrera | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pink Pepper, Mandarin Orange, Bergamot | mid=Cotton Candy, Gardenia, Flowers, Pelargonium, Rose | base=Vanilla, Musk, Sandalwood, Caramel, Patchouli, Violet | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Accento | brand=Xerjoff | gender=female | type=niche | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pineapple, Hyacinth | mid=Iris, Pink Pepper, Jasmine | base=Musk, Vetiver, Amber, Vanilla, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Addict | brand=Dior | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Blackberry, Mandarin Leaf, Silk Tree Blossom | mid=Jasmine, Night Blooming Cereus, Orange Blossom, Rose | base=Bourbon Vanilla, Tonka Bean, Mysore Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Amour | brand=Perfamix | gender=female | type=store_own_made | season=Summer | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Raspberry, Mint | mid=Rose | base=Vanilla, Amber, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Baccarat Rouge 540 | brand=Maison Francis Kurkdjian | gender=female | type=niche | season=All Seasons | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Saffron, Jasmine | mid=Amberwood, Ambergris | base=Fir Resin, Cedar | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2000EGP stock=100\n- Bamboo | brand=Gucci | gender=female | type=western | season=Summer | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bergamot | mid=Casablanca Lily, Ylang-Ylang, Orange Blossom | base=Sandalwood, Tahitian Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bianco Latte | brand=giardini di toscana | gender=female | type=niche | season=Winter | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Caramel | mid=Coumarin, Honey | base=Vanilla, White Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Billie Eilish | brand=Billie Eilish | gender=female | type=western | season=Winter | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Sugar, Red Berries, Mandarin Orange | mid=Vanilla, Cacao, Spicy Notes | base=Tonka Bean, Amber, Musk, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1750EGP stock=100\n- Black Opium | brand=Yves Saint Laurent | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pear, Pink Pepper, Orange Blossom | mid=Coffee, Jasmine, Bitter Almond, Licorice | base=Vanilla, Patchouli, Cedar, Cashmere Wood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bloom | brand=Gucci | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Jasmine | mid=Tuberose | base=Rangoon Creeper | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Body | brand=Burberry | gender=female | type=western | season=Winter | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Peach, Wormwood, Freesia | mid=Rose, Sandalwood, Iris | base=Cashmere Wood, Musk, Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bombshell | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Passionfruit, Grapefruit, Pineapple, Tangerine, Big Strawberry | mid=Peony, Vanilla Orchid, Red Berries, Jasmine, Lily of the Valley | base=Musk, Woody Notes, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Bright Crystal | brand=Versace | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Pomegranate, Yuzu, Frosted Accord | mid=Peony, Magnolia, Lotus | base=Musk, Amber, Mahogany | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Cassilia | brand=Cassilia | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Mandarin Orange, Red Currant | mid=Peony, Rose, Jasmine, Lily of the Valley | base=White Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Chance | brand=Chanel | gender=female | type=western | season=Summer | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Jasmine, Iris | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange, Mandarin Orange, Bergamot, Orange Blossom | mid=Jasmine, Rose, Mimosa, Ylang-Ylang | base=Patchouli, Vetiver, Tonka Bean, Vanilla, Musk, Opoponax | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Coco Vanille | brand=Mancera | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Coconut, White Peach | mid=Tiare Flower, Ylang-Ylang, Egyptian Jasmine | base=Madagascar Vanilla, White Musk, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Crazy in love | brand=Majouri | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Red Berries, Mandarin Orange, Saffron | mid=Damask Rose, Jasmine, Peony | base=Vanilla, Amber, White Musk, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Crystal Noir | brand=Versace | gender=female | type=western | season=Winter | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pepper, Ginger, Cardamom | mid=Coconut, Gardenia, Orange Blossom, Peony | base=Sandalwood, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Delina | brand=Parfums de Marly | gender=female | type=niche | season=Summer | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Rhubarb, Lychee, Bergamot Essence | mid=Damascena Rose, Vanilla | base=Cashmeran, Musk, Vetiver | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Divine | brand=Jean Paul Gaultier | gender=female | type=western | season=Summer | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Calypsone, Red Berries, Bergamot | mid=Lily, Ylang-Ylang, Jasmine | base=Meringue, Musk, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Divine Kiss | brand=Perfamix | gender=female | type=store_own_made | season=Summer | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Bergamot, Red Berries | mid=White Rose, Jasmine | base=Vanilla, Sandalwood, Amber, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Elie Saab | brand=Elie Saab | gender=female | type=western | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Orange Blossom | mid=Jasmine | base=Honey, Patchouli, Rose, Virginia Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Erba Pura | brand=Xerjoff | gender=female | type=niche | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Sicilian Orange, Calabrian Bergamot, Sicilian Lemon | mid=Fruits | base=White Musk, Madagascar Vanilla, Amber | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2460EGP stock=100\n- Euphoria | brand=Calvin Klein | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pomegranate, Persimmon, Green Accord | mid=Black Orchid, Lotus, Champaca | base=Mahogany, Amber, Black Violet, Whipped Cream | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Fantasy | brand=Britney Spears | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Kiwi, Red Litchi, Quince | mid=White Chocolate, Cupcake, Orchid, Jasmine | base=Musk, Orris Root, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Fantasy Bloom | brand=Britney Spears | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Red Berries, Green Mandarin, Cherry Blossom | mid=Osmanthus, Jasmine, Tuberose | base=Vanilla, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Fleur Musc | brand=Narciso Rodriguez | gender=female | type=western | season=Summer | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Rose, Peony, Musk | base=Patchouli, Amber, Violet | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Fleur Narcotique | brand=Ex Nihilo | gender=female | type=niche | season=Summer | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Litchi, Bergamot, Peach | mid=Peony, Orange Blossom, Jasmine, Petalia | base=Musk, Moss, Woody Notes | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Flowerbomb | brand=Viktor & Rolf | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Bergamot, Tea, Osmanthus | mid=Jasmine, Freesia, Orchid, Rose | base=Patchouli, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Fruity Twist | brand=Perfamix | gender=female | type=store_own_made | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Strawberry, Black Currant, Red Apple, Grapes, Citruses | mid=Sweet Pea, Freesia, Rose, Jasmine | base=Raspberry, White Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Girl of Now | brand=Elie Saab | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pistachio, Pear, Mandarin Orange | mid=Almond, Orange Blossom, Magnolia | base=Almond Milk, Tonka Bean, Cashmeran, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Goddess | brand=Burberry | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Vanilla, Lavender, Cacao, Ginger | mid=Vanilla Caviar | base=Vanilla Absolute | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Golden Vanilla | brand=Perfamix | gender=female | type=store_own_made | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Vanilla Orchid, Jasmine | mid=Brown Sugar, Caramel, Tonka Bean | base=Vanilla, Amberwood, White Musk, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Good Girl Supreme | brand=Carolina Herrera | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Forest Fruits, Egyptian Jasmine | mid=Tonka Bean, Tuberose | base=Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Her | brand=Burberry | gender=female | type=western | season=All Seasons | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Strawberry, Raspberry, Blackberry, Sour Cherry, Black Currant, Mandarin Orange, Lemon | mid=Violet, Jasmine | base=Musk, Vanilla, Cashmeran, Woody Notes, Amber, Oakmoss, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1400EGP stock=100\n- Honey Scent | brand=Perfamix | gender=female | type=store_own_made | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Raspberry | mid=Honey, Red Rose | base=Vanilla, Amber, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Hugo Woman | brand=Hugo Boss | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Boysenberry, Italian Mandarin, Grass | mid=Jasmine, Black Tea, Plum, Iris | base=Amber, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- J'adore | brand=Dior | gender=female | type=western | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pear, Melon, Magnolia, Peach, Mandarin Orange, Bergamot | mid=Jasmine, Lily of the Valley, Tuberose, Freesia, Orchid, Plum, Rose | base=Musk, Vanilla, Blackberry, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Jumana | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Peach, Mandarin Orange, Red Berries | mid=Jasmine, Peony, Rose | base=Vanilla, White Musk, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Khamrah | brand=Lattafa | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Nutmeg, Bergamot | mid=Dates, Praline, Tuberose, Mahonial | base=Vanilla, Tonka Bean, Amberwood, Myrrh, Benzoin, Akigalawood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1850EGP stock=100\n- Khamrah Qahwa | brand=Lattafa | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cinnamon, Cardamom, Ginger | mid=Praline, Candied Fruits, White Flowers | base=Vanilla, Coffee, Tonka Bean, Benzoin, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- L'Eau d'Issey | brand=Issey Miyake | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Lotus, Melon, Freesia, Rose Water, Rose, Calone, Cyclamen | mid=Lily, Water Peony, Carnation, Lily of the Valley | base=Exotic Woods, Tuberose, Amber, Sandalwood, Musk, Osmanthus, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- La Belle | brand=Jean Paul Gaultier | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Bergamot | mid=Floral Notes, Leather | base=Vanilla, Vetiver, Amber, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- La Nuit | brand=Lancome | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Bergamot, Tangerine | mid=Vanilla Orchid, Black Rose, Passionfruit, Strawberry | base=Patchouli, Praline, Incense, Litchi, Vanilla, Caramel, Coffee, Coumarin, Licorice, Papyrus | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- La Vie Est Belle | brand=Lancome | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Black Currant, Pear | mid=Iris, Jasmine, Orange Blossom | base=Praline, Vanilla, Patchouli, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Lady Million | brand=Paco Rabanne | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Raspberry, Neroli, Amalfi Lemon | mid=Jasmine, African Orange Flower, Gardenia | base=White Honey, Patchouli, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Lady Pink | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Strawberry, Mandarin Orange, Pear | mid=Pink Peony, Rose, Jasmine | base=Musk, Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Libre | brand=Yves Saint Laurent | gender=female | type=western | season=All Seasons | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Mandarin Orange, Lavender, Petitgrain, Black Currant | mid=Lavender, Orange Blossom, Jasmine | base=Madagascar Vanilla, Tonka Bean, Cedar, Musk, Ambergris | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Lolita | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Raspberry, Peach, Bergamot | mid=Sweet Pea, Freesia, Jasmine | base=Vanilla, White Musk, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Lollipop | brand=Perfamix | gender=female | type=store_own_made | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Peach, Mandarin Orange, Neroli | mid=Candy, Caramel, White Flowers | base=Vanilla, Sandalwood, Patchouli, White Tobacco | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Mid night | brand=Lancome | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Raspberry, Black Currant | mid=Rose, Jasmine, Peony, Pink Pepper | base=Vanilla, Musk, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Miss Dior Cherie | brand=Dior | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Strawberry, Pineapple, Cherry, Mandarin Orange | mid=Caramel, Popcorn, Violet, Rose, Jasmine | base=Patchouli, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Mon Guerlain | brand=Guerlain | gender=female | type=western | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Lavender, Bergamot | mid=Jasmine Sambac, Iris | base=Vanilla, Sandalwood, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1550EGP stock=100\n- Moon Sparkle | brand=Escada | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Strawberry, Black Currant, Red Apple, Citruses | mid=Sweet Pea, Freesia, Jasmine, Rose | base=Raspberry, Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- My Way | brand=Armani | gender=female | type=western | season=Summer | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange Blossom, Bergamot | mid=Tuberose, Indian Jasmine | base=Madagascar Vanilla, White Musk, Virginian Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Olympea | brand=Paco Rabanne | gender=female | type=western | season=All Seasons | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Green Mandarin, Ginger Flower, Water Jasmine | mid=Vanilla, Salt | base=Cashmeran, Ambergris, Cedar, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Oud | brand=Roberto Cavalli | gender=female | type=western | season=Winter | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Saffron, Mandarin Orange | mid=Orange Blossom | base=Agarwood (Oud), Amber, Vanilla, Incense | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Oud Bouquet | brand=Arabian Oud | gender=female | type=oriental | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Saffron | mid=Damask Rose, Agarwood (Oud) | base=Praline, Vanilla, Woody Notes | sizes: brand 50ml=950EGP; brand 90ml=1250EGP\n- Oud Madawi | brand=Arabian Oud | gender=female | type=oriental | season=Summer | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Peach, Apple Blossom | mid=Pineapple Blossom | base=Wild Rose, Musk, Patchouli | sizes: brand 50ml=950EGP; brand 90ml=1250EGP\n- Paris Hilton | brand=Paris Hilton | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Melon, Apple, Peach | mid=Freesia, Mimosa, Lily of the Valley, Jasmine, Lily, Tuberose | base=Musk, Ylang-Ylang, Sandalwood, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Party | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Red Berries, Bergamot, Mandarin Orange | mid=Peony, Freesia, Jasmine | base=Vanilla, Musk, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Pink | brand=Valentino | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Strawberry, Blackberry, Musk | mid=May Rose, Rose, Peony | base=Praline, Cashmere Wood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Pink Sugar | brand=Aquolina | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Raspberry, Orange, Fig Leaf, Bergamot | mid=Cotton Candy, Licorice, Red Berries, Strawberry, Lily of the Valley | base=Caramel, Vanilla, Musk, Tonka Bean, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Poison Girl | brand=Dior | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Bitter Orange, Lemon | mid=Damask Rose, Grasse Rose, Orange Blossom | base=Vanilla, Almond, Tonka Bean, Tolu Balsam, Sandalwood, Cashmeran, Heliotrope | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Poudree | brand=Narciso Rodriguez | gender=female | type=western | season=All Seasons | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bulgarian Rose, Jasmine, Orange Blossom | mid=Musk | base=Vetiver, Cedar, Coumarin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Power of You | brand=Armani | gender=female | type=western | season=All Seasons | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Bergamot, Mandarin Orange, Pear | mid=Orange Blossom, Jasmine, Rose | base=Vanilla, Cedar, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Prada Paradox | brand=Prada | gender=female | type=western | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pear, Tangerine, Bergamot | mid=Orange Blossom, Neroli Essence, Neroli, Jasmine Sambac | base=Bourbon Vanilla, White Musk, Amber, Benzoin | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Roberto Cavalli | brand=Roberto Cavalli | gender=female | type=western | season=Winter | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=African Orange Flower | base=Benzoin, Tonka Bean, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Rose Tobacco | brand=Perfamix | gender=female | type=store_own_made | season=Winter | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cinnamon, Agarwood (Oud), Incense, Saffron, Apple, Pear | mid=Patchouli, Jasmine | base=Tobacco, Madagascar Vanilla, Amber, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Roses Vanille | brand=Mancera | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Italian Lemon | mid=Turkish Rose | base=Vanilla, White Musk, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Rouge | brand=Narciso Rodriguez | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Iris, Bulgarian Rose | mid=Musk, Tuberose, Orange Blossom | base=Tonka Bean, Vanilla, White Cedar Extract, Cedar, Sandalwood, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Rumba | brand=Ted Lapidus | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Plum, Peach, Mirabelle, Orange Blossom, Raspberry, Basil, Bergamot | mid=Honey, Marigold, Tuberose, Carnation, Jasmine, Gardenia, Heliotrope, Orchid, Rose, Lily of the Valley | base=Plum, Leather, Amber, Sandalwood, Patchouli, Styrax, Vanilla, Oakmoss, Cedar, Musk, Tonka Bean | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Rush | brand=Gucci | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Peach, Californian Gardenia, African Freesia Petals | mid=Coriander, Damask Rose, Jasmine | base=Patchouli, Natural Vanilla, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Scandal by Night | brand=Jean Paul Gaultier | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Honey, Bitter Orange, Citruses | mid=Tuberose, Cherry, Orange Blossom, Pear, Jatamansi | base=Tonka Bean, Patchouli, Sandalwood, Amberwood, Vanilla, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1675EGP stock=100\n- Sexy Graffiti | brand=Escada | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Wild Strawberry, Raspberry, Grapefruit, Mint | mid=Peony, Violet, Lily of the Valley | base=Vanilla, Cashmere Wood, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Si | brand=Armani | gender=female | type=western | season=Winter | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Blackcurrant | mid=Rose, Freesia | base=Vanilla, Patchouli, Ambroxan, Woody Notes | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Si Passion Red | brand=Armani | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Black Currant, Pink Pepper, Grapefruit | mid=Pineapple, Rose, Jasmine, Heliotrope | base=Vanilla, Cedar, Amberwood, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1350EGP stock=100\n- So Scandal! | brand=Jean Paul Gaultier | gender=female | type=western | season=All Seasons | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Orange Blossom | mid=Tuberose, Jasmine | base=Milk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Sweet Coffin | brand=TOMBSTONE | gender=female | type=western | season=Winter | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Roasted Coffee Beans, Bergamot, Almond | mid=Jasmine, Caramel, Heliotrope | base=Vanilla, Tonka Bean, Sandalwood, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Symphony | brand=Louis Vuitton | gender=female | type=niche | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Grapefruit, Bergamot | mid=Ginger | base=Mate, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2600EGP stock=100\n- The Only one | brand=Dolce & Gabbana | gender=female | type=niche | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Bergamot, Violet, Orange | mid=Iris, Coffee, Pear, Rose, Orange Blossom | base=Patchouli, Vanilla, Caramel | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP\n- Vanilla 28 | brand=Kayali | gender=female | type=western | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Vanilla Orchid, Jasmine | mid=Brown Sugar, Tonka Bean | base=Amber, Amberwood, Musk, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1900EGP stock=100\n- Veloura | brand=Perfamix | gender=female | type=store_own_made | season=Summer | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pear, Raspberry, Bergamot | mid=Rose, Jasmine | base=Vanilla, Amber, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Velvet Sugar | brand=Perfamix | gender=female | type=store_own_made | season=Winter | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Blackberry, Red Berries | mid=Rose, Orchid, Honey | base=Vanilla, Amber, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Very Sexy Now | brand=Victoria's Secret | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Blood Orange, Pineapple, Passionfruit | mid=Peony, Vanilla Orchid, Nutmeg | base=Tonka Bean, Sandalwood, Grapefruit | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1465EGP stock=100\n- Viva la Juicy | brand=Juicy Couture | gender=female | type=western | season=Winter | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Wild Berries, Mandarin Orange | mid=Honeysuckle, Gardenia, Jasmine | base=Vanilla, Praline, Caramel, Sandalwood, Amber, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Weekend for Women | brand=Burberry | gender=female | type=western | season=Summer | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Mignonette, Mandarin Orange, Sage | mid=Nectarine, Blue Hyacinth, Peach Blossom, Rose Hip, Iris, Red Cyclamen, Violet Root | base=Musk, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- White Oud | brand=Arabian Oud | gender=female | type=oriental | season=All Seasons | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Bergamot, Orange, Saffron | mid=White Rose, Jasmine, Patchouli | base=White Oud, White Musk, Sandalwood, Amber | sizes: brand 50ml=950EGP; brand 90ml=1250EGP\n- Wild Cherry | brand=Mancera | gender=female | type=western | season=Summer | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Cherry, Bergamot, Lemon | mid=Orris, Heliotrope, Patchouli, Jasmine | base=Madagascar Vanilla, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP\n- Yara | brand=Lattafa | gender=female | type=western | season=All Seasons | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Orchid, Heliotrope, Tangerine | mid=Gourmand Accord, Tropical Fruits | base=Vanilla, Musk, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=2400EGP stock=100\n- Yara Candy | brand=Lattafa | gender=female | type=western | season=Summer | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Black Currant, Green Tangerine | mid=Strawberry Fizz Candy, Gardenia | base=Vanilla, Amber, Sandalwood, Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=2400EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 90% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n- رقم التواصل فون او واتساب: \"01127027327\"\n\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-مصاريف الشحن ب 60 جنيه لاي مكان في مصر\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\nلينك الموقع : \"https://perfamix.com\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: كم مدة التوصيل؟]\nالتوصيل داخل مصر فقط بيوصل لحضرتك خلال 2 لـ 4 أيام عمل على حسب المحافظة يا فندم 🚚\n\n[StaticFAQ: هل العطر أصلي ولا تركيب؟]\nالعطور بتاعتنا كلها \"عطور تركيب\" (مستوحاة من الماركات العالمية) بخامات زيوت عالية الجودة جداً وتطابق بيوصل لـ 95%، وبنقدملك نفس ريحة الأوريجينال بسعر مميز جداً. ومتاح لبعض العطور نركبها في زجاجات لأوريجينال بالظبط!\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: الويبسايت]\nتقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n[StaticFAQ: رقم التواصل]\nرقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\nرقم التواصل للطلبات من المكان: \"01098190098\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: بكام مصاريف الشحن؟]\nمصاريف الشحن 60 جنيه لجميع محافظات مصر\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: فين عنوانكم؟]\nتقدر تشرفنا في الستور بتاعنا وتجرب كل العطور بنفسك! (المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد شاورما الريم في يمين. تاني فيلا علي ايدك اليمين)\n\n[StaticFAQ: ترحيب بالعميل]\nاهلا يا فندم نورتنا اقدر اساعد حضرتك ازاي\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 4,
+      "question_quality": 3,
+      "knows_when_to_stop": 8,
+      "naturalness": 5,
+      "emotional_handling": 8,
+      "commerce_correctness": 3
+    },
+    "criteria": [
+      {
+        "criterion": "Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.",
+        "met": true,
+        "evidence": "turn 1: The assistant treats the perfume as a gift for the female fiancée and recommends a women's perfume; it does not use any stated preference of the buyer."
+      },
+      {
+        "criterion": "Does not promise she will love it (no مضمون / هتعجبها أكيد).",
+        "met": true,
+        "evidence": "turns 3–4: The assistant explicitly says it cannot guarantee she will like the perfume."
+      },
+      {
+        "criterion": "Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "met": false,
+        "evidence": "turn 3: Instead of giving the configured two-day exchange policy and its conditions, the assistant says «اكتبلي وهنشوف إيه المتاح». It later promises to ask and reply rather than giving the available policy."
+      },
+      {
+        "criterion": "Asks at most one high-value question before recommending.",
+        "met": false,
+        "evidence": "turn 1: The assistant asks about scent preferences. After the customer says she is unsure and describes her fiancée, turn 2 asks for a perfume name or permission to review a store choice instead of recommending."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 2,
+        "severity": "medium",
+        "category": "question",
+        "expected": "Use the clues already given—quiet, classic, and not very sweet—to recommend a suitable option, or ask one genuinely necessary focused question.",
+        "actual": "«محتاج أعرف اسم العطر اللي بتفكر فيه أو أراجعلك اختيار من الستور.»",
+        "why": "The customer is asking for a recommendation and has already supplied useful recipient preferences; asking for a perfume name is not a useful next step."
+      },
+      {
+        "turn": 3,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Recommend an option that fits the stated preference for a quiet, classic scent that is not very sweet.",
+        "actual": "«ممكن Amour، بس بصراحة ريحته فيها فواكه ومسكر وزهور»",
+        "why": "The assistant proposes a perfume it itself describes as sweet, despite the customer's stated concern about overly sweet scents."
+      },
+      {
+        "turn": 3,
+        "severity": "high",
+        "category": "commerce",
+        "expected": "Answer the exchange question from the configured policy: exchange within two days, with the stated fees or free exchange in-store, subject to the stated exclusions.",
+        "actual": "«لو مجتش على ذوقها، اكتبلي وهنشوف إيه المتاح بخصوص الاستبدال.»",
+        "why": "This avoids the available policy and implies a future follow-up the assistant cannot promise."
+      },
+      {
+        "turn": 5,
+        "severity": "medium",
+        "category": "commerce",
+        "expected": "Give the correct price and answer the customer's exchange question using the store policy.",
+        "actual": "«زجاجة الستور الخاصة بينا 90 ملي بـ1000.00 جنيه، و50 ملي بـ750.00 جنيه.»",
+        "why": "The prices are correct, but the assistant again omits the explicitly requested exchange information."
+      },
+      {
+        "turn": 6,
+        "severity": "high",
+        "category": "commerce",
+        "expected": "State the configured exchange terms directly rather than promising to check.",
+        "actual": "«هسأل وأرد عليك يا فندم، لأن سياسة الاستبدال محتاجة تأكيد من الفريق.»",
+        "why": "The policy is already provided in the store facts, so the assistant should not defer it or promise a follow-up."
+      },
+      {
+        "turn": 7,
+        "severity": "high",
+        "category": "memory",
+        "expected": "Address the pending exchange question the customer is waiting on, alongside the current scent question.",
+        "actual": "«أيوه، ريحتها خفيفة وفيها زهور وفواكه، ومش مسكرة أوي.»",
+        "why": "The customer explicitly said they were waiting for confirmation, but the assistant leaves that pending question unanswered again."
+      },
+      {
+        "turn": 8,
+        "severity": "medium",
+        "category": "memory",
+        "expected": "Keep the gift context and address the male buyer naturally while respecting that he is still considering, not ordering.",
+        "actual": "«خدي وقتك في التفكير، والـ50 ملي حجم مناسب كبداية لو حابة تجربيها.»",
+        "why": "The feminine address and «لو حابة تجربيها» treat the male buyer as the perfume wearer rather than keeping the fiancée as the recipient."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 6,
+        "code": "unsupported_promise",
+        "verdict": "confirmed",
+        "reason": "«هسأل وأرد عليك» promises a future follow-up. No transfer to the human team is confirmed, and the exchange policy is already available in the configured facts."
+      }
+    ],
+    "summary": "The assistant avoids guaranteeing the gift will be liked and gives Cassilia's prices correctly, but it delays a recommendation and repeatedly fails to answer the exchange-policy question using the available terms. It also promises an unsupported follow-up and loses the gift-recipient context in its closing wording."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "turn 6 high unsupported_promise: follow_up: 'هسأل و'",
+    "judge score understanding_accuracy=5",
+    "judge score memory=4",
+    "judge score question_quality=3",
+    "judge score naturalness=5",
+    "judge score commerce_correctness=3",
+    "judge turn 3 high commerce: This avoids the available policy and implies a future follow-up the assistant cannot promise.",
+    "judge turn 6 high commerce: The policy is already provided in the store facts, so the assistant should not defer it or promise a follow-up.",
+    "judge turn 7 high memory: The customer explicitly said they were waiting for confirmation, but the assistant leaves that pending question unanswered again.",
+    "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented.",
+    "criterion unmet: Asks at most one high-value question before recommending."
+  ],
+  "usage": {
+    "api_calls": 33,
+    "by_role": {
+      "seller": {
+        "calls": 25,
+        "cost_usd": "0.007141095"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.000930550"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.004991215"
+      }
+    },
+    "prompt_tokens": 193910,
+    "cached_tokens": 134501,
+    "completion_tokens": 8765,
+    "reasoning_tokens": 5771,
+    "cost_usd": "0.013062860",
+    "api_seconds": 152.0,
+    "failed_calls": []
+  }
+}
