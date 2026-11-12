@@ -1,0 +1,70 @@
+{
+  "run_id": "20261112T195509Z-20b519",
+  "phase": "round3-replay",
+  "attempt": "attempt-1",
+  "started_utc": "2026-11-12T19:55:13.203437+00:00",
+  "seller_models": {
+    "OPENAI_MODEL": "gpt-6-luna",
+    "OPENAI_SMART_MODEL": "gpt-6-luna",
+    "OPENAI_RESOLVER_MODEL": "gpt-6-luna",
+    "OPENAI_TEMPERATURE": 0.3
+  },
+  "seller_profiles": {
+    "extract": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "reason": {
+      "model": "gpt-6-luna"
+    },
+    "resolve": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "converse": {
+      "model": "gpt-6-luna",
+      "temperature": 0.3
+    }
+  },
+  "seller_reasoning_effort": "Luna: none for extract/converse, high for reason/resolve (client.chat)",
+  "simulator": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "none",
+    "temperature": 0.6,
+    "prompt_sha256": "7eb4bd3b4725f610fc2089d050e2ba04d75da92aab67eb9443f69184bcb9b320"
+  },
+  "judge": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "high",
+    "enabled": true,
+    "rubric_sha256": "4b88a27fb215dae414d6490f0a3d353176a2387e4b68942ffd00f3a367e147d5"
+  },
+  "max_completion_tokens": {
+    "gpt-6-luna": {
+      "none": 2048,
+      "high": 25000
+    }
+  },
+  "pass_rule": "no error; no critical/high deterministic finding unless the judge dismissed it with a reason; no judge critical/high issue; every judge score >= 6; no unmet success criterion",
+  "task_cap_usd": "3.50",
+  "workers": 3,
+  "git": {
+    "commit": "40bd12224926231fcb48818729c28c8758840ee2",
+    "products_diff_sha256": "4bc6f4069c552621cdfb01782b576398b43d9e9ff32a420117fa43b84c96a752",
+    "products_diff_lines": 565
+  },
+  "code": {
+    "code_sha256": "d3b1768e13e58d112a0b399351f3da608704b155feda9434eb25f4b0a73c1e0a",
+    "files": 122,
+    "import_failures": []
+  },
+  "temporary_database": "test_customer_sim_71fe64c066",
+  "catalogue_products": 251,
+  "isolation": "Disposable local PostgreSQL copy; read-only source snapshot; scenario transactions rolled back; outbound HTTP disabled; no automatic API retries",
+  "scenarios": [
+    "S11_all_constraints",
+    "S09_unavailable",
+    "S16_skeptic"
+  ],
+  "rejudge_source": null
+}

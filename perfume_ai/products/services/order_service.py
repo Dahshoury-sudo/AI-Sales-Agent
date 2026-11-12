@@ -142,6 +142,24 @@ def clear_cart(conversation, keep_details=False):
 CONFIRMATION_SUMMARY_MARKER = "💰 الإجمالي:"
 
 
+# The confirm verb itself: "أكد", "أكدلي الطلب", "تمام أكد", "نأكد", "confirm". Not "متأكد" (sure),
+# "اتأكد" (make sure), "هأكد" (I will), or "أكيد" (certainly), which the extractor keeps reading.
+_CONFIRM_VERB = re.compile(r"(?<!\w)[وف]?ن?اكد(?:لي|ه|ها|وا|هولي|هالي)?(?!\w)|\bconfirm(?:ed)?\b")
+_NOT_CONFIRMING = re.compile(
+    r"[؟?]|(?<!\w)(?:مش|لسه|قبل\s+ما|ما|لما|لو)\s+(?:\S+\s+)?[وف]?ن?اكد|بعدين|مش\s+دلوقتي|\b(?:not|don't|dont|later|before)\b")
+
+
+def explicit_confirmation(message):
+    """Whether the customer's own words confirm the order: the verb, not a bare "تمام".
+
+    A question ("أأكد إزاي؟"), a negation or condition ("مش هأكد", "قبل ما أكد", "لو أكدت"), and a
+    deferral ("أكد بعدين") are not confirmations.
+    """
+    from .static_faq_service import normalize_arabic
+    text = normalize_arabic(message or "")
+    return bool(_CONFIRM_VERB.search(text)) and not _NOT_CONFIRMING.search(text)
+
+
 def _summary_was_shown(conversation, cart, items=None):
     quote = cart.quote or {}
     if not conversation or not quote.get("message_id") or not quote.get("digest"):
@@ -181,8 +199,7 @@ def _quote_summary(conversation, cart, items, note=""):
     # The total is the items only; saying so, and quoting the store's own shipping answer, keeps
     # the customer from reading 750 as the amount due (simulation S11 t5-t9).
     from .product_formatting import money
-    from .static_faq_service import match_static_faq
-    shipping = (match_static_faq("مصاريف الشحن بكام", conversation.store) or {}).get("answer") if conversation else None
+    shipping = shipping_answer(conversation.store) if conversation else None
     summary += f"\n💰 الإجمالي: {money(total)} جنيه" + (" (من غير الشحن).\n🚚 " + shipping.strip() + "\n" if shipping else ".\n")
     # The amount due, when the store's shipping answer is one flat fee and no free-shipping offer can
     # apply to this total: the judge read "750 + 60" without "810" as a summary missing its total
@@ -199,9 +216,37 @@ def _quote_summary(conversation, cart, items, note=""):
     return summary
 
 
+def shipping_fact(store):
+    """The owner's own shipping sentence in the business facts (the line that states the fee), or "".
+
+    A store may keep its shipping terms there instead of in an FAQ entry: "الشحن بيكون داخل مصر فقط
+    في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر". Only the line carrying an amount is
+    taken; a following note to the agent ("ولو العميل عايز شحن فنفس اليوم…") is not quoted.
+    """
+    from products.models import StoreSettings
+    from .product_formatting import monetary_claims
+    from .static_faq_service import normalize_arabic
+    if not store:
+        return ""
+    facts = StoreSettings.objects.filter(store=store).values_list("business_facts", flat=True).first() or ""
+    for line in facts.splitlines():
+        text = line.strip(" -•*\t")
+        if re.search(r"شحن|توصيل", normalize_arabic(text)) and monetary_claims(text):
+            return text
+    return ""
+
+
 def shipping_answer(store):
+    """The store's shipping answer: its FAQ entry when one is active, else the business-facts line.
+
+    The Perfamix owner moved shipping from an FAQ entry into the business facts (2026-11-12). Read from
+    the FAQ alone, the order summary lost its shipping line and its total with shipping, and "الشحن
+    بكام؟" beside a checkout step lost its answer.
+    """
     from .static_faq_service import match_static_faq
-    return ((match_static_faq("مصاريف الشحن بكام", store) or {}).get("answer") or "").strip() if store else ""
+    if not store:
+        return ""
+    return ((match_static_faq("مصاريف الشحن بكام", store) or {}).get("answer") or "").strip() or shipping_fact(store)
 
 
 def flat_shipping_fee(store):
@@ -1403,6 +1448,18 @@ Return valid JSON in this exact format:
         cart.quote = {}
         cart.save(update_fields=["quote"])
         return _cart_recap(conversation, items_to_create, total_price, message), context_str
+    if not is_confirmed and explicit_confirmation(message) \
+            and _summary_was_shown(conversation, cart, items_to_create):
+        # Owner decision (2026-11-12): "تمام أكد" confirms when the summary was sent for this exact,
+        # unchanged cart, even if other messages came in between. The extractor only accepts a
+        # confirmation right after the summary, so "الشحن بكام؟" between the two made the next "تمام أكد"
+        # resend the identical summary (simulation S11 round 2 batch 5 attempt 2, t8).
+        #
+        # Both safeguards are `_summary_was_shown` itself, unchanged: the quote's digest must equal
+        # this cart's fingerprint (items, prices, quantities, bottle types and contact details), so a
+        # cart changed after the summary needs a new summary; and the quote must point at a summary
+        # message that was actually sent, so nothing confirms without one.
+        is_confirmed = True
     if not is_confirmed or not _summary_was_shown(conversation, cart, items_to_create):
         return _quote_summary(conversation, cart, items_to_create, note=_bottle_note(message, items_to_create)), context_str
 

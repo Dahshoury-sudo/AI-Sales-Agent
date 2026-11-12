@@ -110,6 +110,13 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
             issues.append("popularity: لا توجد بيانات شعبية أو ضمان إعجاب")
     issues += _similarity_claim_issues(reply, facts or {})
     issues += _retraction_issues(reply, facts or {})
+    for clause in re.split(r"[.!؟?\n]", text):
+        # "السيجار قريب من أڤنتوس في الطابع الخشبي والسموكي والفاكهي، بس ترتيب الإحساس مختلف شوية": the
+        # shared labels are recorded, how the two "feel" different is not (simulation S09 round 2
+        # batch 4 attempt 3, t6). The names were in Arabic, so no per-perfume segment covered it.
+        if _UNRECORDED_FEEL.search(clause) and not _HEDGE.search(clause):
+            issues.append("difference: how perfumes differ in feel is not recorded; state only the recorded labels")
+            break
     if not facts:
         return issues
     segments = _attributed_segments(reply, facts)
@@ -204,6 +211,9 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
     return list(dict.fromkeys(issues))
 
 
+# A difference in "feel" between perfumes: "ترتيب الإحساس مختلف", "الإحساس مختلف شوية", "مختلف في الإحساس".
+_UNRECORDED_FEEL = re.compile(
+    r"(?<!\w)(?:ال)?احساس\w*\s+(?:\S+\s+){0,2}مختلف\w*|مختلف\w*\s+(?:\S+\s+){0,2}(?:في\s+)?(?:ال)?احساس")
 # Admitting a mistake. "مش غلط" and "ما غلطتش" stand by the statement and are not retractions.
 _RETRACTION = re.compile(r"بالغلط|(?<!مش )(?<!مفيش )(?<!\w)غلط(?:ت|ه)?(?:\s+مني)?(?!\w)|كان\s+غلط|سهو|اعتذر\w*")
 

@@ -1,12 +1,12 @@
 | Phase | Role | Calls | Prompt tok | Cached tok | Completion tok | Cost USD | Mean latency s | p95 latency s | Statuses |
 |---|---|---|---|---|---|---|---|---|---|
-| ALL | ALL | 6913 | 43017768 | 28690159 | 1478407 | 2.999226 | 3.16 | 8.25 | complete=6897, estimated_unmetered=1, in_flight=2, uncertain_charged_maximum=13 |
-| ALL | judge | 326 | 3450805 | 446899 | 1031951 | 0.960187 | 30.93 | 62.94 | complete=321, in_flight=1, uncertain_charged_maximum=4 |
-| ALL | seller | 4838 | 37852184 | 28243260 | 393406 | 1.717699 | 1.97 | 4.22 | complete=4831, in_flight=1, uncertain_charged_maximum=6 |
-| ALL | simulator | 1748 | 1714779 | 0 | 53050 | 0.221340 | 1.36 | 1.86 | complete=1745, uncertain_charged_maximum=3 |
+| ALL | ALL | 7623 | 47502334 | 31596374 | 1685068 | 3.390974 | 3.23 | 9.02 | complete=7604, estimated_unmetered=1, interrupted_charged_maximum=2, uncertain_charged_maximum=16 |
+| ALL | judge | 378 | 3992133 | 521127 | 1195980 | 1.153897 | 31.09 | 63.03 | complete=371, interrupted_charged_maximum=1, uncertain_charged_maximum=6 |
+| ALL | seller | 5320 | 41622269 | 31075247 | 430630 | 1.893896 | 1.96 | 4.2 | complete=5312, interrupted_charged_maximum=1, uncertain_charged_maximum=7 |
+| ALL | simulator | 1924 | 1887932 | 0 | 58458 | 0.243181 | 1.36 | 1.86 | complete=1921, uncertain_charged_maximum=3 |
 | ALL | unit-tests | 1 | 0 | 0 | 0 | 0.100000 | None | None | estimated_unmetered=1 |
-| baseline | ALL | 586 | 3842136 | 2224753 | 275578 | 0.360282 | 5.77 | 35.12 | complete=586 |
-| baseline | judge | 60 | 746191 | 77723 | 239137 | 0.203900 | 38.19 | 72.05 | complete=60 |
+| baseline | ALL | 608 | 4103104 | 2252553 | 354561 | 0.466459 | 6.87 | 37.37 | complete=606, uncertain_charged_maximum=2 |
+| baseline | judge | 82 | 1007159 | 105523 | 318120 | 0.310076 | 38.43 | 73.69 | complete=80, uncertain_charged_maximum=2 |
 | baseline | seller | 394 | 2968399 | 2147030 | 32340 | 0.140251 | 2.31 | 6.56 | complete=394 |
 | baseline | simulator | 132 | 127546 | 0 | 4101 | 0.016132 | 1.36 | 1.79 | complete=132 |
 | debug-after-final | ALL | 115 | 760369 | 562930 | 25548 | 0.042767 | 2.92 | 6.41 | complete=115 |
@@ -28,8 +28,8 @@
 | final | judge | 40 | 414339 | 55908 | 128976 | 0.109848 | 27.37 | 60.52 | complete=40 |
 | final | seller | 614 | 4948746 | 3743263 | 48046 | 0.211965 | 1.78 | 4.1 | complete=614 |
 | final | simulator | 232 | 223324 | 0 | 6921 | 0.027898 | 1.33 | 1.89 | complete=232 |
-| noise-check | ALL | 5 | 32554 | 14246 | 17305 | 0.011083 | 35.48 | 72.25 | complete=5 |
-| noise-check | judge | 5 | 32554 | 14246 | 17305 | 0.011083 | 35.48 | 72.25 | complete=5 |
+| noise-check | ALL | 7 | 41458 | 23144 | 25490 | 0.015265 | 36.34 | 72.25 | complete=7 |
+| noise-check | judge | 7 | 41458 | 23144 | 25490 | 0.015265 | 36.34 | 72.25 | complete=7 |
 | pilot | ALL | 43 | 227559 | 111061 | 10779 | 0.020942 | 4.62 | 10.68 | complete=43 |
 | pilot | judge | 2 | 17276 | 1279 | 7716 | 0.005870 | 46.45 | 76.16 | complete=2 |
 | pilot | seller | 30 | 199747 | 109782 | 2787 | 0.013735 | 2.93 | 7.34 | complete=30 |
@@ -54,11 +54,19 @@
 | round2-batch5 | judge | 4 | 40852 | 5560 | 16295 | 0.012614 | 42.75 | 59.8 | complete=4 |
 | round2-batch5 | seller | 70 | 561296 | 423110 | 5324 | 0.024130 | 2.06 | 4.53 | complete=70 |
 | round2-batch5 | simulator | 25 | 25499 | 0 | 760 | 0.003208 | 1.42 | 1.86 | complete=25 |
-| round2-full | ALL | 2771 | 17118129 | 11780880 | 469841 | 1.009123 | 2.84 | 6.18 | complete=2769, in_flight=2 |
-| round2-full | judge | 123 | 1284418 | 175399 | 305859 | 0.293302 | 26.17 | 51.76 | complete=122, in_flight=1 |
-| round2-full | seller | 1922 | 15127473 | 11605481 | 142809 | 0.627366 | 1.92 | 3.93 | complete=1921, in_flight=1 |
+| round2-full | ALL | 2771 | 17118129 | 11780880 | 469841 | 1.026816 | 2.84 | 6.18 | complete=2769, interrupted_charged_maximum=2 |
+| round2-full | judge | 123 | 1284418 | 175399 | 305859 | 0.308609 | 26.17 | 51.76 | complete=122, interrupted_charged_maximum=1 |
+| round2-full | seller | 1922 | 15127473 | 11605481 | 142809 | 0.629751 | 1.92 | 3.93 | complete=1921, interrupted_charged_maximum=1 |
 | round2-full | simulator | 726 | 706238 | 0 | 21173 | 0.088456 | 1.36 | 1.87 | complete=726 |
+| round3-full | ALL | 461 | 2793711 | 1892600 | 85971 | 0.172730 | 2.82 | 5.87 | complete=461 |
+| round3-full | judge | 20 | 198173 | 27800 | 55732 | 0.049439 | 27.32 | 53.77 | complete=20 |
+| round3-full | seller | 320 | 2477294 | 1864800 | 26669 | 0.108489 | 1.85 | 4.12 | complete=320 |
+| round3-full | simulator | 121 | 118244 | 0 | 3570 | 0.014802 | 1.35 | 1.92 | complete=121 |
+| round3-replay | ALL | 225 | 1420983 | 976917 | 33522 | 0.090967 | 2.54 | 5.2 | complete=224, uncertain_charged_maximum=1 |
+| round3-replay | judge | 8 | 73283 | 9730 | 21129 | 0.018605 | 24.92 | 50.19 | complete=8 |
+| round3-replay | seller | 162 | 1292791 | 967187 | 10555 | 0.065323 | 1.8 | 3.27 | complete=161, uncertain_charged_maximum=1 |
+| round3-replay | simulator | 55 | 54909 | 0 | 1838 | 0.007039 | 1.46 | 1.88 | complete=55 |
 | unmetered-test-calls | ALL | 1 | 0 | 0 | 0 | 0.100000 | None | None | estimated_unmetered=1 |
 | unmetered-test-calls | unit-tests | 1 | 0 | 0 | 0 | 0.100000 | None | None | estimated_unmetered=1 |
 
-Cap $4.00; accounted $2.999226; remaining $0.983082; models: ['gpt-6-luna']; runs: 33
+Cap $3.50; accounted $3.390974; remaining $0.109026; models: ['gpt-6-luna']; runs: 41

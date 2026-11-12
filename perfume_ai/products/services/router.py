@@ -158,6 +158,24 @@ _TOTAL_QUESTION = _re.compile(
 # Hesitation that a usable recommendation answers better than a diagnostic question. Price
 # objections and complaints about a past purchase keep their own handling.
 _SOFT_OBJECTIONS = frozenset({"not_sure", "cant_choose", "rejected", "wont_like"})
+# A price objection that goes on to ask for another perfume: "مفيش حاجة شبهه في حدود ١٠٠٠؟", "عندك
+# حاجة تانية أرخص؟", "في بديل تحت 900؟". The bare objection ("غالي أوي") has none of these.
+_ASKS_FOR_AN_ALTERNATIVE = _re.compile(
+    r"(?<!\w)(?:مفيش|في|فيه|عندك|عندكم|عندكو)\s+(?:\S+\s+)?حاجه|حاجه\s+تانيه|(?<!\w)بديل|(?<!\w)شبه\w*|"
+    r"في\s+حدود|(?<!\w)(?:تحت|لحد)\s+(?:ال)?[\d٠-٩]")
+
+
+def _something_fits_the_budget(budget, conversation, store):
+    """Whether the store sells anything at or under this budget (or no budget is set)."""
+    from decimal import Decimal, InvalidOperation
+    from .objection_service import _price_floor
+    floor = _price_floor(store, conversation)
+    if budget in (None, "") or floor is None:
+        return True
+    try:
+        return floor <= Decimal(str(budget))
+    except InvalidOperation:
+        return True
 
 
 def _actionable_request(intent, message):
@@ -397,6 +415,14 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
                         fallback = "\n".join(details) + "\n\n" + fallback
                 return fallback, quote_context(context, quotes, max_price=budget), repeats
             from .product_formatting import price_question
+            if message and not offer_rows and _SHIPPING_TOPIC.search(sales_naming.normalize_product_name(message)):
+                # A shipping question whose draft failed the price check must not be asked "which perfume
+                # and size?" (simulation S12 t3, S13 t4, round 3 full run): the store's own shipping
+                # sentence answers it.
+                from .order_service import shipping_answer
+                fact = shipping_answer(store)
+                if fact:
+                    return (fact if fact.endswith((".", "!", "؟")) else fact + "."), context, repeats
             # A message naming a perfume ("أكدته خلاص، Sauvage الـ90") still gets "which perfume and size?".
             if message and not offer_rows and not price_question(message, history, None) \
                     and not _re.search(r"[A-Za-z]{3,}", message):
@@ -1207,13 +1233,22 @@ def _thanked(message, reply, history):
 _DELIVERY_TIME = _re.compile(
     r"(?:شحن|توصيل|يوصل|بيوصل|هيوصل|الاوردر)[^؟?\n]*(?:قد ايه|اد ايه|كام يوم|كام ايام|امتي|مده|بياخد وقت)"
     r"|(?:قد ايه|اد ايه|كام يوم|كام ايام)[^؟?\n]*(?:شحن|توصيل|يوصل)")
+# A shipping question in Arabic, Franco or English. The special cases are left to the model, which
+# has the whole business facts: same-day delivery, free shipping, a rush.
+_SHIPPING_TOPIC = _re.compile(
+    r"شحن|توصيل|(?<![a-z0-9])(?:sha7n|sha7en|shahn|sh7n|shipping|delivery|tawsil|tawseel|taw9il)(?![a-z0-9])")
+_SHIPPING_SPECIAL = _re.compile(r"نفس\s+اليوم|النهارده|انهارده|بكره|مجان|اوبر|مستعجل|سريع|free|uber|same\s+day|today")
 _GREETING_FRAGMENT = _re.compile(r"^\W*و?(?:السلام|سلام|ازيك|اهلا|هاي|مرحبا|صباح|مساء|hi|hello)", _re.I)
 # "ينفع أبدلها؟", "لو مجاش على ذوقها أعمل إيه؟": the exchange policy, which a model paraphrase got
 # wrong ("لو العطر زجاجة ستور خاصة، ينفع استبداله", simulation S07 round 2, t5). Asked as a question,
 # so a cart swap ("عايز ابدل السوفاج بالبلو") is not read as one.
 _EXCHANGE_QUESTION = _re.compile(
     r"(?:ينفع|ممكن|هل|اقدر|نقدر)\s+(?:\S+\s+){0,2}(?:ا|ن|ي|ت)?(?:بدل|رجع|استبدل|ترجع)\w*"
-    r"|مج(?:ا|ت)ش\s+علي\s+ذوق|مطلع(?:ت)?ش\s+علي\s+ذوق|مع?جب(?:ها|هو|ني|ناش)ش|معجبتهاش")
+    r"|مج(?:ا|ت)ش\s+علي\s+ذوق|مطلع(?:ت)?ش\s+علي\s+ذوق|مع?جب(?:ها|هو|ني|ناش)ش|معجبتهاش"
+    # The policy by its own names: "والضمان ده ينفع لو فتحته وجربته؟" went to the model, which invented
+    # "لو فتحتيه وجربتيه، مش هينفع استبداله أو استرجاعه" (simulation S07 round 3 full run, t4, critical).
+    # "تضمن" / "مضمون" are about a promise, not the policy, and do not match.
+    r"|(?<!\w)(?:[وبل]?ال|لل|[وبل])?(?:ضمان|استبدال|استرجاع|مرتجع)(?!\w)")
 
 
 def _strict_faq_match(text, store):
@@ -1250,7 +1285,19 @@ def _faq_lookup(text, store, strict=False):
             found = match_static_faq(canonical, store)
             if found and found.get("answer"):
                 return found
-    return _strict_faq_match(text, store) if strict else match_static_faq(text, store)
+    found = _strict_faq_match(text, store) if strict else match_static_faq(text, store)
+    if not found and single and _SHIPPING_TOPIC.search(normalized) and not _SHIPPING_SPECIAL.search(normalized):
+        # No FAQ entry answers it: the owner's own shipping sentence in the business facts does, when
+        # the store keeps its terms there ("الشحن… في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في
+        # مصر"). Any plain shipping question, as the FAQ entry's bare "شحن" keyword used to answer:
+        # with that entry off, "الشحن بيوصل اسكندريه؟" and "el sha7n b kam?" went to the model, whose
+        # draft failed the price check, and the reply was "تقصد أنهي عطر وحجم؟" (simulation S12 t3 and
+        # S13 t4, round 3 full run). A delivery-time question needs a sentence that states a time.
+        from .order_service import shipping_fact
+        fact = shipping_fact(store)
+        if fact and (not _DELIVERY_TIME.search(normalized) or _re.search(r"يوم|ايام|ساع|اسبوع", normalize_arabic(fact))):
+            return {"answer": fact if fact.endswith((".", "!", "؟")) else fact + "."}
+    return found
 
 
 # What else a message may ask or request beside a store-policy question. Without one of these, the
@@ -1524,10 +1571,115 @@ def route(message, history=None, store=None, conversation=None):
         _TURN_CONVERSATION.reset(token)
 
 
+NEAR_BUDGET = "أعلى حاجة بسيطة من ميزانيتك"
+_NEAR_BUDGET_ON_A_PRICE = _re.compile(
+    r"(بـ?\s*(\d[\d,]*)\s*جنيه)(?:\.\s*" + NEAR_BUDGET + r"|\s*\(" + NEAR_BUDGET + r"\))")
+
+
+def _near_budget_once(reply, message, history):
+    """Say "أعلى حاجة بسيطة من ميزانيتك" once for a price, not on every reply that quotes it.
+
+    One 750 bottle against a 700 budget carried the sentence on four consecutive replies, and twice
+    inside one of them (simulation S11, round 2 full 5 and 6: "repeating it across several
+    consecutive replies sounds scripted"). The first quote of a price keeps it, on the price itself;
+    later quotes of the same price, and a second copy in the model's prose, lose it. A message that
+    asks about the budget keeps it: there the sentence is the answer. Only prices within the
+    near-budget band ever carry the label, so nothing over budget goes unsaid.
+    """
+    from .product_formatting import FITS_BUDGET_QUESTION
+    from .static_faq_service import normalize_arabic
+    if NEAR_BUDGET not in (reply or ""):
+        return reply
+    asked = normalize_arabic(message or "")
+    if _re.search(r"ميزاني|غالي|\bbudget\b", asked) or FITS_BUDGET_QUESTION.search(sales_naming.normalize_product_name(message or "")):
+        earlier = []
+    else:
+        earlier = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    told = {match.group(2).replace(",", "") for text in earlier for match in _NEAR_BUDGET_ON_A_PRICE.finditer(text)}
+    kept_one = False
+
+    def on_price(match):
+        nonlocal kept_one
+        if match.group(2).replace(",", "") in told:
+            return match.group(1)
+        kept_one = True
+        return match.group(0)
+
+    cleaned = _NEAR_BUDGET_ON_A_PRICE.sub(on_price, reply)
+    if kept_one or told:
+        # A copy in the model's own sentence beside the labelled price, or after it was already said.
+        lines = []
+        for line in cleaned.split("\n"):
+            if NEAR_BUDGET in line and not _NEAR_BUDGET_ON_A_PRICE.search(line):
+                sentences = []
+                for sentence in _re.split(r"(?<=[.!؟?])\s+", line):
+                    if NEAR_BUDGET not in sentence:
+                        sentences.append(sentence)
+                        continue
+                    comma = sentence.rfind("،", 0, sentence.find(NEAR_BUDGET))
+                    if comma > 0 and len(sentence[:comma].split()) >= 2:
+                        sentences.append(sentence[:comma].rstrip() + ".")
+                line = " ".join(sentences)
+                if not line.strip():
+                    continue
+            lines.append(line)
+        cleaned = "\n".join(lines)
+    return cleaned if cleaned.strip() else reply
+
+
+# Asking for the source, not complaining that none was given: "من غير مصدر" beside a price question
+# ("لسه بتكرر نفس النوتات من غير مصدر… الـ90 بكام؟") does not ask for it again.
+_NOTES_SOURCE_QUESTION = _re.compile(
+    r"(?<!\w)(?:عندك|عندكم|فين|ايه|هو|في|فيه)\s+(?:\S+\s+)?(?:ال)?مصدر|مصدر(?:ه|ها|هم)?\s+(?:ايه|فين|منين)|"
+    r"من\s+مصدر\s+رسمي|مش\s+مصدر\w*|جبت(?:ه|ها|هم|يه|يها)?\s+منين|منين\s+(?:\S+\s+)?(?:ال)?(?:نوت|معلوم)|"
+    # "إنت متأكد من المصدر؟" (S02 round 3 replay 3, t5): asked about the source, got the list again.
+    r"متاكد\w*\s+من\s+(?:ال)?مصدر|معتمد\w*\s+علي|قايمه\s+ايه")
+NOTES_SOURCE = "النوتات دي هي المسجلة عندنا في بيانات العطر، ومعنديش مصدر رسمي من البراند أستند له."
+NOTES_SOURCE_AGAIN = "زي ما قلتلك، دي النوتات المسجلة عندنا ومعنديش مصدر تاني ليها."
+
+
+def _notes_source_note(normalized, history):
+    """The honest answer to "جبتها منين؟" / "عندك مصدر للنوتات دي؟": the notes are our recorded data.
+
+    Asked three times where the notes came from, the bot repeated the list twice and then said it had
+    no source while presenting the same list as recorded (simulation S02 round 3 replay 2, t3-t5; the
+    same gap in round 2 full 5, t7). Said once; a repeat gets the short form, then nothing more.
+    """
+    if not _NOTES_SOURCE_QUESTION.search(normalized or "") or not _re.search(r"نوت|notes?|مكونات|تركيب", normalized or ""):
+        return ""
+    said = "\n".join(row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant")
+    if NOTES_SOURCE not in said:
+        return NOTES_SOURCE
+    return "" if NOTES_SOURCE_AGAIN in said else NOTES_SOURCE_AGAIN
+
+
+_DRAFTING_LEAK = _re.compile(
+    r"[^.!؟?\n]*(?:هيتضاف|هتتضاف|هيضاف|هتضاف|هينضاف|هيتكتب|هتتكتب)\s+(?:\S+\s+){0,2}(?:تلقائي|[اأ]وتوماتيك|لوحد)[^.!؟?\n]*[.!؟?]?")
+
+
+def _without_drafting_leak(reply):
+    """Drop a sentence that repeats our own drafting instruction to the customer.
+
+    The quote prompt tells the model "الأسعار والأحجام هتتضاف تلقائياً بعد ردك"; it wrote "سعر الـ90 ملي
+    هيتضاف تلقائيًا." into the reply, above the price itself (simulation S02 round 3 full run, t7,
+    critical).
+    """
+    if not reply or not _DRAFTING_LEAK.search(reply):
+        return reply
+    lines = []
+    for line in reply.split("\n"):
+        stripped = _DRAFTING_LEAK.sub("", line).strip()
+        if stripped or not line.strip():
+            lines.append(stripped if stripped != line.strip() else line)
+    return "\n".join(lines).strip() or reply
+
+
 def _route_with_policy(message, history, store, conversation):
     with performance_turn(message, history):
         reply, context = _route(message, history, store, conversation)
         cleaned = enforce_reply(reply, context=context)
+        cleaned = _near_budget_once(cleaned, message, history)
+        cleaned = _without_drafting_leak(cleaned)
         if cleaned != reply and conversation is not None:
             # Checkout binds confirmation to the exact reply saved and delivered.
             import hashlib
@@ -1870,7 +2022,10 @@ def _route(message, history=None, store=None, conversation=None):
         # without its fees or the free in-store exchange (simulation S07 round 2 full 6, t5).
         policy_alone, _, asks_more = _policy_side_questions(message, store, history)
         if policy_alone and not asks_more:
-            return "\n\n".join(policy_alone), ""
+            # A complaint about a past purchase that mentions an exchange keeps its own handling.
+            complaint = sales_objection.detect(message, history)
+            if not (complaint is not None and complaint.is_complaint):
+                return "\n\n".join(policy_alone), ""
 
     objection = None
     if request_type in OBJECTION_ELIGIBLE and not _wants_a_human(message):
@@ -1887,6 +2042,15 @@ def _route(message, history=None, store=None, conversation=None):
                 and objection.kind in _SOFT_OBJECTIONS and _actionable_request({**fresh, **stated_style}, message)):
             # "مش متأكد… هي هادية ومش بتحب المسكر.. ترشحلي حاجة؟" carries everything needed to
             # recommend; the objection branch answered it by asking for a perfume name (S07 t2).
+            objection = None
+        if (objection is not None and request_type == "recommendation" and not objection.is_complaint
+                and objection.kind in ("price", "expensive", "budget")
+                and _ASKS_FOR_AN_ALTERNATIVE.search(normalized)
+                and _something_fits_the_budget(intent.get("max_price"), conversation, store)):
+            # "غالي أوي بصراحة، مفيش حاجة شبهه في حدود ١٠٠٠؟" asks for another perfume within a budget,
+            # and the request had already been read (budget 1000, like Aventus). Answered as a price
+            # objection, it got the same 1400 perfume described again (simulation S09 round 3 replay, t5).
+            # With nothing in the store under the budget, the objection path's own answer stands (S11).
             objection = None
 
     if objection is not None:
@@ -2196,6 +2360,9 @@ def _route(message, history=None, store=None, conversation=None):
         missing = _closer_to_a_missing_perfume(message, normalized, conversation, store)
         if missing and "معنديش بيانات" not in response:
             response = missing + "\n\n" + response
+        notes_source = _notes_source_note(normalized, history)
+        if notes_source and notes_source not in response:
+            response = notes_source + "\n\n" + response
 
         # A price or size question is purchase-adjacent and may close; "ريحته عاملة ايه؟"
         # is a factual question and may not.

@@ -411,6 +411,14 @@ def handle_objection(message, objection, history=None, store=None, conversation=
         # Praise or thanks beside "هفكر" deserves its acknowledgement (simulation S01 t7).
         return ("تسلم، خد وقتك." if thanks_or_praise(message) else "تمام، خد وقتك."), "CUSTOMER_DEFERRED"
     from .static_faq_service import normalize_arabic
+    if closing and not objection.is_complaint and re.search(
+            r"(?<!\w)[وف]?(?:هفكر|افكر|هراجع|اراجع|هشوف|هقرر)", normalize_arabic(message)):
+        # "كده مش مطمن لقائمة النوتات عندكم بصراحة. هفكر وأراجعها قبل ما أقرر، تسلم." closes with a doubt
+        # rather than a plain "هفكر", so it was not the "thinking" kind above, and it got a recap of
+        # the notes and an invitation to the branch (simulation S02 round 3 full run, t8, high). A
+        # customer who says they will think it over and thanks us gets the same short close.
+        from .sales.appreciation import thanks_or_praise
+        return ("تسلم، خد وقتك." if thanks_or_praise(message) else "تمام، خد وقتك."), "CUSTOMER_DEFERRED"
     if (objection.kind in ("price", "expensive", "budget") and not re.search(r"[?؟]", message)
             and re.search(r"(?<!\w)(?:هفكر|افكر|هشوف|اشوف|افكرها|هفكرها)(?!\w)", normalize_arabic(message))):
         # "غالي أوي كده 😅 هفكر وأشوف" defers; answered with a smaller-size pitch and a defence of the price,

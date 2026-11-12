@@ -1,0 +1,409 @@
+{
+  "id": "S02_enthusiast",
+  "title": "Perfume enthusiast asking about notes and differences",
+  "persona": "expert",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أفهم الفرق بين Aventus و Layton، مين فيهم smoky أكتر؟",
+      "reply": "Aventus هو الأكثر دخانية؛ طابعه خشبي وفاكهي وفيه دخان، بينما Layton فاكهي وخشبي ومسكر.",
+      "seconds": 27.69,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "comparison",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "comparison",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, fruity, smoky\nDescription Tags (first three only): woody, fruity, smoky\nSimple Scent Description: ريحته خشبي وفيه ريحة فواكه ودخان\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pineapple, Bergamot, Black Currant, Apple\nMiddle Notes: Birch, Patchouli, Moroccan Jasmine, Rose\nBase Notes: Musk, Oakmoss, Ambergris, Vanilla\n\n-------------------------\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: نيش\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, woody, sweet\nDescription Tags (first three only): fruity, woody, sweet\nSimple Scent Description: فيه ريحة فواكه وخشبي ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Jasmine, Violet, Geranium\nBase Notes: Vanilla, Pepper, Guaiac Wood, Patchouli\n\n-------------------------\n\nCOMPARED_PRODUCTS: Aventus | Layton",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "طب Aventus الـ top notes والـ middle والـ base إيه بالظبط؟ عايز النوتات الحقيقية مش وصف عام كده",
+      "reply": "الـTop Notes: أناناس، برغموت، كشمش أسود وتفاح. الـMiddle Notes: بتولا، باتشولي، ياسمين مغربي وورد. والـBase Notes: مسك، طحلب البلوط، عنبر رمادي وفانيليا.",
+      "seconds": 3.44,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, fruity, smoky\nDescription Tags (first three only): woody, fruity, smoky\nSimple Scent Description: ريحته خشبي وفيه ريحة فواكه ودخان\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pineapple, Bergamot, Black Currant, Apple\nMiddle Notes: Birch, Patchouli, Moroccan Jasmine, Rose\nBase Notes: Musk, Oakmoss, Ambergris, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "تمام، بس فين الليمون والفلفل الوردي اللي بيظهروا في بعض قوائم النوتات؟ النوتات بتختلف حسب الإصدار ولا دي قائمة ثابتة؟",
+      "reply": "Aventus: نوتاته Pineapple, Bergamot, Black Currant, Apple، Birch, Patchouli, Moroccan Jasmine, Rose، Musk, Oakmoss, Ambergris, Vanilla. ثباته ممتاز.",
+      "seconds": 9.32,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, fruity, smoky\nDescription Tags (first three only): woody, fruity, smoky\nSimple Scent Description: ريحته خشبي وفيه ريحة فواكه ودخان\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pineapple, Bergamot, Black Currant, Apple\nMiddle Notes: Birch, Patchouli, Moroccan Jasmine, Rose\nBase Notes: Musk, Oakmoss, Ambergris, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Aventus"
+      ],
+      "claim_checks": [
+        {
+          "draft": "الليمون والفلفل الوردي مش موجودين ضمن النوتات المسجلة عندنا لـAventus؛ النوتات المسجلة ثابتة عندنا، ومش معايا معلومة تأكد إذا كانت القوائم المختلفة بسبب اختلاف الإصدار.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        },
+        {
+          "draft": "الليمون والفلفل الوردي مش موجودين ضمن النوتات المسجلة عندنا لـAventus؛ الـTop Notes هي أناناس وبرغموت وكشمش أسود وتفاح. ماعنديش تأكيد إذا كانت القوائم المختلفة بسبب اختلاف الإصدار ولا لأ.",
+          "issues": [
+            "note:aventus:denied apple, which is in the stored notes"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "يعني كله ثباته ممتاز؟ حلو أوي 😏 بس ما جاوبتنيش على حتة الليمون والفلفل الوردي؛ دول موجودين في إصدارات معينة ولا لأ؟",
+      "reply": "تسلم يا فندم.\n\nAventus: مفيش ليمون ضمن نوتاته المسجلة. مفيش فلفل ضمن نوتاته المسجلة. ثباته ممتاز. متوفر.",
+      "seconds": 10.3,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Aventus\nBrand: Creed\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: All Seasons\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, fruity, smoky\nDescription Tags (first three only): woody, fruity, smoky\nSimple Scent Description: ريحته خشبي وفيه ريحة فواكه ودخان\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pineapple, Bergamot, Black Currant, Apple\nMiddle Notes: Birch, Patchouli, Moroccan Jasmine, Rose\nBase Notes: Musk, Oakmoss, Ambergris, Vanilla\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Aventus"
+      ],
+      "claim_checks": [
+        {
+          "draft": "الليمون والفلفل الوردي مش موجودين ضمن النوتات المسجلة لـAventus، ومش عندي تأكيد إنهم موجودين في إصدارات معينة. القائمة المتاحة ثابتة عندي، ومش بتوضح اختلاف النوتات بين الإصدارات.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        },
+        {
+          "draft": "الليمون والفلفل الوردي مش موجودين ضمن النوتات المسجلة لـAventus، ومش عندي تأكيد إنهم موجودين في إصدارات معينة. القائمة المتاحة ثابتة عندي، ومفيش تفاصيل عن اختلاف النوتات بين الإصدارات.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "تمام، طب Layton الـ top notes والـ middle والـ base إيه؟ عايز أقارنهم على أساس النوتات مش الوصف العام.",
+      "reply": "في الـTop Notes هتلاقي التفاح والبرغموت واللافندر، وفي الـMiddle الياسمين والبنفسج والجيرانيوم. أما الـBase Notes فهي الفانيليا والفلفل وخشب الجاياك والباتشولي.",
+      "seconds": 5.59,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, woody, sweet\nDescription Tags (first three only): fruity, woody, sweet\nSimple Scent Description: فيه ريحة فواكه وخشبي ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Jasmine, Violet, Geranium\nBase Notes: Vanilla, Pepper, Guaiac Wood, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "الفلفل في الـbase؟ مش فاكر إن Layton نوتاته فيها pepper أصلاً، متأكد؟ وكمان فين الـcardamom والـapple واضحين في الـdry down؟",
+      "reply": "معاك حق، الفلفل موجود فعلًا في الـBase Notes حسب النوتات المتاحة عندنا. الـCardamom مش مذكور ضمن النوتات، والتفاح في الـTop Notes مش في الـdry down.",
+      "seconds": 5.54,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, woody, sweet\nDescription Tags (first three only): fruity, woody, sweet\nSimple Scent Description: فيه ريحة فواكه وخشبي ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Jasmine, Violet, Geranium\nBase Notes: Vanilla, Pepper, Guaiac Wood, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "غريبة، الـcardamom من النوتات المعروفة في Layton. إنتوا معتمدين على قايمة إيه؟ وعايز سعر الـ90 من Layton كمان.",
+      "reply": "Layton\nالـCardamom مش موجود ضمن النوتات المسجلة عندنا؛ الـTop Notes: Apple, Bergamot, Lavender، والـMiddle: Jasmine, Violet, Geranium، والـBase: Vanilla, Pepper, Guaiac Wood, Patchouli.\nسعر الـ90 ملي هيتضاف تلقائيًا.\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.",
+      "seconds": 2.93,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, woody, sweet\nDescription Tags (first three only): fruity, woody, sweet\nSimple Scent Description: فيه ريحة فواكه وخشبي ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Jasmine, Violet, Geranium\nBase Notes: Vanilla, Pepper, Guaiac Wood, Patchouli\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1128, \"variant_id\": 3054, \"name\": \"Layton\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"2000.00\"}], \"append\": true, \"text\": \"Layton\\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.\", \"budget\": null, \"request\": \"غريبة، الـcardamom من النوتات المعروفة في Layton. إنتوا معتمدين على قايمة إيه؟ وعايز سعر الـ90 من Layton كمان.\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1128, \"variant_id\": 3054, \"name\": \"Layton\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"2000.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.\", \"budget\": null, \"request\": \"غريبة، الـcardamom من النوتات المعروفة في Layton. إنتوا معتمدين على قايمة إيه؟ وعايز سعر الـ90 من Layton كمان.\", \"sections\": [{\"product_id\": 1128, \"name\": \"Layton\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تمام، كده مش مطمن لقائمة النوتات عندكم بصراحة. هفكر وأراجعها قبل ما أقرر، تسلم.",
+      "reply": "فاهم قلقك يا فندم، خصوصًا إنك بتراجع النوتات قبل ما تقرر. اللي أقدر أقوله إن قائمة Layton عندنا بتذكر التفاح والبرغموت واللافندر في الـTop، والفلفل في الـBase؛ ولو حابب تراجعها بنفسك، تقدر تزور فرعنا.",
+      "seconds": 7.9,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "not_sure",
+        "matched": [
+          "مش مطمن"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Layton\nBrand: Parfums de Marly\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 1400.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 2000.00 EGP\n- زجاجة اوريجنال 100 ملي: 2400.00 EGP\n💡 اقتراح حجم: الـ 90 ملي — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 2000 جنيه، وسعر الـ 50 ملي 1400 جنيه، والفرق بين الحجمين 600 جنيه، بس سعر الملي أرخص: 22.2 بدل 28.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ الفرق في سعر الملي بسيط، فممنوع تقول عليه \"أحسن قيمة\" ولا \"أحسن اختيار\" ولا \"أفضل قيمة\" ولا \"أحسن قيمة مقابل سعر\" — الفرق ده يخص سعر الملي بس، والاختيار حسب طلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: نيش\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fruity, woody, sweet\nDescription Tags (first three only): fruity, woody, sweet\nSimple Scent Description: فيه ريحة فواكه وخشبي ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Bergamot, Lavender\nMiddle Notes: Jasmine, Violet, Geranium\nBase Notes: Vanilla, Pepper, Guaiac Wood, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Layton"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 85.9,
+  "judge_prompt": "SCENARIO S02_enthusiast: Perfume enthusiast asking about notes and differences\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Notes are quoted only from the stored top/middle/base notes; nothing invented.\n- Differences between Aventus and Layton use their stored scent tags/notes accurately.\n- Performance follows the store policy without inventing hours or ranking by performance; handles sarcasm calmly without arguing or forced humour.\n- Price question gets the actual variant price directly.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أفهم الفرق بين Aventus و Layton، مين فيهم smoky أكتر؟\n[internal] route=comparison stage=comparison saved_preferences={}\nASSISTANT: Aventus هو الأكثر دخانية؛ طابعه خشبي وفاكهي وفيه دخان، بينما Layton فاكهي وخشبي ومسكر.\n\n--- TURN 2 ---\nCUSTOMER: طب Aventus الـ top notes والـ middle والـ base إيه بالظبط؟ عايز النوتات الحقيقية مش وصف عام كده\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: الـTop Notes: أناناس، برغموت، كشمش أسود وتفاح. الـMiddle Notes: بتولا، باتشولي، ياسمين مغربي وورد. والـBase Notes: مسك، طحلب البلوط، عنبر رمادي وفانيليا.\n\n--- TURN 3 ---\nCUSTOMER: تمام، بس فين الليمون والفلفل الوردي اللي بيظهروا في بعض قوائم النوتات؟ النوتات بتختلف حسب الإصدار ولا دي قائمة ثابتة؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: Aventus: نوتاته Pineapple, Bergamot, Black Currant, Apple، Birch, Patchouli, Moroccan Jasmine, Rose، Musk, Oakmoss, Ambergris, Vanilla. ثباته ممتاز.\n\n--- TURN 4 ---\nCUSTOMER: يعني كله ثباته ممتاز؟ حلو أوي 😏 بس ما جاوبتنيش على حتة الليمون والفلفل الوردي؛ دول موجودين في إصدارات معينة ولا لأ؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: تسلم يا فندم.\n\nAventus: مفيش ليمون ضمن نوتاته المسجلة. مفيش فلفل ضمن نوتاته المسجلة. ثباته ممتاز. متوفر.\n\n--- TURN 5 ---\nCUSTOMER: تمام، طب Layton الـ top notes والـ middle والـ base إيه؟ عايز أقارنهم على أساس النوتات مش الوصف العام.\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: في الـTop Notes هتلاقي التفاح والبرغموت واللافندر، وفي الـMiddle الياسمين والبنفسج والجيرانيوم. أما الـBase Notes فهي الفانيليا والفلفل وخشب الجاياك والباتشولي.\n\n--- TURN 6 ---\nCUSTOMER: الفلفل في الـbase؟ مش فاكر إن Layton نوتاته فيها pepper أصلاً، متأكد؟ وكمان فين الـcardamom والـapple واضحين في الـdry down؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: معاك حق، الفلفل موجود فعلًا في الـBase Notes حسب النوتات المتاحة عندنا. الـCardamom مش مذكور ضمن النوتات، والتفاح في الـTop Notes مش في الـdry down.\n\n--- TURN 7 ---\nCUSTOMER: غريبة، الـcardamom من النوتات المعروفة في Layton. إنتوا معتمدين على قايمة إيه؟ وعايز سعر الـ90 من Layton كمان.\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: Layton\nالـCardamom مش موجود ضمن النوتات المسجلة عندنا؛ الـTop Notes: Apple, Bergamot, Lavender، والـMiddle: Jasmine, Violet, Geranium، والـBase: Vanilla, Pepper, Guaiac Wood, Patchouli.\nسعر الـ90 ملي هيتضاف تلقائيًا.\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.\n\n--- TURN 8 ---\nCUSTOMER: تمام، كده مش مطمن لقائمة النوتات عندكم بصراحة. هفكر وأراجعها قبل ما أقرر، تسلم.\n[internal] route=faq stage=objection saved_preferences={}\nASSISTANT: فاهم قلقك يا فندم، خصوصًا إنك بتراجع النوتات قبل ما تقرر. اللي أقدر أقوله إن قائمة Layton عندنا بتذكر التفاح والبرغموت واللافندر في الـTop، والفلفل في الـBase؛ ولو حابب تراجعها بنفسك، تقدر تزور فرعنا.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Aventus | brand=Creed | gender=male | type=niche | season=All Seasons | scent_tags=woody,fruity,smoky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pineapple, Bergamot, Black Currant, Apple | mid=Birch, Patchouli, Moroccan Jasmine, Rose | base=Musk, Oakmoss, Ambergris, Vanilla | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Layton | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=fruity,woody,sweet | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Apple, Bergamot, Lavender | mid=Jasmine, Violet, Geranium | base=Vanilla, Pepper, Guaiac Wood, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 4,
+      "naturalness": 5,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "criteria": [
+      {
+        "criterion": "Notes are quoted only from the stored top/middle/base notes; nothing invented.",
+        "met": true,
+        "evidence": "turns 2, 5–7: The listed Aventus and Layton notes match the stored notes; the assistant correctly says cardamom is not in Layton’s stored list."
+      },
+      {
+        "criterion": "Differences between Aventus and Layton use their stored scent tags/notes accurately.",
+        "met": true,
+        "evidence": "turn 1: Aventus is described as woody, fruity, and smoky, while Layton is fruity, woody, and sweet, consistent with their stored scent tags."
+      },
+      {
+        "criterion": "Performance follows the store policy without inventing hours or ranking by performance; handles sarcasm calmly without arguing or forced humour.",
+        "met": true,
+        "evidence": "turns 3–4: The assistant says longevity is excellent without giving an unsupported duration or ranking perfumes; it does not argue or force a joke in response to the sarcasm."
+      },
+      {
+        "criterion": "Price question gets the actual variant price directly.",
+        "met": true,
+        "evidence": "turn 7: It gives the Layton 90ml price as 2000 EGP, matching the stored 90ml price."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 3,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Address whether lemon and pink pepper appear in particular Aventus versions, or clarify that the store’s stored list cannot confirm edition-specific variations.",
+        "actual": "Aventus: نوتاته Pineapple, Bergamot, Black Currant, Apple، Birch, Patchouli, Moroccan Jasmine, Rose، Musk, Oakmoss, Ambergris, Vanilla. ثباته ممتاز.",
+        "why": "The reply repeats the notes but does not answer the edition-variation question; the longevity comment is irrelevant."
+      },
+      {
+        "turn": 4,
+        "severity": "medium",
+        "category": "understanding",
+        "expected": "Answer whether lemon or pink pepper are listed for specific Aventus editions, or state the limitation of the available list.",
+        "actual": "تسلم يا فندم. Aventus: مفيش ليمون ضمن نوتاته المسجلة. مفيش فلفل ضمن نوتاته المسجلة. ثباته ممتاز. متوفر.",
+        "why": "It correctly says those notes are absent from the stored list, but still does not address whether they occur in certain editions; the thanks, longevity, and availability remarks are unnecessary."
+      },
+      {
+        "turn": 7,
+        "severity": "critical",
+        "category": "commerce",
+        "expected": "Give the listed 90ml price directly without claiming an unsupported automatic pricing action.",
+        "actual": "سعر الـ90 ملي هيتضاف تلقائيًا. زجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.",
+        "why": "The 2000 EGP price is correct, but the claim that the price will be added automatically is unsupported by the provided store facts."
+      },
+      {
+        "turn": 8,
+        "severity": "high",
+        "category": "stop",
+        "expected": "Briefly acknowledge the customer’s decision to review and stop without advancing the sale.",
+        "actual": "فاهم قلقك يا فندم، خصوصًا إنك بتراجع النوتات قبل ما تقرر. اللي أقدر أقوله إن قائمة Layton عندنا بتذكر التفاح والبرغموت واللافندر في الـTop، والفلفل في الـBase؛ ولو حابب تراجعها بنفسك، تقدر تزور فرعنا.",
+        "why": "The customer said they would think and review before deciding and thanked the assistant; the recap and invitation to visit the branch continue the sales interaction unnecessarily."
+      }
+    ],
+    "deterministic_review": [],
+    "summary": "The assistant gives accurate scent tags, stored notes, and the correct Layton 90ml price, but repeatedly sidesteps the customer’s edition-specific question. It also makes an unsupported claim about automatic price addition and does not fully stop when the customer says they will review and decide later."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "judge score knows_when_to_stop=4",
+    "judge score naturalness=5",
+    "judge turn 7 critical commerce: The 2000 EGP price is correct, but the claim that the price will be added automatically is unsupported by the provided store facts.",
+    "judge turn 8 high stop: The customer said they would think and review before deciding and thanked the assistant; the recap and invitation to visit the branch continue the sales interac"
+  ],
+  "usage": {
+    "api_calls": 33,
+    "by_role": {
+      "seller": {
+        "calls": 25,
+        "cost_usd": "0.007016275"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.001049750"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.00233095"
+      }
+    },
+    "prompt_tokens": 219224,
+    "cached_tokens": 172480,
+    "completion_tokens": 5795,
+    "reasoning_tokens": 3454,
+    "cost_usd": "0.010396975",
+    "api_seconds": 98.4,
+    "failed_calls": []
+  }
+}

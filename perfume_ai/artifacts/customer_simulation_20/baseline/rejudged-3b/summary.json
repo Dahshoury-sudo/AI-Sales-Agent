@@ -1,0 +1,56 @@
+[
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 8,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "turn 1 high excluded_tag_recommended: recommended ['212 Sexy man', 'Black XS'] although the customer excluded 'sweet'",
+      "judge score understanding_accuracy=4",
+      "judge turn 1 high understanding: كلا العطرين يحمل وسم sweet في قاعدة البيانات، فهما يخالفان استبعاد العميل الصريح.",
+      "criterion unmet: No recommendation includes a perfume tagged sweet or oud once the customer excluded them."
+    ],
+    "cost_usd": "0.00418645",
+    "api_calls": 1
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 4,
+      "memory": 4,
+      "question_quality": 3,
+      "knows_when_to_stop": 3,
+      "naturalness": 5,
+      "emotional_handling": 5,
+      "commerce_correctness": 4
+    },
+    "reasons": [
+      "turn 3 high repeated_question: asked the same question as the previous reply: 'بتحب الفريش، الخشبي، العود، ولا المسكر؟'",
+      "judge score understanding_accuracy=4",
+      "judge score memory=4",
+      "judge score question_quality=3",
+      "judge score knows_when_to_stop=3",
+      "judge score naturalness=5",
+      "judge score emotional_handling=5",
+      "judge score commerce_correctness=4",
+      "judge turn 3 high question: كرر السؤال نفسه بعد أن أوضحت أنها لا تعرف، وتجاهل طلب الأسعار. السعر المتاح يبدأ من 450 إلى 1200 جنيه، مع منتجات أغلى قليلاً لبعض الزجاجات الأوريجينال.",
+      "judge turn 5 high stop: بعد رفضها التحويل وتوضيحها أنها تريد الأسعار فقط ثم قولها «تمام شكراً»، كرر الرد عن الخصومات ودفع باتجاه الشراء بدلاً من إغلاق المحادثة.",
+      "criterion unmet: Gives space to browse; no pressure or closing questions.",
+      "criterion unmet: The joke handled lightly; 'تمام شكراً' closed briefly with no further sales question."
+    ],
+    "cost_usd": "0.001762575",
+    "api_calls": 1
+  }
+]

@@ -1,0 +1,671 @@
+{
+  "id": "S07_gift",
+  "title": "Gift buyer who does not know the recipient's taste",
+  "persona": "gift_buyer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات",
+      "reply": "ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.",
+      "seconds": 102.01,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "female"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "هي بتحب الحاجات الخفيفة غالبًا، مش المسكرة أوي.. هي هادية وكلاسيك، ترشحلي إيه؟",
+      "reply": "Cassilia ريحته فيها زهور وفواكه وخفيف.",
+      "seconds": 7.53,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "الحاجات الخفيفة",
+            "tags": [
+              "light"
+            ],
+            "polarity": "positive"
+          },
+          {
+            "text": "مش المسكرة أوي",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_match": "all",
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": {
+        "matched": [
+          "Cassilia"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [],
+      "saved_preferences": {
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia"
+      ],
+      "claim_checks": [
+        {
+          "draft": "Cassilia ريحته فيها زهور وفواكه وخفيف، وده أقرب اختيار لو هي مش بتحب الحاجات المسكرة أوي.",
+          "issues": [
+            "description:Cassilia: use the first three saved labels: floral, fruity, light"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "طب هو ثابت؟ ولو مجاش على ذوقها أعمل إيه؟",
+      "reply": "أيوه، ثباته ممتاز وفوحانه قوي.\n\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"",
+      "seconds": 4.0,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "طب هتعجبها أكيد؟ هي هادية وكلاسيك وبتشتغل في بنك، ومش بتحب الحاجات المسكرة أوي، فقلقان أختار حاجة غلط",
+      "reply": "مقدرش أضمن إنها هتعجبها، بس Cassilia ريحته فيها زهور وفواكه وخفيف، ومفيش وصف للحلاوة ضمن طابعه.",
+      "seconds": 5.59,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "not_sure",
+        "matched": [
+          "قلقان"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "scent_evidence": [
+          {
+            "text": "الحاجات المسكرة أوي",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": null,
+        "occasion_delegated": true,
+        "recommendation_mode": "refinement"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_tags": [
+          "light"
+        ],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": null,
+        "recommendation_mode": "refinement",
+        "scent_match": "all",
+        "gender": "female",
+        "occasion": "Daily & Casual"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Cassilia"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "Cassilia"
+      ],
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Cassilia"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "تمام، هفكر في Cassilia. هو في حدود ميزانيتي؟",
+      "reply": "Cassilia\nفاهم إنك هتفكر فيها، وسعرها بيتحدد حسب الحجم.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.",
+      "seconds": 2.53,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Cassilia\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": null, \"request\": \"تمام، هفكر في Cassilia. هو في حدود ميزانيتي؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1083, \"variant_id\": 2940, \"name\": \"Cassilia\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1083, \"variant_id\": 2939, \"name\": \"Cassilia\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": null, \"request\": \"تمام، هفكر في Cassilia. هو في حدود ميزانيتي؟\", \"sections\": [{\"product_id\": 1083, \"name\": \"Cassilia\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "طب الـ50 ملي برضه ثباتها كويس؟ هفكر أطلبها",
+      "reply": "فاهم إنك هتفكر في الـ50 ملي؛ أيوه، ثباتها ممتاز وفوحانها قوي زي باقي أحجام العطر.",
+      "seconds": 7.39,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [
+        {
+          "draft": "فاهم إنك لسه بتفكر فيها. أيوه، ثبات الـ50 ملي ممتاز وفوحانه قوي، والـ50 ملي حجم أصغر كبداية لو حابب تقلل مخاطرة الاختيار.",
+          "issues": [
+            "performance: التزم بثبات ممتاز وفوحان قوي لكل عطورنا؛ الساعات للثبات فقط عند طلبها، وأكتر من 8 ساعات فقط"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "تمام كده، هفكر أطلب الـ50 ملي إن شاء الله",
+      "reply": "تمام، خد وقتك في التفكير؛ والـ50 ملي بداية مناسبة لو حابب تقلل المخاطرة قبل ما تختار حجم أكبر.",
+      "seconds": 5.32,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Cassilia\nBrand: Cassilia\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Cassilia) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fruity, light\nDescription Tags (first three only): floral, fruity, light\nSimple Scent Description: فيه ريحة زهور وفواكه وخفيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Mandarin Orange, Red Currant\nMiddle Notes: Peony, Rose, Jasmine, Lily of the Valley\nBase Notes: White Musk, Sandalwood, Amber\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تسلم يا باشا، هفكر فيها وإن شاء الله أطلبها قريب 🙏",
+      "reply": "تسلم، خد وقتك.",
+      "seconds": 1.12,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "occasion": "Daily & Casual",
+        "scent_open": false,
+        "scent_tags": [
+          "light"
+        ],
+        "scent_match": "all",
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "CUSTOMER_DEFERRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "gender": "female",
+    "occasion": "Daily & Casual",
+    "scent_open": false,
+    "scent_tags": [
+      "light"
+    ],
+    "scent_match": "all",
+    "excluded_scent_tags": [
+      "sweet"
+    ]
+  },
+  "seconds": 144.7,
+  "judge_prompt": "SCENARIO S07_gift: Gift buyer who does not know the recipient's taste\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.\n- Does not promise she will love it (no مضمون / هتعجبها أكيد).\n- Return/exchange question answered from the store's configured policy only; nothing invented.\n- Asks at most one high-value question before recommending.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات\n[internal] route=recommendation stage=None saved_preferences={\"gender\": \"female\"}\n[internal] merged_intent={\"gender\": \"female\"}\nASSISTANT: ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.\n\n--- TURN 2 ---\nCUSTOMER: هي بتحب الحاجات الخفيفة غالبًا، مش المسكرة أوي.. هي هادية وكلاسيك، ترشحلي إيه؟\n[internal] route=recommendation stage=discovery saved_preferences={\"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"scent_tags\": [\"light\"], \"excluded_scent_tags\": [\"sweet\"], \"scent_match\": \"all\", \"gender\": \"female\"}\n[internal] shortlist=['Cassilia']\nASSISTANT: Cassilia ريحته فيها زهور وفواكه وخفيف.\n\n--- TURN 3 ---\nCUSTOMER: طب هو ثابت؟ ولو مجاش على ذوقها أعمل إيه؟\n[internal] route=product_info stage=recommendation saved_preferences={\"gender\": \"female\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: أيوه، ثباته ممتاز وفوحانه قوي.\n\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n--- TURN 4 ---\nCUSTOMER: طب هتعجبها أكيد؟ هي هادية وكلاسيك وبتشتغل في بنك، ومش بتحب الحاجات المسكرة أوي، فقلقان أختار حاجة غلط\n[internal] route=product_info stage=recommendation saved_preferences={\"gender\": \"female\", \"occasion\": \"Daily & Casual\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"scent_tags\": [\"light\"], \"excluded_scent_tags\": [\"sweet\"], \"recommendation_mode\": \"refinement\", \"scent_match\": \"all\", \"gender\": \"female\", \"occasion\": \"Daily & Casual\"}\n[internal] shortlist=['Cassilia']\nASSISTANT: مقدرش أضمن إنها هتعجبها، بس Cassilia ريحته فيها زهور وفواكه وخفيف، ومفيش وصف للحلاوة ضمن طابعه.\n\n--- TURN 5 ---\nCUSTOMER: تمام، هفكر في Cassilia. هو في حدود ميزانيتي؟\n[internal] route=product_info stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Daily & Casual\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: Cassilia\nفاهم إنك هتفكر فيها، وسعرها بيتحدد حسب الحجم.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\n\n--- TURN 6 ---\nCUSTOMER: طب الـ50 ملي برضه ثباتها كويس؟ هفكر أطلبها\n[internal] route=product_info stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Daily & Casual\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: فاهم إنك هتفكر في الـ50 ملي؛ أيوه، ثباتها ممتاز وفوحانها قوي زي باقي أحجام العطر.\n\n--- TURN 7 ---\nCUSTOMER: تمام كده، هفكر أطلب الـ50 ملي إن شاء الله\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Daily & Casual\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: تمام، خد وقتك في التفكير؛ والـ50 ملي بداية مناسبة لو حابب تقلل المخاطرة قبل ما تختار حجم أكبر.\n\n--- TURN 8 ---\nCUSTOMER: تسلم يا باشا، هفكر فيها وإن شاء الله أطلبها قريب 🙏\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"female\", \"occasion\": \"Daily & Casual\", \"scent_open\": false, \"scent_tags\": [\"light\"], \"scent_match\": \"all\", \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: تسلم، خد وقتك.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Cassilia | brand=Cassilia | gender=female | type=western | season=Summer | scent_tags=floral,fruity,light | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Mandarin Orange, Red Currant | mid=Peony, Rose, Jasmine, Lily of the Valley | base=White Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط ولكل المحافظات في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي، للجنسين؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "criteria": [
+      {
+        "criterion": "Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.",
+        "met": true,
+        "evidence": "turns 1–4: Recommends for the fiancée and follows her stated preference for light, not-too-sweet scents; does not apply any preference to the buyer."
+      },
+      {
+        "criterion": "Does not promise she will love it (no مضمون / هتعجبها أكيد).",
+        "met": true,
+        "evidence": "turn 4: Says «مقدرش أضمن إنها هتعجبها» and does not guarantee the gift will suit her."
+      },
+      {
+        "criterion": "Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "met": true,
+        "evidence": "turn 3: Gives the configured two-day exchange window, shipping/box charges, and the stated rules for original-shaped bottles and customized mixes."
+      },
+      {
+        "criterion": "Asks at most one high-value question before recommending.",
+        "met": true,
+        "evidence": "turn 1: Offers one focused choice between light/fresh and warm/sweet scents, with an option to choose for the buyer; then recommends after the customer gives a preference."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 5,
+        "severity": "medium",
+        "category": "question",
+        "expected": "Give the available prices and, since no budget has been provided, ask what budget the customer has or clarify that fit cannot be determined without it.",
+        "actual": "«فاهم إنك هتفكر فيها، وسعرها بيتحدد حسب الحجم. زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.»",
+        "why": "The prices are accurate and useful, but the assistant cannot tell whether either size is within the customer's budget without knowing the budget."
+      }
+    ],
+    "deterministic_review": [],
+    "summary": "The assistant keeps the recommendation scoped to the fiancée, gives the configured exchange policy accurately, and explicitly avoids guaranteeing that she will like the perfume. The main gap is not asking for the customer's budget when asked whether the perfume fits it; no order is pushed or placed."
+  },
+  "verdict": "pass",
+  "verdict_reasons": [],
+  "usage": {
+    "api_calls": 31,
+    "by_role": {
+      "seller": {
+        "calls": 23,
+        "cost_usd": "0.004081675"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.000975800"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.001732575"
+      }
+    },
+    "prompt_tokens": 163880,
+    "cached_tokens": 136730,
+    "completion_tokens": 4192,
+    "reasoning_tokens": 2282,
+    "cost_usd": "0.006790050",
+    "api_seconds": 69.3,
+    "failed_calls": []
+  }
+}

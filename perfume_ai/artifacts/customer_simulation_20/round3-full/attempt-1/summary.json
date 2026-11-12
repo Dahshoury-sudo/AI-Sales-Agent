@@ -1,0 +1,375 @@
+[
+  {
+    "id": "S01_beginner",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004906370",
+    "api_calls": 16
+  },
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 4,
+      "naturalness": 5,
+      "emotional_handling": 6,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score knows_when_to_stop=4",
+      "judge score naturalness=5",
+      "judge turn 7 critical commerce: The 2000 EGP price is correct, but the claim that the price will be added automatically is unsupported by the provided store facts.",
+      "judge turn 8 high stop: The customer said they would think and review before deciding and thanked the assistant; the recap and invitation to visit the branch continue the sales interac"
+    ],
+    "cost_usd": "0.010396975",
+    "api_calls": 33
+  },
+  {
+    "id": "S03_total_budget",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.007699820",
+    "api_calls": 22
+  },
+  {
+    "id": "S04_busy_price",
+    "verdict": "pass",
+    "turns": 3,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.002370630",
+    "api_calls": 12
+  },
+  {
+    "id": "S05_premium",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.010716915",
+    "api_calls": 25
+  },
+  {
+    "id": "S06_indecisive",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.016455100",
+    "api_calls": 35
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge turn 4 critical commerce: The policy says orders cannot be opened at delivery, and gives specific sealed-only terms for original bottles and no-return terms for customized mixes. It does",
+      "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented."
+    ],
+    "cost_usd": "0.008212960",
+    "api_calls": 27
+  },
+  {
+    "id": "S08_compare",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.003513410",
+    "api_calls": 16
+  },
+  {
+    "id": "S09_unavailable",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.005588295",
+    "api_calls": 23
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 7,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.014361845",
+    "api_calls": 26
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 10,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.011745240",
+    "api_calls": 30
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "criterion unmet: Topic change (shipping) answered from store facts, then the conversation resumes naturally."
+    ],
+    "cost_usd": "0.015191350",
+    "api_calls": 33
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 6,
+      "question_quality": 5,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge score question_quality=5",
+      "judge turn 4 high memory: The customer asked the shipping cost, not the perfume price, and had already named K By Dolce and the 50ml size. The assistant asks for supplied details instead"
+    ],
+    "cost_usd": "0.011981880",
+    "api_calls": 24
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 7,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.013420615",
+    "api_calls": 34
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.011546810",
+    "api_calls": 29
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.007329395",
+    "api_calls": 26
+  },
+  {
+    "id": "S17_order_complaint",
+    "verdict": "pass",
+    "turns": 2,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.000864775",
+    "api_calls": 4
+  },
+  {
+    "id": "S18_browser",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004420060",
+    "api_calls": 12
+  },
+  {
+    "id": "S19_ready_buyer_edits",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 8,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.009153830",
+    "api_calls": 28
+  },
+  {
+    "id": "S20_pushy_discount",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [],
+    "cost_usd": "0.002854025",
+    "api_calls": 6
+  }
+]

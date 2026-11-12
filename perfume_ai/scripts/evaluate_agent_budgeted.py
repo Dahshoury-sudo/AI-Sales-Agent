@@ -208,8 +208,14 @@ class Meter:
                 if invalid:
                     raise ValueError("Invalid evaluation response: " + invalid)
                 return response
-            except BaseException:
+            except BaseException as error:
                 with self.condition:
+                    if getattr(error, "status_code", None) == 429 or type(error).__name__ == "RateLimitError":
+                        # Owner rule (2026-11-12): stop at the first 429. The provider's own spend limit
+                        # once rejected twelve calls in a row, each charged at its reserved maximum;
+                        # nothing further is sent after the first one.
+                        self.halted = True
+                        self.halt_reason = "provider returned 429"
                     if entry["status"] == "in_flight":
                         self.spent += reservation
                         self.reserved -= reservation

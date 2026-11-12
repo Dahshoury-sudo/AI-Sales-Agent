@@ -1,0 +1,58 @@
+[
+  {
+    "id": "S09_unavailable",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 7,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 7
+    },
+    "reasons": [
+      "judge turn 5 high commerce: This repeats a perfume priced at 1,400 EGP for 50 ml and 2,000 EGP for 90 ml, ignores the stated budget, and fails to offer an available in-budget alternative."
+    ],
+    "cost_usd": "0.015290870",
+    "api_calls": 40
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "pass",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.013765625",
+    "api_calls": 22
+  },
+  {
+    "id": "S16_skeptic",
+    "verdict": "pass",
+    "turns": 7,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.005707090",
+    "api_calls": 27
+  }
+]

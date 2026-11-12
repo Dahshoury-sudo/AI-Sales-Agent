@@ -1,0 +1,20 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.00205579",
+    "api_calls": 1
+  }
+]

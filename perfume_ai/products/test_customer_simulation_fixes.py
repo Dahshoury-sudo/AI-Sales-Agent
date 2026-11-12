@@ -511,18 +511,19 @@ class ReplayFollowUpTwoTests(TestCase):
         self.assertNotIn("750 لـ 1000", prompt)
 
     def test_store_figures_in_the_prompt_come_from_business_facts_only(self):
-        """Owner decision 2026-11-12: an FAQ said 95% while the business facts said 90%."""
+        """Owner decision 2026-11-12: the business facts are the only source of store figures. They now
+        say 95% and 750-2000; an FAQ entry restating an older figure must not reach the model."""
         from products.models import StaticFAQ, StoreSettings
         store = Store.objects.create(name="Figures Store")
-        StoreSettings.objects.create(store=store, business_facts="- نسبة التطابق حوالي 90%. الاسعار من 450 لحد 1200")
+        StoreSettings.objects.create(store=store, business_facts="- نسبة التطابق حوالي 95%. الاسعار من 750 لحد 2000")
         StaticFAQ.objects.create(store=store, question="أصلي ولا تركيب؟", keywords="اصلي", is_active=True,
-                                 answer="كلها عطور تركيب وتطابق بيوصل لـ 95%")
+                                 answer="كلها عطور تركيب وتطابق بيوصل لـ 90%")
         StaticFAQ.objects.create(store=store, question="الاستبدال؟", keywords="استبدال", is_active=True,
                                  answer="الاستبدال خلال يومين من الاستلام")
         prompt = get_system_prompt(store)
-        self.assertIn("90%", prompt)
-        self.assertIn("450 لحد 1200", prompt)
-        self.assertNotIn("95%", prompt)
+        self.assertIn("95%", prompt)
+        self.assertIn("750 لحد 2000", prompt)
+        self.assertNotIn("90%", prompt)
         self.assertIn("الاستبدال خلال يومين من الاستلام", prompt)
 
     def test_last_resort_without_product_data_offers_the_team(self):
@@ -853,11 +854,11 @@ class SecondRoundBatchOneTests(TestCase):
     def test_the_store_price_range_from_business_facts_is_supported(self):
         """Owner decision 3 + S18: the range comes from the business facts, written as bare numbers."""
         from products.services.product_formatting import product_price_issues
-        facts = ["- الاسعار عندنا بتبدأ من اول 450 لحد 1200 وفي حاجات اغلي شويه لو ازايز اوريجنال"]
-        self.assertEqual(product_price_issues("الأسعار عندنا بتبدأ من 450 جنيه لحد 1200 جنيه.", [],
+        facts = ["- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال"]
+        self.assertEqual(product_price_issues("الأسعار عندنا بتبدأ من 750 جنيه لحد 2000 جنيه.", [],
                                               monetary_sources=facts, catalogue=[]), [])
         self.assertTrue(product_price_issues("الأسعار بتبدأ من 300 جنيه.", [], monetary_sources=facts, catalogue=[]))
-        self.assertTrue(product_price_issues("سعره 1200 جنيه.", [], monetary_sources=facts, catalogue=[]))
+        self.assertTrue(product_price_issues("سعره 2000 جنيه.", [], monetary_sources=facts, catalogue=[]))
 
     def test_a_latin_name_that_says_more_than_a_stocked_row_is_not_that_row(self):
         """S09: "عندكو Club de Nuit Intense؟" was answered "La Nuit: متوفر."."""
@@ -1161,10 +1162,10 @@ class SecondRoundBatchTwoTests(TestCase):
         """S18: "الأسعار بتبدأ من كام تقريبًا؟" got "مش متاح عندي سعر بداية مؤكد" four times."""
         from products.models import StoreSettings
         from products.services.router import _store_price_range
-        StoreSettings.objects.create(store=self.store, business_facts="- الشحن 60\n- الاسعار عندنا بتبدأ من اول 450 لحد 1200")
+        StoreSettings.objects.create(store=self.store, business_facts="- الشحن 60\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000")
         self.product("Sauvage", ["fresh"])
         self.assertEqual(_store_price_range("بحبها هادية، والأسعار بتبدأ من كام تقريبًا؟", self.store, self.conversation),
-                         "الاسعار عندنا بتبدأ من اول 450 لحد 1200.")
+                         "الاسعار عندنا بتبدأ من اول 750 لحد 2000.")
         self.assertEqual(_store_price_range("Sauvage الأسعار بتاعته بكام؟", self.store, self.conversation), "")
         self.assertEqual(_store_price_range("الشحن بكام؟", self.store, self.conversation), "")
 
@@ -3040,3 +3041,408 @@ class SecondRoundBatchFiveTests(TestCase):
             reply, _ = route("عايز حاجة فريش وخلاص", history, self.store, self.conversation)
         self.assertNotEqual(reply.strip(), question)
         self.assertEqual(searched.get("names"), [product.name])
+
+
+class ThirdRoundTests(TestCase):
+    """Owner decisions of 2026-11-12 (third brief): confirmation after a side question, store figures,
+    the two remaining medium issues, and the hard budget rules."""
+
+    SHIPPING_FACT = "الشحن بيكون داخل مصر فقط في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر"
+
+    def setUp(self):
+        from products.models import Cart, Conversation, StoreSettings
+        self.store = Store.objects.create(name="Third Round Store")
+        # Shipping lives in the business facts, with no FAQ entry: the Perfamix layout since 2026-11-12.
+        StoreSettings.objects.create(store=self.store, business_facts=(
+            "- نسبة التطابق مع العطور الأصلية توصل لحوالي 95%\n"
+            "- الاسعار عندنا بتبدأ من اول 750 لحد 2000\n\n"
+            "-" + self.SHIPPING_FACT + "\n"
+            "ولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن"))
+        brand = Brand.objects.create(store=self.store, name="Dior")
+        self.product = Product.objects.create(store=self.store, brand=brand, name="Sauvage", gender="male",
+                                              scent_tags=["fresh"])
+        self.small = ProductVariant.objects.create(product=self.product, volume=50, price=Decimal("750.00"),
+                                                   bottle_type="normal")
+        self.large = ProductVariant.objects.create(product=self.product, volume=90, price=Decimal("1000.00"),
+                                                   bottle_type="normal")
+        self.conversation = Conversation.objects.create(store=self.store)
+        self.cart = Cart.objects.create(conversation=self.conversation, customer_name="كريم سامي",
+                                        customer_phone="01011223344", secondary_phone="01099887766",
+                                        shipping_address="12 شارع مصدق، الدقي، الجيزة")
+
+    def checkout(self, message, **updates):
+        """One order turn with the extractor stubbed; the reply is saved as it would be delivered."""
+        from products.services.conversation_service import save_message
+        from products.services.order_service import handle_order
+        data = {"products": [{"name": "Sauvage", "volume": 90, "quantity": 1, "bottle_type": "normal"}],
+                "customer_name": "كريم سامي", "customer_phone": "01011223344",
+                "customer_secondary_phone": "01099887766", "shipping_address": "12 شارع مصدق، الدقي، الجيزة",
+                "is_confirmed": False}
+        data.update(updates)
+        save_message(self.conversation, "user", message)
+        with patch("products.services.order_service.chat", return_value=json.dumps(data)):
+            reply, context = handle_order(message, [], self.store, self.conversation)
+        save_message(self.conversation, "assistant", reply, internal_context=context)
+        return reply
+
+    # --- decision 1: confirmation -------------------------------------------------------------
+
+    def test_confirmation_after_a_side_question_places_the_order(self):
+        """S11 round 2 batch 5 attempt 2, t6-t8: summary, "الشحن بكام؟", then "تمام أكد" resent the summary.
+        The extractor still says not confirmed here; the summary for this exact cart was sent."""
+        from products.models import Order
+        from products.services.conversation_service import save_message
+        summary = self.checkout("ابعت الطلب")
+        self.assertIn("راجع معايا تفاصيل الطلب", summary)
+        self.assertFalse(Order.objects.exists())
+        save_message(self.conversation, "user", "الشحن بكام؟")
+        save_message(self.conversation, "assistant", "الشحن بـ60 جنيه، والإجمالي مع الطلب 1060 جنيه.")
+        confirmed = self.checkout("تمام أكد")
+        order = Order.objects.get(conversation=self.conversation)
+        self.assertIn(f"#{order.pk}", confirmed)
+        self.assertEqual([(item.variant_id, item.quantity) for item in order.items.all()], [(self.large.pk, 1)])
+
+    def test_confirmation_after_a_cart_change_needs_a_new_summary(self):
+        """Safeguard 1: the summary covered the 90 ml bottle; a changed cart is not confirmed by "أكد"."""
+        from products.models import Order
+        self.checkout("ابعت الطلب")
+        changed = self.checkout("خليه 50 ملي وأكد",
+                                products=[{"name": "Sauvage", "volume": 50, "quantity": 1, "bottle_type": "normal"}])
+        self.assertFalse(Order.objects.exists())
+        self.assertIn("راجع معايا تفاصيل الطلب", changed)
+        self.assertIn("(50ml)", changed)
+        # A changed delivery detail counts as a changed cart too.
+        moved = self.checkout("غير العنوان وأكد",
+                              products=[{"name": "Sauvage", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                              shipping_address="5 شارع التحرير، القاهرة")
+        self.assertFalse(Order.objects.exists())
+        self.assertIn("5 شارع التحرير", moved)
+        # The new summary, once sent, is what "تمام أكد" confirms.
+        self.checkout("تمام أكد", products=[{"name": "Sauvage", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                      shipping_address="5 شارع التحرير، القاهرة")
+        order = Order.objects.get(conversation=self.conversation)
+        self.assertEqual([(item.variant_id, item.quantity) for item in order.items.all()], [(self.small.pk, 1)])
+        self.assertIn("5 شارع التحرير", order.shipping_address)
+
+    def test_confirmation_with_no_summary_sent_shows_the_summary_first(self):
+        """Safeguard 2: nothing confirms without a summary that was actually sent."""
+        from products.models import Cart, Order
+        from products.services.order_service import handle_order
+        first = self.checkout("تمام أكد")
+        self.assertFalse(Order.objects.exists())
+        self.assertIn("راجع معايا تفاصيل الطلب", first)
+        # A summary that was composed but never delivered does not count either.
+        other = type(self.conversation).objects.create(store=self.store)
+        Cart.objects.create(conversation=other, customer_name="كريم سامي", customer_phone="01011223344",
+                            secondary_phone="01099887766", shipping_address="12 شارع مصدق، الدقي، الجيزة")
+        data = {"products": [{"name": "Sauvage", "volume": 90, "quantity": 1, "bottle_type": "normal"}],
+                "customer_name": "كريم سامي", "customer_phone": "01011223344",
+                "customer_secondary_phone": "01099887766", "shipping_address": "12 شارع مصدق، الدقي، الجيزة",
+                "is_confirmed": False}
+        for message in ("ابعت الطلب", "تمام أكد"):
+            with patch("products.services.order_service.chat", return_value=json.dumps(data)):
+                reply, _ = handle_order(message, [], self.store, other)   # replies never saved as sent
+        self.assertFalse(Order.objects.filter(conversation=other).exists())
+        self.assertIn("راجع معايا تفاصيل الطلب", reply)
+
+    def test_only_the_confirm_verb_counts_as_an_explicit_confirmation(self):
+        from products.models import Order
+        from products.services.conversation_service import save_message
+        from products.services.order_service import explicit_confirmation
+        for message in ("تمام أكد", "أكد الطلب", "اكدلي", "أيوه نأكد", "confirm"):
+            with self.subTest(message=message):
+                self.assertTrue(explicit_confirmation(message))
+        for message in ("تمام", "أكيد", "مش متأكد", "اتأكد من السعر الأول", "مش هأكد دلوقتي", "قبل ما أكد عايز أسأل",
+                        "أأكد إزاي؟", "أكد بعدين", "لما أكد هقولك"):
+            with self.subTest(message=message):
+                self.assertFalse(explicit_confirmation(message))
+        # A bare "تمام" after a side question stays the extractor's call: no order from this rule.
+        self.checkout("ابعت الطلب")
+        save_message(self.conversation, "user", "الشحن بكام؟")
+        save_message(self.conversation, "assistant", "الشحن بـ60 جنيه.")
+        self.checkout("تمام")
+        self.assertFalse(Order.objects.exists())
+
+    # --- decision 2: store figures and where they live ------------------------------------------
+
+    def test_no_similarity_figure_is_hardcoded_and_the_store_figure_is_the_only_one(self):
+        """Owner decision: 95% lives in the business facts; no "90%" may reach the customer from code."""
+        bare = Store.objects.create(name="No Facts Store")
+        from products.models import StoreSettings
+        StoreSettings.objects.create(store=bare)
+        prompt = get_system_prompt(bare)
+        self.assertNotIn("90%", prompt)
+        self.assertNotIn("95%", prompt)
+        configured = get_system_prompt(self.store)
+        self.assertIn("95%", configured)
+        self.assertNotIn("90%", configured)
+        self.assertIn("750 لحد 2000", configured)
+
+    def test_shipping_is_read_from_the_business_facts_when_no_faq_answers_it(self):
+        """The owner moved shipping out of the FAQ: the summary lost its shipping line and its total."""
+        from products.models import StaticFAQ
+        from products.services.order_service import (_quote_summary, flat_shipping_fee, shipping_answer,
+                                                     shipping_line)
+        self.assertEqual(shipping_answer(self.store), self.SHIPPING_FACT)
+        self.assertEqual(flat_shipping_fee(self.store), Decimal("60"))
+        self.assertEqual(shipping_line(self.store, Decimal("750")),
+                         "وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 810 جنيه.")
+        items = [{"variant": self.small, "quantity": 1, "price": self.small.price, "bottle_type": "normal"}]
+        summary = _quote_summary(self.conversation, self.cart, items)
+        self.assertIn("750 جنيه (من غير الشحن)", summary)
+        self.assertIn("🚚 " + self.SHIPPING_FACT, summary)
+        self.assertIn("الإجمالي مع الشحن: 810 جنيه.", summary)
+        self.assertNotIn("اوبر", summary)
+        # An active FAQ entry still wins.
+        StaticFAQ.objects.create(store=self.store, question="بكام مصاريف الشحن؟", answer="مصاريف الشحن 60 جنيه لجميع محافظات مصر",
+                                 keywords="شحن+بكام, شحن+مصاريف, شحن", priority=3)
+        self.assertEqual(shipping_answer(self.store), "مصاريف الشحن 60 جنيه لجميع محافظات مصر")
+
+    def test_shipping_questions_get_the_owners_sentence_when_no_faq_answers(self):
+        """"الشحن بياخد قد إيه؟" and "الشحن بكام؟" had FAQ entries; with those off they get the facts line."""
+        from products.services.router import _faq_lookup, _policy_side_questions
+        answer = self.SHIPPING_FACT + "."
+        for question in ("الشحن بياخد قد إيه؟", "الشحن بكام؟", "مصاريف التوصيل كام؟"):
+            with self.subTest(question=question):
+                self.assertEqual((_faq_lookup(question, self.store) or {}).get("answer"), answer)
+        self.assertIsNone(_faq_lookup("ريحته عاملة إزاي؟", self.store))
+        answers, rest, asks = _policy_side_questions("تمام، والشحن بياخد قد إيه؟ طب رشحلي كمان حاجة سويت", self.store)
+        self.assertEqual((answers, asks), ([answer], True))
+        self.assertIn("رشحلي", rest)
+
+    # --- decision 3: the two medium issues -----------------------------------------------------
+
+    def test_the_near_budget_sentence_is_said_once_per_price(self):
+        """S11 round 2 full 5/6: "أعلى حاجة بسيطة من ميزانيتك" on four consecutive replies, twice in one."""
+        from products.services.router import NEAR_BUDGET, _near_budget_once
+        first = "212 NYC Man\nريحته فريش.\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه. " + NEAR_BUDGET + "."
+        self.assertEqual(_near_budget_once(first, "عايز رجالي في حدود 700", []), first)
+        history = [{"role": "user", "content": "عايز رجالي في حدود 700"}, {"role": "assistant", "content": first}]
+        again = "212 NYC Man\nأيوه يا فندم، ده سعر الـ50 ملي، و" + NEAR_BUDGET + ".\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه. " + NEAR_BUDGET + "."
+        self.assertEqual(_near_budget_once(again, "طب الـ50 بكام بالظبط؟", history),
+                         "212 NYC Man\nأيوه يا فندم، ده سعر الـ50 ملي.\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.")
+        # Twice in one first-time reply: the price keeps it, the prose copy goes.
+        doubled = "212 NYC Man\nالسعر " + NEAR_BUDGET + ".\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه. " + NEAR_BUDGET + "."
+        self.assertEqual(_near_budget_once(doubled, "عايز رجالي", []),
+                         "212 NYC Man\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه. " + NEAR_BUDGET + ".")
+        # Asked about the budget, the sentence is the answer and stays; a new price keeps its own.
+        self.assertEqual(_near_budget_once(first, "هو في حدود ميزانيتي؟", history), first)
+        other = "Eternity\nزجاجة الستور الخاصة بينا 50 ملي بـ800 جنيه. " + NEAR_BUDGET + "."
+        self.assertEqual(_near_budget_once(other, "والتاني بكام؟", history), other)
+        grouped = "زجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه (" + NEAR_BUDGET + ")، و90 ملي بـ1000 جنيه."
+        self.assertEqual(_near_budget_once(grouped, "والأحجام؟", history),
+                         "زجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه، و90 ملي بـ1000 جنيه.")
+
+    def test_a_difference_in_feel_between_perfumes_is_an_unsupported_claim(self):
+        """S09 round 2 batch 4 attempt 3, t6: "…بس ترتيب الإحساس مختلف شوية" between two stocked perfumes."""
+        from products.services.reply_sanitizer import product_claim_issues
+        facts = {"Cigar": {"scent_tags": ["woody", "smoky", "fruity"], "notes": ["", "", ""], "season": "", "occasion": ""}}
+        said = "فعلاً عندك حق، السيجار قريب من أڤنتوس في الطابع الخشبي والسموكي والفاكهي، بس ترتيب الإحساس مختلف شوية."
+        self.assertTrue([issue for issue in product_claim_issues(said, facts) if issue.startswith("difference:")])
+        self.assertTrue([issue for issue in product_claim_issues("الاتنين مختلفين في الإحساس.", {})
+                         if issue.startswith("difference:")])
+        for honest in ("السيجار وأڤنتوس الاتنين مسجلين خشبي وسموكي وفاكهي.",
+                       "مقدرش أقول الإحساس مختلف ولا لأ من البيانات اللي عندي."):
+            with self.subTest(reply=honest):
+                self.assertEqual([issue for issue in product_claim_issues(honest, facts) if issue.startswith("difference:")], [])
+
+    # --- decision 5: budget rules --------------------------------------------------------------
+
+    def test_the_meter_stops_at_the_first_429(self):
+        """Owner rule: stop immediately if the provider returns 429. The spend-limit incident sent
+        twelve rejected calls, each charged at its maximum."""
+        import httpx
+        import openai
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from unittest import mock
+        from scripts.evaluate_agent_budgeted import BudgetStop, Meter
+        with TemporaryDirectory(prefix="perfume_meter_429_") as directory:
+            meter = Meter(Decimal("0.50"), Path(directory))
+            rejected = openai.RateLimitError(
+                "spend limit", response=httpx.Response(429, request=httpx.Request("POST", "http://127.0.0.1:9/v1")),
+                body=None)
+            provider = mock.Mock(side_effect=rejected)
+            request = {"model": "gpt-6-luna", "reasoning_effort": "none",
+                       "messages": [{"role": "user", "content": "x"}]}
+            with self.assertRaises(openai.RateLimitError):
+                meter.wrap(provider)(**request)
+            with self.assertRaises(BudgetStop):
+                meter.wrap(provider)(**request)
+            self.assertEqual(provider.call_count, 1)
+            self.assertEqual(len(meter.calls), 1)
+
+    def test_the_task_cap_is_the_owners_three_fifty(self):
+        import importlib.util
+        from pathlib import Path
+        source = (Path(__file__).resolve().parent.parent / "scripts" / "simulate_customers.py").read_text(encoding="utf-8")
+        self.assertIn('TASK_CAP = Decimal("3.50")', source)
+
+    # --- found in the replay of this round ------------------------------------------------------
+
+    def _table(self):
+        """Aventus (1400) on the table; Cigar (750/1000) shares its labels and fits a 1000 budget."""
+        from products.services.conversation_service import save_message
+        from products.services.product_formatting import format_products
+        brand = Brand.objects.create(store=self.store, name="House")
+        rows = {}
+        for name, tags, prices in (("Aventus", ["woody", "fruity", "smoky"], ("1400", "2000")),
+                                   ("Cigar", ["woody", "smoky", "fruity"], ("750", "1000"))):
+            rows[name] = Product.objects.create(store=self.store, brand=brand, name=name, gender="male", scent_tags=tags)
+            for volume, price in zip((50, 90), prices):
+                ProductVariant.objects.create(product=rows[name], volume=volume, price=Decimal(price), bottle_type="normal")
+        save_message(self.conversation, "user", "سعر Aventus كام؟")
+        save_message(self.conversation, "assistant", "Aventus\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه، و50 ملي بـ1400 جنيه.",
+                     internal_context=format_products([rows["Aventus"]]))
+        return rows
+
+    def test_a_price_objection_that_asks_for_an_alternative_is_recommended_on(self):
+        """S09 round 3 replay t5: "غالي أوي بصراحة، مفيش حاجة شبهه في حدود ١٠٠٠؟" got the 1400 perfume
+        described again, with the budget and the request already understood."""
+        from products.services.product_formatting import format_products
+        from products.services.router import route
+        self._table()
+        self.conversation.preferences = {"gender": "male"}      # said earlier in the conversation
+        self.conversation.save(update_fields=["preferences"])
+        history = [{"role": row.role, "content": row.content} for row in self.conversation.messages.order_by("id")]
+        searched = {}
+
+        def recommend(message, products, history, **kwargs):
+            searched["names"] = [product.name for product in products]
+            return "ترشيح", format_products(list(products)[:1])
+
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent",
+                   return_value={"gender": "male", "max_price": 1000, "scent_tags": ["smoky", "fruity"]}), \
+             patch("products.services.router.handle_objection") as objection, \
+             patch("products.services.router.recommend", side_effect=recommend):
+            route("غالي أوي بصراحة، مفيش حاجة شبهه في حدود ١٠٠٠؟", history, self.store, self.conversation)
+        objection.assert_not_called()
+        self.assertIn("Cigar", searched.get("names", []))
+        self.assertNotIn("Aventus", searched.get("names", []))
+
+    def test_a_price_objection_with_nothing_in_budget_keeps_its_own_answer(self):
+        """The S11 case must not be rerouted: with nothing at or under the budget, the objection path's
+        "nothing in your budget; this is the lowest price" is the answer."""
+        from products.services.router import _ASKS_FOR_AN_ALTERNATIVE, _something_fits_the_budget
+        from products.services.static_faq_service import normalize_arabic
+        self._table()
+        self.conversation.preferences = {"gender": "male"}
+        self.assertTrue(_ASKS_FOR_AN_ALTERNATIVE.search(normalize_arabic("غالي عليا، أنا قلت في حدود 700")))
+        self.assertFalse(_ASKS_FOR_AN_ALTERNATIVE.search(normalize_arabic("غالي أوي بصراحة")))
+        self.assertFalse(_something_fits_the_budget(700, self.conversation, self.store))    # floor is 750
+        self.assertTrue(_something_fits_the_budget(1000, self.conversation, self.store))
+        self.assertTrue(_something_fits_the_budget(None, self.conversation, self.store))
+
+    # --- the four failures of the round-3 full run ----------------------------------------------
+
+    def test_a_plain_shipping_question_gets_the_owners_sentence(self):
+        """S12 t3 and S13 t4, round 3 full run: with the shipping FAQ entry off, "الشحن بيوصل اسكندريه؟"
+        and "el sha7n b kam?" went to the model and got "تقصد أنهي عطر وحجم؟"."""
+        from products.services.router import _faq_lookup, route
+        answer = self.SHIPPING_FACT + "."
+        for question in ("الشحن بيوصل اسكندريه؟", "tmam 😂 el sha7n b kam?", "بتشحنوا للمحافظات؟", "shipping kam?"):
+            with self.subTest(question=question):
+                self.assertEqual((_faq_lookup(question, self.store) or {}).get("answer"), answer)
+        # Same-day delivery and free shipping are in other lines of the facts: the model answers those.
+        for question in ("ينفع شحن في نفس اليوم؟", "الشحن مجاني؟"):
+            with self.subTest(question=question):
+                self.assertIsNone(_faq_lookup(question, self.store))
+        with patch("products.services.router.classify", return_value="faq"), \
+             patch("products.services.router._handle_general_raw") as general:
+            reply, _ = route("الشحن بيوصل اسكندريه؟", [], self.store, self.conversation)
+        general.assert_not_called()
+        self.assertEqual(reply, answer)
+
+    def test_a_shipping_draft_that_fails_the_price_check_falls_back_to_the_store_sentence(self):
+        """The same failure from the other side: never "which perfume and size?" for a shipping question."""
+        from products.services.router import _rephrased
+        bad = "الشحن 60 جنيه، يعني الإجمالي 810 جنيه."
+        with patch("products.services.router.repetition.repeated_sentences", return_value=[]), \
+             patch("products.services.router.repetition.repeated_frames", return_value=[]):
+            reply, _, _ = _rephrased(bad, "", [], self.store, lambda hint: (bad, ""),
+                                     message="tmam 😂 el sha7n b kam?")
+        self.assertEqual(reply, self.SHIPPING_FACT + ".")
+
+    def test_a_leaked_drafting_instruction_is_removed(self):
+        """S02 round 3 full run t7 (critical): "سعر الـ90 ملي هيتضاف تلقائيًا." above the price itself."""
+        from products.services.router import _without_drafting_leak
+        reply = ("Layton\nالـCardamom مش موجود ضمن النوتات المسجلة عندنا.\nسعر الـ90 ملي هيتضاف تلقائيًا.\n"
+                 "زجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.")
+        self.assertEqual(_without_drafting_leak(reply),
+                         "Layton\nالـCardamom مش موجود ضمن النوتات المسجلة عندنا.\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.")
+        inline = "السعر هيتضاف تلقائياً تحت. Layton نوتاته فيها تفاح."
+        self.assertEqual(_without_drafting_leak(inline), "Layton نوتاته فيها تفاح.")
+        clean = "Layton\n\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه."
+        self.assertEqual(_without_drafting_leak(clean), clean)
+
+    def test_a_doubt_that_closes_with_ill_think_gets_the_short_close(self):
+        """S02 round 3 full run t8 (high): "مش مطمن لقائمة النوتات… هفكر وأراجعها قبل ما أقرر، تسلم." got a
+        recap of the notes and an invitation to the branch."""
+        from products.services.objection_service import handle_objection
+        from products.services.sales import objection as sales_objection
+        message = "تمام، كده مش مطمن لقائمة النوتات عندكم بصراحة. هفكر وأراجعها قبل ما أقرر، تسلم."
+        objection = sales_objection.detect(message, [])
+        self.assertIsNotNone(objection)
+        with patch("products.services.objection_service.chat") as chat, \
+             patch("products.services.objection_service.resolve_products") as resolve:
+            reply, context = handle_objection(message, objection, [], self.store, self.conversation)
+        chat.assert_not_called()
+        resolve.assert_not_called()
+        self.assertEqual((reply, context), ("تسلم، خد وقتك.", "CUSTOMER_DEFERRED"))
+
+    def test_a_guarantee_question_gets_the_store_policy_not_a_paraphrase(self):
+        """S07 round 3 full run t4 (critical): "والضمان ده ينفع لو فتحته وجربته؟" went to the model, which
+        invented "لو فتحتيه وجربتيه، مش هينفع استبداله أو استرجاعه"."""
+        from products.models import StaticFAQ
+        from products.services.router import _is_exchange_question, _policy_side_questions
+        from products.services.static_faq_service import normalize_arabic
+        policy = ("ضمان الاستبدال لمدة يومين من وقت الاستلام.\n"
+                  " في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.")
+        StaticFAQ.objects.create(store=self.store, question="في استرجاع أو استبدال؟", priority=10, answer=policy,
+                                 keywords="استرجاع, استبدال, ضمان")
+        answers, rest, asks = _policy_side_questions(
+            "تمام، هو سعره في حدود كام؟ والضمان ده ينفع لو فتحته وجربته؟", self.store)
+        self.assertEqual((answers, asks), ([policy], True))
+        self.assertIn("سعره في حدود كام", rest)
+        self.assertNotIn("الضمان", rest)
+        # A promise is not the policy.
+        for message in ("تضمن إنها مش مسكرة؟", "هو مضمون يعجبها؟"):
+            with self.subTest(message=message):
+                self.assertFalse(_is_exchange_question(normalize_arabic(message)))
+
+    # --- found in the replay of the full run's failures ----------------------------------------
+
+    def test_a_complaint_that_the_notes_keep_coming_is_not_a_request_for_them(self):
+        """S02 round 3 replay 2, t6 (high): "لسه بتكرر نفس النوتات… الـ90 مل من Layton بكام؟" got the whole
+        notes list again above the price."""
+        from products.services.scent_description import notes_requested
+        self.assertFalse(notes_requested("لسه بتكرر نفس النوتات من غير مصدر 😅 خلينا في اللي متأكدين منه—الـ90 مل من Layton بكام؟",
+                                         product_names=("Layton",)))
+        self.assertFalse(notes_requested("انت كررت النوتات تاني، السعر كام؟"))
+        self.assertTrue(notes_requested("طب Layton الـ top notes والـ middle والـ base إيه؟", product_names=("Layton",)))
+        self.assertTrue(notes_requested("نوتاته إيه؟"))
+
+    def test_where_the_notes_came_from_is_answered_once_and_honestly(self):
+        """S02 round 3 replay 2, t3-t5: "جبتها منين؟" / "عندك مصدر للنوتات دي؟" got the list again, then "no
+        source" beside the same list."""
+        from products.services.router import NOTES_SOURCE, NOTES_SOURCE_AGAIN, _notes_source_note
+        from products.services.static_faq_service import normalize_arabic
+
+        def note(message, history=()):
+            return _notes_source_note(normalize_arabic(message), list(history))
+
+        for question in ("استنى بس، الفانيليا في الـbase بتاعة Aventus؟ دي مش من النوتات الرسمية اللي أعرفها، جبتها منين؟",
+                         "عندك مصدر للنوتات دي؟",
+                         "وهل النوتات دي من مصدر رسمي ولا دي تركيبة الستور؟",
+                         "الـcardamom من النوتات المعروفة في Layton. إنتوا معتمدين على قايمة إيه؟",
+                         "أغلب الـ note breakdowns اللي شفتها حاطة الـ pepper في الـ top. إنت متأكد من المصدر؟"):
+            with self.subTest(question=question):
+                self.assertEqual(note(question), NOTES_SOURCE)
+        said = [{"role": "assistant", "content": NOTES_SOURCE + "\n\nAventus: ..."}]
+        self.assertEqual(note("عندك مصدر للنوتات دي؟", said), NOTES_SOURCE_AGAIN)
+        said.append({"role": "assistant", "content": NOTES_SOURCE_AGAIN})
+        self.assertEqual(note("عندك مصدر للنوتات دي؟", said), "")
+        # A complaint beside a price question, and a question about something else, do not ask for it.
+        self.assertEqual(note("لسه بتكرر نفس النوتات من غير مصدر 😅 خلينا في اللي متأكدين منه—الـ90 مل من Layton بكام؟"), "")
+        self.assertEqual(note("طب Layton نوتاته إيه؟"), "")

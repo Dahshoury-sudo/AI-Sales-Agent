@@ -1,319 +1,249 @@
-# Perfume seller — 20 adaptive customer simulations: final report (round 2)
+# Perfume seller — 20 adaptive customer simulations: final report (round 3)
 
-Branch `opus`, uncommitted working tree on top of `ea27ef8`; nothing was committed. Everything
-referenced here is under `artifacts/customer_simulation_20/`. Per-defect detail (scenario, turn,
-change) is in `findings.md`; the round-1 report is kept unchanged as `REPORT-round1.md`.
-
-Work stopped on the owner's instruction during full run 7.
+Branch `opus`. The owner committed the round-2 state as `40bd122` ("before 18/20"). This round's changes
+are uncommitted on top of it; I committed nothing. Everything referenced here is under
+`artifacts/customer_simulation_20/`. Per-defect detail (scenario, turn, change) is in `findings.md`;
+the round-1 report is kept as `REPORT-round1.md`.
 
 ## 1. Status: the done criterion is not met
 
-The criterion was two consecutive full 20-scenario runs with at least 18/20 passing, no regression, all
+The criterion for this round was one full run on the final code with at least 18 of 20 passing, and all
 tests green.
 
-- **Best full run: 17/20** (run 6, mean judge score 9.07). No full run reached 18.
-- Run 6's three failures (S11, S16, S20) were then fixed. S16 and S20 passed their replays. S11 met all
-  four of its criteria in its last replay and still failed, on one turn that needs an owner decision
-  (§6).
-- **Run 7**, on the final code, was stopped at the owner's request after 2 of 20 scenarios (both
-  passed). It is not a result.
-- So the final code has **no completed full run**. It is verified by the test suite and by replays of
-  the scenarios that had failed (§5).
-- All 2,386 tests pass on the final code, and no test reaches the API.
+- **The one full run scored 16/20** (mean judge score 8.82). No second full run was allowed.
+- The four failures were S02, S07, S12 and S13. Each traced to a specific defect and was fixed with a
+  test. Replayed afterwards: **S07, S12 and S13 pass**. S02 failed its last replay on one criterion,
+  and that same transcript passes on both of two re-gradings (§7).
+- So the code as it stands now has **no full run**. Everything after the full run is verified by tests
+  and by replays of those four scenarios.
+- **All 2,406 tests pass**, and no test reaches the API.
+- **Spend: USD 3.3910 of the 3.50 cap.** USD 0.3917 was spent in this round, of the 0.50 allowed.
+  No 429 occurred.
 
 ## 2. Outcome
 
 | Run | Code | Pass / 20 | Mean judge score |
 |---|---|---|---|
-| Baseline (`baseline/rejudged-2`) | unmodified `ea27ef8` | 1 | 5.78 |
+| Baseline, round-1 judge (`baseline/rejudged-2`) | unmodified `ea27ef8` | 1 | 5.78 |
+| Baseline, round-2 judge (`baseline/rejudged-3` + `-3b`) | unmodified `ea27ef8` | 1 | 5.87 |
 | Round-1 final 1 / final 2 | end of round 1 | 6 / 6 | 7.54 / 7.79 |
-| Round-2 full run 1 | batch-1 fixes | 10 | 8.29 |
-| Round-2 full run 2 | + batch 2–3 fixes | 10 | 8.68 |
-| Round-2 full run 3 | + run-2 fixes | 11 | 8.86 |
-| Round-2 full run 4 | + run-3 fixes | 14 | 8.82 |
-| Round-2 full run 5 | + run-4 fixes | 13 | 8.82 |
-| Round-2 full run 6 | + run-5 and batch-4 fixes | **17** | **9.07** |
-| Round-2 full run 7 | + batch-5 fixes (final code) | stopped at 2/20 on request | — |
+| Round-2 full runs 1–6 | successive fixes | 10, 10, 11, 14, 13, 17 | 8.29 → 9.07 |
+| Round-2 full run 7 | — | stopped at 2/20 on request | — |
+| **Round-3 full run** (`round3-full/attempt-1`) | round-3 code, new store data | **16** | 8.82 |
 
-Replays between full runs (failed scenarios only):
+Round-3 replays (failed or changed scenarios only):
 
-| Replay | Scenarios | Passed |
+| Replay | Scenarios | Result |
 |---|---|---|
-| Batch 1 / 2 / 3 | 7 / 10 / 7 | 1 / 3 / 2 |
-| Batch 4, attempt 1 | run 5's seven failures + S11 | 5 of 8 |
-| Batch 4, attempt 2 | S03, S09, S11 | stopped at turn 2 by the OpenAI project spend limit; no verdicts |
-| Batch 4, attempt 3 | S03, S09, S11 | 2 of 3 (S03 9.7, S11 9.3) |
-| Batch 4, attempt 4 | S09 | 1 of 1 (9.9) |
-| Batch 5, attempt 1 | S11, S16, S20 | 2 of 3 (S16 9.3, S20 8.7) |
-| Batch 5, attempt 2 | S11 | 0 of 1 (all criteria met; §6) |
+| `round3-replay/attempt-1`, before the full run | S11, S09, S16 | S11 pass 9.3, S16 pass 9.9, S09 fail (fixed before the full run; S09 then passed it, 9.4) |
+| `round3-replay/attempt-2`, after the full run | S02, S07, S12, S13 | S07 pass 8.6, S12 pass 9.9, S13 pass 9.7, S02 fail on a new turn |
+| `round3-replay/attempt-3` | S02 | fail on one criterion; the same transcript passes 2 of 2 re-gradings |
 
-How to read the scores:
-- The mean rose from 7.79 at the end of round 1 to 9.07 in run 6.
+How to read these:
+- The baseline is now graded by the same judge as the later runs: 5.87 against 8.82 for the round-3 run.
+- Run 6 (17/20) and the round-3 run (16/20) are not on the same store data. The local store was edited
+  between them (§3), and two of the round-3 failures came from that change.
 - One high issue fails a whole conversation, so pass counts move more than means.
-- The baseline was graded with the round-1 rubric (sha `9bed0237…`); round 2 uses `4b88a27f…`
-  (§3). The baseline was not re-graded under the round-2 judge, so the baseline-vs-round-2 comparison
-  crosses judge versions.
 
-## 3. Owner decisions, and every evaluation change (disclosed)
+## 3. This round's owner decisions, and what else changed
 
-**Decisions applied**
+**Decisions applied** (tests in `ThirdRoundTests`)
 
-1. *"فريق المبيعات هيتواصل معاك قريب" is approved.*
-   - The judge rubric says it is approved store behaviour.
-   - The deterministic `unsupported_promise` check exempts that exact sentence and nothing else.
-   - S11 and S19 are graded on the rest. S19 has passed every full run since run 2.
-2. *Production backtest, read-only.*
-   - Every connection is set read-only, and the run aborts unless the server confirms it. Sentry is
-     off and no model calls are made. Nothing was written to production.
-   - Results are in `backtest-placement-readonly{,-2,-3}.txt`.
-   - 4 of 25 Latin-script placements were questioned (Ultra Male→Le Male ×2, 9PM Night Out→9PM ×2).
-   - 9 of 48 deterministic matches were dropped (Club de Nuit→La Nuit, Dior Homme Sport→Sport, Black
-     Phantom→Phantom…), with no false positives after the final adjustments.
-   - Not re-run after the last change to that rule (§4, "Names"): perfume-talk words such as "notes"
-     and "top" no longer count as name words.
-3. *Conflicting store figures.*
-   - The computed price range left the prompt, and FAQ percentages are kept out of it; the agent
-     reads the business facts.
-   - The store data itself still conflicts and needs the owner's correction:
-     - the business facts say both "حوالي 90%" and "تطابق… 95%";
-     - the static FAQ "أصلي ولا تركيب" says 95%;
-     - "450 لحد 1200" sits beside store bottles that cost 750–2000.
-   - It still shows: in run 6 the bot said 95% on one turn and "حوالي 90%" on another (S16, medium).
-4. *No "مش مسكر" from a missing label.*
-   - The persona rule was rewritten.
-   - In the reply pipeline, the checker flags a negated label the perfume does not carry, including
-     "مش حلو زيادة". Exceptions: a recorded opposite (light/heavy), an ingredient-backed absence
-     (oud/musk/leather), or a hedge.
-   - A recorded label may not be called unconfirmed.
-   - A "guaranteed not sweet" request gets "مقدرش أضمن 100%…" plus what the data does say.
-5. *Budget USD 4.* Recorded in `ledger.json → cap_changes`. Spend is in §8.
+1. *Confirmation after a side question (S11).* "تمام أكد" now places the order when the summary was
+   sent for this exact, unchanged cart, even if other messages came in between.
+   - It needs the confirm verb itself ("أكد", "أكدلي", "نأكد", "confirm"). A bare "تمام", "أكيد",
+     "متأكد", a question, a negation or a deferral does not count.
+   - Safeguard 1: a cart changed after the summary (items, sizes, quantities, bottle types or delivery
+     details) needs a new summary first.
+   - Safeguard 2: nothing confirms without a summary that was actually sent.
+   - Both safeguards are the existing `_summary_was_shown` check, unchanged.
+   - Tests cover all three cases, plus a summary that was composed but never delivered. The first test
+     fails with the rule disabled.
+2. *Store figures.* No "90%" reaches the customer.
+   - Code and prompts: none. The only mentions were a comment and a docstring, now reworded.
+   - Local store data (read-only query): none in the business facts, settings or FAQ answers.
+   - Tests that contained the old value were updated to 95% / 750–2000: three of mine, and one
+     pre-existing fixture in `products/tests.py` (store "Perfamix Test": "نسبة تشابه 90%" → 95% in the
+     fixture and its two assertions). The pre-existing guard that the shared prompt hardcodes no "90%"
+     is untouched.
+3. *The two medium issues.*
+   - S11: "أعلى حاجة بسيطة من ميزانيتك" is said once per price. Later quotes of the same price lose
+     it, and so does a second copy in the model's sentence. A message that asks about the budget keeps
+     it.
+   - S09: a claimed difference in "feel" between perfumes ("ترتيب الإحساس مختلف شوية") is an
+     unsupported claim unless hedged.
+4. *Production backtest, read-only* (`backtest-placement-readonly-4.txt`).
+   - The server reported `transaction_read_only=on` and `default_transaction_read_only=on` before any
+     query. Nothing was written, and no model was called.
+   - Latin-name check: unchanged from the previous run. 4 of 25 placements questioned, 9 of 48
+     deterministic matches dropped, the same items. So the "notes/top/base" change altered no
+     production result.
+   - Arabic guard: the same 7 flagged. Counts moved slightly (329 → 328 examined) from new production
+     conversations and earlier filler-word additions.
+5. *Budget.*
+   - The 3.50 cap was recorded in `ledger.json → cap_changes` before any paid call.
+   - The meter reserves each call's maximum cost before sending it and refuses a call that could pass
+     the cap.
+   - It now also halts every further call after the first 429 (tested). None occurred.
 
-**Evaluation changes.** Each one was made to stop a mis-grading. None weakens the pass rule,
-scenarios or success criteria.
+**The local store data changed, and that mattered.** Between run 7 and this round the local Perfamix
+store was edited. Besides 95% and 750–2000, shipping, delivery time, the website and the contact numbers
+moved into the business facts, and their FAQ entries were switched off ("بكام مصاريف الشحن؟", "كم مدة
+التوصيل؟", "هل العطر أصلي ولا تركيب؟" and others).
+- My shipping code read the fee from the shipping FAQ entry only. On this data the order summary would
+  have lost its shipping line and its total with shipping, silently. I found and fixed this before the
+  paid runs: the shipping helpers fall back to the owner's shipping sentence in the business facts.
+- What I did not anticipate: plain shipping questions ("الشحن بيوصل اسكندريه؟", "el sha7n b kam?") had
+  been answered by that FAQ entry too. With it off they went to the model. That cost S12 and S13 in the
+  full run (§4).
 
-- Judge rubric: the approved sentence (decision 1).
-- `unsupported_promise`: the single-sentence exemption (decision 1).
-- Judge input: the order's `total_price` is labelled `items_total_excluding_shipping`. The judge had
-  read the item total as the full bill (S11).
-- Judge input: a perfume with no original variant in stock now says "original bottle: NONE available".
-  The same S07 transcript failed 2 of 2 re-gradings before this change and passed after it.
-- Harness: `verdict_for` reads a judge dismissal by its leading code. The old whole-string comparison
-  ignored explicit dismissals. Every saved run was re-scored; only batch-2 S02 changed (fail → pass).
-- Stricter, not looser: the eval checker shares the seller's claim checks, so each new seller check
-  (sizes, bottle authenticity, note layers, unknown-perfume likeness, recorded notes denied or called
-  a mistake) also made deterministic grading stricter.
-- Unchanged: scenarios, success criteria, pass rule, and the eval price/number checks. Their known false
-  positives are still there, and the judge dismissed every one it saw:
-  - "Pi" inside "Pineapple";
-  - "المجموع:" lines;
-  - bundle names such as "Tobacco Vanilla" read as notes;
-  - 810/1060/1560 sums flagged as invented numbers;
-  - a denial of "Club de Nuit Intense" read as a denial of the stocked "La Nuit".
+**Evaluation and harness changes in this round** (none weakens the pass rule, scenarios or criteria)
+- A re-grade now gives the judge the store facts saved with the run being re-graded. Without this the
+  baseline would have been judged against today's store data and marked wrong for quoting the facts of
+  its day. The catalogue is unchanged since the baseline.
+- The meter's 429 halt and the 3.50 cap (decision 5).
+- Stricter, as before: the new claim checks are shared with the eval checker (a difference in "feel";
+  a notes list after a complaint that notes keep repeating).
+- Earlier evaluation changes (rounds 1–2) are listed in `findings.md` and are unchanged.
 
-**Test-settings leak (found in round 2).** The scratchpad settings loaded `.env`, so one round-1 test
-reached the real API (about 2 calls per suite run). The settings now use a placeholder key and a dead
-base URL, and log and refuse any escaped request; the hardened copy is `local_test_settings.py` in
-this folder. The unmetered spend is charged to the ledger as an upper-bound estimate of USD 0.10.
+## 4. Bugs fixed in this round
 
-## 4. Bugs fixed in round 2 (by theme)
+**Found by the pre-run replay**
+- S09: "غالي أوي بصراحة، مفيش حاجة شبهه في حدود ١٠٠٠؟" was treated as a bare price objection and the
+  1,400 perfume was described again. A price objection that asks for an alternative now goes to the
+  recommendation, when something in the store fits the budget.
 
-Detail and turn references are in `findings.md`. Every fix has a regression test.
+**The four full-run failures**
+- S12, S13: a plain shipping question got "تقصد أنهي عطر وحجم؟" (the store-data change above). Any
+  plain shipping question, in Arabic, Franco or English, now gets the owner's shipping sentence; a
+  shipping draft that fails the price check falls back to that sentence too.
+- S02: the model wrote its own drafting instruction to the customer ("سعر الـ90 ملي هيتضاف
+  تلقائيًا."). Such a sentence is removed from every reply.
+- S02: "مش مطمن… هفكر وأراجعها قبل ما أقرر، تسلم." got a recap and a branch invitation. A message that
+  closes with thanks and "هفكر/هراجع" now gets the short close whatever objection kind was detected.
+- S07: "والضمان ده ينفع لو فتحته وجربته؟" was not recognised as an exchange-policy question, and the
+  model invented a restriction. The policy's own names (ضمان، استبدال، استرجاع) now route to the
+  store's text.
 
-**Names and availability (S09, S02)**
-- "Club de Nuit Intense" was answered "La Nuit: متوفر": a Latin name that disagrees with the placed
-  row is no longer placed.
-- A confirmed absence was answered "1 Million: متوفر", and the same fallback was resent word for word.
-- After a denial, "حاجة شبهه؟" offered our own alternatives as the reference, then resolved "شبهه" to
-  the one alternative we had listed.
-- "أقدر ألاقيلك حاجة قريبة منه" promised a likeness with no data (my own wording, replaced).
-- The customer's description of the missing perfume ("اللي عاجبني فيه… سموكي وفاكهة") was ignored and
-  the scent question was asked again.
-- "أنهي واحد فيهم أقرب لـ Club de Nuit؟" got price blocks only; it now opens with "معنديش بيانات عن
-  ريحة Club de Nuit أقارن بيها".
-- My Latin-name rule dropped "Layton" from "Layton notes إيه؟" (a regression I introduced and fixed).
+**Found by the replays after the full run**
+- S02: "لسه بتكرر نفس النوتات… الـ90 بكام؟" listed the notes again. A notes word after "بتكرر/كررت"
+  is a complaint, not a request.
+- S02: asked where the notes came from, the bot repeated the list. It now says once: "النوتات دي هي
+  المسجلة عندنا في بيانات العطر، ومعنديش مصدر رسمي من البراند أستند له."
 
-**Orders and totals (S03, S05, S11, S19)**
-- The order extractor dropped items: a house name inside "بلو دي شانيل" became "which Chanel?", and a
-  line was renamed into another line.
-- A purchase message ("خلاص هاخد الـ50… الشحن بكام؟") was swallowed by the anti-repetition redirect
-  after several similar replies, leaving the cart empty.
-- Two recipients' scents were merged into one request; the same pair block was resent on every total
-  question and on "خليهم اتنين".
-- Totals left out shipping: the summary, the repeated-total line ("1500، من غير مصاريف الشحن" read as
-  "no shipping") and the running cart total.
-- "هاخدهم كده" re-asked the bottle type and size that had just been quoted.
-- A deferral ("هكمل بعدين") got the details request again.
-- "أكدلي الأوردر" with nothing chosen got the previous reply word for word.
-- "عايز زجاجة الستور العادية" sent the identical summary three times.
+**From the owner's decisions:** the confirmation rule, the near-budget sentence, the "feel" claim, and
+shipping read from the business facts (§3).
 
-**Offers (S03, S18, S20)**
-- The transfer offer repeated every turn (`test_promotions` passes unchanged).
-- A total/count question under a combined budget was classified as a promotion.
-- A joking discount question from a browsing customer ended on a transfer question.
-- "ماشي خلاص، مش هطلب حاجة. سيبك" was read as yes to the transfer offer and handed to staff.
+The bugs fixed in rounds 1 and 2 are listed by theme in `findings.md` and in the previous version of
+this report (commit `40bd122`).
 
-**Memory and recipients (S06, S10, S14, S15)**
-- "الأولاني" after two single offers pointed at the second perfume.
-- "Aventus مناسب ليا، وكمان عايز حاجة لماما" did not switch recipient; her profile inherited his.
-- "نرجع لبتاعي، كنت قلت إيه؟" ran a fresh search and offered a perfume never mentioned.
-- Musk was excluded as a label but not as an ingredient.
-- Complaints and questions about a perfume ("212 VIB تقيل", "Pure XS فيه جلد؟") were saved as wishes.
-- A new budget said on an FAQ turn was lost.
-- "حاجة/عطر/الريحة اللي **فيها** فواكه/سموكي/توابل" dropped the wish entirely, the model's own tag
-  with it (older than this task).
-
-**Unsupported or wrong claims (S02, S07, S10, S14, S16)**
-- Words no label supports ("أدفى", "دافية مش حادة"), and which trait "leads".
-- A note placed in the wrong layer; a "dry down" described from labels.
-- A recorded label called unconfirmed; "not sweet" inferred from a missing tag.
-- A stored note called a mistake ("ذكرت الفانيليا… بالغلط"), or a mistake admitted in answer to "ليه
-  قلت…؟" when the earlier statement was right.
-- "Only this size" when two are stocked; an original bottle "in several sizes"; a bottle "genuinely
-  from Dior".
-- "زجاجة اوريجنال بنفس شكل زجاجة البراند" rewritten as "…شكل زجاجة الستور الخاصة بينا".
-- A price question answered with an unrequested notes list.
-
-**Store questions and price objections (S07, S11, S14, S16, S18)**
-- Exchange and delivery questions went to the model (which invented a condition) or went unanswered
-  beside another question; they now get the store's own text, clause by clause, shortened on a repeat.
-- The price range was never given; it now comes from the business facts.
-- "بيقعد قد إيه بجد؟" got "needs confirmation" and a handoff offer.
-- "لو السعر ثابت قولّي" was read as a longevity question ("ثباته ممتاز").
-- "الثبات ده على الجلد ولا الهدوم؟" got "اكتبلي اسم العطر تاني".
-- "غالي عليا" when nothing fits the budget got a generic defence or a vague line; it now says nothing
-  is at or under the budget and that the quoted price is the lowest.
-- Cheaper questions at the lowest price got a similarity question (twice), the same-priced perfumes,
-  and "تقصد أنهي عطر وحجم؟"; they now get "مفيش حاجة أرخص من 750 جنيه عندنا حاليًا؛ ده أقل سعر عندنا".
-- A closing remark was answered with an FAQ pitch or sent to a new search.
-
-**Robustness (S12, S15).** An empty completion from the provider is retried once.
-
-**Preserved**
-- Every price is bound to a catalogue variant. New price evidence comes only from the customer's own
-  cart and orders, plus the store's shipping fee.
-- Scent statements come only from stored tags and notes.
-- Stock checks, the performance policy text and store policies are unchanged.
-- Order consent is unchanged: summary first, then explicit confirmation (§6 has one case this rule
-  handles badly, left for the owner).
+Preserved: every price is bound to a catalogue variant; scent statements come only from stored tags and
+notes; stock checks, the performance policy text and store policies are unchanged.
 
 ## 5. Per-scenario status
 
-P/F with the judge's mean score. R1–R6 are full runs. "After R6" lists replays on later code.
+P/F with the judge's mean score. R6 is round-2 full run 6; R3 is the round-3 full run.
 
-| Scenario | R1 | R2 | R3 | R4 | R5 | R6 | After R6 | State |
-|---|---|---|---|---|---|---|---|---|
-| S01 beginner | P | P | P | P | P | P9.9 | | stable |
-| S02 enthusiast | F | F | F | F | F | **P8.0** | | first full-run pass; its "Layton notes" regression fixed after, unit-tested only |
-| S03 total budget | F | F | P | P | F | **P8.3** | P9.7 | fixed |
-| S04 busy price | P | P | P | P | P | P9.9 | | stable |
-| S05 premium | P | P | F | F | P | P9.3 | | passing since run 5 |
-| S06 indecisive | P | F | F | P | F | P8.9 | | fixed |
-| S07 gift | F | P | F | P | F | P8.0 | | fixed; exchange-policy gap fixed after, unit-tested only |
-| S08 compare | P | F | P | F | P | P9.9 | | passing since run 5 |
-| S09 unavailable | F | F | P | F | F | P9.3 | F8.6 → P9.9 | fixed |
-| S10 dislikes | F | F | F | P | P | P9.3 | | passing since run 4 |
-| S11 all constraints | F | F | F | P | P | F8.1 | P9.3, F4.1, F7.1 | criteria met in the last replay; fails on the confirmation case in §6 |
-| S12 short refs | P | P | P | P | P | P9.9 | | stable |
-| S13 mixed language | P | P | P | P | P | P9.7 | | stable |
-| S14 mind change | F | P | F | F | P | P9.6 | | passing since run 5 |
-| S15 self & mother | P | F | F | P | F | P9.7 | | fixed |
-| S16 skeptic | F | F | F | F | P | F7.4 | P9.3 | fixed; replay only |
-| S17 order complaint | P | P | P | P | P | P9.9 | | stable |
-| S18 browser | P | F | P | P | F | P9.3 | | fixed |
-| S19 ready buyer | F | P | P | P | P | P9.6 | | stable since run 2 |
-| S20 pushy discount | F | P | P | P | P | F7.4 | P8.7 | fixed; replay only |
+| Scenario | R6 | R3 full | After R3 | State |
+|---|---|---|---|---|
+| S01 beginner | P9.9 | P9.9 | | stable |
+| S02 enthusiast | P8.0 | F6.6 | F7.9, then F on a criterion that passes 2/2 re-grades | least stable: a long technical conversation that fails on a different turn each time; every fault found is fixed; the last one ("متأكد من المصدر؟") is unit-tested only |
+| S03 total budget | P8.3 | P9.6 | | passing |
+| S04 busy price | P9.9 | P9.9 | | stable |
+| S05 premium | P9.3 | P9.1 | | passing |
+| S06 indecisive | P8.9 | P8.7 | | passing |
+| S07 gift | P8.0 | F7.9 | P8.6 | fixed, replay passed |
+| S08 compare | P9.9 | P9.9 | | passing |
+| S09 unavailable | P9.3 | P9.4 | | passing (failed the pre-run replay, fixed, then passed the full run) |
+| S10 dislikes | P9.3 | P8.1 | | passing |
+| S11 all constraints | F8.1 | P8.6 | | passing; the confirmation rule and the near-budget fix held |
+| S12 short refs | P9.9 | F8.1 | P9.9 | fixed, replay passed |
+| S13 mixed language | P9.7 | F7.1 | P9.7 | fixed, replay passed |
+| S14 mind change | P9.6 | P9.3 | | passing |
+| S15 self & mother | P9.7 | P9.1 | | passing |
+| S16 skeptic | F7.4 | P8.7 | | passing |
+| S17 order complaint | P9.9 | P9.9 | | stable |
+| S18 browser | P9.3 | P9.7 | | passing |
+| S19 ready buyer | P9.6 | P8.4 | | passing |
+| S20 pushy discount | F7.4 | P8.4 | | passing |
 
 ## 6. Open items
 
-- **No completed full run on the final code** (§1). Two full runs are still needed to test the
-  criterion.
-- **Owner decision: confirmation after a side question (S11).**
-  - After the order summary the customer asked "الشحن بكام؟", got the answer, then said "تمام أكد", and
-    received the identical summary again (`round2-batch5/attempt-2`, t8).
-  - The order extractor accepts a confirmation only when the summary is the message immediately before
-    it. The code's own consent check (summary sent for this exact, unchanged cart) was satisfied.
-  - Accepting that confirmation changes the order-confirmation rule, which was to stay as it is, so I
-    did not change it.
-- **Store data conflict** (90% vs 95%, 450–1200): owner to correct (§3).
-- **S11 repeats the near-budget phrase** "أعلى حاجة بسيطة من ميزانيتك" on consecutive price replies
-  (medium; the judge confirmed it in one run and dismissed it in another).
-- **S09 t6:** model prose added "ترتيب الإحساس مختلف شوية" between two stocked perfumes (medium).
+- **No full run on the code as it stands.** One would cost about USD 0.17; USD 0.109 is left under the
+  cap, so it needs a new allowance.
+- **S02** (above). Its "store or original?" answer does not add the original bottle's price; the judge
+  graded that both ways on the same transcript.
+- **S09 t4:** "طب أنهي واحد أقربله؟" (the missing perfume, by pronoun) was answered "Aventus أقرب
+  لطلبك" although Cigar carries the same labels (medium).
+- **S07:** a bare description for "هتعجبها أكيد؟ … مناسب ليها؟" (medium), and feminine forms addressed
+  to a male buyer (low).
+- **Checker false positives the judge has to dismiss** (unchanged; it has dismissed every one):
+  - totals with shipping (810, 1060, 1560) flagged as invented numbers;
+  - a denial of "Club de Nuit Intense" read as a denial of the stocked "La Nuit";
+  - the cart total against a budget the customer knowingly exceeded.
 - **Stores without promotions (not in the simulation):** the classifier does not run before the static
-  FAQ check there, so "هاخد الـ50… الشحن بكام؟" would get the shipping answer alone. Seen while
-  tracing S11; not fixed.
-- **Model-dependent turns stay probabilistic.** The classifier, the order extractor and model prose
-  vary between runs.
+  FAQ check there, so "هاخد الـ50… الشحن بكام؟" would get the shipping answer alone. Not fixed.
+- **Model-dependent turns stay probabilistic.** The classifier, the order extractor and model prose vary
+  between runs.
 
 ## 7. Judge noise, shown by re-grading identical transcripts
 
-- **S18 run 2:** it failed on the joke criterion. Re-graded unchanged, it passes
-  (`noise-check/S18-run2-rejudge-1`). Run 1 had passed with the identical reply.
-- **S07 run 3:** it failed 2 of 2 re-gradings because of a judge-input gap, and passed after the input
-  was fixed (§3). That was an input defect rather than random noise.
-- **S11 criterion:** near-identical wording ("مفيش عطر عندنا سعره تحتها") met the "nothing at or under
-  700" criterion in runs 4 and 5 and missed it in run 6. I made the sentence explicit rather than
-  argue noise.
-- **No noise claim for runs 5 and 6:** every failure in them traced to a real defect, so none is
-  attributed to noise.
+- **S02, round-3 replay 3:** failed on "Price question gets the actual variant price". The identical
+  transcript re-graded twice passes both times with that criterion met
+  (`noise-check/S02-round3-replay3-rejudge-1`, `-2`).
+- **S18, round-2 run 2:** failed on the joke criterion; re-graded unchanged, it passes.
+- **S07, round-2 run 3:** failed 2 of 2 re-gradings because of a judge-input gap, and passed after the
+  input was fixed. That was an input defect rather than random noise.
+- **No noise claim for the round-3 full run:** all four failures traced to real defects.
 
-## 8. Executions, API calls and spend
+## 8. Spend
 
 From `ledger.json`; the per-phase table is in `ledger-totals.md`.
 
-| | |
+| | USD |
 |---|---|
-| Ledger total | **USD 2.9992 of 4.00**; USD 0.0177 more is reserved for two calls in flight when run 7 was stopped; remaining 0.9831 |
-| Round 1 | USD 1.3495 |
-| Round 2 | USD 1.6497: full runs 1.0091 (six complete runs at 0.15–0.19 each, plus 0.0135 for the stopped run 7), replays 0.5295 (batches 1–5), re-gradings 0.0111, unmetered test-leak estimate 0.1000 |
-| Not real spend | 13 calls charged at their reserved maximum (USD 0.1076): 12 rejected with 429 when the OpenAI project hit its own spend limit (USD 0.0879), and 1 judge timeout (USD 0.0197) |
-| API calls | 6,913 ledger entries, all `gpt-6-luna` |
+| Spent before this round | 2.9992 |
+| Two calls in flight when run 7 was stopped, charged at their maximum | 0.0177 |
+| Replay before the full run (S11, S09, S16) | 0.0348 |
+| The full run | 0.1727 |
+| Replay of the four failures | 0.0371 |
+| Replay of S02 | 0.0191 |
+| Two re-gradings of the S02 transcript | 0.0042 |
+| Baseline re-grade, plus the retry of two scenarios | 0.1062 |
+| **This round** | **0.3917** (of 0.50 allowed) |
+| **Total** | **3.3910 of 3.50** (0.1090 unspent) |
 
-Every attempt is kept with its transcripts, `config.json` and log, including failed and stopped ones:
-- `round2-full/attempt-1…7` (7 is partial)
-- `round2-batch1…3/attempt-1`, `round2-batch4/attempt-1…4`, `round2-batch5/attempt-1…2`
-- `noise-check/*`
-- the round-1 folders
-
-Stopping run 7 left a stale `ledger.lock` and its disposable database
-(`test_customer_sim_fb1ce0f34b`, local PostgreSQL). Both were removed.
+- The baseline re-grade cost more than my USD 0.07 estimate. Two of its judge calls got a provider
+  server error and were charged at their maximum (USD 0.0373), then retried.
+- One seller call in the S02 replay failed the same way (USD 0.0097); the turn recovered.
+- No 429 occurred, and the cap was never approached within one call's maximum.
+- Every attempt is kept with its transcripts, `config.json` and log: `round3-replay/attempt-1…3`,
+  `round3-full/attempt-1`, `baseline/rejudged-3` and `-3b`, the two new `noise-check` folders, and all
+  earlier folders.
 
 ## 9. Tests and commands
 
-- **Totals:** 2,243 tests at the end of round 1; **2,386** now, all passing (`tests-round2-31.log`).
-  No code file changed after that run.
-- **New tests:** all 143 are in `products/test_customer_simulation_fixes.py`, in
-  `SecondRoundBatchOneTests` … `SecondRoundBatchFiveTests` (13, 18, 72, 28 and 11 tests; the 143
-  includes one added to an earlier class).
-- **Pre-existing tests:** none were changed in round 2. Three of them caught mistakes in my first
-  versions, which I then narrowed until they passed unchanged:
-  - `test_fixed_negation_does_not_reject_a_supported_description`
-  - `test_literal_ingredients_do_not_add_a_style_requirement`
-  - `test_explicit_withdrawal_clears_both_fields_and_provenance`
-- **My own earlier tests:** I changed some round-2 tests when later fixes changed the behaviour they
-  pinned; each is listed in `findings.md`.
-- **A gap I found in my own testing:** two tests called `handle_objection` directly and never ran the
-  routed turn's price check, which was rejecting the sentence they asserted. They now run the whole
-  routed turn.
-- **API check:** the suite's blocked-call log did not grow over the last six suite runs.
+- **2,406 tests pass** on the final code (`tests-round3-6.log`): the 2,386 from before plus 20 new ones
+  in `ThirdRoundTests`.
+- **Old tests:** one pre-existing fixture was changed, because it contained the old 90% value
+  (decision 2). No other old test was edited.
+- **My own earlier tests:** three were updated to the new figures (95%, 750–2000).
+- **API check:** the suite's blocked-call log did not grow over this round's six suite runs.
 
 ```
 # from perfume_ai/ (Redis is not running here; the settings use an in-memory cache and block the API)
 PYTHONPATH=artifacts/customer_simulation_20 python manage.py test products --keepdb --noinput --settings=local_test_settings
-python scripts/simulate_customers.py --phase round2-full --attempt attempt-8 --workers 4      # then attempt-9
-python scripts/simulate_customers.py --phase baseline --attempt rejudged-3 --rejudge artifacts/customer_simulation_20/baseline/attempt-1
-python eval_harness/summarize_simulation.py <run folders…> --out artifacts/customer_simulation_20/comparison-round2.md
+python scripts/simulate_customers.py --phase round3-full --attempt attempt-2 --workers 4
+python scripts/simulate_customers.py --phase round3-replay --attempt attempt-4 --scenarios S02_enthusiast
+python eval_harness/summarize_simulation.py <run folders…> --out artifacts/customer_simulation_20/comparison-round3.md
 python eval_harness/ledger_totals.py --out artifacts/customer_simulation_20/ledger-totals.md
 ```
-
-To finish the criterion: two full runs on the current code (about USD 0.16 each) and the baseline
-re-grade (about USD 0.07). The ledger has USD 0.98 left.
 
 ## 10. Limitations
 
 - **Single samples:** one conversation per scenario per run. The simulator adapts, so a replay is a
-  different conversation, and single pass/fail flips are within noise.
+  different conversation.
+- **Store data moved under the runs:** round-2 runs and the round-3 run used different store facts.
 - **Not exercised:** Redis-backed paths, real channel delivery (outbound HTTP is blocked), and the
   production database except for the read-only backtest.
-- **Wording:** deterministic texts still say "المسجل" ("recorded") where the persona discourages it.
-- **Tooling:** `pyflakes` was installed locally for checking and is not a project dependency.
-- **Commits:** none. The working tree holds every change, uncommitted, as requested.
+- **Commits:** none by me. The round-3 changes are uncommitted on top of `40bd122`.

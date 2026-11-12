@@ -7367,19 +7367,19 @@ class StoreConfiguredClaimsSurviveTests(TestCase):
         self.store = Store.objects.create(name="Perfamix Test")
         StoreSettings.objects.create(
             store=self.store,
-            business_facts="تركيباتنا بتوصل لنسبة تشابه 90% مع العطر الأصلي.",
+            business_facts="تركيباتنا بتوصل لنسبة تشابه 95% مع العطر الأصلي.",
         )
 
     def test_the_configured_similarity_fact_reaches_the_prompt(self):
         prompt = get_system_prompt(self.store)
 
-        self.assertIn("نسبة تشابه 90%", prompt)
+        self.assertIn("نسبة تشابه 95%", prompt)
 
     def test_the_sanitizer_does_not_strip_a_relayed_store_fact(self):
         """The store wrote this number; the bot is only repeating it."""
-        reply = "تركيباتنا بتوصل لنسبة تشابه 90% مع العطر الأصلي يا فندم."
+        reply = "تركيباتنا بتوصل لنسبة تشابه 95% مع العطر الأصلي يا فندم."
 
-        self.assertIn("90%", soften_marketing_language(reply))
+        self.assertIn("95%", soften_marketing_language(reply))
 
     def test_but_an_invented_match_percentage_is_still_removed(self):
         self.assertNotIn(

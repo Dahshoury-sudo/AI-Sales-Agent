@@ -1,0 +1,22 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 10,
+      "question_quality": 9,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 8,
+      "commerce_correctness": 8
+    },
+    "reasons": [
+      "criterion unmet: Price question gets the actual variant price directly."
+    ],
+    "cost_usd": "0.019075350",
+    "api_calls": 29
+  }
+]

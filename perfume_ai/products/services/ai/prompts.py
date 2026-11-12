@@ -36,8 +36,8 @@ def _faq_facts(store):
                 or re.search(r"(?<!\w)(?:hi|hello|اهلا|مرحبا|السلام)(?!\w)", normalize_arabic(faq.keywords or ""))
                 or blocks_checkout(f"{faq.question}\n{answer}")
                 # Owner decision (2026-11-12): store figures such as the similarity percentage come from
-                # the business facts only; an FAQ restating one ("95%" against the facts' "90%") put
-                # two different figures in front of the model.
+                # the business facts only; an FAQ restating one with a different number put two
+                # figures in front of the model.
                 or re.search(r"\d\s*%|[٠-٩]\s*٪|\d\s*٪", answer)):
             continue
         lines.append(f"- {faq.question}: {catalog_text(normalize_bottle_wording(answer))}")

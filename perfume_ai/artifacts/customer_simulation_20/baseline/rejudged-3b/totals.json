@@ -1,0 +1,12 @@
+{
+  "run_id": "20261112T204102Z-ff2891",
+  "phase": "baseline",
+  "conversations": 2,
+  "passed": 0,
+  "failed": 2,
+  "incomplete": 0,
+  "api_calls": 2,
+  "run_cost_usd": "0.005949025",
+  "cumulative_spent_usd": "3.390973915",
+  "remaining_usd": "0.109026085"
+}

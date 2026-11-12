@@ -1,0 +1,76 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "fail",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 6,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 7,
+      "emotional_handling": 8,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "judge turn 6 high memory: The customer explicitly said they were still repeating the notes and asked to focus on the price; the assistant repeated the entire notes list again."
+    ],
+    "cost_usd": "0.011560080",
+    "api_calls": 28
+  },
+  {
+    "id": "S07_gift",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 8
+    },
+    "reasons": [],
+    "cost_usd": "0.006790050",
+    "api_calls": 31
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.011584095",
+    "api_calls": 32
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 5,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.007194285",
+    "api_calls": 16
+  }
+]

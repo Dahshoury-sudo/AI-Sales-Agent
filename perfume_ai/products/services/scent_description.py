@@ -285,9 +285,16 @@ def _ingredient_mentions(text, recorded=()):
     return list(re.finditer(pattern, text))
 
 
+# "لسه بتكرر نفس النوتات من غير مصدر 😅 خلينا في اللي متأكدين منه—الـ90 مل من Layton بكام؟" complains
+# that the notes keep coming back; its "النوتات" was read as a request and the whole list went out
+# again above the price (simulation S02 round 3 replay 2, t6, high).
+_NOTE_COMPLAINT = re.compile(r"(?:بتكرر|بتعيد|كررت|عيدت|تكرار)\w*\s+(?:\S+\s+){0,2}$")
+
+
 def _notes_authorized(text, recorded=()):
     mentions = [*_NOTE_SCOPE.finditer(text), *_ingredient_mentions(text, recorded)]
     return any(not _NOTE_OPT_OUT.search(text[max(0, match.start() - 70):match.start()])
+               and not _NOTE_COMPLAINT.search(text[max(0, match.start() - 40):match.start()])
                for match in mentions)
 
 

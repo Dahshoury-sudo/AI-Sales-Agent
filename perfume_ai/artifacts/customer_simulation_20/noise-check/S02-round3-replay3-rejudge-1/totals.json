@@ -1,0 +1,12 @@
+{
+  "run_id": "20261112T203224Z-e9b63b",
+  "phase": "noise-check",
+  "conversations": 1,
+  "passed": 1,
+  "failed": 0,
+  "incomplete": 0,
+  "api_calls": 1,
+  "run_cost_usd": "0.00212629",
+  "cumulative_spent_usd": "3.282742000",
+  "remaining_usd": "0.217258000"
+}

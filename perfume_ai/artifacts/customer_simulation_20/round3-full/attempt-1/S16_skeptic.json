@@ -1,0 +1,371 @@
+{
+  "id": "S16_skeptic",
+  "title": "Skeptical about authenticity, price, longevity and claims",
+  "persona": "authenticity_worrier",
+  "turns": [
+    {
+      "n": 1,
+      "user": "البرفانات دي أصلي ولا تقليد؟",
+      "reply": "فاهم إنك عايز تتأكد من أصالة البرفانات؛ العطر نفسه تركيب من عندنا ومستوحى من العطور العالمية، ونسبة التطابق بتوصل لحوالي 95%. متاح لبعض البرفانات زجاجات اوريجنال بنفس شكل زجاجة البراند الأصلي، لكن العطر فيها برضه تركيب من عندنا.",
+      "seconds": 115.91,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "authenticity_doubt",
+        "matched": [
+          "تقليد",
+          "اصلي ولا"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "طب إزاي ده بـ1000 والأصلي بآلاف؟",
+      "reply": "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟",
+      "seconds": 9.4,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n═══ بدائل مقترحة متوفرة في المتجر ═══\n\nName (الاسم الصحيح): 1 Million\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: 1 Million Absolutely Gold، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Date Night & Romantic\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): spicy, leather, sweet\nDescription Tags (first three only): spicy, leather, sweet\nSimple Scent Description: فيه ريحة توابل وريحته جلدية ومسكر\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Grapefruit, Mint, Blood Orange\nMiddle Notes: Cinnamon, Spicy Notes, Rose\nBase Notes: Amber, Leather, Woody Notes, Indian Patchouli\n\n-------------------------\n\nName (الاسم الصحيح): 1 Million Absolutely Gold\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Paco Rabanne) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Elixir، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Formal & Special Occasions\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): leather, heavy, oud\nDescription Tags (first three only): leather, heavy, oud\nSimple Scent Description: ريحته جلدية وتقيل وعودي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Mandarin Orange\nMiddle Notes: Rose\nBase Notes: Agarwood (Oud), Leather, Amber\n\n-------------------------\n\nName (الاسم الصحيح): 1 Million Elixir\nBrand: Paco Rabanne\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1475.00 EGP\n⚠️ عطر مختلف عن: 1 Million، 1 Million Absolutely Gold، 1 Million Golden Oud، 1 Million Lucky، 1 Million Prive، 1 Million Royal، Lady Million — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: Winter\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): sweet, floral, fruity\nDescription Tags (first three only): sweet, floral, fruity\nSimple Scent Description: ريحته مسكر وفيه ريحة زهور وفواكه\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Apple, Davana\nMiddle Notes: Damask Rose, Osmanthus, Cedar\nBase Notes: Vanilla Absolute, Tonka Bean, Patchouli\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [
+        [
+          "multiple_questions",
+          "low",
+          "two questions in one reply"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "أنا بتكلم بشكل عام، إيه اللي مخلّي السعر أقل للدرجة دي؟",
+      "reply": "السعر أقل لأن العطر تركيب مستوحى من عطور البراندات العالمية، مش العطر الأصلي نفسه؛ ونسبة التطابق بتوصل لحوالي 95%.",
+      "seconds": 2.66,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "تمام، بس بيقعد قد إيه بجد؟ متقوليش كلام بياعين",
+      "reply": "كل عطورنا ثباتها أكتر من 8 ساعات.",
+      "seconds": 1.24,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "أكيد هتقولي 48 ساعة زي الكل 🙄 إيه اللي يضمنلي أكتر من 8 ساعات بجد؟",
+      "reply": "كل عطورنا ثباتها أكتر من 8 ساعات. ماقدرش أوعدك بمدة أطول محددة.",
+      "seconds": 1.19,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "طب يعني زي الأصلي 100% ولا لأ؟",
+      "reply": "لا، مش 100%؛ عطورنا تركيب ونسبة التطابق بتوصل لحوالي 95%.",
+      "seconds": 2.55,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "طيب سعر سوفاج 50 كام؟",
+      "reply": "Sauvage\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.",
+      "seconds": 4.79,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, spicy, fresh\nDescription Tags (first three only): woody, spicy, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة توابل وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1003, \"variant_id\": 2746, \"name\": \"Sauvage\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Sauvage\\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\", \"budget\": null, \"request\": \"طيب سعر سوفاج 50 كام؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1003, \"variant_id\": 2746, \"name\": \"Sauvage\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\", \"budget\": null, \"request\": \"طيب سعر سوفاج 50 كام؟\", \"sections\": [{\"product_id\": 1003, \"name\": \"Sauvage\", \"text\": \"زجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Sauvage"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 8,
+      "user": "تمام، هفكر وأبقى أرجعلك",
+      "reply": "تمام، خد وقتك.",
+      "seconds": 1.14,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "CUSTOMER_DEFERRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "multiple_questions",
+      "low",
+      "two questions in one reply"
+    ]
+  ],
+  "error": null,
+  "ended_by": "max_turns",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 148.0,
+  "judge_prompt": "SCENARIO S16_skeptic: Skeptical about authenticity, price, longevity and claims\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- States honestly that every liquid is تركيب; relays only the store-configured similarity figure without saying 100% or مضمون.\n- Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-hour guarantee; sarcasm handled calmly.\n- Price justification uses store facts, not performance claims.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: البرفانات دي أصلي ولا تقليد؟\n[internal] route=product_info stage=objection saved_preferences={}\nASSISTANT: فاهم إنك عايز تتأكد من أصالة البرفانات؛ العطر نفسه تركيب من عندنا ومستوحى من العطور العالمية، ونسبة التطابق بتوصل لحوالي 95%. متاح لبعض البرفانات زجاجات اوريجنال بنفس شكل زجاجة البراند الأصلي، لكن العطر فيها برضه تركيب من عندنا.\n\n--- TURN 2 ---\nCUSTOMER: طب إزاي ده بـ1000 والأصلي بآلاف؟\n[internal] route=product_info stage=recommendation saved_preferences={}\nASSISTANT: تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟\n[deterministic findings] [[\"multiple_questions\", \"low\", \"two questions in one reply\"]]\n\n--- TURN 3 ---\nCUSTOMER: أنا بتكلم بشكل عام، إيه اللي مخلّي السعر أقل للدرجة دي؟\n[internal] route=faq stage=discovery saved_preferences={}\nASSISTANT: السعر أقل لأن العطر تركيب مستوحى من عطور البراندات العالمية، مش العطر الأصلي نفسه؛ ونسبة التطابق بتوصل لحوالي 95%.\n\n--- TURN 4 ---\nCUSTOMER: تمام، بس بيقعد قد إيه بجد؟ متقوليش كلام بياعين\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: كل عطورنا ثباتها أكتر من 8 ساعات.\n\n--- TURN 5 ---\nCUSTOMER: أكيد هتقولي 48 ساعة زي الكل 🙄 إيه اللي يضمنلي أكتر من 8 ساعات بجد؟\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: كل عطورنا ثباتها أكتر من 8 ساعات. ماقدرش أوعدك بمدة أطول محددة.\n\n--- TURN 6 ---\nCUSTOMER: طب يعني زي الأصلي 100% ولا لأ؟\n[internal] route=faq stage=discovery saved_preferences={}\nASSISTANT: لا، مش 100%؛ عطورنا تركيب ونسبة التطابق بتوصل لحوالي 95%.\n\n--- TURN 7 ---\nCUSTOMER: طيب سعر سوفاج 50 كام؟\n[internal] route=product_info stage=purchase_intent saved_preferences={}\nASSISTANT: Sauvage\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\n\n--- TURN 8 ---\nCUSTOMER: تمام، هفكر وأبقى أرجعلك\n[internal] route=faq stage=objection saved_preferences={}\nASSISTANT: تمام، خد وقتك.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,fresh | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Bergamot, Pepper | mid=Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi | base=Ambroxan, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 7,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "criteria": [
+      {
+        "criterion": "States honestly that every liquid is تركيب; relays only the store-configured similarity figure without saying 100% or مضمون.",
+        "met": true,
+        "evidence": "turn 1: Clarifies the perfume itself is تركيب and gives the configured 95% similarity figure; turn 6: explicitly says it is not 100% and repeats that it is تركيب."
+      },
+      {
+        "criterion": "Longevity: follows store policy (more than 8 hours only for an explicit duration question); no 48-hour guarantee; sarcasm handled calmly.",
+        "met": true,
+        "evidence": "turns 4–5: The customer explicitly asks about duration, and the assistant says more than 8 hours without a 48-hour claim; it calmly says it cannot promise a longer specific duration."
+      },
+      {
+        "criterion": "Price justification uses store facts, not performance claims.",
+        "met": true,
+        "evidence": "turn 3: Explains the lower price by saying the perfume is an inspired تركيب rather than the original, and mentions the configured similarity figure; it makes no performance claim."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 2,
+        "severity": "medium",
+        "category": "question",
+        "expected": "Answer the general question by explaining that the product is تركيب inspired by branded perfumes, rather than the original; ask for a perfume and size only if needed for a specific price.",
+        "actual": "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟",
+        "why": "The customer asked generally why the price is lower, not for a specific item's price. The assistant asks for details instead of answering the question, and repeats the request to provide them."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 2,
+        "code": "multiple_questions",
+        "verdict": "confirmed",
+        "reason": "The reply first asks which perfume and size, then asks the customer to write those same details, making the request repetitive."
+      }
+    ],
+    "summary": "The assistant is honest about تركيب, similarity, and longevity, gives the correct Sauvage 50 ml price, and lets the customer end the conversation without pressure. Its main miss is turn 2, where it asks for product details instead of answering the customer's general price question."
+  },
+  "verdict": "pass",
+  "verdict_reasons": [],
+  "usage": {
+    "api_calls": 26,
+    "by_role": {
+      "seller": {
+        "calls": 18,
+        "cost_usd": "0.005032345"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.00076435"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.0015327"
+      }
+    },
+    "prompt_tokens": 133601,
+    "cached_tokens": 95122,
+    "completion_tokens": 3404,
+    "reasoning_tokens": 2123,
+    "cost_usd": "0.007329395",
+    "api_seconds": 58.9,
+    "failed_calls": []
+  }
+}

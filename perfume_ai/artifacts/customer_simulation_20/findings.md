@@ -443,3 +443,99 @@ existing negation pattern and that test passes unchanged (`tests-round2-30.log` 
 
 Tests: `SecondRoundBatchFiveTests` 11 tests; full suite 2386, green, no request reaching the API
 (`tests-round2-31.log`).
+
+## Round 3 (2026-11-12, third brief): owner decisions, one replay, one full run
+
+Budget rule: total cap set to USD 3.50 by the owner (recorded in `ledger.json → cap_changes`, replacing
+4.00) before any paid call. The meter reserves each call's maximum cost before sending it and refuses
+a call that could pass the cap; it now also halts every further call after the first 429.
+
+### Owner decisions applied (tests in `ThirdRoundTests`)
+
+| Decision | Change |
+|---|---|
+| 1. "تمام أكد" after a side question (S11) | `order_service.explicit_confirmation`: the confirm verb itself ("أكد", "أكدلي", "نأكد", "confirm"; not a bare "تمام", "أكيد", "متأكد", a question, a negation or a deferral). When the extractor says "not confirmed" and the message is an explicit confirmation, the order is placed **if `_summary_was_shown` holds**: the summary message was sent, and the quote's digest equals this cart's fingerprint (items, prices, quantities, bottle types, contact details). Both safeguards are that unchanged function. Tests: after a side question → order placed; after a cart change or an address change in the same message → new summary, no order; with no summary sent, or one composed but never delivered → summary first, no order. The first test fails with the rule disabled |
+| 2. Store figures | No "90%" reaches the customer: none in code or prompts (the only mentions were a comment and a docstring, reworded), none in the local store's business facts, settings or FAQ answers (read-only query). Tests that carried the old value were updated to 95% / 750–2000: three of mine and one pre-existing fixture (`tests.py`, store "Perfamix Test": "نسبة تشابه 90%" → 95% in the fixture and its two assertions). The pre-existing guard that the shared prompt hardcodes no "90%" is untouched |
+| 3a. S11 repeated "أعلى حاجة بسيطة من ميزانيتك" | said once per price: a later quote of the same price, and a second copy in the model's sentence, lose it. A message that asks about the budget keeps it. Only prices within 20% over budget ever carry the label, and the eval's silent-overage check starts above that band, so nothing over budget goes unsaid |
+| 3b. S09 "ترتيب الإحساس مختلف شوية" | claim check: a difference in "feel" between perfumes is not recorded (unless hedged). Shared with the eval checker, so grading is slightly stricter |
+| 4. Production backtest | re-run read-only (`backtest-placement-readonly-4.txt`): the server reported `transaction_read_only=on` and `default_transaction_read_only=on` before any query; nothing was written. Latin check unchanged from run 3: 4 of 25 placements questioned, 9 of 48 deterministic matches dropped, the same items. Arabic guard: the same 7 flagged; counts moved slightly (329 → 328 examined) from new production conversations and my earlier filler-word additions |
+| 5. Budget | cap 3.50 recorded; `TASK_CAP` matches it; the meter halts at the first 429 (test: the second call never reaches the provider) |
+
+### Found while doing it: the local store data changed
+
+Between run 7 (19:09 UTC) and this round the local Perfamix store was edited: the business facts now say
+95% and 750–2000, and **shipping, delivery time, the website and the contact numbers moved into the
+business facts, with their FAQ entries switched off** ("بكام مصاريف الشحن؟", "كم مدة التوصيل؟", "هل
+العطر أصلي ولا تركيب؟" and others are inactive). My shipping code read the fee from the shipping FAQ
+entry only, so on this data the order summary would have lost its shipping line and its total with
+shipping, silently.
+
+| Defect | Change |
+|---|---|
+| shipping fee read from an FAQ entry only | `shipping_answer` falls back to the owner's own shipping sentence in the business facts (the line that states the fee; the note to the agent after it is not quoted), so the summary, the running total, the repeated-total line and "الشحن بكام؟" beside a checkout step keep working. An active FAQ entry still wins |
+| delivery-time and shipping-fee questions had only FAQ answers | with no FAQ entry they get that same sentence |
+
+### Round 3 replay (`round3-replay/attempt-1`, run `20261112T195509Z-20b519`): 2/3, USD 0.0348
+
+S11 pass (9.3), S16 pass (9.9), on the new store data. S09 failed on one high issue:
+
+| Scenario | Defect (turn) | Change |
+|---|---|---|
+| S09 | "غالي أوي بصراحة، مفيش حاجة شبهه في حدود ١٠٠٠؟" — the request was already understood (budget 1000, like Aventus, smoky and fruity), but "غالي" sent it to the price-objection path, whose drafts failed a description check and fell back to describing the 1400 perfume again (t5, high) | on a recommendation turn, a price objection that asks for an alternative ("مفيش حاجة…", "حاجة تانية", "بديل", "شبهه", "في حدود…", "تحت…") is recommended on, when something in the store fits the budget. With nothing under the budget the objection path's own answer stands (the S11 case) |
+
+Not changed: S09 t4, "طب أنهي واحد أقربله؟" answered "Aventus أقرب لطلبك" although Cigar carries the
+same labels (medium). The honest-comparison line added in batch 4 needs the missing perfume's name in
+the message; "أقربله" is a pronoun.
+
+Tests: `ThirdRoundTests` 13 tests; full suite 2399, green, no request reaching the API
+(`tests-round3-2.log`).
+
+### Round 3 full run (`round3-full/attempt-1`, run `20261112T200236Z-128819`): 16/20, mean 8.82, USD 0.1727
+
+The one full run allowed, on the code above. Pass: S01, S03–S06, S08–S11, S14–S20. Four failed. S12 and
+S13 had passed every earlier full run; both failed on the store-data change.
+
+| Scenario | Defect (turn) | Change |
+|---|---|---|
+| S12 | "الشحن بيوصل اسكندريه؟" got "تقصد أنهي عطر وحجم؟ ممكن تكتبهم عشان أقولك السعر الحالي؟" (t3; criterion). The shipping FAQ entry, whose bare "شحن" keyword used to answer it, is now off; the question went to the model, its draft failed the price check, and the fallback for a failed price check asks which perfume. The same question at t7 was answered correctly | any plain shipping question (Arabic, Franco or English) with no FAQ entry gets the owner's shipping sentence from the business facts; same-day, free-shipping and rush questions are left to the model, which has the other lines. A shipping draft that fails the price check falls back to that sentence, never to "which perfume and size?" |
+| S13 | "tmam 😂 el sha7n b kam?" got the same wrong fallback (t4, high) | same change (the Franco spelling is recognised) |
+| S02 | the model wrote its own drafting instruction to the customer: "سعر الـ90 ملي هيتضاف تلقائيًا." (t7, critical); "مش مطمن لقائمة النوتات… هفكر وأراجعها قبل ما أقرر، تسلم." got a recap of the notes and an invitation to the branch (t8, high) | a sentence saying the price "هيتضاف تلقائيًا" is removed from every reply; a message that closes with thanks and "هفكر/هراجع…" gets the short close whatever objection kind was detected (it had been read as a doubt, not as "thinking") |
+| S07 | "والضمان ده ينفع لو فتحته وجربته؟" was not recognised as an exchange-policy question; the model answered and invented "لو فتحتيه وجربتيه، مش هينفع استبداله أو استرجاعه" (t4, critical; criterion) | the policy's own names (ضمان، استبدال، استرجاع، مرتجع) mark an exchange-policy question, which gets the store's text; "تضمن"/"مضمون" do not. A complaint about a past purchase that mentions an exchange keeps its own handling |
+
+### Replays of the four (`round3-replay/attempt-2`, run `20261112T202423Z-7ac991`): 3/4, USD 0.0371
+
+S07 pass (8.6), S12 pass (9.9), S13 pass (9.7). S02: both run-3 faults gone, failed on a new turn:
+
+| Scenario | Defect (turn) | Change |
+|---|---|---|
+| S02 | "لسه بتكرر نفس النوتات من غير مصدر 😅 خلينا في اللي متأكدين منه—الـ90 مل من Layton بكام؟" got the whole notes list again above the price: its "النوتات" was read as a request (t6, high). And asked three times where the notes came from ("جبتها منين؟", "عندك مصدر للنوتات دي؟"), the bot repeated the list, then said it had no source while presenting the same list as recorded (t3–t5, medium each) | a notes word after "بتكرر/كررت/بتعيد…" is a complaint, not a request (also in the claim checker, which now treats a notes list there as unsolicited); a question about the notes' source gets one honest sentence, "النوتات دي هي المسجلة عندنا في بيانات العطر، ومعنديش مصدر رسمي من البراند أستند له.", a short form on a repeat, then nothing more |
+
+`round3-replay/attempt-3` (run `20261112T203022Z-daee8f`), S02 alone, USD 0.0191: the notes list did not
+come back at the price question. Verdict fail on one criterion, **shown to be judge noise**:
+
+- At t7 ("ده سعر الستور ولا Aventus الأصلي؟ والـ Layton الـ90 بكام…") the judge marked "Price question gets
+  the actual variant price" unmet because the original bottle's 2400 was not quoted. In replay 2 it had
+  accepted the same kind of answer.
+- The identical transcript re-graded twice passes both times, with that criterion met
+  (`noise-check/S02-round3-replay3-rejudge-1`, `-2`; scores 8–10).
+- All three gradings agree on one medium gap: "إنت متأكد من المصدر؟" did not trigger the source sentence.
+  That phrasing was added afterwards (unit-tested; not replayed).
+
+### Baseline re-graded under the round-2 judge (`baseline/rejudged-3`, `rejudged-3b`): 1/20, mean 5.86
+
+- **Harness change, disclosed:** a re-grade now gives the judge the store facts saved with the run it
+  re-grades. Otherwise it would have judged the baseline conversations against today's store data
+  (95%, 750–2000, delivery "يومين ل 5" instead of the old FAQ's "2 لـ 4 أيام"), and marked replies that
+  quoted the facts of their day as wrong. The catalogue is unchanged since the baseline (251 products,
+  no entry differs). `rejudged-3/store_facts.txt` is byte-identical to the baseline's.
+- Two of the 20 judge calls got a provider `InternalServerError` (S10, S18; charged at their maximum,
+  USD 0.0373). Those two were re-graded in `rejudged-3b`.
+- Result with all 20 judged: 1 pass, mean 5.87 by the summary script's method (5.78 under the round-1
+  judge); as a plain mean of per-scenario means, 5.86 against 5.76. Largest per-scenario moves: S13 +0.6, S06/S09/S11 +0.4, S12 −0.4.
+
+Not changed after this round: S09 t4 ("أقربله" by pronoun, medium); S07 t3 (a bare description for
+"هتعجبها أكيد؟ … مناسب ليها؟", medium) and feminine forms addressed to a male buyer (low); S02 t7's
+"store or original?" answer does not add the original bottle's price (graded both ways, see above).
+
+Tests: `ThirdRoundTests` 20 tests; full suite 2406, green, no request reaching the API
+(`tests-round3-5.log`).

@@ -202,7 +202,7 @@ def store_facts():
     """Claims the store itself configured, which the agent is entitled to relay.
 
     Without this the judge marked legitimate answers as invented: the oil ratios, the
-    available bottle sizes and the ~90% similarity figure all live in StoreSettings and
+    available bottle sizes and the similarity figure all live in StoreSettings and
     StaticFAQ, not on a product row, so a facts block built only from named perfumes made
     them look fabricated. Three of seven "critical" findings in the first pass were this
     mistake.
