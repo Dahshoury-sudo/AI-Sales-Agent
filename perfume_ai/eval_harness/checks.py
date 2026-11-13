@@ -299,7 +299,7 @@ def _unbacked_denial(reply, context):
     One no-data turn is exempt, and it is the turn where a denial is not merely allowed but
     required: `products.services.absence` swept the whole active catalogue for the name the customer
     typed and found nothing. `product_info` marks that turn `ABSENCE_DENIED`, and the reply is
-    required to deny plainly and offer alternatives. Flagging the denial there would score the fix
+    required to deny plainly and stop there. Flagging the denial there would score the fix
     as the defect — and `_contradictory_availability` still holds that reply to not promising
     another check.
 
@@ -336,8 +336,7 @@ def _stalled_when_denial_required(reply, context):
     """A promise to go and check, on the one turn where there is nothing left to check.
 
     `ABSENCE_DENIED` means `products.services.absence` already swept the whole active catalogue for
-    the name the customer typed and found nothing. The reply is then required to say so and to pitch
-    stocked perfumes instead. "لحظة أتأكدلك منه" on that turn is not a hedge, it is a promise nobody
+    the name the customer typed and found nothing. The reply is then required to say so, and nothing more. "لحظة أتأكدلك منه" on that turn is not a hedge, it is a promise nobody
     in this pipeline keeps: no job looks the name up between two messages and no owner reply comes
     back, so the customer waits on an answer that never arrives. Conversation 816 turn 3 is the whole
     failure in one message — its entire text was `لحظة أتأكدلك منه يا فندم.`
@@ -376,56 +375,44 @@ def _stalled_when_denial_required(reply, context):
     )
 
 
-def _denial_without_alternatives(reply, context, truth):
-    """A bare denial on a turn that was told to offer something in the same breath.
+def _substitute_after_denial(reply, context, truth):
+    """A denial that did not stop at the denial.
 
-    The deterministic half of `scenarios_conv772.py`'s turn-1 probe: a customer who asked about a
-    perfume we do not carry came here to buy a perfume, and "مش عندنا" on its own ends the
-    conversation as surely as the stall it replaced. `product_info` widens the alternatives pool on
-    every fully-absent turn precisely so the reply has stocked perfumes to name.
+    Store owner, 2026-11-13: *"when someone asks for a perfume that is unavailable i want you to say
+    it's not available and stop. don't offer alternatives."* This is the inverse of the check that
+    used to live here (`_denial_without_alternatives`, which flagged a bare denial for leaving the
+    customer with nothing to buy): the bare denial is now the required reply, and what is flagged is
+    a stocked perfume named beside it, an offer to recommend one, or a closing question.
 
-    High, not critical: the fact stated is true and the customer is not misled, only unserved.
+    High, not critical: nothing false was said. The customer was sold at when they asked a question.
 
-    Scoped to `ABSENCE_DENIED` turns, which is what keeps it quiet everywhere a denial legitimately
-    stands alone — a sold-out size, a perfume with no original bottle, a `NAME_UNREADABLE` abstain.
-    The partial case needs no exemption of its own: it carries rows for the perfumes we *did* place,
-    the reply names them, and those names are in `available_names`, so this passes without ever
-    requiring the fresh alternatives that turn deliberately withholds.
+    Scoped by `product_info.denial_only` — the marker with no product row — so a partially-resolved
+    turn, whose reply is rightly about the perfumes the customer did ask for, and a sold-out size
+    are untouched. A promise to check on that turn belongs to `_stalled_when_denial_required` and is
+    left to it.
 
-    Detects the offer by naming, not by wording — any active, sellable catalogue perfume named
-    anywhere in the reply counts. A reply that gestures at alternatives without naming one ("عندنا
-    عطور تانية حلوة") is a real defect and is caught, which is the intent: an unnamed perfume cannot
-    be bought.
-
-    Bounded by `_DENIAL`, so a denial phrased outside those patterns is a conservative miss rather
-    than a false alarm. Returns the lone denial clause, or None.
+    The predicate is `described.denial_alone`, the one `router._denial_only_reply` trims with, so
+    the guard and the grader cannot disagree: a reply reaching here untrimmed is one the router
+    should have cut. Returns the reply text that went past the denial, or None.
     """
-    from products.services.product_info import ABSENCE_DENIED_MARKER
-    from products.services.sales import naming
+    from products.services.product_info import denial_only
+    from products.services.sales import described
 
-    if ABSENCE_DENIED_MARKER not in (context or ""):
+    if not denial_only(context):
         return None
-
-    available = truth.get("available_names") or ()
-    if not available:
+    asked = ""
+    for line in (context or "").splitlines():
+        if line.strip().startswith(described.PENDING_LOOKUP_MARKER):
+            asked = line.strip()[len(described.PENDING_LOOKUP_MARKER):]
+            break
+    names = [name for name in truth.get("available_names") or () if name]
+    kept = described.denial_alone(reply, names, asked)
+    if kept == reply:
         return None
-
-    offending = None
-    for clause in _CLAUSE.split(reply or ""):
-        if not any(pattern.search(clause) for pattern in _DENIAL):
-            continue
-        if any(pattern.search(clause) for pattern in _DENIAL_SCOPED):
-            continue
-        if any(pattern.search(clause) for pattern in _DENIAL_SIMILARITY):
-            continue
-        offending = clause.strip()
-        break
-
-    if not offending:
+    if kept is None and described.promises_a_lookup(reply):
         return None
-    if naming.mentioned_in(reply or "", [_NameOnly(name) for name in available if name]):
-        return None
-    return offending
+    extra = (reply or "").replace((kept or "").rstrip("."), "", 1) if kept else (reply or "")
+    return extra.strip(" .،\n") or (reply or "").strip()
 
 
 def _numbers(text):
@@ -679,13 +666,13 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             f"searched and the name was not in it — nothing looks it up after this reply",
         ))
 
-    # ── Denying without offering anything instead ─────────────────────────
-    bare = _denial_without_alternatives(reply, context, truth)
-    if bare:
+    # ── Not stopping at the denial ────────────────────────────────────────
+    pitched = _substitute_after_denial(reply, context, truth)
+    if pitched:
         findings.append((
-            "denial_without_alternatives", "high",
-            f"denied the perfume ('{bare}') without naming a single stocked perfume the customer "
-            f"could buy instead",
+            "substitute_after_denial", "high",
+            f"denied the perfume and then offered something in its place ('{pitched}') — the owner "
+            f"wants the denial and nothing after it",
         ))
 
     # ── Talking to the customer about the injected data ───────────────────

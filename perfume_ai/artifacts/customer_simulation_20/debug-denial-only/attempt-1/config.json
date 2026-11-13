@@ -1,0 +1,69 @@
+{
+  "run_id": "20261113T212520Z-e11906",
+  "phase": "debug-denial-only",
+  "attempt": "attempt-1",
+  "started_utc": "2026-11-13T21:25:24.657657+00:00",
+  "seller_models": {
+    "OPENAI_MODEL": "gpt-6-luna",
+    "OPENAI_SMART_MODEL": "gpt-6-luna",
+    "OPENAI_RESOLVER_MODEL": "gpt-6-luna",
+    "OPENAI_TEMPERATURE": 0.3
+  },
+  "seller_profiles": {
+    "extract": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "reason": {
+      "model": "gpt-6-luna"
+    },
+    "resolve": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "converse": {
+      "model": "gpt-6-luna",
+      "temperature": 0.3
+    }
+  },
+  "seller_reasoning_effort": "Luna: none for extract/converse, high for reason/resolve (client.chat)",
+  "simulator": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "none",
+    "temperature": 0.6,
+    "prompt_sha256": "7eb4bd3b4725f610fc2089d050e2ba04d75da92aab67eb9443f69184bcb9b320"
+  },
+  "judge": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "high",
+    "enabled": true,
+    "rubric_sha256": "75709d01bca0d88ed386c7ac2d930d564389a976ef916d43b2f91a20d2e9538f"
+  },
+  "max_completion_tokens": {
+    "gpt-6-luna": {
+      "none": 2048,
+      "high": 25000
+    }
+  },
+  "pass_rule": "no error; no critical/high deterministic finding unless the judge dismissed it with a reason; no judge critical/high issue; every judge score >= 6; no unmet success criterion",
+  "task_cap_usd": "4.06",
+  "workers": 4,
+  "git": {
+    "commit": "6f3f41f808853dac75d5bbc08a1e57b6e349301b",
+    "products_diff_sha256": "bbe5a0d0f3cc6d76ac57d35e66bdfe5007741c953d5b9c0a5d721c0090b52c64",
+    "products_diff_lines": 1615
+  },
+  "code": {
+    "code_sha256": "a42c6f9db038ba9a021e51873c05265e0a645cbbe8e4de55e28ef96ec3414114",
+    "files": 122,
+    "import_failures": []
+  },
+  "temporary_database": "test_customer_sim_dff6f474b5",
+  "catalogue_products": 251,
+  "isolation": "Disposable local PostgreSQL copy; read-only source snapshot; scenario transactions rolled back; outbound HTTP disabled; no automatic API retries",
+  "scenarios": [
+    "S09_unavailable"
+  ],
+  "rejudge_source": null,
+  "judge_store_facts": "current store data"
+}

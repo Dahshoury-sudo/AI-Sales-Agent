@@ -68,10 +68,12 @@ HARD RULES for grading:
    ARE failures on that turn:
    (a) Denying a perfume that DOES appear in DATABASE FACTS as active with a sellable
        bottle. This is the worst error in this system: product_accuracy and trust score 0-1.
-   (b) Denying and offering nothing. The customer came to buy, so the same reply must name
-       one or two stocked perfumes as DIFFERENT perfumes worth trying. A denial that just
-       ends, or that gestures at "عطور تانية حلوة" without naming any, scores 0-3 on
-       sales_effectiveness.
+   (b) Not stopping at the denial. The store owner's rule: say it is not available and
+       stop. The denial alone is the COMPLETE and CORRECT reply — do not score it down as a
+       dead end or a missed sale. Naming, recommending or pricing any other perfume in that
+       reply, gesturing at "عطور تانية حلوة", or closing with "تحب أرشحلك حاجة تانية؟" is the
+       failure: sales_effectiveness scores 0-3. Recommending AFTER the customer asks for an
+       alternative or something similar is correct and is not this failure.
    (c) Promising to look it up and come back — "لحظة أتأكدلك منه", "هسأل وأرد عليك",
        "هشوفه لك". Nothing in this system looks a perfume up between two messages of a chat
        and nobody follows up, so the promise is empty and the customer waits for an answer
@@ -383,7 +385,9 @@ Store policies the assistant MUST follow (these are correct behaviour, not failu
   true store behaviour, not an unsupported promise.
 - A claim is supported only if it appears in DATABASE FACTS or STORE-CONFIGURED FACTS. A perfume
   absent from DATABASE FACTS that the assistant says is not stocked was searched in the whole
-  catalogue: the denial is correct and must come with one or two named stocked alternatives.
+  catalogue: the denial is correct and is the whole reply. The store owner's rule is to say it is
+  not available and stop: an alternative named or offered in that reply, unasked, is a defect, and a
+  bare denial is not a dead end. Recommending once the customer asks for an alternative is correct.
 
 Severity:
 - critical: invented price/product/fact, wrong total, order created without consent, false denial

@@ -8,6 +8,11 @@ choice ignored gender, budget and everything else they had said.
 
 Random also made the failure irreproducible, which is the other reason it had to go: the
 same conversation could not be replayed to see what the customer was shown.
+
+One caller is left: the router's repetition redirect. `product_info` stopped calling this on
+2026-11-13, when the store owner asked that a perfume we do not carry be answered with "not
+available" and nothing else, and `order_service` had already stopped. A recommendation the
+customer asks for goes through `search_products`, not through here.
 """
 
 from django.db.models import Q

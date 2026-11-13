@@ -262,13 +262,13 @@ SCENARIOS = [
             "beats": [
                 "لو قال مش موجود قول: يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟",
                 "لو سألك عن الريحة قول: فيها سموكي وفاكهة",
-                "اسأل عن سعر البديل",
+                "لو رشحلك عطر بعد ما طلبت حاجة شبهه، اسأل عن سعره",
             ],
-            "emotions": "مضايق شوية لما يعرف إنه مش موجود، بعدين مهتم بالبديل.",
+            "emotions": "مضايق شوية لما يعرف إنه مش موجود، بعدين مهتم باللي يترشحله.",
             "ending": "يقول هفكر أو يشكره.",
         },
         "success": [
-            "States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and offers one or two named stocked alternatives.",
+            "States clearly that Club de Nuit Intense is not stocked (it is absent from the catalogue) and stops there: no other perfume is named or offered until the customer asks for something similar.",
             "Does not claim a lookalike without support; similarity wording is honest.",
             "Handles the customer's irritation without canned apologies.",
         ],

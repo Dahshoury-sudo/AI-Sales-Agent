@@ -7,6 +7,8 @@ from .product_info import (
     occasion_reference_requested,
     ABSENCE_DENIED_MARKER,
     NAME_UNREADABLE_MARKER,
+    BARE_DENIAL,
+    denial_only,
 )
 from .comparison_service import compare_products
 from .order_service import handle_order, restore_stock, clear_cart
@@ -365,6 +367,11 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     for sentence in repetition.repeated_frames(prose, history, store=store):
         if sentence not in repeats:
             repeats.append(sentence)
+    if denial_only(context):
+        # "ها لقيت اي ؟" after a denial is owed the denial again, and since 2026-11-13 that sentence
+        # is the whole reply — so every chase repeated itself by construction and was regenerated,
+        # which re-runs the extractor and the confirming call and can come back with a promise.
+        repeats = [sentence for sentence in repeats if not sales_described.states_absence(sentence)]
     if not repeats and not issues:
         return append_quotation(reply, context), context, ()
 
@@ -417,6 +424,12 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
     if salvaged:
         retried, remaining = salvaged, []
     if remaining or (issues and not (retried or "").strip()):
+        if denial_only(context):
+            # A turn whose whole answer is "we do not carry it" has one supported fallback, and it
+            # is not a question about sizes or an offer to transfer — both of which the exits below
+            # produced once the turn stopped carrying product rows. Not passed through
+            # `_not_a_repeat` either: said twice, it is still the answer.
+            return BARE_DENIAL, context, repeats
         if evidence.get("sections"):
             quoted_ids = {q.get("product_id") for q in evidence.get("quotes", [])}
             selected = [p for p in offer_rows if p.pk in quoted_ids]
@@ -516,13 +529,16 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
             from .ai.recommendation import recommendation_fit
             fallback = recommendation_fit(selected, recommendation_intent, message=message, history=history)
         elif denied and selected:
-            # The named perfume was confirmed absent and the rows are alternatives. Answered "متوفر"
-            # line by line, the fallback read as if the alternatives were the perfume asked about and
-            # dropped the denial (simulation S09 round 2, t1). The denial stays; the alternatives are
-            # described from their labels.
-            lines = requested_product_details(selected, "", history=history, description_required=True)
+            # A denial that still carries rows is a partially-resolved turn: the rows are perfumes the
+            # customer asked about in the same message, not substitutes (a denial-only turn returned
+            # `BARE_DENIAL` above). They are answered as asked, and the perfume we do not carry keeps
+            # its own line — answered "متوفر" line by line with nothing after it, the fallback dropped
+            # the denial (simulation S09 round 2, t1).
+            lines = requested_product_details(selected, message, preferred_occasion=preferred_occasion,
+                                              history=history)
+            lines = lines or requested_product_details(selected, "", history=history, description_required=True)
             lines = lines or [f"{product.name}: {factual_description(product)}." for product in selected]
-            fallback = "للأسف العطر ده مش موجود عندنا. كبدائل متوفرة:\n" + "\n".join(lines)
+            fallback = "\n".join(lines) + "\nأما العطر التاني اللي سألت عنه فللأسف مش موجود عندنا."
         else:
             lines = requested_product_details(selected, message, preferred_occasion=preferred_occasion, history=history)
             if message is None and not lines:
@@ -728,10 +744,9 @@ def _escalate_absent_name(conversation, store, context, message, history):
     `context` is this turn's own prompt context, so a marker in it describes *this* reply.
 
     **The bot is never muzzled on the turn it answers.** Both replies this function sees are
-    complete answers the customer can act on: a plain denial with alternatives named, or a request
-    to retype the name. Setting `needs_human` alongside either is what made conversations 816 and
-    817 dead ends — `views.py` then answered every later message with silence, and the alternative
-    the bot had just pitched could not be sold. "ماشي" and "اتأكد" each got nothing back. So notify
+    complete answers: a plain denial, or a request to retype the name. Setting `needs_human` alongside either is what made conversations 816 and
+    817 dead ends — `views.py` then answered every later message with silence, so a customer who went on
+    to ask for something we do sell got nothing. "ماشي" and "اتأكد" each got nothing back. So notify
     the owner, who still wants to know a customer asked for something absent from the catalogue, and
     leave the bot able to keep serving.
 
@@ -741,7 +756,7 @@ def _escalate_absent_name(conversation, store, context, message, history):
 
     Twice, not once, and the second answer is not a wasted turn. A customer who chases immediately
     after the denial usually has not taken it in — 835 turn 2 and 836 turn 2 are both that — and the
-    reply they are owed is the same answer said again, plainly, with the alternatives pushed harder.
+    reply they are owed is the same answer said again, plainly.
     Handing over on the first chase would put the silence one turn later than 816 and 817 had it
     instead of removing it. Two complete answers about one absent perfume is where the bot runs out
     of true things to say.
@@ -809,7 +824,7 @@ def _escalate_absent_name(conversation, store, context, message, history):
             title="عميل سأل عن عطر مش في الكتالوج ❌",
             message=(
                 f"محادثة #{conversation.id}: العميل سأل عن «{question}» — والعطر ده مش في بيانات "
-                f"المتجر، فالبوت قاله إنه مش موجود عندنا وعرض عليه بدائل. "
+                f"المتجر، فالبوت قاله إنه مش موجود عندنا وبس، من غير ما يعرض بدائل. "
                 f"لو العطر ده عندنا فعلاً أو تحب تجيبه، راجع المحادثة ورد على العميل."
             ),
         )
@@ -826,6 +841,32 @@ def _escalate_absent_name(conversation, store, context, message, history):
                 f"لو إنت فاهم هو بيقصد إيه، راجع المحادثة ورد على العميل."
             ),
         )
+
+
+def _denial_only_reply(reply, context, message, store):
+    """Hold a denial-only turn to the denial. Returns the reply to send.
+
+    Store owner, 2026-11-13: *"when someone asks for a perfume that is unavailable i want you to say
+    it's not available and stop. don't offer alternatives."* `product_info` sends no substitute rows
+    and forbids the pitch, and this is the deterministic line behind both: whatever the model wrote
+    past the denial — a perfume from earlier in the chat, "تحب أرشحلك حاجة قريبة؟", a promise to
+    check — is cut clause by clause (`described.denial_alone`), and a reply with no clean denial
+    left in it becomes `BARE_DENIAL`.
+
+    A trim rather than a regeneration: a second `get_product_info` is up to three model calls, can
+    come back with a different verdict, and is no likelier to obey. Runs after `_rephrased` so it
+    reads the reply actually being sent, and before the code-written additions (handoff
+    confirmation, policy answers, "معنديش بيانات عن ريحة…"), which are not the model's to lose.
+
+    Scoped by `product_info.denial_only`, so a partially-resolved turn — whose reply is mostly about
+    perfumes the customer did ask for — and every other turn pass through untouched.
+    """
+    if not denial_only(context) or store is None:
+        return reply
+    from products.models import Product
+    names = list(Product.objects.filter(store=store, is_active=True).values_list("name", flat=True))
+    asked = f"{message or ''} {_deferred_question(context, message)}"
+    return sales_described.denial_alone(reply, names, asked) or BARE_DENIAL
 
 
 def _was_already_handed_off(history):
@@ -2257,7 +2298,11 @@ def _route(message, history=None, store=None, conversation=None):
     # الشحن بكام؟" was redirected to the general model, which asked for contact details while the cart
     # stayed empty, and the next turn asked "تحب تطلب أنهي عطر؟" (simulation S11 round 2 batch 4, t6-t7).
     # The order flow holds the cart and is not what was repeating.
-    if request_type not in ("recommendation", "order", "order_cancel") and (text_rep >= 3 or semantic_rep >= 3):
+    # Nor straight after a denial: since 2026-11-13 a denial is one short sentence, so a customer who
+    # asks about several perfumes we do not carry gets near-identical replies by design, and this
+    # redirect would answer the next one with a shelf of suggestions and no absence check at all.
+    if (request_type not in ("recommendation", "order", "order_cancel") and (text_rep >= 3 or semantic_rep >= 3)
+            and not _recently_denied(conversation, turns=1)):
         # Bot has been repeating itself — force a conversation redirect
         # Fetch real products from DB to prevent hallucination when suggesting alternatives.
         # Deterministic rather than order_by('?'), so a repeated conversation can be
@@ -2510,8 +2555,8 @@ def _route(message, history=None, store=None, conversation=None):
                     "\"لحظة أتأكدلك\" أو \"هسأل وأرد عليك\" أو \"هشوفه لك\") — وده ممنوع في الرد ده. "
                     "إحنا **اتأكدنا خلاص** من العطر ده في الكتالوج كله ومش عندنا، ومفيش حد هيراجع "
                     "حاجة بعد كده، فالوعد ده بيسيب العميل مستني رد عمره ما هييجي. اكتب الرد تاني: "
-                    "قوله بوضوح وباعتذار قصير إن العطر مش موجود عندنا، وفي نفس الرد اعرض عليه بديل "
-                    "أو اتنين من العطور اللي في البيانات بالاسم الكامل.\n"
+                    "قوله بوضوح وباعتذار قصير إن العطر مش موجود عندنا، وبس — ❌ من غير وعد، ومن غير "
+                    "ما تعرض بديل ليه.\n"
                 ),
             )
 
@@ -2528,6 +2573,7 @@ def _route(message, history=None, store=None, conversation=None):
             lambda hint: get_product_info(message, history, store, conversation, retry_hint=hint),
             message=message, preferred_occasion=(conversation.preferences or {}).get("occasion") if conversation else None,
         )
+        response = _denial_only_reply(response, context, message, store)
 
         # After the retry, so a deferral the retry introduced or removed is judged on the context
         # actually being sent.
@@ -2572,6 +2618,7 @@ def _route(message, history=None, store=None, conversation=None):
             lambda hint: compare_products(message, history, store, conversation, retry_hint=hint),
             message=message, preferred_occasion=(conversation.preferences or {}).get("occasion") if conversation else None,
         )
+        response = _denial_only_reply(response, context, message, store)
 
         # `compare_products` hands a turn it cannot place two perfumes on straight to
         # `get_product_info`, so this branch now produces the same markers the one above does —

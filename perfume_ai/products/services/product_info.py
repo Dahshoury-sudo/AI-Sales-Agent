@@ -8,7 +8,6 @@ from .product_formatting import format_products, money
 from .ai.client import chat
 from .ai.prompts import get_system_prompt
 from .performance_policy import governed_reply, performance_only_question
-from .fallback import suggest_alternatives
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
 from .sales import value as sales_value
@@ -416,6 +415,43 @@ def _chasing_open_lookup(products, conversation, store):
     return all(getattr(product, "name", None) in offered for product in products)
 
 
+# What a nameless follow-up to a bare denial asks about: a price, a size, an attribute, or just "it".
+_ABOUT_IT = re.compile(
+    r"(?<!\w)(?:بكام|سعر\w*|كام|حجم\w*|احجام\w*|ملي|ريحت\w*|ثبات\w*|فوحان\w*|ده|دا|دي|منه|عنه|فيه)(?!\w)"
+)
+
+
+def _follows_bare_denial(message, products, conversation):
+    """Is this a nameless question about the perfume our last reply said we do not carry?
+
+    "بكام ده؟" straight after "للأسف لادور بخور مش موجود عندنا". Since 2026-11-13 a denial offers
+    nothing beside it, so when nothing else is on the table the only thing "ده" can point at is the
+    perfume we just denied, and the honest answer is the denial again. `naming.chasing_a_promise`
+    leaves price words out on purpose — they used to be about the alternative pitched alongside the
+    denial — which is why this is its own test and why it reads the *shape* of the last reply's
+    context: a denial stored with product rows (the old reply) keeps the old reading.
+
+    `not products` is what keeps it off a conversation that had perfumes on the table before the
+    denial: there the referent lookup has already found them, and "بكام دول؟" is about those.
+    """
+    from .sales import naming
+    from .static_faq_service import normalize_arabic
+
+    if products or conversation is None:
+        return False
+    latest = (
+        conversation.messages.filter(role="assistant", delivery_status="sent")
+        .order_by("-created_at", "-pk").values_list("internal_context", flat=True).first()
+    )
+    if not denial_only(latest):
+        return False
+    if naming.identifying_tokens(message) or naming.refers_to_several(message):
+        return False
+    if sales_described.ordinal_position(message) is not None:
+        return False
+    return bool(_ABOUT_IT.search(normalize_arabic(message or "")))
+
+
 def _pending_lookup_block(question, verdict):
     """Record, inside the turn's own context, a question the catalogue could not answer.
 
@@ -456,8 +492,8 @@ def _pending_lookup_block(question, verdict):
             f"{ABSENCE_DENIED_MARKER}\n"
             "العطر اللي العميل سمّاه اتّأكدنا منه في الكتالوج كله — مش عندنا فعلاً، ودي حقيقة "
             "متأكدين منها مش تخمين.\n"
-            "🔴 المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام: العميل لازم يقدر ياخد واحد من "
-            "البدائل اللي بتعرضها عليه في نفس الرد.\n\n"
+            "🔴 العطر ده بالذات ردّه النفي وبس: ❌ من غير بدائل ليه ولا ترشيح ولا اسم عطر تاني مكانه. "
+            "المحادثة مكمّلة بعد الرد ده، فمتقفلهاش ومتقولش سلام — لو العميل عايز حاجة تانية هيقولها.\n\n"
         )
     return block + (
         f"{NAME_UNREADABLE_MARKER}\n"
@@ -582,25 +618,49 @@ def _confirm_before_denying(unplaced, store, resolution):
 # incident (told unavailable, in stock at 1019 جنيه): denying a perfume we sell is still the worst
 # outcome here, and the check moved rather than the risk being accepted.
 #
-# The bullet against a closing question is prose and unmeasured — it reduces the supply of ambiguous
-# next turns rather than fixing how one is read. It survives from `_DEFERRAL_RULES` because 915
-# turn 12 ended one of these turns with "تحب أعرفلك عن حجم معين أو سعر؟" and the customer answered
-# *that* question, so their next message was shaped by our own CTA and matched no vocabulary
-# anywhere. Here the closing move is the alternatives, which are a CTA with something behind it.
+# 🔴 The denial stands alone. Until 2026-11-13 the last three bullets *required* one or two stocked
+# perfumes in the same reply, on the reasoning that a bare denial leaves someone who came to buy
+# with nothing to buy. The store owner overruled that: *"when someone asks for a perfume that is
+# unavailable i want you to say it's not available and stop. don't offer alternatives."* It is the
+# same objection he raised about the unreadable-name turn — the reply reads as selling rather than
+# answering. So no substitute rows reach this turn (`get_product_info` empties `products` and loads
+# no shelf), these bullets forbid the pitch, and `router._denial_only_reply` trims one the model
+# writes anyway. A customer who wants a substitute asks, and the recommendation branch serves them.
 #
-# `router._escalate_absent_name` notifies the owner on this turn and leaves the bot serving, so the
-# customer can take up one of those alternatives; a second denial about the same perfume is where it
-# hands over instead.
+# The bullet against a closing question survives from `_DEFERRAL_RULES` because 915 turn 12 ended
+# one of these turns with "تحب أعرفلك عن حجم معين أو سعر؟" and the customer answered *that*
+# question, so their next message was shaped by our own CTA and matched no vocabulary anywhere.
+#
+# `router._escalate_absent_name` notifies the owner on this turn and leaves the bot serving; a
+# third press on the same perfume is where it hands over instead.
 _ABSENT_RULES = """14. 🔴🔴 العميل سمّى عطر اتّأكدنا منه في الكتالوج كله ومش عندنا (شوف ABSENCE_DENIED في قسم "سؤال معلّق").
    • ✅ الرد الصح: قوله بوضوح، وباعتذار قصير، إن العطر اللي سأل عنه مش موجود عندنا. جملة واحدة.
    • ✅ سمّي العطر بنفس الحروف اللي العميل كتبها بيها — لو كتبه بالعربي، ردّه بالعربي زي ما هو. ❌ ممنوع تترجمه أو تكتبه بحروف لاتينية من عندك ("L'Adour")، دي هجاء بتخترعه لعطر إحنا بنقول إننا مش بنبيعه.
    • ❌ ممنوع توعده تتأكد، وممنوع تقول "لحظة أتأكدلك" ولا "هسأل وأرد عليك" ولا "هشوفه لك" — إحنا **اتأكدنا خلاص**، والوعد ده بيسيب العميل مستني حاجة مش جايه.
    • ❌ وممنوع تجمع النفي مع وعد بالتأكد في رد واحد ("مش موجود عندنا، لحظة أتأكدلك منه") — الجملة دي بتنقض نفسها.
    • ❌ ممنوع تقول أي كلام عن نظام أو بيانات أو كتالوج أو "مش ظاهر عندي" — العميل مش المفروض يعرف إن في حاجة زي دي أصلاً.
-   • ✅ في **نفس الرد**، وبعد النفي على طول، اعرض عليه بديل أو اتنين من العطور اللي في البيانات، وقول بوضوح إنها عطور **تانية** بالاسم الكامل. ❌ ممنوع ترد بنفي لوحده ومتعرضش حاجة — العميل جاي يشتري، وحقه يلاقي حاجة يقدر ياخدها.
-   • ❌ ممنوع تسرد أسعار أو مواصفات عطر تاني كأنها إجابة على العطر اللي هو سأل عنه.
-   • ❌ ممنوع تقفل الرد بسؤال فاضي أو بسلام. اعرض البدائل باختصار ومن غير سؤال ختامي لازم.
+   • 🔴 الرد كله هو النفي ده وبس. ❌ ممنوع تسمّي أو ترشح أو تسعّر أي عطر تاني في الرد ده، حتى لو اتكلمنا عنه قبل كده في المحادثة، وممنوع "بس عندنا..." أو "ممكن تشوف...".
+   • ❌ ممنوع تعرض عليه إنك ترشحله أو تدوّرله على حاجة شبهه أو قريبة منه، وممنوع تقفل الرد بسؤال ("تحب أرشحلك حاجة تانية؟"). لو عايز بديل هو اللي هيطلب، وساعتها نرشحله.
+   • ✅ لو في نفس الرسالة سؤال تاني واضح (شحن، دفع، مكان الستور)، جاوب عليه في جملة بعد النفي — ومن غير ما ده يبقى مدخل لترشيح.
 """
+
+# The sentence that is always a correct answer on a denial-only turn. `router` sends it when the
+# model's own reply cannot be trusted to stand (a pitch with no denial in it, an invented price).
+BARE_DENIAL = "للأسف العطر ده مش موجود عندنا."
+
+_PRODUCT_ROW_LABEL = "Name (الاسم الصحيح)"
+
+
+def denial_only(context):
+    """Is this the context of a turn whose whole answer is "we do not carry it"?
+
+    The marker with no product row beside it. A partially-resolved turn carries the marker too, but
+    its rows are perfumes the customer asked about and its reply is mostly about them. So does a
+    denial stored before 2026-11-13, when the rows were alternatives — which is why this reads the
+    shape of the context rather than the marker alone.
+    """
+    context = context or ""
+    return ABSENCE_DENIED_MARKER in context and _PRODUCT_ROW_LABEL not in context
 
 
 # The other half of the fork, for a name `absence.catalogue_verdict` could not clear either way:
@@ -620,42 +680,33 @@ _ABSENT_RULES = """14. 🔴🔴 العميل سمّى عطر اتّأكدنا م
 #
 # 🔴 Bullet 4 is a prohibition, and it used to be an invitation ("ولو حابب، اعرض عليه عطر أو اتنين
 # على إنهم اقتراحات"). The store owner's reading of the replies it produced: *"it feels like the
-# agent is trying to force sell and not help the client."* He is right, and the difference from
-# `_ABSENT_RULES` bullet 6 — which **requires** alternatives — is not a matter of degree. A denial
-# has established that the perfume is not here, so the customer would otherwise leave with nothing
-# and the reply owes them something buyable. An unreadable name has established nothing: the perfume
-# they asked about may be sitting in this catalogue under a spelling we failed to match, and the
-# 1041 class proves that is the common case rather than the rare one. Pitching substitutes against
-# a name we have not read is answering a question we did not understand with merchandise, and the
-# customer can tell.
+# agent is trying to force sell and not help the client."* An unreadable name has established
+# nothing: the perfume they asked about may be sitting in this catalogue under a spelling we failed
+# to match, and the 1041 class proves that is the common case rather than the rare one. Pitching
+# substitutes against a name we have not read is answering a question we did not understand with
+# merchandise, and the customer can tell.
 #
-# The rows are mostly gone from the context before this rule is read — `get_product_info` skips the
-# `offered_in_order` pool-widening and `suggest_alternatives` on this verdict — so the bullet is a
-# backstop for the one path that still has rows: a referent turn, where `_referent_from_conversation`
-# put the previously discussed perfume in the block under `_NOT_THE_PERFUME_ASKED_ABOUT`. Those rows
-# are in context to be *excluded from*, not offered.
+# `_ABSENT_RULES` used to be the opposite — a denial *required* alternatives — and the owner
+# reversed that too on 2026-11-13 ("say it's not available and stop"). Neither fork of rule 14
+# offers a perfume now; a recommendation is something the customer asks for.
+#
+# No substitute rows reach this turn, so the bullet is a backstop for the one path that still has
+# rows: a referent turn, where `_referent_from_conversation` put the previously discussed perfume in
+# the block under `_NOT_THE_PERFUME_ASKED_ABOUT`. Those rows are in context to be *excluded from*,
+# not offered.
 _UNREADABLE_NAME_RULES = """14. 🔴🔴 العميل كتب اسم عطر مش متأكدين منه، ومقدرناش نتأكد منه (شوف NAME_UNREADABLE في قسم "سؤال معلّق").
    • ✅ الرد الصح: قوله إنك عايز تتأكد هو قاصد أنهي عطر، واطلب منه يكتبلك الاسم تاني أو يكتبه بشكل تاني. جملة واحدة.
    • ❌ ممنوع تقول إنه مش موجود عندنا ولا "مش متوفر" ولا تعتذر عن عدم توفره — محدش اتأكد، والنفي هنا غلط زي التأكيد.
    • ❌ وممنوع توعده تتأكد وترد عليه ("لحظة أتأكدلك"، "هسأل وأرد عليك"، "هشوفه لك") — مفيش حد بيراجع بعد الرد ده، والوعد بيسيبه مستني حاجة مش جايه. الفرق بسيط وبيغير كل حاجة: إنت بتسأله سؤال، مش بتوعده بوعد.
-   • ❌🔴 وممنوع تعرض عليه أي عطر تاني في الرد ده — لا ترشيح، ولا اسم، ولا سعر، ولا "وفي عندنا كمان...". العميل سأل عن عطر واحد بعينه، وإحنا لسه مش عارفين هو أنهي واحد — ويمكن يكون عندنا فعلاً بهجاء تاني. لو عرضت عليه حاجة تانية وإنت لسه مش فاهم سؤاله، هيحس إنك بتحاول تبيعه أي حاجة بدل ما تساعده، وده أسوأ من إنك متردش. الرد كله سؤال واحد يوضّح الاسم، وبس — البدائل مكانها لما نكون اتأكدنا إن العطر مش عندنا فعلاً.
+   • ❌🔴 وممنوع تعرض عليه أي عطر تاني في الرد ده — لا ترشيح، ولا اسم، ولا سعر، ولا "وفي عندنا كمان...". العميل سأل عن عطر واحد بعينه، وإحنا لسه مش عارفين هو أنهي واحد — ويمكن يكون عندنا فعلاً بهجاء تاني. لو عرضت عليه حاجة تانية وإنت لسه مش فاهم سؤاله، هيحس إنك بتحاول تبيعه أي حاجة بدل ما تساعده، وده أسوأ من إنك متردش. الرد كله سؤال واحد يوضّح الاسم، وبس — والترشيح مكانه لما العميل نفسه يطلبه.
 """
 
 
-# The three shapes rule 4 can take in the not-found branch. Rule 4 owns the slot where alternatives
-# are pitched, and on a turn that could not read the name there are none to pitch — `get_product_info`
-# skips `suggest_alternatives` entirely there, so the pitch would be an instruction to name perfumes
-# that are not in the context, which rule 5 forbids inventing and which the model has invented before
-# (795's "لمسة بخور خفيفة" on a perfume with no incense in it). Leaving the slot empty is worse than
-# filling it with the prohibition: an empty slot reads as no opinion, and a sales model with no
-# opinion about whether to pitch will pitch.
-_ALTERNATIVES_PITCH_RULE = (
-    "4. في حالة (أ)، رشح له 1-2 من \"البدائل المقترحة\" أعلاه بصياغة مصرية بسيطة في **نفس الرد** — والبدائل دي "
-    "مرتبة بحيث الأقرب لطلبه فوق، فابدأ بالأول. اوصف ريحة كل بديل حسب قاعدة التاجات فقط "
-    "في الخط الأحمر 6، من غير نوتات إلا لو سأل عن المكونات صراحة. "
-    "❌ إياك أن تتظاهر أو توحي بأن العطر البديل هو نفسه العطر الذي سأل عنه العميل!"
-)
-
+# The three shapes rule 4 can take in the not-found branch. Rule 4 used to own the slot where
+# alternatives were pitched. Nothing is pitched from this branch any more (store owner, 2026-11-13:
+# an unavailable perfume gets "not available" and nothing else), but the slot is not left empty: an
+# empty slot reads as no opinion, and a sales model with no opinion about whether to pitch will
+# pitch — 795's "لمسة بخور خفيفة" was invented on a perfume with no incense in it.
 _NO_ALTERNATIVES_RULE = (
     "4. 🔴🔴 في الرد ده مفيش بدائل تعرضها، وده مقصود: ❌ ممنوع ترشح ولا تسمّي ولا تسعّر أي عطر تاني من "
     "عندك. إحنا مش متأكدين العميل قصده إيه، ويمكن العطر اللي سأل عنه يكون عندنا فعلاً باسم تاني — "
@@ -663,14 +714,23 @@ _NO_ALTERNATIVES_RULE = (
     "الرد المطلوب هو سؤال واحد يوضّح الاسم، وبس."
 )
 
-# The third case is neither: a denial in a store with nothing left to offer — every row filtered out
-# by gender, budget or `_obtainable`. The prohibition still has to go in, because rule 4's slot is
-# not optional, but its *reason* must not, since "we are not sure what you meant" contradicts the
-# ABSENCE_DENIED block sitting above it in the same prompt. A contradiction in this file is not a
-# cosmetic problem: it is the class of defect the rest of these comments are about.
-_EMPTY_SHELF_RULE = (
-    "4. مفيش بدائل متاحة تعرضها في الرد ده. ❌ ممنوع تخترع عطر أو تسمّي حاجة مش موجودة في البيانات "
-    "فوق عشان تملا الفراغ — رد بالنفي وبس، من غير ترشيحات."
+# The denial. Its reason must not be `_NO_ALTERNATIVES_RULE`'s — "we are not sure what you meant"
+# contradicts the ABSENCE_DENIED block sitting above it in the same prompt. It also switches rule 1
+# off for this turn: a chase ("ها لقيت اي ؟") looks like a follow-up on the perfume we discussed
+# before, and answering it from that perfume's history is conversation 795.
+_DENIAL_ONLY_RULE = (
+    "4. 🔴🔴 الحالة هنا (أ) والعطر متأكدين إنه مش عندنا، فمفيش بدائل في الرد ده وده مقصود: ❌ ممنوع ترشح "
+    "ولا تسمّي ولا تسعّر أي عطر تاني، لا من عندك ولا من اللي اتكلمنا عنه قبل كده، وممنوع تعرض عليه إنك "
+    "ترشحله. وقاعدة 1 فوق مش بتنطبق هنا: العميل بيسأل عن العطر المكتوب في \"سؤال معلّق\"، مش بيتابع "
+    "عطر قديم — ❌ ممنوع ترد عليه بمعلومات أو أسعار عطر تاني من الرسايل اللي فاتت. الرد هو النفي بتاع "
+    "قاعدة 14 وبس."
+)
+
+# Everything else that reaches this branch: a store question, vague browsing, an unreadable message.
+# None of them asked for a recommendation, and no shelf is loaded for them.
+_NO_PITCH_RULE = (
+    "4. مفيش ترشيحات في الرد ده. ❌ ممنوع ترشح أو تسمّي أو تسعّر عطر من عندك، وممنوع تخترع عطر مش "
+    "موجود في البيانات — لو العميل عايز ترشيح هيطلبه."
 )
 
 
@@ -693,11 +753,9 @@ _PARTIALLY_ANSWERED = (
 # disappear — 836 answered two of three names for three turns running and by the third had stopped
 # mentioning the third one at all.
 #
-# Deliberately no alternatives bullet, which is the one place this diverges from `_ABSENT_RULES`
-# rather than just re-scoping it. The reason the plain denial must carry alternatives is that a bare
-# denial leaves a customer who came to buy with nothing to buy; here they already have two real
-# perfumes with real prices in the same reply, so a third suggestion is the "متحشرش معلومات" that
-# rule 7 forbids.
+# No alternatives bullet, like `_ABSENT_RULES` since 2026-11-13: the customer already has real
+# perfumes with real prices in the same reply, and a suggestion nobody asked for is the "متحشرش
+# معلومات" that rule 7 forbids.
 _PARTIAL_ABSENT_RULES = """14. 🔴🔴 العميل سمّى أكتر من عطر، وواحد منهم اتّأكدنا منه ومش عندنا (شوف ABSENCE_DENIED في قسم "سؤال معلّق").
    • ✅ جاوب على العطور اللي في البيانات عادي — قول أسعارها ومواصفاتها زي أي سؤال تمن طبيعي. دي أسئلة العميل وسألها بجد.
    • ✅ وفي نفس الرد، اذكر العطر التاني بالاسم اللي العميل كتبه بيه وقوله بوضوح وباعتذار قصير إنه مش موجود عندنا. جملة واحدة.
@@ -819,34 +877,6 @@ def _named_budget_hint(budget):
         "هنا سأل عن العطر ده بالاسم، فقوله سعر الحجم اللي سأل عنه زي ما هو مكتوب، وقوله إنه أعلى "
         "من الرقم اللي قاله، واعرض معاه حجم داخل ميزانيته لو فيه. ❌ ممنوع تخفي سعر عطر العميل "
         "سأل عنه بالاسم، وممنوع تقول إنه مش متوفر عشان سعره.\n"
-    )
-
-
-def _alternatives_budget_hint(budget, *, nearest=False):
-    """The same markers on the fallback list, where the model *is* the one choosing.
-
-    Separate from `_named_budget_hint` because the ❌ prohibition is correct here and wrong there —
-    nobody named these perfumes, so declining to pitch an over-budget one is the right call. What
-    Legacy suggestions only sort by budget. Contextual suggestions enforce the
-    saved limits and rank by scent fit, so their hint must preserve that ordering.
-    Silence and an unmarked over-budget pitch are both worse than saying the number out loud.
-    """
-    if budget is None:
-        return ""
-    if nearest:
-        return (
-            f"\nميزانية العميل {int(budget)} جنيه. البدائل مرتبة حسب أقرب طابع ريحة وموسم ومناسبة، "
-            "والأحجام المعروضة بتراعي الميزانية والحجم ونوع الزجاجة اللي طلبهم. ابدأ بالأقرب في القائمة؛ "
-            "متقدمش اختيار أبعد لمجرد إنه أرخص. لو سعر عليه ⚠️، اذكر سعره الحقيقي وجملة "
-            "\"أعلى حاجة بسيطة من ميزانيتك\"، من غير حساب فرق.\n"
-        )
-    return (
-        f"\n🔴 ميزانية العميل {int(budget)} جنيه، والبدائل فوق مرتبة بحيث اللي داخل الميزانية (✅) "
-        "الأول — فابدأ بيه. ولو الحجم عليه ⚠️، قول سعره المكتوب وقول \"أعلى حاجة بسيطة من "
-        "ميزانيتك\" بالحرف — ❌ ممنوع تذكر الفرق بكام ولا تحسبه. ولو كل البدائل عليها ⚠️ أو ❌، "
-        "قول للعميل بصراحة إن اللي عندنا أعلى من الرقم اللي قاله واذكر أرخص حاجة عندنا بسعرها. "
-        "❌ ممنوع تعرض سعر أعلى من ميزانيته من غير ما تقول إنه أعلى، وممنوع تسكت وتسيبه من غير أي "
-        "اقتراح.\n"
     )
 
 
@@ -987,7 +1017,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # `product_resolver.Resolution`; `getattr` because a plain list is still a valid return here and
     # every mocked `resolve_products` in the test suite hands back one.
     # A verified numeric miss already identifies the name. Passing it through the
-    # normal absence flow preserves alternatives and notification/escalation state.
+    # normal absence flow preserves the notification/escalation state.
     unplaced = (numeric_absent_name,) if numeric_absent_name else tuple(getattr(products, "unplaced", ()))
 
     # Spans the resolver *placed* and then withheld, because the customer's own letters point at a
@@ -1111,7 +1141,8 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         # is a price question about the perfume we offered alongside the promise — answering it
         # with "مش موجود عندنا" would deny a perfume the customer never named and drop the
         # question they did ask. `naming` owns that vocabulary; see `chasing_a_promise`.
-        and (naming.chasing_a_promise(message) or naming.insisting_on_a_promise(message))
+        and (naming.chasing_a_promise(message) or naming.insisting_on_a_promise(message)
+             or _follows_bare_denial(message, products, conversation))
         # The second predicate covers the customer who insists without a collection verb and
         # without re-typing the name: 915 turn 13 is "اه عايز اعرف اسعاره" after a deferral on
         # لادور بخور. `chasing_a_promise` is False on it by design, so the turn was read as neither
@@ -1275,45 +1306,30 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # One name for "this turn owes an answer we do not have", however we found that out.
     deferring = bool(pending_block)
 
-    # On the turn the denial lands, the rows in context are no longer a referent — they are the only
-    # thing the customer can act on, and `_ABSENT_RULES` asks for "بديل أو اتنين" of them. 835 turn 3
-    # had exactly one row to offer, because the resolver had placed the unplaceable name onto the one
-    # perfume it had seen most recently, so the denial could name a single alternative and turn 4's
-    # plural "طب عاملين كام دو" had one perfume to price instead of two.
+    # 🔴 A denial stands alone, so the turn that delivers it carries no perfume at all.
     #
-    # The comment above records that unioning the referent with the resolver's output was tried and
-    # reverted. That was the *found* branch, where the union put a wrong guess back in as the answer.
-    # Here the rows are already labelled `_NOT_THE_PERFUME_ASKED_ABOUT`: nothing in this context claims
-    # to be what the customer asked about, so widening the pool cannot mislabel anything.
+    # Store owner, 2026-11-13: *"when someone asks for a perfume that is unavailable i want you to
+    # say it's not available and stop. don't offer alternatives."* This block used to do the
+    # opposite — it *widened* `products` with everything `offered_in_order` still had on the table,
+    # so the denial had "بديل أو اتنين" to name. Whatever is in `products` here is not what the
+    # customer asked about: it is the referent, or a pronoun the resolver placed on a perfume we had
+    # already offered. Labelled or not, those rows are alternatives in everything but name, and a
+    # row the model never receives is a row it cannot pitch — this file's history is mostly
+    # instructions that were ignored. So the turn goes to the not-found branch with nothing.
     #
-    # Every deferring turn now needs this, which is the change: the denial arrives on the first ask,
-    # so the first ask is the turn that has to name an alternative. It used to be gated on the second
-    # ask, when the denial was, and a first ask deliberately got no more data than it came with —
-    # that made sense while its reply was a promise, which needs nothing to offer.
+    # Nothing later needs the rows: `described._nameless_reply_subject`, `router._escalate_absent_name`
+    # and `reference._after_denial` read the marker, and `offered_in_order` still finds what was on
+    # the table *before* the denial, because a reply that names no perfume moves no referent.
     #
-    # `not partially_resolved` is the exception, and the reason is the customer's own screen: they
-    # already have two real perfumes with real prices in front of them, so a third they did not ask
-    # about is noise, and `_PARTIAL_ABSENT_RULES` deliberately asks for no alternatives.
-    #
-    # 🔴 `denied` is the second exception, and it is the whole point of the fork. Every reason above
-    # is a reason about a *denial*: the customer asked for something we established we do not sell,
-    # so the reply owes them something they can actually buy. None of it holds when the verdict is
-    # UNKNOWN. There we do not know what they asked for — we may well sell it — and the only thing
-    # owed is one question. Widening the pool there hands the model a shelf to pitch from on a turn
-    # whose entire job is to ask, and the reply reads as a sales dodge: the customer typed a name,
-    # got "which perfume did you mean?", and then got two perfumes they never mentioned. That is the
-    # force-sell complaint, and it is answered here rather than in the prompt because a pool the
-    # model was never given is a pool it cannot pitch from. See `_UNREADABLE_NAME_RULES`.
+    # `not partially_resolved` is the exception, as it always was: there the rows are perfumes the
+    # customer asked about in the same message, and they are owed their answer.
     if deferring and denied and not partially_resolved:
-        pool = list(products)
-        for product in _products_named(
-            sales_described.offered_in_order(conversation, store), store
-        ):
-            if product not in pool:
-                pool.append(product)
-        products = pool
+        products = []
 
-    availability_hint = _availability_only_hint(message)
+    # Not on a turn that owes "we do not carry it" or "which perfume did you mean": the hint says
+    # "أكّد التوفر باختصار", which is the opposite instruction, and with no rows in the context
+    # there is nothing for it to protect from becoming a price list.
+    availability_hint = "" if deferring and not partially_resolved else _availability_only_hint(message)
     # Only when this turn is not already about something we could not find. 836 turn 2 is
     # "ها لقيت اي" one turn after a message containing "اسعار", so without the guard the carry would
     # push a price list onto the turn that has to deliver the denial.
@@ -1421,7 +1437,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
 2. لو العميل سأل عن الحجم أو الملي، اذكر كل الأحجام المتاحة كما هي مكتوبة بالظبط.
 3. لو العميل سأل رأيك، قول سبب قصير حسب قاعدة التاجات فقط في الخط الأحمر 6. متعيدش الثبات والفوحان إلا لو سأل عنهم؛ مش فرق بين العطور.
 4. ❌ ممنوع تخترع أي معلومة مش موجودة في البيانات أعلاه.
-5. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌) أو حجم معين نفد، أخبر العميل بذلك بشكل لطيف واقترح عليه إنه يسأل عن عطور تانية متوفرة أو اعرض عليه الأحجام المتوفرة إن وجدت.
+5. 🔴 لو المنتج نفد من المخزون (Stock Status = ❌) أو حجم معين نفد، قول للعميل ده بشكل لطيف، ولو فيه أحجام تانية متوفرة من **نفس العطر** اذكرها. ❌ ممنوع تقترح عليه عطر تاني أو تعرض بدائل — لو عايز بديل هو اللي هيطلب.
 6. 🔴🔴 ادمج المعلومات في كلام طبيعي. ❌ ممنوع تسرد المواصفات في شكل قائمة جامدة (الثبات: ... / الفوحان: ... / الموسم: ...). العميل بيتكلم مع بياع مش قاعدة بيانات.
 7. 🔴 متحشرش معلومات العميل مسألش عنها. جاوب على اللي اتسأل بس.
 8. 🔴 جاوب الأول في جملة أو جملتين، وسؤال واحد بس لو فيه معلومة ناقصة لازمة. لو عايز يطلب، كمّل بيانات الطلب؛ لو بيستفسر بس، متقفلش البيعة. ممنوع أسئلة فاضية أو دعوة لزيارة الستور من غير ما يطلب يجرب. ❌ ممنوع توعد بحاجة مش تقدر تعملها (زي صور أو حجز معاد أو عينات).
@@ -1446,78 +1462,37 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         instructions += carried_intent_hint
         instructions += _named_budget_hint(budget)
     else:
-        # Product not found, let's get some alternatives. Chosen deterministically and
-        # with the customer's gender in mind: `order_by('?')` here offered a women's
-        # perfume and a men's perfume side by side to someone whose gender was never
-        # established, and made the reply impossible to reproduce.
-        from .sales import gender as sales_gender
-        from .sales import notes as sales_notes
-        alternative_intent = (getattr(conversation, "preferences", None) or {})
-
-        # 🔴 Not on a turn that could not read the name. `deferring and not denied` is exactly the
-        # NAME_UNREADABLE block, and on that turn there is no established absence to compensate for:
-        # the perfume the customer asked about may be sitting in this catalogue under a spelling we
-        # failed to match. Offering substitutes reads as a refusal to help — the customer asked a
-        # question about one perfume, was told the name was unclear, and got pitched two others in
-        # the same breath. A denial earns alternatives because something really is missing and the
-        # customer would otherwise leave with nothing; an unreadable name earns a question and
-        # nothing else. The suppression is here, not in the rules, because rows that never enter the
-        # prompt cannot be pitched out of it — this file's history is mostly instructions that were
-        # ignored. Rule 4 below flips to a prohibition to match.
-        if deferring and not denied:
-            alternatives = []
-        else:
-            alternatives = suggest_alternatives(
-                store,
-                gender=sales_gender.resolve({}, message, history, store),
-                # The accords the customer actually asked for. Without them this ranked on price
-                # alone, so conversation 795's "عندكو لادور بخور صح ؟" was answered with the
-                # cheapest perfume in the catalogue while Dior Homme Sport (olibanum) and Bleu de
-                # Chanel (incense) sat in it unoffered.
-                notes=sales_notes.terms_in(message),
-                # Saved preferences make these firm purchase limits. Legacy
-                # calls without preferences retain their budget ordering.
-                max_price=budget,
-                intent=alternative_intent,
-            )
-
+        # Nothing to answer from, and nothing to offer either. This branch used to load a shelf of
+        # `suggest_alternatives` for one purpose — pitching them at a customer who had named a
+        # perfume that is not in the data — and the store owner ended that on 2026-11-13: an
+        # unavailable perfume gets "not available" and nothing else. Every other turn that lands
+        # here (a store question, vague browsing, an unreadable message) never had a use for the
+        # shelf, and leaving it loaded for them would pitch on the turn *after* a denial: "بكام ده؟"
+        # with an empty table arrives here with no pending question.
         context = pending_block
-        context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
-        if alternatives:
-            context += "═══ بدائل مقترحة متوفرة في المتجر ═══\n"
-            combined_alternatives = alternative_intent.get("budget_scope") == "total"
-            if combined_alternatives:
-                from .sales.scent_selection import combined_budget_quotes
-                quotes = combined_budget_quotes(alternatives, alternative_intent)
-                quoting = True
-                quote_footer = f"إجمالي الـ{len(quotes)} زجاجات: {money(sum(q.price for q in quotes))} جنيه."
-            # Alternatives need saved scent tags; occasions answer explicit suitability questions.
-            # Notes are evidence only for explicit ingredient questions, never a substitute for
-            # missing scent tags or a reason to invent a note that the customer wants.
-            #
-            # The value pick still goes, for recommendation's reason: a turn about *which perfume*
-            # must not open with a verdict about *which size*.
-            from .scent_description import occasion_preference
-            preferred = occasion_preference(message, product_names=[p.name for p in alternatives],
-                                             saved=(conversation.preferences or {}).get("occasion") if conversation else None)
-            context += format_products(alternatives, max_price=budget, show_value_pick=False,
-                                        show_prices=not combined_alternatives,
-                                        preferred_occasion=preferred, variant_intent=alternative_intent or None)
+        if denied and deferring:
+            # Not "no product name was recognised": one was, and it is not ours. The old header
+            # contradicted the ABSENCE_DENIED block directly above it.
+            context += (
+                "═══ تنبيه للنظام ═══\n"
+                "مفيش بيانات منتجات مبعوتة في الرسالة دي عن قصد: العطر اللي العميل سأل عنه مش عندنا "
+                "(شوف \"سؤال معلّق\" فوق)، ومفيش عطر تاني مطلوب تتكلم عنه.\n\n"
+            )
+        else:
+            context += "═══ تنبيه للنظام ═══\nلم يتم التعرف على اسم منتج محدد في رسالة العميل الأخيرة.\n\n"
 
-        # Which half of rule 4 goes in. The verdict is asked first and `alternatives` second,
-        # because the two empty cases are empty for opposite reasons and must not borrow each
-        # other's wording: one has nothing to offer because we refused to look for substitutes,
-        # the other because the shelf came back bare.
+        # Which shape rule 4 takes. The two deferring cases offer nothing for opposite reasons and
+        # must not borrow each other's wording.
         if deferring and not denied:
             alternatives_rule = _NO_ALTERNATIVES_RULE
-        elif alternatives:
-            alternatives_rule = _ALTERNATIVES_PITCH_RULE
+        elif deferring:
+            alternatives_rule = _DENIAL_ONLY_RULE
         else:
-            alternatives_rule = _EMPTY_SHELF_RULE
+            alternatives_rule = _NO_PITCH_RULE
 
         instructions = f"""
 ═══ تعليمات ═══
-1. لو العميل بيتابع سؤال عن عطر اتكلمنا عنه، جاوب على السؤال الجديد بس من سياقه وتجاهل قائمة البدائل؛ متعيدش وصفه أو أداءه.
+1. لو العميل بيتابع سؤال عن عطر اتكلمنا عنه، جاوب على السؤال الجديد بس من سياقه؛ متعيدش وصفه أو أداءه.
 2. ❌ إياك أن تقول أن المنتج "غير متوفر" إذا كان قد تم إخباره بأنه متوفر في الرسائل السابقة. النظام هنا لم يتعرف على اسم منتج جديد فقط.
 3. 🔴🔴 قانون مهم جداً — فرّق بين أربع حالات مختلفة تماماً:
    • **(أ) العميل سمّى عطر معين باسمه بوضوح** (مثل "عندكو ديور هوم" أو "سعر أمبريو أرماني") والاسم ده مش موجود في البيانات المتاحة → 🔴 الرد على الحالة دي مكتوب في قاعدة رقم 14 تحت وفي قسم "سؤال معلّق" فوق: هما اللي بيقولوا إحنا اتأكدنا من الاسم ده وهو مش عندنا فعلاً، ولا لسه مش متأكدين هو قاصد إيه. اتبعها بالحرف. ❌ في الحالتين ممنوع تقول "لحظة أتأكدلك منه" ولا "هسأل وأرد عليك" — مفيش حد بيراجع الاسم ده بعد الرد، والوعد ده بيسيب العميل مستني رد عمره ما هييجي.
@@ -1529,7 +1504,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
    • **(ج) العميل بيتفرج بشكل مبهم** (مثل "عندكو حاجة من شانيل" أو "عايز حاجة حلوة") → ❌ ممنوع تقول "مش متوفر"! اسأله يحدد: "تقصد أنهي عطر بالظبط يا فندم؟".
    • **(د) الرسالة نفسها غير مفهومة فعلاً** (حروف عشوائية، كلام مبتور، مفيش معنى واضح) → دي الحالة الوحيدة اللي تقول فيها: "مش فاهم قصد حضرتك يا فندم، ممكن توضحلي أكتر؟".
 {alternatives_rule}
-5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في القائمة المقترحة أو في حقائق الستور. لو هتوصف ريحة، التزم بقاعدة التاجات فقط في الخط الأحمر 6؛ النوتات للمكونات المطلوبة صراحة فقط. ممنوع تضيف ريحة أو نوتة مش مسجلة عشان ترضي طلب العميل.
+5. ❌ ممنوع تخترع أي معلومة أو عطر غير موجود في حقائق الستور. لو هتوصف ريحة، التزم بقاعدة التاجات فقط في الخط الأحمر 6؛ النوتات للمكونات المطلوبة صراحة فقط. ممنوع تضيف ريحة أو نوتة مش مسجلة عشان ترضي طلب العميل.
 """        # Case (أ) above delegates to rule 14, so the fork has to actually be here. Which half
         # depends on the verdict and not on how many times the customer has asked: that is the whole
         # change. `deferring` is the guard rather than a bare `if denied` because a turn with no
@@ -1538,16 +1513,6 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
             instructions += _ABSENT_RULES if denied else _UNREADABLE_NAME_RULES
         instructions += availability_hint
         instructions += carried_intent_hint
-        # Only when a list was actually rendered — with no alternatives there is nothing to
-        # order, and a budget line about an empty list is a number with no referent.
-        if alternatives:
-            instructions += _alternatives_budget_hint(budget, nearest=bool(alternative_intent))
-            if alternative_intent:
-                instructions += (
-                    "\nتاج ريحة واحد مشترك كفاية للترشيح. البدائل مرتبة حسب الموسم، ثم عدد التاجات المشتركة، "
-                    "ثم المناسبة؛ ابدأ بالأقرب. اختلاف الموسم أو المناسبة مش سبب ترفض الترشيح أو تسأل "
-                    "العميل يغير تفضيلاته. اوصف كل عطر بمعلوماته المسجلة من غير ادعاء تطابق مش موجود.\n"
-                )
 
     # Both branches above converge here, and a compliment can arrive on either: "اشتريت منكم امبيرو
     # وعجبني" resolves a real row, while praise for something we cannot place lands in the not-found
@@ -1556,7 +1521,7 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # instruction and not a separate branch. Without it the reply to a compliment is a price list.
     if praised:
         instructions += appreciation.RULES
-    if occasion_reference:
+    if occasion_reference and products:
         instructions += (
             f"\nالعميل بيشير للعطر اللي اتكلمنا عنه {occasion_label}: {products[0].name}. "
             "ده المتوافق مع المناسبة المسجلة في بياناته. جاوبه عنه، "

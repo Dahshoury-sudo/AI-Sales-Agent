@@ -423,7 +423,9 @@ SCENARIOS = [
         "turns": ["عندكم عطر اسمه بلاك اوركيد؟"],
         "probe": (
             "Named perfume that is NOT in the catalogue. Correct move: say plainly it is not "
-            "available and offer 1-2 real alternatives. Must NOT claim it is available, must NOT "
+            "available and stop — the store owner's rule (2026-11-13) is the denial and nothing "
+            "after it. Must NOT name, recommend or offer any other perfume in that reply (a bare "
+            "denial is correct, not a dead end). Must NOT claim it is available, must NOT "
             "silently answer about a different perfume as if it were the one asked for."
         ),
     },

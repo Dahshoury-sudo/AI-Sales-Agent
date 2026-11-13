@@ -287,6 +287,83 @@ def promises_a_lookup(reply):
     return any(normalize_arabic(marker) in normalized for marker in _DEFERRAL)
 
 
+# A clause that tells the customer the perfume is not ours. Matched on `normalize_arabic` output.
+_STATES_ABSENCE = re.compile(
+    r"(?:مش|غير)\s+(?:موجود|متوفر|متاح)\w*|مش\s+عندنا|مفيش\s+عندنا|مش\s+بنبيع\w*"
+)
+
+# A clause that offers something in the denied perfume's place, or offers to go and find one. Every
+# alternative is in normalised spelling (ا for أ/إ, ه for ة). Bare "زي" is deliberately absent:
+# "زي ما قلتلك، مش موجود عندنا" is a denial said again, not an offer.
+_OFFERS_SUBSTITUTE = re.compile(
+    r"(?<!\w)(?:[وفكبل]|ال|وال|لل)?(?:بديل|بدايل|بدائل)\w*"
+    r"|(?<!\w)بد(?:لا\s+من|ال)\w*"
+    r"|\w*رشح\w*|\w*رشيح\w*|\w*قترح\w*|\w*قتراح\w*"
+    r"|(?<!\w)(?:شبه\w*|شبيه\w*|مشابه\w*|زي(?:ه|ها|هم)(?!\w)|قريب\w*\s+(?:من|ل)\w*|اقرب\s+\S+)"
+    r"|(?:حاجه|حاجات|عطر|عطور|اختيار\w*|خيار\w*)\s+(?:\S+\s+)?(?:تاني\w*|غير\w*)"
+    r"|(?<!\w)(?:بس|لكن|انما)\s+(?:\S+\s+){0,2}?(?:عندنا|متوفر\w*|متاح\w*|موجود\w*|فيه)(?!\w)"
+    r"|(?<!\w)(?:ممكن|تحب\w*|حاب\w*)\s+(?:\S+\s+){0,2}?(?:تشوف\w*|تجرب\w*|تبص\w*|اعرض\w*)"
+    r"|(?:اكتب|تكتب)\w*\s+(?:\S+\s+)?(?:ال)?اسم"
+)
+
+def states_absence(text):
+    """Does this text tell the customer a perfume is not ours?"""
+    return bool(_STATES_ABSENCE.search(normalize_arabic(text or "")))
+
+
+# Where one thing the reply says ends and the next begins: sentence enders, commas, line breaks, and
+# the turn "بس/لكن" makes mid-sentence ("مش موجود عندنا بس عندنا X").
+_REPLY_CLAUSE = re.compile(r"(?<=[.!؟?؛،,\n])\s*|\s+(?=(?:بس|لكن|إنما|انما)\s)")
+
+
+def denial_alone(reply, names, asked=""):
+    """The reply with everything past the denial removed, or None if no clean denial is left.
+
+    Store owner, 2026-11-13: *"when someone asks for a perfume that is unavailable i want you to say
+    it's not available and stop. don't offer alternatives."* `product_info` sends no substitute rows
+    on that turn and its rules forbid a pitch, but a sales persona with the conversation history in
+    front of it still reaches for one — this file's history is mostly instructions that were
+    ignored — so the reply is also read here, clause by clause, in code.
+
+    Dropped: a clause that names a catalogue perfume the customer did not (`asked` is their message
+    plus the pending question, so the denied name itself never counts), offers or gestures at a
+    substitute, asks a question, promises a lookup, or asks for the name again. Kept: everything
+    else, so a greeting and an answered side question survive. A reply returned unchanged is one
+    this function had nothing to remove from.
+
+    None means the caller must not send what is left: nothing in it states the absence, or the
+    clause that does also names a perfume nobody asked about.
+
+    Shared with `eval_harness.checks`, for the reason `promises_a_lookup` is: the guard and the
+    grader must not be able to disagree about one reply.
+    """
+    from .naming import names_in
+
+    allowed = set(names_in(asked or "", names))
+    kept, dropped, denies = [], False, False
+    for clause in _REPLY_CLAUSE.split(reply or ""):
+        if not (clause or "").strip():
+            continue
+        normalized = normalize_arabic(clause)
+        unasked = [name for name in names_in(clause, names) if name not in allowed]
+        states_absence = bool(_STATES_ABSENCE.search(normalized)) and not promises_a_lookup(clause)
+        if states_absence and not unasked and "؟" not in clause and "?" not in clause:
+            denies = True
+            kept.append(clause)
+            continue
+        if (unasked or "؟" in clause or "?" in clause or promises_a_lookup(clause)
+                or _OFFERS_SUBSTITUTE.search(normalized)):
+            dropped = True
+            continue
+        kept.append(clause)
+    if not denies:
+        return None
+    if not dropped:
+        return reply
+    trimmed = " ".join(part.strip() for part in kept).strip()
+    return re.sub(r"[،,؛:\s]+$", "", trimmed) + ("" if trimmed.endswith((".", "!")) else ".")
+
+
 def under_discussion(conversation, store, turns=2):
     """Perfumes we actually put in front of the customer in our last `turns` replies.
 

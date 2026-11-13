@@ -12,7 +12,6 @@ from .ai.client import chat
 from .bottle_wording import (
     NORMAL_BOTTLE, ORIGINAL_BOTTLE, NORMAL_BOTTLES, ORIGINAL_BOTTLES, bottle_label,
 )
-from .fallback import suggest_alternatives
 from .product_resolver import resolve_product
 from .notification_service import notify_new_order
 from .sales.value import budget_tier, stated_budget
@@ -823,7 +822,7 @@ def _house_choice_question(brand, store):
         .values_list("name", flat=True)
     )
     if not names:
-        return f"مفيش عندنا عطور متاحة من {brand.name} دلوقتي، لكن ممكن أرشحلك بدائل من نفس الطابع."
+        return f"مفيش عندنا عطور متاحة من {brand.name} دلوقتي."
     if len(names) == 1:
         return f"من {brand.name} عندنا {names[0]}. تحب أنهي حجم؟"
     listed = " و ".join(names[:-1]) + f" و {names[-1]}"
@@ -1399,7 +1398,9 @@ Return valid JSON in this exact format:
             unavailable = [p for p in unknown if Product.objects.filter(
                 store=store, name__iexact=p["name"], is_active=False).exists()]
             for p in unavailable:
-                details.append(f"{p['name']} مش متاح حالياً. تحب نشوف بديل مناسب ليك؟")
+                # The denial and nothing after it (store owner, 2026-11-13): no offer to find a
+                # substitute. A customer who wants one asks.
+                details.append(f"{p['name']} مش متاح حالياً.")
             unrecognised = [p for p in unknown if p not in unavailable]
             if unrecognised:
                 changed = [p for p in unrecognised if p["name"].casefold() in previous_quantities

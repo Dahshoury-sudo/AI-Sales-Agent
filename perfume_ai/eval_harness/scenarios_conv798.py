@@ -52,10 +52,14 @@ _CHASE_RULES = (
     "❌ CRITICAL: any mention of a system, data, catalogue, 'مش ظاهر عندي' or 'البيانات اللي معايا'. "
     "The customer must never learn such a thing exists. "
     "✅ Required on the FIRST turn: say plainly that we do not carry the perfume they named, with a "
-    "short apology, echoing the name in their own Arabic letters — AND in the SAME reply offer one "
-    "or two stocked perfumes by full name as DIFFERENT perfumes. The name was searched against the "
+    "short apology, echoing the name in their own Arabic letters. The name was searched against the "
     "whole active catalogue before the reply was written, so the answer is already known. "
-    "❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. "
+    "The reply is that denial and NOTHING after it — the store owner's rule since "
+    "2026-11-13 is to say it is not available and stop. A bare denial is the correct, "
+    "complete reply, not a dead end. "
+    "❌ CRITICAL: naming, recommending or pricing any other perfume in that reply, or "
+    "offering to ('تحب أرشحلك حاجة تانية؟') — the customer asked about one perfume and "
+    "did not ask for a substitute. "
 )
 
 SCENARIOS = [
@@ -76,9 +80,8 @@ SCENARIOS = [
             + _CHASE_RULES
             + "❌ CRITICAL: attributing a بخور, incense or frankincense note to a perfume whose "
             "recorded notes do not contain one. Wanting the note is not evidence of it. "
-            "✅ Expected: turn 1 says plainly that لادور بخور is not ours and offers Dior Homme "
-            "Sport or Bleu de Chanel by full name as different perfumes, citing the olibanum/incense "
-            "note each one really has. Turn 2 carries that same answer forward rather than reporting "
+            "✅ Expected: turn 1 says plainly that لادور بخور is not ours and stops there, with no "
+            "other perfume named. Turn 2 carries that same answer forward rather than reporting "
             "a search. Turn 1 asked about availability only, so a size and price list is "
             "unrequested there. ❌ Never quote a price that is not one of the four figures above."
         ),
@@ -102,8 +105,8 @@ SCENARIOS = [
             + _CHASE_RULES
             + "❌ CRITICAL: implying الكساندريا 2 and Stronger With You are the same perfume, or "
             "that one is the other's 'correct name'. "
-            "✅ Expected: turn 1 says plainly that الكساندريا 2 is not ours and offers a stocked "
-            "perfume by full name as a different perfume. Turn 2 carries that same answer forward "
+            "✅ Expected: turn 1 says plainly that الكساندريا 2 is not ours and stops there, with "
+            "no other perfume named. Turn 2 carries that same answer forward "
             "instead of pricing something else. Turn 1 asked about availability only, so a size "
             "and price list is unrequested there. ❌ Never quote a price for any perfume that is "
             "not one of the six figures above."

@@ -285,20 +285,19 @@ def identify_perfume(message, history=None, store=None, conversation=None, retry
         # Nothing in the catalogue fits, but the clues point somewhere. Naming it is
         # allowed here and only here, and only alongside "we don't stock it" — the persona
         # otherwise treats a perfume absent from the data as non-existent. Saying the name
-        # and then offering the closest thing we do sell is more useful than pretending
-        # not to know, provided we never imply availability.
-        from .search_service import SELLABLE
-
-        alternatives = Product.objects.filter(
-            store=store, is_active=True
-        ).filter(SELLABLE).distinct()[:3]
-        context = format_products(alternatives, max_price=budget, brief=True) if alternatives else ""
+        # is more useful than pretending not to know, provided we never imply availability.
+        #
+        # And nothing is offered in its place (store owner, 2026-11-13: an unavailable perfume
+        # gets "not available" and nothing else). This used to load the first three sellable
+        # rows in database order and invite a pitch "من نفس الطابع" — rows chosen with no
+        # regard to the description, so the likeness was never there to claim.
+        context = ""
         instructions = f"""
 ═══ تعليمات التعرف على العطر ═══
 1. 🔴 الوصف بيشاور على "{clues['likely_known_perfume']}" بس العطر ده مش موجود عندنا.
    قوله كده بالظبط بالترتيب: "غالبًا {clues['likely_known_perfume']}" + إنك مش متأكد + إنه مش متوفر عندنا.
 2. ❌ ممنوع توحي إننا بنبيعه أو إنه متوفر.
-3. قولها باختصار في جملة أو جملتين. لو فيه قائمة، ممكن تعرض ترشيح من نفس الطابع عندنا؛ من غير وصف مطوّل أو ادعاء تشابه أكيد.
+3. قولها باختصار في جملة أو جملتين وبس. ❌ ممنوع ترشح أو تسمّي أي عطر تاني من عندنا في الرد ده — لو عايز بديل هو اللي هيطلب.
 4. 🔴 سؤال واحد بس لو محتاج توضيح.
 {unverifiable}
 """

@@ -76,12 +76,16 @@ _RE_ASK_RULES = (
     "('L'Adour', 'Alexandria'). Inventing a spelling for a perfume we do not carry is incoherent — "
     "echo the customer's own letters. "
     "✅ Required on the FIRST turn, and it is what makes the re-ask turn unnecessary: a short "
-    "apology and a plain statement that the perfume the customer named is not available, followed "
-    "in the SAME reply by one or two stocked perfumes offered by FULL name and clearly labelled as "
-    "DIFFERENT perfumes. The name is searched against the whole active catalogue before that reply "
-    "is written, so the answer is already known on turn 1. 815 is the model wording: "
-    "'بعتذر يا فندم، الكساندريا 2 مش موجود عندنا' and then Stronger With You with its prices. "
-    "❌ CRITICAL: a bare denial with nothing on offer beside it — the customer came to buy. "
+    "apology and a plain statement that the perfume the customer named is not available. "
+    "The name is searched against the whole active catalogue before that reply "
+    "is written, so the answer is already known on turn 1. The model wording is 815's first "
+    "sentence and nothing after it: 'بعتذر يا فندم، الكساندريا 2 مش موجود عندنا'. "
+    "The reply is that denial and NOTHING after it — the store owner's rule since "
+    "2026-11-13 is to say it is not available and stop. A bare denial is the correct, "
+    "complete reply, not a dead end. "
+    "❌ CRITICAL: naming, recommending or pricing any other perfume in that reply, or "
+    "offering to ('تحب أرشحلك حاجة تانية؟') — the customer asked about one perfume and "
+    "did not ask for a substitute. "
 )
 
 SCENARIOS = [
@@ -105,14 +109,12 @@ SCENARIOS = [
             + _RE_ASK_RULES
             + "Turn 2 ('ماشي شوفو' — 'go on then, look it up') is a chase, not a new question: it "
             "collects the promise turn 1 made, and names no perfume of its own. Under the current "
-            "policy turn 1 has already answered, so turn 2 must carry that answer forward and move "
-            "to what is actually on offer; answering it about Stronger With You as though "
+            "policy turn 1 has already answered, so turn 2 must carry that answer forward; "
+            "answering it about Stronger With You as though "
             "الكساندريا 2 had never been asked about is a failure, and is also what left turn 3 "
             "with an open question and no record of it. "
-            "By turn 3 the customer has been told twice, so that reply must not read the denial "
-            "back a third time — it must move the sale on. Turn 4 must still be served. "
-            "Turn 1 asked about availability only, so a size and price list for the alternatives is "
-            "unrequested there — name them, do not price them. "
+            "By turn 3 the customer has been told twice; a short restatement is all that is owed, "
+            "still with no other perfume named. Turn 4 must still be served. "
             "❌ Never quote a price that is not one of the six figures above."
         ),
     },
@@ -135,8 +137,7 @@ SCENARIOS = [
             + "❌ CRITICAL: attributing a بخور, incense or frankincense note to a perfume whose "
             "recorded notes do not contain one. Wanting the note is not evidence of it — Stronger "
             "With You was pitched as having 'لمسة بخور' and its notes are cardamom, pineapple, "
-            "cinnamon, vanilla, chestnut and amberwood. When offering Dior Homme Sport or Bleu de "
-            "Chanel, cite the olibanum/incense note each one really has. "
+            "cinnamon, vanilla, chestnut and amberwood. "
             "Turn 1 asked about availability only, so a size and price list is unrequested there. "
             "❌ Never quote a price that is not one of the four figures above."
         ),

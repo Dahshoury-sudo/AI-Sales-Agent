@@ -85,6 +85,9 @@ without choosing an occasion. **يا فريش يا خشبي** accepts either lab
   discussion, preferred brand, and previous offers. Contextual alternatives
   also retain the current ingredient affinity between equal fits; ingredient
   names do not supply scent labels. Product ID is the final deterministic tie-breaker.
+  Since 2026-11-13 contextual alternatives are shown only by the repetition redirect:
+  a perfume the store does not carry is answered with "not available" and nothing
+  else (store owner's rule), so a denial no longer lists or quotes any.
 - Occasion is optional. After gender is known, an occasion-only request gets a scent-style question.
   A scent preference alone, or an explicit “any scent,” is enough to search.
 - Stock, gender, strict brand restrictions, requested size and bottle type,

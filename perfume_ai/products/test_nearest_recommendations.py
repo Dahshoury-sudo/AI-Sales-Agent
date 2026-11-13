@@ -318,26 +318,41 @@ class NearestSelectionTests(NearestCatalogMixin, TestCase):
 
 
 class NearestAlternativeTests(NearestCatalogMixin, TestCase):
-    def unavailable_turn(self, preferences):
+    def alternatives(self, preferences):
+        """Names, in order, from `suggest_alternatives` with the customer's saved preferences.
+
+        These tests used to drive a denied perfume through `get_product_info` and read the names
+        out of its context. A denial no longer loads alternatives (store owner, 2026-11-13: "say
+        it's not available and stop"), so the selection is asserted where it still runs.
+        """
+        from products.services.fallback import suggest_alternatives
+
+        return [product.name for product in suggest_alternatives(self.store, intent=preferences)]
+
+    def test_an_unavailable_perfume_loads_no_contextual_alternatives(self):
         from products.services.product_info import get_product_info
         from products.services.product_resolver import Resolution
 
-        conversation = Conversation.objects.create(store=self.store, preferences=preferences)
+        fresh = self.perfume("Summer Fresh", price=500)
+        conversation = Conversation.objects.create(
+            store=self.store, preferences={"gender": "unisex", "scent_tags": ["fresh"]})
         with patch("products.services.product_info.resolve_products", return_value=Resolution([], ["Unknown Fragrance"])), \
              patch("products.services.product_info.confirm_unplaced", return_value=None), \
              patch("products.services.product_info.chat", return_value="العطر مش متاح حالياً."):
-            return get_product_info("عندكم Unknown Fragrance؟", [], self.store, conversation)
+            _, context = get_product_info("عندكم Unknown Fragrance؟", [], self.store, conversation)
+        self.assertIn("ABSENCE_DENIED", context)
+        self.assertNotIn(fresh.name, context)
 
     def test_contextual_alternatives_keep_one_tag_matches_and_prefer_season(self):
         unrelated = self.perfume("Cheap Sweet", ["sweet"], price=50)
         winter = self.perfume("Winter Cedar", ["fresh", "woody"], price=100, season="Winter")
         summer = self.perfume("Summer Fresh", price=500, occasion="Evening")
-        _, context = self.unavailable_turn({"gender": "unisex", "scent_tags": ["fresh", "woody"],
-                                            "season": "summer", "occasion": "work"})
-        self.assertIn(summer.name, context)
-        self.assertIn(winter.name, context)
-        self.assertNotIn(unrelated.name, context)
-        self.assertLess(context.index(summer.name), context.index(winter.name))
+        names = self.alternatives({"gender": "unisex", "scent_tags": ["fresh", "woody"],
+                                   "season": "summer", "occasion": "work"})
+        self.assertIn(summer.name, names)
+        self.assertIn(winter.name, names)
+        self.assertNotIn(unrelated.name, names)
+        self.assertLess(names.index(summer.name), names.index(winter.name))
 
     def test_contextual_alternatives_keep_current_ingredient_affinity_when_fits_tie(self):
         from products.services.fallback import suggest_alternatives
@@ -370,19 +385,11 @@ class NearestAlternativeTests(NearestCatalogMixin, TestCase):
         preferences = {"gender": "unisex", "scent_tags": ["fresh"], "budget_scope": "total",
                        "max_price": 500, "purchase_quantity": 2}
         draft = "Cedar One 100 ملي بـ 400 جنيه. Cedar Two 100 ملي بـ 400 جنيه. الإجمالي 800 جنيه."
-        for entrypoint in ("unavailable", "repetition"):
+        # The "unavailable" entry point is gone: a denied perfume no longer quotes alternatives.
+        for entrypoint in ("repetition",):
             with self.subTest(entrypoint=entrypoint):
                 conversation = Conversation.objects.create(store=self.store, preferences=preferences)
-                if entrypoint == "unavailable":
-                    from products.services.product_resolver import Resolution
-                    with patch("products.services.router.classify", return_value="product_info"), \
-                         patch("products.services.router.confident_catalogue_match", return_value=None), \
-                         patch("products.services.product_info.resolve_products",
-                               return_value=Resolution([], ["Unknown Fragrance"])), \
-                         patch("products.services.product_info.confirm_unplaced", return_value=None), \
-                         patch("products.services.product_info.chat", return_value=draft):
-                        reply, context = route("عندكم Unknown Fragrance؟", [], self.store, conversation)
-                else:
+                if True:
                     with patch("products.services.router.classify", return_value="faq"), \
                          patch("products.services.router._detect_semantic_repetition", return_value=3), \
                          patch("products.services.router.confident_catalogue_match", return_value=None), \
@@ -404,14 +411,12 @@ class NearestAlternativeTests(NearestCatalogMixin, TestCase):
         ProductVariant.objects.create(product=expensive, volume=100, price=501)
         match = self.perfume("Larger Fresh", price=100)
         ProductVariant.objects.create(product=match, volume=100, price=500)
-        _, context = self.unavailable_turn({"gender": "unisex", "scent_tags": ["fresh"],
-                                            "excluded_scent_tags": ["sweet"], "requested_volume": 100,
-                                            "max_price": 500, "budget_strict": True})
-        self.assertIn(match.name, context)
-        self.assertIn("100 ملي", context)
-        self.assertNotIn("50 ملي", context)
+        names = self.alternatives({"gender": "unisex", "scent_tags": ["fresh"],
+                                   "excluded_scent_tags": ["sweet"], "requested_volume": 100,
+                                   "max_price": 500, "budget_strict": True})
+        self.assertIn(match.name, names)
         for rejected in (sweet, wrong_size, expensive):
-            self.assertNotIn(rejected.name, context)
+            self.assertNotIn(rejected.name, names)
 
     def test_repetition_suggestions_retain_saved_scent_and_gender(self):
         wrong_scent = self.perfume("Cheap Sweet", ["sweet"], price=50)

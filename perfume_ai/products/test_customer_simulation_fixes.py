@@ -1127,19 +1127,22 @@ class SecondRoundBatchTwoTests(TestCase):
         self.assertEqual(_not_a_repeat("Sauvage: فريش.", "طب Sauvage؟", history), "Sauvage: فريش.")
 
     def test_a_confirmed_absence_keeps_the_denial_in_the_fallback(self):
-        """S09 round 2 t1: the fallback answered "1 Million: متوفر." with no word about the denial."""
+        """S09 round 2 t1: the fallback answered "1 Million: متوفر." with no word about the denial.
+
+        Since 2026-11-13 a denial carries no alternative rows (the store owner: "say it's not
+        available and stop"), so the fallback on that turn is the denial alone — not a question
+        about sizes, and not an offer to transfer.
+        """
+        from products.services.product_info import BARE_DENIAL
         from products.services.router import _rephrased
-        million = self.product("1 Million", ["spicy", "leather", "sweet"])
-        from products.services.product_formatting import format_products
-        context = "ABSENCE_DENIED\n═══ بدائل مقترحة متوفرة في المتجر ═══\n" + format_products([million])
-        bad = "للأسف مش عندنا. 1 Million ريحته فيها توابل وجلد."
+        self.product("1 Million", ["spicy", "leather", "sweet"])
+        context = "═══ سؤال معلّق ═══\nPENDING_LOOKUP: عندكو Club de Nuit Intense؟\nABSENCE_DENIED\n"
+        bad = "للأسف مش عندنا. Club de Nuit Intense سعره 777 جنيه."
         with patch("products.services.router.repetition.repeated_sentences", return_value=[]), \
              patch("products.services.router.repetition.repeated_frames", return_value=[]):
             reply, _, _ = _rephrased(bad, context, [], self.store, lambda hint: (bad, context),
                                      message="عندكو Club de Nuit Intense؟")
-        self.assertTrue(reply.startswith("للأسف العطر ده مش موجود عندنا."), reply)
-        self.assertIn("1 Million", reply)
-        self.assertNotIn("متوفر.", reply.replace("متوفرة", ""))
+        self.assertEqual(reply, BARE_DENIAL)
 
     def test_misplaced_latin_names_are_withdrawn_even_when_two_rows_were_placed(self):
         """S09 round 2: "Club de Nuit Intense" came back as 1 Million and 1 Million Elixir."""

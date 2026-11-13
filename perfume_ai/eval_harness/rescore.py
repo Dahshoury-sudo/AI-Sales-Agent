@@ -271,21 +271,21 @@ def rescore(record, truth, scenario_budget=None):
                 f"told the customer a perfume is not available on a turn whose injected data "
                 f"said nothing about it: '{unbacked}'")
 
-        # ── stalling where the catalogue was already swept, and denying with nothing on offer ──
+        # ── stalling where the catalogue was already swept, and not stopping at the denial ──
         # The two halves of the deny-on-the-first-ask policy, mirrored for the same reason as the
         # three above. Both are scoped to the `ABSENCE_DENIED` marker, so neither can fire on a turn
-        # where the promise is honest or the denial legitimately stands alone.
+        # where the promise is honest or the reply is rightly about other perfumes.
         stall = checks._stalled_when_denial_required(reply, context)
         if stall:
             add("stalled_when_denial_required", "critical",
                 f"promised to check ('{stall}') on a turn where the whole catalogue had already "
                 f"been searched and the name was not in it — nothing looks it up after this reply")
 
-        bare = checks._denial_without_alternatives(reply, context, truth)
-        if bare:
-            add("denial_without_alternatives", "high",
-                f"denied the perfume ('{bare}') without naming a single stocked perfume the "
-                f"customer could buy instead")
+        pitched = checks._substitute_after_denial(reply, context, truth)
+        if pitched:
+            add("substitute_after_denial", "high",
+                f"denied the perfume and then offered something in its place ('{pitched}') — "
+                f"the owner wants the denial and nothing after it")
 
         # ── verbatim-ish repetition across turns ──
         # Its own numbers, deliberately: 0.7 against the immediately previous reply and no length

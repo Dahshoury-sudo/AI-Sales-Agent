@@ -3,7 +3,7 @@
 
 Written for the deny-on-the-first-ask verification (`absence.py` and friends), where the
 acceptance criteria are not "no findings" but two statements about the *content* of each
-reply: an absent perfume must be denied and offered alternatives in the same message, and a
+reply: an absent perfume must be denied (since 2026-11-13 with nothing offered beside it), and a
 stocked perfume must never be denied at all. Neither is fully decidable by a regex, so the
 replies have to be read — and reading them out of a 6000-line JSON by hand is how a
 regression gets missed.

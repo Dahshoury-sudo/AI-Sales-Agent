@@ -13071,6 +13071,12 @@ class DenialKeepsItsAlternativesTests(TestCase):
     the one turn that matters most. `test_the_first_denial_is_widened_too` is that inversion, and it
     is asserted together with the availability-only hint, which is what actually keeps a wide pool
     from becoming a price dump.
+
+    🔴 Reversed on 2026-11-13. The store owner: *"when someone asks for a perfume that is unavailable
+    i want you to say it's not available and stop. don't offer alternatives."* The pool is no longer
+    widened — it is emptied — and the two tests that asserted the widening now assert that a denied
+    turn carries no perfume at all. The class keeps its name because the history above is why the
+    code it exercises exists.
     """
 
     def setUp(self):
@@ -13091,7 +13097,7 @@ class DenialKeepsItsAlternativesTests(TestCase):
         )
         self.conversation = Conversation.objects.create(store=self.store)
 
-    def test_the_re_asked_turn_offers_every_perfume_already_on_the_table(self):
+    def test_the_re_asked_turn_brings_no_perfume_from_the_table(self):
         from products.services import product_info
         from products.services.sales import described
 
@@ -13127,10 +13133,11 @@ class DenialKeepsItsAlternativesTests(TestCase):
             )
 
         self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
-        self.assertIn("Dior Homme Sport", context)
-        self.assertIn("Bleu de Chanel", context)
+        self.assertNotIn("Dior Homme Sport", context)
+        self.assertNotIn("Bleu de Chanel", context)
+        self.assertTrue(product_info.denial_only(context))
 
-    def test_the_first_denial_is_widened_too(self):
+    def test_the_first_denial_brings_no_perfume_either(self):
         """This is the inversion the policy change forces, and it is the whole point of the change.
 
         The pool used to be widened only on the turn the denial landed, which was the *second* ask;
@@ -13168,9 +13175,10 @@ class DenialKeepsItsAlternativesTests(TestCase):
             )
 
         self.assertIn(product_info.ABSENCE_DENIED_MARKER, context)
-        self.assertIn("Dior Homme Sport", context)
-        self.assertIn("Bleu de Chanel", context)
-        self.assertIn("العميل سأل عن التوفر بس", chat.call_args[0][0][-1]["content"])
+        self.assertNotIn("Dior Homme Sport", context)
+        self.assertNotIn("Bleu de Chanel", context)
+        # "confirm availability briefly" is the opposite instruction to a denial.
+        self.assertNotIn("العميل سأل عن التوفر بس", chat.call_args[0][0][-1]["content"])
 
     def test_an_unverified_first_ask_is_not_widened(self):
         """The other fork does **not** get the same pool, and that is the whole fork.
@@ -13454,43 +13462,27 @@ class FirstAskDeniesAndOffersTests(TestCase):
 
         self.assertEqual(line, f"{described.PENDING_LOOKUP_MARKER} عندك لادور بخور ؟")
 
-    # ── and it does not arrive alone ──────────────────────────────────────
-    def test_the_alternatives_are_in_the_same_reply(self):
-        """Both halves of the instruction, and the data behind them. `_ABSENT_RULES` asks for
-        "بديل أو اتنين" in **نفس الرد**, which is only answerable if the rows are actually there —
-        conversation 795 turn 1 had them and pitched the cheapest perfume in the shop instead,
-        which is why they arrive note-ranked."""
+    # ── and it arrives alone ──────────────────────────────────────────────
+    def test_no_alternative_rides_along_with_the_denial(self):
+        """Reversed on 2026-11-13. This asserted the opposite — a shelf of "بدائل مقترحة" and an
+        instruction to pitch "بديل أو اتنين" in the same reply. The store owner: *"say it's not
+        available and stop. don't offer alternatives."*"""
         context, prompt = self._first_ask()
 
-        self.assertIn("بدائل مقترحة متوفرة في المتجر", context)
-        self.assertIn("Dior Homme Sport", context)
-        self.assertIn("Bleu de Chanel", context)
-        self.assertIn("في **نفس الرد**، وبعد النفي على طول، اعرض عليه بديل أو اتنين", prompt)
-        self.assertIn("ممنوع ترد بنفي لوحده ومتعرضش حاجة", prompt)
+        self.assertNotIn("بدائل مقترحة متوفرة في المتجر", context)
+        self.assertNotIn("Dior Homme Sport", context)
+        self.assertNotIn("Bleu de Chanel", context)
+        self.assertNotIn("اعرض عليه بديل", prompt)
+        self.assertNotIn("ممنوع ترد بنفي لوحده", prompt)
+        self.assertIn("الرد كله هو النفي ده وبس", prompt)
 
-    def test_the_alternatives_answer_the_accord_that_was_asked_for(self):
-        """Actual notes support accord ranking; saved tags supply description prose."""
-        for product, occasion in ((self.sport, "Office"), (self.bleu, "Casual")):
-            product.scent_tags = ["fresh", "woody"]
-            product.occasion = occasion
-            product.save(update_fields=["scent_tags", "occasion"])
-        context, prompt = self._first_ask()
-
-        self.assertLess(context.index("Dior Homme Sport"), context.index("Bleu de Chanel"))
-        self.assertIn("Olibanum", context)
-        self.assertIn("Incense", context)
-        self.assertEqual(context.count("Description Tags (first three only): fresh, woody"), 2)
-        for evidence in ("Occasion: Office", "Occasion: Casual", "Simple Scent Description: ريحته فريش ومنعش وخشبي"):
-            self.assertIn(evidence, context)
-        self.assertIn(context, prompt)
-
-    def test_an_availability_question_does_not_become_a_price_list(self):
-        """The counterweight to handing this turn a pool of perfumes. "عندك لادور بخور ؟" asks
-        whether we have it and nothing else, so two alternatives must not arrive as two size
-        ladders."""
+    def test_an_availability_question_is_not_told_to_confirm_availability(self):
+        """"عندك لادور بخور ؟" trips the availability-only hint, whose instruction is "أكّد التوفر
+        باختصار" — the opposite of the denial this turn owes. It guarded a pool of rows from
+        becoming a price list; there are no rows now, so it only contradicts."""
         _, prompt = self._first_ask()
 
-        self.assertIn("العميل سأل عن التوفر بس", prompt)
+        self.assertNotIn("العميل سأل عن التوفر بس", prompt)
 
     def test_the_name_goes_back_in_the_customers_own_letters(self):
         """We are saying we do not sell this perfume, so a Latin spelling we invented for it is a
@@ -13679,7 +13671,7 @@ class AbsentNameStillNotDeniedOnAbstainTests(TestCase):
 
         self.assertNotIn("بدائل مقترحة متوفرة في المتجر", context)
         self.assertIn("وممنوع تعرض عليه أي عطر تاني في الرد ده", prompt)
-        self.assertIn("البدائل مكانها لما نكون اتأكدنا إن العطر مش عندنا فعلاً", prompt)
+        self.assertIn("والترشيح مكانه لما العميل نفسه يطلبه", prompt)
 
     def test_the_question_it_asks_is_one_the_customer_can_answer(self):
         """What separates this from the stall. "اكتبلي الاسم تاني" resolves on the next message;
@@ -13802,12 +13794,14 @@ class ChasedDeferralTests(TestCase):
 
         self.assertIn(described.PENDING_LOOKUP_MARKER, context)
 
-    def test_the_volunteered_perfume_is_labelled_as_not_the_answer(self):
+    def test_the_volunteered_perfume_is_not_carried_into_the_chase(self):
+        """It used to ride along labelled "not the perfume you asked about". Since 2026-11-13 a
+        denied turn carries no perfume at all: a row the model never receives cannot be pitched."""
         self._denied_on()
         context, _ = self._turn("اتأكدلي منه")
 
-        self.assertIn("Stronger With You", context)
-        self.assertIn("**مش** العطر اللي العميل سأل", context)
+        self.assertNotIn("Stronger With You", context)
+        self.assertNotIn("Name (الاسم الصحيح)", context)
 
     def test_the_open_question_is_the_earlier_message_not_the_chase(self):
         """"اتأكدلي منه" is not a perfume name. An owner handed that has been told nothing, and a
@@ -13877,7 +13871,8 @@ class ChasedDeferralTests(TestCase):
 
         self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("إن العطر اللي سأل عنه مش موجود عندنا", prompt)
-        self.assertIn("اعرض عليه بديل أو اتنين", prompt)
+        self.assertNotIn("اعرض عليه بديل", prompt)
+        self.assertIn("الرد كله هو النفي ده وبس", prompt)
 
     def test_a_different_unknown_name_gets_its_own_verdict(self):
         """Conversation 795 turn 4: الكساندريا 2 asked while لادور بخور is still open. The record
@@ -14435,14 +14430,14 @@ class ReAskedDeferralTests(TestCase):
         self.assertIn(ABSENCE_DENIED_MARKER, context)
         self.assertIn("مش موجود عندنا", prompt)
 
-    def test_the_denial_comes_with_alternatives(self):
-        """The half the customer can act on. A denial on its own ends the conversation; 815 got
-        this right and named Stronger With You with its prices."""
+    def test_the_denial_comes_alone(self):
+        """Reversed on 2026-11-13: the re-asked denial used to name Stronger With You. The store
+        owner asked for the denial and nothing after it."""
         self._denied_on("عندك الكساندريا 2؟")
         context, prompt = self._turn("بتكلم علي الكساندريا 2؟", absent="الكساندريا 2")
 
-        self.assertIn("Stronger With You", context)
-        self.assertIn("اعرض عليه بديل", prompt)
+        self.assertNotIn("Stronger With You", context)
+        self.assertNotIn("اعرض عليه بديل", prompt)
 
     def test_the_record_keeps_the_original_wording(self):
         """So a third ask matches the same open question instead of opening a new one."""
@@ -14958,25 +14953,11 @@ class AlternativesAnswerTheRequestTests(TestCase):
     def test_the_budget_tier_still_applies(self):
         self.assertEqual(self._alternatives(notes=("بخور",), max_price=500)[0], "Dior Homme Sport")
 
-    # ── and product_info actually asks for it ────────────────────────────
-    def _turn(self, message="عندكو لادور بخور صح ؟"):
-        """The data block the branch injects, and the prompt it actually delivers.
-
-        Two different surfaces, and the difference is easy to get wrong: `get_product_info`
-        returns only `context` — the rows — because that is what the router persists into
-        `Message.internal_context`. The instructions are appended to the user message and never
-        appear in the return value, so a rule asserted against `context` is a rule nothing
-        checked.
-
-        🔴 `_absent("لادور بخور")` rather than `return_value=[]`, and the distinction is now
-        load-bearing rather than cosmetic. Alternatives are offered on a **denial** — we checked,
-        we do not have it, and the customer would otherwise leave with nothing — and are withheld
-        when the name could not be read at all, because there we do not yet know that we lack it.
-        The 795 ranking this class exists for still applies on the denial, which is the turn 835
-        actually produced; `return_value=[]` would now route this into the abstain branch, where
-        `suggest_alternatives` is deliberately never called and every assertion below would be
-        testing a block that no longer exists.
-        """
+    # ── and product_info no longer asks for it ───────────────────────────
+    def test_a_denial_does_not_load_the_fallback_shelf(self):
+        """The ranking above still serves `router`'s repetition redirect. `product_info` was its
+        other caller, on a denial, and the store owner ended that on 2026-11-13: an unavailable
+        perfume gets "not available" and nothing else."""
         conversation = Conversation.objects.create(store=self.store)
         with mock.patch(
             "products.services.product_info.resolve_products",
@@ -14985,42 +14966,16 @@ class AlternativesAnswerTheRequestTests(TestCase):
             "products.services.product_info.confirm_unplaced",
             lambda name, store=None: None,
         ), mock.patch(
+            "products.services.fallback.suggest_alternatives"
+        ) as suggest, mock.patch(
             "products.services.product_info.chat", return_value="ok"
         ) as chat_call:
-            _, context = get_product_info(message, [], self.store, conversation)
-        return context, chat_call.call_args[0][0][-1]["content"]
+            _, context = get_product_info("عندكو لادور بخور صح ؟", [], self.store, conversation)
 
-    def _context(self, message="عندكو لادور بخور صح ؟"):
-        return self._turn(message)[0]
-
-    def test_product_info_passes_the_request_to_the_fallback(self):
-        context = self._context()
-
-        self.assertIn("Dior Homme Sport", context)
-        self.assertLess(context.index("Dior Homme Sport"), context.index("Stronger With You"))
-
-    def test_the_alternatives_carry_their_real_notes(self):
-        """Notes remain available for explicit ingredients, separate from ordinary scent evidence."""
-        self.sport.scent_tags = ["fresh", "citrus", "woody"]
-        self.sport.occasion = "Office"
-        self.sport.description = "Untrusted catalog description"
-        self.sport.save(update_fields=["scent_tags", "occasion", "description"])
-        context, prompt = self._turn()
-
-        self.assertIn("Olibanum", context)
-        self.assertIn("Description Tags (first three only): fresh, citrus, woody", context)
-        self.assertIn("Occasion: Office", context)
-        self.assertNotIn("مناسب للشغل والمكتب", context)
-        self.assertNotIn("Untrusted catalog description", context)
-        self.assertIn(context, prompt)
-
-    def test_the_rows_reach_the_model_and_not_just_the_return_value(self):
-        """`context` is interpolated into the prompt, but nothing pinned that. If the two ever
-        come apart, every assertion above this line would keep passing against a prompt the model
-        never saw."""
-        context, prompt = self._turn()
-
-        self.assertIn(context, prompt)
+        suggest.assert_not_called()
+        self.assertNotIn("Dior Homme Sport", context)
+        self.assertNotIn("Stronger With You", context)
+        self.assertIn(context, chat_call.call_args[0][0][-1]["content"])
 
 
 class BriefBlockCannotInviteInventionTests(TestCase):
@@ -15206,7 +15161,7 @@ class AbsentNameEscalationTests(TestCase):
     # ── a denied name: tell the owner, keep the conversation ─────────────
     def test_a_denied_name_notifies_the_owner_and_leaves_the_bot_serving(self):
         """The whole point of the notification surviving the policy change. The customer has been
-        told plainly that we do not carry it and has two stocked perfumes in front of them, so there
+        told plainly that we do not carry it, which is a complete answer, so there
         is nothing for a person to rescue — but the owner still wants to know a customer walked in
         asking for something the catalogue does not have, and may well want to stock it.
         """
@@ -15216,7 +15171,7 @@ class AbsentNameEscalationTests(TestCase):
         self.assertEqual(notification.type, "handoff")
         self.assertIn("لادور بخور", notification.message)
         self.assertIn(str(self.conversation.id), notification.message)
-        self.assertIn("مش موجود عندنا وعرض عليه بدائل", notification.message)
+        self.assertIn("مش موجود عندنا وبس، من غير ما يعرض بدائل", notification.message)
         self.assertFalse(self.conversation.needs_human)
         self.assertFalse(notify.called)
 
@@ -15647,7 +15602,7 @@ class TheStallCannotSurviveADeniedTurnTests(TestCase):
     def test_a_promise_on_a_denied_turn_is_generated_again(self):
         response, context, chat_call = self._route_with_replies(
             "لحظة أتأكدلك منه يا فندم",
-            "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You بـ400.",
+            "بعتذر يا فندم، لادور بخور مش موجود عندنا.",
         )
 
         self.assertEqual(chat_call.call_count, 2)
@@ -15661,20 +15616,31 @@ class TheStallCannotSurviveADeniedTurnTests(TestCase):
         change the fact — the perfume is still absent."""
         _, _, chat_call = self._route_with_replies(
             "لحظة أتأكدلك منه يا فندم",
-            "بعتذر، مش موجود عندنا. بس عندنا Stronger With You.",
+            "بعتذر، مش موجود عندنا.",
         )
 
         retry_prompt = chat_call.call_args_list[1][0][0][-1]["content"]
         self.assertIn("لحظة أتأكدلك", retry_prompt)
         self.assertIn("اتأكدنا خلاص", retry_prompt)
-        self.assertIn("اعرض عليه بديل", retry_prompt)
+        self.assertIn("ومن غير ما تعرض بديل ليه", retry_prompt)
+        self.assertNotIn("اعرض عليه بديل أو اتنين", retry_prompt)
 
     def test_a_clean_denial_costs_no_second_call(self):
         _, _, chat_call = self._route_with_replies(
-            "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You بـ400."
+            "بعتذر يا فندم، لادور بخور مش موجود عندنا."
         )
 
         self.assertEqual(chat_call.call_count, 1)
+
+    def test_a_pitch_beside_the_denial_is_trimmed_without_a_second_call(self):
+        """A named alternative is cut in code (`router._denial_only_reply`), not regenerated."""
+        response, _, chat_call = self._route_with_replies(
+            "بعتذر يا فندم، لادور بخور مش موجود عندنا. بس عندنا Stronger With You."
+        )
+
+        self.assertEqual(chat_call.call_count, 1)
+        self.assertIn("مش موجود عندنا", response)
+        self.assertNotIn("Stronger With You", response)
 
     def test_the_retry_does_not_fire_on_an_abstain_turn(self):
         """Scoped to `ABSENCE_DENIED` on purpose. A `NAME_UNREADABLE` turn's rules also ban the
@@ -15715,7 +15681,8 @@ class HarnessCatchesConv795Tests(TestCase):
     can measure is a fix that regresses silently.
 
     The same argument is why the deny-on-the-first-ask policy brought two checks of its own, covered
-    in the last section here: `_stalled_when_denial_required` and `_denial_without_alternatives`.
+    in the last section here: `_stalled_when_denial_required` and `_substitute_after_denial` (the
+    inverse, since 2026-11-13, of the `_denial_without_alternatives` it replaced).
     Both halves of that policy are prompt instructions, and an instruction the harness cannot score
     is an instruction that decays. The stall check is the one that makes `router`'s retry visible —
     without it, a promise that survived being told twice not to make it reads exactly like a clean
@@ -15727,9 +15694,9 @@ class HarnessCatchesConv795Tests(TestCase):
 
         self.checks = checks
         self.store = Store.objects.create(name="Perfamix Test")
-        # Two stocked perfumes, because `_denial_without_alternatives` compares the reply against
-        # `truth["available_names"]` and returns None on an empty catalogue — a store with nothing
-        # in it cannot fail to offer an alternative, so the check would be vacuous here. Neither is
+        # Two stocked perfumes, because `_substitute_after_denial` compares the reply against
+        # `truth["available_names"]` — a store with nothing in it has no perfume a reply could
+        # wrongly name beside the denial, so half the check would be vacuous here. Neither is
         # a spelling of الكساندريا 2, so `_false_denial` stays out of every test in this class.
         armani = Brand.objects.create(store=self.store, name="Emporio Armani")
         stronger = Product.objects.create(
@@ -15918,44 +15885,65 @@ class HarnessCatchesConv795Tests(TestCase):
                     self.checks._stalled_when_denial_required(reply, context) is not None,
                 )
 
-    def test_a_denial_with_alternatives_passes_both_new_checks(self):
-        """The reply the policy asks for. It has to score clean in both passes or the harness
-        pushes the bot back towards the stall."""
-        reply = (
-            "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. "
-            "بس عندنا Stronger With You و Bleu de Chanel لو تحب."
-        )
+    def test_a_bare_denial_passes_both_new_checks(self):
+        """The reply the owner asked for on 2026-11-13: the denial and nothing after it. It has to
+        score clean in both passes or the harness pushes the bot back towards the pitch."""
+        reply = "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا."
         context = self._denied_context()
         truth = self.checks.build_ground_truth(self.store)
 
         self.assertIsNone(self.checks._stalled_when_denial_required(reply, context))
-        self.assertIsNone(self.checks._denial_without_alternatives(reply, context, truth))
+        self.assertIsNone(self.checks._substitute_after_denial(reply, context, truth))
 
-    def test_a_bare_denial_is_flagged_for_offering_nothing(self):
-        flagged = self.checks._denial_without_alternatives(
-            "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا.",
+    def test_a_denial_with_alternatives_is_flagged(self):
+        """This asserted the opposite until 2026-11-13, when a bare denial was the defect."""
+        flagged = self.checks._substitute_after_denial(
+            "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. "
+            "بس عندنا Stronger With You و Bleu de Chanel لو تحب.",
             self._denied_context(),
             self.checks.build_ground_truth(self.store),
         )
 
         self.assertIsNotNone(flagged)
-        self.assertIn("مش موجود عندنا", flagged)
+        self.assertIn("Stronger With You", flagged)
 
-    def test_gesturing_at_alternatives_without_naming_one_is_still_bare(self):
-        """"عندنا عطور تانية حلوة" is not an offer. A perfume the customer cannot name is a perfume
-        they cannot ask for, which is the whole reason the check counts names and not wording."""
-        self.assertIsNotNone(
-            self.checks._denial_without_alternatives(
-                "بعتذر، مش موجود عندنا. بس عندنا عطور تانية حلوة ممكن تعجبك.",
-                self._denied_context(),
-                self.checks.build_ground_truth(self.store),
-            )
-        )
+    def test_gesturing_at_alternatives_without_naming_one_is_flagged_too(self):
+        """"عندنا عطور تانية حلوة" and "تحب أرشحلك؟" name nothing and still sell at a customer who
+        asked a question."""
+        truth = self.checks.build_ground_truth(self.store)
+        for reply in (
+            "بعتذر، مش موجود عندنا. بس عندنا عطور تانية حلوة ممكن تعجبك.",
+            "بعتذر، مش موجود عندنا. تحب أرشحلك حاجة قريبة منه؟",
+        ):
+            with self.subTest(reply=reply):
+                self.assertIsNotNone(
+                    self.checks._substitute_after_denial(reply, self._denied_context(), truth)
+                )
+
+    def test_the_check_reads_the_same_predicate_the_router_trims_with(self):
+        """If the check and the guard disagreed, a reply the router let through would be flagged,
+        or one it trimmed would pass."""
+        from products.services.sales import described
+
+        truth = self.checks.build_ground_truth(self.store)
+        names = list(truth["available_names"])
+        context = self._denied_context()
+        for reply in (
+            "للأسف الكساندريا 2 مش موجود عندنا.",
+            "للأسف الكساندريا 2 مش موجود عندنا. ممكن تشوف Bleu de Chanel.",
+            "زي ما قلتلك يا فندم، مش موجود عندنا.",
+        ):
+            with self.subTest(reply=reply):
+                trimmed = described.denial_alone(reply, names, "طب عندكو الكساندريا 2 ؟")
+                self.assertEqual(
+                    trimmed != reply,
+                    self.checks._substitute_after_denial(reply, context, truth) is not None,
+                )
 
     def test_neither_new_check_fires_without_the_marker(self):
         """Both are scoped to a confirmed absence, and that scoping is what keeps them quiet on the
-        turns where a promise is honest (red line 2, the store-policy question) and where a denial
-        legitimately stands alone (a sold-out size, a perfume with no original bottle)."""
+        turns where a promise is honest (red line 2, the store-policy question) and where the reply
+        is rightly about a stocked perfume (a sold-out size, a perfume with no original bottle)."""
         truth = self.checks.build_ground_truth(self.store)
         context = "Name (الاسم الصحيح): Versace Eros\nOriginal Bottle: ❌ مش متوفر"
 
@@ -15963,8 +15951,20 @@ class HarnessCatchesConv795Tests(TestCase):
             self.checks._stalled_when_denial_required("لحظة أتأكدلك من الأوريجينال.", context)
         )
         self.assertIsNone(
-            self.checks._denial_without_alternatives(
-                "للاسف مش متوفر منه زجاجة أوريجينال حالياً.", context, truth
+            self.checks._substitute_after_denial(
+                "للاسف مش متوفر منه زجاجة أوريجينال حالياً. بس عندنا Bleu de Chanel.", context, truth
+            )
+        )
+
+    def test_a_partial_denial_may_name_the_perfumes_that_were_asked_about(self):
+        from products.services.product_info import ABSENCE_DENIED_MARKER
+
+        context = f"{self.pending_context}{ABSENCE_DENIED_MARKER}\nName (الاسم الصحيح): Bleu de Chanel"
+
+        self.assertIsNone(
+            self.checks._substitute_after_denial(
+                "Bleu de Chanel الـ50 ملي بـ645. أما الكساندريا 2 فمش موجود عندنا.",
+                context, self.checks.build_ground_truth(self.store),
             )
         )
 
@@ -15994,19 +15994,21 @@ class HarnessCatchesConv795Tests(TestCase):
         stalled = rescore.rescore(
             self._record("لحظة أتأكدلك منه يا فندم", context), truth
         )
-        bare = rescore.rescore(
-            self._record("بعتذر يا فندم، الكساندريا 2 مش موجود عندنا.", context), truth
+        pitched = rescore.rescore(
+            self._record(
+                "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. بس عندنا Stronger With You.", context
+            ), truth
         )
 
         self.assertIn("stalled_when_denial_required", [f["code"] for f in stalled])
-        self.assertIn("denial_without_alternatives", [f["code"] for f in bare])
+        self.assertIn("substitute_after_denial", [f["code"] for f in pitched])
 
     def test_rescore_leaves_the_required_reply_alone(self):
         from eval_harness import rescore
 
         findings = rescore.rescore(
             self._record(
-                "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا. بس عندنا Stronger With You بـ400.",
+                "بعتذر يا فندم، الكساندريا 2 مش موجود عندنا.",
                 self._denied_context(),
             ),
             self.checks.build_ground_truth(self.store),
@@ -16014,7 +16016,7 @@ class HarnessCatchesConv795Tests(TestCase):
         codes = [f["code"] for f in findings]
 
         self.assertNotIn("stalled_when_denial_required", codes)
-        self.assertNotIn("denial_without_alternatives", codes)
+        self.assertNotIn("substitute_after_denial", codes)
         self.assertNotIn("unbacked_denial", codes)
 
     def test_the_new_severities_are_ones_rescore_can_sort(self):
@@ -16743,68 +16745,25 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
         self.assertIn("ممنوع تخفي سعر عطر العميل سأل عنه بالاسم", prompt)
         self.assertIn("ممنوع تقول إنه مش متوفر عشان سعره", prompt)
 
-    # ── the branch that offers alternatives because nothing resolved ───────
-    def _alternatives_turn(self, budget=None, alternatives=None):
-        """🔴 A **denied** name, not a vague browse, and that is now what puts rows in this block.
-
-        This used to be `return_value=[]` on "عندكو حاجة حلوة؟" — an abstain, where the pipeline
-        never established that we lack anything. Alternatives are no longer offered there: the
-        store owner asked for them gone from every turn that could not read the name, because a
-        clarifying question followed by two perfumes he never mentioned reads to the customer as
-        force-selling. The budget labels this class is about belong to the denial, which is where
-        the block survives, so the fixture moves to a denial and the assertions are unchanged.
-        """
-        conversation = self._conversation(budget)
-        returns = [self.eros, self.baccarat] if alternatives is None else alternatives
-        with mock.patch(
-            "products.services.product_info.resolve_products",
-            return_value=_absent("بلاك اوركيد"),
-        ), mock.patch(
-            "products.services.product_info.confirm_unplaced",
-            lambda name, store=None: None,
-        ), mock.patch(
-            "products.services.product_info.suggest_alternatives", return_value=returns
-        ) as suggest, mock.patch(
-            "products.services.product_info.chat", return_value="ok"
-        ) as chat_call:
-            _, context = get_product_info("عندكو بلاك اوركيد؟", [], self.store, conversation)
-        return context, chat_call.call_args[0][0][-1]["content"], suggest
-
-    def test_the_alternatives_are_ranked_against_the_budget(self):
-        """An ordering tier, not a filter — `suggest_alternatives` sorts in-budget first and keeps
-        the rest, which is the shape this branch needs. Passing the budget is what makes that
-        ordering happen at all."""
-        _, _, suggest = self._alternatives_turn(budget=1200)
-
-        self.assertEqual(suggest.call_args.kwargs["max_price"], Decimal("1200"))
-
-    def test_the_alternatives_rows_carry_the_budget_verdict(self):
-        context, _, _ = self._alternatives_turn(budget=1200)
-
-        self.assertIn(self.IN, context)
-        self.assertIn(self.NEAR, context)
-        self.assertNotIn(self.FAR, context)
-        self.assertNotIn("3800", context)
-
-    def test_contextual_alternatives_do_not_pitch_an_all_over_budget_catalog(self):
+    # ── the branch that used to offer alternatives because nothing resolved ─
+    def test_a_denied_name_carries_no_shelf_whatever_the_budget(self):
+        """This section held the budget labels on the "بدائل مقترحة" block. The block is gone: the
+        store owner (2026-11-13) wants an unavailable perfume answered with "not available" and
+        nothing else, so there are no alternative rows left to label."""
         for product in (self.eros, self.baccarat):
             product.scent_tags = ["fresh"]
             product.save(update_fields=["scent_tags"])
-        conversation = self._conversation(100)
-        with mock.patch("products.services.product_info.resolve_products", return_value=_absent("بلاك اوركيد")), \
-             mock.patch("products.services.product_info.confirm_unplaced", return_value=None), \
-             mock.patch("products.services.product_info.chat", return_value="العطر مش متاح"):
-            _, context = get_product_info("عندكو بلاك اوركيد؟", [], self.store, conversation)
-        self.assertNotIn("بدائل مقترحة", context)
-        self.assertNotIn(self.eros.name, context)
-        self.assertNotIn(self.baccarat.name, context)
-
-    def test_no_budget_line_when_there_is_no_list_to_order(self):
-        """A budget rule about an empty list is a number with no referent."""
-        context, prompt, _ = self._alternatives_turn(budget=1200, alternatives=[])
-
-        self.assertNotIn("بدائل مقترحة", context)
-        self.assertNotIn("والبدائل فوق مرتبة", prompt)
+        for budget in (None, 100, 1200):
+            with self.subTest(budget=budget):
+                conversation = self._conversation(budget)
+                with mock.patch("products.services.product_info.resolve_products", return_value=_absent("بلاك اوركيد")), \
+                     mock.patch("products.services.product_info.confirm_unplaced", return_value=None), \
+                     mock.patch("products.services.product_info.chat", return_value="العطر مش متاح") as chat_call:
+                    _, context = get_product_info("عندكو بلاك اوركيد؟", [], self.store, conversation)
+                self.assertNotIn("بدائل مقترحة", context)
+                self.assertNotIn(self.eros.name, context)
+                self.assertNotIn(self.baccarat.name, context)
+                self.assertNotIn("والبدائل فوق مرتبة", chat_call.call_args[0][0][-1]["content"])
 
     # ── the objection branch ──────────────────────────────────────────────
     def _objection_turn(self, budget=None, products=None, message="غالي شوية"):
@@ -16877,13 +16836,14 @@ class BudgetLabelsReachEveryPricePathTests(TestCase):
         self.assertIn("Eros", prompt)
         self.assertIn(self.IN, prompt)
 
-    def test_the_unstocked_guess_alternatives_carry_it_too(self):
-        """The carve-out branch: we name a perfume we do not stock, then offer what we do. Those
-        offers are priced, so they are labelled."""
+    def test_the_unstocked_guess_offers_nothing_to_label(self):
+        """The carve-out branch: we name a perfume we do not stock. It used to offer what we do and
+        label those prices; since 2026-11-13 it offers nothing, so no price reaches the prompt."""
         prompt = self._identification_turn(1200, {"likely_known_perfume": "Creed Aventus"})
 
         self.assertIn("Creed Aventus", prompt)
-        self.assertIn(self.FAR, prompt)
+        self.assertNotIn(self.FAR, prompt)
+        self.assertNotIn(self.eros.name, prompt)
 
     # ── the shared reader ─────────────────────────────────────────────────
     def test_the_budget_reader_handles_every_shape_a_caller_passes(self):

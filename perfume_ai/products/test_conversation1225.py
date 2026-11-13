@@ -142,14 +142,16 @@ class Conversation1225Tests(TestCase):
         _, context, prompt = self.info(message)
         self.assert_absence(context, prompt, message)
 
-    def test_previously_offered_perfume_is_labeled_as_an_alternative(self):
+    def test_previously_offered_perfume_is_not_brought_into_the_denial(self):
+        """Store owner, 2026-11-13: an unavailable perfume gets "not available" and nothing else.
+        The perfume we had offered used to ride along as a labelled alternative."""
         save_message(self.conv, "assistant", self.alternative.name,
                      internal_context=format_products([self.alternative]))
         message = "9pm night out"
         _, context, prompt = self.info(message)
         self.assert_absence(context, prompt, message)
-        self.assertIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, context)
-        self.assertIn(self.alternative.name, context)
+        self.assertNotIn(product_info._NOT_THE_PERFUME_ASKED_ABOUT, context)
+        self.assertNotIn(self.alternative.name, context)
 
     def test_multiple_names_and_unverified_arabic_suffix_are_not_falsely_denied(self):
         self.product("Dior Sauvage")
