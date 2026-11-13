@@ -1,0 +1,631 @@
+{
+  "id": "S07_gift",
+  "title": "Gift buyer who does not know the recipient's taste",
+  "persona": "gift_buyer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات",
+      "reply": "ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.",
+      "seconds": 80.76,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "gender": "female"
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female"
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "SCENT_PREFERENCE_REQUIRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "هي هادية وكلاسيك ومش بتحب الحاجات المسكرة أوي، فترشحلي إيه؟ ولو مجاش على ذوقها أعمل إيه؟",
+      "reply": "L'Eau d'Issey فيه ريحة زهور، وبحرية ونضيفة.\n\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"",
+      "seconds": 8.97,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_evidence": [
+          {
+            "text": "مش بتحب الحاجات المسكرة أوي",
+            "tags": [
+              "sweet"
+            ],
+            "polarity": "negative"
+          }
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "similar_to": null,
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": null,
+        "longevity": null,
+        "projection": null,
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "notes": [],
+        "avoid_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": null,
+        "budget_strict": null,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "scent_open": false,
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "discovery",
+      "search": {
+        "matched": [
+          "L'Eau d'Issey",
+          "Paris Hilton",
+          "Bright Crystal",
+          "Bloom",
+          "Crystal Noir",
+          "Fleur Musc",
+          "Cassilia",
+          "Poudree",
+          "Hugo Woman",
+          "Weekend for Women",
+          "40 Knots",
+          "Fleur Narcotique",
+          "Pacific Chill",
+          "Symphony",
+          "White Oud",
+          "Oud Madawi",
+          "Body",
+          "Bombshell",
+          "J'adore",
+          "Chance",
+          "Coco Mademoiselle",
+          "My Way",
+          "Accento"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [],
+      "saved_preferences": {
+        "gender": "female",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): L'Eau d'Issey\nBrand: Issey Miyake\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Issey Miyake) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\n⚠️ عطر مختلف عن: L'Eau d'Issey Pour Homme — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, aquatic, clean\nDescription Tags (first three only): floral, aquatic, clean\nSimple Scent Description: فيه ريحة زهور وريحته بحرية ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Lotus, Melon, Freesia, Rose Water, Rose, Calone, Cyclamen\nMiddle Notes: Lily, Water Peony, Carnation, Lily of the Valley\nBase Notes: Exotic Woods, Tuberose, Amber, Sandalwood, Musk, Osmanthus, Cedar\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "L'Eau d'Issey"
+      ],
+      "claim_checks": [
+        {
+          "draft": "أرشحلك L'Eau d'Issey؛ فيه ريحة زهور وبحرية ونضيف، ومن غير طابع مسكر ضمن وصفه.",
+          "issues": [
+            "description:L'Eau d'Issey: use the first three saved labels: floral, aquatic, clean"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "طب هتعجبها أكيد؟ ولو مجاش على ذوقها مش هينفع أبدله لو فتحته؟",
+      "reply": "مش هقدر أأكد إنها هتعجبها أكيد، لأن الأذواق بتختلف. طابعها زهور وبحري ونضيف، والحلاوة فيها مش مؤكدة عندي.\n\nزي ما قلتلك:\nضمان الاستبدال لمدة يومين من وقت الاستلام.\nفي حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.",
+      "seconds": 7.14,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "recommendation",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "scent_open": false,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): L'Eau d'Issey\nBrand: Issey Miyake\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Issey Miyake) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n⚠️ عطر مختلف عن: L'Eau d'Issey Pour Homme — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Beach, Summer & Gym\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, aquatic, clean\nDescription Tags (first three only): floral, aquatic, clean\nSimple Scent Description: فيه ريحة زهور وريحته بحرية ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Lotus, Melon, Freesia, Rose Water, Rose, Calone, Cyclamen\nMiddle Notes: Lily, Water Peony, Carnation, Lily of the Valley\nBase Notes: Exotic Woods, Tuberose, Amber, Sandalwood, Musk, Osmanthus, Cedar\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [
+        {
+          "draft": "مقدرش أضمن إنها هتعجبها أكيد، لأن الأذواق بتختلف؛ بس طابعها زهري وبحري ونضيف، ومش مسكر حسب وصفها.",
+          "issues": [
+            "description:L'Eau d'Issey: an unrecorded trait is not confirmed absent; say it is not confirmed: sweet"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "طب في حاجة تانية قريبة من نفس الستايل وتكون هادية؟ وميزانيتي لحد ١٠٠٠ جنيه",
+      "reply": "Bloom\nفيه ريحة زهور وفريش ومنعش ونضيف.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\n\nFleur Musc\nفيه ريحة زهور ومسكي ونضيف.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.",
+      "seconds": 7.18,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": {
+        "brand": null,
+        "brand_strict": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": 1000,
+        "longevity": null,
+        "projection": null,
+        "scent_evidence": [],
+        "similar_to": "L'Eau d'Issey",
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "reset_preferences": null,
+        "clear_preferences": []
+      },
+      "merged_intent": {
+        "brand": null,
+        "exclude_brands": null,
+        "perfume_type": null,
+        "season": null,
+        "max_price": 1000,
+        "longevity": null,
+        "projection": null,
+        "similar_to": "L'Eau d'Issey",
+        "similar_to_notes": [],
+        "exclude_names": null,
+        "wants_uncommon": null,
+        "purchase_quantity": null,
+        "recommendation_count": null,
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "reset_preferences": null,
+        "clear_preferences": [],
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "gender": "female"
+      },
+      "pending_relax": {},
+      "stage": "recommendation",
+      "search": {
+        "matched": [
+          "Bloom",
+          "Fleur Musc",
+          "My Way",
+          "Paris Hilton",
+          "Bright Crystal",
+          "Crystal Noir",
+          "Cassilia",
+          "Poudree",
+          "Hugo Woman",
+          "Weekend for Women",
+          "White Oud",
+          "Oud Madawi",
+          "Body",
+          "Bombshell",
+          "J'adore",
+          "Chance",
+          "Coco Mademoiselle"
+        ],
+        "alternatives": [],
+        "similarity": null,
+        "reasons": {}
+      },
+      "offered": [
+        "L'Eau d'Issey"
+      ],
+      "saved_preferences": {
+        "gender": "female",
+        "max_price": 1000,
+        "scent_open": false,
+        "similar_to": "L'Eau d'Issey",
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fresh, clean\nDescription Tags (first three only): floral, fresh, clean\nSimple Scent Description: فيه ريحة زهور وفريش ومنعش ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Jasmine\nMiddle Notes: Tuberose\nBase Notes: Rangoon Creeper\n\n-------------------------\n\nName (الاسم الصحيح): Fleur Musc\nBrand: Narciso Rodriguez\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, musky, clean\nDescription Tags (first three only): floral, musky, clean\nSimple Scent Description: فيه ريحة زهور ومسكي ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Rose, Peony, Musk\nBase Notes: Patchouli, Amber, Violet\n\n-------------------------\nMOVED_PAST: L'Eau d'Issey\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1055, \"variant_id\": 2876, \"name\": \"Bloom\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1055, \"variant_id\": 2875, \"name\": \"Bloom\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 1080, \"variant_id\": 2932, \"name\": \"Fleur Musc\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1080, \"variant_id\": 2931, \"name\": \"Fleur Musc\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"Bloom\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\n\\nFleur Musc\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": \"1000\", \"request\": \"طب في حاجة تانية قريبة من نفس الستايل وتكون هادية؟ وميزانيتي لحد ١٠٠٠ جنيه\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 1055, \"variant_id\": 2876, \"name\": \"Bloom\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1055, \"variant_id\": 2875, \"name\": \"Bloom\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}, {\"product_id\": 1080, \"variant_id\": 2932, \"name\": \"Fleur Musc\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}, {\"product_id\": 1080, \"variant_id\": 2931, \"name\": \"Fleur Musc\", \"volume\": 50, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"750.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\\n\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\", \"budget\": \"1000\", \"request\": \"طب في حاجة تانية قريبة من نفس الستايل وتكون هادية؟ وميزانيتي لحد ١٠٠٠ جنيه\", \"sections\": [{\"product_id\": 1055, \"name\": \"Bloom\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\"}, {\"product_id\": 1080, \"name\": \"Fleur Musc\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Bloom",
+        "Fleur Musc"
+      ],
+      "claim_checks": [
+        {
+          "draft": "أقرب اختيار لستايلها Bloom من Gucci، فيه ريحة زهور وفريش ومنعش ونضيف.",
+          "issues": [
+            "similarity: no recorded data compares a perfume with gucci"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "أنهي واحدة فيهم أهدى ومش مسكرة؟ وبتفتكر هتعجبها أكتر؟ هفكر أطلبها",
+      "reply": "Bloom أهدى من ناحية الطابع؛ فريش ونضيف، لكن الحلاوة مش مؤكدة. مش قادر أجزم أنهي واحدة هتعجبها أكتر من غير ما نعرف ذوقها في الروائح.",
+      "seconds": 2.93,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": {
+        "excluded_scent_tags": [
+          "sweet"
+        ],
+        "scent_open": false,
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "gender": "female",
+        "max_price": 1000,
+        "similar_to": "L'Eau d'Issey"
+      },
+      "pending_relax": {},
+      "stage": "comparison",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "max_price": 1000,
+        "scent_open": false,
+        "similar_to": "L'Eau d'Issey",
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fresh, clean\nDescription Tags (first three only): floral, fresh, clean\nSimple Scent Description: فيه ريحة زهور وفريش ومنعش ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Jasmine\nMiddle Notes: Tuberose\nBase Notes: Rangoon Creeper\n\n-------------------------\n\nName (الاسم الصحيح): Fleur Musc\nBrand: Narciso Rodriguez\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, musky, clean\nDescription Tags (first three only): floral, musky, clean\nSimple Scent Description: فيه ريحة زهور ومسكي ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Pink Pepper\nMiddle Notes: Rose, Peony, Musk\nBase Notes: Patchouli, Amber, Violet\n\n-------------------------\n\nCOMPARED_PRODUCTS: Bloom | Fleur Musc",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Bloom"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "تمام هفكر في الـ Bloom، هي 50 ملي بـ750 صح؟",
+      "reply": "أيوه، الـ50 ملي بـ750 جنيه. خدي وقتك في التفكير، ومش هضغط عليكي.",
+      "seconds": 2.71,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "max_price": 1000,
+        "scent_open": false,
+        "similar_to": "L'Eau d'Issey",
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Bloom\nBrand: Gucci\nStock Status: ✅ متوفر\nOriginal Bottle: NOT AVAILABLE — this is a GLOBAL BRAND (Gucci) perfume, NOT store-exclusive. If asked, say EXACTLY: \"للاسف مش متوفر منه زجاجة اوريجنال حالياً\". ❌ DO NOT say it is store-exclusive or حصري.\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP ✅ (داخل الميزانية)\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP ✅ (داخل الميزانية)\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس. ❌ والـ 250 جنيه دي فرق بين حجمين من نفس العطر وبس — مش فرق عن ميزانية العميل. السطر ده مفيهوش أي معلومة عن الميزانية، فممنوع تستخدم أي رقم منه في أي كلام عن ميزانية العميل.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: female\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): floral, fresh, clean\nDescription Tags (first three only): floral, fresh, clean\nSimple Scent Description: فيه ريحة زهور وفريش ومنعش ونضيف\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Jasmine\nMiddle Notes: Tuberose\nBase Notes: Rangoon Creeper\n\n-------------------------\n",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "تمام شكراً، هفكر فيها وأرجعلك لو قررت أطلبها 🙏",
+      "reply": "تسلم، خد وقتك.",
+      "seconds": 1.08,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": {
+        "kind": "thinking",
+        "matched": [
+          "هفكر"
+        ],
+        "past_purchase": false
+      },
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "objection",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {
+        "gender": "female",
+        "max_price": 1000,
+        "scent_open": false,
+        "similar_to": "L'Eau d'Issey",
+        "budget_scope": "per_item",
+        "budget_strict": true,
+        "excluded_scent_tags": [
+          "sweet"
+        ]
+      },
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "CUSTOMER_DEFERRED",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "customer",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {
+    "gender": "female",
+    "max_price": 1000,
+    "scent_open": false,
+    "similar_to": "L'Eau d'Issey",
+    "budget_scope": "per_item",
+    "budget_strict": true,
+    "excluded_scent_tags": [
+      "sweet"
+    ]
+  },
+  "seconds": 122.1,
+  "judge_prompt": "SCENARIO S07_gift: Gift buyer who does not know the recipient's taste\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.\n- Does not promise she will love it (no مضمون / هتعجبها أكيد).\n- Return/exchange question answered from the store's configured policy only; nothing invented.\n- Asks at most one high-value question before recommending.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز أجيب هدية لخطيبتي بس معرفش هي بتحب إيه في البرفانات\n[internal] route=recommendation stage=None saved_preferences={\"gender\": \"female\"}\n[internal] merged_intent={\"gender\": \"female\"}\nASSISTANT: ولا يهمك. تحبها منعشة وخفيفة زي ريحة الصابون بعد الدش، ولا دافية ومسكرة شوية زي الفانيليا؟ ولو مش فارقة معاك أختارلك أنا.\n\n--- TURN 2 ---\nCUSTOMER: هي هادية وكلاسيك ومش بتحب الحاجات المسكرة أوي، فترشحلي إيه؟ ولو مجاش على ذوقها أعمل إيه؟\n[internal] route=recommendation stage=discovery saved_preferences={\"gender\": \"female\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"excluded_scent_tags\": [\"sweet\"], \"gender\": \"female\"}\n[internal] shortlist=[\"L'Eau d'Issey\", 'Paris Hilton', 'Bright Crystal', 'Bloom', 'Crystal Noir', 'Fleur Musc', 'Cassilia', 'Poudree']\nASSISTANT: L'Eau d'Issey فيه ريحة زهور، وبحرية ونضيفة.\n\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n--- TURN 3 ---\nCUSTOMER: طب هتعجبها أكيد؟ ولو مجاش على ذوقها مش هينفع أبدله لو فتحته؟\n[internal] route=product_info stage=recommendation saved_preferences={\"gender\": \"female\", \"scent_open\": false, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: مش هقدر أأكد إنها هتعجبها أكيد، لأن الأذواق بتختلف. طابعها زهور وبحري ونضيف، والحلاوة فيها مش مؤكدة عندي.\n\nزي ما قلتلك:\nضمان الاستبدال لمدة يومين من وقت الاستلام.\nفي حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n• لو الأوردر زجاجات اوريجنال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\n--- TURN 4 ---\nCUSTOMER: طب في حاجة تانية قريبة من نفس الستايل وتكون هادية؟ وميزانيتي لحد ١٠٠٠ جنيه\n[internal] route=recommendation stage=recommendation saved_preferences={\"gender\": \"female\", \"max_price\": 1000, \"scent_open\": false, \"similar_to\": \"L'Eau d'Issey\", \"budget_scope\": \"per_item\", \"budget_strict\": true, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"max_price\": 1000, \"similar_to\": \"L'Eau d'Issey\", \"budget_scope\": \"per_item\", \"budget_strict\": true, \"excluded_scent_tags\": [\"sweet\"], \"gender\": \"female\"}\n[internal] shortlist=['Bloom', 'Fleur Musc', 'My Way', 'Paris Hilton', 'Bright Crystal', 'Crystal Noir', 'Cassilia', 'Poudree']\nASSISTANT: Bloom\nفيه ريحة زهور وفريش ومنعش ونضيف.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\n\nFleur Musc\nفيه ريحة زهور ومسكي ونضيف.\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.\n\n--- TURN 5 ---\nCUSTOMER: أنهي واحدة فيهم أهدى ومش مسكرة؟ وبتفتكر هتعجبها أكتر؟ هفكر أطلبها\n[internal] route=product_info stage=comparison saved_preferences={\"gender\": \"female\", \"max_price\": 1000, \"scent_open\": false, \"similar_to\": \"L'Eau d'Issey\", \"budget_scope\": \"per_item\", \"budget_strict\": true, \"excluded_scent_tags\": [\"sweet\"]}\n[internal] merged_intent={\"excluded_scent_tags\": [\"sweet\"], \"budget_scope\": \"per_item\", \"budget_strict\": true, \"gender\": \"female\", \"max_price\": 1000, \"similar_to\": \"L'Eau d'Issey\"}\nASSISTANT: Bloom أهدى من ناحية الطابع؛ فريش ونضيف، لكن الحلاوة مش مؤكدة. مش قادر أجزم أنهي واحدة هتعجبها أكتر من غير ما نعرف ذوقها في الروائح.\n\n--- TURN 6 ---\nCUSTOMER: تمام هفكر في الـ Bloom، هي 50 ملي بـ750 صح؟\n[internal] route=product_info stage=objection saved_preferences={\"gender\": \"female\", \"max_price\": 1000, \"scent_open\": false, \"similar_to\": \"L'Eau d'Issey\", \"budget_scope\": \"per_item\", \"budget_strict\": true, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: أيوه، الـ50 ملي بـ750 جنيه. خدي وقتك في التفكير، ومش هضغط عليكي.\n\n--- TURN 7 ---\nCUSTOMER: تمام شكراً، هفكر فيها وأرجعلك لو قررت أطلبها 🙏\n[internal] route=faq stage=objection saved_preferences={\"gender\": \"female\", \"max_price\": 1000, \"scent_open\": false, \"similar_to\": \"L'Eau d'Issey\", \"budget_scope\": \"per_item\", \"budget_strict\": true, \"excluded_scent_tags\": [\"sweet\"]}\nASSISTANT: تسلم، خد وقتك.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- 40 Knots | brand=Xerjoff | gender=unisex | type=niche | season=Summer | scent_tags=fresh,woody,aquatic | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Sea Notes, Salt, Green Notes | mid=Woody Notes, Cedar | base=Ambergris, Sandalwood | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Accento | brand=Xerjoff | gender=female | type=niche | season=All Seasons | scent_tags=floral,fruity,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pineapple, Hyacinth | mid=Iris, Pink Pepper, Jasmine | base=Musk, Vetiver, Amber, Vanilla, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Bloom | brand=Gucci | gender=female | type=western | season=Summer | scent_tags=floral,fresh,clean | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Jasmine | mid=Tuberose | base=Rangoon Creeper | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Body | brand=Burberry | gender=female | type=western | season=Winter | scent_tags=floral,fruity,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Peach, Wormwood, Freesia | mid=Rose, Sandalwood, Iris | base=Cashmere Wood, Musk, Vanilla, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Bombshell | brand=Victoria's Secret | gender=female | type=western | season=Summer | scent_tags=fruity,floral,citrus | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Passionfruit, Grapefruit, Pineapple, Tangerine, Big Strawberry | mid=Peony, Vanilla Orchid, Red Berries, Jasmine, Lily of the Valley | base=Musk, Woody Notes, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Bright Crystal | brand=Versace | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Pomegranate, Yuzu, Frosted Accord | mid=Peony, Magnolia, Lotus | base=Musk, Amber, Mahogany | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Cassilia | brand=Cassilia | gender=female | type=western | season=Summer | scent_tags=floral,fruity,light | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Bergamot, Mandarin Orange, Red Currant | mid=Peony, Rose, Jasmine, Lily of the Valley | base=White Musk, Sandalwood, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Chance | brand=Chanel | gender=female | type=western | season=Summer | scent_tags=floral,powdery,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Jasmine, Iris | base=Patchouli, Musk, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Coco Mademoiselle | brand=Chanel | gender=female | type=western | season=All Seasons | scent_tags=floral,citrus,woody | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange, Mandarin Orange, Bergamot, Orange Blossom | mid=Jasmine, Rose, Mimosa, Ylang-Ylang | base=Patchouli, Vetiver, Tonka Bean, Vanilla, Musk, Opoponax | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Crystal Noir | brand=Versace | gender=female | type=western | season=Winter | scent_tags=floral,spicy,woody | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pepper, Ginger, Cardamom | mid=Coconut, Gardenia, Orange Blossom, Peony | base=Sandalwood, Musk, Amber | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Fleur Musc | brand=Narciso Rodriguez | gender=female | type=western | season=Summer | scent_tags=floral,musky,clean | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Pink Pepper | mid=Rose, Peony, Musk | base=Patchouli, Amber, Violet | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Fleur Narcotique | brand=Ex Nihilo | gender=female | type=niche | season=Summer | scent_tags=floral,musky,fruity | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Litchi, Bergamot, Peach | mid=Peony, Orange Blossom, Jasmine, Petalia | base=Musk, Moss, Woody Notes | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP | original bottle: NONE available for this perfume\n- Hugo Woman | brand=Hugo Boss | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Boysenberry, Italian Mandarin, Grass | mid=Jasmine, Black Tea, Plum, Iris | base=Amber, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- J'adore | brand=Dior | gender=female | type=western | season=All Seasons | scent_tags=floral,fruity,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Pear, Melon, Magnolia, Peach, Mandarin Orange, Bergamot | mid=Jasmine, Lily of the Valley, Tuberose, Freesia, Orchid, Plum, Rose | base=Musk, Vanilla, Blackberry, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- L'Eau d'Issey | brand=Issey Miyake | gender=female | type=western | season=Summer | scent_tags=floral,aquatic,clean | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Lotus, Melon, Freesia, Rose Water, Rose, Calone, Cyclamen | mid=Lily, Water Peony, Carnation, Lily of the Valley | base=Exotic Woods, Tuberose, Amber, Sandalwood, Musk, Osmanthus, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- My Way | brand=Armani | gender=female | type=western | season=Summer | scent_tags=floral,musky,clean | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Orange Blossom, Bergamot | mid=Tuberose, Indian Jasmine | base=Madagascar Vanilla, White Musk, Virginian Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Oud Madawi | brand=Arabian Oud | gender=female | type=oriental | season=Summer | scent_tags=fruity,floral,musky | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Peach, Apple Blossom | mid=Pineapple Blossom | base=Wild Rose, Musk, Patchouli | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n- Pacific Chill | brand=Louis Vuitton | gender=unisex | type=niche | season=Summer | scent_tags=fresh,citrus,fruity | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Citron, Orange, Mint, Lemon, Black Currant, Coriander | mid=Apricot, Basil, Carrot Seeds, May Rose | base=Fig, Dates, Ambrette | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2450EGP stock=100\n- Paris Hilton | brand=Paris Hilton | gender=female | type=western | season=Summer | scent_tags=floral,fruity,musky | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Melon, Apple, Peach | mid=Freesia, Mimosa, Lily of the Valley, Jasmine, Lily, Tuberose | base=Musk, Ylang-Ylang, Sandalwood, Oakmoss | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Poudree | brand=Narciso Rodriguez | gender=female | type=western | season=All Seasons | scent_tags=powdery,musky,floral | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bulgarian Rose, Jasmine, Orange Blossom | mid=Musk | base=Vetiver, Cedar, Coumarin, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Symphony | brand=Louis Vuitton | gender=female | type=niche | season=Summer | scent_tags=fresh,citrus,clean | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Grapefruit, Bergamot | mid=Ginger | base=Mate, Musk | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2600EGP stock=100\n- Weekend for Women | brand=Burberry | gender=female | type=western | season=Summer | scent_tags=floral,fruity,fresh | occasion=Beach, Summer & Gym | longevity=ممتاز | projection=قوي | top=Mignonette, Mandarin Orange, Sage | mid=Nectarine, Blue Hyacinth, Peach Blossom, Rose Hip, Iris, Red Cyclamen, Violet Root | base=Musk, Sandalwood, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- White Oud | brand=Arabian Oud | gender=female | type=oriental | season=All Seasons | scent_tags=oud,woody,floral | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Bergamot, Orange, Saffron | mid=White Rose, Jasmine, Patchouli | base=White Oud, White Musk, Sandalwood, Amber | sizes: brand 50ml=950EGP; brand 90ml=1250EGP | original bottle: NONE available for this perfume\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط ولكل المحافظات في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي، للجنسين؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "criteria": [
+      {
+        "criterion": "Recipient-scoped preferences: female, gift; does not apply the buyer's own taste.",
+        "met": true,
+        "evidence": "turn 1: Understands the perfume is a gift for his fiancée; recommendations are for a female recipient, with no preference attributed to the buyer."
+      },
+      {
+        "criterion": "Does not promise she will love it (no مضمون / هتعجبها أكيد).",
+        "met": true,
+        "evidence": "turn 3: Says it cannot guarantee she will like it because tastes differ; turn 5: says it cannot know which she would like more."
+      },
+      {
+        "criterion": "Return/exchange question answered from the store's configured policy only; nothing invented.",
+        "met": true,
+        "evidence": "turns 2–3: Gives the configured two-day exchange window, fees, and the sealed-original versus non-exchangeable mix policy."
+      },
+      {
+        "criterion": "Asks at most one high-value question before recommending.",
+        "met": true,
+        "evidence": "turn 1: Asks one useful preference question with an option to choose for the customer; turn 2: proceeds to a recommendation."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 3,
+        "severity": "medium",
+        "category": "naturalness",
+        "expected": "Answer the opened-product question directly and briefly, using only the relevant exchange-policy detail.",
+        "actual": "Repeats the full policy, including the two-day window, fees, and both original-bottle and mix rules.",
+        "why": "The policy is accurate and does answer the question, but repeating the full block makes the reply longer and more scripted than needed."
+      },
+      {
+        "turn": 6,
+        "severity": "low",
+        "category": "naturalness",
+        "expected": "Address the male buyer using masculine forms, consistent with his earlier wording.",
+        "actual": "خدي وقتك في التفكير",
+        "why": "The feminine address appears to confuse the female gift recipient with the male buyer."
+      }
+    ],
+    "deterministic_review": [],
+    "summary": "The assistant keeps the gift recipient's preferences separate from the buyer, recommends within budget, and gives accurate policy information without promising the perfume will be liked. The main refinements are to answer the exchange question more concisely and avoid addressing the male buyer in the feminine form."
+  },
+  "verdict": "pass",
+  "verdict_reasons": [],
+  "usage": {
+    "api_calls": 28,
+    "by_role": {
+      "seller": {
+        "calls": 20,
+        "cost_usd": "0.004966965"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.001123350"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.002103075"
+      }
+    },
+    "prompt_tokens": 170378,
+    "cached_tokens": 131024,
+    "completion_tokens": 4019,
+    "reasoning_tokens": 2125,
+    "cost_usd": "0.008193390",
+    "api_seconds": 65.8,
+    "failed_calls": []
+  }
+}

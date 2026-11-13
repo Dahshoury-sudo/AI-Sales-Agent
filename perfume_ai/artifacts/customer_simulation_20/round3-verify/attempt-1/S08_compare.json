@@ -1,0 +1,237 @@
+{
+  "id": "S08_compare",
+  "title": "Comparing three perfumes before deciding",
+  "persona": "comparer",
+  "turns": [
+    {
+      "n": 1,
+      "user": "إيه الفرق بين بلو دي شانيل وسوفاج وإيروس؟",
+      "reply": "Bleu de Chanel: ريحته خشبي وفيه ريحة حمضيات وفريش ومنعش.\nSauvage: ريحته خشبي وفيه ريحة توابل وفريش ومنعش.\nEros: ريحته فريش ومنعش ومسكر وخشبي.",
+      "seconds": 70.36,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "comparison",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "comparison",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, citrus, fresh\nDescription Tags (first three only): woody, citrus, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة حمضيات وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\n\n-------------------------\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, spicy, fresh\nDescription Tags (first three only): woody, spicy, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة توابل وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\n\n-------------------------\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fresh, sweet, woody\nDescription Tags (first three only): fresh, sweet, woody\nSimple Scent Description: ريحته فريش ومنعش ومسكر وخشبي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss, Cedar\n\n-------------------------\n\nCOMPARED_PRODUCTS: Bleu de Chanel | Sauvage | Eros",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Bleu de Chanel",
+        "Sauvage",
+        "Eros"
+      ],
+      "claim_checks": [
+        {
+          "draft": "Bleu de Chanel ريحته خشبي وحمضيات وفريش، ومناسب للشغل؛ Sauvage خشبي وفيه توابل وفريش، ومناسب للاستخدام اليومي والخروجات العادية. Eros فريش ومسكر وخشبي، ومناسب للسهرات والخروجات؛ لو بتحب الحلاوة اختار Eros، ولو تفضّل التوابل اختار Sauvage.",
+          "issues": [
+            "description:Bleu de Chanel: occasion suitability requires an explicit current question",
+            "description:Sauvage: occasion suitability requires an explicit current question",
+            "description:Eros: occasion suitability requires an explicit current question",
+            "description:Eros: use the first three saved labels: fresh, sweet, woody",
+            "scent:eros:spicy"
+          ]
+        },
+        {
+          "draft": "Bleu de Chanel ريحته خشبي وحمضيات وفريش، ومناسب للشغل؛ Sauvage خشبي وفيه توابل وفريش، ومناسب للاستخدام اليومي والخروجات الكاجوال. Eros فريش ومسكر وخشبي، ومناسب للخروجات والسهرات.",
+          "issues": [
+            "description:Bleu de Chanel: occasion suitability requires an explicit current question",
+            "description:Sauvage: occasion suitability requires an explicit current question",
+            "description:Eros: occasion suitability requires an explicit current question"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "أنهي فيهم أنسب للشغل؟",
+      "reply": "للشغل، Bleu de Chanel هو الأنسب؛ مناسب للشغل والمكتب، وريحته خشبية فيها حمضيات ومنعشة. Sauvage مناسب للاستخدام اليومي والكاجوال، وEros للخروجات والسهرات.",
+      "seconds": 4.64,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "recommendation",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "comparison",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, citrus, fresh\nDescription Tags (first three only): woody, citrus, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة حمضيات وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\n\n-------------------------\n\nName (الاسم الصحيح): Sauvage\nBrand: Dior\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\n⚠️ عطر مختلف عن: Sauvage Elixir — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Daily & Casual\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, spicy, fresh\nDescription Tags (first three only): woody, spicy, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة توابل وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Bergamot, Pepper\nMiddle Notes: Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi\nBase Notes: Ambroxan, Cedar, Labdanum\n\n-------------------------\n\nName (الاسم الصحيح): Eros\nBrand: Versace\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nGender: male\nPerfume Type: عطور غربية\nSeason: Summer\nOccasion: Night Out & Hanging Out\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): fresh, sweet, woody\nDescription Tags (first three only): fresh, sweet, woody\nSimple Scent Description: ريحته فريش ومنعش ومسكر وخشبي\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Mint, Green Apple, Lemon\nMiddle Notes: Tonka Bean, Ambroxan, Geranium\nBase Notes: Vanilla, Vetiver, Oakmoss, Cedar\n\n-------------------------\n\nCOMPARED_PRODUCTS: Bleu de Chanel | Sauvage | Eros",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Bleu de Chanel",
+        "Sauvage",
+        "Eros"
+      ],
+      "claim_checks": [
+        {
+          "draft": "للشغل، Bleu de Chanel هو الأنسب؛ مناسب للشغل والمكتب، وريحته خشبيّة فيها حمضيات وفريش. Sauvage طابعه خشبي وتوابلي وفريش ومناسب للاستخدام اليومي والخروجات، وEros فريش ومسكر وخشبي ومناسب للخروجات والسهرات.",
+          "issues": [
+            "description:Sauvage: occasion is not recorded; do not invent it: Night Out & Hanging Out",
+            "description:Sauvage: use the first three saved labels: woody, spicy, fresh"
+          ]
+        }
+      ],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "خلاص بلو دي شانيل، الـ90 بكام؟",
+      "reply": "Bleu de Chanel\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.",
+      "seconds": 3.73,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "product_info",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "purchase_intent",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n\nName (الاسم الصحيح): Bleu de Chanel\nBrand: Chanel\nStock Status: ✅ متوفر\nOriginal Bottle: Available (see sizes below)\nAvailable Sizes & Prices:\n- زجاجة الستور الخاصة بينا 50 ملي: 750.00 EGP\n- زجاجة الستور الخاصة بينا 90 ملي: 1000.00 EGP\n- زجاجة اوريجنال 100 ملي: 1500.00 EGP\n⚠️ عطر مختلف عن: Bleu de Chanel Exclusive — نفس البراند ونفس بداية الاسم، بس ريحة مختلفة وتركيبة مختلفة وسعر مختلف.\n   ❌ ممنوع تعاملهم كعطر واحد، وممنوع تقول سعر واحد منهم على إنه سعر التاني.\n   ❌ لو العميل قال اسم مختصر ينفع على أكتر من واحد فيهم، اسأله يقصد أنهي واحد.\n   ✅ لو بترشح واحد منهم والعميل سمع قبل كده عن واحد تاني، قوله بوضوح إن ده عطر تاني مختلف — مش نفس اللي اتكلمنا عنه قبل كده.\n   ❌ الأسماء دي للتوضيح بس، مش قايمة منتجات: ممنوع تعرض أو تسعّر واحد منهم بياناته مش موجودة فوق.\n💡 Value Pick: الـ 90 ملي أحسن value — كمية أكتر بـ 80%، أغلى من الـ 50 ملي في الإجمالي: سعر الـ 90 ملي 1000 جنيه، وسعر الـ 50 ملي 750 جنيه، والفرق بين الحجمين 250 جنيه، بس سعر الملي أرخص: 11.1 بدل 15.0 جنيه للملي. المعلومة دي عن أحجام نفس العطر فقط؛ ممكن تستخدمها لو العميل سأل أنهي حجم أوفر أو طلب مساعدة في اختيار الحجم. سؤال السعر وحده مش محتاج شرح سعر الملي أو اقتراح حجم أكبر. ده مش سبب تبدأ بيه ردك ولا تفضّله على عطر تاني أنسب لطلب العميل. ❌ ممنوع تقول إنه \"أرخص\" أو \"بيوفرلك فلوس\" — هو أغلى في الإجمالي، الأوفر في سعر الملي بس.\nOut of Stock Sizes (DO NOT OFFER unless explicitly asked):\nلا يوجد\nGender: male\nPerfume Type: عطور غربية\nSeason: All Seasons\nOccasion: Work & Office\nLongevity: ممتاز\nProjection: قوي\nScent Labels (character, not ingredients or performance): woody, citrus, fresh\nDescription Tags (first three only): woody, citrus, fresh\nSimple Scent Description: ريحته خشبي وفيه ريحة حمضيات وفريش ومنعش\nNotes below are for explicit notes/ingredient questions only; never use them to infer scent character.\nTop Notes: Grapefruit, Lemon, Mint, Pink Pepper\nMiddle Notes: Ginger, Nutmeg, Jasmine\nBase Notes: Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum\n\n-------------------------\n\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 959, \"variant_id\": 2635, \"name\": \"Bleu de Chanel\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}], \"append\": true, \"text\": \"Bleu de Chanel\\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.\", \"budget\": null, \"request\": \"خلاص بلو دي شانيل، الـ90 بكام؟\"}\nQUOTE_EVIDENCE:{\"quotes\": [{\"product_id\": 959, \"variant_id\": 2635, \"name\": \"Bleu de Chanel\", \"volume\": 90, \"bottle_type\": \"normal\", \"quantity\": 1, \"price\": \"1000.00\"}], \"append\": true, \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.\", \"budget\": null, \"request\": \"خلاص بلو دي شانيل، الـ90 بكام؟\", \"sections\": [{\"product_id\": 959, \"name\": \"Bleu de Chanel\", \"text\": \"زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.\"}], \"ambiguous_prose\": false}",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Bleu de Chanel"
+      ],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "تمام، هطلبه بعدين. شكراً",
+      "reply": "العفو يا فندم، ولو احتجت أي حاجة أنا موجود.",
+      "seconds": 1.16,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [],
+  "error": null,
+  "ended_by": "customer",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 85.1,
+  "judge_prompt": "SCENARIO S08_compare: Comparing three perfumes before deciding\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- Covers all three perfumes when asked, using stored scent tags; no invented performance differences.\n- The explicit work-suitability question is answered from each perfume's stored occasion.\n- Price of Bleu de Chanel 90 ml given directly (1000 store bottle); no premature close while comparing.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: إيه الفرق بين بلو دي شانيل وسوفاج وإيروس؟\n[internal] route=comparison stage=comparison saved_preferences={}\nASSISTANT: Bleu de Chanel: ريحته خشبي وفيه ريحة حمضيات وفريش ومنعش.\nSauvage: ريحته خشبي وفيه ريحة توابل وفريش ومنعش.\nEros: ريحته فريش ومنعش ومسكر وخشبي.\n\n--- TURN 2 ---\nCUSTOMER: أنهي فيهم أنسب للشغل؟\n[internal] route=recommendation stage=comparison saved_preferences={}\nASSISTANT: للشغل، Bleu de Chanel هو الأنسب؛ مناسب للشغل والمكتب، وريحته خشبية فيها حمضيات ومنعشة. Sauvage مناسب للاستخدام اليومي والكاجوال، وEros للخروجات والسهرات.\n\n--- TURN 3 ---\nCUSTOMER: خلاص بلو دي شانيل، الـ90 بكام؟\n[internal] route=product_info stage=purchase_intent saved_preferences={}\nASSISTANT: Bleu de Chanel\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.\n\n--- TURN 4 ---\nCUSTOMER: تمام، هطلبه بعدين. شكراً\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: العفو يا فندم، ولو احتجت أي حاجة أنا موجود.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Bleu de Chanel | brand=Chanel | gender=male | type=western | season=All Seasons | scent_tags=woody,citrus,fresh | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Grapefruit, Lemon, Mint, Pink Pepper | mid=Ginger, Nutmeg, Jasmine | base=Incense, Vetiver, Cedar, Sandalwood, Patchouli, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Eros | brand=Versace | gender=male | type=western | season=Summer | scent_tags=fresh,sweet,woody | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Mint, Green Apple, Lemon | mid=Tonka Bean, Ambroxan, Geranium | base=Vanilla, Vetiver, Oakmoss, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sauvage | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,fresh | occasion=Daily & Casual | longevity=ممتاز | projection=قوي | top=Bergamot, Pepper | mid=Sichuan Pepper, Lavender, Pink Pepper, Vetiver, Patchouli, Geranium, Elemi | base=Ambroxan, Cedar, Labdanum | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط ولكل المحافظات في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي، للجنسين؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "criteria": [
+      {
+        "criterion": "Covers all three perfumes when asked, using stored scent tags; no invented performance differences.",
+        "met": true,
+        "evidence": "turn 1: Compared Bleu de Chanel, Sauvage, and Eros using their stored scent tags; made no performance claims."
+      },
+      {
+        "criterion": "The explicit work-suitability question is answered from each perfume's stored occasion.",
+        "met": true,
+        "evidence": "turn 2: Identified Bleu de Chanel as suitable for work and described Sauvage as daily/casual and Eros as for nights out, matching the stored occasions."
+      },
+      {
+        "criterion": "Price of Bleu de Chanel 90 ml given directly (1000 store bottle); no premature close while comparing.",
+        "met": true,
+        "evidence": "turn 3: Directly quoted 1000 EGP for the 90 ml store bottle. No premature closing while the customer was comparing."
+      }
+    ],
+    "issues": [],
+    "deterministic_review": [],
+    "summary": "The assistant accurately compared all three perfumes, answered the work-suitability question, and gave the requested price directly. It respected the customer's decision to order later and ended without pushing the sale."
+  },
+  "verdict": "pass",
+  "verdict_reasons": [],
+  "usage": {
+    "api_calls": 17,
+    "by_role": {
+      "seller": {
+        "calls": 12,
+        "cost_usd": "0.002805980"
+      },
+      "simulator": {
+        "calls": 4,
+        "cost_usd": "0.0003540"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.00065045"
+      }
+    },
+    "prompt_tokens": 96730,
+    "cached_tokens": 76853,
+    "completion_tokens": 1272,
+    "reasoning_tokens": 385,
+    "cost_usd": "0.003810430",
+    "api_seconds": 27.8,
+    "failed_calls": []
+  }
+}

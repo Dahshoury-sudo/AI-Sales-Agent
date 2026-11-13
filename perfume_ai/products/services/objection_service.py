@@ -405,7 +405,16 @@ def handle_objection(message, objection, history=None, store=None, conversation=
     # "تمام، هفكر في الـ Cigar عشان سعره مناسب. تسلم يا باشا" gives a reason and closes; its "سعر" is
     # not a price question, and the model answered with a smaller-size pitch (simulation S09 round 2, t8).
     closing = closes_conversation(message) and not re.search(r"[?؟]", message)
-    if objection.kind == "thinking" and (closing or not re.search(
+    from .static_faq_service import normalize_arabic as _normalize
+    # "طب Cigar شكله أنسب وسعره داخل الميزانية، هفكر فيه وأرد عليكم" says the price suits and promises
+    # to come back; its "سعره" asks nothing, and it got a smaller-size pitch and the prices again
+    # (simulation S09 round 4 full run, t5, high).
+    will_return = not re.search(r"[?؟]", message) and re.search(
+        # First person only: "ابعتلي الصور" beside "هفكر" still asks for something.
+        r"(?<!\w)و?(?:ه|ح)(?:رد|رجع|كلم|تواصل|بعت)\w*(?!\w)|(?<!\w)و?ا(?:رد|رجع|كلم|تواصل)\w*\s+(?:علي|ل|مع)\w+|"
+        r"(?<!\w)و?ابقي\s+(?:ارد|اكلم|اطلب|ابعت)\w*",
+        _normalize(message))
+    if objection.kind == "thinking" and (closing or will_return or not re.search(
             r"[?؟]|بكام|سعر|فيه ايه|ثبات|عنوان|احجام|ملي", message)):
         from .sales.appreciation import thanks_or_praise
         # Praise or thanks beside "هفكر" deserves its acknowledgement (simulation S01 t7).

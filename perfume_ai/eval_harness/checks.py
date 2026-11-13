@@ -527,7 +527,10 @@ def check_variant_prices(reply, truth, customer_text=""):
     records = truth.get("variant_prices", {})
     if not records:
         return []
-    pattern = re.compile("|".join(re.escape(n) for n in sorted(records, key=len, reverse=True)), re.I)
+    # Whole names only: "Pineapple" in a notes list is not the perfume "Pi", whose price then failed a
+    # correct Aventus quote (simulation S02 round 4 replay, t4-t5).
+    pattern = re.compile(r"(?<![A-Za-z0-9])(?:" + "|".join(re.escape(n) for n in sorted(records, key=len, reverse=True))
+                         + r")(?![A-Za-z0-9])", re.I)
     names = list(pattern.finditer(text))
     by_lower = {n.lower(): rows for n, rows in records.items()}
     findings = []

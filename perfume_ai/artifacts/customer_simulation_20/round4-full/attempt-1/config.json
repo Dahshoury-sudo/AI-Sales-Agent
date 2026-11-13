@@ -1,0 +1,88 @@
+{
+  "run_id": "20261113T013617Z-304243",
+  "phase": "round4-full",
+  "attempt": "attempt-1",
+  "started_utc": "2026-11-13T01:36:21.302236+00:00",
+  "seller_models": {
+    "OPENAI_MODEL": "gpt-6-luna",
+    "OPENAI_SMART_MODEL": "gpt-6-luna",
+    "OPENAI_RESOLVER_MODEL": "gpt-6-luna",
+    "OPENAI_TEMPERATURE": 0.3
+  },
+  "seller_profiles": {
+    "extract": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "reason": {
+      "model": "gpt-6-luna"
+    },
+    "resolve": {
+      "model": "gpt-6-luna",
+      "temperature": 0
+    },
+    "converse": {
+      "model": "gpt-6-luna",
+      "temperature": 0.3
+    }
+  },
+  "seller_reasoning_effort": "Luna: none for extract/converse, high for reason/resolve (client.chat)",
+  "simulator": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "none",
+    "temperature": 0.6,
+    "prompt_sha256": "7eb4bd3b4725f610fc2089d050e2ba04d75da92aab67eb9443f69184bcb9b320"
+  },
+  "judge": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "high",
+    "enabled": true,
+    "rubric_sha256": "4b88a27fb215dae414d6490f0a3d353176a2387e4b68942ffd00f3a367e147d5"
+  },
+  "max_completion_tokens": {
+    "gpt-6-luna": {
+      "none": 2048,
+      "high": 25000
+    }
+  },
+  "pass_rule": "no error; no critical/high deterministic finding unless the judge dismissed it with a reason; no judge critical/high issue; every judge score >= 6; no unmet success criterion",
+  "task_cap_usd": "4.06",
+  "workers": 4,
+  "git": {
+    "commit": "54b5f12da0b041f3792cbac93f61e6eb05dd29ab",
+    "products_diff_sha256": "4f0bd052c8bb21e0e8374ade83b664ebaee0dfc50c6bb3eed864fd85dbf24706",
+    "products_diff_lines": 1449
+  },
+  "code": {
+    "code_sha256": "33b437e149649baa4baa7e57670fcda4ca2e83699884c0ac8a68f05272d7f78c",
+    "files": 122,
+    "import_failures": []
+  },
+  "temporary_database": "test_customer_sim_6dbcf3bf0f",
+  "catalogue_products": 251,
+  "isolation": "Disposable local PostgreSQL copy; read-only source snapshot; scenario transactions rolled back; outbound HTTP disabled; no automatic API retries",
+  "scenarios": [
+    "S01_beginner",
+    "S02_enthusiast",
+    "S03_total_budget",
+    "S04_busy_price",
+    "S05_premium",
+    "S06_indecisive",
+    "S07_gift",
+    "S08_compare",
+    "S09_unavailable",
+    "S10_dislikes",
+    "S11_all_constraints",
+    "S12_short_refs",
+    "S13_mixed_language",
+    "S14_mind_change_long",
+    "S15_self_and_other",
+    "S16_skeptic",
+    "S17_order_complaint",
+    "S18_browser",
+    "S19_ready_buyer_edits",
+    "S20_pushy_discount"
+  ],
+  "rejudge_source": null,
+  "judge_store_facts": "current store data"
+}

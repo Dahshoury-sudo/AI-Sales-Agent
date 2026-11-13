@@ -1,0 +1,139 @@
+[
+  {
+    "id": "S02_enthusiast",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "max_turns",
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 9,
+      "question_quality": 9,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.012374345",
+    "api_calls": 33
+  },
+  {
+    "id": "S10_dislikes",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 5,
+      "memory": 3,
+      "question_quality": 8,
+      "knows_when_to_stop": 9,
+      "naturalness": 6,
+      "emotional_handling": 5,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "judge score understanding_accuracy=5",
+      "judge score memory=3",
+      "judge score emotional_handling=5",
+      "judge turn 3 high memory: The customer explicitly rejected those suggestions in turn 2, but the assistant recommended both again.",
+      "judge turn 5 high memory: The customer asked for something else and had already rejected K By Dolce and 212 NYC Man; the assistant repeats them, along with the previously uncertain 212 V",
+      "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+    ],
+    "cost_usd": "0.015936635",
+    "api_calls": 25
+  },
+  {
+    "id": "S11_all_constraints",
+    "verdict": "fail",
+    "turns": 6,
+    "ended_by": "handoff",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 6,
+      "knows_when_to_stop": 7,
+      "naturalness": 6,
+      "emotional_handling": 8,
+      "commerce_correctness": 6
+    },
+    "reasons": [
+      "criterion unmet: Checkout: correct item/price/shipping; order placed only after a summary with total and explicit con"
+    ],
+    "cost_usd": "0.008830070",
+    "api_calls": 20
+  },
+  {
+    "id": "S12_short_refs",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 10,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.009514525",
+    "api_calls": 28
+  },
+  {
+    "id": "S13_mixed_language",
+    "verdict": "pass",
+    "turns": 4,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 9,
+      "memory": 9,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.004976345",
+    "api_calls": 13
+  },
+  {
+    "id": "S14_mind_change_long",
+    "verdict": "fail",
+    "turns": 9,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 7,
+      "memory": 8,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 8,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "reasons": [
+      "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+    ],
+    "cost_usd": "0.014733190",
+    "api_calls": 35
+  },
+  {
+    "id": "S15_self_and_other",
+    "verdict": "pass",
+    "turns": 8,
+    "ended_by": "customer",
+    "scores": {
+      "understanding_accuracy": 10,
+      "memory": 10,
+      "question_quality": 10,
+      "knows_when_to_stop": 10,
+      "naturalness": 9,
+      "emotional_handling": 9,
+      "commerce_correctness": 10
+    },
+    "reasons": [],
+    "cost_usd": "0.014533790",
+    "api_calls": 32
+  }
+]

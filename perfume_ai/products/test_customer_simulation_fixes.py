@@ -3272,11 +3272,11 @@ class ThirdRoundTests(TestCase):
             self.assertEqual(provider.call_count, 1)
             self.assertEqual(len(meter.calls), 1)
 
-    def test_the_task_cap_is_the_owners_three_fifty(self):
-        import importlib.util
+    def test_the_task_cap_is_the_last_one_the_owner_set(self):
+        """3.50 on 2026-11-12, 3.64 for the verification run, 4.06 for the fourth round (2026-11-13)."""
         from pathlib import Path
         source = (Path(__file__).resolve().parent.parent / "scripts" / "simulate_customers.py").read_text(encoding="utf-8")
-        self.assertIn('TASK_CAP = Decimal("3.50")', source)
+        self.assertIn('TASK_CAP = Decimal("4.06")', source)
 
     # --- found in the replay of this round ------------------------------------------------------
 
@@ -3446,3 +3446,778 @@ class ThirdRoundTests(TestCase):
         # A complaint beside a price question, and a question about something else, do not ask for it.
         self.assertEqual(note("لسه بتكرر نفس النوتات من غير مصدر 😅 خلينا في اللي متأكدين منه—الـ90 مل من Layton بكام؟"), "")
         self.assertEqual(note("طب Layton نوتاته إيه؟"), "")
+
+
+class FourthRoundTests(TestCase):
+    """The seven failures of the verification run of 2026-11-13 (`round3-verify/attempt-1`, 13/20)."""
+
+    SHIPPING_FACT = "الشحن بيكون داخل مصر فقط ولكل المحافظات في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر"
+    PAYMENT = "(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)"
+
+    def setUp(self):
+        from products.models import Conversation, StaticFAQ, StoreSettings
+        self.store = Store.objects.create(name="Fourth Round Store")
+        StoreSettings.objects.create(store=self.store, business_facts="-" + self.SHIPPING_FACT)
+        StaticFAQ.objects.create(store=self.store, question="إيه هي طرق الدفع؟", priority=5, answer=self.PAYMENT,
+                                 keywords="دفع, الدفع, طرق الدفع, كاش, فيزا")
+        self.brand = Brand.objects.create(store=self.store, name="House")
+        self.conversation = Conversation.objects.create(store=self.store)
+
+    def perfume(self, name, tags, *, gender="male", original=None, prices=("750", "1000")):
+        product = Product.objects.create(store=self.store, brand=self.brand, name=name, gender=gender, scent_tags=tags)
+        for volume, price in zip((50, 90), prices):
+            ProductVariant.objects.create(product=product, volume=volume, price=Decimal(price), bottle_type="normal")
+        if original:
+            ProductVariant.objects.create(product=product, volume=100, price=Decimal(original), bottle_type="original",
+                                          stock=100)
+        return product
+
+    def said(self, role, content, context=""):
+        from products.services.conversation_service import save_message
+        save_message(self.conversation, role, content, internal_context=context)
+
+    def history(self):
+        return [{"role": row.role, "content": row.content} for row in self.conversation.messages.order_by("id")]
+
+    # --- S02: a stocked bottle denied, a gender question, unasked alternatives -------------------
+
+    def test_asking_whether_a_bottle_is_tarkeeb_does_not_select_the_store_bottle(self):
+        """S02 t7 (critical): "زجاجة الـ100 ملي بـ2400 تركيب برضه؟" was read as "the 100 ml store bottle",
+        which does not exist, and got "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً" for a bottle in stock."""
+        from products.services.product_formatting import product_quotes, requested_quote_options
+        for question in ("إنت كده بتقترح بدائل وأنا لسه بسأل عن Aventus 😅 زجاجة الـ100 ملي بـ2400 تركيب برضه؟",
+                         "الـ100 ملي دي تركيب؟", "هو الـ100 ملي تركيب ولا أصلي؟"):
+            with self.subTest(question=question):
+                self.assertEqual(requested_quote_options(question), ([100], None))
+        # Naming the kind still selects it.
+        self.assertEqual(requested_quote_options("التركيب 50 ملي بكام؟"), ([50], "normal"))
+        self.assertEqual(requested_quote_options("عايز الـ90 تركيب"), ([90], "normal"))
+        aventus = self.perfume("Aventus", ["woody", "fruity", "smoky"], original="2400", prices=("1400", "2000"))
+        quotes = product_quotes([aventus], "زجاجة الـ100 ملي بـ2400 تركيب برضه؟", None, filter_budget=False)
+        self.assertEqual([(q.volume, q.bottle_type, q.price) for q in quotes], [(100, "original", Decimal("2400"))])
+
+    def test_the_tarkeeb_question_about_a_stocked_bottle_is_answered_with_its_price(self):
+        """S02 t5 and t7 end to end, with the model's sentence stubbed: no gender question, no
+        "not available", and the 100 ml original bottle's own price."""
+        from products.services.product_formatting import format_products
+        from products.services.router import route
+        aventus = self.perfume("Aventus", ["woody", "fruity", "smoky"], original="2400", prices=("1400", "2000"))
+        self.perfume("Black Afgano", ["smoky", "woody", "heavy"], original="1350")
+        self.conversation.preferences = {"gender": "male"}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "2000 للستور؟ أنا بسأل عن Aventus الأصلي.")
+        self.said("assistant", "Aventus\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه، و50 ملي بـ1400 جنيه.\n"
+                               "زجاجة اوريجنال 100 ملي بـ2400 جنيه.", format_products([aventus]))
+        for question in ("إنت كده بتقترح بدائل وأنا لسه بسأل عن Aventus 😅 زجاجة الـ100 ملي بـ2400 تركيب برضه؟",
+                         "تمام، كده واضح إن مفيش Aventus أصلي عندكم. بس زجاجة «أوريجينال» 100 ملي بـ2400 دي تركيب "
+                         "برضه؟ وهتكون نفس النوتات اللي قلتها؟"):
+            with self.subTest(question=question):
+                with patch("products.services.router.classify", return_value="product_info"), \
+                     patch("products.services.router.extract_intent") as extract, \
+                     patch("products.services.router.recommend") as recommend, \
+                     patch("products.services.product_info.chat",
+                           return_value="أيوه، دي تركيب برضه زي باقي العطور عندنا."):
+                    reply, _ = route(question, self.history(), self.store, self.conversation)
+                extract.assert_not_called()
+                recommend.assert_not_called()
+                self.assertNotIn("مش متاحين", reply)
+                self.assertNotIn("رجالي ولا حريمي", reply)
+                self.assertNotIn("Black Afgano", reply)
+                self.assertIn("تركيب", reply)
+                if "وهتكون" not in question:
+                    self.assertIn("زجاجة اوريجنال 100 ملي بـ2400 جنيه", reply)
+
+    def test_same_notes_as_you_said_is_a_question_about_this_perfume(self):
+        """S02 t5: "…دي تركيب برضه؟ وهتكون نفس النوتات اللي قلتها؟" was read as "find me a perfume with the
+        same notes as Aventus": it got the gender question, then two other perfumes (t5-t6)."""
+        from products.services.sales.reference import similarity_requested
+        for question in ("بس زجاجة «أوريجينال» 100 ملي بـ2400 دي تركيب برضه؟ وهتكون نفس النوتات اللي قلتها؟",
+                         "الـ100 ملي فيها نفس النوتات برضه؟", "هي نفس الريحة اللي قلت عليها؟"):
+            with self.subTest(question=question):
+                self.assertFalse(similarity_requested(question))
+        for request in ("عايز حاجة نفس نوتات Aventus", "رشحلي عطر نفس ستايل Layton", "عندك حاجة شبه Aventus؟",
+                        "عايز حاجة فيها نفس ريحة Aventus", "هي نفس ريحة Aventus عايز زيها"):
+            with self.subTest(request=request):
+                self.assertTrue(similarity_requested(request))
+
+    def test_disputing_a_listed_note_is_not_a_scent_exclusion(self):
+        """S02 t3: "Aventus غالبًا فيه birch وoakmoss وambroxan، مش فانيليا واضحة" corrects our notes list;
+        it saved "sweet" as excluded for the rest of the conversation."""
+        from products.services.sales.constraints import stated_preference_updates
+        dispute = ("تمام، بس الـbase هنا مش دقيق قوي على اللي فاكره؛ Aventus غالبًا فيه birch وoakmoss وambroxan، "
+                   "مش فانيليا واضحة. طب سعر الـ90 من Aventus كام؟")
+        self.assertNotIn("excluded_scent_tags", stated_preference_updates(dispute))
+        # A wish, also one said right after a perfume was described, is still saved.
+        self.assertEqual(stated_preference_updates("مش عايز فانيليا").get("excluded_scent_tags"), ["sweet"])
+        self.assertEqual(stated_preference_updates("Aventus حلو، بس مش عايز حاجة مسكرة").get("excluded_scent_tags"),
+                         ["sweet"])
+        self.assertEqual(stated_preference_updates("وعلى فكرة مش بحب العود خالص").get("excluded_scent_tags"), ["oud"])
+
+    def test_which_edition_are_these_notes_from_gets_the_source_sentence(self):
+        """S02 t4 (medium): "…دي مش من النوتات المعتادة اللي أعرفها—المعلومة دي من أنهي إصدار؟" got the notes
+        list again."""
+        from products.services.router import NOTES_SOURCE, _notes_source_note
+        from products.services.static_faq_service import normalize_arabic
+        for question in ("وكمان حاطين فانيليا في الـbase، دي مش من النوتات المعتادة اللي أعرفها—المعلومة دي من أنهي إصدار؟",
+                         "النوتات دي من أنهي نسخة؟"):
+            with self.subTest(question=question):
+                self.assertEqual(_notes_source_note(normalize_arabic(question), []), NOTES_SOURCE)
+        self.assertEqual(_notes_source_note(normalize_arabic("عندكم أنهي إصدار من Aventus؟"), []), "")
+
+    # --- S15: liking a perfume is not buying it; "الأول" as "first" ------------------------------
+
+    def test_first_as_beforehand_is_not_the_first_perfume(self):
+        """S15 t4 (high): "ممكن ترشحلي حاجة لماما الأول؟" was read as a question about the first perfume
+        and got "عايز أتأكد إنتِ تقصدي أنهي عطر؛ اكتبيلي اسمه تاني"."""
+        from products.services.sales.described import ordinal_position
+        for message in ("لسه مش محدد، بس ممكن ترشحلي حاجة لماما الأول؟", "رشحلي حاجة لأخويا الأول وبعدين نشوف بتاعي",
+                        "عايز حاجة لماما الأول", "هسأل مراتي الأول", "خليني أفكر الأول."):
+            with self.subTest(message=message):
+                self.assertIsNone(ordinal_position(message))
+        for message in ("الأول بكام؟", "عايز الأول", "طب الاولانى ريحته عامله ازاى", "رشحلي حاجة غير الأول",
+                        "هاخد الأول", "ريحة الأول عاملة إزاي؟", "عايز أسأل عن الأول", "هفكر في الأول"):
+            with self.subTest(message=message):
+                self.assertEqual(ordinal_position(message), 0)
+
+    def _recommendation_route(self, message, classified, extracted):
+        """Route one message with the model stubbed; returns (names searched, order handler mock, reply)."""
+        from products.services.product_formatting import format_products
+        from products.services.router import route
+        searched = {}
+
+        def recommend(text, products, history, **kwargs):
+            searched["names"] = [product.name for product in products]
+            return "ترشيح", format_products(list(products)[:1])
+
+        with patch("products.services.router.classify", return_value=classified), \
+             patch("products.services.router.extract_intent", return_value=extracted), \
+             patch("products.services.router.handle_order", return_value=("ORDER", "")) as order, \
+             patch("products.services.router.recommend", side_effect=recommend):
+            reply, _ = route(message, self.history(), self.store, self.conversation)
+        return searched.get("names"), order, reply
+
+    def _his_table(self):
+        from products.services.product_formatting import format_products
+        aventus = self.perfume("Aventus", ["woody", "fruity", "smoky"], original="2400", prices=("1400", "2000"))
+        self.perfume("Cassilia", ["floral", "fruity", "light"], gender="female")
+        self.conversation.preferences = {"gender": "male", "scent_tags": ["woody"], "scent_match": "all",
+                                         "scent_open": False}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "رجالي طبعاً")
+        self.said("assistant", "Aventus ريحته خشبي وفيه ريحة فواكه ودخان.", format_products([aventus]))
+
+    def test_liking_a_perfume_and_asking_for_one_for_someone_else_is_not_an_order(self):
+        """S15 t3 (high): "Aventus شكله حلو، وكمان عايز حاجة لماما تكون هادية فيها ورد" was classified as an
+        order: the reply asked for the Aventus bottle type and skipped the mother's request."""
+        self._his_table()
+        names, order, _ = self._recommendation_route(
+            "Aventus شكله حلو، وكمان عايز حاجة لماما تكون هادية فيها ورد", "order",
+            {"gender": "female", "scent_tags": ["floral", "light"], "scent_match": "all"})
+        order.assert_not_called()
+        self.assertEqual(names, ["Cassilia"])
+
+    def test_buying_one_and_asking_for_another_stays_an_order(self):
+        self._his_table()
+        _, order, reply = self._recommendation_route(
+            "هاخد Aventus الـ90، وكمان عايز حاجة لماما تكون هادية فيها ورد", "order",
+            {"gender": "female", "scent_tags": ["floral", "light"], "scent_match": "all"})
+        order.assert_called_once()
+        self.assertIn("ORDER", reply)
+
+    def test_recommend_for_mum_first_is_a_recommendation(self):
+        self._his_table()
+        names, order, _ = self._recommendation_route(
+            "لسه مش محدد، بس ممكن ترشحلي حاجة لماما الأول؟", "recommendation",
+            {"gender": "female", "scent_tags": ["floral", "light"], "scent_match": "all"})
+        order.assert_not_called()
+        self.assertEqual(names, ["Cassilia"])
+
+    # --- S14: "another one like that" keeps the taste; a payment question beside a comparison -----
+
+    def test_another_one_like_that_is_a_refinement_not_a_new_goal(self):
+        """S14 t7 (high): "تمام، طب رشحلي تاني حاجة كده للسهرات" was read as a new goal, the saved "sweet"
+        was dropped, and a spicy-fresh-citrus perfume was offered for a sweet evening request."""
+        from products.services.sales.request_updates import request_mode
+        for message in ("تمام، طب رشحلي تاني حاجة كده للسهرات", "رشحلي كمان حاجة كده للسهرات",
+                        "عايز حاجة تانية كده للشغل"):
+            with self.subTest(message=message):
+                self.assertEqual(request_mode(message, [], None), "refinement")
+        for message in ("عايز حاجة فريش للصيف", "لا استنى، بدل فريش خليها حاجة سويت للسهرات",
+                        "عايز حاجة كده خفيفة للصيف"):
+            with self.subTest(message=message):
+                self.assertEqual(request_mode(message, [], None), "new_goal")
+
+    def test_another_one_like_that_searches_with_the_saved_taste(self):
+        self.perfume("Wanted by Night", ["spicy", "sweet", "heavy"])
+        self.perfume("212 VIB Man", ["spicy", "fresh", "citrus"])
+        self.conversation.preferences = {"gender": "male", "occasion": "Night Out & Hanging Out", "max_price": 1500,
+                                         "scent_open": False, "scent_tags": ["sweet"], "scent_match": "all",
+                                         "budget_scope": "per_item", "excluded_scent_tags": ["oud"]}
+        self.conversation.save(update_fields=["preferences"])
+        names, _, _ = self._recommendation_route(
+            "تمام، طب رشحلي تاني حاجة كده للسهرات", "recommendation",
+            {"reset_preferences": False, "occasion_text": "للسهرات", "occasion": "Night Out & Hanging Out",
+             "recommendation_mode": "new_goal"})
+        self.assertEqual(names, ["Wanted by Night"])
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.preferences.get("scent_tags"), ["sweet"])
+
+    # --- S12: which perfume a bare size and "قصدي التانى" point at ----------------------------------
+
+    def _two_on_the_table(self):
+        """S12 t1-t4: two offered, the second priced, a shipping question, then the first described
+        without its name."""
+        from products.services.product_formatting import format_products
+        black = self.perfume("Black XS", ["spicy", "sweet", "woody"])
+        pure = self.perfume("Pure XS", ["spicy", "sweet", "leather"], original="1500")
+        header = "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n"
+        self.said("user", "عايز برفان رجالي للسهرات يكون سويت وفيه توابل")
+        self.said("assistant", "Black XS ريحته فيها توابل ومسكر وخشبي، وPure XS فيه ريحة توابل ومسكر وريحته جلدية.",
+                  format_products([black, pure]))
+        self.said("user", "التانى بكام")
+        self.said("assistant", "Pure XS\nزجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه، و50 ملي بـ750 جنيه.",
+                  header + format_products([pure]))
+        self.said("user", "الشحن بيوصل اسكندريه؟")
+        self.said("assistant", self.SHIPPING_FACT + ".")
+        self.said("user", "طب الاولانى ريحته عامله ازاى")
+        self.said("assistant", "ده ريحته فيها توابل ومسكر وخشبي.", header + format_products([black]))
+        return black, pure
+
+    def test_a_bare_size_after_a_nameless_answer_is_about_that_perfume(self):
+        """S12 t5 (high): "الاولانى ريحته عامله ازاى" got "ده ريحته…" with no name, so the next message,
+        "الـ90", fell back to the perfume priced three turns earlier (Pure XS, not Black XS)."""
+        from products.services.product_info import _referent_from_conversation
+        black, _ = self._two_on_the_table()
+        self.assertEqual(_referent_from_conversation("الـ90", self.store, self.conversation), [black])
+        self.assertEqual(_referent_from_conversation("بكام ده؟", self.store, self.conversation), [black])
+
+    def test_a_nameless_reply_that_was_not_about_its_rows_is_not_a_referent(self):
+        from products.services.product_formatting import format_products
+        from products.services.product_info import _NOT_THE_PERFUME_ASKED_ABOUT, _referent_from_conversation
+        black, pure = self._two_on_the_table()
+        self.said("user", "عندك نسيم الليل؟")
+        self.said("assistant", "ممكن تكتبلي الاسم تاني؟",
+                  "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n" + _NOT_THE_PERFUME_ASKED_ABOUT
+                  + format_products([black]))
+        # The row under a "not the perfume asked about" label is no subject: the older anchor stands.
+        self.assertEqual(_referent_from_conversation("بكام؟", self.store, self.conversation), [pure])
+
+    def test_not_this_one_i_mean_the_other_points_away_from_the_perfume_just_answered(self):
+        """S12 t6 (high): after an answer about Pure XS, "مش ده، قصدي التانى" got Pure XS again: "التانى"
+        was read as "the second", which is the perfume being rejected."""
+        from products.services.product_formatting import format_products
+        from products.services.sales.described import resolve_ordinal
+        black, pure = self._two_on_the_table()
+        # After the answer about the first one, "التانى" is the second as usual.
+        self.assertEqual(resolve_ordinal("مش ده، قصدي التانى", self.conversation, self.store), "Pure XS")
+        self.said("user", "الـ90")
+        self.said("assistant", "الـ90 ملي من Pure XS في زجاجة الستور الخاصة بينا بـ1000 جنيه.",
+                  "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n" + format_products([pure]))
+        self.assertEqual(resolve_ordinal("مش ده، قصدي التانى", self.conversation, self.store), "Black XS")
+        self.assertEqual(resolve_ordinal("لا مش ده، التاني", self.conversation, self.store), "Black XS")
+        # Without a rejection, "التاني" keeps its position.
+        self.assertEqual(resolve_ordinal("التانى بكام", self.conversation, self.store), "Pure XS")
+        self.assertEqual(resolve_ordinal("الاولانى", self.conversation, self.store), "Black XS")
+
+    # --- S13: "total 810 صح؟" before any cart exists ----------------------------------------------
+
+    def _one_size_quoted(self, *sizes):
+        """K By Dolce quoted (one size unless more are given), then the shipping answer."""
+        from products.services.product_formatting import (ProductQuote, format_products, quote_context,
+                                                          render_quotes)
+        dolce = self.perfume("K By Dolce", ["fresh", "woody", "citrus"])
+        variants = [v for v in dolce.variants.order_by("volume") if v.volume in (sizes or (50,))]
+        quotes = [ProductQuote.from_variant(v) for v in variants]
+        self.said("user", "tmam 7elw، around 800 keda.. how much el 50ml?")
+        self.said("assistant", render_quotes(quotes), quote_context(format_products([dolce]), quotes))
+        self.said("user", "el sha7n b kam?")
+        self.said("assistant", self.SHIPPING_FACT + ".")
+        return dolce
+
+    def test_a_total_question_with_no_cart_is_answered_from_the_quote_and_the_shipping_fee(self):
+        """S13 t4: "tmam ya basha, total 810 صح؟" was classified as an order and got "تحب تطلب أنهي عطر؟
+        قولي اسمه." The size had been quoted at 750 and shipping stated as 60."""
+        from products.services.router import route
+        self._one_size_quoted()
+        confirmed = "أيوه، K By Dolce 50 ملي بـ750 جنيه، وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 810 جنيه."
+        with patch("products.services.router.classify", return_value="order") as classify, \
+             patch("products.services.router.handle_order") as order:
+            reply, _ = route("tmam ya basha, total 810 صح؟", self.history(), self.store, self.conversation)
+        order.assert_not_called()
+        classify.assert_not_called()
+        self.assertEqual(reply, confirmed)
+
+    def test_a_total_question_states_the_right_sum_when_the_customer_has_it_wrong(self):
+        from products.services.order_service import quoted_total_answer
+        self._one_size_quoted()
+        self.assertEqual(quoted_total_answer(self.conversation, "الإجمالي 750 صح؟"),
+                         "لأ، K By Dolce 50 ملي بـ750 جنيه، وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 810 جنيه.")
+        self.assertEqual(quoted_total_answer(self.conversation, "الإجمالي كام بالشحن؟"),
+                         "K By Dolce 50 ملي بـ750 جنيه، وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 810 جنيه.")
+        # Not a total question, or one that also buys: left to the normal flow.
+        self.assertIsNone(quoted_total_answer(self.conversation, "الشحن بكام؟"))
+        self.assertIsNone(quoted_total_answer(self.conversation, "تمام هاخده، الإجمالي كام؟"))
+        # More than one bottle is the combined-total flow's question.
+        self.assertIsNone(quoted_total_answer(self.conversation, "الإجمالي كام لو الاتنين؟"))
+        self.conversation.preferences = {"budget_scope": "total", "max_price": 1600}
+        self.assertIsNone(quoted_total_answer(self.conversation, "الإجمالي 810 صح؟"))
+
+    def test_a_total_question_after_two_sizes_were_quoted_needs_the_sum_to_pick_one(self):
+        from products.services.order_service import quoted_total_answer
+        self._one_size_quoted(50, 90)
+        self.assertEqual(quoted_total_answer(self.conversation, "total 1060 صح؟"),
+                         "أيوه، K By Dolce 90 ملي بـ1000 جنيه، وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 1060 جنيه.")
+        self.assertIsNone(quoted_total_answer(self.conversation, "الإجمالي كام؟"))
+
+    def test_a_total_question_with_a_cart_keeps_the_checkout_answer(self):
+        from products.models import Cart, CartItem
+        from products.services.order_service import quoted_total_answer
+        dolce = self._one_size_quoted()
+        cart = Cart.objects.create(conversation=self.conversation)
+        CartItem.objects.create(cart=cart, variant=dolce.variants.get(volume=90), quantity=1)
+        self.assertIsNone(quoted_total_answer(self.conversation, "total 810 صح؟"))
+
+    # --- S11: "the difference between it and the 50" ---------------------------------------------
+
+    def test_the_difference_between_a_perfume_and_its_own_size_is_that_there_is_none(self):
+        """S11 t3-t4 (high): "طب إيه الفرق بينه وبين الـ50؟" got "الـ50 ملي بـ750 جنيه.", and asked again,
+        "آه، قصدك الفرق بينه وبين ميزانيتك؟". The customer took the 50 for another perfume."""
+        from products.services.product_formatting import format_products
+        from products.services.router import route
+        nyc = self.perfume("212 NYC Man", ["fresh", "citrus", "musky"])
+        self.conversation.preferences = {"gender": "male", "max_price": 700}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "غالي عليا بصراحة، والـ50 بكام بالظبط؟")
+        self.said("assistant", "212 NYC Man\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.", format_products([nyc]))
+        replies = []
+        for question in ("طب إيه الفرق بينه وبين الـ50؟", "مش فاهم، قصدي إيه الفرق بينه وبين الـ50؟",
+                         "لا قصدي الفرق بين 212 NYC Man والـ50 اللي بتقول عليها، إيه الفرق في الريحة أو الجودة؟"):
+            with patch("products.services.router.classify", return_value="product_info"), \
+                 patch("products.services.product_info.chat") as chat:
+                reply, context = route(question, self.history(), self.store, self.conversation)
+            chat.assert_not_called()
+            self.assertIn("212 NYC Man", reply)
+            self.assertIn("الـ50 ملي", reply)
+            self.assertIn("مش عطر تاني", reply)
+            self.assertNotIn("ميزانيتك", reply)
+            self.said("user", question)
+            self.said("assistant", reply, context)
+            replies.append(reply)
+        self.assertEqual(len(set(replies[:2])), 2)       # asked again, it is not the same sentence again
+
+    def test_a_question_about_two_sizes_is_not_the_same_perfume_note(self):
+        from products.services.product_info import _size_of_the_same_perfume
+        nyc = self.perfume("212 NYC Man", ["fresh", "citrus", "musky"])
+        self.assertEqual(_size_of_the_same_perfume("إيه الفرق بين الـ50 والـ90؟", [nyc], []), "")
+        self.assertEqual(_size_of_the_same_perfume("الـ50 بكام؟", [nyc], []), "")
+        self.assertEqual(_size_of_the_same_perfume("إيه الفرق بينه وبين الـ100؟", [nyc], []), "")   # no such size
+        self.assertIn("مش عطر تاني", _size_of_the_same_perfume("إيه الفرق بينه وبين الـ50؟", [nyc], []))
+
+    # --- S14: a payment question beside a hesitation ------------------------------------------------
+
+    def test_a_payment_question_beside_a_hesitation_gets_the_store_answer(self):
+        """S14 t9: "…محتار بينه وبين Pure XS. الدفع بيكون عند الاستلام؟" went down the objection path, both
+        drafts failed the claim check, and the reply was two scent descriptions with no payment answer."""
+        from products.services.router import _policy_side_questions, route
+        message = "تمام، غالبًا هفكر في Wanted by Night، بس محتار بينه وبين Pure XS. الدفع بيكون عند الاستلام؟"
+        answers, rest, asks = _policy_side_questions(message, self.store)
+        self.assertEqual(answers, [self.PAYMENT])
+        self.assertIn("محتار بينه وبين Pure XS", rest)
+        self.assertNotIn("الدفع", rest)
+        self.perfume("Wanted by Night", ["spicy", "sweet", "heavy"])
+        self.perfume("Pure XS", ["spicy", "sweet", "leather"])
+        seen = {}
+
+        def objection(text, detected, history, store, conversation, retry_hint=None):
+            seen["message"] = text
+            return "الاتنين فيهم توابل ومسكر؛ Wanted by Night تقيل وPure XS ريحته جلدية.", ""
+
+        with patch("products.services.router.classify", return_value="product_info"), \
+             patch("products.services.router.handle_objection", side_effect=objection), \
+             patch("products.services.router._rephrased", side_effect=lambda reply, context, *a, **k: (reply, context, False)):
+            reply, _ = route(message, self.history(), self.store, self.conversation)
+        self.assertNotIn("الدفع", seen["message"])
+        self.assertTrue(reply.endswith(self.PAYMENT))
+        self.assertIn("Wanted by Night تقيل", reply)
+
+    def test_a_word_that_only_contains_pay_is_not_a_payment_question(self):
+        from products.services.router import _policy_side_questions
+        answers, _, _ = _policy_side_questions("إيه الفرق اللي بيدفعني أشتريه؟ ومحتار بينهم", self.store)
+        self.assertEqual(answers, [])
+
+    # --- S10: a customer who wants certainty the data cannot give ---------------------------------
+
+    def _no_sweet_table(self):
+        from products.services.product_formatting import format_products
+        dolce = self.perfume("K By Dolce", ["fresh", "woody", "citrus"])
+        vib = self.perfume("212 VIB Man", ["spicy", "fresh", "citrus"])
+        self.perfume("For Him", ["fresh", "woody", "citrus"])
+        self.perfume("Eros", ["sweet", "fresh", "woody"])
+        self.conversation.preferences = {"gender": "male", "scent_open": False, "excluded_scent_tags": ["sweet", "oud"]}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "عايز برفان رجالي، بس مش عايز أي حاجة مسكرة ولا فيها عود خالص")
+        self.said("assistant", "K By Dolce ريحته فريش ومنعش وخشبي وفيه ريحة حمضيات. و212 VIB Man فيه ريحة توابل وفريش.",
+                  format_products([dolce, vib]))
+        return dolce, vib
+
+    def test_i_do_not_want_to_risk_it_gets_what_can_and_cannot_be_guaranteed(self):
+        """S10 t4 (high): "رشحلي حاجة تانية… ومش مسكرة ولا فيها عود، مش عايز أخاطر" got two more perfumes
+        with a word about oud and none about sweetness. Only "تضمن/مضمون" used to earn the note."""
+        self._no_sweet_table()
+        names, _, reply = self._recommendation_route(
+            "طب رشحلي حاجة تانية تكون فريش وحمضيات ومش مسكرة ولا فيها عود، مش عايز أخاطر", "recommendation",
+            {"scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet", "oud"], "scent_match": "all"})
+        self.assertEqual(names, ["For Him"])
+        self.assertTrue(reply.startswith("مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي."))
+
+    def test_a_second_demand_for_certainty_gets_no_new_perfume(self):
+        """S10 t6 and t8 (high each): after being told sweetness cannot be confirmed, "ما ترشحليش حاجة إلا
+        لما تكون متأكد إنها مش مسكرة!" got one more perfume, which the next turn could not confirm either."""
+        from products.services.router import NO_GUARANTEE, NO_GUARANTEE_AGAIN
+        self._no_sweet_table()
+        self.said("user", "طب رشحلي حاجة تانية ومش مسكرة، مش عايز أخاطر")
+        self.said("assistant", "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي.\n\nFor Him: ريحته فريش.")
+        for demand in ("طب ما ترشحليش حاجة إلا لما تكون متأكد إنها مش مسكرة!",
+                       "طب ما ترشحلي حاجة تكون متأكد إنها مش مسكرة ومفيهاش عود، مش عايز أفضل أخاطر كده!"):
+            with self.subTest(demand=demand):
+                names, _, reply = self._recommendation_route(
+                    demand, "recommendation", {"excluded_scent_tags": ["sweet"], "scent_open": False})
+                self.assertIsNone(names)                     # nothing was searched or recommended
+                self.assertTrue(reply.startswith(NO_GUARANTEE))
+                self.assertIn("الحلاوة مش ضمن تصنيفهم", reply)    # what the records say of the ones offered
+                self.assertNotIn("K By Dolce", reply)        # named again, they read as offered again
+                self.assertNotIn("Eros", reply)
+        self.said("user", "طب ما ترشحليش حاجة إلا لما تكون متأكد إنها مش مسكرة!")
+        self.said("assistant", reply)
+        _, _, again = self._recommendation_route("يعني مفيش حاجة مضمونة خالص؟", "recommendation",
+                                                 {"excluded_scent_tags": ["sweet"], "scent_open": False})
+        self.assertEqual(again, NO_GUARANTEE_AGAIN)
+
+    # --- medium issues in scenarios that passed (S09, S05) --------------------------------------------
+
+    def _club_de_nuit_denied(self):
+        from products.services.product_formatting import format_products
+        aventus = self.perfume("Aventus", ["woody", "fruity", "smoky"], prices=("1400", "2000"))
+        cigar = self.perfume("Cigar", ["woody", "smoky", "fruity"])
+        self.conversation.preferences = {"gender": "male"}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "عندكو Club de Nuit Intense؟")
+        self.said("assistant", "للأسف العطر ده مش موجود عندنا.", "PENDING_LOOKUP: Club de Nuit Intense\nABSENCE_DENIED")
+        self.said("user", "رجالي، بحب الريحة اللي فيها سموكي وفاكهة كده")
+        self.said("assistant", "Aventus ريحته خشبي وفيه ريحة فواكه ودخان، وCigar ريحته خشبي وفيه ريحة دخان وفواكه.",
+                  format_products([aventus, cigar]))
+        return aventus, cigar
+
+    def test_which_is_closer_to_it_after_a_denial_says_there_is_nothing_to_compare_with(self):
+        """S09 t4 (medium): "طب أنهي واحد فيهم أقربله؟ وسعره كام؟" got two price blocks and no word on the
+        question. "أقربله" points at the perfume we said we do not stock."""
+        from products.services.router import _closer_to_a_missing_perfume
+        from products.services.static_faq_service import normalize_arabic
+        self._club_de_nuit_denied()
+
+        def line(message):
+            return _closer_to_a_missing_perfume(message, normalize_arabic(message), self.conversation, self.store)
+
+        self.assertEqual(line("طب أنهي واحد فيهم أقربله؟ وسعره كام؟"),
+                         "معنديش بيانات عن ريحة العطر اللي سألت عنه أقارن بيها، فمقدرش أقول أنهي أقرب له.")
+        self.assertEqual(line("طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب"),
+                         "معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول إذا كان قريب منه.")
+        self.assertEqual(line("أنهي واحد فيهم أقرب لـ Club de Nuit؟"),
+                         "معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول أنهي أقرب له.")
+        # A question between the two on the table, with nothing pointing at the missing one.
+        self.assertEqual(line("أنهي واحد فيهم أحسن؟"), "")
+        self.assertEqual(line("Cigar قريب من Aventus؟"), "")
+
+    def test_is_it_close_to_the_missing_perfume_is_answered_on_the_objection_path(self):
+        """S09 t5 (medium): "طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب" was read as "thinking"
+        and got Cigar's description again."""
+        from products.services.router import route
+        self._club_de_nuit_denied()
+        with patch("products.services.router.classify", return_value="product_info"), \
+             patch("products.services.router.handle_objection",
+                   return_value=("Cigar: ريحته خشبي وفيه ريحة دخان وفواكه.", "")), \
+             patch("products.services.router._rephrased", side_effect=lambda reply, context, *a, **k: (reply, context, False)):
+            reply, _ = route("طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب", self.history(), self.store,
+                             self.conversation)
+        self.assertTrue(reply.startswith("معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول إذا كان قريب منه."))
+        self.assertIn("Cigar: ريحته خشبي", reply)
+
+    def test_the_first_original_bottle_quote_says_the_liquid_is_ours(self):
+        """S05 t5 (medium): "فيه منهم زجاجة أورجينال؟" got the original-bottle prices with no word that the
+        perfume in them is the store's own blend."""
+        from products.services.bottle_wording import BOTTLE_DIFFERENCE
+        from products.services.router import _original_bottle_note
+        quoted = "Alexandria II\nزجاجة اوريجنال 100 ملي بـ2400 جنيه."
+        self.assertEqual(_original_bottle_note("تمام، ذوقك حلو. فيه منهم زجاجة أورجينال؟", quoted, []), BOTTLE_DIFFERENCE)
+        # Said once: not again, and not when the reply already explains it.
+        told = [{"role": "assistant", "content": quoted + "\n" + BOTTLE_DIFFERENCE}]
+        self.assertEqual(_original_bottle_note("والأورجينال من التاني بكام؟", quoted, told), "")
+        self.assertEqual(_original_bottle_note("فيه زجاجة أورجينال؟", quoted + "\nالعطور عندنا كلها تركيب.", []), "")
+        # A plain price question, or a reply that quotes no original bottle, gets no note.
+        self.assertEqual(_original_bottle_note("بكام؟", quoted, []), "")
+        self.assertEqual(_original_bottle_note("فيه زجاجة أورجينال؟", "زجاجة الستور الخاصة بينا 90 ملي بـ1000 جنيه.", []), "")
+
+    # --- found in the replay of the seven (`round4-replay/attempt-1`: S10, S11, S14 failed again) ----
+
+    def test_a_guarantee_word_with_an_attached_conjunction_is_still_a_demand(self):
+        """S10 replay t3 (high): "طب رشحلي حاجة… ومضمونة مش مسكرة ولا فيها عود!" got the two perfumes just
+        turned down again, with no word on sweetness: "ومضمونة" slipped past the pattern."""
+        from products.services.router import NO_GUARANTEE_HEAD
+        self._no_sweet_table()
+        names, _, reply = self._recommendation_route(
+            "طب رشحلي حاجة رجالي فريش وحمضيات، ومضمونة مش مسكرة ولا فيها عود!", "recommendation",
+            {"scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet", "oud"], "scent_match": "all",
+             "gender": "male"})
+        self.assertEqual(names, ["For Him"])                 # not the two on the table
+        self.assertTrue(reply.startswith(NO_GUARANTEE_HEAD))
+
+    def test_the_second_certainty_reply_names_no_perfume(self):
+        """S10 replay t5 (high): the reply re-listed K By Dolce and 212 NYC Man, which the customer had
+        turned down two turns earlier."""
+        self._no_sweet_table()
+        self.said("user", "طب رشحلي حاجة تانية ومش مسكرة، مش عايز أخاطر")
+        self.said("assistant", "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي.\n\nFor Him: ريحته فريش.")
+        _, _, reply = self._recommendation_route("طب مفيش حاجة تانية تكون متأكدين إنها مش مسكرة ومفيهاش عود؟",
+                                                 "recommendation", {"excluded_scent_tags": ["sweet", "oud"]})
+        for name in ("K By Dolce", "212 VIB Man", "For Him", "Eros"):
+            self.assertNotIn(name, reply)
+        self.assertIn("مفيش عطر أقدر أأكدلك 100%", reply)
+        self.assertIn("الستور", reply)
+
+    def test_another_one_excludes_what_was_offered_before_the_side_questions(self):
+        """S14 replay t7: two perfumes offered, then a nameless answer and a shipping answer; "رشحلي تاني
+        حاجة كده للسهرات، ويفضل تكون سويت" got the same two back, because only the last two replies were
+        read as "on the table"."""
+        from products.services.product_formatting import format_products
+        black = self.perfume("Black XS", ["spicy", "sweet", "woody"])
+        pure = self.perfume("Pure XS", ["spicy", "sweet", "leather"])
+        self.perfume("Wanted by Night", ["spicy", "sweet", "heavy"])
+        self.conversation.preferences = {"gender": "male", "occasion": "Night Out & Hanging Out", "max_price": 1500,
+                                         "scent_open": False, "scent_tags": ["sweet"], "scent_match": "all"}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "بدل فريش خليها حاجة سويت للسهرات")
+        self.said("assistant", "Black XS ريحته فيها توابل ومسكر وخشبي. Pure XS ريحته فيها توابل ومسكر وريحته جلدية.",
+                  format_products([black, pure]))
+        self.said("user", "Pure XS ريحته مسكرة قوي ولا خفيفة؟")
+        self.said("assistant", "الحلاوة فيه واضحة، لكن مش مؤكد إذا كانت قوية ولا خفيفة.", format_products([pure]))
+        self.said("user", "تمام، طب الشحن بياخد قد إيه؟")
+        self.said("assistant", self.SHIPPING_FACT + ".")
+        names, _, _ = self._recommendation_route(
+            "طب رشحلي تاني حاجة كده للسهرات، ويفضل تكون سويت", "recommendation",
+            {"scent_tags": ["sweet"], "scent_match": "all", "occasion": "Night Out & Hanging Out",
+             "occasion_text": "للسهرات", "recommendation_mode": "new_goal"})
+        self.assertEqual(names, ["Wanted by Night"])
+
+    def test_another_one_with_nothing_else_to_offer_keeps_the_older_options(self):
+        from products.services.product_formatting import format_products
+        black = self.perfume("Black XS", ["spicy", "sweet", "woody"])
+        self.conversation.preferences = {"gender": "male", "scent_open": False, "scent_tags": ["sweet"],
+                                         "scent_match": "all"}
+        self.conversation.save(update_fields=["preferences"])
+        self.said("user", "عايز حاجة سويت")
+        self.said("assistant", "Black XS ريحته فيها توابل ومسكر وخشبي.", format_products([black]))
+        self.said("user", "الشحن بكام؟")
+        self.said("assistant", self.SHIPPING_FACT + ".")
+        self.said("user", "وبيوصل امتى؟")
+        self.said("assistant", self.SHIPPING_FACT + ".")
+        names, _, _ = self._recommendation_route("طب رشحلي حاجة تانية سويت", "recommendation",
+                                                 {"scent_tags": ["sweet"], "scent_match": "all"})
+        self.assertEqual(names, ["Black XS"])                # the store has no other sweet perfume
+
+    def test_a_draft_spoiled_only_by_an_unasked_occasion_sentence_is_trimmed_not_thrown_away(self):
+        """S14 replay t8: both drafts answered "Black XS السويت فيه أوضح من Pure XS؟" well and added "الاتنين
+        مناسبتهم المسجلة للسهرات والخروجات"; both were rejected whole, and the fallback was "Black XS:
+        طابعه المسجل مسكر." with the comparison unanswered."""
+        from products.services.product_formatting import format_products
+        from products.services.router import _rephrased
+        black = self.perfume("Black XS", ["spicy", "sweet", "woody"])
+        pure = self.perfume("Pure XS", ["spicy", "sweet", "leather"])
+        for product in (black, pure):
+            product.occasion = "Night Out & Hanging Out"
+            product.save(update_fields=["occasion"])
+        good = ("الاتنين طابعهم مسكر، لكن مش قادر أجزم إن حلاوة Black XS أوضح من Pure XS؛ المسجل عنهم ما بيحددش "
+                "درجة الحلاوة.")
+        draft = good + " الاتنين مناسبتهم المسجلة للسهرات والخروجات."
+        context = format_products([black, pure], show_prices=False)
+        message = "طب Black XS السويت فيه أوضح من Pure XS؟ حاسس إني محتار بينهم"
+        reply, _, _ = _rephrased(draft, context, [], self.store, lambda hint: (draft, context), message=message)
+        self.assertEqual(reply, good)
+
+    def test_declining_the_offer_ends_the_offer_and_the_order_goes_ahead(self):
+        """S11 replay t5: after "مفيش خصم؟" and the offers, the customer said "لا مش عايز برفانين، أنا عايز
+        واحدة بس"; then "خلاص هاخد الـ50 من الأولاني. الشحن بكام؟" was still blocked as an offer purchase,
+        got the free-shipping threshold instead of the fee, and a transfer."""
+        from products.models import StoreSettings
+        from products.services import promotion_service
+        self.store.settings.promotions = "1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠"
+        self.store.settings.save(update_fields=["promotions"])
+        history = [
+            {"role": "user", "content": "يعني الـ50 بـ750؟ طب مفيش خصم أو حاجة؟"},
+            {"role": "assistant", "content": "تفاصيل العرض:\nاشتري برفانين 90 ملي وخد التالت هدية\n\n"
+                                             + promotion_service.LIMITATION + "\n\n" + promotion_service.INVITATION},
+        ]
+        self.assertTrue(promotion_service.has_promotion_context(history))
+        for decline in ("لا مش عايز برفانين، أنا عايز واحدة بس. الـ50 بكام بالظبط؟", "لا أنا عايز واحد بس",
+                        "مش عايز العرض، هاخد واحدة بس"):
+            with self.subTest(decline=decline):
+                declined = history + [{"role": "user", "content": decline},
+                                      {"role": "assistant", "content": "212 NYC Man\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه."}]
+                self.assertFalse(promotion_service.has_promotion_context(declined))
+                self.assertFalse(promotion_service.blocks_checkout("خلاص هاخد الـ50 من الأولاني. الشحن بكام؟",
+                                                                   declined, self.store))
+        # Still on the offer: a purchase is still the team's to complete.
+        still = history + [{"role": "user", "content": "طيب تمام"}, {"role": "assistant", "content": "تمام."}]
+        self.assertTrue(promotion_service.blocks_checkout("خلاص هاخد اتنين 90", still, self.store))
+
+    def test_a_shipping_fee_question_inside_an_offer_reply_gets_the_fee(self):
+        """S11 replay t5-t6 (criterion): "الشحن بكام؟" got "الشحن مجاني لاي اوردر فوق ال ١٥٠٠" and never the
+        60 EGP fee, on the offer reply and again on the transfer."""
+        from products.models import StoreSettings
+        from products.services import promotion_service
+        from products.services.router import HANDOFF_CONFIRMATION, _handoff
+        self.store.settings.promotions = "1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠"
+        self.store.settings.save(update_fields=["promotions"])
+        with patch("products.services.promotion_service.chat",
+                   return_value=json.dumps({"quotes": ["الشحن مجاني لاي اوردر فوق ال ١٥٠٠"]})):
+            reply, _ = promotion_service.reply("طيب والشحن بكام على العرض ده؟", [], self.store,
+                                               conversation=self.conversation, usage_recorded=True)
+        self.assertIn(self.SHIPPING_FACT, reply)
+        self.assertIn("الشحن مجاني لاي اوردر فوق ال ١٥٠٠", reply)
+        handed, _ = _handoff("آه حوّلني، بس عايز أعرف الشحن هيبقى بكام على الأوردر ده؟", [], self.store, self.conversation)
+        self.assertTrue(handed.startswith(HANDOFF_CONFIRMATION))
+        self.assertIn(self.SHIPPING_FACT, handed)
+        plain, _ = _handoff("آه حوّلني", [], self.store, self.conversation)
+        self.assertEqual(plain, HANDOFF_CONFIRMATION)
+
+    def test_are_these_notes_documented_is_a_source_question(self):
+        """S02 replay t7-t8 (medium each): "عندكم Layton notes موثقة أكتر ولا نفس الحكاية؟" and "والنوتات دي
+        برضه من بياناتكم بس؟" got the notes list with the source question unanswered."""
+        from products.services.router import NOTES_SOURCE, _notes_source_note
+        from products.services.static_faq_service import normalize_arabic
+        for question in ("طالما مفيش مصدر رسمي صعب أقارن. عندكم Layton notes موثقة أكتر ولا نفس الحكاية؟",
+                         "طب الـ90 مل من Layton بكام؟ والنوتات دي برضه من بياناتكم بس؟"):
+            with self.subTest(question=question):
+                self.assertEqual(_notes_source_note(normalize_arabic(question), []), NOTES_SOURCE)
+
+    def test_the_price_checker_does_not_read_pineapple_as_the_perfume_pi(self):
+        """Harness false positive in the S02 replay (t4, t5; critical, dismissed by the judge each time):
+        "Pineapple" in a notes list was matched as the perfume "Pi", whose 90 ml costs 1000."""
+        from eval_harness.checks import check_variant_prices
+        truth = {"variant_prices": {
+            "Aventus": [{"volume": 90, "bottle_type": "normal", "price": "2000.00"}],
+            "Pi": [{"volume": 90, "bottle_type": "normal", "price": "1000.00"}]}}
+        reply = ("Aventus\nالـTop Notes: Pineapple, Bergamot, Black Currant, Apple.\n"
+                 "زجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه.")
+        self.assertEqual(check_variant_prices(reply, truth, "طب الـ90 مل بكام؟"), [])
+        wrong = "Pi\nزجاجة الستور الخاصة بينا 90 ملي بـ2000 جنيه."
+        self.assertEqual([finding[0] for finding in check_variant_prices(wrong, truth, "Pi الـ90 بكام؟")],
+                         ["wrong_variant_price"])
+
+    def test_how_does_it_smell_beside_an_ingredient_dislike_still_gets_the_description(self):
+        """S14 replay t2: "وعلى فكرة مش بحب العود خالص. ريحة K By Dolce عاملة إزاي بالظبط؟" got "K By Dolce:
+        مفيش عود ضمن نوتاته المسجلة." and no description: the oud word made it a notes question only."""
+        from products.services.price_reply import requested_product_details
+        from products.services.scent_description import scent_requested
+        dolce = self.perfume("K By Dolce", ["fresh", "woody", "citrus"])
+        dolce.top_notes, dolce.middle_notes, dolce.base_notes = "Juniper Berries, Blood Orange", "Lavender, Geranium", "Cedar, Vetiver"
+        dolce.save()
+        message = "وعلى فكرة مش بحب العود خالص. ريحة K By Dolce عاملة إزاي بالظبط؟"
+        self.assertTrue(scent_requested(message, product_names=("K By Dolce",)))
+        lines = "\n".join(requested_product_details([dolce], message))
+        self.assertIn("فريش", lines)
+        self.assertIn("مفيش عود ضمن نوتاته المسجلة", lines)
+        # A notes question stays a notes question.
+        self.assertFalse(scent_requested("K By Dolce فيه عود؟", product_names=("K By Dolce",)))
+
+    # --- found in the full run (`round4-full/attempt-1`: S02, S03, S09) -------------------------------
+
+    def test_close_to_what_i_know_is_not_a_request_for_a_similar_perfume(self):
+        """S02 full run t3-t4: "الـ notes دي قريبة من اللي أعرفه، بس الفانيليا في base بتاع Aventus مش
+        فاكرها… عندكم إصدار معين؟" was read as "something close to Aventus": the gender question, then
+        two other perfumes."""
+        from products.services.sales.reference import similarity_requested
+        from products.services.sales.request_updates import request_mode
+        message = ("الـ notes دي قريبة من اللي أعرفه، بس الفانيليا في base بتاع Aventus مش فاكرها نوت أساسية "
+                   "في الـ official listing. عندكم إصدار معين؟")
+        self.assertFalse(similarity_requested(message))
+        self.assertEqual(request_mode(message, [], None), "")
+        self.assertFalse(similarity_requested("ده شبه اللي فاكره عنه"))
+        self.assertTrue(similarity_requested("عايز حاجة قريبة من Aventus"))
+        self.assertTrue(similarity_requested("عايز حاجة قريبة من اللي بستخدمه، Sauvage"))
+
+    def test_but_not_vanilla_in_a_notes_remark_is_not_an_exclusion(self):
+        """S02 full run t6: "الـofficial notes اللي أعرفها فيها ambergris وmusk وoakmoss، بس مش vanilla"
+        saved "sweet" as excluded again: "بس" and a Latin note word were not covered."""
+        from products.services.sales.constraints import stated_preference_updates
+        remark = ("غريبة بصراحة، الـofficial notes اللي أعرفها فيها ambergris وmusk وoakmoss، بس مش vanilla. "
+                  "طب خلينا في Layton: إيه الـtop وmiddle وbase notes عندكم؟")
+        self.assertNotIn("excluded_scent_tags", stated_preference_updates(remark))
+        self.assertEqual(stated_preference_updates("Aventus حلو، بس مش عايز vanilla").get("excluded_scent_tags"),
+                         ["sweet"])
+
+    def test_asking_for_the_notes_you_have_is_not_an_availability_question(self):
+        """S02 full run t6 (medium): "…طب خلينا في Layton: إيه الـtop وmiddle وbase notes عندكم؟" got "أيوه،
+        Layton متوفر يا فندم.": "عندكم" alone marked it availability-only."""
+        from products.services.product_info import _availability_only_hint
+        self.assertEqual(_availability_only_hint("طب خلينا في Layton: إيه الـtop وmiddle وbase notes عندكم؟"), "")
+        self.assertEqual(_availability_only_hint("عندكم إصدار معين؟"), "")
+        self.assertEqual(_availability_only_hint("ريحته عاملة إزاي اللي عندكم؟"), "")
+        self.assertNotEqual(_availability_only_hint("عندكم Layton؟"), "")
+
+    def test_the_cart_recap_keeps_the_shipping_once_a_total_with_shipping_was_given(self):
+        """S03 full run t6 (critical): told "الإجمالي مع الشحن 1560 جنيه" twice, the customer said "تمام،
+        هاخدهم كده." and the cart recap said "المجموع: 1500 جنيه." and nothing about shipping."""
+        from products.services.order_service import _cart_recap
+        nyc = self.perfume("212 NYC Man", ["fresh", "citrus", "musky"])
+        sexy = self.perfume("212 Sexy man", ["sweet", "woody", "spicy"])
+        items = [{"variant": product.variants.get(volume=50), "quantity": 1, "price": Decimal("750")}
+                 for product in (nyc, sexy)]
+        plain = _cart_recap(self.conversation, items, Decimal("1500"), "تمام، هاخدهم كده.")
+        self.assertIn("المجموع: 1500 جنيه.", plain)
+        self.assertNotIn("شحن", plain)                       # nothing was said about shipping yet
+        self.said("user", "خليهم 2 زي ما هما، بس الـ1560 شامل الشحن؟")
+        self.said("assistant", "إجمالي الـ2 زجاجات: 1500 جنيه. وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 1560 جنيه.")
+        recap = _cart_recap(self.conversation, items, Decimal("1500"), "تمام، هاخدهم كده.")
+        self.assertIn("المجموع: 1500 جنيه.\nوفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 1560 جنيه.", recap)
+
+    def test_ill_think_and_get_back_to_you_is_a_deferral_even_with_a_price_remark(self):
+        """S09 full run t5 (high): "طب Cigar شكله أنسب وسعره داخل الميزانية، هفكر فيه وأرد عليكم" got a
+        smaller-size suggestion and the prices again: "سعره" kept it off the short close."""
+        from products.services.objection_service import handle_objection
+        from products.services.sales import objection as sales_objection
+        for message in ("طب Cigar شكله أنسب وسعره داخل الميزانية، هفكر فيه وأرد عليكم",
+                        "السعر كويس، هفكر وأبقى أكلمكم"):
+            with self.subTest(message=message):
+                objection = sales_objection.detect(message, [])
+                self.assertIsNotNone(objection)
+                with patch("products.services.objection_service.chat") as chat:
+                    reply, context = handle_objection(message, objection, [], self.store, self.conversation)
+                chat.assert_not_called()
+                self.assertEqual((reply, context), ("تمام، خد وقتك.", "CUSTOMER_DEFERRED"))
+
+    def test_back_to_his_own_after_a_rerouted_request_for_mum_keeps_his_profile(self):
+        """S15 round 4 full run t5: after "Aventus شكله مناسب، وكمان عايز حاجة لماما…" (classified as an order
+        and re-routed), "طب نرجع لبتاعي، كنت قلت إيه أحسن واحد ليا؟" got "رجالي ولا حريمي؟"."""
+        from products.services.conversation_service import save_message
+        from products.services.product_formatting import format_products
+        from products.services.router import route
+        self._his_table()
+
+        def turn(message, classified, extracted):
+            names, _, reply = self._recommendation_route(message, classified, extracted)
+            self.conversation.refresh_from_db()
+            save_message(self.conversation, "user", message)
+            save_message(self.conversation, "assistant", reply,
+                         internal_context=format_products(list(Product.objects.filter(name__in=names or []))))
+            return reply
+
+        turn("Aventus شكله مناسب، وكمان عايز حاجة لماما تكون هادية فيها ورد", "order",
+             {"gender": "female", "scent_tags": ["floral"], "scent_match": "all", "similar_to": "Aventus",
+              "reset_preferences": False})
+        back = turn("طب نرجع لبتاعي، كنت قلت إيه أحسن واحد ليا؟", "recommendation", {"reset_preferences": True})
+        self.assertNotIn("رجالي ولا حريمي", back)
+        self.assertIn("Aventus", back)
+        self.conversation.refresh_from_db()
+        self.assertEqual(self.conversation.preferences.get("gender"), "male")
+
+    # --- end of the fourth round ---

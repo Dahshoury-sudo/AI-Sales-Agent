@@ -1,0 +1,12 @@
+{
+  "run_id": "20261113T012018Z-f39732",
+  "phase": "round4-replay",
+  "conversations": 7,
+  "passed": 4,
+  "failed": 3,
+  "incomplete": 0,
+  "api_calls": 186,
+  "run_cost_usd": "0.080898900",
+  "cumulative_spent_usd": "3.648946030",
+  "remaining_usd": "0.411053970"
+}

@@ -105,6 +105,23 @@ def cancelling_order(message):
     return bool(_CANCEL.search(_words(message)))
 
 
+# Turning down what the offer asks for: "لا مش عايز برفانين، أنا عايز واحدة بس".
+_DECLINES_OFFER = re.compile(
+    r"\b(?:مش عايز|مش عاوز|مش عايزه|مش عاوزه|مش محتاج|بلاش)\s+(?:برفانين|عطرين|اتنين|تلاته|زجاجتين|اكتر من واح\w+)\b|"
+    r"\b(?:عايز|عاوز|عايزه|عاوزه|محتاج|هاخد)\s+(?:برفان\s+|عطر\s+|زجاجه\s+)?(?:واحد|واحده)\s+بس\b|"
+    r"\b(?:واحد|واحده)\s+بس\b")
+
+
+def declines_offer(message):
+    """The customer wants less than the offer requires, so the offer is no longer the subject.
+
+    After "مفيش خصم؟" and the offers, "لا مش عايز برفانين، أنا عايز واحدة بس" turned them down; the
+    next message, "خلاص هاخد الـ50 من الأولاني. الشحن بكام؟", was still treated as an offer purchase
+    the bot cannot complete, and got a transfer instead of an order (simulation S11 round 4 replay, t5).
+    """
+    return bool(_DECLINES_OFFER.search(_words(message)))
+
+
 def _explicit(message, facts=""):
     text = _words(message)
     if ordinary_purchase(message):
@@ -145,6 +162,8 @@ def has_promotion_context(history):
                 return False
             if _explicit(content):
                 return True
+            if declines_offer(content):
+                return False
         elif row.get("role") == "assistant":
             if any(limitation in content for limitation in (LIMITATION, _LEGACY_LIMITATION)):
                 return True
@@ -345,7 +364,14 @@ def reply(message, history=None, store=None, *, explain=True, usage_recorded=Fal
         closing = REPEAT_INVITATION
     else:
         closing = INVITATION
-    text = "\n\n".join(filter(None, (details, LIMITATION, website_ordering_reply(store), closing)))
+    # "الشحن بكام؟" inside an offer conversation got "الشحن مجاني لاي اوردر فوق ال ١٥٠٠" and never the
+    # fee itself (simulation S11 round 4 replay, t5): the store's own shipping sentence goes first.
+    shipping = ""
+    if re.search(r"(?:شحن|توصيل)\S*\s+(?:\S+\s+){0,2}?(?:بكام|كام)|(?:بكام|كام|مصاريف|سعر)\s+(?:\S+\s+)?(?:ال)?(?:شحن|توصيل)",
+                 normalize_arabic(message or "")):
+        from .order_service import shipping_answer
+        shipping = shipping_answer(store)
+    text = "\n\n".join(filter(None, (shipping, details, LIMITATION, website_ordering_reply(store), closing)))
     if _PLAYFUL.search(message or "") and not _CONFIRM_ORDER.search(normalize_arabic(message or "")):
         # "ولو اشتريت كل حاجة هتعملولي خصم؟ 😂" is a joke; answered with the procedure alone it read as
         # taken literally (simulation S18 round 2 full 2, t4). The boundary stays; the tone is met first.

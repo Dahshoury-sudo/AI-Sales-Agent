@@ -113,6 +113,21 @@ _SUBJECT_STOPWORDS = frozenset({
 })
 
 
+def _continues_a_description(before):
+    """Whether a bare negation after a comma goes on describing the perfume of the clause before it.
+
+    "Aventus غالبًا فيه birch وoakmoss وambroxan، مش فانيليا واضحة" and "الـofficial notes اللي أعرفها
+    فيها ambergris وmusk وoakmoss، بس مش vanilla" correct our notes list; read alone, the negation saved
+    sweet as excluded (simulation S02 round 3 verify t3, round 4 full run t6). A wish after the comma
+    ("، بس مش عايز…") has its own words and is not this.
+    """
+    clause = re.split(r"[.!؟?\n؛;،,]", before)[-1]
+    if not re.fullmatch(r"\s*(?:و|بس|لكن)?\s*(?:مش|مو|ولا|not)\s*(?:ال)?", clause):
+        return False
+    earlier = re.split(r"[،,]", re.split(r"[.!؟?\n؛;]", before)[-1])
+    return len(earlier) >= 2 and _describes_a_perfume(earlier[-2])
+
+
 def _describes_a_perfume(before):
     clause = re.split(r"[.!؟?\n؛;،,]", before)[-1]
     match = _DESCRIBED.match(clause)
@@ -176,6 +191,8 @@ def _mentions(text, *, for_claims=False):
         # Only an Arabic trait word after the subject: the real shape is mixed script ("212 VIB
         # تقيل"), while an English request ("recommend a fresh unisex perfume") is Latin throughout.
         if not for_claims and re.match(r"[؀-ۿ]", match[1]) and _describes_a_perfume(before):
+            polarity = "ignored"
+        if not for_claims and _continues_a_description(before):
             polarity = "ignored"
         # Keep the conjunction outside the span so phrase-level reconciliation
         # can join this alias to a preceding phrase understood by the model.

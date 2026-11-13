@@ -19,6 +19,12 @@ _AVAILABILITY = re.compile(r"^(?:(?:و|طيب|طب)\s+)*(?:عندك(?:م|و)?|do
 _FACT = re.compile(r"^(?:(?:طيب|طب)\s+)?(?:هل|هو|هي|بكام|سعر|how|is|does)\b|\b(?:ينفع|بينفع|مناسب|سعره|ثباته كام|فوحانه ايه)\b")
 _PURCHASE = re.compile(r"(?<!\w)(?:ضيف|اطلب|هاخد|هشتري|اشتري|شيل|الغ[يى]|كنسل|order|buy|add|cancel)(?!\w)")
 _LINK = re.compile(r"(?<!\w)(?:نفس\s+(?:الطلب|الشروط|المواصفات|الريحه)|شبه(?:ه|ها|و)|زي(?:ه|ها)|يكون\s+كمان|same\s+(?:one|request)|also\s+suitable)(?!\w)")
+# "رشحلي تاني حاجة كده للسهرات" asks for one more of what was just described. Read as a new goal it
+# dropped the saved "sweet" and offered a spicy-fresh perfume (simulation S14 round 3 verify, t7). With
+# a scent word of its own ("حاجة كده خفيفة للصيف") the message states the taste itself and stays a new goal.
+_MORE_OF_THE_SAME = re.compile(
+    r"(?<!\w)(?:(?:تاني|كمان)\s+(?:حاجه|واحد|واحده|عطر|برفان)\s+كده|"
+    r"(?:حاجه|واحد|واحده|عطر|برفان|اختيار|ترشيح)\s+(?:(?:تاني|تانيه|كمان)\s+)?كده)(?!\w)")
 _NEGATIVE = re.compile(r"(?:مش|لا|بلاش|بدون|غير|not|no)(?:\s+(?:عايز(?:ه)?|عاوز(?:ه)?|حاجه|يكون|ريحه|want|something)){0,3}\s*$")
 def _text(message):
     text = normalize_arabic(message or "")
@@ -105,7 +111,7 @@ def request_mode(message, history=None, store=None, *, occasion_evidence=None):
     if not (_positive(text, _REQUEST) or re.match(r"^(?:لل|بال)", text)
             or criteria.get("scent_tags") or _LINK.search(text)):
         return ""
-    if _LINK.search(text):
+    if _LINK.search(text) or (_MORE_OF_THE_SAME.search(text) and not criteria.get("scent_tags")):
         return "refinement"
     if history and len(text.split()) <= 4 and re.search(r"اكتر|mostly", text) and not _positive(text, _REQUEST):
         return "refinement"

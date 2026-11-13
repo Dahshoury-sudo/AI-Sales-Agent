@@ -428,6 +428,12 @@ def offered_ever(conversation, store):
     return frozenset(found)
 
 
+_FIRST_AS_BEFOREHAND = re.compile(
+    r"(?<!\w)(?:(?:حاجه|عطر|برفان|هديه)\s+(?:\S+\s+){0,3}?ل\S+"
+    r"|(?:ها|هن|بي|بت|بن|[ابهنتي])?(?:فكر|سال|ستشير|تاكد)\w*(?:\s+(?!ال|عن\s|علي\s|في\s|من\s|بين\s)\S+){0,2})"
+    r"\s+الاول(?=\s*(?:[؟?.!،,]|$|و?بعد))")
+
+
 def ordinal_position(message):
     """Return a requested list position; None means no ordinal was used."""
     text = normalize_arabic(message or "")
@@ -435,6 +441,10 @@ def ordinal_position(message):
     # the pick between the two on the table became a one-perfume lookup (simulation S06 round 2 full 2, t7).
     text = re.sub(r"(?<!\w)(?:اكتر|اكثر|اقل|احسن|اوحش|ازيد|اصعب|اسهل)\s+من\s+الاول(?!\w)|(?<!\w)زي\s+الاول(?!\w)",
                   " ", text)
+    # "ممكن ترشحلي حاجة لماما الأول؟" and "هسأل مراتي الأول" say "first, before anything else"; read as
+    # "the first one", the request for the mother became a lookup of the first perfume and got "عايز
+    # أتأكد إنتِ تقصدي أنهي عطر؛ اكتبيلي اسمه تاني" (simulation S15 round 3 verify, t4).
+    text = _FIRST_AS_BEFOREHAND.sub(" ", text)
     for pattern, position in (
         (r"(?:الاولاني|الاولى|الاولي|الاول|اول واحده?)", 0),
         (r"(?:التانيه?|الثانيه?|تاني واحده?)", 1),
@@ -478,10 +488,45 @@ def ordinal_products(conversation, store, turns=8):
     return current
 
 
+_NOT_THIS_ONE = re.compile(r"(?<!\w)(?:مش|مو)\s+(?:ده|دا|دي|هو|هي|قصدي\s+(?:ده|دا|دي))(?!\w)")
+
+
 def resolve_ordinal(message, conversation, store):
     position = ordinal_position(message)
     offered = ordinal_products(conversation, store)
-    return offered[position] if position is not None and -len(offered) <= position < len(offered) else None
+    name = offered[position] if position is not None and -len(offered) <= position < len(offered) else None
+    if name and position == 1 and len(offered) == 2 and _NOT_THIS_ONE.search(normalize_arabic(message or "")):
+        # "مش ده، قصدي التانى" right after an answer about the second perfume means the other one;
+        # read as "the second" it answered about the rejected perfume again (simulation S12 round 3
+        # verify, t6).
+        if offered_in_order(conversation, store, latest_only=True) == [name]:
+            return offered[0]
+    return name
+
+
+def _nameless_reply_subject(conversation, store):
+    """The one perfume our latest reply was about when it did not say its name.
+
+    "طب الاولانى ريحته عامله ازاى" was answered "ده ريحته فيها توابل ومسكر وخشبي."; with no name in
+    the prose the next message, "الـ90", was resolved to the perfume priced three turns earlier
+    (simulation S12 round 3 verify, t5). The reply's own injected data says which perfume it was
+    about: exactly one row, and not a row labelled as something other than the subject.
+    """
+    from products.models import Product
+    from .naming import names_in
+    latest = (conversation.messages.filter(role="assistant", delivery_status="sent")
+              .order_by("-created_at", "-pk").values_list("content", "internal_context").first())
+    if not latest:
+        return None
+    content, context = latest[0] or "", latest[1] or ""
+    if (not context or _is_cart_context(context) or PENDING_LOOKUP_MARKER in context
+            or any(marker in context for marker in ("NAME_UNREADABLE", "ABSENCE_DENIED", "**مش** العطر اللي العميل سأل"))):
+        return None
+    catalogue = list(Product.objects.filter(store=store).values_list("name", flat=True))
+    if names_in(content, catalogue):
+        return None
+    rows = _row_names(context.partition(SIMILARITY_REFERENCE_HEADER)[0], catalogue)
+    return next(iter(rows)) if len(rows) == 1 and len(_PRODUCT_ROW.findall(context)) == 1 else None
 
 
 def offered_in_order(conversation, store, turns=2, latest_only=False):
@@ -519,6 +564,10 @@ def offered_in_order(conversation, store, turns=2, latest_only=False):
     """
     if conversation is None or store is None or conversation.store_id != store.pk:
         return []
+    if latest_only:
+        subject = _nameless_reply_subject(conversation, store)
+        if subject:
+            return [subject]
     names = under_discussion(conversation, store, turns=turns)
     if not names:
         from products.models import Conversation, Product, Message

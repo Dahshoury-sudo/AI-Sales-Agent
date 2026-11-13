@@ -539,3 +539,73 @@ Not changed after this round: S09 t4 ("أقربله" by pronoun, medium); S07 t3
 
 Tests: `ThirdRoundTests` 20 tests; full suite 2406, green, no request reaching the API
 (`tests-round3-5.log`).
+
+## Round 4 (2026-11-13): the seven failures of the verification run
+
+Owner's brief: one more fix round, USD 0.50 (cap 4.06, recorded before any paid call). Starting point:
+`round3-verify/attempt-1`, 13/20. Each row below has a test in `FourthRoundTests`
+(`products/test_customer_simulation_fixes.py`), written first and seen failing; with the service
+changes stashed, every non-guard test of the class fails.
+
+### The seven failures of the verification run
+
+| Scenario | Defect (turn) | Root cause | Change |
+|---|---|---|---|
+| S02 | "زجاجة الـ100 ملي بـ2400 تركيب برضه؟" got "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً" for a bottle in stock (t7, critical) | "تركيب" inside a question was read as the store-bottle type, and a 100 ml store bottle does not exist | a question about whether it is تركيب ("تركيب برضه؟", "دي تركيب؟", "تركيب ولا أصلي") selects no bottle type; "التركيب 50 ملي بكام؟" still does |
+| S02 | the gender question, then two other perfumes, for "…دي تركيب برضه؟ وهتكون نفس النوتات اللي قلتها؟" (t5–t6, medium each) | "نفس النوتات" was read as "find a perfume with the same notes as Aventus" | "نفس النوتات / نفس الريحة" said of the perfume under discussion ("اللي قلتها", "برضه", "هتكون…") is not a likeness request |
+| S02 | "sweet" saved as excluded from "…فيه birch وoakmoss وambroxan، مش فانيليا واضحة" (t3) | a correction to our notes list was read as a wish | a bare negation that continues a description of a perfume belongs to that description |
+| S02 | "المعلومة دي من أنهي إصدار؟" got the notes list again (t4, medium) | the phrasing was not recognised as a source question | recognised: the one-sentence source answer |
+| S10 | more perfumes after each demand for certainty (t4, t6, t8, high each) | only "تضمن / مضمون" counted as a demand, and nothing stopped new picks once the limit of the data had been stated | "متأكد", "مش عايز أخاطر", "مطمن" count as well. First demand: new options, each with what the records say about sweetness. Second: no new perfume and the limit stated plainly. Third: the team is offered |
+| S11 | "إيه الفرق بينه وبين الـ50؟" got the price, then "قصدك الفرق بينه وبين ميزانيتك؟" (t3–t4, high) | nothing read "a perfume against its own size" | answered in code before any name lookup: the 50 ml is a size of the same perfume; a second wording when asked again; "الفرق بين الـ50 والـ90" keeps its own answer |
+| S12 | "الـ90" priced for the wrong perfume (t5, high) | the previous answer ("ده ريحته…") named no perfume, so the referent fell back three turns to the last one priced | the subject of a nameless reply is read from that reply's own product data (exactly one row, and not a row labelled as not being the subject) |
+| S12 | "مش ده، قصدي التانى" got the same perfume again (t6, high) | "التانى" was always "the second" | after an answer about the second of two, "مش ده… التاني" is the other one |
+| S13 | "total 810 صح؟" got "تحب تطلب أنهي عطر؟ قولي اسمه." (t4) | classified as an order with an empty cart | answered before classification from the size we quoted and the flat shipping fee ("أيوه، K By Dolce 50 ملي بـ750 جنيه، وفيه مصاريف شحن 60 جنيه، فالإجمالي مع الشحن 810 جنيه."). With two sizes quoted, the customer's own figure has to pick one. Never with a cart, an order, a buying word, or several bottles |
+| S14 | a perfume with no sweet label for "رشحلي تاني حاجة كده للسهرات" (t7, high) | read as a new goal, which drops the saved "sweet" | "another one like that", with no scent word of its own, refines the saved request |
+| S14 | "…محتار بينه وبين Pure XS. الدفع بيكون عند الاستلام؟": payment not answered (t9) | the hesitation path had no handling for a store question beside it | a payment question beside other text gets the store's own answer, after the reply to the hesitation |
+| S15 | "Aventus شكله حلو، وكمان عايز حاجة لماما…" was asked the Aventus bottle type (t3, high) | the classifier said "order" | liking a perfume and asking for an unnamed one for someone else, with no buying word, is a recommendation; "هاخد Aventus… وكمان عايز حاجة لماما" stays an order |
+| S15 | "ممكن ترشحلي حاجة لماما الأول؟" got "تقصدي أنهي عطر؛ اكتبيلي اسمه تاني" (t4, high) | "الأول" was read as "the first perfume" | "الأول" after a request for someone, or after think / ask / make-sure verbs, is "first", not an ordinal; "الأول بكام؟", "هفكر في الأول" are unchanged |
+
+Medium issues in scenarios that had passed, fixed in the same pass:
+
+| Scenario | Defect (turn) | Change |
+|---|---|---|
+| S09 | "أنهي واحد فيهم أقربله؟" (the pronoun is the perfume we do not stock) got two price blocks; "الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب" got Cigar's description again (t4, t5) | after a denial, "أقربله" gets "معنديش بيانات عن ريحة العطر اللي سألت عنه أقارن بيها…"; the same line is added on the hesitation path; a yes/no question gets "…فمقدرش أقول إذا كان قريب منه" |
+| S05 | "فيه منهم زجاجة أورجينال؟" got the original-bottle prices with no word that the perfume in them is the store's own (t5) | the store's own sentence ("العطر في الاتنين نفس التركيبة من عندنا، والفرق في شكل الزجاجة وسعرها.") once per conversation, the first time an original-bottle price answers such a question |
+
+### Replay of the seven (`round4-replay/attempt-1`, run of 03:20): 4/7, USD 0.0809
+
+Pass: S02 (9.0), S12 (10.0), S13 (9.3), S15 (9.7). S10, S11 and S14 failed, each on a new path:
+
+| Scenario | Defect (turn) | Root cause | Change |
+|---|---|---|---|
+| S10 | "طب رشحلي حاجة… ومضمونة مش مسكرة ولا فيها عود!" got the two perfumes just turned down, with no word on sweetness (t3, high) | "ومضمونة": the attached "و" slipped past the pattern | the pattern allows an attached conjunction or article |
+| S10 | the second-demand reply listed "the closest of what we discussed", which the customer had turned down (t5, high) | my own first version of that reply | it names no perfume: the limit, what the records say of the ones offered, and trying in the store |
+| S11 | after "مفيش خصم؟" and the offers, "لا مش عايز برفانين، أنا عايز واحدة بس"; then "خلاص هاخد الـ50 من الأولاني. الشحن بكام؟" was blocked as an offer purchase, got "الشحن مجاني لاي اوردر فوق ال ١٥٠٠" and a transfer, never the 60 EGP fee (t5–t6, criterion) | the offer stayed "pending" after it was turned down; inside an offer reply a fee question was answered from the offers only | "عايز واحدة بس" / "مش عايز برفانين" ends the offer context, so the order goes ahead; a shipping-fee question inside an offer reply, and on a transfer, gets the store's shipping sentence |
+| S14 | "طب رشحلي تاني حاجة كده للسهرات، ويفضل تكون سويت" got the same two perfumes (t7, medium) | "on the table" covered only the last two replies, and those two named nothing (a nameless answer, a shipping answer) | a request for another excludes what was offered over the last six replies; if nothing else fits, the older options are kept |
+| S14 | "Black XS السويت فيه أوضح من Pure XS؟" got "Black XS: طابعه المسجل مسكر." (t8, criterion) | both drafts answered it and added an unasked "مناسبتهم للسهرات"; each was rejected whole | a draft whose only fault is an unasked occasion sentence loses that sentence and is re-checked, instead of being thrown away |
+| S14 | "مش بحب العود خالص. ريحة K By Dolce عاملة إزاي بالظبط؟" got "مفيش عود ضمن نوتاته المسجلة" and no description (t2, medium in replay 2) | the oud word made it a notes question only | "ريحة X عاملة إزاي" is a scent question whatever else the message mentions |
+| S02 | "عندكم Layton notes موثقة أكتر ولا نفس الحكاية؟", "والنوتات دي برضه من بياناتكم بس؟" got the list, not the source (t7–t8, medium; passed) | phrasings not recognised | recognised as source questions |
+
+**Harness change, disclosed.** `eval_harness/checks.py::check_variant_prices` matched product names without
+word boundaries, so "Pineapple" in a notes list was read as the perfume "Pi" and a correct Aventus price
+was flagged `wrong_variant_price` (critical) three times in the S02 replay. The judge dismissed each one.
+Names now match as whole words; a wrong price under the real name "Pi" is still flagged (tested). No
+verdict of any saved run depends on it.
+
+### Second replay, the three that failed (`round4-replay/attempt-2`): 3/3, USD 0.0359
+
+S10 pass (8.7), S11 pass (9.4), S14 pass (9.6).
+
+### Full run (`round4-full/attempt-1`): 13/20, mean 8.60, USD 0.1554
+
+The full run's failures came on turns not seen before. See REPORT.md, "Round 4". Fixed after the run, with
+tests in `FourthRoundTests`, unit-tested but not replayed:
+- S02: "قريبة من اللي أعرفه" is no longer read as a likeness request; "بس مش vanilla" is no longer an exclusion; "notes عندكم" is no longer availability-only.
+- S03: the cart recap keeps the shipping line once a total with shipping was given.
+- S09: "هفكر… وأرد عليكم" gets the short close.
+
+Fixed after the run as well: S15, whose saved profile was lost on the way back from his mother's request. The extractor's reset on "نرجع لبتاعي" wiped `sales_state`, recipient profiles included; a reset now keeps them.
+
+Open: S12 ("هطلبه بعدين" routed to checkout), S13 (shipping and comparison in one message; "212" denied),
+and S20 (the offer
+script after "سيبك، هسأل محل تاني").

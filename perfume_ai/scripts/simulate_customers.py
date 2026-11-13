@@ -43,8 +43,10 @@ from evaluate_agent_budgeted import (  # noqa: E402
 
 OUTPUT = ROOT / "artifacts" / "customer_simulation_20"
 # Raised from 3.00 to 4.00 by the store owner on 2026-11-12, then set to 3.50 by the owner later the
-# same day (at most USD 0.50 on top of the 2.9992 spent). Both are recorded in the ledger's cap_changes.
-TASK_CAP = Decimal("3.50")
+# same day (at most USD 0.50 on top of the 2.9992 spent). On 2026-11-13 the owner set 3.64 for one
+# verification run and then 4.06 for a fourth fix round (USD 0.50 on top of the 3.5680 spent). Every
+# change is recorded in the ledger's cap_changes; the meter refuses to run when the two disagree.
+TASK_CAP = Decimal("4.06")
 SCORE_FLOOR = 6
 
 

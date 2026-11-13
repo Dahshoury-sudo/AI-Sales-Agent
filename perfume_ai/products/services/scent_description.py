@@ -307,7 +307,11 @@ def scent_requested(message, *, product_names=()):
     """Open character descriptions/opinions, rather than single trait answers."""
     text = _without_names(message, product_names)
     if _notes_authorized(text) and not re.search(
-        r"ريحته|ريحتها|ريحتهم|الريحه|رايك|\b(?:scent|smells?|fragrance|opinion)\b", text,
+        # "مش بحب العود خالص. ريحة K By Dolce عاملة إزاي بالظبط؟" asks how it smells in so many words;
+        # its oud word made it a notes question only, and the reply was "مفيش عود ضمن نوتاته المسجلة"
+        # with no description (simulation S14 round 4 replay, t2).
+        r"ريحته|ريحتها|ريحتهم|الريحه|رايك|ريحه\s+(?:عامله?\s+)?(?:ايه|ازاي|كيف)|"
+        r"\b(?:scent|smells?|fragrance|opinion)\b", text,
     ):
         return False
     if occasion_requested(text) and not re.search(

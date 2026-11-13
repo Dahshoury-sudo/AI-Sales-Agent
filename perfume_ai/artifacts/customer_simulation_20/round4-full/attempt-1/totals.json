@@ -1,0 +1,12 @@
+{
+  "run_id": "20261113T013617Z-304243",
+  "phase": "round4-full",
+  "conversations": 20,
+  "passed": 13,
+  "failed": 7,
+  "incomplete": 0,
+  "api_calls": 460,
+  "run_cost_usd": "0.155353205",
+  "cumulative_spent_usd": "3.840226620",
+  "remaining_usd": "0.219773380"
+}

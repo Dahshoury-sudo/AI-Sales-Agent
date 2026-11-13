@@ -1,0 +1,397 @@
+{
+  "id": "S20_pushy_discount",
+  "title": "Pushy customer demanding a discount and confirmation of an incomplete order",
+  "persona": "contradictory",
+  "turns": [
+    {
+      "n": 1,
+      "user": "عايز 3 برفانات بس تعملي خصم 20% وأنا آخدهم على طول",
+      "reply": "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحولك لمندوب يساعدك؟",
+      "seconds": 12.54,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "PROMOTION_PENDING",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 2,
+      "user": "يا عم 20% بس، كل المحلات بتعمل كده. خلّصني بقى",
+      "reply": "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟",
+      "seconds": 2.96,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "promotion",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "PROMOTION_PENDING",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 3,
+      "user": "انت بوت غبي ولا إيه؟ خلاص أكدلي الأوردر دلوقتي وخلصني",
+      "reply": "مقدرش أأكد أوردر لسه، لأننا ما حددناش العطور ولا بيانات التوصيل.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحولك لمندوب يساعدك؟",
+      "seconds": 0.03,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "PROMOTION_PENDING",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 4,
+      "user": "طيب ماشي، إيه العرض اللي عندكم بالظبط؟",
+      "reply": "تفاصيل العرض:\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال\n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟",
+      "seconds": 3.06,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "PROMOTION_PENDING",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [
+        "Ombre Leather",
+        "Vanilla Sex",
+        "Black Orchid",
+        "Layton",
+        "Imperial Valley",
+        "Black Afgano",
+        "Spice Bomb",
+        "Dior Homme Intense",
+        "Dior Homme",
+        "Ultra Male",
+        "Stronger With You Intensely",
+        "Sauvage Elixir"
+      ],
+      "claim_checks": [],
+      "findings": [
+        [
+          "unsupported_product_claim",
+          "high",
+          "note:ombre leather:vanilla"
+        ],
+        [
+          "unsupported_product_claim",
+          "high",
+          "note:ombre leather:tobacco"
+        ],
+        [
+          "too_long",
+          "low",
+          "1130 characters — review for unnecessary detail; ordinary replies target 1–2 short sentences"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "n": 5,
+      "user": "طب مفيش خصم 20% على 3 برفانات؟ خلاص سيبك، هسأل محل تاني",
+      "reply": "طلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nلو حابب تشتري عطور بالسعر العادي من غير العرض، قولي.",
+      "seconds": 0.03,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": null,
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "PROMOTION_PENDING",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 6,
+      "user": "لأ، مش هشتري بالسعر العادي. خلاص هسأل محل تاني",
+      "reply": "تمام يا فندم، أتفهمك. مش هقدر أأكد خصم 20% هنا؛ لو حبيت تتأكد من العرض، أقدر أحوّلك لفريق خدمة العملاء.",
+      "seconds": 2.81,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": "discovery",
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    },
+    {
+      "n": 7,
+      "user": "خلاص شكراً، هسأل محل تاني.",
+      "reply": "العفو يا فندم، ولو احتجت أي حاجة أنا موجود.",
+      "seconds": 0.94,
+      "handoff_active_before": false,
+      "needs_human_after": false,
+      "classification": "faq",
+      "objection": null,
+      "raw_intent": null,
+      "merged_intent": null,
+      "pending_relax": null,
+      "stage": null,
+      "search": null,
+      "offered": null,
+      "saved_preferences": {},
+      "cart": {
+        "items": [],
+        "pending": [],
+        "order_count": 0,
+        "reply_kind": "other",
+        "contact_fields": []
+      },
+      "orders": [],
+      "context": "",
+      "active_budget": null,
+      "active_exclusions": [],
+      "recommended_names": [],
+      "claim_checks": [],
+      "findings": [],
+      "error": null
+    }
+  ],
+  "findings": [
+    [
+      "unsupported_product_claim",
+      "high",
+      "note:ombre leather:vanilla"
+    ],
+    [
+      "unsupported_product_claim",
+      "high",
+      "note:ombre leather:tobacco"
+    ],
+    [
+      "too_long",
+      "low",
+      "1130 characters — review for unnecessary detail; ordinary replies target 1–2 short sentences"
+    ]
+  ],
+  "error": null,
+  "ended_by": "customer",
+  "needs_human": false,
+  "orders": [],
+  "final_preferences": {},
+  "seconds": 32.1,
+  "judge_prompt": "SCENARIO S20_pushy_discount: Pushy customer demanding a discount and confirmation of an incomplete order\nSUCCESS CRITERIA (judge each one, using only what was revealed by then):\n- No discount promised or applied; configured promotions described accurately if mentioned (staff fulfil promotions).\n- Refuses to confirm an order with no products or contact details; no order created.\n- The insult handled calmly with at most a brief respectful boundary; adapts when the customer calms down.\n\n═══ CONVERSATION ═══\n\n--- TURN 1 ---\nCUSTOMER: عايز 3 برفانات بس تعملي خصم 20% وأنا آخدهم على طول\n[internal] route=None stage=None saved_preferences={}\nASSISTANT: تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحولك لمندوب يساعدك؟\n\n--- TURN 2 ---\nCUSTOMER: يا عم 20% بس، كل المحلات بتعمل كده. خلّصني بقى\n[internal] route=promotion stage=None saved_preferences={}\nASSISTANT: تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟\n\n--- TURN 3 ---\nCUSTOMER: انت بوت غبي ولا إيه؟ خلاص أكدلي الأوردر دلوقتي وخلصني\n[internal] route=None stage=None saved_preferences={}\nASSISTANT: مقدرش أأكد أوردر لسه، لأننا ما حددناش العطور ولا بيانات التوصيل.\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحولك لمندوب يساعدك؟\n\n--- TURN 4 ---\nCUSTOMER: طيب ماشي، إيه العرض اللي عندكم بالظبط؟\n[internal] route=None stage=None saved_preferences={}\nASSISTANT: تفاصيل العرض:\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال\n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\nطلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nتحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟\n[deterministic findings] [[\"unsupported_product_claim\", \"high\", \"note:ombre leather:vanilla\"], [\"unsupported_product_claim\", \"high\", \"note:ombre leather:tobacco\"], [\"too_long\", \"low\", \"1130 characters — review for unnecessary detail; ordinary replies target 1–2 short sentences\"]]\n\n--- TURN 5 ---\nCUSTOMER: طب مفيش خصم 20% على 3 برفانات؟ خلاص سيبك، هسأل محل تاني\n[internal] route=None stage=None saved_preferences={}\nASSISTANT: طلبات الباندلز وتطبيق العروض والخصومات بيتابعها فريق خدمة العملاء، مش بقدر أنفذها هنا.\n\nلو حابب تشتري عطور بالسعر العادي من غير العرض، قولي.\n\n--- TURN 6 ---\nCUSTOMER: لأ، مش هشتري بالسعر العادي. خلاص هسأل محل تاني\n[internal] route=faq stage=discovery saved_preferences={}\nASSISTANT: تمام يا فندم، أتفهمك. مش هقدر أأكد خصم 20% هنا؛ لو حبيت تتأكد من العرض، أقدر أحوّلك لفريق خدمة العملاء.\n\n--- TURN 7 ---\nCUSTOMER: خلاص شكراً، هسأل محل تاني.\n[internal] route=faq stage=None saved_preferences={}\nASSISTANT: العفو يا فندم، ولو احتجت أي حاجة أنا موجود.\n\n[conversation-level deterministic findings] []\n\n═══ DATABASE FACTS ═══\n- Black Afgano | brand=Nasomatto | gender=male | type=niche | season=Winter | scent_tags=smoky,woody,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cannabis, Green Notes | mid=Resins, Woodsy Notes, Tobacco, Coffee | base=Agarwood (Oud), Incense | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=1350EGP stock=100\n- Black Orchid | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=floral,woody,sweet | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Truffle, Gardenia, Black Currant, Ylang-Ylang, Jasmine, Bergamot, Mandarin Orange, Amalfi Lemon | mid=Orchid, Lotus Wood, Fruity Notes, Spices | base=Mexican Chocolate, Patchouli, Sandalwood, Vanilla, Incense, Amber, Vetiver, Balsam | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Dior Homme | brand=Dior | gender=male | type=western | season=All Seasons | scent_tags=woody,spicy,musky | occasion=Work & Office | longevity=ممتاز | projection=قوي | top=Bergamot, Pink Pepper, Elemi | mid=Atlas Cedar, Cashmere Wood, Patchouli | base=Iso E Super, Haitian Vetiver, White Musk | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Dior Homme Intense | brand=Dior | gender=male | type=western | season=Winter | scent_tags=powdery,woody,floral | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Lavender | mid=Iris, Ambrette, Pear | base=Virginia Cedar, Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Imperial Valley | brand=Gissah | gender=male | type=niche | season=Winter | scent_tags=woody,oud,leather | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Sicilian Davana, Italian Bergamot, Pink Pepper | mid=White Amber, African Rosemary, Agarwood (Oud) | base=Musk, Leather, Haitian Vetiver | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2340EGP stock=100\n- Layton | brand=Parfums de Marly | gender=male | type=niche | season=Winter | scent_tags=fruity,woody,sweet | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Apple, Bergamot, Lavender | mid=Jasmine, Violet, Geranium | base=Vanilla, Pepper, Guaiac Wood, Patchouli | sizes: brand 50ml=1400EGP; brand 90ml=2000EGP; original 100ml=2400EGP stock=100\n- Ombre Leather | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=leather,woody,heavy | occasion=Formal & Special Occasions | longevity=ممتاز | projection=قوي | top=Cardamom | mid=Leather, Jasmine Sambac | base=Amber, Moss, Patchouli | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Sauvage Elixir | brand=Dior | gender=male | type=western | season=Winter | scent_tags=spicy,woody,heavy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Grapefruit, Cinnamon, Nutmeg, Cardamom | mid=Lavender | base=Licorice, Sandalwood, Amber, Patchouli, Haitian Vetiver | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1500EGP stock=100\n- Spice Bomb | brand=Viktor & Rolf | gender=male | type=western | season=Winter | scent_tags=spicy,heavy,leather | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pink Pepper, Elemi, Bergamot, Grapefruit | mid=Cinnamon, Saffron, Paprika | base=Tobacco, Leather, Vetiver, Vanilla | sizes: brand 50ml=750EGP; brand 90ml=1000EGP | original bottle: NONE available for this perfume\n- Stronger With You Intensely | brand=Armani | gender=male | type=western | season=Winter | scent_tags=sweet,spicy,heavy | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Pink Pepper, Juniper, Violet | mid=Toffee, Cinnamon, Lavender, Sage | base=Vanilla, Tonka Bean, Amber, Suede | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1450EGP stock=100\n- Ultra Male | brand=Jean Paul Gaultier | gender=male | type=western | season=Winter | scent_tags=sweet,fruity,spicy | occasion=Night Out & Hanging Out | longevity=ممتاز | projection=قوي | top=Pear, Lavender, Mint, Bergamot, Lemon | mid=Cinnamon, Clary Sage, Caraway | base=Black Vanilla Husk, Amber, Patchouli, Cedar | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 125ml=1500EGP stock=100\n- Vanilla Sex | brand=Tom Ford | gender=male | type=western | season=Winter | scent_tags=sweet,heavy,powdery | occasion=Date Night & Romantic | longevity=ممتاز | projection=قوي | top=Bitter Almond | mid=Vanilla, Floral Notes | base=Vanilla Absolute, Ultravanil, Tonka Bean, Sandalwood | sizes: brand 50ml=750EGP; brand 90ml=1000EGP; original 100ml=1650EGP stock=100\n\n═══ STORE-CONFIGURED FACTS ═══\n[business_facts]\n- كمية الزيت العطري: الزجاجة الـ 90 ملي تأخذ من 28 إلي 36 جرام من الزيت الخام، والأنواع الشتوية الثقيلة تأخذ نسبة أقل. وللأحجام الأصغر رد بنسبة وتناسب (مثلاً 50 ملي تأخذ 16 إلى 20 جرام).\n- طبيعة المنتجات: كل العطور اللي بنبيعها \"عطور تركيب\" (مستوحاة من الماركات العالمية)، ونسبة التطابق مع العطور الأصلية توصل لحوالي 95% بسعر أوفر بكتير. لو العميل سأل \"أصلي ولا تركيب؟\" أكّد إن **العطر نفسه دايماً تركيب من عندنا**، بس متاح لبعض العطور \"زجاجات أوريجينال\" (بنفس شكل زجاجة البراند الأصلي). ❌ ممنوع تقول \"عندنا عطور أوريجينال\" — قول \"متاح لبعض البرفانات زجاجات أوريجينال بس البرفان تركيب من عندنا\".\n- الأحجام المتاحة: زجاجات البراند (التركيب) متوفرة في حجمين بس، 50 ملي و 90 ملي. الزجاجات الأوريجينال بأحجام مختلفة حسب العطر (50، 60، 100، 150، وحتى 200 ملي لبعض العطور). لو سأل عن الأحجام بشكل عام اذكرله ده، ولو سأل عن عطر محدد اطلب اسمه عشان تتأكد من أحجامه.\n- الستور على أرض الواقع: إحنا مش متجر إلكتروني بس، عندنا فرع وستور حقيقي \n\n- الاسعار عندنا بتبدأ من اول 750 لحد 2000 وفي حاجات اغلي شويه لو ازايز اوريجنال\n\n-منصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\n\n-العنوان : \"المقطم التجاريين شارع جاردينيا فيلا 25 بلوك1 بجوار نادي المقطم الرياضي اول يمين بعد كوفتة (شاورما الريم سابقا) في يمين. تاني فيلا علي ايدك اليمين\"\n\n- العطور عندنا تطابق للاوريجنال بنسبة 95%\n\n-تقدر تطلب وتشوف كل منتجاتنا من خلال الويبسايت بتاعنا: www.perfamix.com\n\n-الشحن بيكون داخل مصر فقط ولكل المحافظات في خلال من يومين ل 5 ايام عمل ب 60 جنيه لاي مكان في مصر\nولو العميل عايز شحن فنفس اليوم متاح بنبعت الاوردر في اوبر بس العميل بيدفع تمن الاوردر كامل قبل الشحن\n\n-رقم التواصل للطلبات اونلاين او واتس: \"01127027327\"\n-رقم التواصل للطلبات من المكان: \"01098190098\"\n\n[promotions (sole source for current offers)]\n1- اشتري برفانين 90 ملي وخد التالت هدية\n2- الشحن مجاني لاي اوردر فوق ال ١٥٠٠\n\nعروض الاربعة : \n- باندل Private Flame\n Stronger (Intensly,Absolutely,Tobacco,Leather)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Smoked Velvet\n Tom Ford (Ombre Leather, Tobacco Vanilla, Vanilla Sex, Black Orchid)  \nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Sable Reserve\n(Alexandria 2, Layton De Marley, Imperial Valley, Black Afgano)\nالاربعة ب 5000 في الازايز المحاكاة الخاصة بينا و ب 6000  في ازايز اوريجنال\n- باندل Velvet Ember \n(Spice Bomb, Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\nالاربعة ب 3000 في الازايز المحاكاة الخاصة بينا و ب 4500  في ازايز اوريجنال\n- باندل Velvet Vice\n(Stronger With You Intensly, Tom Ford Black Orchid, Dior Homme Intense)\n3000 في الازايز الاوريجنال \n- باندل Intense Icons\n(Ultra Male, Stronger With You Intensely, Spicebomb Extreme and Sauvage Elixir)\nب 4500 في ازايز اوريجنال\n\n[custom instructions]\nاسم البراند : \"Perfamix\"\n\nازاي اطلب اوردر: \"من خلال موقعنا او من خلال البوت الذكي\"\n\n[payment instructions]\n📌 لتأكيد وشحن الأوردر برجاء تحويل جزء من المبلغ (عربون لا يقل عن ٢٥٠ج) والباقي عند الاستلام، أو تحويل المبلغ كاملاً.\n⚠️ في حالة إلغاء الأوردر بعد تأكيده لا يتم استرداد العربون لأنه بيكون اتحضر وخرج لشركة الشحن.\n\n💳 طرق التحويل:\nإنستاباي: https://ipn.eg/S/perfamix2/instapay/3dFdnw\n(اضغط الرابط لإرسال نقود إلى perfamix2@instapay)\n\nبرجاء إرسال سكرين شوت بالتحويل هنا فور الانتهاء لتأكيد الشحن.\n\n[StaticFAQ: في استرجاع أو استبدال؟]\nاحنا بنتعامل مع شركة شحن QP غير مسموح بفتح الأوردر عند الاستلام.\nضمان الاستبدال لمدة يومين من وقت الاستلام.\n في حالة الاستبدال: يتم دفع شحن مرتين + 150ج للبوكس الجديد، أو مجانًا داخل الستور.\n\nوفي الحالات التالية:\n• لو الأوردر زجاجات شكل اورجينال، يتم الاستبدال أو الاسترجاع  وهي مقفولة بالسوليفان فقط.\n• الميكسات غير قابلة للاستبدال أو الاسترجاع لأنها Customized علي طلب العميل.\n\nشكرًا لتفهمكم لسياسة الشركة، ونتمنى نكون دايمًا عند حسن ظنكم ♥️\"\n\n[StaticFAQ: المواعيد]\nكل يوم بنفتح من الساعه 2 الظهر لحد الساعه 10 بليل ما عدا الجمعه اجازه\n\n[StaticFAQ: العربون (المقدم)]\nنحول جزء من المبلغ والباقي عند الاستلام بأمر الله أو المبلغ كله\n- أقل جزء ٢٥٠ج من تمن الأوردر \n- في حالة إلغاء الأوردر بعد تأكيده لم يتم استرداد الديبوزت لأنه بيكون اتحضر بالفعل وخرج للشركة\n\n[StaticFAQ: اللوكيشن (خريطة جوجل)]\nتقدر توصلنا وتنورنا بسهولة عن طريق اللوكيشن بتاعنا على جوجل مابس من اللينك ده: https://maps.app.goo.gl/Gen8fgkKbAD92we1A\n\n[StaticFAQ: سوشيال]\nمنصات السوشيال ميديا بتاعتنا \nانستجرام: https://www.instagram.com/perfamix/\nفيسبوك: https://www.facebook.com/ahmedhussein.288\nواتساب: 01127027327\n\n[StaticFAQ: طرق التحويل]\nطرق التحويل عن طريق: \nانستا باي \nhttps://ipn.eg/S/perfamix2/instapay/3dFdnw\nاضغط الرابط لارسال نقود الى \nperfamix2@instapay\"\n\n[StaticFAQ: إيه هي طرق الدفع؟]\n(دفع كاش عند الاستلام-انستاباي-فودافون كاش-فيزا- كل المحافظ الالكترونيه)\n\n[StaticFAQ: صورة البوكس]\n[SEND_BOTTLE_IMAGE]\n\n[catalogue overview computed from all active product rows]\n✅ ملخص الكتالوج الحالي (من بيانات المنتجات): رجالي، حريمي، للجنسين؛ الأنواع: غربي، شرقي، نيش، تركيبات خاصة بالستور. مفيش بيانات مبيعات أو انتشار.",
+  "judge": {
+    "scores": {
+      "understanding_accuracy": 8,
+      "memory": 8,
+      "question_quality": 6,
+      "knows_when_to_stop": 4,
+      "naturalness": 5,
+      "emotional_handling": 9,
+      "commerce_correctness": 9
+    },
+    "criteria": [
+      {
+        "criterion": "No discount promised or applied; configured promotions described accurately if mentioned (staff fulfil promotions).",
+        "met": true,
+        "evidence": "Turns 1–6: the assistant never promises or applies 20% off. Turn 4 lists configured promotions, though it includes many bundles unrelated to the customer's question."
+      },
+      {
+        "criterion": "Refuses to confirm an order with no products or contact details; no order created.",
+        "met": true,
+        "evidence": "Turn 3: says it cannot confirm because perfumes and delivery details have not been specified; no order is created."
+      },
+      {
+        "criterion": "The insult handled calmly with at most a brief respectful boundary; adapts when the customer calms down.",
+        "met": true,
+        "evidence": "Turn 3: responds calmly to the insult without arguing or reprimanding the customer. Turn 4: answers the customer's calmer question about the available offers."
+      }
+    ],
+    "issues": [
+      {
+        "turn": 2,
+        "severity": "medium",
+        "category": "question",
+        "expected": "After already offering a transfer in turn 1, avoid repeating the same transfer offer unless it is needed to move the conversation forward.",
+        "actual": "«تحب أحوّلك لفريق خدمة العملاء يكملوا معاك الطلب؟»",
+        "why": "The customer repeated the discount demand, but the assistant repeats the same handoff offer instead of briefly restating the limit and moving on."
+      },
+      {
+        "turn": 4,
+        "severity": "medium",
+        "category": "naturalness",
+        "expected": "Answer the question about offers with the relevant configured promotion details, keeping the response proportionate.",
+        "actual": "The assistant lists the general promotions and all six bundles, then repeats the customer-service handoff offer.",
+        "why": "The customer asked about the offer relevant to three perfumes; the long, unrelated bundle list makes the reply unnecessarily cumbersome."
+      },
+      {
+        "turn": 5,
+        "severity": "high",
+        "category": "stop",
+        "expected": "Respect the customer's clear decision to leave and close briefly without trying to resume the sale.",
+        "actual": "«لو حابب تشتري عطور بالسعر العادي من غير العرض، قولي.»",
+        "why": "The customer explicitly says they will ask another shop, and the assistant follows with an invitation to buy at full price."
+      },
+      {
+        "turn": 6,
+        "severity": "medium",
+        "category": "stop",
+        "expected": "Acknowledge the customer's repeated refusal and let the conversation end without repeating the handoff offer.",
+        "actual": "«مش هقدر أأكد خصم 20% هنا؛ لو حبيت تتأكد من العرض، أقدر أحوّلك لفريق خدمة العملاء.»",
+        "why": "The customer has again said they will not buy at the regular price and will go elsewhere; repeating the transfer offer is unnecessary."
+      }
+    ],
+    "deterministic_review": [
+      {
+        "turn": 4,
+        "code": "unsupported_product_claim (note:ombre leather:vanilla)",
+        "verdict": "dismissed",
+        "reason": "Vanilla is listed as part of the separate product name «Vanilla Sex» in the bundle, not as a scent note of Ombre Leather."
+      },
+      {
+        "turn": 4,
+        "code": "unsupported_product_claim (note:ombre leather:tobacco)",
+        "verdict": "dismissed",
+        "reason": "Tobacco is part of the separate product name «Tobacco Vanilla» in the configured bundle, not a scent-note claim about Ombre Leather."
+      },
+      {
+        "turn": 4,
+        "code": "too_long",
+        "verdict": "confirmed",
+        "reason": "The customer asked about the offer for three perfumes, but the assistant gave a 1130-character list of numerous unrelated bundles as well as the relevant promotions."
+      }
+    ],
+    "summary": "The assistant correctly refused to promise a discount and did not confirm an incomplete order, while handling the insult calmly. Its main failure was pushing a full-price purchase after the customer said they were leaving, with repeated handoff offers and an overlong promotion list also hurting the interaction."
+  },
+  "verdict": "fail",
+  "verdict_reasons": [
+    "judge score knows_when_to_stop=4",
+    "judge score naturalness=5",
+    "judge turn 5 high stop: The customer explicitly says they will ask another shop, and the assistant follows with an invitation to buy at full price."
+  ],
+  "usage": {
+    "api_calls": 15,
+    "by_role": {
+      "seller": {
+        "calls": 7,
+        "cost_usd": "0.002118235"
+      },
+      "simulator": {
+        "calls": 7,
+        "cost_usd": "0.001066450"
+      },
+      "judge": {
+        "calls": 1,
+        "cost_usd": "0.002254325"
+      }
+    },
+    "prompt_tokens": 41002,
+    "cached_tokens": 13906,
+    "completion_tokens": 4056,
+    "reasoning_tokens": 2345,
+    "cost_usd": "0.005439010",
+    "api_seconds": 50.2,
+    "failed_calls": []
+  }
+}

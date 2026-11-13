@@ -60,17 +60,38 @@ def _taste_reference(text, cue):
     # a likeness request it got "تقصد عطر شبه أنهي عطر أو إصدار؟" (simulation S07 round 2 full 5, t4).
     if re.match(r"\s*(?:ل|ب)?(?:ال)?(?:ذوق|طبع|شخصي)|\s*اللي\s+(?:بت|بي|ب|ت|ي)?حب", text[cue.end():]):
         return True
+    # "الـ notes دي قريبة من اللي أعرفه، بس الفانيليا…" compares our notes with what the customer
+    # knows; read as "something close to Aventus" it got the gender question and two other perfumes
+    # (simulation S02 round 4 full run, t3-t4).
+    if re.match(r"\s*اللي\s+(?:انا\s+)?(?:اعرف|عارف|فاكر|قري|شفت|سمعت|حافظ|متعود)", text[cue.end():]):
+        return True
     # "طب في بديل أرخص شوية ويكون فريش؟" asks for another option, not for a perfume like a named one;
     # it got "تقصد عطر شبه أنهي عطر أو إصدار؟" twice (simulation S11 round 2 batch 5, t4-t5).
     return cue.group() == "بديل" and bool(re.match(
         r"\s+(?:ارخص|اقل|اغلي|احسن|افضل|تاني|مناسب|كويس|حلو|في\s+حدود)", text[cue.end():]))
 
 
+def _same_perfume_question(text, cue):
+    # "زجاجة الـ100 ملي دي تركيب برضه؟ وهتكون نفس النوتات اللي قلتها؟" asks whether this bottle has the
+    # notes already listed, not for a perfume with the same notes: read as a likeness request it got
+    # the gender question and then two other perfumes (simulation S02 round 3 verify, t5-t6).
+    if not cue.group().startswith("نفس"):
+        return False
+    after = text[cue.end():]
+    if re.match(r"\s+(?:اللي\s+(?:انت\s+)?(?:قلت|ذكرت|كتبت|بعت|قولت)|برضه|برضو|بردو)", after):
+        return True
+    # "هتكون نفس النوتات؟" predicates it of this bottle; "عايز حاجة فيها نفس ريحة Aventus" still asks.
+    clause = re.split(r"[.!؟?\n؛;،,]", text[:cue.start()])[-1]
+    return bool(re.search(r"(?<!\w)(?:هتكون|هيكون|هتبقي|هيبقي|هي|هو|دي|ده)\s+$", clause)
+                and not re.search(r"(?<!\w)(?:عايز|عاوز|محتاج|رشح|ترشح|عندك|حاجه)", clause)
+                and not re.match(r"\s+[a-z]", after))
+
+
 def _affirmative_cues(text):
     matches = []
     negated = None
     for match in _SIMILAR.finditer(text):
-        if _scent_analogy(text, match) or _taste_reference(text, match):
+        if _scent_analogy(text, match) or _taste_reference(text, match) or _same_perfume_question(text, match):
             continue
         joined_negative = negated is not None and re.search(
             r"\b(?:او|or)\s*$", text[negated.end():match.start()],
@@ -93,6 +114,7 @@ def _withdrawn(message):
     return bool(_WITHDRAW.search(text)) or any(
         _NEGATIVE.search(text[:match.start()]) for match in _SIMILAR.finditer(text)
         if not _scent_analogy(text, match) and not _taste_reference(text, match)
+        and not _same_perfume_question(text, match)
     )
 
 
@@ -378,7 +400,12 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
     reset = fresh.get("reset_preferences") is True or bool(_RESET.search(_normalized(message)))
     if reset:
         fresh["reset_preferences"] = True
-        saved, state = {}, {}
+        # Whose profile is whose survives a reset: "طب نرجع لبتاعي…" came with the extractor's reset, the
+        # record of the switch to his mother was wiped with everything else, nothing was restored, and
+        # he was asked "رجالي ولا حريمي؟" again (simulation S15 round 4 full run, t5).
+        saved = {}
+        state = {key: value for key, value in state.items()
+                 if key in ("recipient", "recipient_profiles", "recipient_offers")}
 
     cleared = set(fresh.get("clear_preferences") or ())
     withdrawn = bool(cleared.intersection(REFERENCE_KEYS)) or _withdrawn(message)

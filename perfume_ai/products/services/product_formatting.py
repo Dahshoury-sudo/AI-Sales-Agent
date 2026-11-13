@@ -158,9 +158,18 @@ def requested_quote_options(message):
     bottle = explicit_bottle_type(text)
     if bottle is None and re.search(r"اوريجينال|اوريجنال|اورجينال|original", text):
         bottle = "original"
-    elif bottle is None and re.search(r"تركيب", text):
+    elif bottle is None and re.search(r"تركيب", text) and not _ASKS_IF_TARKEEB.search(text):
         bottle = "normal"
     return sizes, bottle
+
+
+# "زجاجة الـ100 ملي بـ2400 تركيب برضه؟" asks whether that bottle's liquid is تركيب; it does not pick the
+# store bottle. Read as a bottle type it looked for a 100 ml store bottle, found none, and a bottle in
+# stock was answered with "الحجم ونوع الزجاجة المطلوبين مش متاحين حالياً" (simulation S02 round 3 verify, t7).
+_ASKS_IF_TARKEEB = re.compile(
+    r"(?<!\w)تركيب\S*\s+(?:برضه|برضو|بردو|كمان|ولا|او|زيه|زيها)(?!\w)"
+    r"|(?<!\w)(?:ده|دي|دا|هو|هي|دول|يبقي|تبقي|هيكون|هتكون|يعتبر|تعتبر)\s+تركيب(?!\w)"
+    r"|(?<!\w)(?:ملي|مل|ml)\s+(?:ده|دي|دا)?\s*تركيب\s*$")
 
 
 def product_quotes(products, message="", max_price=None, *, filter_budget=True):

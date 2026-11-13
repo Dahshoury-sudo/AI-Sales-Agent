@@ -1,0 +1,1015 @@
+{
+  "S01_beginner": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.007425365",
+      "calls": 22
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.004906370",
+      "calls": 16
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006968825",
+      "calls": 16
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 10.0,
+      "min_score": 10,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.004938025",
+      "calls": 16
+    }
+  },
+  "S02_enthusiast": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 8.0,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002740640",
+      "calls": 10
+    },
+    "round3-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.6,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 2,
+      "reasons": [
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=5",
+        "judge turn 7 critical commerce: The 2000 EGP price is correct, but the claim that the price will be added automatically is unsupported by the provided store facts.",
+        "judge turn 8 high stop: The customer said they would think and review before deciding and thanked the assistant; the recap and invitation to visit the branch continue the sales interac"
+      ],
+      "cost": "0.010396975",
+      "calls": 33
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 5.7,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge score understanding_accuracy=5",
+        "judge score memory=5",
+        "judge score question_quality=4",
+        "judge score commerce_correctness=4",
+        "judge turn 7 critical commerce: This falsely denies availability of a stocked Aventus variant: the database lists original 100ml, price 2400 جنيه, stock 100. It also fails to answer the custom"
+      ],
+      "cost": "0.009337575",
+      "calls": 26
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 6.6,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [
+        "judge score memory=5",
+        "judge score question_quality=4"
+      ],
+      "cost": "0.011539410",
+      "calls": 28
+    }
+  },
+  "S03_total_budget": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 8.3,
+      "min_score": 7,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006836220",
+      "calls": 22
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.6,
+      "min_score": 9,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.007699820",
+      "calls": 22
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.0,
+      "min_score": 8,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006957930",
+      "calls": 24
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 7.7,
+      "min_score": 5,
+      "det_high": 2,
+      "judge_high": 1,
+      "reasons": [
+        "judge score commerce_correctness=5",
+        "judge turn 6 critical commerce: The customer had just confirmed they wanted the pair at the stated price including shipping. Calling 1500 EGP the total omits the known 60 EGP shipping fee and "
+      ],
+      "cost": "0.007334930",
+      "calls": 27
+    }
+  },
+  "S04_busy_price": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 3,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002333720",
+      "calls": 11
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 3,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002370630",
+      "calls": 12
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 3,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002958070",
+      "calls": 12
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 3,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002343770",
+      "calls": 12
+    }
+  },
+  "S05_premium": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.3,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.010847640",
+      "calls": 27
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.1,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.010716915",
+      "calls": 25
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 8.4,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.011637525",
+      "calls": 28
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.3,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.009352935",
+      "calls": 25
+    }
+  },
+  "S06_indecisive": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 8.9,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.014337380",
+      "calls": 32
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 8.7,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.016455100",
+      "calls": 35
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 9.4,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.013320900",
+      "calls": 33
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.6,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.011450345",
+      "calls": 30
+    }
+  },
+  "S07_gift": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 8.0,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.007630635",
+      "calls": 24
+    },
+    "round3-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 6,
+      "mean_score": 7.9,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge turn 4 critical commerce: The policy says orders cannot be opened at delivery, and gives specific sealed-only terms for original bottles and no-return terms for customized mixes. It does",
+        "criterion unmet: Return/exchange question answered from the store's configured policy only; nothing invented."
+      ],
+      "cost": "0.008212960",
+      "calls": 27
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.0,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.008193390",
+      "calls": 28
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 8.7,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.005230285",
+      "calls": 19
+    }
+  },
+  "S08_compare": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003897900",
+      "calls": 17
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003513410",
+      "calls": 16
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003810430",
+      "calls": 17
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003516920",
+      "calls": 16
+    }
+  },
+  "S09_unavailable": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.3,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006039415",
+      "calls": 25
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.4,
+      "min_score": 8,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.005588295",
+      "calls": 23
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 8.4,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006811565",
+      "calls": 25
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 6,
+      "mean_score": 8.7,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge turn 5 high stop: After the customer explicitly says they will think and reply, the assistant adds a smaller-size suggestion and repeats the prices, unnecessarily pushing the pur"
+      ],
+      "cost": "0.006411430",
+      "calls": 24
+    }
+  },
+  "S10_dislikes": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.3,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.008010930",
+      "calls": 21
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 8.1,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.014361845",
+      "calls": 26
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 6.9,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 3,
+      "reasons": [
+        "judge turn 4 high understanding: The reply addresses oud but omits whether either option is confirmed not sweet. The assistant had just said it could not confirm K By Dolce was not sweet, so it",
+        "judge turn 6 high memory: The customer explicitly asks for something the assistant is sure is not sweet. The assistant gives two more recommendations without establishing that, even thou",
+        "judge turn 8 high stop: This is another recommendation that does not establish the requested certainty. Turn 9 confirms the assistant cannot say whether Eternity is sweet.",
+        "criterion unmet: When the customer complains, checks whether the earlier recommendation actually violated the exclusi"
+      ],
+      "cost": "0.022664265",
+      "calls": 45
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.4,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.012102460",
+      "calls": 25
+    }
+  },
+  "S11_all_constraints": {
+    "round2-full/attempt-6": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 8.1,
+      "min_score": 6,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [
+        "criterion unmet: Says honestly that nothing is at or under 700 (cheapest is 750) using the store's near-budget wordin",
+        "criterion unmet: 'غالي عليا' is addressed with the known budget and real options, not a generic defence."
+      ],
+      "cost": "0.011835120",
+      "calls": 26
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 8.6,
+      "min_score": 7,
+      "det_high": 4,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.011745240",
+      "calls": 30
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 7.7,
+      "min_score": 5,
+      "det_high": 3,
+      "judge_high": 1,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge turn 4 high understanding: The assistant guesses an incorrect meaning even after the customer says the previous answer did not resolve the question."
+      ],
+      "cost": "0.012826705",
+      "calls": 34
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.4,
+      "min_score": 8,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.010431455",
+      "calls": 22
+    }
+  },
+  "S12_short_refs": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.010843110",
+      "calls": 29
+    },
+    "round3-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 8.1,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [
+        "criterion unmet: Topic change (shipping) answered from store facts, then the conversation resumes naturally."
+      ],
+      "cost": "0.015191350",
+      "calls": 33
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 6.9,
+      "min_score": 4,
+      "det_high": 0,
+      "judge_high": 2,
+      "reasons": [
+        "judge score understanding_accuracy=5",
+        "judge score memory=4",
+        "judge score commerce_correctness=5",
+        "judge turn 5 high understanding: The assistant followed the earlier Pure XS price inquiry instead of the latest topic, which was the first perfume, Black XS. The amount happens to be the same, ",
+        "judge turn 6 high memory: The customer explicitly says they did not mean Pure XS and meant the other one. The assistant repeats Pure XS and gives details that do not answer the correctio",
+        "criterion unmet: 'التانى' / 'الاولانى' resolve to the right previously offered perfume; genuinely ambiguous reference",
+        "criterion unmet: الـ90' is a size selection, not order consent; price stated correctly."
+      ],
+      "cost": "0.009236190",
+      "calls": 26
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 6.3,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 3,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge score knows_when_to_stop=4",
+        "judge turn 7 high stop: The customer explicitly says they will order later; asking which perfume to order pushes a closing step instead of respecting the deferment.",
+        "judge turn 8 high stop: The customer names Pure XS and again says they will order later. The assistant unnecessarily reconfirms the named perfume and requests a size to advance checkou",
+        "judge turn 9 high memory: Pure XS was explicitly named in the prior turn and the assistant had just asked for the size. It forgets both the product and the size selection, and repeats th",
+        "criterion unmet: The 'الـ90' is a size selection, not order consent; price stated correctly."
+      ],
+      "cost": "0.009777770",
+      "calls": 35
+    }
+  },
+  "S13_mixed_language": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.7,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.007246465",
+      "calls": 18
+    },
+    "round3-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 6,
+      "mean_score": 7.1,
+      "min_score": 5,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge turn 4 high memory: The customer asked the shipping cost, not the perfume price, and had already named K By Dolce and the 50ml size. The assistant asks for supplied details instead"
+      ],
+      "cost": "0.011981880",
+      "calls": 24
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 5,
+      "mean_score": 7.1,
+      "min_score": 5,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=5",
+        "criterion unmet: Respects the ~800 budget once stated (750 options); shipping 60 from store facts."
+      ],
+      "cost": "0.006796350",
+      "calls": 18
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 5.4,
+      "min_score": 3,
+      "det_high": 2,
+      "judge_high": 3,
+      "reasons": [
+        "turn 3 high over_budget_offer: quoted [1000.0, 1375.0, 1625.0] against a stated budget of 800",
+        "turn 4 critical repeated_reply: 100% identical to an earlier reply: 'K By Dolce\nزجاجة الستور الخاصة بينا 50 ملي بـ750 جنيه.\n\n212 NYC Man\nزجاجة الستور الخاصة بينا 50 ملي '",
+        "judge score understanding_accuracy=4",
+        "judge score memory=3",
+        "judge score commerce_correctness=3",
+        "judge turn 3 high commerce: عرض خيارات تتجاوز الميزانية المعلنة، من دون صياغة «أعلى حاجة بسيطة من ميزانيتك»؛ سعر 1000 جنيه أعلى من الميزانية بأكثر من 20%.",
+        "judge turn 5 critical accuracy: نفى توفر 212 NYC Man رغم أنه موجود ومخزون في قاعدة البيانات؛ ذكر بديلًا لا يصحح النفي الخاطئ.",
+        "judge turn 6 high understanding: صحح التوفر ضمنيًا لكنه لم يعالج التناقض صراحةً، والأهم أنه أجاب عن 212 بدل سؤال العميل عن K By Dolce.",
+        "criterion unmet: Understands the Franco/English mix and replies naturally in Egyptian Arabic (light mirroring accepta",
+        "criterion unmet: Respects the ~800 budget once stated (750 options); shipping 60 from store facts."
+      ],
+      "cost": "0.010374170",
+      "calls": 34
+    }
+  },
+  "S14_mind_change_long": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 9,
+      "mean_score": 9.6,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.013957995",
+      "calls": 34
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 9,
+      "mean_score": 9.3,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.013420615",
+      "calls": 34
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 10,
+      "mean_score": 7.7,
+      "min_score": 6,
+      "det_high": 0,
+      "judge_high": 1,
+      "reasons": [
+        "judge turn 7 high memory: This option is not tagged sweet, so it does not honor the customer's explicit latest scent preference. Wanted by Night is a suitable option, but the other recom",
+        "criterion unmet: The latest explicit preference wins (sweet for evenings, budget 1500) over the earlier fresh / 1000.",
+        "criterion unmet: Side questions are answered and the recommendation resumes without restarting discovery."
+      ],
+      "cost": "0.018759735",
+      "calls": 40
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 10,
+      "mean_score": 9.7,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.014916730",
+      "calls": 39
+    }
+  },
+  "S15_self_and_other": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 9,
+      "mean_score": 9.7,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.017985050",
+      "calls": 34
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 9.1,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.011546810",
+      "calls": 29
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 7.4,
+      "min_score": 5,
+      "det_high": 0,
+      "judge_high": 2,
+      "reasons": [
+        "judge score question_quality=5",
+        "judge turn 3 high stop: The customer said Aventus looked appealing but also asked for a separate recommendation for his mother. Asking which bottle type he wants prematurely advances t",
+        "judge turn 4 high understanding: The request was clear and did not refer to an unnamed existing perfume. This unnecessary clarification makes the customer repeat that he wants a soft, rose-scen"
+      ],
+      "cost": "0.016550255",
+      "calls": 32
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 9,
+      "mean_score": 6.0,
+      "min_score": 3,
+      "det_high": 0,
+      "judge_high": 3,
+      "reasons": [
+        "judge score memory=3",
+        "judge score question_quality=3",
+        "judge turn 5 high memory: The customer had already stated that he wanted a men's perfume and had received the two recommendations. Re-asking the gender question loses both supplied conte",
+        "judge turn 6 high memory: The customer had already said he likes woody scents earlier, and explicitly names the two suggestions he wants compared. The question repeats a known preference",
+        "judge turn 8 high memory: The immediately preceding exchange establishes that he prefers woody scents and wants something in Aventus's style. The assistant re-asks the already supplied p",
+        "criterion unmet: Returning to his own purchase restores his woody men's preference and recalls the earlier suggestion",
+        "criterion unmet: At the late turn the woody/men's preference is still honoured after leaving the recent-message windo"
+      ],
+      "cost": "0.014288565",
+      "calls": 32
+    }
+  },
+  "S16_skeptic": {
+    "round2-full/attempt-6": {
+      "verdict": "fail",
+      "turns": 8,
+      "mean_score": 7.4,
+      "min_score": 4,
+      "det_high": 1,
+      "judge_high": 0,
+      "reasons": [
+        "judge score question_quality=4"
+      ],
+      "cost": "0.007579300",
+      "calls": 30
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 8.7,
+      "min_score": 7,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.007329395",
+      "calls": 26
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.7,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003883715",
+      "calls": 23
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 6,
+      "mean_score": 9.0,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.004181390",
+      "calls": 21
+    }
+  },
+  "S17_order_complaint": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002174345",
+      "calls": 4
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.000864775",
+      "calls": 4
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.00203152",
+      "calls": 4
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 2,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.00200087",
+      "calls": 4
+    }
+  },
+  "S18_browser": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.3,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003352650",
+      "calls": 12
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.7,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.004420060",
+      "calls": 12
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.3,
+      "min_score": 9,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003190530",
+      "calls": 12
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 5,
+      "mean_score": 9.6,
+      "min_score": 8,
+      "det_high": 0,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.003065000",
+      "calls": 12
+    }
+  },
+  "S19_ready_buyer_edits": {
+    "round2-full/attempt-6": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.6,
+      "min_score": 8,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.008282960",
+      "calls": 24
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 9,
+      "mean_score": 8.4,
+      "min_score": 7,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.009153830",
+      "calls": 28
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 8,
+      "mean_score": 9.7,
+      "min_score": 8,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.008461690",
+      "calls": 27
+    },
+    "round4-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 7,
+      "mean_score": 9.9,
+      "min_score": 9,
+      "det_high": 3,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.006657735",
+      "calls": 24
+    }
+  },
+  "S20_pushy_discount": {
+    "round2-full/attempt-6": {
+      "verdict": "fail",
+      "turns": 5,
+      "mean_score": 7.4,
+      "min_score": 5,
+      "det_high": 2,
+      "judge_high": 1,
+      "reasons": [
+        "judge score knows_when_to_stop=5",
+        "judge turn 5 high stop: The customer said they would not order and asked the assistant to leave it. Transferring the conversation and promising team follow-up pushes contact after a cl",
+        "criterion unmet: The insult handled calmly with at most a brief respectful boundary; adapts when the customer calms d"
+      ],
+      "cost": "0.003485100",
+      "calls": 8
+    },
+    "round3-full/attempt-1": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 8.4,
+      "min_score": 7,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002854025",
+      "calls": 6
+    },
+    "round3-verify/attempt-1": {
+      "verdict": "pass",
+      "turns": 4,
+      "mean_score": 8.3,
+      "min_score": 7,
+      "det_high": 2,
+      "judge_high": 0,
+      "reasons": [],
+      "cost": "0.002676050",
+      "calls": 6
+    },
+    "round4-full/attempt-1": {
+      "verdict": "fail",
+      "turns": 7,
+      "mean_score": 7.0,
+      "min_score": 4,
+      "det_high": 2,
+      "judge_high": 1,
+      "reasons": [
+        "judge score knows_when_to_stop=4",
+        "judge score naturalness=5",
+        "judge turn 5 high stop: The customer explicitly says they will ask another shop, and the assistant follows with an invitation to buy at full price."
+      ],
+      "cost": "0.005439010",
+      "calls": 15
+    }
+  }
+}

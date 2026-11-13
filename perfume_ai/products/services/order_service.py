@@ -355,6 +355,58 @@ def amount_with_shipping(conversation, fragment):
     return f"{lead}الطلب {money(total)} جنيه + الشحن {money(fee)} جنيه = {money(grand)} جنيه."
 
 
+_BUYS_NOW = re.compile(r"(?<!\w)و?(?:هاخد\w*|اخد\w*|اطلب\w*|هطلب\w*|اشتري\w*|هشتري\w*|احجز\w*|اكد\w*|ضيف\w*|ابعت\w*|"
+                       r"كمل\s+الطلب|order|buy|confirm)(?!\w)")
+
+
+def quoted_total_answer(conversation, message):
+    """"total 810 صح؟" before any cart exists, answered from the size we quoted and the shipping fee.
+
+    Classified as an order with nothing in the cart, it got "تحب تطلب أنهي عطر؟ قولي اسمه." one turn
+    after the 50 ml was quoted at 750 and shipping at 60 (simulation S13 round 3 verify, t4). The sum
+    is computed here from the live price of the quoted size and the store's one flat fee. With two
+    sizes quoted, the customer's own figure has to pick one; otherwise the normal flow answers. A
+    message that buys, and a customer who has a cart or an order, keep the checkout's own answer.
+    """
+    from .product_formatting import money, quote_evidence
+    from .sales.naming import normalize_product_name
+    from .product_formatting import is_variant_available
+    if conversation is None or getattr(conversation, "pk", None) is None:
+        return None
+    text = normalize_product_name(message or "")
+    if not _ASKS_TOTAL.search(text) or _BUYS_NOW.search(text):
+        return None
+    # Several bottles, or one budget for several: the flow that computes combined totals answers.
+    if (conversation.preferences or {}).get("budget_scope") == "total" or re.search(
+            r"(?<!\w)(?:ال)?(?:اتنين|تلاته|تلات|زجاجتين|عطرين|قطعتين)(?!\w)|(?<![\d.])[2-9]\s*(?:زجاج|عطور|قطع|برفان)", text):
+        return None
+    cart = Cart.objects.filter(conversation=conversation).first()
+    if (cart and (cart.items.exists() or cart.pending_items)) or _due_totals(conversation)[0]:
+        return None
+    fee = flat_shipping_fee(conversation.store)
+    if fee is None:
+        return None
+    contexts = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                .order_by("-created_at", "-pk").values_list("internal_context", flat=True)[:4])
+    records = next((found for found in (quote_evidence(context).get("quotes") for context in contexts) if found), [])
+    ids = [record.get("variant_id") for record in records if isinstance(record, dict)]
+    variants = [variant for variant in ProductVariant.objects.filter(pk__in=ids, product__store=conversation.store,
+                                                                     product__is_active=True)
+                .select_related("product") if is_variant_available(variant)]
+    stated = {Decimal(n) for n in re.findall(r"(?<![\d.])\d{3,6}(?![\d.])", text)}
+    if len(variants) > 1:
+        variants = [variant for variant in variants if variant.price + fee in stated]
+    if len(variants) != 1:
+        return None
+    variant = variants[0]
+    line = shipping_line(conversation.store, variant.price)
+    if not line:
+        return None
+    grand = variant.price + fee
+    lead = "أيوه، " if grand in stated else ("لأ، " if stated else "")
+    return f"{lead}{variant.product.name} {variant.volume} ملي بـ{money(variant.price)} جنيه، {line}"
+
+
 def _cart_context(cart):
     """Render the saved cart for the extractor prompt.
 
@@ -840,7 +892,15 @@ def _cart_recap(conversation, items_to_create, total_price, message=None):
     # round 2 full 5, t7). A shipping question is answered by `router._with_side_answers` instead.
     from .sales.naming import normalize_product_name
     asked = normalize_product_name(message or "")
-    if _ASKS_TOTAL.search(asked) and not re.search(r"شحن|توصيل", asked):
+    # Once a total with shipping has been given, a bare "المجموع: 1500 جنيه." under it reads as the
+    # order's total with the fee dropped: told 1560 twice, "تمام، هاخدهم كده." got a recap at 1500
+    # (simulation S03 round 4 full run, t6, critical).
+    told_with_shipping = False
+    if conversation is not None and getattr(conversation, "pk", None) is not None:
+        recent = (conversation.messages.filter(role="assistant", delivery_status="sent")
+                  .order_by("-created_at", "-pk").values_list("content", flat=True)[:6])
+        told_with_shipping = any("مع الشحن" in (content or "") for content in recent)
+    if (_ASKS_TOTAL.search(asked) or told_with_shipping) and not re.search(r"شحن|توصيل", asked):
         shipping = shipping_line(getattr(conversation, "store", None), total_price)
         if shipping:
             recap += shipping + "\n"

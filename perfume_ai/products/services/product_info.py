@@ -357,6 +357,10 @@ def _availability_only_hint(message):
         return ""
     if any(word in normalized for word in _PRICE_OR_SIZE_WORDS):
         return ""
+    # "إيه الـtop وmiddle وbase notes عندكم؟" asks for the notes we have; marked availability-only by
+    # its "عندكم", it was answered "أيوه، Layton متوفر يا فندم." (simulation S02 round 4 full run, t6).
+    if re.search(r"نوت|مكونات|ريح|ثبات|فوحان|اصدار|نسخه|تركيب|فرق|\b(?:notes?|top|middle|base)\b", normalized.lower()):
+        return ""
     return (
         "\n🔴 ملاحظة على الرسالة دي: العميل سأل عن التوفر بس — مفيش في كلامه أي سؤال عن سعر "
         "ولا حجم. أكّد التوفر باختصار باسم العطر؛ سؤال واحد بس لو لازم لطلبه الحالي. ❌ ممنوع تسرد أسعار أو أحجام "
@@ -846,6 +850,34 @@ def _alternatives_budget_hint(budget, *, nearest=False):
     )
 
 
+_DIFFERENCE_BETWEEN = re.compile(r"(?<!\w)(?:ال)?(?:فرق|يفرق|بيفرق|تفرق|بتفرق)\w*\s+(?:\S+\s+){0,3}?بين")
+
+
+def _size_of_the_same_perfume(message, products, history):
+    """"إيه الفرق بينه وبين الـ50؟": the 50 is a size of the same perfume, said in so many words.
+
+    A customer who had just been quoted "50 ملي بـ750 جنيه" took the 50 for another perfume. The
+    question got the price again, then "آه، قصدك الفرق بينه وبين ميزانيتك؟" (simulation S11 round 3
+    verify, t3-t4). Only when one perfume is the subject and exactly one of its own sizes is named:
+    "الفرق بين الـ50 والـ90" compares two sizes and keeps its own answer.
+    """
+    from .product_formatting import is_variant_available, requested_quote_options
+    from .static_faq_service import normalize_arabic
+    if len(products) != 1 or not _DIFFERENCE_BETWEEN.search(normalize_arabic(message or "")):
+        return ""
+    sizes, _ = requested_quote_options(message)
+    product = products[0]
+    volumes = {variant.volume for variant in product.variants.all() if is_variant_available(variant)}
+    if len(set(sizes)) != 1 or sizes[0] not in volumes:
+        return ""
+    size, name = sizes[0], product.name
+    first = (f"مفيش فرق في العطر نفسه: الـ{size} ملي ده حجم من {name}، مش عطر تاني. "
+             "الفرق بين الأحجام في كمية العطر والسعر بس.")
+    again = f"قصدي إن الـ{size} ملي مش عطر تاني: هو {name} نفسه في زجاجة {size} ملي، بنفس الريحة."
+    said = [row.get("content", "") for row in (history or [])[-6:] if row.get("role") == "assistant"]
+    return again if any(first in reply for reply in said) and not any(again in reply for reply in said[-1:]) else first
+
+
 @governed_reply
 def get_product_info(message, history=None, store=None, conversation=None, retry_hint=""):
     """Answer a question about a named perfume.
@@ -904,6 +936,14 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
         products = _products_named([name], store) if name else []
         if not products:
             return "تقصد أنهي عطر؟ ممكن تكتب اسمه؟", "ORDINAL_UNRESOLVED"
+    # Before any resolver: "إيه الفرق بينه وبين الـ50؟" names a size of the perfume it points at, and
+    # the answer needs neither a name lookup nor the model.
+    from .static_faq_service import normalize_arabic as _normalize_arabic
+    if _DIFFERENCE_BETWEEN.search(_normalize_arabic(message or "")):
+        subject = list(products) or _referent_from_conversation(message, store, conversation)
+        same_perfume = _size_of_the_same_perfume(message, subject, history)
+        if same_perfume:
+            return same_perfume, "═══ بيانات المنتجات الحقيقية من قاعدة البيانات ═══\n" + format_products(subject)
     # Kept because the `chasing` gate below needs to know the name came from *this* message: a
     # deterministic match is never a resolved pronoun, so it always ends a chase.
     named_here = bool(products)
