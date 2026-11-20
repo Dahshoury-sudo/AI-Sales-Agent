@@ -235,10 +235,13 @@ def _unverifiable_note(clues):
         return ""
     labels = {"bottle_color": "لون الزجاجة", "bottle_shape": "شكل الزجاجة"}
     described = "، ".join(labels[clue] for clue in given)
+    # No "we don't record that in our data": the model repeats a first-person line like that to the
+    # customer, and the owner wants no reply to cite its records (2026-11-20).
     return (
-        f"⚠️ العميل وصف {described}، وإحنا مش بنسجل ده في بياناتنا — "
+        f"⚠️ العميل وصف {described}، ودي حاجة مينفعش تحدد بيها العطر — "
         f"فمينفعش تعتمد عليه كدليل ولا تقول إنه بيطابق. "
-        f"لكن ينفع تسأله عنه أو عن الريحة عشان تضيّق."
+        f"لكن ينفع تسأله عن الريحة أو عن أي حاجة تانية فاكرها عشان تضيّق، "
+        f"زي \"مقدرش أعرف العطر من {described} لوحده، فاكر ريحته كانت عاملة إزاي؟\"."
     )
 
 

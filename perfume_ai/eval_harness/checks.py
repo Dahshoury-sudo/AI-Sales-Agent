@@ -686,6 +686,17 @@ def check_reply(reply, *, truth, context, customer_text, turn_state, history_tex
             f"told the customer about the injected data ('{leak.group()}') instead of naming "
             f"the perfume or asking which one they meant",
         ))
+    else:
+        # ── Citing its own records ("طابعه المسجل", "مصنف عندنا") ─────────────
+        # The owner wants facts stated plainly (2026-11-20). Production rewrites what it safely can
+        # and logs the rest as SOURCE_TALK; this is the same detector, on what reached the customer.
+        from products.services.reply_sanitizer import source_talk
+        cited = source_talk(reply)
+        if cited:
+            findings.append((
+                "source_talk", "medium",
+                f"cited its own records ('{cited[0]}') instead of stating the fact plainly",
+            ))
 
     # ── Unsupported certainty ─────────────────────────────────────────────
     for pattern in _GUARANTEE:

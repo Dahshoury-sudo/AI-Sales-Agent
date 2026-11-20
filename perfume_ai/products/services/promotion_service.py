@@ -26,7 +26,7 @@ REPEAT_INVITATION = "تحب أحوّلك لفريق خدمة العملاء يك
 WEBSITE_ORDERING = "وتقدر كمان تطلب الباندلز والعروض مباشرة من موقعنا."
 DECLINED = "لو حابب تشتري عطور بالسعر العادي من غير العرض، قولي."
 UNKNOWN_DETAILS = "تفاصيل العرض محتاجة تأكيد من فريق خدمة العملاء."
-NO_MORE_DETAILS = "ده كل المكتوب عندي عن العرض؛ حسابه وتطبيقه بيتم مع فريق خدمة العملاء."
+NO_MORE_DETAILS = "ده كل اللي أعرفه عن العرض؛ حسابه وتطبيقه بيتم مع فريق خدمة العملاء."
 NO_MORE_DETAILS_AGAIN = "مفيش عندي أي تفاصيل تانية عن العرض غير اللي قلتهالك."
 # "أكدلي الأوردر دلوقتي" with nothing chosen and no delivery details got the opening boundary reply
 # again, word for word, and never said why nothing could be confirmed (simulation S20 round 2, t3).

@@ -160,7 +160,9 @@ class CatalogTests(TestCase):
         intent = {attraction.GOAL_KEY: "women"}
         reply = "Velvet Night ريحته مسكرة وخشبية، وPlain Sweet برضه مسكر وخشبي."
         noted = attraction.appeal_note(reply, [self.plain, self.appealing], intent)
-        self.assertTrue(noted.endswith("Velvet Night " + attraction.DESCRIBED_AS_APPEALING + "."))
+        # Said plainly: the old "موصوف عندنا إنه جذاب" came back from the model as "ووصفه عندنا جذاب".
+        self.assertTrue(noted.endswith("\n\nVelvet Night ريحته جذابة."), noted)
+        self.assertEqual(attraction.appealing_line(["A", "B"]), "A وB ريحتهم جذابة.")
         self.assertEqual(attraction.appeal_note(reply, [self.plain, self.appealing], {}), reply)
         self.assertEqual(attraction.appeal_note("Plain Sweet ريحته مسكرة.", [self.plain], intent),
                          "Plain Sweet ريحته مسكرة.")
@@ -175,7 +177,9 @@ class CatalogTests(TestCase):
         prompt = "\n".join(message["content"] for message in chat_call.call_args[0][0])
         self.assertIn(attraction.named_rules([self.appealing]), prompt)
         self.assertIn("Velvet Night", attraction.named_rules([self.appealing]))
-        self.assertIn("مفيش عطر هنا موصوف", attraction.named_rules([self.plain]))
+        self.assertIn("ممنوع تقول عن أي عطر هنا إنه جذاب", attraction.named_rules([self.plain]))
+        for perfumes in ([self.appealing], [self.plain]):
+            self.assertNotIn("موصوف", attraction.named_rules(perfumes).replace("مسجلة أو موصوفة عندنا", ""))
         self.assertIn("ممنوع تنصحه", attraction.named_rules([self.plain]))
 
 

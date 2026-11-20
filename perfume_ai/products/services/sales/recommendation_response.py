@@ -76,5 +76,5 @@ def response_issues(reply, products, intent, search=None):
                 continue
             for claimed in occasion_groups(clause):
                 if not occasion_matches(product.occasion, claimed):
-                    issues.append(f"لا تنسب مناسبة مخالفة إلى {product.name}؛ مناسبته المسجلة {product.occasion}")
+                    issues.append(f"لا تنسب مناسبة مخالفة إلى {product.name}؛ مناسبته {product.occasion}")
     return list(dict.fromkeys(issues))

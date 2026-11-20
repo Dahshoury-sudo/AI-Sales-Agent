@@ -98,6 +98,169 @@ class ConfidentWordingTests(SimpleTestCase):
     def test_source_aside_after_a_negative_answer_is_still_removed(self):
         self.assertEqual(sanitize_reply("ده مش يونيسكس حسب معلوماتي."), "ده مش يونيسكس.")
 
+    # Owner, 2026-11-20: no reply cites where its information comes from. The six phrases above matched
+    # none of 6,687 stored and simulated replies; these are the forms the bot actually wrote.
+    def test_real_source_talk_is_removed_or_reworded(self):
+        for draft, expected in (
+            ("الفرق في الطابع المسجل: Alexandria II عودي وخشبي.", "الفرق في الطابع: Alexandria II عودي وخشبي."),
+            ("212 Sexy Women: طابعه المسجل فيه ريحة بودرة.", "212 Sexy Women: طابعه فيه ريحة بودرة."),
+            ("مفيش عود ضمن نوتاته المسجلة.", "مفيش عود ضمن نوتاته."),
+            ("الـBase Notes المسجلة عندنا هي Vanilla وPepper.", "الـBase Notes هي Vanilla وPepper."),
+            ("طابعها زهور وبحري ونضيف، والحلاوة فيها مش مؤكدة عندي.", "طابعها زهور وبحري ونضيف، والحلاوة فيها مش مؤكدة."),
+            ("Her فيها ريحة فواكه؛ خفتها مش مؤكدة في بياناته.", "Her فيها ريحة فواكه؛ خفتها مش مؤكدة."),
+            ("سعر Afnan 9PM هو 2000 جنيه زي ما هو مكتوب عندنا.", "سعر Afnan 9PM هو 2000 جنيه."),
+            ("ومقدرش أحدد أنهي أوضح فيهم من البيانات اللي عندي.", "ومقدرش أحدد أنهي أوضح فيهم."),
+            ("مناسب للشغل حسب بياناته.", "مناسب للشغل."),
+            ("Bleu de Chanel هو الأنسب للشغل، ومناسب للمكتب حسب استخدامه.",
+             "Bleu de Chanel هو الأنسب للشغل، ومناسب للمكتب."),
+            ("للخروج، Aventus أنسب حسب المناسبة المسجلة له، وريحته خشبية.", "للخروج، Aventus أنسب، وريحته خشبية."),
+            ("لكن حسب النوتات المتاحة عندي، الـBase Notes فيها فانيليا.", "لكن الـBase Notes فيها فانيليا."),
+            ("ومش تقيل حسب وصف الريحة المسجل.", "ومش تقيل في طابعه."),
+            ("لا يا فندم، مفيش عود حسب وصف الريحة المتاح.", "لا يا فندم، مفيش عود في طابعه."),
+            ("بس طابعها زهري ونضيف، ومش مسكر حسب وصفها.", "بس طابعها زهري ونضيف، ومش مسكر في طابعها."),
+            ("ريحته مسكر وخشبي، ووصفه عندنا جذاب.", "ريحته مسكر وخشبي، وريحته جذاب."),
+            ("212 Sexy man ريحته مسكرة وخشبية، ووصفه جذاب.", "212 Sexy man ريحته مسكرة وخشبية، وريحته جذاب."),
+            ("ده موصوف عندنا إنه جذاب.", "ده جذاب."),
+            ("ده كل اللي متسجل عندي عن ده؛ أي تفاصيل أكتر محتاجة تأكيد.", "ده كل اللي أعرفه عن ده؛ أي تفاصيل أكتر محتاجة تأكيد."),
+            ("ده كل المكتوب عندي عن العرض.", "ده كل اللي أعرفه عن العرض."),
+            ("أقدر أأكدلك المسجل عندنا بس.", "أقدر أأكدلك اللي أعرفه بس."),
+            ("الاتنين مسجلين للمناسبات الرسمية.", "الاتنين مناسبين للمناسبات الرسمية."),
+            ("K By Dolce أنسب لأنه مسجل للشاطئ والصيف.", "K By Dolce أنسب لأنه مناسب للشاطئ والصيف."),
+            # Found in the backtest over stored replies:
+            ("الاتنين مناسبتهم مسجلة للمناسبات الرسمية والخاصة.", "الاتنين مناسبتهم للمناسبات الرسمية والخاصة."),
+            ("الـPepper موجود في الـBase Notes حسب التقسيم المتاح عندي.", "الـPepper موجود في الـBase Notes."),
+            ("حقك عليّا، وصفهم المسجل ما بيأكدش إذا فيهم حلاوة.", "حقك عليّا، وصفهم ما بيأكدش إذا فيهم حلاوة."),
+            ("مش هقدر أأكد إن BMW مش مسكر؛ وصفه المسجل حمضيات وفريش وخشبي.",
+             "مش هقدر أأكد إن BMW مش مسكر؛ ريحته حمضيات وفريش وخشبي."),
+            ("أما Layton ففاكهي وخشبي ومسكر، من غير طابع دخاني مسجل.", "أما Layton ففاكهي وخشبي ومسكر، من غير طابع دخاني."),
+            ("Cigar ريحته خشبي، بس مفيش مقارنة مسجلة تثبت إنه شبه Aventus.",
+             "Cigar ريحته خشبي، بس مفيش مقارنة تثبت إنه شبه Aventus."),
+            ("بس مناسبة الاستخدام اليومي مش مسجلة عندي؛ بتحبي العطر أخف؟", "بس مناسبة الاستخدام اليومي مش مؤكدة؛ بتحبي العطر أخف؟"),
+            ("مفيش عندي بيانات عن أكتر العطور مبيعًا، فالمعلومة محتاجة تأكيد.", "معرفش أكتر العطور مبيعًا، فالمعلومة محتاجة تأكيد."),
+            ("Cigar ريحته خشبي. مفيش بيانات بتأكد إنهم شبه Club de Nuit.", "Cigar ريحته خشبي. مفيش حاجة بتأكد إنهم شبه Club de Nuit."),
+            ("مش قادر أجزم إنه شبه Club de Nuit من غير بيانات عن ريحته.", "مش قادر أجزم إنه شبه Club de Nuit."),
+            ("مش قادر أجزم أنهي أقرب من غير بيانات مقارنة بينهم؛ Ultra Male مسكر.", "مش قادر أجزم أنهي أقرب؛ Ultra Male مسكر."),
+            ("وده مطابق للنوتات المسجلة عندنا.", "وده مطابق للنوتات."),
+        ):
+            with self.subTest(draft=draft):
+                self.assertEqual(sanitize_reply(draft), expected)
+                self.assertEqual(sanitize_reply(expected), expected)
+
+    def test_a_negated_registry_phrase_is_reworded_never_deleted(self):
+        # Deleting "مش مسجل" from "ومش مسجل إنه تقيل" would say it IS heavy.
+        for draft, expected in (
+            ("ومش مسجل إنه تقيل.", "ومش مؤكد إنه تقيل."),
+            ("Black Code خيار جيد، لكن مش مسجل فيه الريحة النظيفة اللي طلبتها.",
+             "Black Code خيار جيد، لكن مش مؤكد إن فيه الريحة النظيفة اللي طلبتها."),
+            # A trait missing from the labels is absent (owner, 2026-11-20).
+            ("والطابع الخشبي مش من وصفه؛ هو فريش وحمضي.", "والطابع الخشبي مش فيه؛ هو فريش وحمضي."),
+            ("Cassilia ريحته فيها زهور وفواكه، ومش من وصفه إنه مسكر.", "Cassilia ريحته فيها زهور وفواكه، ومش مؤكد إنه مسكر."),
+        ):
+            with self.subTest(draft=draft):
+                self.assertEqual(sanitize_reply(draft), expected)
+        # "مش مسجل للشغل" (unrecorded) is not "مش مناسب للشغل": left as written, and logged.
+        self.assertEqual(sanitize_reply("ده مش مسجل للشغل."), "ده مش مسجل للشغل.")
+
+    def test_customer_order_and_stock_wording_is_not_source_talk(self):
+        from products.services.reply_sanitizer import source_talk, strip_source_qualifiers
+        for reply in (
+            "التوصيل بيوصل خلال 2 لـ4 أيام عمل حسب المحافظة يا فندم.",
+            "للشغل، Eternity أهدى اختيار حسب طابعه الفريش والخشبي.",
+            "وكمان ممكن زجاجة أوريجينال حسب المتوفر.",
+            "أرشحلك على حسب الريحة اللي بتحبها.", "حسب وصفك، أقرب حاجة Aventus.",
+            "كل البيانات كده تمام ونأكد الطلب، ولا تحب تعدل حاجة؟",
+            "اكتبلي بيانات التوصيل: الاسم والعنوان والتليفون.",
+            "أيوه، مسجل لك 1 × Dior Sauvage، زجاجة أوريجينال 100 ملي بـ815 جنيه.",
+            "الاختيارات والكمية متسجلة زي ما طلبت.", "طلبك مسجل عندنا وهيتواصل معاك المندوب.",
+            "الوصف ده قريب من Lattafa Asad، بس مش متأكد.", "العطر اللي بتوصفه ممكن يكون Aventus.",
+            "عندنا تصنيفات مختلفة: عطور شرقية، عطور غربية، عطور نيش.",
+            "مش متوفر عندنا عطر أصلي من تصنيع البراند.", "المعلومة دي محتاجة تأكيد من فريق خدمة العملاء.",
+            "يعني السعر اللي مكتوب هو للـ4 عطور مع بعض.", "والحلاوة مش ضمن طابعه.",
+            "لو تحب أعدل أي بيانات في الطلب قولي.", "ماعنديش معلومة مؤكدة إن Cigar قريب من Club de Nuit.",
+            "من غير ما تكون عندك تجربة، ابدأ بالـ50 ملي.",
+        ):
+            with self.subTest(reply=reply):
+                # Checked on the source pass alone: `sanitize_reply` also standardises the bottle spelling
+                # ("أوريجينال" → "اوريجنال").
+                self.assertEqual(strip_source_qualifiers(reply), reply)
+                self.assertEqual(source_talk(reply), [])
+        # A denial is never read as a noun with its adjective (backtest: "وصف مش مسجل" lost its "مسجل").
+        denial = "من غير ما أضيف وصف مش مسجل، طابعه منعش وخشبي."
+        self.assertEqual(strip_source_qualifiers(denial), denial)
+
+    def test_what_no_rule_can_repair_is_logged(self):
+        with self.assertLogs("products.services.reply_sanitizer", level="WARNING") as logs:
+            self.assertEqual(sanitize_reply("ده مش مصنف عندنا، محتاج أتأكد من نوعه."),
+                             "ده مش مصنف عندنا، محتاج أتأكد من نوعه.")
+        self.assertIn("SOURCE_TALK", logs.output[0])
+
+    def test_canned_replies_cite_no_records_and_pass_through_unchanged(self):
+        from types import SimpleNamespace
+
+        from products.services import promotion_service, router, scent_description
+        from products.services.reply_sanitizer import source_talk
+        from products.services.sales import attraction
+
+        product = SimpleNamespace(name="For Him", top_notes="Lemon", middle_notes="", base_notes="Cedar",
+                                  scent_tags=["fresh", "woody"])
+        other = SimpleNamespace(name="K By Dolce", top_notes="", middle_notes="", base_notes="",
+                                scent_tags=["fresh", "citrus"])
+        canned = [
+            router.NOTES_SOURCE, router.NOTES_SOURCE_AGAIN, router.SKIN_OR_CLOTHES_ANSWER,
+            router.SKIN_OR_CLOTHES_AGAIN, promotion_service.NO_MORE_DETAILS, promotion_service.NO_MORE_DETAILS_AGAIN,
+            attraction.ACKNOWLEDGEMENT, attraction.appealing_line(["Velvet Night"]), scent_description._FALLBACK,
+            router._not_sweet_line([product]), router._not_sweet_line([product, other]),
+            router._label_difference(product, other), router._label_difference(product, product),
+            router._not_a_repeat("نفس الرد اللي اتقال قبل كده بالظبط.", "طب وبعدين؟",
+                                 [{"role": "assistant", "content": "نفس الرد اللي اتقال قبل كده بالظبط."}]),
+            *scent_description._DENIALS.values(),
+        ]
+        for text in canned:
+            with self.subTest(text=text):
+                self.assertEqual(source_talk(text), [])
+                self.assertEqual(sanitize_reply(text), text.strip())
+        # The "did we already say it?" checks compare these constants with saved history.
+        self.assertEqual(router._not_sweet_line([product]), "For Him مش مسكر، ومفيش فانيليا ولا عسل في نوتاته.")
+        self.assertEqual(router._not_sweet_line([product, other]), "For Him وK By Dolce مش مسكرين.")
+
+
+class MissingTraitTests(SimpleTestCase):
+    """Owner, 2026-11-20 (reversing 2026-11-12): a trait missing from the labels is absent, for every trait."""
+
+    def product(self, tags, notes=("", "", "")):
+        from types import SimpleNamespace
+        return SimpleNamespace(name="X", scent_tags=tags, top_notes=notes[0], middle_notes=notes[1], base_notes=notes[2])
+
+    def test_every_denial_reads_back_as_a_denial_of_its_own_label(self):
+        from products.scent_tags import SCENT_TAG_LABELS
+        from products.services import scent_description as sd
+        self.assertEqual(set(sd._DENIALS), set(SCENT_TAG_LABELS))
+        for tag, phrase in sd._DENIALS.items():
+            with self.subTest(tag=tag):
+                self.assertEqual([(found, negative) for found, _, _, negative in sd._tag_mentions(sd._NORMALIZE(phrase))],
+                                 [(tag, True)])
+
+    def test_a_missing_trait_is_answered_no_then_the_character_it_has(self):
+        from products.services.scent_description import asked_attribute_answers
+        fresh = self.product(["fresh", "citrus", "woody"], ("Bergamot", "Lavender", "Cedar"))
+        self.assertEqual(asked_attribute_answers("هو تقيل؟", fresh),
+                         ["مش تقيل", "ريحته فريش ومنعش وفيه ريحة حمضيات وخشبي"])
+        self.assertEqual(asked_attribute_answers("هو مسكر؟", fresh)[0], "مش مسكر")
+        self.assertEqual(asked_attribute_answers("ريحته نضيفة؟", fresh)[0], "ريحته مش من النوع النضيف")
+        self.assertEqual(asked_attribute_answers("هو فريش؟", fresh), ["طابعه فريش ومنعش"])
+
+    def test_a_perfume_with_no_labels_still_needs_confirmation(self):
+        from products.services.scent_description import asked_attribute_answers
+        self.assertEqual(asked_attribute_answers("هو مسكر؟", self.product([])), ["ريحته محتاجة تأكيد"])
+
+    def test_which_trait_leads_is_only_answered_when_it_has_both(self):
+        from products.services.scent_description import asked_attribute_answers
+        both = self.product(["sweet", "spicy", "woody"])
+        self.assertIn("ومقدرش أحدد أنهي فيهم أوضح",
+                      asked_attribute_answers("ريحته سويت قوي ولا التوابل والخشب أوضح؟", both))
+        neither = self.product(["fresh", "citrus"], ("Lemon", "Ginger", "Cedar"))
+        self.assertNotIn("ومقدرش أحدد أنهي فيهم أوضح", asked_attribute_answers("فيه عود أو ريحته مسكرة؟", neither))
+
 
 class Conversation1337ReplyTests(TestCase):
     @classmethod

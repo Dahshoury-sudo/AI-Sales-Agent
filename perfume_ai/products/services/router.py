@@ -569,7 +569,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
                 fallback = "كل عطورنا " + text.replace("ثباته ", "ثباتها ").replace("فوحانه ", "فوحانها ") + "."
         if any(i.startswith("popularity:") for i in remaining or issues):
             fallback = (fallback + " ماقدرش أجزم بمدى انتشار العطور دي.") if fallback else (
-                "معنديش بيانات عن الأكتر مبيعاً، بس أقدر أرشحلك حسب الريحة اللي بتحبها.")
+                "مقدرش أقولك أنهي الأكتر مبيعاً، بس أقدر أرشحلك على حسب الريحة اللي بتحبها.")
         if not fallback:
             # With product rows the doubt is which perfume; with none, the honest answer is the
             # team, which is a transfer this system can actually make (simulation S16 replay t7).
@@ -1144,46 +1144,55 @@ def _nothing_cheaper_exists(message, normalized, history, conversation, store):
 # (simulation S10 round 4 replay, t3).
 _GUARANTEE = _re.compile(r"(?<!\w)[وفبل]?(?:ال)?(?:تضمن\w*|مضمون\w*|ضامن\w*|يضمن\w*|متاكد\w*|اتاكد\w*|اخاطر\w*|مخاطر\w*|"
                          r"مطمن\w*|اطمن\w*)(?!\w)")
-NO_GUARANTEE_HEAD = "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي."
-NO_GUARANTEE = "بصراحة مفيش عطر أقدر أأكدلك 100% إنه مش مسكر من البيانات اللي عندي، فمش هرشحلك حاجة تانية على إنها مضمونة."
-NO_GUARANTEE_AGAIN = ("زي ما قلتلك، مقدرش أضمن ده من البيانات اللي عندي. لو مهم تتأكد قبل ما تقرر، "
-                      "تحب أحولك لفريق خدمة العملاء؟")
+def _not_sweet_line(products):
+    """"X وY مش مسكرين، ومفيش فانيليا ولا عسل في نوتاتهم." for perfumes without the sweet label.
 
-
-def _no_guarantee_again(history, conversation, store, excluded):
-    """The answer to a second demand for a perfume that is certainly not sweet: none can be confirmed.
-
-    After being told that sweetness cannot be confirmed, "ما ترشحليش حاجة إلا لما تكون متأكد إنها مش
-    مسكرة!" got one more perfume, and the next turn could not confirm that one either (simulation S10
-    round 3 verify, t6 and t8, high each). The honest reply recommends nothing new and names no
-    perfume: listing the ones already offered read as offering again what had just been turned down
-    (round 4 replay, t5). It says what the records do show and how to make sure. Returns "" until the
-    limits of the data have been stated once in the recent replies.
+    Owner, 2026-11-20: a perfume without the sweet label is not sweet, and the customer who demands a
+    guarantee is told so plainly, with no "100%" disclaimer. The notes clause is added only when every
+    one of them has notes recorded and none has a sweet material (vanilla, honey…) in them.
     """
-    replies = [row.get("content", "") for row in (history or [])[-8:] if row.get("role") == "assistant"]
-    if any(NO_GUARANTEE in reply for reply in replies):
-        return NO_GUARANTEE_AGAIN
-    if not any(NO_GUARANTEE_HEAD in reply for reply in replies):
-        # The first demand still earns new options, with what the data says about each (`_guarantee_note`).
+    from .sales.scent_matching import has_sweet_notes
+    names = " و".join(product.name for product in products)
+    one = len(products) == 1
+    line = names + (" مش مسكر" if one else " مش مسكرين")
+    noted = all(any((getattr(product, layer, "") or "").strip() for layer in ("top_notes", "middle_notes", "base_notes"))
+                for product in products)
+    if noted and not any(has_sweet_notes(product) for product in products):
+        line += "، ومفيش فانيليا ولا عسل في " + ("نوتاته" if one else "نوتاتهم")
+    return line + "."
+
+
+def _confirm_not_sweet(normalized, store, on_table):
+    """"متأكد إنهم مش مسكرين؟" about the perfumes on the table: answered from their labels.
+
+    It used to exclude them and offer new ones, because their sweetness counted as unconfirmed; a
+    second demand got a refusal to recommend anything (simulation S10 round 3 verify, t6/t8). Since
+    the owner's 2026-11-20 decision a missing sweet label means not sweet, so the question about the
+    perfumes already offered has a plain answer. Asking for other picks still gets new ones.
+    """
+    if not on_table or _RECOMMEND_VERB.search(normalized) or _ASKS_FOR_OTHERS.search(normalized) \
+            or _REJECTS_THE_TABLE.search(normalized):
         return ""
     from products.models import Product
-    from .sales.scent_matching import has_sweet_notes
-    offered = sales_described.offered_ever(conversation, store) if conversation is not None else ()
-    refused = set(excluded or ())
-    shown = list(Product.objects.filter(store=store, is_active=True, name__in=list(offered)))
-    all_clean = bool(shown) and all(not refused & set(product.scent_tags or ()) and not has_sweet_notes(product)
-                                    for product in shown)
-    recorded = (" اللي متسجل عندي عن اللي رشحتهم: الحلاوة مش ضمن تصنيفهم، ومفيش فانيليا ولا عسل في نوتاتهم."
-                if all_clean else "")
-    return NO_GUARANTEE + recorded + " لو تحب تتأكد بنفسك، تقدر تجرب في الستور قبل ما تطلب."
+    shown = list(Product.objects.filter(store=store, is_active=True, name__in=list(on_table)).order_by("name"))
+    if not shown:
+        return ""
+    sweet = [product for product in shown if "sweet" in (product.scent_tags or ())]
+    not_sweet = [product for product in shown if product not in sweet]
+    if not sweet:
+        return "أيوه، " + _not_sweet_line(not_sweet)
+    names, one = " و".join(product.name for product in sweet), len(sweet) == 1
+    if not_sweet:
+        return _not_sweet_line(not_sweet) + " أما " + names + (" فمسكر." if one else " فمسكرين.")
+    return "لا، " + names + (" مسكر." if one else " مسكرين.")
 
 
 def _guarantee_note(response, products, intent, normalized):
-    """"رشحلي حاجة تضمن إنها مش مسكرة": say what can and cannot be guaranteed, from the data.
+    """"رشحلي حاجة تضمن إنها مش مسكرة": say plainly which picks are not sweet.
 
-    S10 round 2 full 3, t6-t7: each such demand got options whose sweetness was unconfirmed, with no
-    word that no guarantee is possible (owner decision 4 forbids inferring "not sweet"). The recorded
-    facts that do bear on it are the classification and the notes.
+    S10 round 2 full 3, t6-t7: each such demand got options with no word on their sweetness. Owner,
+    2026-11-20: the picks without the sweet label are not sweet, said with no "100%" disclaimer and
+    no "try it in the store first" tail.
     """
     if not response or not _GUARANTEE.search(normalized or "") \
             or "sweet" not in set((intent or {}).get("excluded_scent_tags") or ()):
@@ -1192,11 +1201,19 @@ def _guarantee_note(response, products, intent, normalized):
     by_name = {product.name: product for product in products}
     clean = [by_name[name] for name in sales_naming.names_in(response, list(by_name))
              if "sweet" not in (by_name[name].scent_tags or ()) and not has_sweet_notes(by_name[name])]
-    head = NO_GUARANTEE_HEAD
-    if clean:
-        head += (" " + " و".join(product.name for product in clean)
-                 + ": الحلاوة مش ضمن تصنيفها، ومفيش فانيليا ولا عسل في نوتاتها.")
-    return head + "\n\n" + response + "\n\nولو عايز تطمن أكتر، جربها في الستور قبل ما تطلب."
+    return (_not_sweet_line(clean) + "\n\n" + response) if clean else response
+
+
+def _without_sweet_notes(results):
+    """On a "guaranteed not sweet" request, drop picks with vanilla or honey in their notes.
+
+    Owner, 2026-11-20. Ranking already puts them after clean picks; here they go, as long as one clean
+    pick is left.
+    """
+    from .sales.scent_matching import has_sweet_notes
+    products = list(results.get("products") or ())
+    clean = [product for product in products if not has_sweet_notes(product)]
+    return {**results, "products": clean} if clean and len(clean) < len(products) else results
 
 
 _RECALL = _re.compile(r"كنت\s+(?:قلت|قولت|قلتلي|قولتلي|رشحت\w*|اقترحت\w*)|(?:رشحت|اقترحت)(?:لي|هولي)?\s+(?:ايه|انهي)|"
@@ -1297,13 +1314,18 @@ def _closer_to_a_missing_perfume(message, normalized, conversation, store):
         words = [word for word in _re.findall(r"[a-z]+", run.lower())
                  if word not in sales_naming.LATIN_FILLER and len(word) >= 3]
         if words and not sales_naming.names_in(run, names) and _recently_denied(conversation, turns=8):
-            return f"معنديش بيانات عن ريحة {run.strip()} أقارن بيها، {tail}"
+            return f"معرفش ريحة {run.strip()} بالظبط، {tail}"
     # "طب أنهي واحد فيهم أقربله؟" names nothing: after a denial, "له" is the perfume we do not stock
     # (simulation S09 round 3 verify, t4; the same reading as `reference._after_denial`).
     if (which and _re.search(r"(?<!\w)(?:اقرب|اشبه)\s*(?:له|ليه|لو)(?!\w)|(?<!\w)(?:اقربله|اشبهله)(?!\w)", normalized)
             and not _re.search(r"[A-Za-z]{3}", message or "") and _recently_denied(conversation, turns=8)):
-        return f"معنديش بيانات عن ريحة العطر اللي سألت عنه أقارن بيها، {tail}"
+        return f"معرفش ريحة العطر اللي سألت عنه بالظبط، {tail}"
     return ""
+
+
+# The reply already says the missing perfume's scent is unknown: the line above, or the model's own
+# words, including the wording used before 2026-11-20.
+_SAYS_SCENT_UNKNOWN = _re.compile(r"معرفش\s+ريح|معنديش\s+بيانات")
 
 
 _ASKS_ORIGINAL_BOTTLE = _re.compile(r"(?<!\w)(?:ال)?(?:اوريجنال|اوريجينال|اورجينال|اورجنال|اوريجنل)(?!\w)|\boriginal\b")
@@ -1338,7 +1360,7 @@ def _not_a_repeat(fallback, message, history):
     from .sales.appreciation import closes_conversation, thanks_or_praise
     if closes_conversation(message) or (thanks_or_praise(message) and not _re.search(r"[؟?]", message or "")):
         return "تمام، خد وقتك، ولو احتجت حاجة أنا موجود."
-    return "ده كل اللي متسجل عندي عن ده؛ أي تفاصيل أكتر محتاجة تأكيد من فريق خدمة العملاء."
+    return "ده كل اللي أعرفه عن ده؛ أي تفاصيل أكتر محتاجة تأكيد من فريق خدمة العملاء."
 
 
 def _label_difference(first, second):
@@ -1348,13 +1370,13 @@ def _label_difference(first, second):
     only_first = [_PHRASES[tag] for tag in mine if tag not in theirs and tag in _PHRASES]
     only_second = [_PHRASES[tag] for tag in theirs if tag not in mine and tag in _PHRASES]
     if not only_first and not only_second:
-        return "طابعهم المسجل متقارب جداً، فالفرق الأساسي بينهم في السعر والحجم."
+        return "طابعهم متقارب جداً، فالفرق الأساسي بينهم في السعر والحجم."
     parts = []
     if only_first:
         parts.append(f"{first.name} " + " و".join(only_first))
     if only_second:
         parts.append(f"{second.name} " + " و".join(only_second))
-    return "الفرق في الطابع المسجل: " + "، و".join(parts) + "."
+    return "الفرق بينهم في الطابع: " + "، و".join(parts) + "."
 
 
 def _pick_for_customer(first, second, conversation):
@@ -1494,8 +1516,8 @@ def _fixed_price_note(message, store):
 
 _SKIN_OR_CLOTHES = _re.compile(r"(?<!\w)(?:علي|ع)\s*(?:ال)?(?:جلد|بشره|هدوم|لبس|ملابس)(?!\w)")
 # Worded without "الثبات": the performance-policy enforcer rewrites any clause that carries it.
-SKIN_OR_CLOTHES_ANSWER = "المعلومة دي مش مسجلة عندي: المدة مش محدد فيها إذا كانت على الجلد ولا على الهدوم، فمقدرش أأكدلك أنهي فيهم."
-SKIN_OR_CLOTHES_AGAIN = ("زي ما قلتلك، المعلومة دي مش مسجلة عندي. لو مهم تتأكد منها قبل ما تقرر، "
+SKIN_OR_CLOTHES_ANSWER = "مقدرش أحددلك إذا كانت المدة دي على الجلد ولا على الهدوم."
+SKIN_OR_CLOTHES_AGAIN = ("زي ما قلتلك، مقدرش أحدد ده. لو مهم تتأكد منه قبل ما تقرر، "
                          "تحب أحولك لفريق خدمة العملاء؟")
 
 
@@ -1809,8 +1831,10 @@ _NOTES_SOURCE_QUESTION = _re.compile(
     # "عندكم Layton notes موثقة أكتر ولا نفس الحكاية؟", "والنوتات دي برضه من بياناتكم بس؟" (S02 round 4
     # replay, t7-t8): asked whether the notes are documented, got the list.
     r"(?<!\w)موثق\w*|(?:نوتات|notes)\s+(?:\S+\s+){0,2}?من\s+بيانات(?:كم|ك|كو)(?!\w)")
-NOTES_SOURCE = "النوتات دي هي المسجلة عندنا في بيانات العطر، ومعنديش مصدر رسمي من البراند أستند له."
-NOTES_SOURCE_AGAIN = "زي ما قلتلك، دي النوتات المسجلة عندنا ومعنديش مصدر تاني ليها."
+# Worded by the owner (2026-11-20): honest about having no official source, with no "recorded in
+# our data".
+NOTES_SOURCE = "دي النوتات اللي إحنا شغالين بيها للعطر ده، ومعنديش مصدر رسمي من البراند ليها."
+NOTES_SOURCE_AGAIN = "زي ما قلتلك، دي النوتات اللي إحنا شغالين بيها، ومعنديش مصدر تاني ليها."
 
 
 def _notes_source_note(normalized, history):
@@ -2208,7 +2232,7 @@ def _route(message, history=None, store=None, conversation=None):
                 # "يعني مفيش؟" and no word for the irritation (simulation S09 round 2 full 4, t2). Nothing
                 # recorded describes the missing perfume, so no likeness is promised: "أقدر ألاقيلك حاجة
                 # قريبة منه" failed the honest-similarity criterion (S09 round 2 full 5, t2).
-                return ("أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها، بس أقدر أرشحلك من المتاح "
+                return ("أيوه للأسف مش عندنا، ومعرفش ريحته بالظبط، بس أقدر أرشحلك من اللي عندنا "
                         "على حسب الريحة اللي بتحبها. " + sales_gender.QUESTION, sales_gender.REQUIRED_MARKER)
             from .sales import attraction
             return (attraction.with_acknowledgement(sales_gender.QUESTION, message, history),
@@ -2284,7 +2308,7 @@ def _route(message, history=None, store=None, conversation=None):
         # "طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب": the question is about a perfume we
         # hold no data for, whatever kind of hesitation carried it (simulation S09 round 3 verify, t5).
         missing = _closer_to_a_missing_perfume(message, normalize_arabic(message), conversation, store)
-        if missing and reply and "معنديش بيانات" not in reply:
+        if missing and reply and not _SAYS_SCENT_UNKNOWN.search(reply):
             reply = missing + "\n\n" + reply
         return _finalize(reply, stage) + "".join("\n\n" + a for a in objection_policy), context
 
@@ -2403,7 +2427,7 @@ def _route(message, history=None, store=None, conversation=None):
             # compare with: "قريبة من ريحته" got "تقصد عطر شبه أنهي واحد: 1 Million ولا…؟" (our own
             # alternatives), and "ريحته فيها سموكي وفاكهة" was asked for again (simulation S09).
             if not described:
-                return ("العطر ده مش عندنا فمعنديش بياناته أقارن بيها؛ قولي ريحته عاملة إزاي "
+                return ("العطر ده مش عندنا فمعرفش ريحته بالظبط؛ قولي ريحته عاملة إزاي "
                         "(سموكي، فواكه، خشبي، فريش، مسكر…) وأرشحلك الأقرب ليها من عندنا."), "SIMILARITY_NEEDS_PROFILE"
             intent = {**intent, "scent_tags": described, "scent_match": "any", "scent_open": False,
                       "similarity_needs_reference": False, "similar_to": None}
@@ -2448,9 +2472,9 @@ def _route(message, history=None, store=None, conversation=None):
         demands_guarantee = bool(_GUARANTEE.search(normalized)
                                  and "sweet" in set(intent.get("excluded_scent_tags") or ()))
         if demands_guarantee:
-            no_guarantee = _no_guarantee_again(history, conversation, store, intent.get("excluded_scent_tags"))
-            if no_guarantee:
-                return no_guarantee, ""
+            confirmed = _confirm_not_sweet(normalized, store, on_table)
+            if confirmed:
+                return confirmed, ""
         wants_others = bool(_ASKS_FOR_OTHERS.search(normalized) or _REJECTS_THE_TABLE.search(normalized)
                             or demands_guarantee)
         # "رشحلي تاني حاجة كده" two side questions after the offer: the last two replies named nothing,
@@ -2477,6 +2501,8 @@ def _route(message, history=None, store=None, conversation=None):
                 narrowed = {**narrowed, "exclude_names": sorted(set(narrowed["exclude_names"]) | set(rejected))}
             intent = narrowed
             results = search_products(intent, store, keep=keep, offered=sales_described.offered_ever(conversation, store))
+        if demands_guarantee:
+            results = _without_sweet_notes(results)
         if results.get("needs_scent_reference"):
             return "قولي طابع الريحة اللي بتدور عليه: فريش، سويت، عودي، ولا حاجة تانية؟", "SIMILARITY_NEEDS_PROFILE"
         response, context = recommend(
@@ -2503,6 +2529,8 @@ def _route(message, history=None, store=None, conversation=None):
                 retry_intent = {**intent, "exclude_names": sorted(set(intent.get("exclude_names") or ()) | set(shown))}
                 retry = search_products(retry_intent, store, keep=set(),
                                         offered=sales_described.offered_ever(conversation, store))
+                if demands_guarantee:
+                    retry = _without_sweet_notes(retry)
                 if retry.get("products"):
                     response, context = recommend(message, retry["products"], history, store=store,
                                                   intent=retry_intent, search=retry, gender_unknown=False)
@@ -2602,7 +2630,7 @@ def _route(message, history=None, store=None, conversation=None):
         if fixed_price and fixed_price not in response:
             response = response.rstrip() + "\n" + fixed_price
         missing = _closer_to_a_missing_perfume(message, normalized, conversation, store)
-        if missing and "معنديش بيانات" not in response:
+        if missing and not _SAYS_SCENT_UNKNOWN.search(response):
             response = missing + "\n\n" + response
         original_note = _original_bottle_note(message, response, history)
         if original_note:
@@ -2645,7 +2673,7 @@ def _route(message, history=None, store=None, conversation=None):
             response = response + "\n\n" + HANDOFF_CONFIRMATION
 
         missing = _closer_to_a_missing_perfume(message, normalized, conversation, store)
-        if missing and "معنديش بيانات" not in response:
+        if missing and not _SAYS_SCENT_UNKNOWN.search(response):
             response = missing + "\n\n" + response
 
         # Still weighing two options — differentiate, do not close.

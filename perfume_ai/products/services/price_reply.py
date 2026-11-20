@@ -272,7 +272,7 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
                                                  for v in product.variants.all())
             facts.append("متوفر" if available else "مش متوفر حاليا")
         if re.search(r"رجال|حريم|للجنسين|gender|male|female|unisex", text, re.I):
-            facts.append({"male": "رجالي", "female": "حريمي", "unisex": "للجنسين"}.get(product.gender, "نوعه مش مسجل عندي"))
+            facts.append({"male": "رجالي", "female": "حريمي", "unisex": "للجنسين"}.get(product.gender, "نوعه محتاج تأكيد"))
         if re.search(r"اصلي|اصال|تركيب|سائل|تصنيع|مصنع|authentic|original", text, re.I):
             from .sales.constraints import formulation_reply
             facts.append(formulation_reply().split(" لو مناسب ليك")[0])
@@ -280,9 +280,9 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
             from .bottle_wording import BOTTLE_DIFFERENCE
             facts.append(BOTTLE_DIFFERENCE)
         if re.search(r"تركيز|perfume type|concentration|edp|edt|extrait", text, re.I):
-            facts.append("تركيزه " + product.perfume_type if product.perfume_type else "تركيزه مش مسجل عندي")
+            facts.append("تركيزه " + product.perfume_type if product.perfume_type else "تركيزه محتاج تأكيد")
         if re.search(r"تقييم|reviews?|ratings?", text, re.I):
-            facts.append("مش عندي تقييمات عملاء مسجلة")
+            facts.append("معنديش تقييمات عملاء عليه")
         # The scoped text has lost its question mark; with one perfume the raw message is the same scope.
         # "Wanted by Night تقيل أوي ولا ينفع للسهرات؟" got the heaviness and not the evening answer
         # (simulation S14 round 2 full 3, t7). `description_issues` reads it the same way.
@@ -302,7 +302,9 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
                 from products.occasions import OCCASIONS, occasion_groups
                 recorded = [c for c in OCCASIONS if c in occasion_groups(product.occasion or "")]
                 if recorded:
-                    facts.append("مناسبته المسجلة " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded))
+                    # "مناسبته" rather than "مناسب": a bare "مناسب للبحر والصيف" reads to the season check as
+                    # a summer claim. No "المسجلة" (owner, 2026-11-20: no reply cites its records).
+                    facts.append("مناسبته " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded))
             else:
                 # Asked about an occasion the perfume is not recorded for, the recorded one is the
                 # honest answer; "مناسبته محتاجة تأكيد" read as if nothing were known (S06 replay t5).
@@ -312,7 +314,7 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
                 if recorded:
                     # The store rule stands (an unrecorded use needs confirmation), and the recorded
                     # use is still worth saying.
-                    facts.append("مناسبته المسجلة " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded)
+                    facts.append("مناسبته " + " و".join(OCCASION_DESCRIPTIONS[c] for c in recorded)
                                  + (f"، ومناسبته {asked} محتاجة تأكيد" if asked else ""))
                 else:
                     facts.append("مناسبته محتاجة تأكيد")

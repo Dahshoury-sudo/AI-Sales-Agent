@@ -19,7 +19,7 @@ _PHRASES = {
     "leather": "ريحته جلدية", "aquatic": "ريحته بحرية", "light": "خفيف",
     "heavy": "تقيل",
 }
-_FALLBACK = "وصف ريحته محتاج تأكيد"
+_FALLBACK = "ريحته محتاجة تأكيد"
 _NORMALIZE = occasions.normalize_text
 _BY_TAG_ALIAS = {
     _NORMALIZE(alias): tag for tag, aliases in TAG_ALIASES.items() for alias in aliases
@@ -57,7 +57,8 @@ _SCENT_SCOPE = re.compile(
 _SCENT_PROSE = re.compile(r"ريحته|ريحتها|ريحتهم|طابعه|طابعها|ستايله|ستايلها|\b(?:scent|smells?|character)\b")
 _NEGATIVE = re.compile(
     r"(?<!\w)(?:و)?(?:مش|غير|لا|مفيش|مفيهوش|مافيش|بدون|not|no|without)"
-    r"(?:\s+(?:جدا|اوي|قوي|يكون|تكون|ريحه|حاجه|too|very|really|it|a|be)){0,3}\s*$"
+    # "من النوع" so the clean denial "ريحته مش من النوع النضيف" reads as a denial (`_DENIALS`).
+    r"(?:\s+(?:جدا|اوي|قوي|يكون|تكون|ريحه|حاجه|من|النوع|too|very|really|it|a|be)){0,3}\s*$"
 )
 _NOTE_OPT_OUT = re.compile(
     r"(?<!\w)(?:و)?(?:مش|بلاش|بدون|من غير|لا|without|no|don't|dont|do not)"
@@ -65,10 +66,19 @@ _NOTE_OPT_OUT = re.compile(
     r"tell|explain|details|about|the|any|a|scent|smell|fragrance)){0,5}\s*$"
 )
 _UNCERTAIN = re.compile(r"محتاج(?:ه)?\s+تاكيد|مش\s+(?:مسجل|متسجل|متاكد|مؤكد|موكد|معروف)|غير\s+(?:مسجل|متوفر)|ماقدرش|مقدرش|لا\s+توجد|not\s+(?:recorded|known)|needs?\s+confirmation")
-# Owner decision (2026-11-12): a trait missing from the saved labels is unknown, not absent, so
-# "لا، مش مسكر" about a perfume with no sweet label is an inference (simulation S07 t5). The one
-# exception is a recorded opposite: a perfume labelled light is not heavy.
-_OPPOSITE_TAGS = {"heavy": {"light"}, "light": {"heavy"}}
+# Owner decision (2026-11-20), reversing the 2026-11-12 one ("a missing label is unknown"): the saved
+# labels are the perfume's whole character, so a trait missing from them is absent, for every trait.
+# "هو تقيل؟" about a perfume labelled fresh, citrus and woody is answered "مش تقيل". A perfume with no
+# labels at all has no character to answer from and still gets "محتاجة تأكيد".
+_DENIALS = {
+    "fresh": "مش فريش", "sweet": "مش مسكر", "oud": "مش عودي", "woody": "مش خشبي",
+    "citrus": "مفيهوش ريحة حمضيات", "floral": "مفيهوش ريحة زهور", "fruity": "مفيهوش ريحة فواكه",
+    "spicy": "مفيهوش ريحة توابل", "musky": "مش مسكي",
+    # Not "مش نضيف": said of a perfume, it reads as "dirty".
+    "clean": "ريحته مش من النوع النضيف",
+    "powdery": "مفيهوش ريحة بودرة", "smoky": "مفيهوش ريحة دخان", "leather": "ريحته مش جلدية",
+    "aquatic": "ريحته مش بحرية", "light": "مش خفيف", "heavy": "مش تقيل",
+}
 # Character words no saved label can support: warm, sharp, soft, luxurious, cool. "Body… ممكن يكون
 # أدفى في طابعه" (simulation S07 t3) and "التوابل فيه دافية، مش حادة" (S14 t5) were the judge's
 # critical invented claims; the checker had no word for them, so they passed.
@@ -451,10 +461,6 @@ _PROMINENCE = re.compile(r"(?:هو\s+|هي\s+)?(?:اوضح|اقوي|الغالب
 LAYER_QUESTION = re.compile(r"(?<![a-z])(?:top|middle|heart|base)(?![a-z])|dry\s*-?\s*down|دراي\s*داون|افتتاحي|قاعد")
 
 
-# A trait asked about by name gets its noun in the answer only when that noun is not itself a
-# label alias: "التوابل مش مؤكدة" would read back to the claim checker as a spicy claim.
-_TRAIT_NOUNS = {"sweet": "الحلاوة", "fresh": "الانتعاش", "woody": "ريحة الخشب", "heavy": "التقل",
-                "light": "الخفة"}
 # A trait the customer is asking for ("وعايز حاجة مسكرة") is a wish, not a question about this perfume.
 _TRAIT_WISH = re.compile(r"(?<!\w)و?(?:عايز|عاوز|عايزه|عاوزه|محتاج|محتاجه|بحب|بدور|نفسي|رشح\w*|اقترح\w*|"
                          r"want|need|looking|recommend|suggest)(?!\w)[^.،,]*$")
@@ -465,8 +471,9 @@ def asked_attribute_answers(text, product, *, traits=True):
 
     "212 VIB Man فيه عود أو ريحته مسكرة؟" got every recorded note and no answer to either question,
     so the customer had to ask again (simulation S10 round 2, t4). An ingredient is answered from
-    the stored notes. A trait is answered from the saved labels, and one the labels do not record
-    is unconfirmed, never absent (owner decision 4, 2026-11-12).
+    the stored notes. A trait is answered from the saved labels: one the labels lack is absent, said
+    plainly and followed by the character the perfume does have (owner, 2026-11-20). Only a perfume
+    with no labels at all gets "محتاجة تأكيد".
     """
     text = _NORMALIZE(text or "")
     from .reply_sanitizer import _NOTE_ALIASES
@@ -493,37 +500,40 @@ def asked_attribute_answers(text, product, *, traits=True):
                      if value and any(re.search(r"(?<!\w)" + re.escape(_NORMALIZE(alias)) + r"(?!\w)", _NORMALIZE(value))
                                       for alias in aliases)]
             if not homes:
-                answers.append(f"مفيش {word} ضمن نوتاته المسجلة")
+                answers.append(f"مفيش {word} في نوتاته")
             elif LAYER_QUESTION.search(text):
                 # "فلفل في الـbase؟ اللي أعرفه إنه في الـtop": the layer it is recorded in is the answer,
                 # whatever layer the customer believed (simulation S02 round 2, t4).
-                answers.append(f"{word} مسجل عندنا في {homes[0][0]}: {homes[0][1]}")
+                answers.append(f"{word} موجود في {homes[0][0]}: {homes[0][1]}")
             else:
                 answers.append(f"فيه {word} في نوتاته")
     for tag, start, _end, _negative in (_tag_mentions(text) if traits else ()):
         if tag in materials or _TRAIT_WISH.search(text[max(0, start - 40):start]):
             continue
         if tag in tags:
-            answers.append(f"طابعه المسجل {_PHRASES[tag]}")
-        elif tag in _MATERIAL_NOTES:
+            phrase = _PHRASES[tag]
+            answers.append(phrase if phrase.startswith(("ريحته ", "فيه ريحة ")) else f"طابعه {phrase}")
+        elif tag in _MATERIAL_NOTES and recorded:
             # A material label ("ريحته عودي؟") the labels lack is answered from the notes, as an
             # ingredient would be.
             word = _MATERIAL_NOTES[tag][-1]
             present = any(re.search(r"(?<!\w)" + re.escape(_NORMALIZE(name)) + r"(?!\w)", _NORMALIZE(" ".join(recorded)))
                           for name in _MATERIAL_NOTES[tag])
-            if recorded:
-                answers.append(f"فيه {word} في نوتاته" if present else f"مفيش {word} ضمن نوتاته المسجلة")
+            answers.append(f"فيه {word} في نوتاته" if present else f"مفيش {word} في نوتاته")
+        elif tags:
+            answers.append(_DENIALS[tag])
         else:
-            noun = _TRAIT_NOUNS.get(tag, "الصفة دي")
-            answers.append(f"{noun} مش مؤكدة في طابعه المسجل")
+            answers.append(_FALLBACK)
     answers = list(dict.fromkeys(answers))
-    if answers and any("مش مؤكدة" in answer for answer in answers) and tags:
-        answers.append("وصفه المسجل: " + describe_scent(tags).replace("ريحته ", ""))
+    if tags and any(answer in _DENIALS.values() for answer in answers):
+        # The character it does have, after the one it lacks: "مش تقيل. ريحته فريش ومنعش…".
+        answers.append(describe_scent(tags))
     asked_traits = {tag for tag, _, _, _ in _tag_mentions(text)} if traits else set()
-    if len(asked_traits) >= 2 and re.search(r"(?<!\w)(?:ولا|او|اكتر|اوضح|اقوي|غالب\w*)(?!\w)", text):
+    if len(asked_traits & set(tags)) >= 2 and re.search(r"(?<!\w)(?:ولا|او|اكتر|اوضح|اقوي|غالب\w*)(?!\w)", text):
         # "ريحته سويت قوي ولا التوابل والخشب أوضح؟" asks which trait leads; the labels say which ones
-        # are there, not which is stronger (simulation S14 round 2 full 4, t5/t7).
-        answers.append("ومقدرش أحدد أنهي أوضح فيهم من البيانات اللي عندي")
+        # are there, not which is stronger (simulation S14 round 2 full 4, t5/t7). Only when it has at least
+        # two of them: "فيه عود أو ريحته مسكرة؟" about a perfume with neither is already answered.
+        answers.append("ومقدرش أحدد أنهي فيهم أوضح")
     return answers
 
 
@@ -580,13 +590,14 @@ def description_issues(reply, facts, *, message=None, history=None,
                 break
         recorded = set(row.get("scent_tags") or ())
         for tag, start, end, negative in mentions:
-            if (negative and tag not in recorded and not (_OPPOSITE_TAGS.get(tag, set()) & recorded)
-                    and not _absence_in_notes(row, tag)
+            # A trait missing from the labels is absent (owner, 2026-11-20), so "مش مسكر" about a perfume
+            # without the sweet label is right. Only a perfume with no labels at all has nothing to deny from.
+            if (negative and not recorded and not _absence_in_notes(row, tag)
                     and not _UNCERTAIN.search(character[max(0, start - 40):end + 40])):
-                problems.append("an unrecorded trait is not confirmed absent; say it is not confirmed: " + tag)
-            # The other half of owner decision 4: a label that IS recorded is not "unconfirmed". "الجلدية
-            # مش مؤكدة في طابعه… والتوابل مش مؤكدة" about Pure XS, labelled leather and spicy
-            # (simulation S14 round 2 batch 3, t6).
+                problems.append("no saved character labels; say its scent needs confirmation instead of "
+                                "denying a trait: " + tag)
+            # A label that IS recorded is not "unconfirmed". "الجلدية مش مؤكدة في طابعه… والتوابل مش مؤكدة"
+            # about Pure XS, labelled leather and spicy (simulation S14 round 2 batch 3, t6).
             if tag in recorded and not negative and _UNCERTAIN.match(character[end:end + 30].lstrip()):
                 problems.append("a recorded label is stated as unconfirmed; it is recorded: " + tag)
             # "المسكر أوضح في طابعه، والجلدي موجود كمان": the labels say which traits are there, not

@@ -543,7 +543,9 @@ _CLAIM_FIELDS = (
     ("occasion", "المناسبة", "ممنوع تقول مناسب لمناسبة معينة"),
 )
 
-_NOT_RECORDED = "غير مسجل"
+# The customer-facing words for a missing field: the model repeats this value, and "غير مسجل" taught it
+# "المناسبة غير مسجلة" (owner, 2026-11-20: no reply cites its records).
+_NOT_RECORDED = "محتاج تأكيد"
 
 
 def _missing_data_note(product):

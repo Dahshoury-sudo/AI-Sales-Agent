@@ -84,7 +84,7 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
         return f"من {product.brand.name}، والعميل قال إنه مش عايز البراند ده"
 
     if not product.scent_tags:
-        return "طابع ريحته لسه مش متسجل"
+        return "طابع ريحته محتاج تأكيد"
     tags, wanted = set(product.scent_tags), set(intent.get("scent_tags") or ())
     if tags & set(intent.get("excluded_scent_tags") or ()):
         return "طابع ريحته من الأنواع اللي العميل استبعدها"
@@ -92,7 +92,7 @@ def _drop_reason(product, intent, max_price, *, blocked_brands=frozenset()):
         reference = intent.get("similar_to")
         return f"طابع ريحته مش مطابق لطابع {reference}" if reference else "طابع ريحته مش مطابق للطلب"
     if any(not note_matches(product, note) for note in intent.get("notes") or ()):
-        return "المكونات المسجلة مش بتطابق النوتات المطلوبة"
+        return "نوتاته مش فيها النوتات المطلوبة"
     if any(note_matches(product, note) for note in avoided_notes(intent)):
         return "فيه نوتات العميل استبعدها"
     variants = [v for v in eligible_variants(product, {**intent, "max_price": None}) if v.volume > 0]

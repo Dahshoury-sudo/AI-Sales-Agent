@@ -111,10 +111,10 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
         # bottles; that the bottle is genuinely the brand's is not recorded (simulation S16 round 2 full 2, t7).
         if re.search(r"(?:زجاج|ازاز)\S*\s+(?:\S+\s+){0,2}(?:اصليه|اصلي)\s+(?:من|بتاعه|بتاعت)\s+\S", clause) \
                 and not re.search(r"(?<!\w)(?:مش|غير|مو)\s+(?:\S+\s+){0,1}(?:اصليه|اصلي)", clause):
-            issues.append("authenticity: زجاجة الأوريجينال بشكل زجاجة البراند؛ مش مسجل إنها أصلية من البراند نفسه")
+            issues.append("authenticity: زجاجة الأوريجينال بشكل زجاجة البراند؛ متقولش إنها أصلية من البراند نفسه")
     for popularity in re.finditer(r"معظم الناس|اغلب الناس|مش منتشر|مش موجود عند حد|مضمون هيعجب|\bنادره?\b", text):
         if not re.search(r"ماقدرش|مقدرش|مش متاكد|مش مؤكد", text[max(0, popularity.start()-35):popularity.start()]):
-            issues.append("popularity: لا توجد بيانات شعبية أو ضمان إعجاب")
+            issues.append("popularity: متتكلمش عن انتشار العطر أو إنه هيعجب أغلب الناس")
     issues += _similarity_claim_issues(reply, facts or {})
     issues += _retraction_issues(reply, facts or {})
     for clause in re.split(r"[.!؟?\n]", text):
@@ -153,15 +153,16 @@ def product_claim_issues(reply, facts, *, request=None, context="", message=None
                 r"(?:المتاح|متاح|موجود|عندنا)\s+(?:منه\s+)?(?:هو\s+)?(?:الحجم\s+ده|حجم\s+واحد)\s+بس|"
                 r"مفيش\s+(?:منه\s+)?غير\s+(?:الحجم\s+ده|حجم\s+واحد)|(?:حجم|الحجم)\s+واحد\s+بس", segment):
             issues.append(f"sizes:{name}: stocked in {len(row['sizes'])} sizes")
-        # "Cassilia… ومش حلو زيادة": the catalogue records the labels a perfume has, never the ones it
-        # lacks, so "not sweet" is an inference from a missing tag, which the owner ruled out (round 2;
-        # simulation S07 round 2 full 5, t2). Said with a hedge it is the honest form and passes.
-        # Scoped like `description_issues`' unrecorded-trait check: only with the current message,
-        # i.e. in the reply pipeline; a legacy direct call keeps its original scope.
-        for clause in re.split(r"[.!؟?\n]", segment) if message is not None else ():
-            if _NOT_SWEET.search(clause) and not _NOT_SWEET_HEDGE.search(clause):
-                issues.append(f"scent:{name}:not sweet is not recorded; a missing label is not a negative")
-                break
+        # A trait missing from the labels is absent (owner, 2026-11-20, reversing the 2026-11-12 rule that
+        # made "Cassilia… ومش حلو زيادة" an inference, simulation S07 round 2 full 5, t2), so "not sweet"
+        # passes for a perfume without the sweet label. Said of one labelled sweet, it denies a saved label;
+        # `explicit_scent_updates` below misses "مش حلو". Scoped to the reply pipeline (current message), as
+        # `description_issues` is; a legacy direct call keeps its original scope.
+        if "sweet" in (row.get("scent_tags") or ()):
+            for clause in re.split(r"[.!؟?\n]", segment) if message is not None else ():
+                if _NOT_SWEET.search(clause) and not _NOT_SWEET_HEDGE.search(clause):
+                    issues.append(f"scent:{name}:denied sweet")
+                    break
         if row.get("scent_tags"):
             from .sales.scent_preferences import explicit_scent_updates
             from products.occasions import occasion_groups, occasion_matches
@@ -811,27 +812,243 @@ def strip_overage_figure(reply):
     return cleaned, removed
 
 
-_SOURCE_QUALIFIERS = re.compile(
-    r"(?<!\w)(?:حسب\s+(?:المتوفر\s+عندنا|تصنيف(?:ه|ها)?\s+عندنا|معلوماتي|"
-    r"(?:الداتا|البيانات|المعلومات)\s+(?:(?:اللي|الي)\s+)?(?:معايا|عندي))|"
-    r"(?P<classification>(?:مصن[\u064b-\u065f]*ف|متصنف)(?:ه)?\s+عندنا))(?!\w)(?:[ \t]*[،,])?"
+# ── Source talk ───────────────────────────────────────────────────────────────────────────────
+#
+# Owner, 2026-11-20: a reply never says where its information comes from ("حسب تصنيفه عندنا",
+# "طابعه المسجل", "ووصفه عندنا جذاب", "مش مؤكدة عندي"). It makes the customer feel they are talking
+# to a machine reading a screen. Most of that wording was taught by our own canned strings and prompt
+# examples, which were rewritten at the source; this is the safety net for what the model still writes.
+#
+# Built from 6,687 stored and simulated replies; the six phrases this replaced matched none of them.
+# Each rule either deletes an aside whose claim stands without it, or rewrites a phrase whose deletion
+# would break the sentence. A negated form is never deleted: "ومش مسجل إنه تقيل" without "مش مسجل"
+# says it IS heavy. What no rule can repair safely is left as written and logged as SOURCE_TALK.
+#
+# Patterns run on `_claim_normalize` text (أ→ا, ة→ه, ى→ي), which keeps every offset, so spans map back
+# onto the original reply. `\w` is the word test rather than an Arabic block range, which would also
+# take in the Arabic comma (U+060C).
+
+_SUFFIX = "(?:ه|ها|هم)"
+_HOLDER = "(?:عندي|عندنا|معايا|معانا)"
+_THAT = "(?:اللي|الي)"
+_TO_IT = "(?:له|لها|ليه|ليها|عنه|عنها)"
+_NEGATOR_BEFORE = re.compile("(?<!\\w)و?(?:مش|مِش|غير|ليس|ليست|ماهوش|مكانش|مبقاش)\\s*$")
+
+# "حسب تصنيفه عندنا", "على حسب البيانات اللي معايا", "Aventus أنسب حسب المناسبة المسجلة له",
+# "ومناسب للمكتب حسب استخدامه": the claim stands without the aside, so the aside goes. Customer-side
+# uses stay: "حسب الحجم", "حسب ذوقك", "حسب المناسبة", "على حسب الريحة اللي بتحبها", "حسب المحافظة",
+# and "حسب المتوفر" as a stock condition.
+_SOURCE_ASIDE = re.compile(
+    r"(?<!\w)و?(?:علي\s+)?حسب\s+(?:" + "|".join((
+        rf"(?:ال)?تصنيف{_SUFFIX}?(?:\s+(?:{_HOLDER}|بتاعنا))?",
+        r"معلومات(?:ي|نا)",
+        rf"(?:ال)?معلومات\s+{_THAT}\s+{_HOLDER}",
+        rf"(?:ال)?(?:بيانات|داتا)(?:{_SUFFIX}|نا|ي)?(?:\s+{_THAT}\s+{_HOLDER})?",
+        rf"(?:ال)?(?:مسجل|متسجل|مكتوب)ه?(?:\s+(?:{_HOLDER}|{_TO_IT}))?",
+        rf"(?:ال)?(?:مناسبه|مناسبات|نوتات|تاجات|تقسيم)\s+(?:ال)?(?:مسجله?|متسجله?|متاحه?|مكتوبه?)(?:\s+(?:{_HOLDER}|{_TO_IT}))?",
+        r"(?:ال)?متوفر\s+عندنا",
+        r"استخدام(?:ه|ها)",
+        rf"{_THAT}\s+(?:{_HOLDER}|متسجل|مسجل|مكتوب)(?:\s+{_HOLDER})?",
+    )) + r")(?!\w)(?P<comma>[ \t]*[،,])?"
 )
-_CLASSIFICATION_NEGATION = re.compile(
-    r"(?<!\w)(?:مش|مِش|غير|ليس|ليست|ماهوش|مكانش|مبقاش)\s*$"
+# "ومش مسكر حسب وصفها", "مفيش عود حسب وصف الريحة المتاح": the aside scopes a claim to the perfume's
+# character, so it becomes "في طابعها". Deleted, the scoped claim would read as a flat one.
+_DESCRIPTION_ASIDE = re.compile(
+    rf"(?<!\w)(?P<conj>و)?(?:علي\s+)?حسب\s+(?:وصف(?P<suffix>{_SUFFIX})(?:\s+(?:{_HOLDER}|المسجل|المتاح|المكتوب))?"
+    rf"|(?:ال)?وصف\s+(?:ال)?ريحه(?:\s+(?:ال)?(?:مسجل|متاح|مكتوب)ه?)?(?:\s+{_HOLDER})?)(?!\w)"
 )
+# "طابعه المسجل", "الفرق في الطابع المسجل:", "الـBase Notes المسجلة عندنا": the adjective goes and the
+# noun stays. Only after a noun (a possessed or definite word, or a Latin one), so "أقدر أأكدلك المسجل
+# عندنا" is left to `_WHAT_IS_RECORDED`; never after an order word ("العنوان المسجل" is the customer's).
+_REGISTERED_ADJECTIVE = re.compile(
+    rf"(?P<noun>(?<!\w)(?:(?:ال|لل)[\wـ]+|[\wـ]+{_SUFFIX}|[a-z]+))"
+    rf"(?P<adjective>\s+ال(?:مسجل|متسجل)(?:ه|ين)?(?:\s+(?:{_HOLDER}|{_TO_IT}|في\s+بيانات\w*))?)(?!\w)"
+)
+_NOT_A_CATALOGUE_NOUN = re.compile(
+    r"(?:ال)?(?:طلب|اوردر|عنوان|رقم|اسم|بيانات|تليفون|موبايل|حساب)\w*|"
+    r"(?:عنه|عنها|له|لها|ليه|ليها|فيه|فيها|منه|منها|بيه|بيها)"
+)
+# The indefinite form: "من غير طابع دخاني مسجل", "مفيش مقارنة مسجلة تثبت إنه شبه…", "أقرب نوتة مسجلة في
+# القلب". The adjective goes.
+_REGISTERED_INDEFINITE = re.compile(
+    # Never across a negation: "وصف مش مسجل" is a denial, not a noun with its adjective.
+    r"(?<!\w)(?:طابع|مقارنه|وصف|نوته)(?:\s+(?!مسجل|متسجل|(?:مش|غير|مو|ليس)(?!\w))[\wـ]+)?"
+    rf"(?P<adjective>\s+(?:مسجل|متسجل)ه?(?:\s+{_TO_IT})?)(?!\w)"
+)
+# "بس مناسبة الاستخدام اليومي مش مسجلة عندي" → "مش مؤكدة": the doubt stays, in the seller's words.
+_NOT_RECORDED_HERE = re.compile(
+    rf"(?<!\w)(?P<neg>و?(?:مش|غير))\s+(?:مسجل|متسجل)(?P<suffix>ه|ين)?\s+{_HOLDER}(?!\w)"
+)
+# "معنديش بيانات عن أكتر العطور مبيعًا" → "معرفش أكتر العطور مبيعًا". Not "معلومات": "ماعنديش معلومة
+# مؤكدة إن…" is how a person says it.
+_NO_DATA_ABOUT = re.compile(
+    r"(?<!\w)(?P<conj>و)?(?:معنديش|ماعنديش|مفيش\s+عندي|مش\s+عندي)\s+(?:ال)?(?:بيانات|داتا)"
+    r"(?:\s+(?:مؤكده|كفايه|موثوقه))?\s+عن(?!\w)"
+)
+# "مفيش بيانات بتأكد إنهم شبه Club de Nuit" → "مفيش حاجة بتأكد…".
+_NO_DATA_CONFIRMS = re.compile(
+    r"(?<!\w)(?:مفيش|مافيش)\s+(?P<word>بيانات)(?=\s+(?:بت|ت)(?:اكد|ثبت|قول|وضح|حدد))"
+)
+# "مش قادر أجزم إنه شبه Club de Nuit من غير بيانات عن ريحته" → "…شبه Club de Nuit": the doubt was already
+# said; only a tail that ends its clause goes.
+_WITHOUT_DATA = re.compile(
+    r"\s*(?<!\w)من\s+غير\s+(?:ال)?(?:بيانات|داتا)\w*[^.!؟?\n؛;،,]{0,60}(?=[.!؟?\n؛;،,]|$)"
+)
+# "والحلاوة فيها مش مؤكدة عندي", "مش مؤكدة في بياناته": the doubt stays, its source goes.
+_CONFIRMED_WHERE = re.compile(
+    rf"(?<!\w)(?:مؤكد|موكد)(?:ه|ين)?(?P<source>\s+(?:عندي|عندنا|في\s+بيانات(?:{_SUFFIX}|نا|ي)?))(?!\w)"
+)
+# "…بـ2000 جنيه زي ما هو مكتوب عندنا", "مقدرش أحدد أنهي أوضح فيهم من البيانات اللي عندي".
+_SOURCE_TAIL = re.compile(
+    rf"(?<!\w)(?:زي\s+ما\s+(?:هو\s+|هي\s+)?(?:مكتوب|مسجل|متسجل)ه?\s+{_HOLDER}"
+    rf"|من\s+(?:ال)?(?:بيانات|داتا|معلومات)(?:\s+{_THAT}\s+{_HOLDER}|{_SUFFIX}))(?!\w)"
+)
+# "ده موصوف عندنا إنه جذاب" → "ده جذاب", "ده مصنّف عندنا نيش" → "ده نيش". "مسجل/مكتوب عندنا" only before
+# "إنه": "طلبك مسجل عندنا" is about the order. Never after a negation (`_NEGATOR_BEFORE`): "ده مش مصنف
+# عندنا، محتاج أتأكد من نوعه" keeps its doubt and is logged instead.
+_REGISTERED_AS = re.compile(
+    rf"(?<!\w)(?:(?:مصن[ً-ٟ]*ف|متصنف|موصوف)ه?\s+{_HOLDER}(?:\s+(?:انه|انها|ان))?"
+    rf"|(?:مسجل|متسجل|مكتوب)ه?\s+{_HOLDER}\s+(?:انه|انها|ان))(?!\w)"
+)
+# "ووصفه عندنا جذاب" (conversation 8189) → "وريحته جذاب"; "ووصفه عندنا إنه جذاب" → "وهو جذاب"; and the
+# bare "ووصفه جذاب" (8183), which the attraction feature's own wording taught, → "وريحته جذاب".
+_DESCRIBED_AS = re.compile(
+    rf"(?<!\w)(?P<conj>و)?وصف(?P<suffix>{_SUFFIX})"
+    rf"(?:\s+(?:{_HOLDER}|ال(?:مسجل|متسجل)ه?)\s+(?P<that>انه|انها|ان)(?!\w)"
+    # Not before a verb: "وصفه المسجل ما بيأكدش…" is not "ريحته ما بيأكدش…"; `_REGISTERED_ADJECTIVE` takes it.
+    rf"|\s+(?:{_HOLDER}|ال(?:مسجل|متسجل)ه?)(?=\s+(?!ما\s|م?ب[يت])[\wـ])"
+    rf"|(?=\s+(?:جذاب|مغري|مثير|سكسي|sexy|attractive|seductive)))"
+)
+_PRONOUNS = {"ه": "هو", "ها": "هي", "هم": "هم"}
+# "لكن مش مسجل فيه الريحة النظيفة" → "مش مؤكد إن فيه…", "ومش مسجل إنه تقيل" → "ومش مؤكد إنه تقيل",
+# "والطابع الخشبي مش من وصفه" → "مش فيه" (a trait missing from the labels is absent: owner, 2026-11-20).
+_NOT_REGISTERED = re.compile(
+    rf"(?<!\w)(?P<neg>و?(?:مش|غير))\s+(?:(?:مسجل|متسجل|مكتوب|موصوف)(?:ه|ين)?(?:\s+{_HOLDER})?"
+    rf"(?:\s+(?P<inside>فيه|فيها|فيهم)|\s+(?P<that>انه|انها|ان))"
+    # "ومش من وصفه إنه مسكر" → "ومش مؤكد إنه مسكر": "ومش فيه إنه مسكر" would not be Arabic.
+    rf"|من\s+وصف(?P<of>{_SUFFIX})(?:\s+(?P<of_that>انه|انها|ان))?)(?!\w)"
+)
+# "الاتنين مسجلين للمناسبات الرسمية" → "مناسبين", "لأنه مسجل للشاطئ" → "مناسب". Not after a negation:
+# "مش مسجل للشغل" (unrecorded, needs confirmation) is not "مش مناسب للشغل".
+_REGISTERED_FOR = re.compile(
+    r"(?<!\w)(?P<word>(?P<stem>مسجل|متسجل)(?:ه|ين)?)(?P<gap>\s+)لل(?!طلب|اوردر|توصيل|شحن|دفع)[\wـ]"
+)
+# "الاتنين مناسبتهم مسجلة للمناسبات الرسمية": after "مناسبته" the word just goes, or it reads
+# "مناسبتهم مناسبة للمناسبات".
+_SUITABILITY_BEFORE = re.compile(r"(?<!\w)و?مناسبت(?:ه|ها|هم)\s+$")
+# "ده كل اللي متسجل عندي عن ده" → "ده كل اللي أعرفه عن ده", "ده كل المكتوب عندي عن العرض", and the
+# noun "أقدر أأكدلك المسجل عندنا بس".
+_WHAT_IS_RECORDED = re.compile(
+    rf"(?<!\w)(?:{_THAT}\s+(?:متسجل|مسجل|مكتوب)|ال(?:مكتوب|مسجل|متسجل))\s+{_HOLDER}(?!\w)"
+)
+# What the rules above leave: logged, never edited. Order wording is not source talk: "مسجل لك 1 ×",
+# "الاختيارات والكمية متسجلة زي ما طلبت", "كل البيانات كده تمام", "بيانات التوصيل". "تاج" is matched as a
+# word only, never inside "محتاج".
+_SOURCE_TALK = re.compile(
+    r"(?<!\w)(?:ال)?(?:مسجل|متسجل)(?:ه|ين)?(?!\w)(?!\s+(?:لك|ليك|ليكي|ليكم|باسم|زي\s+ما))"
+    r"|(?<!\w)(?<!كل )(?<!اي )(?:ال)?(?:بيانات|داتا)(?:ه|ها|هم|نا|ي)?(?!\w)"
+    r"(?!\s+(?:ال)?(?:توصيل|شحن|طلب|اوردر|دفع|عميل|تواصل))"
+    r"|(?<!\w)(?:ال)?تاجات?(?!\w)"
+    r"|(?<!\w)(?:مصن[ً-ٟ]*ف|متصنف|موصوف)ه?\s+عند(?:نا|ي)(?!\w)"
+    r"|(?<!\w)وصف(?:ه|ها|هم)\s+(?:عندنا|عندي)(?!\w)"
+    r"|(?<!\w)معلوماتي(?!\w)"
+    r"|(?<!\w)(?:ال)?سيستم(?!\w)"
+)
+
+
+def _source_edits(text, original):
+    """`(start, end, replacement)` for every source phrase in the normalized `text`."""
+    def span(match, group):
+        return original[match.start(group):match.end(group)]
+
+    edits = []
+    for m in _SOURCE_ASIDE.finditer(text):
+        # An aside that opens a clause takes its comma ("حسب الداتا اللي معايا، ده للجنسين" → "ده للجنسين",
+        # "لكن حسب النوتات المتاحة عندي، الـBase…" → "لكن الـBase…"); one after a full clause leaves it for
+        # the next clause ("Aventus أنسب حسب المناسبة المسجلة له، وريحته…").
+        opens = not text[:m.start()].strip() or re.search(
+            r"(?:[.!؟?\n؛;:]|(?<!\w)(?:لكن|بس|و|ف|يعني|اما))\s*$", text[:m.start()])
+        edits.append((m.start(), m.end() if opens or not m.group("comma") else m.start("comma"), ""))
+    edits += [(m.start(), m.end(), (span(m, "conj") if m.group("conj") else "") + "في طابع"
+               + (span(m, "suffix") if m.group("suffix") else "ه"))
+              for m in _DESCRIPTION_ASIDE.finditer(text)]
+    edits += [(m.start("adjective"), m.end("adjective"), "") for m in _REGISTERED_ADJECTIVE.finditer(text)
+              if not _NOT_A_CATALOGUE_NOUN.fullmatch(m.group("noun"))]
+    edits += [(m.start("adjective"), m.end("adjective"), "") for m in _REGISTERED_INDEFINITE.finditer(text)]
+    edits += [(m.start(), m.end(), f"{span(m, 'neg')} مؤكد{span(m, 'suffix') if m.group('suffix') else ''}")
+              for m in _NOT_RECORDED_HERE.finditer(text)]
+    edits += [(m.start(), m.end(), (span(m, "conj") if m.group("conj") else "") + "معرفش")
+              for m in _NO_DATA_ABOUT.finditer(text)]
+    edits += [(m.start("word"), m.end("word"), "حاجة") for m in _NO_DATA_CONFIRMS.finditer(text)]
+    edits += [(m.start(), m.end(), "") for m in _WITHOUT_DATA.finditer(text)]
+    edits += [(m.start("source"), m.end("source"), "") for m in _CONFIRMED_WHERE.finditer(text)]
+    edits += [(m.start(), m.end(), "") for m in _SOURCE_TAIL.finditer(text)]
+    edits += [(m.start(), m.end(), "") for m in _REGISTERED_AS.finditer(text)
+              if not _NEGATOR_BEFORE.search(text[:m.start()])]
+    for m in _DESCRIBED_AS.finditer(text):
+        conj = span(m, "conj") if m.group("conj") else ""
+        if m.group("that"):
+            edits.append((m.start(), m.end(), conj + _PRONOUNS[m.group("suffix")]))
+        else:
+            edits.append((m.start(), m.end(), conj + "ريحت" + span(m, "suffix")))
+    for m in _NOT_REGISTERED.finditer(text):
+        neg = span(m, "neg")
+        if m.group("inside"):
+            edits.append((m.start(), m.end(), f"{neg} مؤكد إن {span(m, 'inside')}"))
+        elif m.group("that"):
+            edits.append((m.start(), m.end(), f"{neg} مؤكد {span(m, 'that')}"))
+        elif m.group("of_that"):
+            edits.append((m.start(), m.end(), f"{neg} مؤكد {span(m, 'of_that')}"))
+        else:
+            edits.append((m.start(), m.end(), f"{neg} في{span(m, 'of')}"))
+    for m in _REGISTERED_FOR.finditer(text):
+        if _NEGATOR_BEFORE.search(text[:m.start()]):
+            continue
+        if _SUITABILITY_BEFORE.search(text[:m.start()]):
+            edits.append((m.start("word"), m.end("gap"), ""))
+        else:
+            edits.append((m.start("stem"), m.end("stem"), "مناسب"))
+    edits += [(m.start(), m.end(), "اللي أعرفه") for m in _WHAT_IS_RECORDED.finditer(text)]
+
+    # Where two rules cover the same words, the one starting first wins, then the longer one: "حسب
+    # المناسبة المسجلة له" is one aside, not an aside plus an adjective.
+    chosen, end = [], -1
+    for edit in sorted(edits, key=lambda edit: (edit[0], -(edit[1] - edit[0]))):
+        if edit[0] >= end:
+            chosen.append(edit)
+            end = edit[1]
+    return chosen
 
 
 def strip_source_qualifiers(reply):
-    """Remove source asides, preserving the claim, negation and real uncertainty."""
-    text = _claim_normalize(reply)
-    matches = [match for match in _SOURCE_QUALIFIERS.finditer(text)
-               if not (match.group("classification")
-                       and _CLASSIFICATION_NEGATION.search(text[:match.start()]))]
-    if not matches:
+    """Remove or reword phrases that cite where the information comes from (owner, 2026-11-20).
+
+    The claim, its negation and any real doubt survive: an aside is deleted only when the sentence
+    stands without it, and a phrase whose deletion would change the meaning is reworded instead.
+    """
+    if not reply:
         return reply
-    for match in reversed(matches):
-        reply = reply[:match.start()] + reply[match.end():]
-    return _tidy_after_strip(reply)
+    edits = _source_edits(_claim_normalize(reply), reply)
+    if not edits:
+        return reply
+    cleaned = reply
+    for start, end, replacement in reversed(edits):
+        if not replacement and (start == 0 or cleaned[start - 1] == "\n"):
+            # An aside that opened a line takes the space after it too.
+            while end < len(cleaned) and cleaned[end] in " \t":
+                end += 1
+        cleaned = cleaned[:start] + replacement + cleaned[end:]
+    cleaned = _tidy_after_strip(cleaned)
+    # An empty or punctuation-only reply is worse than one with an aside in it.
+    return cleaned if re.search(r"\w", cleaned) else reply
+
+
+def source_talk(reply):
+    """The source phrases still in `reply` after `strip_source_qualifiers`: for logs and evaluation."""
+    text = _claim_normalize(reply or "")
+    # "طلبك مسجل عندنا" is the order, not a source.
+    return [match.group().strip() for match in _SOURCE_TALK.finditer(text)
+            if not re.search(r"(?:طلب|اوردر)\w*\s+$", text[:match.start()])]
 
 
 def sanitize_reply(reply, conversation=None):
@@ -849,6 +1066,14 @@ def sanitize_reply(reply, conversation=None):
         return reply
 
     cleaned = strip_source_qualifiers(normalize_bottle_wording(reply))
+    residual = source_talk(cleaned)
+    if residual:
+        logger.warning(
+            "SOURCE_TALK: reply still cites its own records%s: %s. No rule rewrites these safely; a "
+            "steady rate means some prompt or canned wording still teaches them.",
+            f" (conversation #{conversation.id})" if conversation is not None else "",
+            " | ".join(residual),
+        )
 
     # Read straight off the conversation rather than importing the model, so this module stays
     # Django-free. merge_preferences (conversation_service) writes max_price *inside* route(),

@@ -31,7 +31,7 @@ class ScentDescriptionTests(SimpleTestCase):
 
     def test_zero_one_and_two_tags_do_not_invent_character(self):
         for tags, expected in (
-            ([], "وصف ريحته محتاج تأكيد"),
+            ([], "ريحته محتاجة تأكيد"),
             (["fresh"], "ريحته فريش ومنعش"),
             (["woody", "sweet"], "ريحته خشبي ومسكر"),
         ):
@@ -200,10 +200,12 @@ class ScentDescriptionTests(SimpleTestCase):
 
     def test_empty_tags_and_unknown_occasions_accept_honest_fallback(self):
         facts = {"Beta": {"scent_tags": [], "notes": ["", "", ""], "occasion": "unknown"}}
-        self.assertEqual(self.helper.description_issues(
-            "Beta وصف ريحته محتاج تأكيد", facts, message="ريحته ايه؟", required=True,
-        ), [])
-        self.assertEqual(self.helper.describe_scent([], "unknown"), "وصف ريحته محتاج تأكيد")
+        for reply in ("Beta ريحته محتاجة تأكيد", "Beta وصف ريحته محتاج تأكيد"):   # the wording before 2026-11-20
+            with self.subTest(reply=reply):
+                self.assertEqual(self.helper.description_issues(
+                    reply, facts, message="ريحته ايه؟", required=True,
+                ), [])
+        self.assertEqual(self.helper.describe_scent([], "unknown"), "ريحته محتاجة تأكيد")
 
     def test_known_tags_with_unknown_occasion_do_not_require_invented_use(self):
         facts = {"Beta": {"scent_tags": ["sweet"], "notes": ["", "", ""], "occasion": "unknown"}}

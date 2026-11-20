@@ -33,8 +33,13 @@ GOAL_KEY = "appeal_goal"
 # any perfume; which perfumes are described as attractive is decided by the data afterwards.
 ACKNOWLEDGEMENT = "تمام، هركز على العطور الجذابة اللي عندنا."
 
-# The evidence line a perfume earns in the recommendation payload and the reply note.
-DESCRIBED_AS_APPEALING = "موصوف عندنا إنه جذاب"
+def appealing_line(names):
+    """The line attractive perfumes earn in the reply note: said plainly, never "موصوف عندنا إنه جذاب".
+
+    The old wording was copied by the model as "ووصفه عندنا جذاب" (conversation 8189); the owner wants
+    no reply to cite where its information comes from (2026-11-20).
+    """
+    return " و".join(names) + (" ريحته جذابة." if len(names) == 1 else " ريحتهم جذابة.")
 
 _WOMEN = r"(?:ال)?(?:بنات|ستات|حريم|نسوان|مزز)|البنت|الست"
 _MEN = r"(?:ال)?(?:رجاله|رجال|شباب|ولاد)"
@@ -175,12 +180,13 @@ def appeal_note(response, products, intent):
     named = [name for name in naming.names_in(response, list(by_name)) if describes_appeal(by_name[name])]
     if not named:
         return response
-    return response + "\n\n" + " و".join(named) + " " + DESCRIBED_AS_APPEALING + "."
+    return response + "\n\n" + appealing_line(named)
 
 
 RECOMMENDATION_RULE = (
     "The customer wants a perfume other people find attractive (preferences.appeal_goal). "
-    "Only the owner's descriptions record that: call a perfume جذاب only when its described_as_attractive is true. "
+    "Call a perfume جذاب only when its attractive_scent is true, and say it plainly (\"ريحته جذابة\"), "
+    "never that it is described, recorded or classified as attractive. "
     "If none of your choices has it, recommend on scent alone and make no attraction claim. "
     "Never promise how women, men or people will react to the customer."
 )
@@ -190,14 +196,16 @@ def named_rules(products):
     """Instructions for "X هيخلي البنات تحبني؟" about the named perfume(s) in `products`."""
     appealing = [product.name for product in products if describes_appeal(product)]
     if appealing:
-        appeal = ("- العطور دي موصوفة عندنا إنها جذابة، وتقدر تقول كده عنها بس: " + "، ".join(appealing) + ".\n"
+        appeal = ("- العطور دي ريحتها جذابة، وتقدر تقول كده عنها بس (زي \"ريحته جذابة\"): "
+                  + "، ".join(appealing) + ".\n"
                   "- ❌ ممنوع تقول عن أي عطر تاني إنه جذاب.\n")
     else:
-        appeal = "- ❌ مفيش عطر هنا موصوف عندنا إنه جذاب، فممنوع تقول إنه جذاب.\n"
+        appeal = "- ❌ ممنوع تقول عن أي عطر هنا إنه جذاب.\n"
     return (
         "\nالعميل بيسأل إذا كان العطر ده هيخلي الناس (أو البنات/الستات) تحبه أو تنجذبله:\n"
         "- ابدأ بجملة قصيرة إنك متقدرش تضمن ده، زي \"مقدرش أضمن ده يا فندم\".\n"
-        "- بعدها قول الحقايق المسجلة بس: المناسبات المسجلة في بياناته، وثباته وفوحانه زي ما هما مسجلين.\n"
+        "- بعدها قول حقايقه بس: مناسباته وثباته وفوحانه زي ما هي في بياناته، من غير ما تقول للعميل "
+        "إنها مسجلة أو موصوفة عندنا.\n"
         + appeal +
         "- ❌ ممنوع تقول إنه هيجذب البنات أو هيخليهم يحبوه أو إنه بيعجب أغلب الناس.\n"
         "- ❌ ممنوع تنصحه أو توعظه، زي \"الأهم تختاره عشان يعجبك\".\n"
@@ -224,7 +232,7 @@ def promise_issues(reply):
     text = _normalize(reply)
     for match in _PROMISE.finditer(text):
         if not _HEDGE.search(text[max(0, match.start() - 60):match.start()]):
-            return ["appeal: ممنوع تضمن رد فعل الناس أو إن العطر هيجذب البنات؛ مفيش بيانات بكده"]
+            return ["appeal: ممنوع تضمن رد فعل الناس أو إن العطر هيجذب البنات"]
     return []
 
 
@@ -238,5 +246,5 @@ def unbacked_claim_issues(reply, facts):
             continue
         claim = _CLAIM.search(_normalize(segment))
         if claim and not _HEDGE.search(_normalize(segment)[max(0, claim.start() - 60):claim.start()]):
-            issues.append(f"appeal: {name} مش موصوف عندنا إنه جذاب؛ متقولش عنه كده")
+            issues.append(f"appeal: متقولش إن {name} جذاب")
     return issues

@@ -569,7 +569,8 @@ class ReplayTwoTests(TestCase):
                                          scent_tags=["floral", "fruity", "light"], occasion="Beach, Summer & Gym")
         message = "طب هو مناسب للاستخدام اليومي ولا لأ؟"
         line = "\n".join(requested_product_details([product], message))
-        self.assertIn("مناسبته المسجلة للبحر والصيف والجيم", line)
+        self.assertIn("مناسبته للبحر والصيف والجيم", line)
+        self.assertNotIn("المسجل", line)
         self.assertIn("محتاجة تأكيد", line)
         self.assertEqual(product_claim_issues(line, product_claim_facts([product]), message=message, history=[]), [])
 
@@ -838,15 +839,19 @@ class SecondRoundBatchOneTests(TestCase):
         self.assertNotIn("unsupported_promise", [f[0] for f in checks.check_behavior(approved, **kwargs)])
         self.assertIn("unsupported_promise", [f[0] for f in checks.check_behavior("فريقنا هيتواصل معاك بكرة.", **kwargs)])
 
-    def test_an_unrecorded_trait_is_not_confirmed_absent(self):
-        """Owner decision 4: "مش مسكر" is not inferred from a missing sweet label (S07 t5)."""
+    def test_an_unrecorded_trait_is_absent(self):
+        """Owner, 2026-11-20 (reversing decision 4 of 2026-11-12): a trait missing from the labels is absent,
+        so "مش مسكر" about a perfume without the sweet label is right (S07 t5 asked exactly this)."""
         from products.services.scent_description import description_issues
         facts = {"K By Dolce": {"scent_tags": ["fresh", "woody", "citrus"], "notes": ["Lemon", "Juniper", "Cedar"],
                                 "occasion": ""}}
         message = "ده مش مسكر صح؟"
-        self.assertTrue(description_issues("لا، K By Dolce مش مسكر.", facts, message=message))
-        self.assertEqual(description_issues("K By Dolce طابعه فريش وخشبي، والحلاوة فيه مش مؤكدة عندي.", facts,
-                                            message=message), [])
+        self.assertEqual(description_issues("لا، K By Dolce مش مسكر.", facts, message=message), [])
+        self.assertEqual(description_issues("لا، K By Dolce مش تقيل؛ طابعه فريش وخشبي.", facts, message="ده تقيل؟"), [])
+        # A perfume with no labels has nothing to deny from.
+        blank = {"Blank": {"scent_tags": [], "notes": [], "occasion": ""}}
+        self.assertTrue(description_issues("لا، Blank مش مسكر.", blank, message=message))
+        self.assertEqual(description_issues("Blank ريحته محتاجة تأكيد.", blank, message=message), [])
         light = {"Cassilia": {"scent_tags": ["floral", "fruity", "light"], "notes": [], "occasion": ""}}
         self.assertEqual(description_issues("لا، Cassilia مش تقيل.", light, message="ده تقيل؟"), [])
         self.assertEqual(description_issues("K By Dolce مفيهوش عود.", facts, message="فيه عود؟"), [])
@@ -1115,7 +1120,7 @@ class SecondRoundBatchTwoTests(TestCase):
         from products.services.router import _label_difference
         k_by = self.product("K By Dolce", ["fresh", "woody", "citrus"])
         nyc = self.product("212 NYC Man", ["fresh", "citrus", "musky"])
-        self.assertEqual(_label_difference(k_by, nyc), "الفرق في الطابع المسجل: K By Dolce خشبي، و212 NYC Man مسكي.")
+        self.assertEqual(_label_difference(k_by, nyc), "الفرق بينهم في الطابع: K By Dolce خشبي، و212 NYC Man مسكي.")
 
     def test_a_fallback_that_repeats_a_recent_reply_is_replaced(self):
         """S09 round 2 t6-t7: the same Ultra Male description went out three times."""
@@ -1525,7 +1530,7 @@ class SecondRoundBatchThreeTests(TestCase):
         self.assertTrue(description_issues("Pure XS: الجلدية مش مؤكدة في طابعه، والتوابل مش مؤكدة.", facts, message=question))
         self.assertEqual(description_issues("Pure XS طابعه جلدي وفيه توابل، بس مقدرش أحدد أنهي أوضح.", facts,
                                             message=question), [])
-        self.assertEqual(asked_attribute_answers(question, pure)[:2], ["طابعه المسجل ريحته جلدية", "طابعه المسجل فيه ريحة توابل"])
+        self.assertEqual(asked_attribute_answers(question, pure)[:2], ["ريحته جلدية", "فيه ريحة توابل"])
 
     def test_thinking_about_one_perfume_while_asking_for_another_pick_is_not_a_close(self):
         """S14 round 2 batch 3 t9: "رشحلي حاجة سويت… وأنا هفكر في Wanted by Night كمان" got "خد وقتك"."""
@@ -1667,8 +1672,10 @@ class SecondRoundBatchThreeTests(TestCase):
                              self.conversation)
         self.assertEqual(reply, "تمام يا فندم، ولما تحب تطلبه ابعتلي.")
 
-    def test_a_demand_for_a_guarantee_gets_what_can_and_cannot_be_guaranteed(self):
-        """S10 round 2 full 3 t6-t7: "رشحلي حاجة تضمن إنها مش مسكرة" got unconfirmed options with no word."""
+    def test_a_demand_for_a_guarantee_gets_a_plain_answer(self):
+        """S10 round 2 full 3 t6-t7: "رشحلي حاجة تضمن إنها مش مسكرة" got options with no word on sweetness.
+        Owner, 2026-11-20: the picks without the sweet label are said plainly to be not sweet, with no "100%"
+        disclaimer and no "try it in the store" tail."""
         from products.services.router import _guarantee_note
         from products.services.static_faq_service import normalize_arabic
         clean = self.product("Clean Citrus", ["fresh", "citrus"], ("Lemon", "Lavender", "Cedar"))
@@ -1676,10 +1683,9 @@ class SecondRoundBatchThreeTests(TestCase):
         intent = {"excluded_scent_tags": ["sweet", "oud"]}
         message = normalize_arabic("طالما مش مضمون يبقى رشحلي حاجة تضمن إنها فريش ومش مسكرة")
         reply = _guarantee_note("Clean Citrus فريش. وVanilla Fresh فريش.", [clean, vanilla], intent, message)
-        self.assertTrue(reply.startswith("مقدرش أضمن 100% إن عطر مش مسكر"), reply)
-        self.assertIn("Clean Citrus: الحلاوة مش ضمن تصنيفها", reply)
-        self.assertNotIn("Vanilla Fresh: الحلاوة", reply)
-        self.assertTrue(reply.endswith("جربها في الستور قبل ما تطلب."))
+        self.assertTrue(reply.startswith("Clean Citrus مش مسكر، ومفيش فانيليا ولا عسل في نوتاته.\n\n"), reply)
+        self.assertNotIn("Vanilla Fresh مش مسكر", reply)
+        self.assertNotRegex(reply, "100%|مقدرش أضمن|جربها في الستور|البيانات")
         self.assertEqual(_guarantee_note("x", [clean], {"excluded_scent_tags": ["oud"]}, message), "x")
         from products.services.product_formatting import product_claim_facts
         from products.services.reply_sanitizer import product_claim_issues
@@ -1826,7 +1832,7 @@ class SecondRoundBatchThreeTests(TestCase):
         facts = {"Pure XS": {"scent_tags": ["spicy", "sweet", "leather"], "notes": ["Ginger", "Leather", "Vanilla"], "occasion": ""}}
         self.assertTrue(description_issues("المسكر أوضح في طابعه، والجلدي موجود كمان.", facts, message=question))
         self.assertEqual(description_issues("الاتنين في طابعه، ومقدرش أحدد أنهي أوضح فيهم.", facts, message=question), [])
-        self.assertIn("ومقدرش أحدد أنهي أوضح فيهم من البيانات اللي عندي", asked_attribute_answers(question, pure))
+        self.assertIn("ومقدرش أحدد أنهي فيهم أوضح", asked_attribute_answers(question, pure))
 
     def test_how_long_it_lasts_in_other_words_gets_the_policy(self):
         """S16 round 2 full 4 t3-t5: "بيقعد قد إيه؟", "يعني عمليًا…", "قولّي تقدير عملي…" got no hours."""
@@ -1899,7 +1905,7 @@ class SecondRoundBatchThreeTests(TestCase):
         with patch("products.services.comparison_service.chat", return_value="Bleu de Chanel أنسب للشغل.") as chat, \
              patch("products.services.comparison_service.resolve_products", return_value=[]):
             compare_products("أنهي أنسب للشغل: Bleu de Chanel ولا Sauvage ولا Eros؟", [], self.store, self.conversation)
-        self.assertIn("قول المناسبة المسجلة لكل عطر منهم", chat.call_args.args[0][-1]["content"])
+        self.assertIn("قول مناسبة كل عطر منهم", chat.call_args.args[0][-1]["content"])
 
     def test_like_the_original_is_an_authenticity_question_not_a_likeness_request(self):
         """S16 round 2 batch 3 t3-t4: "يعني زي الأصلي 100% ولا لأ؟" got the gender and reference questions."""
@@ -2004,8 +2010,10 @@ class SecondRoundBatchThreeTests(TestCase):
                            ("Lime, Caviar, Pepper", "Spices, Vodka, Mint", "Amber, Leather, Woody Notes"))
         question = "طب 212 VIB Man فيه عود أو ريحته مسكرة؟"
         [line] = requested_product_details([vib], question)
-        self.assertIn("مفيش عود ضمن نوتاته المسجلة", line)
-        self.assertIn("الحلاوة مش مؤكدة في طابعه المسجل", line)
+        self.assertIn("مفيش عود في نوتاته", line)
+        # Owner, 2026-11-20: no sweet label means not sweet, said plainly, then the character it has.
+        self.assertIn("مش مسكر. فيه ريحة توابل", line)
+        self.assertNotRegex(line, "مؤكد|المسجل|أوضح")
         self.assertNotIn("Caviar", line)
         facts = product_claim_facts([vib])
         self.assertEqual(product_claim_issues(line, facts, message=question), [])
@@ -2025,7 +2033,7 @@ class SecondRoundBatchThreeTests(TestCase):
                                "Vanilla, Pepper, Guaiac Wood, Patchouli"))
         question = "استنى، فلفل في الـbase؟ اللي أعرفه إنه في الـtop"
         [line] = requested_product_details([layton], question)
-        self.assertIn("مسجل عندنا في الـBase Notes: Vanilla, Pepper", line)
+        self.assertIn("موجود في الـBase Notes: Vanilla, Pepper", line)
         facts = product_claim_facts([layton])
         self.assertEqual(product_claim_issues(line, facts, message=question), [])
         dry_down = "طب الـdry down بتاعه إيه؟"
@@ -2056,7 +2064,7 @@ class SecondRoundBatchThreeTests(TestCase):
         clean = self.product("Clean Citrus", ["citrus", "fresh"], ("Lemon, Bergamot", "Lavender", "Cedar, Amber"))
         [line] = requested_product_details([clean], "رشحلي حاجة فريش مش مسكرة ولا فيها عود",
                                            description_required=True)
-        self.assertIn("مفيش عود ضمن نوتاته المسجلة", line)
+        self.assertIn("مفيش عود في نوتاته", line)
         self.assertNotIn("Bergamot", line)
         [both] = requested_product_details([clean], "ريحته ايه ونوتاته ايه؟", description_required=True)
         self.assertIn("Bergamot", both)
@@ -2373,7 +2381,8 @@ class SecondRoundBatchFourTests(TestCase):
              patch("products.services.router.extract_intent", return_value={}):
             reply, _ = route("يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟", [], self.store, self.conversation)
         self.assertTrue(reply.startswith("أيوه للأسف مش عندنا"), reply)
-        self.assertIn("معنديش بيانات عن ريحته", reply)
+        self.assertIn("ومعرفش ريحته بالظبط", reply)
+        self.assertNotIn("بيانات", reply)
         self.assertNotIn("قريبة منه", reply)
         self.assertTrue(reply.endswith(sales_gender.QUESTION))
 
@@ -2531,23 +2540,23 @@ class SecondRoundBatchFourTests(TestCase):
         shorter = _policy_answer(policy, history)
         self.assertEqual(shorter, "زي ما قلتلك، ضمان الاستبدال لمدة يومين من وقت الاستلام.")
 
-    def test_not_sweet_is_never_inferred_from_a_missing_label(self):
-        """S07 round 2 full 5 t2: "Cassilia… ومش حلو زيادة" with no record of its sweetness (owner decision 4)."""
+    def test_not_sweet_follows_the_sweet_label(self):
+        """S07 round 2 full 5 t2 flagged "Cassilia… ومش حلو زيادة" under the 2026-11-12 rule that a missing label is
+        unknown. Owner, 2026-11-20: a missing label is absent, so "not sweet" passes for a perfume without the
+        sweet label and is a denied label for one that has it."""
         from products.services.reply_sanitizer import product_claim_issues
         facts = {"Cassilia": {"scent_tags": ["floral", "fruity", "light"], "notes": ["Pear", "Rose", "Musk"],
                               "season": "", "occasion": ""}}
+        sweet = {"Cassilia": {**facts["Cassilia"], "scent_tags": ["floral", "sweet", "light"]}}
         message = "هي بتحب الحاجات الخفيفة أكتر ومش مسكرة أوي، ترشحلي إيه؟"
-        for reply in ("Cassilia ريحته فيها زهور وفواكه وخفيف، ومش حلو زيادة.", "Cassilia مش مسكرة أوي."):
+        for reply in ("Cassilia ريحته فيها زهور وفواكه وخفيف، ومش حلو زيادة.", "Cassilia مش مسكرة أوي.",
+                      "Cassilia مش مسكر، ومفيش فانيليا ولا عسل في نوتاته."):
             with self.subTest(reply=reply):
-                self.assertTrue([i for i in product_claim_issues(reply, facts, message=message) if "not sweet" in i])
-                # A legacy direct call (no current message) keeps its original scope
+                self.assertEqual([i for i in product_claim_issues(reply, facts, message=message) if "sweet" in i], [])
+                self.assertTrue([i for i in product_claim_issues(reply, sweet, message=message) if "denied sweet" in i])
+                # A legacy direct call (no current message) keeps its original scope for the "حلو" wording
                 # (`test_scent_interpretation`'s fixed-negation test).
-                self.assertEqual([i for i in product_claim_issues(reply, facts) if "not sweet" in i], [])
-        for reply in ("Cassilia ريحته فيها زهور وفواكه وخفيف.",
-                      "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي. "
-                      "Cassilia: الحلاوة مش ضمن تصنيفها، ومفيش فانيليا ولا عسل في نوتاتها."):
-            with self.subTest(reply=reply):
-                self.assertEqual([i for i in product_claim_issues(reply, facts, message=message) if "not sweet" in i], [])
+        self.assertEqual([i for i in product_claim_issues("Cassilia ومش حلو زيادة.", sweet) if "denied sweet" in i], [])
 
     def test_a_recorded_note_is_not_retracted_or_denied(self):
         """S02 round 2 full 5 t4: "أنا ذكرت الفانيليا في قاعدة Aventus بالغلط" about a stored base note."""
@@ -2741,7 +2750,7 @@ class SecondRoundBatchFourTests(TestCase):
             return reply
 
         first = turn("يعني مفيش؟ 🙄 طب عندك حاجة شبهه؟", {"similar_to": "Club de Nuit Intense"})
-        self.assertIn("معنديش بيانات عن ريحته", first)
+        self.assertIn("ومعرفش ريحته بالظبط", first)
         self.assertNotEqual((self.conversation.preferences or {}).get("similar_to"), "1 Million")
         turn("رجالي، بحب الريحة اللي فيها سموكي وفاكهة",
              {"scent_open": False, "similar_to": "Club de Nuit Intense", "gender": "male",
@@ -2799,7 +2808,7 @@ class SecondRoundBatchFourTests(TestCase):
         self.assertEqual(_closer_to_a_missing_perfume(question, normalize_arabic(question), self.conversation, self.store), "")
         self._denied()
         self.assertEqual(_closer_to_a_missing_perfume(question, normalize_arabic(question), self.conversation, self.store),
-                         "معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول أنهي أقرب له.")
+                         "معرفش ريحة Club de Nuit بالظبط، فمقدرش أقول أنهي أقرب له.")
         stocked = "طب أنهي أقرب لـ Aventus؟"
         self.assertEqual(_closer_to_a_missing_perfume(stocked, normalize_arabic(stocked), self.conversation, self.store), "")
         price = "طب Club de Nuit كان بكام؟"
@@ -3582,15 +3591,17 @@ class FourthRoundTests(TestCase):
             with self.subTest(message=message):
                 self.assertEqual(ordinal_position(message), 0)
 
-    def _recommendation_route(self, message, classified, extracted):
-        """Route one message with the model stubbed; returns (names searched, order handler mock, reply)."""
+    def _recommendation_route(self, message, classified, extracted, draft=None):
+        """Route one message with the model stubbed; returns (names searched, order handler mock, reply).
+
+        `draft(products)` writes the stubbed recommendation; by default it names no perfume."""
         from products.services.product_formatting import format_products
         from products.services.router import route
         searched = {}
 
         def recommend(text, products, history, **kwargs):
             searched["names"] = [product.name for product in products]
-            return "ترشيح", format_products(list(products)[:1])
+            return (draft(list(products)) if draft else "ترشيح"), format_products(list(products)[:1])
 
         with patch("products.services.router.classify", return_value=classified), \
              patch("products.services.router.extract_intent", return_value=extracted), \
@@ -3863,38 +3874,65 @@ class FourthRoundTests(TestCase):
                   format_products([dolce, vib]))
         return dolce, vib
 
-    def test_i_do_not_want_to_risk_it_gets_what_can_and_cannot_be_guaranteed(self):
+    def test_i_do_not_want_to_risk_it_gets_a_plain_answer(self):
         """S10 t4 (high): "رشحلي حاجة تانية… ومش مسكرة ولا فيها عود، مش عايز أخاطر" got two more perfumes
-        with a word about oud and none about sweetness. Only "تضمن/مضمون" used to earn the note."""
+        with a word about oud and none about sweetness. Owner, 2026-11-20: the pick is said plainly to be not
+        sweet, with no "100%" disclaimer."""
         self._no_sweet_table()
         names, _, reply = self._recommendation_route(
             "طب رشحلي حاجة تانية تكون فريش وحمضيات ومش مسكرة ولا فيها عود، مش عايز أخاطر", "recommendation",
-            {"scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet", "oud"], "scent_match": "all"})
+            {"scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet", "oud"], "scent_match": "all"},
+            draft=lambda products: f"{products[0].name} ريحته فريش ومنعش.")
         self.assertEqual(names, ["For Him"])
-        self.assertTrue(reply.startswith("مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي."))
+        self.assertTrue(reply.startswith("For Him مش مسكر.\n\nFor Him ريحته فريش"), reply)
+        self.assertNotRegex(reply, "100%|مقدرش أضمن|البيانات")
 
-    def test_a_second_demand_for_certainty_gets_no_new_perfume(self):
-        """S10 t6 and t8 (high each): after being told sweetness cannot be confirmed, "ما ترشحليش حاجة إلا
-        لما تكون متأكد إنها مش مسكرة!" got one more perfume, which the next turn could not confirm either."""
-        from products.services.router import NO_GUARANTEE, NO_GUARANTEE_AGAIN
+    def test_certainty_about_the_perfumes_on_the_table_is_answered_from_their_labels(self):
+        """S10 t6 and t8 (high each): asked for certainty, the bot offered new perfumes and then refused to
+        recommend anything. Owner, 2026-11-20: the perfumes without the sweet label are not sweet, so the
+        question about the ones on the table gets a plain yes."""
+        self._no_sweet_table()
+        names, _, reply = self._recommendation_route(
+            "متأكد إنهم مش مسكرين؟", "recommendation", {"excluded_scent_tags": ["sweet"], "scent_open": False})
+        self.assertIsNone(names)                             # nothing new searched or offered
+        self.assertEqual(reply, "أيوه، 212 VIB Man وK By Dolce مش مسكرين.")
+        from products.services.router import _confirm_not_sweet
+        eros = Product.objects.get(store=self.store, name="Eros")         # labelled sweet
+        self.assertEqual(_confirm_not_sweet("متاكد انهم مش مسكرين", self.store, {"K By Dolce", "Eros"}),
+                         "K By Dolce مش مسكر. أما Eros فمسكر.")
+        self.assertEqual(_confirm_not_sweet("متاكد انه مش مسكر", self.store, {eros.name}), "لا، Eros مسكر.")
+
+    def test_a_repeat_demand_for_certainty_gets_new_picks_not_a_refusal(self):
+        """S10 replay t5 used to get "مفيش عطر أقدر أأكدلك 100%… مش هرشحلك حاجة تانية". The owner reversed
+        that on 2026-11-20: asked again, the customer gets picks without the sweet label, said plainly."""
         self._no_sweet_table()
         self.said("user", "طب رشحلي حاجة تانية ومش مسكرة، مش عايز أخاطر")
-        self.said("assistant", "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي.\n\nFor Him: ريحته فريش.")
+        self.said("assistant", "For Him مش مسكر.\n\nFor Him: ريحته فريش.")
         for demand in ("طب ما ترشحليش حاجة إلا لما تكون متأكد إنها مش مسكرة!",
-                       "طب ما ترشحلي حاجة تكون متأكد إنها مش مسكرة ومفيهاش عود، مش عايز أفضل أخاطر كده!"):
+                       "طب مفيش حاجة تانية تكون متأكدين إنها مش مسكرة ومفيهاش عود؟"):
             with self.subTest(demand=demand):
                 names, _, reply = self._recommendation_route(
-                    demand, "recommendation", {"excluded_scent_tags": ["sweet"], "scent_open": False})
-                self.assertIsNone(names)                     # nothing was searched or recommended
-                self.assertTrue(reply.startswith(NO_GUARANTEE))
-                self.assertIn("الحلاوة مش ضمن تصنيفهم", reply)    # what the records say of the ones offered
-                self.assertNotIn("K By Dolce", reply)        # named again, they read as offered again
-                self.assertNotIn("Eros", reply)
-        self.said("user", "طب ما ترشحليش حاجة إلا لما تكون متأكد إنها مش مسكرة!")
-        self.said("assistant", reply)
-        _, _, again = self._recommendation_route("يعني مفيش حاجة مضمونة خالص؟", "recommendation",
-                                                 {"excluded_scent_tags": ["sweet"], "scent_open": False})
-        self.assertEqual(again, NO_GUARANTEE_AGAIN)
+                    demand, "recommendation", {"excluded_scent_tags": ["sweet", "oud"], "scent_open": False},
+                    draft=lambda products: " و".join(product.name for product in products) + " فريش.")
+                self.assertIsNotNone(names)
+                self.assertNotIn("Eros", names)                  # labelled sweet
+                self.assertNotRegex(reply, "100%|مقدرش أضمن|مش هرشحلك|البيانات")
+
+    def test_a_guarantee_demand_leaves_out_picks_with_sweet_notes(self):
+        """Owner, 2026-11-20: on a "guaranteed not sweet" request a pick with vanilla or honey in its notes is
+        left out while a clean one exists; without the guarantee it is only ranked after the clean one."""
+        self.perfume("Clean Fresh", ["fresh", "citrus"])
+        vanilla = self.perfume("Vanilla Fresh", ["fresh", "citrus"])
+        vanilla.base_notes = "Vanilla, Musk"
+        vanilla.save(update_fields=["base_notes"])
+        self.conversation.preferences = {"gender": "male", "scent_open": False}
+        self.conversation.save(update_fields=["preferences"])
+        intent = {"gender": "male", "scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet"],
+                  "scent_match": "all", "scent_open": False}
+        guaranteed, _, _ = self._recommendation_route("رشحلي حاجة فريش تكون مضمونة مش مسكرة", "recommendation", intent)
+        self.assertEqual(guaranteed, ["Clean Fresh"])
+        plain, _, _ = self._recommendation_route("رشحلي حاجة فريش مش مسكرة", "recommendation", intent)
+        self.assertEqual(plain, ["Clean Fresh", "Vanilla Fresh"])
 
     # --- medium issues in scenarios that passed (S09, S05) --------------------------------------------
 
@@ -3922,11 +3960,11 @@ class FourthRoundTests(TestCase):
             return _closer_to_a_missing_perfume(message, normalize_arabic(message), self.conversation, self.store)
 
         self.assertEqual(line("طب أنهي واحد فيهم أقربله؟ وسعره كام؟"),
-                         "معنديش بيانات عن ريحة العطر اللي سألت عنه أقارن بيها، فمقدرش أقول أنهي أقرب له.")
+                         "معرفش ريحة العطر اللي سألت عنه بالظبط، فمقدرش أقول أنهي أقرب له.")
         self.assertEqual(line("طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب"),
-                         "معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول إذا كان قريب منه.")
+                         "معرفش ريحة Club de Nuit بالظبط، فمقدرش أقول إذا كان قريب منه.")
         self.assertEqual(line("أنهي واحد فيهم أقرب لـ Club de Nuit؟"),
-                         "معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول أنهي أقرب له.")
+                         "معرفش ريحة Club de Nuit بالظبط، فمقدرش أقول أنهي أقرب له.")
         # A question between the two on the table, with nothing pointing at the missing one.
         self.assertEqual(line("أنهي واحد فيهم أحسن؟"), "")
         self.assertEqual(line("Cigar قريب من Aventus؟"), "")
@@ -3942,7 +3980,7 @@ class FourthRoundTests(TestCase):
              patch("products.services.router._rephrased", side_effect=lambda reply, context, *a, **k: (reply, context, False)):
             reply, _ = route("طب الـCigar ده قريب من Club de Nuit؟ هفكر فيه لو قريب", self.history(), self.store,
                              self.conversation)
-        self.assertTrue(reply.startswith("معنديش بيانات عن ريحة Club de Nuit أقارن بيها، فمقدرش أقول إذا كان قريب منه."))
+        self.assertTrue(reply.startswith("معرفش ريحة Club de Nuit بالظبط، فمقدرش أقول إذا كان قريب منه."))
         self.assertIn("Cigar: ريحته خشبي", reply)
 
     def test_the_first_original_bottle_quote_says_the_liquid_is_ours(self):
@@ -3965,27 +4003,14 @@ class FourthRoundTests(TestCase):
     def test_a_guarantee_word_with_an_attached_conjunction_is_still_a_demand(self):
         """S10 replay t3 (high): "طب رشحلي حاجة… ومضمونة مش مسكرة ولا فيها عود!" got the two perfumes just
         turned down again, with no word on sweetness: "ومضمونة" slipped past the pattern."""
-        from products.services.router import NO_GUARANTEE_HEAD
         self._no_sweet_table()
         names, _, reply = self._recommendation_route(
             "طب رشحلي حاجة رجالي فريش وحمضيات، ومضمونة مش مسكرة ولا فيها عود!", "recommendation",
             {"scent_tags": ["fresh", "citrus"], "excluded_scent_tags": ["sweet", "oud"], "scent_match": "all",
-             "gender": "male"})
+             "gender": "male"},
+            draft=lambda products: f"{products[0].name} ريحته فريش ومنعش.")
         self.assertEqual(names, ["For Him"])                 # not the two on the table
-        self.assertTrue(reply.startswith(NO_GUARANTEE_HEAD))
-
-    def test_the_second_certainty_reply_names_no_perfume(self):
-        """S10 replay t5 (high): the reply re-listed K By Dolce and 212 NYC Man, which the customer had
-        turned down two turns earlier."""
-        self._no_sweet_table()
-        self.said("user", "طب رشحلي حاجة تانية ومش مسكرة، مش عايز أخاطر")
-        self.said("assistant", "مقدرش أضمن 100% إن عطر مش مسكر من البيانات اللي عندي.\n\nFor Him: ريحته فريش.")
-        _, _, reply = self._recommendation_route("طب مفيش حاجة تانية تكون متأكدين إنها مش مسكرة ومفيهاش عود؟",
-                                                 "recommendation", {"excluded_scent_tags": ["sweet", "oud"]})
-        for name in ("K By Dolce", "212 VIB Man", "For Him", "Eros"):
-            self.assertNotIn(name, reply)
-        self.assertIn("مفيش عطر أقدر أأكدلك 100%", reply)
-        self.assertIn("الستور", reply)
+        self.assertTrue(reply.startswith("For Him مش مسكر."), reply)
 
     def test_another_one_excludes_what_was_offered_before_the_side_questions(self):
         """S14 replay t7: two perfumes offered, then a nameless answer and a shipping answer; "رشحلي تاني
@@ -4128,7 +4153,7 @@ class FourthRoundTests(TestCase):
         self.assertTrue(scent_requested(message, product_names=("K By Dolce",)))
         lines = "\n".join(requested_product_details([dolce], message))
         self.assertIn("فريش", lines)
-        self.assertIn("مفيش عود ضمن نوتاته المسجلة", lines)
+        self.assertIn("مفيش عود في نوتاته", lines)
         # A notes question stays a notes question.
         self.assertFalse(scent_requested("K By Dolce فيه عود؟", product_names=("K By Dolce",)))
 

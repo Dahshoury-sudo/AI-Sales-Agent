@@ -6952,8 +6952,10 @@ class SalesScenarioTests(TestCase):
             {"notes": ["vanilla"], "bottle_color": "black"},
         )
 
-        self.assertIn("مش بنسجل ده في بياناتنا", prompt)
+        self.assertIn("مينفعش تحدد بيها العطر", prompt)
         self.assertIn("مينفعش تعتمد عليه كدليل", prompt)
+        # No first-person "we don't record that in our data" for the model to repeat (owner, 2026-11-20).
+        self.assertNotIn("بياناتنا", prompt.split("═══ تعليمات التعرف على العطر ═══")[-1])
 
     def test_c_exactly_one_clarifying_question_is_requested(self):
         prompt = self._route_identification(

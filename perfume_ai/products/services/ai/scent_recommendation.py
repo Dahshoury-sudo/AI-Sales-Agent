@@ -106,7 +106,8 @@ def _record(product, intent):
     from ..sales.attraction import GOAL_KEY, describes_appeal
     record = _catalog_record(product, intent)
     if intent.get(GOAL_KEY):
-        record["described_as_attractive"] = describes_appeal(product)
+        # Not "described_as_attractive": the model turned that into "ووصفه عندنا جذاب" (conversation 8189).
+        record["attractive_scent"] = describes_appeal(product)
     return record
 
 
