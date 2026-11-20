@@ -1974,6 +1974,14 @@ def _route(message, history=None, store=None, conversation=None):
         faq_match = None
     from products.models import Cart
     active_cart = Cart.objects.filter(conversation=conversation).first() if conversation else None
+    if active_cart is not None and request_type not in ("handoff", "promotion", "order_cancel"):
+        from .sales import second_gender
+        if second_gender.decline(conversation, message):
+            # "لا خلاص" to "تمام، نكمل بالحريمي؟": the order carries on from the step it was offered at.
+            if request_type is None:
+                record_llm_message(store)
+            reply, context = handle_order(message, history, store, conversation)
+            return _with_side_answers(message, reply, history, store, conversation), context
     from .objection_service import is_price_dispute, handle_price_dispute
     cancelling = bool(re.search(r"الغ[ياء]|الغي|كنسل|مش عايز (?:الطلب|الاوردر)|cancel", normalized))
     if is_price_dispute(message) and not cancelling and not _wants_a_human(message):
@@ -2189,6 +2197,10 @@ def _route(message, history=None, store=None, conversation=None):
             pending=sales_described.pending_relaxations(conversation), history=history, store=store,
         )
         if intent.get("gender") == "multiple":
+            # Both sides are remembered, each with its own scent, so the second is offered once the
+            # first is chosen (sales.second_gender).
+            from .sales import second_gender
+            second_gender.start(conversation, message, fresh)
             return sales_gender.MULTIPLE_QUESTION, "MULTIPLE_RECIPIENTS"
         if not sales_gender.canonical(intent.get("gender")):
             if _recently_denied(conversation) and _re.search(r"مفيش|مش\s+موجود|شبه|زي|قريب", normalized):

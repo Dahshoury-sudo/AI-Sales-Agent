@@ -32,13 +32,16 @@ MALE_WORDS = (
     "رجالي", "رجالى", "للرجال", "male", "رجاليه", "ولادي", "شبابي", "شاب",
     "رجاله", "عريس", "لصاحبي", "لاخويا", "لأخويا", "لابويا", "لأبويا",
     "لخطيبي", "لجوزي", "لابني", "لعمي", "لخالي", "انا ولد",
+    # "عايز واحد لماما وواحد لبابا" parsed as female alone and the father was dropped. Only the
+    # ل-forms: a bare "بابا" turns up in sentences that are not about who the perfume is for.
+    "لبابا", "لوالدي",
 )
 FEMALE_WORDS = (
     "للست",
     "حريمي", "حريمى", "للبنات", "للستات", "female", "نسائي", "بناتي", "بنت",
     "بنات", "عروسة", "عروسه", "لصاحبتي", "لاختي", "لأختي", "لماما",
     "لخطيبتي", "لمراتي", "لبنتي", "لطنطي", "لخالتي", "انا بنت", "أنا بنت",
-    "لواحده", "لمرات",
+    "لواحده", "لمرات", "لمامتي", "لوالدتي",
 )
 UNISEX_WORDS = (
     "يونيسيكس", "unisex", "للجنسين", "bisexual", "بايسكشوال", "بايسيكشوال",
@@ -109,6 +112,18 @@ _UNRESOLVED_ANSWER = re.compile(
     r"انت اختار|اختار(?:لي)?(?: انت)?|علي ذوقك|اي حاجه|ok|okay|yes|sure|for me|"
     r"a gift|don't know|not sure|you choose|choose for me|surprise me)[.!؟?]*"
 )
+# The speaker describing themselves. Matched on normalised text, so "أنا"/"عروسة" arrive as انا/عروسه.
+_SPEAKER = re.compile(r"(?<!\w)انا\s+(?:راجل|عريس|عروسه|بنت|ولد|شاب)(?!\w)")
+# Asked once the first of two perfumes is in the cart (sales.second_gender). "نكمل بالحريمي؟" is the
+# tail of an order reply, so it is recognised by its ending and, with a conversation, by its marker.
+OFFER_MARKER = "SECOND_GENDER_OFFER"
+_OFFER_TAIL = re.compile(r"نكمل\s+بال(?:رجالي|حريمي)\s*[؟?]\s*$")
+_ACCEPTS_OFFER = re.compile(
+    r"(?:(?:طيب|طب|ايوه|ايوا|اه|تمام|ماشي|يلا|اوك|اكيد|ياريت|نكمل|ok|okay|yes|sure)[\s،,.!]*)+")
+# "تمام كده" / "ماشي خلاص" decline: the leading word agrees with the order, the rest says nothing more.
+_DECLINES_OFFER = re.compile(
+    r"(?:(?:تمام|ماشي|اوك|ok)[\s،,.!]*)?"
+    r"(?:(?:لا|لاء|خلاص|كده|كدا|بس|مش\s+(?:عايز|عاوز|محتاج)(?:ه)?|شكرا|no|nope|thanks)[\s،,.!]*)+")
 _OTHER_REQUEST = re.compile(
     r"(?<!\w)(?:ضيف|هاخد|هشتري|اطلب|الغي|الغاء|كنسل|موظف|حد اكلمه|بكام|سعر|ثبات|فوحان|"
     r"شحن|توصيل|عنوان|مواعيد|order|buy|add|cancel|human|price|cost|delivery|shipping)(?!\w)|"
@@ -127,7 +142,9 @@ def _compile_words(table):
             word = _text(word)
             aliases[word] = gender
             if re.match(r"[\u0600-\u06ff]", word):
-                for prefix in ("و", "ل", "ال", "لل", "وال", "ول"):
+                # ب/بال: "نبدأ بالرجالي" is the natural answer to MULTIPLE_QUESTION, and conversation 649
+                # answered exactly that ("ماشي نبدأ بالرجالي"); it parsed as no choice at all.
+                for prefix in ("و", "ل", "ال", "لل", "وال", "ول", "ب", "بال"):
                     aliases[prefix + word] = gender
     pattern = re.compile(r"(?<!\w)(?:" + "|".join(
         re.escape(word) for word in sorted(aliases, key=lambda word: (-len(word), word))
@@ -158,11 +175,27 @@ def _one_for_both(text):
     return bool(match) and not _NEGATIVE.search(text[:match.start()])
 
 
+def _without_speaker(text):
+    """The text minus "انا راجل"-style self-descriptions when someone else is named.
+
+    "انا عريس جديد وعايز حاجه لمراتي" (conversation 356) and "انا عروسه وعايزه حاجه لصاحبي" (357)
+    describe the speaker and then name the recipient; both parsed as `multiple` and would have been
+    asked which perfume to start with. The description counts only when the message also asks for
+    something for the speaker: "عايز برفان ليا انا راجل وواحد لاختي" (649) is two perfumes.
+    """
+    masked = _SPEAKER.sub(" ", text)
+    if masked == text or not (_groups(masked, _CATEGORY_WORDS) or _groups(masked, _RECIPIENT_WORDS)):
+        return text
+    from ..conversation_service import _SELF_RECIPIENT
+    return text if _SELF_RECIPIENT.search(text) else masked
+
+
 def _choice(text):
     # Before the category groups: "رجالي وحريمي في نفس الوقت" holds both groups, which alone
     # would read as two recipients.
     if _one_for_both(text):
         return "unisex"
+    text = _without_speaker(text)
     groups = _groups(text, _CATEGORY_WORDS) or _groups(text, _RECIPIENT_WORDS)
     if "unisex" in groups:
         return "unisex"
@@ -219,19 +252,42 @@ def from_customer_history(history, store=None):
     return None
 
 
+def _latest_reply(history=None, conversation=None):
+    """(content, internal_context) of the last assistant reply, or None when staff spoke last."""
+    if conversation is not None:
+        latest = conversation.messages.filter(role__in=("assistant", "agent"), delivery_status="sent").order_by("-created_at", "-pk").first()
+        if latest:
+            return (latest.content or "", latest.internal_context or "") if latest.role == "assistant" else None
+    latest = next((row for row in reversed(history or []) if row.get("role") in ("assistant", "agent")), {})
+    return (latest.get("content", ""), "") if latest.get("role") == "assistant" else None
+
+
+def offer_pending(history=None, conversation=None):
+    """Did our last reply offer to move on to the second of two perfumes?"""
+    latest = _latest_reply(history, conversation)
+    return bool(latest) and (OFFER_MARKER in latest[1] or bool(_OFFER_TAIL.search(_text(latest[0]))))
+
+
+def accepts_offer(message):
+    text = _text(message)
+    return len(text.split()) <= 4 and bool(_ACCEPTS_OFFER.fullmatch(text))
+
+
+def declines_offer(message):
+    text = _text(message)
+    return len(text.split()) <= 5 and bool(_DECLINES_OFFER.fullmatch(text))
+
+
 def question_pending(history=None, conversation=None):
     questions = {_text(question) for question in (
         QUESTION, _LEGACY_QUESTION, MULTIPLE_QUESTION, _LEGACY_MULTIPLE_QUESTION,
     )}
-    if conversation is not None:
-        latest = conversation.messages.filter(role__in=("assistant", "agent"), delivery_status="sent").order_by("-created_at", "-pk").first()
-        if latest:
-            return latest.role == "assistant" and (
-                REQUIRED_MARKER in (latest.internal_context or "") or _text(latest.content) in questions
-                or "MULTIPLE_RECIPIENTS" in (latest.internal_context or "")
-            )
-    latest = next((row for row in reversed(history or []) if row.get("role") in ("assistant", "agent")), {})
-    return latest.get("role") == "assistant" and _text(latest.get("content", "")) in questions
+    latest = _latest_reply(history, conversation)
+    if not latest:
+        return False
+    content, context = latest
+    return (REQUIRED_MARKER in context or "MULTIPLE_RECIPIENTS" in context or _text(content) in questions
+            or OFFER_MARKER in context or bool(_OFFER_TAIL.search(_text(content))))
 
 
 def pending_answer(message, history=None, conversation=None, store=None):
@@ -240,6 +296,10 @@ def pending_answer(message, history=None, conversation=None, store=None):
     text = _text(message)
     if len(text.split()) > 16 or _OTHER_REQUEST.search(text):
         return False
+    if offer_pending(history, conversation):
+        # "نكمل بالحريمي؟" is answered yes or with the gender; a "تمام" there is a yes, not the
+        # undecided answer it would be to the bare gender question.
+        return bool(accepts_offer(message) or customer_choice(message, store=store) in ("male", "female"))
     return bool(customer_choice(message, store=store) or _UNRESOLVED_ANSWER.fullmatch(text)
                 or _groups(text, _CATEGORY_WORDS))
 

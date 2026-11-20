@@ -1451,7 +1451,17 @@ Return valid JSON in this exact format:
             return recap + f"محتاج أعرف {missing_text}؟", context_str
         return recap + f"محتاج أعرف {missing_text}؟", context_str
 
-    # 3. Product details are complete — now check for missing personal info.
+    # 3. Product details are complete. A customer who asked for a men's and a women's perfume is
+    # offered the second one now, before the contact details, which are then asked once for both
+    # (sales.second_gender; owner decision 2026-11-20). Nothing is quoted on this turn.
+    from .sales import second_gender
+    from .sales.gender import OFFER_MARKER
+    offer = second_gender.offer_line(conversation, items_to_create)
+    if offer:
+        return (_cart_recap(conversation, items_to_create, total_price, message) + offer,
+                context_str + "\n" + OFFER_MARKER)
+
+    # Now check for missing personal info.
     # Phones go through _looks_like_phone rather than a truthiness check: the
     # extractor is a language model, and a non-numeric string it invented or
     # echoed must count as missing, not as a contact number.

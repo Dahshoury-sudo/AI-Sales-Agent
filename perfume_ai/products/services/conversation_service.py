@@ -621,9 +621,22 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
     from .sales.reference import prepare_similarity, STATE_KEY
     prepared = prepare_similarity(conversation, merged, message, history, store)
     merged, saved = prepared.intent, prepared.preferences
+    from .sales import gender as sales_gender
     if conversation is not None:
         left_behind = dict(conversation.preferences or {})
-        restored = _switch_recipient(conversation, message, prepared.sales_state)
+        conversation_store = store or getattr(conversation, "store", None)
+        # "عايز هدية لخطيبتي ولأخويا" is answered with "نبدأ بالرجالي ولا الحريمي؟". Switching to the
+        # fiancée on that turn filed the brother's answer under her profile.
+        both = sales_gender.customer_choice(message, merged, conversation_store) == "multiple"
+        restored = None if both else _switch_recipient(conversation, message, prepared.sales_state)
+        foreign = set()
+        if restored is None and not both:
+            # A men's and a women's perfume asked for together: the side picked now, or the second
+            # side once the first is chosen (sales.second_gender).
+            from .sales import second_gender
+            switched = second_gender.switch(conversation, message, prepared.sales_state, conversation_store)
+            if switched is not None:
+                restored, foreign = switched
         if restored is not None:
             # The recipient change is handled here, so the extractor's blanket reset must not wipe
             # the profile being restored.
@@ -636,11 +649,14 @@ def merge_preferences(conversation, intent, message=None, pending=None, history=
             stated = explicit_scent_updates(message)
             for key in ("scent_tags", "excluded_scent_tags"):
                 previous = set(left_behind.get(key) or ()) - set(restored.get(key) or ())
+                if key == "scent_tags":
+                    # The other side's own scent: "نبدأ بالرجالي" re-reads "رجالي خشبي وحريمي فلورال"
+                    # and brings floral back for the men's search.
+                    previous |= foreign
                 for source in (merged, fresh_scent):
                     if isinstance(source.get(key), list) and previous:
                         source[key] = [tag for tag in source[key]
                                        if tag not in previous or tag in (stated.get(key) or ())]
-    from .sales import gender as sales_gender
     merged = sales_gender.sanitize_updates(merged, message, store or getattr(conversation, "store", None))
     saved = {key: value for key, value in saved.items() if key not in replaced}
     saved_gender = sales_gender.canonical(saved.get("gender"))

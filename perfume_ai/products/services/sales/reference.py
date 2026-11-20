@@ -404,8 +404,10 @@ def prepare_similarity(conversation, intent, message=None, history=None, store=N
         # record of the switch to his mother was wiped with everything else, nothing was restored, and
         # he was asked "رجالي ولا حريمي؟" again (simulation S15 round 4 full run, t5).
         saved = {}
+        # So does a men's-and-women's request (sales.second_gender): "والحريمي بقى" can arrive with the
+        # extractor's reset, and the women's side has to be there for it to switch to.
         state = {key: value for key, value in state.items()
-                 if key in ("recipient", "recipient_profiles", "recipient_offers")}
+                 if key in ("recipient", "recipient_profiles", "recipient_offers", "gender_queue")}
 
     cleared = set(fresh.get("clear_preferences") or ())
     withdrawn = bool(cleared.intersection(REFERENCE_KEYS)) or _withdrawn(message)

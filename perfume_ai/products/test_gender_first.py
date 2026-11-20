@@ -45,6 +45,53 @@ class GenderChoiceTests(SimpleTestCase):
             with self.subTest(message=message):
                 self.assertEqual(gender.customer_choice(message), expected)
 
+    def test_two_genders_only_when_two_perfumes_are_asked_for(self):
+        """356/357 described the speaker and named one recipient; 649 asked for two perfumes."""
+        for message, expected in (
+            ("انا عريس جديد وعايز حاجه لمراتي", "female"), ("انا عروسه وعايزه حاجه لصاحبي", "male"),
+            ("عايز برفان ليا انا راجل وواحد لاختي عندنا فرح", "multiple"), ("انا راجل", "male"),
+            ("أنا بنت وعايزة حاجة ليا ولأخويا", "multiple"), ("عايز واحد لماما وواحد لبابا", "multiple"),
+            ("انا راجل ونازل ديت مع صاحبتي", "male"),
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(gender.customer_choice(message), expected)
+
+    def test_answers_to_the_which_first_question(self):
+        """649 answered "ماشي نبدأ بالرجالي" and it parsed as no choice."""
+        history = [{"role": "user", "content": "عايز رجالي وحريمي"},
+                   {"role": "assistant", "content": gender.MULTIPLE_QUESTION}]
+        for message, expected in (("ماشي نبدأ بالرجالي", "male"), ("ابدأ بالحريمي", "female"), ("الرجالي", "male")):
+            with self.subTest(message=message):
+                self.assertEqual(gender.customer_choice(message), expected)
+                self.assertTrue(gender.pending_answer(message, history))
+
+    def test_answers_to_the_second_perfume_offer(self):
+        history = [{"role": "assistant", "content": "🛍️ الطلب لحد دلوقتي:\n- 1 × Le Male\n\nتمام، نكمل بالحريمي؟"}]
+        for message in ("ايوه", "تمام", "ايوه يلا نكمل", "الحريمي"):
+            with self.subTest(message=message):
+                self.assertTrue(gender.pending_answer(message, history))
+        for message in ("لا خلاص", "تمام كده", "لا شكرا"):
+            with self.subTest(message=message):
+                self.assertFalse(gender.pending_answer(message, history))
+                self.assertTrue(gender.declines_offer(message))
+        self.assertFalse(gender.pending_answer("محمد 01012345678 القاهره", history))
+
+    def test_scents_split_only_when_each_side_has_its_own(self):
+        from products.services.sales.second_gender import split_scents
+        evidence = {"scent_tags": ["woody", "floral"], "scent_evidence": [
+            {"text": "خشبي", "tags": ["woody"], "polarity": "positive"},
+            {"text": "فلورال", "tags": ["floral"], "polarity": "positive"}]}
+        self.assertEqual(split_scents("عايز رجالي خشبي وحريمي فلورال", evidence),
+                         {"male": ["woody"], "female": ["floral"]})
+        vanilla = {"scent_tags": ["fresh", "sweet"], "scent_evidence": [
+            {"text": "فريش", "tags": ["fresh"], "polarity": "positive"},
+            {"text": "فانيليا", "tags": ["sweet"], "polarity": "positive"}]}
+        self.assertEqual(split_scents("عايز اتنين، واحد رجالي فريش وواحد حريمي فانيليا", vanilla),
+                         {"male": ["fresh"], "female": ["sweet"]})
+        for message in ("عايز حاجه فريش رجالي وحريمي", "عايز رجالي وحريمي الاتنين فريش للصيف"):
+            with self.subTest(message=message):
+                self.assertEqual(split_scents(message, {}), {})
+
     def test_inferred_or_default_gender_from_the_model_is_discarded(self):
         for message, supplied in (("something like Le Male", "male"), ("choose for me", "unisex"),
                                   ("my name is Sarah, recommend a fresh perfume", "female")):
@@ -219,6 +266,120 @@ class GenderFirstRecommendationTests(TestCase):
              patch("products.services.router.handle_objection") as objection:
             self.ask({"scent_tags": ["fresh"]}, "رشحلي فريش أرخص")
         objection.assert_not_called()
+
+
+class SecondGenderTests(TestCase):
+    """A men's and a women's perfume in one message: one at a time, and the second is not forgotten.
+
+    Conversation 649 got men's picks after "نبدأ بالرجالي" and the sister's perfume never came up again.
+    The second side is offered once the first is in the cart (owner, 2026-11-20).
+    """
+
+    REQUEST = "عايز رجالي خشبي وحريمي فلورال"
+    # What the extractor returns for REQUEST, and keeps returning while it is in the history.
+    EXTRACTED = {"scent_tags": ["woody", "floral"], "scent_match": "all", "scent_evidence": [
+        {"text": "خشبي", "tags": ["woody"], "polarity": "positive"},
+        {"text": "فلورال", "tags": ["floral"], "polarity": "positive"}]}
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Two genders")
+        StoreSettings.objects.create(store=cls.store)
+        cls.brand = Brand.objects.create(store=cls.store, name="House")
+        cls.products = {}
+        for choice, name, tags in (("male", "Cedar Man", ["woody"]), ("female", "Rose Lady", ["floral"])):
+            product = Product.objects.create(store=cls.store, brand=cls.brand, name=name, gender=choice,
+                                             scent_tags=tags, occasion=f"{WORK}; {ROMANTIC}")
+            ProductVariant.objects.create(product=product, volume=50, price=400)
+            cls.products[choice] = product
+
+    def setUp(self):
+        self.conversation = Conversation.objects.create(store=self.store)
+        self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
+        self.enterContext(patch("products.services.router.confident_catalogue_match", return_value=None))
+
+    def say(self, message, updates=None, classification="recommendation"):
+        """One customer turn through the router; the reply is saved as sent."""
+        with patch("products.services.router.classify", return_value=classification), \
+             patch("products.services.router.extract_intent", return_value=dict(updates or {})), \
+             patch("products.services.router.recommend", return_value=("اختيار مناسب", "selected")) as recommender:
+            result = route(message, [], self.store, self.conversation)
+        save_message(self.conversation, "assistant", *result)
+        self.conversation.refresh_from_db()
+        return result, recommender
+
+    def order(self, message, names):
+        data = {"products": [{"name": name, "volume": 50, "quantity": 1, "bottle_type": "normal"} for name in names],
+                "customer_name": None, "customer_phone": None, "customer_secondary_phone": None,
+                "shipping_address": None, "is_confirmed": False}
+        with patch("products.services.order_service.chat", return_value=json.dumps(data)):
+            result, _ = self.say(message, classification="order")
+        return result
+
+    def queue(self):
+        return (self.conversation.sales_state or {}).get("gender_queue")
+
+    def start_with_the_men(self):
+        result, model = self.say(self.REQUEST, {**self.EXTRACTED, "gender": "multiple"})
+        self.assertEqual(result, (gender.MULTIPLE_QUESTION, "MULTIPLE_RECIPIENTS"))
+        model.assert_not_called()
+        self.assertFalse({"woody", "floral"} & set(self.conversation.preferences.get("scent_tags") or ()))
+        result, model = self.say("ماشي نبدأ بالرجالي", self.EXTRACTED)
+        self.assertEqual(result[1], "selected")
+        intent = model.call_args.kwargs["intent"]
+        self.assertEqual(intent["gender"], "male")
+        self.assertEqual(intent["scent_tags"], ["woody"])
+
+    def test_each_side_is_searched_with_its_own_scent_and_the_second_is_offered_after_the_first(self):
+        self.start_with_the_men()
+        reply, context = self.order("هاخد Cedar Man", ["Cedar Man"])
+        self.assertTrue(reply.endswith("تمام، نكمل بالحريمي؟"), reply)
+        self.assertIn("Cedar Man", reply)
+        self.assertIn(gender.OFFER_MARKER, context)
+        result, model = self.say("ايوه", self.EXTRACTED)
+        self.assertEqual(result[1], "selected")
+        intent = model.call_args.kwargs["intent"]
+        self.assertEqual(intent["gender"], "female")
+        self.assertEqual(intent["scent_tags"], ["floral"])
+        self.assertEqual(self.conversation.preferences["gender"], "female")
+        # Both perfumes in the cart: no further offer, the contact details are asked once.
+        reply, context = self.order("هاخد Rose Lady", ["Cedar Man", "Rose Lady"])
+        self.assertNotIn("نكمل", reply)
+        self.assertIn("ناقصني للطلب", reply)
+        self.assertIsNone(self.queue())
+
+    def test_a_no_carries_on_with_the_order_and_is_not_asked_again(self):
+        self.start_with_the_men()
+        self.order("هاخد Cedar Man", ["Cedar Man"])
+        with patch("products.services.order_service.chat", return_value=json.dumps({
+                "products": [{"name": "Cedar Man", "volume": 50, "quantity": 1, "bottle_type": "normal"}],
+                "customer_name": None, "customer_phone": None, "customer_secondary_phone": None,
+                "shipping_address": None, "is_confirmed": False})):
+            (reply, _), _ = self.say("لا خلاص كده", classification="faq")
+        self.assertIn("ناقصني للطلب", reply)
+        self.assertNotIn("نكمل", reply)
+        self.assertIsNone(self.queue())
+
+    def test_details_sent_instead_of_an_answer_close_the_offer(self):
+        self.start_with_the_men()
+        self.order("هاخد Cedar Man", ["Cedar Man"])
+        reply, _ = self.order("اسمي كريم", ["Cedar Man"])
+        self.assertNotIn("نكمل", reply)
+        self.assertIn("ناقص", reply)
+        self.assertIsNone(self.queue())
+
+    def test_the_second_side_survives_an_extractor_reset(self):
+        self.start_with_the_men()
+        self.order("هاخد Cedar Man", ["Cedar Man"])
+        result, model = self.say("ايوه", {**self.EXTRACTED, "reset_preferences": True})
+        intent = model.call_args.kwargs["intent"]
+        self.assertEqual(intent["gender"], "female")
+        self.assertEqual(intent["scent_tags"], ["floral"])
+
+    def test_two_named_recipients_do_not_switch_to_the_first_on_the_which_first_turn(self):
+        result, _ = self.say("عايز هدية لخطيبتي ولأخويا", {"gender": "multiple"})
+        self.assertEqual(result[1], "MULTIPLE_RECIPIENTS")
+        self.assertIn(self.conversation.sales_state.get("recipient"), (None, "self"))
 
 
 class UnisexNoMatchTests(TestCase):
