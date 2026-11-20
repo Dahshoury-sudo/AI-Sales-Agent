@@ -17,7 +17,7 @@ from products.scent_tags import SCENT_TAG_LABELS
 from ..sales import brand_response, described, naming, repetition
 from ..sales import gender as sales_gender
 from ..sales.scent_preferences import normalize_scent_intent
-from ..sales.scent_matching import fit_key, match_facts, order_candidates
+from ..sales.scent_matching import distinct_selection_issue, fit_key, match_facts, order_candidates
 from ..sales.scent_selection import combined_budget_quotes, nearest_selection
 from ..sales.value import as_budget, eligible_variants
 from ..scent_description import describe_scent, selected_tags
@@ -218,6 +218,8 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "No introductory recap, decorative bullets, emoji, repeated performance descriptions, or obligatory closing question. "
         "Ask at most one useful question only when the current request needs missing information. "
         "If presenting two, give a short difference only if it helps the customer choose. "
+        "When choosing two or more, make them smell different: besides the requested scent tags, each next perfume "
+        "should share as few scent_tags as possible with the earlier ones; nearest_product_ids already does this. "
         "scent_tags are the owner's descriptions of scent character. They do not prove ingredients, performance, or authenticity. "
         "Mention notes only when the current customer explicitly asks about notes or ingredients. "
         "An ordinary smell question does not ask for notes; never infer character from notes. "
@@ -269,6 +271,10 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
                                         keep=search.get("keeping", ()), offered=search.get("offered", ()))
             if not closest or [fit_key(p, intent) for p in proposed] != [fit_key(p, intent) for p in closest]:
                 raise ValueError("Choose the nearest feasible perfumes in order: season, shared scent tags, then occasion.")
+            same_smell = distinct_selection_issue(proposed, list(available.values()), intent,
+                                                  keep=search.get("keeping", ()), offered=search.get("offered", ()))
+            if same_smell:
+                raise ValueError(same_smell)
             draft = data.get("reply")
             if not isinstance(draft, str) or not draft.strip():
                 raise ValueError("Write a brief explanation naming the selected perfumes.")

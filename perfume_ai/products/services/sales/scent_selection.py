@@ -1,7 +1,7 @@
 """Choose the nearest eligible perfumes, including feasible combined budgets."""
 from collections import Counter, defaultdict
 
-from .scent_matching import fit_key, order_candidates
+from .scent_matching import candidate_key, diverse_pick, fit_key, order_candidates, shared_other_tags
 from .value import as_budget, eligible_variants
 
 
@@ -23,9 +23,9 @@ def combined_budget_quotes(selected, intent):
 
 
 def nearest_selection(candidates, intent, count, *, keep=(), offered=(), tie_breaker=None):
-    ordered = order_candidates(candidates, intent, keep=keep, offered=offered, tie_breaker=tie_breaker)
     if intent.get("budget_scope") != "total":
-        return ordered[:count]
+        return diverse_pick(candidates, intent, count, keep=keep, offered=offered, tie_breaker=tie_breaker)
+    ordered = order_candidates(candidates, intent, keep=keep, offered=offered, tie_breaker=tie_breaker)
 
     budget = as_budget(intent.get("max_price"))
     if budget is None or len(ordered) < count:
@@ -51,6 +51,9 @@ def nearest_selection(candidates, intent, count, *, keep=(), offered=(), tie_bre
 
     # Honor context and brand ties only when the same optimal fit profile and
     # combined budget remain possible. This does not enumerate combinations.
+    # Within those ties, each bottle smells as different from the earlier ones as the budget allows.
+    preference, tail = candidate_key(intent, keep=keep, offered=offered, tie_breaker=tie_breaker)
+    ranks = {p.pk: (preference(p), tail(p)) for p in ordered}
     required = Counter(profile)
     chosen, used = [], set()
 
@@ -69,7 +72,9 @@ def nearest_selection(candidates, intent, count, *, keep=(), offered=(), tie_bre
 
     for key in profile:
         required[key] -= 1
-        for product in ordered:
+        nearest_first = sorted(ordered, key=lambda p: (
+            ranks[p.pk][0], len(shared_other_tags(p, chosen, intent)), ranks[p.pk][1]))
+        for product in nearest_first:
             if product.pk in used or fits[product.pk] != key:
                 continue
             rest = completion_cost(used | {product.pk})
