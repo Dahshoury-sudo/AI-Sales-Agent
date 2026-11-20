@@ -393,11 +393,14 @@ def product_price_issues(reply, products, *, evidence=None, monetary_sources=(),
 def product_claim_facts(products):
     """Serializable evidence shared by reply validation and evaluation."""
     from .performance_policy import EXCELLENT, STRONG
+    from .sales.attraction import describes_appeal
     return {p.name: {
         "notes": [p.top_notes or "", p.middle_notes or "", p.base_notes or ""],
         "scent_tags": getattr(p, "scent_tags", []),
         "longevity": EXCELLENT, "projection": STRONG,
         "season": p.season or "", "occasion": p.occasion or "",
+        # Whether the owner's description calls it attractive (sales.attraction).
+        "appeal": describes_appeal(p),
         "original_sizes": sorted({v.volume for v in p.variants.all()
                                   if v.bottle_type == "original" and v.volume > 0 and is_variant_available(v)}),
         "sizes": sorted({v.volume for v in p.variants.all() if v.volume > 0 and is_variant_available(v)}),

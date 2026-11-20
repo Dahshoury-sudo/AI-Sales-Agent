@@ -303,6 +303,9 @@ PERSISTED_PREFERENCE_KEYS = (
     # "مش منتشرة" is a taste, not a passing remark, and losing it dropped the one signal
     # that favours the store's own exclusive blends — its highest-margin stock.
     "wants_uncommon",
+    # "عايز برفان يخلي البنات تحبني" is said once, before the gender and scent questions are
+    # answered (sales.attraction). A new goal or a new recipient drops it (request_updates.GOAL_KEYS).
+    "appeal_goal",
 )
 
 # "multiple" is a transient signal, not a taste: it means the customer wants a men's and

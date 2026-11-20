@@ -191,6 +191,11 @@ def _without_speaker(text):
 
 
 def _choice(text):
+    # "عايز برفان يخلي البنات تحبني": the women are who the customer wants to please, not who wears
+    # it. Read as the wearer, conversation 1345 offered a man 212 Sexy Women. The owner's call
+    # (2026-11-20) is to ask رجالي ولا حريمي rather than infer the opposite gender.
+    from .attraction import mask_audience
+    text = mask_audience(text)
     # Before the category groups: "رجالي وحريمي في نفس الوقت" holds both groups, which alone
     # would read as two recipients.
     if _one_for_both(text):
@@ -286,7 +291,10 @@ def question_pending(history=None, conversation=None):
     if not latest:
         return False
     content, context = latest
+    # The last line too: the question can follow a one-line acknowledgement (sales.attraction).
+    last_line = _text((content or "").strip().splitlines()[-1] if (content or "").strip() else "")
     return (REQUIRED_MARKER in context or "MULTIPLE_RECIPIENTS" in context or _text(content) in questions
+            or last_line in questions
             or OFFER_MARKER in context or bool(_OFFER_TAIL.search(_text(content))))
 
 
@@ -320,7 +328,8 @@ def _conversation_text(message, history=None):
 
 def mentioned_in_words(message, history=None):
     """Did the customer name a gender at all, in any form?"""
-    text = _conversation_text(message, history)
+    from .attraction import mask_audience
+    text = mask_audience(_conversation_text(message, history))
     return any(normalize_arabic(word) in text for word in ALL_WORDS) or bool(_ONE_FOR_BOTH.search(_text(text)))
 
 

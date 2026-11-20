@@ -2210,7 +2210,9 @@ def _route(message, history=None, store=None, conversation=None):
                 # قريبة منه" failed the honest-similarity criterion (S09 round 2 full 5, t2).
                 return ("أيوه للأسف مش عندنا، ومعنديش بيانات عن ريحته أقارن بيها، بس أقدر أرشحلك من المتاح "
                         "على حسب الريحة اللي بتحبها. " + sales_gender.QUESTION, sales_gender.REQUIRED_MARKER)
-            return sales_gender.QUESTION, sales_gender.REQUIRED_MARKER
+            from .sales import attraction
+            return (attraction.with_acknowledgement(sales_gender.QUESTION, message, history),
+                    sales_gender.REQUIRED_MARKER)
 
     if request_type in ("product_info", "faq", "greeting", "comparison", "out_of_domain"):
         skin_or_clothes = _skin_or_clothes_answer(normalized, history)
@@ -2435,7 +2437,9 @@ def _route(message, history=None, store=None, conversation=None):
                 return (_total_only_if_repeat(response[0], normalized, history, store)
                         + "".join("\n\n" + a for a in recommendation_policy)), response[1]
         if not has_scent_preference(intent):
-            return next_scent_question(message, history), "SCENT_PREFERENCE_REQUIRED"
+            from .sales import attraction
+            return (attraction.with_acknowledgement(next_scent_question(message, history), message, history),
+                    "SCENT_PREFERENCE_REQUIRED")
 
         on_table = sales_described.under_discussion(conversation, store)
         keep = on_table - sales_described.moved_past(conversation, store)
@@ -2509,6 +2513,8 @@ def _route(message, history=None, store=None, conversation=None):
         stage = sales_stage.derive(request_type, message, intent, objection, history)
         response = _nothing_cheaper(response, normalized, history, results["products"], store, conversation)
         response = _uncommon_note(response, results["products"], intent)
+        from .sales.attraction import appeal_note
+        response = appeal_note(response, results["products"], intent)
         response = _guarantee_note(response, results["products"], intent, normalized)
         if side_products and response:
             from .price_reply import requested_product_details

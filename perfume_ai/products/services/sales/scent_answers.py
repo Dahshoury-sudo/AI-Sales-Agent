@@ -38,9 +38,11 @@ def pending_question(history=None):
     if latest.get("role") != "assistant":
         return None
     content = normalize_arabic(latest.get("content", ""))
-    if content in {normalize_arabic(PREFERENCE_QUESTION), normalize_arabic(_LEGACY_PREFERENCE_QUESTION)}:
+    # The question can follow a one-line acknowledgement (sales.attraction), so its last line counts.
+    asked = {content, content.splitlines()[-1].strip() if content else ""}
+    if asked & {normalize_arabic(PREFERENCE_QUESTION), normalize_arabic(_LEGACY_PREFERENCE_QUESTION)}:
         return "standard"
-    if content == normalize_arabic(SIMPLE_PREFERENCE_QUESTION):
+    if normalize_arabic(SIMPLE_PREFERENCE_QUESTION) in asked:
         return "simple"
     return None
 

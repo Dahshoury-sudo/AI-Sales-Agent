@@ -103,6 +103,14 @@ def total_budget_limit_reply(count, minimum_prices, budget):
 
 
 def _record(product, intent):
+    from ..sales.attraction import GOAL_KEY, describes_appeal
+    record = _catalog_record(product, intent)
+    if intent.get(GOAL_KEY):
+        record["described_as_attractive"] = describes_appeal(product)
+    return record
+
+
+def _catalog_record(product, intent):
     return {
         "id": product.pk, "name": product.name, "brand": product.brand.name,
         "scent_tags": product.scent_tags, "gender": product.gender,
@@ -240,6 +248,10 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
         "Write naturally and briefly, with no internal IDs, scoring, labels about system behavior, or premature checkout request. "
         "Performance is shared by the choices; mention it once only if relevant to the current request."
     )
+    from ..sales.attraction import GOAL_KEY, RECOMMENDATION_RULE
+    appeal_goal = bool(intent.get(GOAL_KEY))
+    if appeal_goal:
+        instructions += " " + RECOMMENDATION_RULE
     reference = search.get("reference_product")
     payload = {
         "message": message, "preferences": intent, "eligible_products": [_record(p, intent) for p in candidates],
@@ -295,7 +307,7 @@ def recommend_from_labels(message, products, history=None, alternatives=None, st
                 raise ValueError("An eligible partial match exists. Recommend it directly without a no-match or relaxation message.")
             issues = product_claim_issues(draft, product_claim_facts(proposed), message=message,
                                           history=history, preferred_occasion=intent.get("occasion"),
-                                          description_required=True)
+                                          description_required=True, appeal_goal=appeal_goal)
             if monetary_claims(draft):
                 issues.append("Do not write prices or totals; quotations are added automatically.")
             from ..sales.similarity import claims_unsupported_similarity

@@ -88,10 +88,17 @@ def _season_claim_issues(segment, recorded, name):
 
 
 def product_claim_issues(reply, facts, *, request=None, context="", message=None,
-                         history=None, preferred_occasion=None, description_required=False):
+                         history=None, preferred_occasion=None, description_required=False,
+                         appeal_goal=False):
     """Validate attributable claims in a bounded vocabulary, not arbitrary semantics."""
+    from .sales import attraction
     text = _claim_normalize(reply)
     issues = internal_draft_issues(reply) + performance_claim_issues(reply, request, context=context)
+    # "هيخلي البنات تحبك" is never recorded anywhere. On a turn about that goal, "جذاب" is only for
+    # perfumes the owner's description calls attractive (owner, 2026-11-20).
+    issues += attraction.promise_issues(reply)
+    if facts and (appeal_goal or attraction.detect(message)):
+        issues += attraction.unbacked_claim_issues(reply, facts)
     from .scent_description import (description_issues, _attributed_segments, _character_text,
                                     _notes_authorized, request_texts)
     issues += description_issues(reply, facts, message=message, history=history,

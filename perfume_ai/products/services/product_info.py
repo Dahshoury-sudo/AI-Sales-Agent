@@ -11,7 +11,7 @@ from .performance_policy import governed_reply, performance_only_question
 from .static_faq_service import normalize_arabic
 from .sales import described as sales_described
 from .sales import value as sales_value
-from .sales import appreciation
+from .sales import appreciation, attraction
 from .sales.followups import accepts_price_offer, numeric_reference
 
 logger = logging.getLogger(__name__)
@@ -1521,6 +1521,9 @@ def get_product_info(message, history=None, store=None, conversation=None, retry
     # instruction and not a separate branch. Without it the reply to a compliment is a price list.
     if praised:
         instructions += appreciation.RULES
+    # "Sauvage هيخلي البنات تحبني؟": no promise, only what is recorded (owner, 2026-11-20).
+    if products and attraction.detect(message):
+        instructions += attraction.named_rules(products)
     if occasion_reference and products:
         instructions += (
             f"\nالعميل بيشير للعطر اللي اتكلمنا عنه {occasion_label}: {products[0].name}. "

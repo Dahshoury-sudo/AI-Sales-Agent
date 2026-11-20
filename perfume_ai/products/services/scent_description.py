@@ -603,6 +603,10 @@ def description_issues(reply, facts, *, message=None, history=None,
         # (one subject, or a name written in Arabic), the raw message still carries it.
         asked_occasion = occasion_requested(request_text) or (
             request_text == _NORMALIZE(message) and occasion_requested(message, product_names=product_names))
+        # "Sauvage هيخلي البنات تحبني؟" is answered with the occasions recorded for it (owner, 2026-11-20);
+        # an unrecorded one is still refused below.
+        from .sales.attraction import detect as asks_about_attraction
+        asked_occasion = asked_occasion or bool(asks_about_attraction(message))
         if occasion_claims and not asked_occasion:
             problems.append("occasion suitability requires an explicit current question")
         else:

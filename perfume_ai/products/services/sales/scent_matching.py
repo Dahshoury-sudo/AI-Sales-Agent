@@ -63,11 +63,16 @@ def candidate_key(intent, *, keep=(), offered=(), tie_breaker=None):
     # "عايز حاجة مميزة ومش منتشرة" was answered with a mainstream Armani beside a niche Xerjoff
     # (simulation S05 round 2 full 3, t3): among equal label fits, niche and the store's own come first.
     uncommon = bool(intent.get("wants_uncommon"))
+    # "عايز برفان يخلي البنات تحبني": among equal label fits, perfumes the owner's description calls
+    # attractive come first (sales.attraction). Behind the fit, so it never beats a scent match.
+    from .attraction import GOAL_KEY, describes_appeal
+    appeal = bool(intent.get(GOAL_KEY))
 
     def preference(product):
         preferred = not intent.get("brand") or matches_brand(product, intent["brand"], product.store)
         return (*fit_key(product, intent), avoid_sweet and has_sweet_notes(product),
-                uncommon and not is_uncommon(product), product.name not in keeping,
+                uncommon and not is_uncommon(product), appeal and not describes_appeal(product),
+                product.name not in keeping,
                 not preferred, product.name in seen, tie_breaker(product) if tie_breaker else 0)
 
     def tail(product):

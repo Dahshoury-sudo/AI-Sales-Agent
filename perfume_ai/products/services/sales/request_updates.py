@@ -13,7 +13,7 @@ from .occasion_preferences import (
 
 
 GOAL_KEYS = frozenset({"notes", "occasion", PENDING_KEY, "projection", "longevity", "scent_tags", "scent_match", "scent_open",
-                       "similar_to", "similar_to_notes"})
+                       "similar_to", "similar_to_notes", "appeal_goal"})
 _REQUEST = r"(?:عايز(?:ه)?|عاوز(?:ه)?|محتاج(?:ه)?|رشح(?:لي)?|ترشح(?:لي)?|عندك(?:م|و)?|recommend|suggest|want)"
 _AVAILABILITY = re.compile(r"^(?:(?:و|طيب|طب)\s+)*(?:عندك(?:م|و)?|do\s+you\s+(?:have|stock))(?!\w)")
 _FACT = re.compile(r"^(?:(?:طيب|طب)\s+)?(?:هل|هو|هي|بكام|سعر|how|is|does)\b|\b(?:ينفع|بينفع|مناسب|سعره|ثباته كام|فوحانه ايه)\b")

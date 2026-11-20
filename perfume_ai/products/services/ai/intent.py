@@ -117,6 +117,17 @@ def _sanitize(intent):
     return intent
 
 
+def _with_appeal_goal(intent, message):
+    """"عايز برفان يخلي البنات تحبني" sets the goal from the customer's words, never from the model."""
+    from ..sales import attraction
+    intent = dict(intent or {})
+    intent.pop(attraction.GOAL_KEY, None)
+    audience = attraction.detect(message)
+    if audience:
+        intent[attraction.GOAL_KEY] = audience
+    return intent
+
+
 def extract_intent(message: str, history=None, store=None):
     store_name_text = f"The name of the store is '{store.name}'." if store else ""
     system_prompt = f"""
@@ -295,7 +306,7 @@ Other requirements:
         intent = reconcile_scent_intent(prepare_updates(intent, message, history, store)[0], message)
         from ..sales.gender import sanitize_updates
         intent = sanitize_updates(intent, message, store)
-        return intent
+        return _with_appeal_goal(intent, message)
     except Exception:
         from ..sales.request_updates import prepare_updates
         fallback = reconcile_scent_intent(_explicit_recommendation_updates(message), message)
@@ -306,4 +317,4 @@ Other requirements:
         ):
             fallback[PENDING_KEY] = True
         from ..sales.gender import sanitize_updates
-        return sanitize_updates(fallback, message, store)
+        return _with_appeal_goal(sanitize_updates(fallback, message, store), message)
