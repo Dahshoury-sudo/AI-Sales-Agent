@@ -258,8 +258,11 @@ FITS_BUDGET_QUESTION = re.compile(
     r"|within\s+(?:my\s+)?budget|\bunder\s+\d")
 
 
+_PRICE_COMPARISON = re.compile(r"(?<!\w)(?:ال)?(?:ارخص|اغلي|اوفر)(?!\w)")
+
+
 def price_question(message, history=None, conversation=None):
-    from .sales.followups import accepts_price_offer
+    from .sales.followups import ASKS_TO_CHOOSE, accepts_price_offer
     if accepts_price_offer(message, history, conversation):
         return True
     text = naming.normalize_product_name(message)
@@ -290,7 +293,12 @@ def price_question(message, history=None, conversation=None):
     # Bare continuations ("والتاني؟", "و90؟") inherit the customer's most recent price question. A full
     # new question does not: "أنهي واحد فيهم أحلى للصيف؟" got unrequested price blocks (S13 t4).
     if len(text.split()) <= 3 and not re.search(r"متوفر|موجود|عندك|ثبات|فوحان|مكونات|ريح", text):
-        previous = next((m.get("content", "") for m in reversed(history or []) if m.get("role") == "user"), "")
+        # Three words are enough for a new question too: "انهي احسن فيهم" right after "بكام دول" got the
+        # price block again, and the comparison only came after the customer sent "؟" (conversation 1313).
+        # A pick on price ("انهي ارخص؟", "مين فيهم اوفر؟") is still answered by the prices.
+        if ASKS_TO_CHOOSE.search(text) and not _PRICE_COMPARISON.search(text):
+            return False
+        previous =next((m.get("content", "") for m in reversed(history or []) if m.get("role") == "user"), "")
         return bool(re.search(r"بكام|سعر|اسعار|ثمن", previous))
     return False
 

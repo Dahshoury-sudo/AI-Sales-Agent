@@ -30,7 +30,7 @@ from .sales import gender as sales_gender
 from .sales import naming as sales_naming
 from .sales import objection as sales_objection
 from .sales import repetition
-from .sales.followups import accepts_price_offer, numeric_reference
+from .sales.followups import ASKS_TO_CHOOSE, accepts_price_offer, numeric_reference
 from .sales import stage as sales_stage
 from products.models import Order
 from django.db import transaction
@@ -553,7 +553,7 @@ def _rephrased(reply, context, history, store, regenerate, *, recommendation_int
                                                   history=history, description_required=True)
                 lines = lines or [f"{product.name}: {factual_description(product)}." for product in selected]
             fallback = "\n".join(lines)
-            if len(selected) == 2 and lines and _ASKS_TO_CHOOSE.search(sales_naming.normalize_product_name(message or "")):
+            if len(selected) == 2 and lines and ASKS_TO_CHOOSE.search(sales_naming.normalize_product_name(message or "")):
                 # A pick or a difference was asked for; the two descriptions alone repeated an
                 # earlier reply almost word for word and chose nothing (simulation S13 final 1, t4).
                 fallback += "\n" + _label_difference(*selected)
@@ -1339,11 +1339,6 @@ def _not_a_repeat(fallback, message, history):
     if closes_conversation(message) or (thanks_or_praise(message) and not _re.search(r"[؟?]", message or "")):
         return "تمام، خد وقتك، ولو احتجت حاجة أنا موجود."
     return "ده كل اللي متسجل عندي عن ده؛ أي تفاصيل أكتر محتاجة تأكيد من فريق خدمة العملاء."
-
-
-_ASKS_TO_CHOOSE = _re.compile(
-    r"(?<!\w)(?:انهي|مين|احسن|افضل|انسب|احلي|اقوي|اخف|الفرق|فرق|يميز|اختار\w*|anhy|anhi|a7san|a7la|which|better|"
-    r"difference|vs)(?!\w)", _re.IGNORECASE)
 
 
 def _label_difference(first, second):

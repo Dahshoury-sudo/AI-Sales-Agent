@@ -4,6 +4,13 @@ import re
 
 from . import naming
 
+# Asks to pick between perfumes or for what separates them. Applied to `naming.normalize_product_name`
+# output. Shared by the router's description fallback and `price_question`, where a short "انهي احسن
+# فيهم" right after "بكام دول" asks for a choice, not for the same prices again (conversation 1313).
+ASKS_TO_CHOOSE = re.compile(
+    r"(?<!\w)(?:انهي|مين|احسن|افضل|انسب|احلي|اقوي|اخف|الفرق|فرق|يميز|اختار\w*|anhy|anhi|a7san|a7la|which|better|"
+    r"difference|vs)(?!\w)", re.IGNORECASE)
+
 
 def latest_reply(history=None, conversation=None):
     if conversation is not None:

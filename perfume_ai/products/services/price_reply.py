@@ -333,9 +333,17 @@ def requested_product_details(products, message, *, preferred_occasion=None, his
 def fallback_price_reply(context, products, recommendation_intent=None):
     """Use catalogue facts for requested detail after an unsuccessful grounding retry."""
     evidence = quote_evidence(context)
-    lines = requested_product_details(products, evidence.get("request", ""),
-                                      preferred_occasion=(recommendation_intent or {}).get("occasion"))
-    clean = {key: value for key, value in evidence.items() if key not in ("sections", "ambiguous_prose")}
+    request = evidence.get("request", "")
+    preferred = (recommendation_intent or {}).get("occasion")
+    lines = requested_product_details(products, request, preferred_occasion=preferred)
+    from .sales.followups import ASKS_TO_CHOOSE
+    if not lines and len(products) > 1 and ASKS_TO_CHOOSE.search(naming.normalize_product_name(request)):
+        # "انهي احسن فيهم وبكام؟" names no attribute, so the recovery was the price rows alone and the
+        # choice went unanswered (conversation 1313). Each perfume's own description under its heading is
+        # the supported difference; a line naming both would fail `composition_issues`.
+        lines = requested_product_details(products, request, preferred_occasion=preferred,
+                                          description_required=True)
+    clean ={key: value for key, value in evidence.items() if key not in ("sections", "ambiguous_prose")}
     clean["append"] = True
     context += "\n" + QUOTE_MARKER + json.dumps(clean, ensure_ascii=False)
     if recommendation_intent is not None:
