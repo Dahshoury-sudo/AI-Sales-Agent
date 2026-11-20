@@ -29,6 +29,22 @@ class GenderChoiceTests(SimpleTestCase):
             with self.subTest(message=message):
                 self.assertIsNone(gender.customer_choice(message))
 
+    def test_unisex_in_customer_spellings_and_one_for_both_phrases(self):
+        """Conversation 1314 said "يونيسكس" three times and got the binary question three times."""
+        for message in ("يونيسكس", "عايز برفان يونيسكس", "منا قولت يونيسكس", "عايز حاجه يونيسكس من زيرجوف",
+                        "يونسكس", "يوني سكس", "يونيكس", "uni sex", "gender neutral perfume",
+                        "شبه Naxos يونيسكس",
+                        # One perfume for both, without the word (conversation 23).
+                        "عايز حاجه رجالي وحريمي فنفس الوقت", "رجالي وحريمي في نفس الوقت",
+                        "ينفع للراجل والست", "عايز حاجه تنفع للاتنين", "for both men and women"):
+            with self.subTest(message=message):
+                self.assertEqual(gender.customer_choice(message), "unisex")
+        for message, expected in (("عايز رجالي وحريمي", "multiple"), ("عايز عطر رجالي وعطر حريمي", "multiple"),
+                                  ("بكام الاتنين", None), ("الاتنين", None), ("90 ملي من الاتنين", None),
+                                  ("رجالي ولا حريمي", None)):
+            with self.subTest(message=message):
+                self.assertEqual(gender.customer_choice(message), expected)
+
     def test_inferred_or_default_gender_from_the_model_is_discarded(self):
         for message, supplied in (("something like Le Male", "male"), ("choose for me", "unisex"),
                                   ("my name is Sarah, recommend a fresh perfume", "female")):
@@ -155,6 +171,19 @@ class GenderFirstRecommendationTests(TestCase):
         self.assertEqual(result[1], "selected")
         self.assertEqual(model.call_args.kwargs["intent"]["gender"], "unisex")
 
+    def test_unisex_in_the_customers_spelling_never_gets_the_binary_question(self):
+        """Replay of conversation 1314."""
+        result, _, _ = self.call("عايز برفان يونيسكس", {})
+        self.assertNotEqual(result, (gender.QUESTION, gender.REQUIRED_MARKER))
+        self.assertEqual(self.conversation.preferences["gender"], "unisex")
+
+        self.conversation.preferences = {}
+        self.conversation.save(update_fields=["preferences"])
+        self.ask()
+        result, _, model = self.call("منا قولت يونيسكس", classification="faq")
+        self.assertEqual(result[1], "selected")
+        self.assertEqual(model.call_args.kwargs["intent"]["gender"], "unisex")
+
     def test_new_recipient_clears_old_gender_and_requires_a_choice(self):
         self.conversation.preferences = {"gender": "male", "scent_tags": ["fresh"]}
         self.conversation.save(update_fields=["preferences"])
@@ -190,3 +219,73 @@ class GenderFirstRecommendationTests(TestCase):
              patch("products.services.router.handle_objection") as objection:
             self.ask({"scent_tags": ["fresh"]}, "رشحلي فريش أرخص")
         objection.assert_not_called()
+
+
+class UnisexNoMatchTests(TestCase):
+    """When no unisex perfume fits: say so, then ask رجالي ولا حريمي (owner, 2026-11-20)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.store = Store.objects.create(name="Unisex no match")
+        StoreSettings.objects.create(store=cls.store)
+        cls.brand = Brand.objects.create(store=cls.store, name="House")
+        for name, choice, tags, price in (("Shared Breeze", "unisex", ["fresh"], 900),
+                                          ("Oud Man", "male", ["oud"], 400),
+                                          ("Fresh Man", "male", ["fresh"], 800),
+                                          ("Fresh Lady", "female", ["fresh"], 300)):
+            product = Product.objects.create(store=cls.store, brand=cls.brand, name=name, gender=choice,
+                                             scent_tags=tags, occasion=f"{WORK}; {ROMANTIC}")
+            ProductVariant.objects.create(product=product, volume=50, price=price)
+
+    def setUp(self):
+        self.conversation = Conversation.objects.create(store=self.store)
+        self.enterContext(patch("products.services.product_resolver.confirm_unplaced", return_value=None))
+        self.enterContext(patch("products.services.router.confident_catalogue_match", return_value=None))
+
+    def search(self, intent):
+        from products.services.search_service import search_products
+        return search_products(intent, self.store)
+
+    def test_reply_names_the_one_requirement_the_unisex_perfumes_miss(self):
+        from products.services.ai.scent_recommendation import no_match_reply
+        for intent, blocker, detail in (
+            ({"gender": "unisex", "scent_tags": ["oud"]}, "scent_tags", "بطابع عودي"),
+            ({"gender": "unisex", "scent_tags": ["fresh"], "max_price": 500}, "max_price", "في الميزانية دي"),
+            # Neither alone unblocks it, so neither is named.
+            ({"gender": "unisex", "scent_tags": ["oud"], "max_price": 500}, None, "بالمواصفات دي"),
+        ):
+            with self.subTest(intent=intent):
+                result = self.search(intent)
+                self.assertFalse(result["products"].exists())
+                self.assertEqual(result["no_match_reason"], "gender")
+                self.assertIsNone(result["relax_key"])
+                self.assertEqual(result["unisex_blocker"], blocker)
+                reply, context = no_match_reply(result)
+                self.assertEqual(reply, f"مفيش عندي عطر للجنسين {detail}. تحب أشوفلك رجالي ولا حريمي؟")
+                self.assertIn(gender.REQUIRED_MARKER, context)
+
+    def test_a_male_request_keeps_the_budget_first_relax_order(self):
+        result = self.search({"gender": "male", "scent_tags": ["fresh"], "max_price": 350})
+        self.assertEqual((result["no_match_reason"], result["relax_key"], result["unisex_blocker"]),
+                         ("max_price", "max_price", None))
+
+    def test_the_reply_reaches_the_customer_and_the_answer_continues_the_request(self):
+        with patch("products.services.router.classify", return_value="recommendation"), \
+             patch("products.services.router.extract_intent", return_value={"scent_tags": ["oud"]}), \
+             patch("products.services.ai.recommendation.chat") as model:
+            reply, context = route("عايز برفان يونيسكس عودي", [], self.store, self.conversation)
+        model.assert_not_called()
+        self.assertIn("مفيش عندي عطر للجنسين بطابع عودي. تحب أشوفلك رجالي ولا حريمي؟", reply)
+        self.assertIn(gender.REQUIRED_MARKER, context)
+        save_message(self.conversation, "assistant", reply, context)
+
+        with patch("products.services.router.classify", return_value="faq") as classifier, \
+             patch("products.services.router.extract_intent", return_value={}), \
+             patch("products.services.router.recommend", return_value=("اختيار مناسب", "selected")) as recommender:
+            result = route("رجالي", [], self.store, self.conversation)
+        classifier.assert_not_called()
+        self.assertEqual(result[1], "selected")
+        current = recommender.call_args.kwargs["intent"]
+        self.assertEqual(current["gender"], "male")
+        self.assertEqual(current["scent_tags"], ["oud"])
+        self.assertEqual([p.name for p in recommender.call_args.args[1]], ["Oud Man"])

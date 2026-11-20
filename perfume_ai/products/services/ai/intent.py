@@ -45,7 +45,7 @@ def _explicit_recommendation_updates(message):
     longevity_words = {"ثابت", "ثابته"}
     vocabulary = request_words | daytime_words | projection_words | longevity_words | {
         "طيب", "طب", "ايه", "ممكن", "لي", "ليا", "حاجه", "عطر", "برفان", "برفيوم", "ريحه",
-        "حلو", "حلوه", "كويس", "كويسه", "رجالي", "حريمي", "للجنسين", "و", "يكون", "تكون",
+        "حلو", "حلوه", "كويس", "كويسه", "رجالي", "حريمي", "للجنسين", "يونيسكس", "و", "يكون", "تكون",
     }
     if not (tokens & request_words) or not tokens <= vocabulary:
         return {}

@@ -13,7 +13,9 @@ from ..product_formatting import (
 from ..reply_sanitizer import product_claim_issues
 from ..performance_policy import EXCELLENT, STRONG, governed_reply, selection_preferences
 from ..search_service import product_matches_request
+from products.scent_tags import SCENT_TAG_LABELS
 from ..sales import brand_response, described, naming, repetition
+from ..sales import gender as sales_gender
 from ..sales.scent_preferences import normalize_scent_intent
 from ..sales.scent_matching import fit_key, match_facts, order_candidates
 from ..sales.scent_selection import combined_budget_quotes, nearest_selection
@@ -22,7 +24,37 @@ from ..scent_description import describe_scent, selected_tags
 from ..static_faq_service import normalize_arabic
 
 
+UNISEX_NO_MATCH = "UNISEX_NO_MATCH"
+
+
+def unisex_no_match_reply(search):
+    """No unisex perfume fits: say so, then hand back the binary question.
+
+    The owner's policy (2026-11-20): unisex is never offered, only accepted, and when none of the
+    few unisex perfumes fits, the way out is رجالي ولا حريمي, with no perfume pitched on this turn.
+    The generic gender blocker ("للنوع اللي طلبته… فيه طابع ريحة تاني؟") never said the problem was
+    unisex, so customers changed the scent instead and hit the same wall.
+
+    The context carries GENDER_REQUIRED so the answer ("رجالي") is read as the pending gender
+    choice by sales.gender.question_pending, and the saved scent and budget carry into the search.
+    """
+    intent = search.get("effective_intent") or {}
+    blocker = search.get("unisex_blocker")
+    labels = [SCENT_TAG_LABELS[tag] for tag in intent.get("scent_tags") or () if tag in SCENT_TAG_LABELS]
+    if blocker == "scent_tags" and labels:
+        detail = "بطابع " + " أو ".join(labels)
+    elif blocker == "max_price":
+        detail = "في الميزانية دي"
+    else:
+        detail = "بالمواصفات دي"
+    return (f"مفيش عندي عطر للجنسين {detail}. تحب أشوفلك رجالي ولا حريمي؟",
+            f"{sales_gender.REQUIRED_MARKER} {UNISEX_NO_MATCH}")
+
+
 def no_match_reply(search=None):
+    if ((search or {}).get("no_match_reason") == "gender"
+            and str(((search or {}).get("effective_intent") or {}).get("gender") or "").lower() == "unisex"):
+        return unisex_no_match_reply(search)
     key = (search or {}).get("relax_key")
     questions = {
         "max_price": "مش لاقي اختيار بنفس طابع الريحة في الميزانية دي. تحب تحدد ميزانية تانية؟",

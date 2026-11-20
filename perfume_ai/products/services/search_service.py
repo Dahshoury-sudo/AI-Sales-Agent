@@ -200,18 +200,35 @@ def search_products(intent, store=None, keep=(), offered=()):
     preferred = preferred_brand_name(intent.get("brand"), store)
     relax_key = None
     no_match_reason = None
+    unisex_blocker = None
+    unisex = str(intent.get("gender") or "").lower() == "unisex"
+
+    def matches_without(*keys):
+        relaxed = {name: value for name, value in intent.items() if name not in keys}
+        return any(product_matches_request(p, relaxed, store, blocked_brands=blocked,
+                                           excluded_names=excluded, reference_id=reference.pk if reference else None)
+                   for p in catalog)
+
     if not rows and not needs_reference:
-        for key in ("max_price", "brand", "requested_volume", "bottle_type", "gender", "perfume_type", "notes"):
+        order = ("max_price", "brand", "requested_volume", "bottle_type", "gender", "perfume_type", "notes")
+        if unisex:
+            # Unisex is the rarest requirement (5 of 251 active perfumes at Perfamix), so it is the
+            # one offered up first: the owner's choice (2026-11-20) is "say no unisex fits, then ask
+            # رجالي ولا حريمي", not "raise your budget" for one of five bottles.
+            order = ("gender", *(key for key in order if key != "gender"))
+        for key in order:
             if not intent.get(key) or (key == "brand" and intent.get("brand_strict") is not True):
                 continue
-            relaxed = {name: value for name, value in intent.items() if name != key}
-            if any(product_matches_request(p, relaxed, store, blocked_brands=blocked,
-                                           excluded_names=excluded, reference_id=reference.pk if reference else None)
-                   for p in catalog):
+            if matches_without(key):
                 no_match_reason = key
                 if key in ("max_price", "brand"):
                     relax_key = key
                 break
+        if unisex and no_match_reason == "gender":
+            # What the unisex perfumes miss, named only when exactly one requirement does it. With
+            # both, "no unisex fresh" and "no unisex in budget" would each be false on its own.
+            unblocking = [key for key in ("scent_tags", "max_price") if intent.get(key) and matches_without(key)]
+            unisex_blocker = unblocking[0] if len(unblocking) == 1 else None
         if no_match_reason is None:
             no_match_reason = ("scent_tags" if intent.get("scent_tags") and not any(
                 matching_tags(p, intent) for p in catalog
@@ -221,7 +238,7 @@ def search_products(intent, store=None, keep=(), offered=()):
         "effective_intent": intent, "needs_scent_reference": needs_reference,
         "needs_occasion": False,
         "relax_key": relax_key,
-        "no_match_reason": no_match_reason,
+        "no_match_reason": no_match_reason, "unisex_blocker": unisex_blocker,
         "reference_product": reference, "ranked": {},
         "keeping": sorted(surviving), "offered": sorted(offered or ()),
         "dropped": dropped,

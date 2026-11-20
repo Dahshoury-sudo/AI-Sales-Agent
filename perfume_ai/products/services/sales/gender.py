@@ -42,6 +42,12 @@ FEMALE_WORDS = (
 )
 UNISEX_WORDS = (
     "يونيسيكس", "unisex", "للجنسين", "bisexual", "بايسكشوال", "بايسيكشوال",
+    # "يونيسكس" is how customers actually spell it: 8 of the 3,701 stored customer messages, and
+    # none of them parsed. Conversation 1314 said it three times ("منا قولت يونيسكس") and got the
+    # binary question three times, until the customer gave up and said "رجالي". "يونيكس" is the
+    # spelling the bot itself used in conversation 365, so customers will echo it.
+    "يونيسكس", "يونسكس", "يوني سكس", "يونيكس",
+    "uni sex", "unisix", "gender neutral", "genderless",
 )
 
 # Any of these means the customer told us who it is for, even if we cannot tell which
@@ -70,10 +76,33 @@ _NEGATIVE = re.compile(
 )
 _CONNECTOR = re.compile(r"\s*(?:و|او|ولا|and|or|nor)\s*")
 _ALTERNATIVE = re.compile(r"(?<!\w)(?:او|ولا|or)(?!\w)")
+# One perfume for both sexes, said without the word "unisex". Matched on normalised text.
+#
+# "ينفع للراجل والست" parsed as *male*: "والست" is deliberately not a female word (see above), so
+# only "للراجل" matched. "عايز حاجه رجالي وحريمي فنفس الوقت" (conversation 23) parsed as
+# `multiple` and got the two-recipients question. Each form here is narrow on purpose: a "suits"
+# verb, or the two category words joined and followed by "at the same time". The plain
+# "عايز رجالي وحريمي" and "عطر رجالي وعطر حريمي" still mean two perfumes, and "الاتنين" alone
+# almost always means "both of those perfumes" ("بكام الاتنين").
+_SUITS = r"(?:[يت](?:نفع|صلح|ناسب|ليق))"
+_MEN = r"(?:لل|ل|ال)?(?:راجل|رجاله|رجال|رجل|ولاد|شباب)"
+_WOMEN = r"(?:لل|ل|ال)?(?:ست|ستات|سيدات|بنات|بنت)"
+_MALE_CATEGORY = r"(?:رجالي|رجاليه|للرجال|رجاله)"
+_FEMALE_CATEGORY = r"(?:حريمي|حريميه|نسائي|نسائيه|للستات|للبنات)"
+_ONE_FOR_BOTH = re.compile(
+    r"(?<!\w)(?:"
+    rf"{_SUITS}\s+(?:لل|ل|ال)?(?:اتنين|اثنين)"
+    rf"|{_SUITS}\s+(?:{_MEN}\s+و\s*{_WOMEN}|{_WOMEN}\s+و\s*{_MEN})"
+    rf"|(?:{_MALE_CATEGORY}\s+و\s*{_FEMALE_CATEGORY}|{_FEMALE_CATEGORY}\s+و\s*{_MALE_CATEGORY})\s*(?:في|ف)\s*نفس\s*الوقت"
+    r"|for\s+(?:both\s+)?men\s+and\s+women|for\s+both\s+(?:genders|sexes)"
+    r")(?!\w)"
+)
+_UNISEX_STOP = "|".join(re.escape(" ".join(normalize_arabic(word).split()))
+                        for word in sorted(UNISEX_WORDS, key=len, reverse=True))
 _REFERENCE_SPAN = re.compile(
     r"(?<!\w)(?:similar\s+to|something\s+like|perfume\s+like|fragrance\s+like|شبه|زي|بديل)\s+"
     r".+?(?=\s+(?:but|بس|لكن|for\s+(?:my|him|her)|ل(?:مراتي|خطيبتي|جوزي|اخويا|اختي|زوجتي)|"
-    r"رجالي|حريمي|unisex)(?!\w)|[.!؟?،;]|$)"
+    rf"رجالي|حريمي|{_SUITS}|{_UNISEX_STOP})(?!\w)|[.!؟?،;]|$)"
 )
 _UNRESOLVED_ANSWER = re.compile(
     r"(?:(?:طيب|طب)\s+)?(?:تمام|اه|ايوه|ماشي|ليا|لنفسي|هديه|لحد عزيز|مش عارف(?:ه)?|"
@@ -124,7 +153,16 @@ def _groups(text, words):
     return groups
 
 
+def _one_for_both(text):
+    match = _ONE_FOR_BOTH.search(text)
+    return bool(match) and not _NEGATIVE.search(text[:match.start()])
+
+
 def _choice(text):
+    # Before the category groups: "رجالي وحريمي في نفس الوقت" holds both groups, which alone
+    # would read as two recipients.
+    if _one_for_both(text):
+        return "unisex"
     groups = _groups(text, _CATEGORY_WORDS) or _groups(text, _RECIPIENT_WORDS)
     if "unisex" in groups:
         return "unisex"
@@ -144,7 +182,7 @@ def customer_choice(message, intent=None, store=None):
     text = _text(message)
     if _CATEGORY_WORDS[0].fullmatch(text) or _RECIPIENT_WORDS[0].fullmatch(text):
         return _choice(text)
-    if not (_CATEGORY_WORDS[0].search(text) or _RECIPIENT_WORDS[0].search(text)):
+    if not (_CATEGORY_WORDS[0].search(text) or _RECIPIENT_WORDS[0].search(text) or _ONE_FOR_BOTH.search(text)):
         return None
     names = [(intent or {}).get("similar_to")]
     if store:
@@ -223,7 +261,7 @@ def _conversation_text(message, history=None):
 def mentioned_in_words(message, history=None):
     """Did the customer name a gender at all, in any form?"""
     text = _conversation_text(message, history)
-    return any(normalize_arabic(word) in text for word in ALL_WORDS)
+    return any(normalize_arabic(word) in text for word in ALL_WORDS) or bool(_ONE_FOR_BOTH.search(_text(text)))
 
 
 def from_words(message, history=None):
