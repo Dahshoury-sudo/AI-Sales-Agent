@@ -554,6 +554,53 @@ class StoreMonthlyUsage(models.Model):
         return f"{self.store.name} {self.period:%Y-%m}: {self.llm_messages}"
 
 
+class AIUsageDaily(models.Model):
+    """Exact OpenAI tokens and cost per store, per day, per channel.
+
+    Written by products.services.ai.usage after each turn, outside the turn's transaction,
+    so a turn that rolls back still records the spend OpenAI billed for it. `cost_usd` is
+    priced at the table in force when the call was made; the token counts are kept so a
+    cost can be recomputed. A null store is spend not tied to any store (admin evaluations).
+    """
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, null=True, blank=True,
+                              related_name="ai_usage")
+    date = models.DateField()
+    # whatsapp, messenger, instagram, web, facebook_comment, instagram_comment, admin_evaluation
+    channel = models.CharField(max_length=40)
+    calls = models.PositiveIntegerField(default=0)
+    # Calls that raised before a response: no usage to price.
+    failed_calls = models.PositiveIntegerField(default=0)
+    # Calls whose model is missing from the price table, or that returned no usage.
+    # Their tokens are counted when present, their cost is not.
+    unpriced_calls = models.PositiveIntegerField(default=0)
+    prompt_tokens = models.PositiveBigIntegerField(default=0)
+    cached_tokens = models.PositiveBigIntegerField(default=0)
+    cache_write_tokens = models.PositiveBigIntegerField(default=0)
+    completion_tokens = models.PositiveBigIntegerField(default=0)
+    # Already included in completion_tokens; kept to see what reasoning costs.
+    reasoning_tokens = models.PositiveBigIntegerField(default=0)
+    cost_usd = models.DecimalField(max_digits=14, decimal_places=8, default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["store", "date", "channel"],
+                                    condition=models.Q(store__isnull=False),
+                                    name="one_ai_usage_row_per_store_day_channel"),
+            models.UniqueConstraint(fields=["date", "channel"],
+                                    condition=models.Q(store__isnull=True),
+                                    name="one_storeless_ai_usage_row_per_day_channel"),
+        ]
+        indexes = [models.Index(fields=["date"], name="ai_usage_date_idx")]
+        ordering = ["-date", "store_id", "channel"]
+        verbose_name = "AI usage (daily)"
+        verbose_name_plural = "AI usage (daily)"
+
+    def __str__(self):
+        return f"{self.store.name if self.store else 'No store'} {self.date} {self.channel}: ${self.cost_usd}"
+
+
 class InboundEvent(models.Model):
     """A durable receipt; task retries resume this turn instead of recreating it."""
 

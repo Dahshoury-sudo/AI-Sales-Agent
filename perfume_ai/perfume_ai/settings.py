@@ -38,6 +38,8 @@ OPENAI_SMART_MODEL = os.environ.get("OPENAI_SMART_MODEL")
 # trade-offs. Unset falls back to OPENAI_MODEL; see products.services.ai.client._profiles.
 OPENAI_RESOLVER_MODEL = os.environ.get("OPENAI_RESOLVER_MODEL")
 OPENAI_TEMPERATURE = float(os.environ.get("OPENAI_TEMPERATURE", 1.0))
+# Optional EGP per USD for `manage.py ai_cost_report`; --egp-rate overrides it. Unset = USD only.
+USD_EGP_RATE = os.environ.get("USD_EGP_RATE")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Set DEBUG=True in .env for development

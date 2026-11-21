@@ -1,9 +1,28 @@
-"""Price estimates and content-free JSON usage logs, independent of DB rollback."""
+"""Price estimates, content-free JSON usage logs, and per-store cost records.
+
+Every model call passes through ai.client._complete, which calls `record` (or
+`record_failure`). The store is attributed by the entry point that started the turn:
+
+    with usage.attribute(store_id, "whatsapp"):
+        generate_event(...)
+
+Calls are tallied in memory during the turn and written once when the block exits. The
+turn itself runs inside a transaction that can roll back, and OpenAI bills the calls either
+way, so the record is written after it, outside it. Outside any `attribute` block (scripts,
+tests, simulations) calls are only logged, never written.
+
+Recording is observability: nothing here may raise into a customer's reply.
+"""
+from contextlib import contextmanager
+from contextvars import ContextVar
 from decimal import Decimal
 import json
 import logging
 
 logger = logging.getLogger("ai.usage")
+
+TOKEN_FIELDS = ("prompt_tokens", "cached_tokens", "cache_write_tokens", "completion_tokens", "reasoning_tokens")
+COUNTER_FIELDS = ("calls", "failed_calls", "unpriced_calls") + TOKEN_FIELDS
 PRICING_DATE = "2026-11-03"
 # USD per million input / cached input / output tokens. Keep unknown models unknown.
 PRICES = {name: tuple(map(Decimal, prices)) for name, prices in {
@@ -37,10 +56,12 @@ def usage_counts(usage):
     if type(field(usage, "prompt_tokens")) is not int or type(field(usage, "completion_tokens")) is not int:
         return None
     details = field(usage, "prompt_tokens_details")
+    # Current name first; older Chat Completions responses call it cache_creation_tokens.
+    written = "cache_write_tokens" if type(field(details, "cache_write_tokens")) is int else "cache_creation_tokens"
     return {
         "prompt_tokens": count(usage, "prompt_tokens"),
         "cached_tokens": count(details, "cached_tokens"),
-        "cache_write_tokens": count(details, "cache_creation_tokens"),
+        "cache_write_tokens": count(details, written),
         "completion_tokens": count(usage, "completion_tokens"),
         # Already part of completion_tokens, never billed a second time.
         "reasoning_tokens": count(field(usage, "completion_tokens_details"), "reasoning_tokens"),
@@ -78,3 +99,90 @@ def emit(**values):
     except Exception:
         # Observability must not change customer behavior if a log sink fails.
         pass
+
+
+# ── Per-store attribution ───────────────────────────────────────────────────
+
+class _Tally:
+    def __init__(self, store_id, channel):
+        self.store_id = store_id
+        self.channel = channel
+        self.counters = dict.fromkeys(COUNTER_FIELDS, 0)
+        self.cost = Decimal(0)
+
+    def add(self, counts, cost, failed=False):
+        self.counters["calls"] += 1
+        if failed:
+            self.counters["failed_calls"] += 1
+            return
+        for name in TOKEN_FIELDS:
+            self.counters[name] += (counts or {}).get(name, 0)
+        if cost is None:
+            self.counters["unpriced_calls"] += 1
+        else:
+            self.cost += cost
+
+
+_active = ContextVar("ai_usage_tally", default=None)
+
+
+@contextmanager
+def attribute(store_id, channel):
+    """Attribute every model call made inside this block to one store and channel."""
+    tally = _Tally(store_id, channel)
+    token = _active.set(tally)
+    try:
+        yield tally
+    finally:
+        _active.reset(token)
+        flush(tally)
+
+
+def record(model, response):
+    """Account one completed call. Never raises."""
+    try:
+        counts = usage_counts(field(response, "usage"))
+        cost = estimate_cost(model, counts)
+        _account(model, counts, cost)
+    except Exception:
+        logger.exception("Could not account an OpenAI call")
+
+
+def record_failure(model):
+    """Account a call that raised before returning a response. Never raises."""
+    try:
+        _account(model, None, None, failed=True)
+    except Exception:
+        logger.exception("Could not account a failed OpenAI call")
+
+
+def _account(model, counts, cost, failed=False):
+    tally = _active.get()
+    emit(store_id=tally.store_id if tally else None, channel=tally.channel if tally else None,
+         model=model, failed=failed, cost_usd=cost, **(counts or {}))
+    if tally is not None:
+        tally.add(counts, cost, failed=failed)
+
+
+def flush(tally):
+    """Write a tally to its store's row for today, adding to what is there. Never raises."""
+    if not tally.counters["calls"]:
+        return
+    try:
+        from django.db.models import F
+        from django.utils import timezone
+        from products.models import AIUsageDaily
+
+        row, _ = AIUsageDaily.objects.get_or_create(
+            store_id=tally.store_id, date=timezone.localdate(), channel=tally.channel)
+        increments = {name: F(name) + value for name, value in tally.counters.items() if value}
+        if tally.cost:
+            increments["cost_usd"] = F("cost_usd") + tally.cost.quantize(Decimal("0.00000001"))
+        increments["updated_at"] = timezone.now()
+        # F() additions, not read-modify-write: gunicorn threads and Celery processes
+        # add to the same row concurrently.
+        AIUsageDaily.objects.filter(pk=row.pk).update(**increments)
+    except Exception:
+        logger.exception("Could not save AI usage for store %s channel %s: %s",
+                         tally.store_id, tally.channel,
+                         json.dumps({**tally.counters, "cost_usd": str(tally.cost)}))

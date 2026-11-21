@@ -24,6 +24,7 @@ from products.services.meta_service import (
 )
 from products.services.notification_service import notify_delivery_failure
 from products.services import rate_limit
+from products.services.ai import usage as ai_usage
 from products.services.response_policy import message_replies_enabled, comment_replies_enabled
 from products.services.comment_filter import should_reply_to_post
 
@@ -182,7 +183,9 @@ def _process_message_event(event):
         if not suppress_message_event(event):
             _deliver_event(event)
         return
-    generate_event(event, _attachment_route if event.attachment_url else route, sanitize_reply)
+    # Usage is saved when this block exits, after generate_event's transaction.
+    with ai_usage.attribute(event.store_id, event.platform):
+        generate_event(event, _attachment_route if event.attachment_url else route, sanitize_reply)
     _deliver_event(event)
 
 
@@ -371,8 +374,9 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         history = build_llm_history(conversation)
         save_message(conversation, "user", comment_text)  # save original comment only
 
-        ai_reply, context = route(enriched_text, history, store, conversation)
-        ai_reply = sanitize_reply(ai_reply, conversation)
+        with ai_usage.attribute(store_id, f"{platform}_comment"):
+            ai_reply, context = route(enriched_text, history, store, conversation)
+            ai_reply = sanitize_reply(ai_reply, conversation)
         save_message(conversation, "assistant", ai_reply, internal_context=context)
 
         # ── 4. Pick a random public reply message ───────────────────────────

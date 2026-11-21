@@ -1,6 +1,8 @@
 from openai import OpenAI
 from django.conf import settings
 
+from . import usage
+
 client = OpenAI(
     api_key=settings.OPENAI_API_KEY,
 )
@@ -105,6 +107,11 @@ def _complete(kwargs):
         response = client.chat.completions.create(**kwargs)
     except EmptyCompletion:
         return ""
+    except Exception:
+        usage.record_failure(kwargs.get("model"))
+        raise
+    # Priced on the model that answered; a dated snapshot maps to its family in usage.PRICES.
+    usage.record(getattr(response, "model", None) or kwargs.get("model"), response)
     content = response.choices[0].message.content if response.choices else None
     return content if isinstance(content, str) else ""
 

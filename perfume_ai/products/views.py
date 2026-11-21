@@ -19,6 +19,7 @@ from dashboard.auth_backend import StoreOwnerAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .services.router import route
 from .services.reply_sanitizer import sanitize_reply
+from .services.ai import usage as ai_usage
 from .throttles import ChatThrottle, StoreKeyThrottle, ChatPollingThrottle, DashboardPollingThrottle
 
 from .services.conversation_service import (
@@ -79,8 +80,10 @@ class ChatAPIView(APIView):
         try:
             event = receive_event(request.store, "web", "", message, source_id, conversation)
             with conversation_lock(f"conversation:{event.conversation_id}"):
-                for waiting in pending_through(event):
-                    generate_event(waiting, route, sanitize_reply)
+                # Usage is saved when this block exits, after each turn's transaction.
+                with ai_usage.attribute(request.store.pk, "web"):
+                    for waiting in pending_through(event):
+                        generate_event(waiting, route, sanitize_reply)
                 event.refresh_from_db()
                 return Response({**event.result, "conversation_id": signer.sign_object(event.conversation_id)})
         except ValueError as exc:
