@@ -19,8 +19,13 @@ class Store(models.Model):
 
 class StoreSettings(models.Model):
     store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name="settings")
-    message_replies_enabled = models.BooleanField(default=True)
-    comment_replies_enabled = models.BooleanField(default=True)
+    # Auto-reply switches, one per inbound source. Read through
+    # products.services.response_policy, never cached on a related object.
+    whatsapp_replies_enabled = models.BooleanField(default=True)
+    messenger_replies_enabled = models.BooleanField(default=True)
+    instagram_replies_enabled = models.BooleanField(default=True)
+    facebook_comment_replies_enabled = models.BooleanField(default=True)
+    instagram_comment_replies_enabled = models.BooleanField(default=True)
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
     website_ordering_enabled = models.BooleanField(
         default=False,

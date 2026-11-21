@@ -4,12 +4,22 @@ const {intercept, base, out} = require('./check_layout.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 
+// [settings field, element id, accessible name], in tab order.
+const SWITCHES = [
+    ['whatsapp_replies_enabled', 'whatsapp-replies-enabled', 'رسائل واتساب'],
+    ['messenger_replies_enabled', 'messenger-replies-enabled', 'رسائل ماسنجر'],
+    ['instagram_replies_enabled', 'instagram-replies-enabled', 'رسائل إنستجرام'],
+    ['facebook_comment_replies_enabled', 'facebook-comment-replies-enabled', 'تعليقات فيسبوك'],
+    ['instagram_comment_replies_enabled', 'instagram-comment-replies-enabled', 'تعليقات إنستجرام'],
+];
+const FIRST_ID = SWITCHES[0][1];
+
 (async () => {
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
         const context = await browser.newContext({viewport: {width: 1440, height: 1000}, reducedMotion: 'reduce'});
         await context.route('**/*', intercept);
-        const settings = {message_replies_enabled: true, comment_replies_enabled: true};
+        const settings = Object.fromEntries(SWITCHES.map(([field]) => [field, true]));
         const writes = [];
         let failRead = false, failWrite = false, releaseRead, releaseWrite;
         let holdRead = new Promise(resolve => { releaseRead = resolve; });
@@ -31,75 +41,77 @@ const path = require('node:path');
         const page = await context.newPage();
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
+        const switches = SWITCHES.map(([, , name]) => page.getByRole('switch', {name, exact: true}));
+        const ready = () => page.waitForFunction(id => !document.getElementById(id).disabled, FIRST_ID);
+        const states = () => Promise.all(switches.map(control => control.isChecked()));
+
         await page.goto(base + '/dashboard/', {waitUntil: 'networkidle'});
         await page.evaluate(() => showSection('meta'));
-        const messages = page.getByRole('switch', {name: 'الرد على الرسائل', exact: true});
-        const comments = page.getByRole('switch', {name: 'الرد على التعليقات', exact: true});
-        assert.equal(await messages.isDisabled(), true);
-        assert.equal(await comments.isDisabled(), true);
+        for (const control of switches) assert.equal(await control.isDisabled(), true);
         releaseRead(); holdRead = null;
-        await page.waitForFunction(() => !document.getElementById('message-replies-enabled').disabled);
-        assert.equal(await messages.isChecked(), true);
-        assert.equal(await comments.isChecked(), true);
+        await ready();
+        assert.deepEqual(await states(), [true, true, true, true, true]);
 
+        // First switch: pending state locks every switch and sends only its own field.
         holdWrite = new Promise(resolve => { releaseWrite = resolve; });
-        await messages.focus();
+        await switches[0].focus();
         await page.keyboard.press('Space');
         await page.waitForFunction(() => document.getElementById('reply-controls').getAttribute('aria-busy') === 'true');
-        assert.equal(await messages.isDisabled(), true);
-        assert.equal(await comments.isDisabled(), true);
-        assert.deepEqual(writes, [{message_replies_enabled: false}]);
+        for (const control of switches) assert.equal(await control.isDisabled(), true);
+        assert.deepEqual(writes, [{[SWITCHES[0][0]]: false}]);
         releaseWrite(); holdWrite = null;
-        await page.waitForFunction(() => !document.getElementById('message-replies-enabled').disabled);
-        assert.equal(await messages.isChecked(), false);
-        assert.equal(await comments.isChecked(), true);
-        assert.equal(await messages.evaluate(el => document.activeElement === el), true);
+        await ready();
+        assert.deepEqual(await states(), [false, true, true, true, true]);
+        assert.equal(await switches[0].evaluate(el => document.activeElement === el), true);
 
-        await page.keyboard.press('Tab');
-        assert.equal(await comments.evaluate(el => document.activeElement === el), true);
-        await page.keyboard.press('Space');
-        await page.waitForFunction(() => !document.getElementById('comment-replies-enabled').disabled);
-        assert.equal(await comments.isChecked(), false);
-        assert.deepEqual(writes.at(-1), {comment_replies_enabled: false});
+        // Tab through the rest: each one saves only itself and leaves the others as they were.
+        for (let i = 1; i < SWITCHES.length; i++) {
+            await page.keyboard.press('Tab');
+            assert.equal(await switches[i].evaluate(el => document.activeElement === el), true, `tab to ${SWITCHES[i][2]}`);
+            await page.keyboard.press('Space');
+            await ready();
+            assert.deepEqual(writes.at(-1), {[SWITCHES[i][0]]: false});
+            assert.deepEqual(await states(), SWITCHES.map((_, j) => j > i));
+            assert.equal(await switches[i].evaluate(el => document.activeElement === el), true);
+        }
 
         failWrite = true;
-        await messages.click();
+        await switches[0].click();
         await page.waitForSelector('#reply-controls-status.is-error');
-        assert.equal(await messages.isChecked(), false);
-        assert.equal(await comments.isChecked(), false);
-        assert.equal(await messages.isDisabled(), false);
+        assert.deepEqual(await states(), [false, false, false, false, false]);
+        assert.equal(await switches[0].isDisabled(), false);
         failWrite = false;
 
         failRead = true;
         await page.evaluate(() => window.ReplyControls.load());
-        assert.equal(await messages.isDisabled(), true);
+        assert.equal(await switches[0].isDisabled(), true);
         assert.equal(await page.locator('#reply-controls-retry').isVisible(), true);
         failRead = false;
         await page.locator('#reply-controls-retry').click();
-        await page.waitForFunction(() => !document.getElementById('message-replies-enabled').disabled);
-        assert.equal(await messages.isChecked(), false);
+        await ready();
+        assert.deepEqual(await states(), [false, false, false, false, false]);
 
-        // Reload persists both states, and the separate credentials save omits them.
+        // Reload persists every state, and the separate credentials save omits all switches.
+        await switches[2].click();
+        await ready();
         await page.reload({waitUntil: 'networkidle'});
         await page.evaluate(() => showSection('meta'));
-        await page.waitForFunction(() => !document.getElementById('message-replies-enabled').disabled);
-        assert.equal(await messages.isChecked(), false);
-        assert.equal(await comments.isChecked(), false);
+        await ready();
+        assert.deepEqual(await states(), [false, false, true, false, false]);
         await page.evaluate(() => saveMetaSettings());
-        assert.equal('message_replies_enabled' in writes.at(-1), false);
-        assert.equal('comment_replies_enabled' in writes.at(-1), false);
+        for (const [field] of SWITCHES) assert.equal(field in writes.at(-1), false);
 
         for (const width of [1440, 768, 375]) {
             await page.setViewportSize({width, height: 1000});
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
-            for (const control of [messages, comments]) {
+            for (const control of switches) {
                 const box = await control.boundingBox();
                 assert.ok(box.width >= 44 && box.height >= 28);
             }
             await page.screenshot({path: path.join(out, `reply-controls-${width}.png`), fullPage: true});
         }
         assert.deepEqual(errors, []);
-        console.log('PASS: loading, keyboard, independent autosave, pending state, failure recovery, reload, credentials isolation, and 3 responsive layouts');
+        console.log('PASS: 5 per-platform switches: loading, keyboard order, independent autosave, pending state, failure recovery, reload, credentials isolation, and 3 responsive layouts');
         console.log('Screenshots: ' + out);
     } finally {
         await browser.close();

@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.db import connection
+from django.test import TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -7,6 +8,7 @@ from django.core.cache import cache
 from unittest.mock import patch
 
 from products.models import Store, StoreSettings
+from dashboard.views_store import REPLY_SWITCHES
 
 
 class PromotionSettingsTests(TestCase):
@@ -109,37 +111,42 @@ class ReplyControlSettingsTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(self.owner)}")
         self.url = reverse("dashboard-api-settings")
 
-    def test_defaults_and_all_combinations_are_store_scoped(self):
+    def switches(self, settings):
+        settings.refresh_from_db()
+        return {field: getattr(settings, field) for field in REPLY_SWITCHES}
+
+    def test_defaults_and_each_switch_alone_are_store_scoped(self):
         data = self.client.get(self.url).data
-        self.assertIs(data["message_replies_enabled"], True)
-        self.assertIs(data["comment_replies_enabled"], True)
-        for messages, comments in ((False, True), (True, False), (False, False), (True, True)):
-            payload = {"message_replies_enabled": messages, "comment_replies_enabled": comments,
-                       "store_id": self.other.store_id}
-            self.assertEqual(self.client.put(self.url, payload, format="json").status_code, 200)
-            data = self.client.get(self.url).data
-            self.assertIs(data["message_replies_enabled"], messages)
-            self.assertIs(data["comment_replies_enabled"], comments)
-            self.other.refresh_from_db()
-            self.assertTrue(self.other.message_replies_enabled)
-            self.assertTrue(self.other.comment_replies_enabled)
+        self.assertEqual({f: data[f] for f in REPLY_SWITCHES}, dict.fromkeys(REPLY_SWITCHES, True))
+        for off in REPLY_SWITCHES:
+            with self.subTest(off=off):
+                expected = {f: f != off for f in REPLY_SWITCHES}
+                payload = {**expected, "store_id": self.other.store_id}
+                self.assertEqual(self.client.put(self.url, payload, format="json").status_code, 200)
+                data = self.client.get(self.url).data
+                for field in REPLY_SWITCHES:
+                    self.assertIs(data[field], expected[field])
+                self.assertEqual(self.switches(self.other), dict.fromkeys(REPLY_SWITCHES, True))
 
     def test_invalid_values_reject_entire_update(self):
-        for field in ("message_replies_enabled", "comment_replies_enabled"):
+        for field in REPLY_SWITCHES:
             for value in ("true", "false", 0, 1, None, [], {}):
                 response = self.client.put(self.url, {field: value, "business_facts": "must not save"}, format="json")
                 self.assertEqual(response.status_code, 400)
-                self.settings.refresh_from_db()
-                self.assertTrue(self.settings.message_replies_enabled)
-                self.assertTrue(self.settings.comment_replies_enabled)
+                self.assertEqual(self.switches(self.settings), dict.fromkeys(REPLY_SWITCHES, True))
                 self.assertEqual(self.settings.business_facts, "")
 
+    def test_old_grouped_keys_are_ignored(self):
+        payload = {"message_replies_enabled": False, "comment_replies_enabled": False}
+        self.assertEqual(self.client.put(self.url, payload, format="json").status_code, 200)
+        self.assertEqual(self.switches(self.settings), dict.fromkeys(REPLY_SWITCHES, True))
+        self.assertNotIn("message_replies_enabled", self.client.get(self.url).data)
+
     def test_partial_updates_preserve_switches_credentials_and_other_fields(self):
-        self.client.put(self.url, {"message_replies_enabled": False}, format="json")
+        self.client.put(self.url, {"whatsapp_replies_enabled": False}, format="json")
         self.client.put(self.url, {"business_facts": "facts", "messenger_access_token": "••••••••"}, format="json")
-        self.settings.refresh_from_db()
-        self.assertFalse(self.settings.message_replies_enabled)
-        self.assertTrue(self.settings.comment_replies_enabled)
+        self.assertEqual(self.switches(self.settings),
+                         {f: f != "whatsapp_replies_enabled" for f in REPLY_SWITCHES})
         self.assertEqual(self.settings.messenger_access_token, "secret")
         self.assertEqual(self.settings.business_facts, "facts")
 
@@ -147,25 +154,67 @@ class ReplyControlSettingsTests(TestCase):
         original_save = StoreSettings.save
 
         def save_after_other_request(instance, *args, **kwargs):
-            StoreSettings.objects.filter(pk=instance.pk).update(comment_replies_enabled=False)
+            StoreSettings.objects.filter(pk=instance.pk).update(instagram_comment_replies_enabled=False)
             return original_save(instance, *args, **kwargs)
 
         with patch.object(StoreSettings, "save", autospec=True, side_effect=save_after_other_request):
-            response = self.client.put(self.url, {"message_replies_enabled": False}, format="json")
+            response = self.client.put(self.url, {"messenger_replies_enabled": False}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.settings.refresh_from_db()
-        self.assertFalse(self.settings.message_replies_enabled)
-        self.assertFalse(self.settings.comment_replies_enabled)
+        saved = self.switches(self.settings)
+        self.assertFalse(saved["messenger_replies_enabled"])
+        self.assertFalse(saved["instagram_comment_replies_enabled"])
 
     def test_read_and_write_require_owner_authentication(self):
         self.client.credentials()
         self.assertEqual(self.client.get(self.url).status_code, 401)
-        self.assertEqual(self.client.put(self.url, {"message_replies_enabled": False}, format="json").status_code, 401)
+        self.assertEqual(self.client.put(self.url, {"whatsapp_replies_enabled": False}, format="json").status_code, 401)
 
     def test_settings_row_can_be_created_with_one_switch_disabled(self):
         self.settings.delete()
-        response = self.client.put(self.url, {"comment_replies_enabled": False}, format="json")
+        response = self.client.put(self.url, {"facebook_comment_replies_enabled": False}, format="json")
         self.assertEqual(response.status_code, 200)
         saved = StoreSettings.objects.get(store=self.store)
-        self.assertTrue(saved.message_replies_enabled)
-        self.assertFalse(saved.comment_replies_enabled)
+        self.assertEqual(self.switches(saved), {f: f != "facebook_comment_replies_enabled" for f in REPLY_SWITCHES})
+
+
+class ReplySwitchMigrationTests(TransactionTestCase):
+    def test_grouped_switches_split_per_platform_and_merge_back_without_turning_replies_on(self):
+        from django.db.migrations.executor import MigrationExecutor
+        executor = MigrationExecutor(connection)
+        restore_target = executor.loader.graph.leaf_nodes()
+        old_target = [("products", "0046_storesettings_promotions")]
+        new_target = [("products", "0047_storesettings_per_platform_reply_switches")]
+        combos = [(m, c) for m in (True, False) for c in (True, False)]
+        executor.migrate(old_target)
+        try:
+            apps = executor.loader.project_state(old_target).apps
+            OldStore = apps.get_model("products", "Store")
+            OldSettings = apps.get_model("products", "StoreSettings")
+            rows = {combo: OldSettings.objects.create(
+                        store=OldStore.objects.create(name=f"Legacy {combo}"),
+                        message_replies_enabled=combo[0], comment_replies_enabled=combo[1]).pk
+                    for combo in combos}
+
+            MigrationExecutor(connection).migrate(new_target)
+            for (messages, comments), pk in rows.items():
+                saved = StoreSettings.objects.get(pk=pk)
+                self.assertEqual({f: getattr(saved, f) for f in REPLY_SWITCHES}, {
+                    "whatsapp_replies_enabled": messages, "messenger_replies_enabled": messages,
+                    "instagram_replies_enabled": messages,
+                    "facebook_comment_replies_enabled": comments, "instagram_comment_replies_enabled": comments,
+                })
+            # One platform off is enough to keep its whole old group off after a rollback.
+            StoreSettings.objects.filter(pk=rows[(True, True)]).update(
+                instagram_replies_enabled=False, facebook_comment_replies_enabled=False)
+
+            executor = MigrationExecutor(connection)
+            executor.migrate(old_target)
+            OldSettings = executor.loader.project_state(old_target).apps.get_model("products", "StoreSettings")
+            back = {combo: tuple(OldSettings.objects.filter(pk=pk).values_list(
+                        "message_replies_enabled", "comment_replies_enabled").get())
+                    for combo, pk in rows.items()}
+            self.assertEqual(back, {(True, True): (False, False), (True, False): (True, False),
+                                    (False, True): (False, True), (False, False): (False, False)})
+        finally:
+            # Later TransactionTestCases need the current schema, not just migration 0046.
+            MigrationExecutor(connection).migrate(restore_target)

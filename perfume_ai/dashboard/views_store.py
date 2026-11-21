@@ -8,6 +8,11 @@ from .auth_backend import StoreOwnerAuthentication
 
 logger = logging.getLogger(__name__)
 
+REPLY_SWITCHES = (
+    "whatsapp_replies_enabled", "messenger_replies_enabled", "instagram_replies_enabled",
+    "facebook_comment_replies_enabled", "instagram_comment_replies_enabled",
+)
+
 
 class StoreSettingsView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
@@ -36,13 +41,12 @@ class StoreSettingsView(APIView):
             "business_facts": settings.business_facts,
             "promotions": settings.promotions,
             "website_ordering_enabled": settings.website_ordering_enabled,
-            "message_replies_enabled": settings.message_replies_enabled,
-            "comment_replies_enabled": settings.comment_replies_enabled,
+            **{field: getattr(settings, field) for field in REPLY_SWITCHES},
         })
 
     def put(self, request):
         store = request.store
-        for field in ("website_ordering_enabled", "message_replies_enabled", "comment_replies_enabled"):
+        for field in ("website_ordering_enabled", *REPLY_SWITCHES):
             if field in request.data and type(request.data[field]) is not bool:
                 return Response({field: "Must be true or false."}, status=400)
         try:
@@ -57,7 +61,7 @@ class StoreSettingsView(APIView):
             "comment_reply_messages", "payment_instructions",
             "bottle_image_url", "business_facts", "promotions",
             "website_ordering_enabled",
-            "message_replies_enabled", "comment_replies_enabled",
+            *REPLY_SWITCHES,
         ]
 
         updated_fields = []

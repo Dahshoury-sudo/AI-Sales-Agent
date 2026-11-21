@@ -15,7 +15,12 @@ from rest_framework_simplejwt.tokens import AccessToken
 from products import tasks
 from products.models import Conversation, InboundEvent, Message, Notification, PostCommentRule, Store, StoreSettings
 from products.services.conversation_service import build_llm_history, generate_event, receive_event
-from products.services.response_policy import message_replies_enabled
+from products.services.response_policy import comment_replies_enabled, message_replies_enabled
+
+MESSAGE_SWITCH = {"whatsapp": "whatsapp_replies_enabled", "messenger": "messenger_replies_enabled",
+                  "instagram": "instagram_replies_enabled"}
+COMMENT_SWITCH = {"facebook": "facebook_comment_replies_enabled",
+                  "instagram": "instagram_comment_replies_enabled"}
 
 
 class ResponseControlTests(TestCase):
@@ -35,9 +40,11 @@ class ResponseControlTests(TestCase):
         self.send = self.enterContext(patch("products.tasks.send_platform_message", return_value=True))
         self.enterContext(patch("products.tasks.sanitize_reply", side_effect=lambda reply, conv: reply))
 
-    def configure(self, messages, comments=True):
-        StoreSettings.objects.filter(pk=self.settings.pk).update(
-            message_replies_enabled=messages, comment_replies_enabled=comments)
+    def configure(self, messages, comments=True, **overrides):
+        """Set every message switch to `messages` and every comment switch to `comments`, then overrides."""
+        switches = {**{f: messages for f in MESSAGE_SWITCH.values()},
+                    **{f: comments for f in COMMENT_SWITCH.values()}, **overrides}
+        StoreSettings.objects.filter(pk=self.settings.pk).update(**switches)
 
     def post(self, payload, valid=True):
         body = json.dumps(payload).encode()
@@ -70,11 +77,13 @@ class ResponseControlTests(TestCase):
             "id": source, "from": {"id": source}, "text": "hello", "media": {"id": "post"}}}]}]}
 
     def test_message_and_image_matrix_retains_history_and_controls_sends(self):
-        for enabled, comments, platform, image in product((True, False), (True, False),
-                                                         ("messenger", "instagram", "whatsapp"), (False, True)):
-            with self.subTest(enabled=enabled, comments=comments, platform=platform, image=image):
-                self.configure(enabled, comments)
-                source = f"{enabled}-{comments}-{platform}-{image}"
+        # Each platform switched off alone: only that platform goes silent, the others still reply.
+        for off, comments, platform, image in product((None, *MESSAGE_SWITCH), (True, False),
+                                                     tuple(MESSAGE_SWITCH), (False, True)):
+            with self.subTest(off=off, comments=comments, platform=platform, image=image):
+                self.configure(True, comments, **({MESSAGE_SWITCH[off]: False} if off else {}))
+                enabled = platform != off
+                source = f"{off}-{comments}-{platform}-{image}"
                 task = tasks.process_incoming_attachment if image else tasks.process_incoming_message
                 self.send.reset_mock()
                 self.route.reset_mock()
@@ -95,16 +104,18 @@ class ResponseControlTests(TestCase):
                     self.assertEqual(event.result["reason"], "message_replies_disabled")
 
     def test_comment_matrix_keeps_private_answer_when_messages_are_off(self):
-        for messages, enabled, platform in product((True, False), (True, False), ("facebook", "instagram")):
-            with self.subTest(messages=messages, enabled=enabled, platform=platform):
-                self.configure(messages, enabled)
+        # Each comment platform switched off alone, with message switches all on or all off.
+        for messages, off, platform in product((True, False), (None, *COMMENT_SWITCH), tuple(COMMENT_SWITCH)):
+            with self.subTest(messages=messages, off=off, platform=platform):
+                self.configure(messages, True, **({COMMENT_SWITCH[off]: False} if off else {}))
+                enabled = platform != off
                 self.route.reset_mock()
                 with patch.object(tasks.process_comment_task, "apply_async") as queued, \
                      patch("products.tasks.fetch_post_content", return_value="caption") as fetch, \
                      patch("products.tasks.reply_to_comment") as fb, \
                      patch("products.tasks.reply_to_ig_comment") as ig, \
                      patch("products.tasks.send_private_reply") as private:
-                    response = self.post(self.comment_payload(platform, f"{messages}-{enabled}-{platform}"))
+                    response = self.post(self.comment_payload(platform, f"{messages}-{off}-{platform}"))
                     self.assertEqual(response.status_code, 200)
                     self.assertEqual(queued.call_count, int(enabled))
                     if queued.called:
@@ -183,6 +194,38 @@ class ResponseControlTests(TestCase):
                 fetch.assert_not_called()
                 private.assert_not_called()
         self.route.assert_not_called()
+
+    def test_queued_message_rechecks_only_its_own_platform_switch(self):
+        for platform, off in product(tuple(MESSAGE_SWITCH), tuple(MESSAGE_SWITCH)):
+            with self.subTest(platform=platform, off=off):
+                self.configure(True)
+                with patch.object(tasks.process_incoming_message, "delay") as queued:
+                    self.post(self.message_payload(platform, f"recheck-{platform}-{off}"))
+                self.configure(True, **{MESSAGE_SWITCH[off]: False})
+                self.send.reset_mock()
+                tasks.process_incoming_message(*queued.call_args.args, **queued.call_args.kwargs)
+                self.assertEqual(self.send.call_count, int(platform != off))
+
+    def test_queued_comment_rechecks_only_its_own_platform_switch(self):
+        for platform, off in product(tuple(COMMENT_SWITCH), tuple(COMMENT_SWITCH)):
+            with self.subTest(platform=platform, off=off):
+                self.configure(True, True, **{COMMENT_SWITCH[off]: False})
+                with patch("products.tasks.fetch_post_content", return_value="caption") as fetch, \
+                     patch("products.tasks.reply_to_comment"), patch("products.tasks.reply_to_ig_comment"), \
+                     patch("products.tasks.send_private_reply") as private:
+                    tasks.process_comment_task(self.store.pk, platform, "comment", "customer", "hello", "post")
+                self.assertEqual(fetch.call_count, int(platform != off))
+                self.assertEqual(private.call_count, int(platform != off))
+
+    def test_legacy_facebook_messages_follow_messenger_not_the_comment_switch(self):
+        for messenger, fb_comments in product((True, False), (True, False)):
+            with self.subTest(messenger=messenger, fb_comments=fb_comments):
+                self.configure(not messenger, True, messenger_replies_enabled=messenger,
+                               facebook_comment_replies_enabled=fb_comments)
+                self.assertIs(message_replies_enabled(self.store.pk, "facebook"), messenger)
+                self.assertIs(comment_replies_enabled(self.store.pk, "facebook"), fb_comments)
+        self.configure(False, False)
+        self.assertTrue(message_replies_enabled(self.store.pk, "web"))
 
     def test_switch_is_checked_for_each_event_drained_from_queue(self):
         first = receive_event(self.store, "messenger", "customer", "first", "first")

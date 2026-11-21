@@ -631,8 +631,12 @@
         .cmp-metric .cmp-name  { color: var(--text-muted); }
         .cmp-metric .cmp-val   { font-weight: 600; }
 
+        .reply-group { border: 0; margin: 0; padding: 0; min-width: 0; }
+        .reply-group legend { padding: 0; margin-bottom: 12px; font-weight: 700; color: var(--ink); }
+        .reply-group .reply-control + .reply-control { margin-top: 12px; }
         .reply-control { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .reply-control label { font-weight: 600; cursor: pointer; }
+        .reply-control label i { width: 1.2em; text-align: center; color: var(--text-muted); }
         .reply-control input[role="switch"] {
             appearance: none; position: relative; flex: 0 0 48px; width: 48px;
             height: 28px; margin: 0; padding: 0; border: 1px solid var(--control-border);

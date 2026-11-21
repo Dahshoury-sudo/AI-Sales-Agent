@@ -283,7 +283,7 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
     """
     try:
         # ── 1. Load store + settings ────────────────────────────────────────
-        if not comment_replies_enabled(store_id):
+        if not comment_replies_enabled(store_id, platform):
             return
         store = Store.objects.get(id=store_id)
         store_settings = store.settings
@@ -360,7 +360,7 @@ def process_comment_async(store_id, platform, comment_id, commenter_id, comment_
     and WhatsApp messages: a sleeping task held a slot outright, and a couple of
     comments could stall live conversations.
     """
-    if not comment_replies_enabled(store_id):
+    if not comment_replies_enabled(store_id, platform):
         return
     countdown = random.randint(*COMMENT_REPLY_DELAY_RANGE)
     logger.info(

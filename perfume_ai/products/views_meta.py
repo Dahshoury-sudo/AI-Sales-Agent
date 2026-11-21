@@ -119,7 +119,7 @@ class MetaWebhookView(APIView):
                             if not self.verify_signature(request, body, store_settings.meta_app_secret, f"FB page {page_id}"):
                                 return HttpResponse("Invalid signature", status=403)
 
-                            if not store_settings.comment_replies_enabled:
+                            if not store_settings.facebook_comment_replies_enabled:
                                 continue
 
                             comment_id = value.get("comment_id")
@@ -152,7 +152,7 @@ class MetaWebhookView(APIView):
                             if not self.verify_signature(request, body, store_settings.meta_app_secret, f"IG account {ig_account_id}"):
                                 return HttpResponse("Invalid signature", status=403)
 
-                            if not store_settings.comment_replies_enabled:
+                            if not store_settings.instagram_comment_replies_enabled:
                                 continue
 
                             comment_id = value.get("id")
