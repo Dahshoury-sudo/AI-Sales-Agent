@@ -451,7 +451,7 @@ Check your DM, we replied!
             <div class="settings-card table-panel">
                 <div style="margin-bottom:15px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:0.85rem; color:var(--ink);">
                     <i class="fas fa-info-circle"></i>
-                    <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، الصق رابط البوست هنا وهنستخرج الـ ID تلقائياً.
+                    <strong>كيف تشتغل؟</strong> البوت بيرد على تعليقات كل البوستات بشكل تلقائي. لو عايز تمنعه من الرد على بوست معين، دوس "إضافة بوست" واختاره من آخر بوستاتك، أو الصق رابطه لو مش ظاهر.
                 </div>
                 <div class="table-responsive">
                     <table class="products-table">
@@ -523,21 +523,28 @@ Check your DM, we replied!
             <input type="hidden" id="post-rule-edit-id">
 
             <div class="form-group" style="margin-bottom:15px;">
-                <label>المنصة</label>
-                <select id="post-rule-platform" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
+                <label for="post-rule-platform">المنصة</label>
+                <select id="post-rule-platform" onchange="loadRecentPosts()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
                 </select>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
-                <label>رابط البوست</label>
-                <input type="text" id="post-rule-post-id" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;" dir="ltr">
-                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;"> افتح البوست وانسخ الرابط من البراوزر والصقه هنا</small>
+                <span id="post-rule-picker-label" style="display:block; margin-bottom:6px; font-weight:600;">اختار البوست</span>
+                <div id="post-rule-picker" role="group" aria-labelledby="post-rule-picker-label" style="max-height:280px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;"></div>
+                <p id="post-rule-picker-status" role="status" style="color:var(--text-muted); font-size:0.85rem; margin:6px 0 0;"></p>
+                <button type="button" id="post-rule-picker-more" class="btn btn-secondary btn-sm" onclick="loadRecentPosts(true)" style="display:none; margin-top:6px;">عرض المزيد</button>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
-                <label>وصف (اختياري)</label>
+                <label for="post-rule-post-id">أو الصق رابط البوست</label>
+                <input type="text" id="post-rule-post-id" oninput="if (this.value.trim()) selectRecentPost(null)" placeholder="الصق رابط البوست من فيسبوك أو انستجرام" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;" dir="ltr">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">لو البوست مش ظاهر في القائمة: افتح البوست وانسخ الرابط والصقه هنا</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="post-rule-label">وصف (اختياري)</label>
                 <input type="text" id="post-rule-label" placeholder="مثال: بوست إعلان صيف 2026" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--control-border); background:var(--input-bg); color:var(--ink); font-family:inherit;">
             </div>
 
@@ -1230,33 +1237,158 @@ Check your DM, we replied!
                     return;
                 }
 
-                tbody.innerHTML = data.map(rule => {
-                    const platformBadge = rule.platform === 'facebook'
-                        ? '<span style="background:var(--surface);color:var(--ink);padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-facebook"></i> Facebook</span>'
-                        : '<span style="background:var(--surface);color:var(--ink);padding:3px 10px;border-radius:8px;font-size:0.8rem;"><i class="fab fa-instagram"></i> Instagram</span>';
-
-                    const statusBadge = rule.is_active
-                        ? '<span style="background:var(--danger-bg);color:var(--danger);padding:3px 10px;border-radius:8px;font-size:0.8rem;">محظور</span>'
-                        : '<span style="background:var(--success-bg);color:var(--success);padding:3px 10px;border-radius:8px;font-size:0.8rem;">مسموح</span>';
-
-                    return `<tr>
-                        <td>${platformBadge}</td>
-                        <td style="font-family:monospace;font-size:0.85rem;direction:ltr;text-align:left;">${rule.post_id}</td>
-                        <td style="color:var(--text-muted);">${rule.label || '—'}</td>
-                        <td>${statusBadge}</td>
-                        <td>
-                            <button onclick="togglePostRule(${rule.id}, ${rule.is_active})" class="btn btn-sm btn-warning" style="margin-inline-end:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
-                                <i class="fas fa-${rule.is_active ? 'toggle-on' : 'toggle-off'}"></i>
-                            </button>
-                            <button onclick="deletePostRule(${rule.id})" class="btn btn-sm btn-danger" title="حذف">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                }).join('');
+                tbody.replaceChildren(...data.map(postRuleRow));
             } catch(e) {
                 window.WebVitasUI?.showError();
                 console.error('Error loading post rules:', e);
+            }
+        }
+
+        // Text from the owner or from Meta (labels, captions) only ever goes in via textContent.
+        function textNode(tag, text, style) {
+            const node = document.createElement(tag);
+            if (text != null) node.textContent = text;
+            if (style) node.style.cssText = style;
+            return node;
+        }
+
+        function postRuleRow(rule) {
+            const badge = 'padding:3px 10px;border-radius:8px;font-size:0.8rem;';
+            const row = document.createElement('tr');
+
+            const platformCell = document.createElement('td');
+            platformCell.innerHTML = rule.platform === 'facebook'
+                ? `<span style="background:var(--surface);color:var(--ink);${badge}"><i class="fab fa-facebook"></i> Facebook</span>`
+                : `<span style="background:var(--surface);color:var(--ink);${badge}"><i class="fab fa-instagram"></i> Instagram</span>`;
+
+            const statusCell = document.createElement('td');
+            statusCell.appendChild(rule.is_active
+                ? textNode('span', 'محظور', `background:var(--danger-bg);color:var(--danger);${badge}`)
+                : textNode('span', 'مسموح', `background:var(--success-bg);color:var(--success);${badge}`));
+            if (rule.matchable === false) {
+                statusCell.appendChild(textNode('span', 'مش هيشتغل — احذفه واختار البوست من القائمة',
+                    `display:block;margin-top:6px;background:var(--warning-bg);color:var(--warning);${badge}`));
+            }
+
+            const id = Number(rule.id);
+            const actions = document.createElement('td');
+            actions.innerHTML = `
+                <button onclick="togglePostRule(${id}, ${rule.is_active ? 'true' : 'false'})" class="btn btn-sm btn-warning" style="margin-inline-end:5px;" title="${rule.is_active ? 'إلغاء الحظر' : 'تفعيل الحظر'}">
+                    <i class="fas fa-${rule.is_active ? 'toggle-on' : 'toggle-off'}"></i>
+                </button>
+                <button onclick="deletePostRule(${id})" class="btn btn-sm btn-danger" title="حذف">
+                    <i class="fas fa-trash"></i>
+                </button>`;
+
+            row.append(
+                platformCell,
+                textNode('td', rule.post_id, 'font-family:monospace;font-size:0.85rem;direction:ltr;text-align:left;'),
+                textNode('td', rule.label || '—', 'color:var(--text-muted);'),
+                statusCell,
+                actions,
+            );
+            return row;
+        }
+
+        // ── Recent-post picker: IDs come from Meta in the exact form the webhook uses ──
+        const postPicker = { selected: null, next: null, request: 0, autoLabel: '' };
+
+        function postDate(value) {
+            // Facebook sends "+0000"; make it "+00:00" so every browser parses it.
+            const date = new Date(String(value || '').replace(/([+-]\d\d)(\d\d)$/, '$1:$2'));
+            return isNaN(date) ? '' : new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium' }).format(date);
+        }
+
+        function recentPostButton(post) {
+            const caption = (post.text || '').replace(/\s+/g, ' ').trim();
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.postId = post.id;
+            button.setAttribute('aria-pressed', 'false');
+            button.style.cssText = 'display:flex;gap:10px;align-items:center;width:100%;padding:8px 10px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:start;cursor:pointer;';
+
+            if (post.image) {
+                const image = document.createElement('img');
+                image.src = post.image;
+                image.alt = '';
+                image.loading = 'lazy';
+                image.referrerPolicy = 'no-referrer';
+                image.style.cssText = 'width:48px;height:48px;object-fit:cover;border-radius:6px;flex-shrink:0;';
+                button.appendChild(image);
+            } else {
+                button.appendChild(textNode('span', '', 'width:48px;height:48px;border-radius:6px;flex-shrink:0;background:var(--surface);border:1px solid var(--line);'));
+            }
+
+            const body = textNode('span', null, 'flex:1;min-width:0;');
+            body.appendChild(textNode('span', caption ? (caption.length > 120 ? caption.slice(0, 120) + '…' : caption) : 'بوست من غير كلام',
+                'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;'));
+            body.appendChild(textNode('span', [postDate(post.created_at), post.blocked ? 'محظور بالفعل' : ''].filter(Boolean).join(' · '),
+                'display:block;color:var(--text-muted);font-size:0.8rem;margin-top:2px;'));
+            button.appendChild(body);
+
+            if (post.blocked) {
+                button.disabled = true;
+                button.style.opacity = '0.6';
+                button.style.cursor = 'default';
+            } else {
+                button.onclick = () => selectRecentPost(post.id, caption.slice(0, 60));
+            }
+            return button;
+        }
+
+        function selectRecentPost(id, caption = '') {
+            postPicker.selected = id;
+            document.querySelectorAll('#post-rule-picker button').forEach(button => {
+                const on = button.dataset.postId === id;
+                button.setAttribute('aria-pressed', String(on));
+                button.style.background = on ? 'var(--surface)' : 'none';
+                button.style.boxShadow = on ? 'inset -3px 0 0 var(--ink)' : 'none';   // start edge in RTL
+            });
+            if (!id) return;
+            document.getElementById('post-rule-post-id').value = '';
+            const label = document.getElementById('post-rule-label');
+            if (!label.value.trim() || label.value === postPicker.autoLabel) {
+                label.value = caption;
+                postPicker.autoLabel = caption;
+            }
+        }
+
+        async function loadRecentPosts(more = false) {
+            const platform = document.getElementById('post-rule-platform').value;
+            const list = document.getElementById('post-rule-picker');
+            const status = document.getElementById('post-rule-picker-status');
+            const moreButton = document.getElementById('post-rule-picker-more');
+            const request = ++postPicker.request;   // a newer load (e.g. platform switch) wins
+
+            if (!more) {
+                list.replaceChildren();
+                postPicker.next = null;
+                selectRecentPost(null);
+            }
+            list.hidden = !list.children.length;
+            moreButton.style.display = 'none';
+            status.textContent = 'جاري تحميل آخر البوستات...';
+
+            const params = new URLSearchParams({ platform });
+            if (more && postPicker.next) params.set('after', postPicker.next);
+            try {
+                const res = await authFetch(`${API_BASE}/post-rules/recent/?${params}`, { suppressError: true });
+                if (!res || request !== postPicker.request) return;
+                const data = await res.json().catch(() => ({}));
+                if (request !== postPicker.request) return;
+                if (!res.ok) {
+                    status.textContent = `${data.error || 'مقدرناش نحمّل البوستات.'} تقدر تلصق رابط البوست تحت.`;
+                    return;
+                }
+                (data.posts || []).forEach(post => list.appendChild(recentPostButton(post)));
+                list.hidden = !list.children.length;
+                postPicker.next = data.next || null;
+                moreButton.style.display = postPicker.next ? '' : 'none';
+                status.textContent = list.children.length ? '' : 'مفيش بوستات على الحساب ده.';
+            } catch (e) {
+                if (request !== postPicker.request) return;
+                console.error('Error loading recent posts:', e);
+                status.textContent = 'مقدرناش نحمّل البوستات. تقدر تلصق رابط البوست تحت.';
             }
         }
 
@@ -1266,35 +1398,41 @@ Check your DM, we replied!
             document.getElementById('post-rule-platform').value = 'facebook';
             document.getElementById('post-rule-post-id').value = '';
             document.getElementById('post-rule-label').value = '';
+            postPicker.autoLabel = '';
             document.getElementById('post-rule-modal').style.display = 'flex';
+            loadRecentPosts();
         }
 
         function closePostRuleModal() {
+            postPicker.request++;   // drop any load still in flight
             document.getElementById('post-rule-modal').style.display = 'none';
         }
 
         async function savePostRule() {
-            const postId = document.getElementById('post-rule-post-id').value.trim();
+            const pasted = document.getElementById('post-rule-post-id').value.trim();
+            const postId = pasted || postPicker.selected;
             const platform = document.getElementById('post-rule-platform').value;
             const label = document.getElementById('post-rule-label').value.trim();
 
             if (!postId) {
-                showToast('لازم تدخل رابط البوست');
+                showToast('اختار بوست من القائمة أو الصق رابطه');
                 return;
             }
 
             try {
                 const res = await authFetch(`${API_BASE}/post-rules/`, {
                     method: 'POST',
-                    body: JSON.stringify({ platform, post_id: postId, label })
+                    body: JSON.stringify({ platform, post_id: postId, label }),
+                    suppressError: true,
                 });
+                if (!res) return;
 
-                if (res && (res.ok || res.status === 201)) {
+                if (res.ok) {
                     showToast('تم إضافة البوست للقائمة المحظورة');
                     closePostRuleModal();
                     loadPostRules();
                 } else {
-                    const err = await res.json();
+                    const err = await res.json().catch(() => ({}));
                     showToast(err.error || 'حدث خطأ');
                 }
             } catch(e) {

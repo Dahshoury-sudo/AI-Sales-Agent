@@ -13,7 +13,8 @@ const analytics={kpis:{total_revenue:48500,total_orders:82,total_conversations:3
 const settings={system_prompt:'تحدث بأسلوب طبيعي، ورشّح من منتجات المتجر.',payment_instructions:'الدفع عند الاستلام.',business_facts:'متاح التوصيل لكل المحافظات.',promotions:'بوكس الصيف: 3 عطور بـ3000 جنيه.\nهدية 50 مل مع العرض.',bottle_image_url:'',comment_reply_messages:['أهلاً بيك، بعتنالك التفاصيل.'],whatsapp_replies_enabled:true,messenger_replies_enabled:true,instagram_replies_enabled:true,facebook_comment_replies_enabled:true,instagram_comment_replies_enabled:true};
 const notifications={unread_count:1,notifications:[{id:1,type:'new_order',title:'طلب جديد من أحمد',message:'طلب جديد لعطر Oud Wood بحجم ١٠٠ مل.',is_read:false,created_at:'2026-10-07T10:00:00Z'}]};
 const faqs={faqs:[{id:1,question:'الشحن بكام؟',answer:'تكلفة الشحن حسب المحافظة.',keywords:'شحن,توصيل',priority:1,is_active:true}]};
-const rules=[{id:1,platform:'facebook',post_id:'123456789',label:'إعلان الصيف',is_active:true}];
+const rules=[{id:1,platform:'facebook',post_id:'111_123456789',label:'إعلان الصيف',is_active:true,matchable:true},{id:2,platform:'facebook',post_id:'123456789',label:'رابط قديم',is_active:true,matchable:false}];
+const recentPosts={posts:[{id:'111_900',text:'عرض الشتاء: عطرين بـ900 جنيه وهدية 50 مل مع كل طلب، والتوصيل مجاني لكل المحافظات لحد آخر الشهر.',image:'',permalink:'https://www.facebook.com/p/900',created_at:'2026-11-20T10:00:00+0000',blocked:false},{id:'111_123456789',text:'إعلان الصيف',image:'',permalink:'',created_at:'2026-07-01T10:00:00+0000',blocked:true}],next:null};
 const apiCalls=[];
 let empty=false;
 async function intercept(route) {
@@ -39,6 +40,7 @@ async function intercept(route) {
  else if(p.endsWith('/notifications/')) data=empty?{notifications:[],unread_count:0}:notifications;
  else if(p.endsWith('/faqs/')) data=empty?{faqs:[]}:faqs;
  else if(p.endsWith('/post-rules/')) data=empty?[]:rules;
+ else if(p.endsWith('/post-rules/recent/')) data=empty?{posts:[],next:null}:recentPosts;
  else if(p.endsWith('/orders/dashboard/')) data={store_name:profile.store.name,orders:empty?[]:orders};
  else if(p.endsWith('/conversations/')) data={conversations:empty?[]:conversations};
  else if(p.endsWith('/messages/')) data={messages,after_id:3};
@@ -48,7 +50,7 @@ async function intercept(route) {
 async function ready(page){await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(120);}
 async function overflow(frame){return frame.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));}
 
-module.exports = { intercept, base, out, ready, overflow, profile, products, orders, apiCalls, setEmpty: value => { empty = value; } };
+module.exports = { intercept, base, out, ready, overflow, profile, products, orders, recentPosts, apiCalls, setEmpty: value => { empty = value; } };
 if (require.main === module) (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true});
  try {

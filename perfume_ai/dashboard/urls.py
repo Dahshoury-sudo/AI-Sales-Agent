@@ -9,7 +9,7 @@ from products.scent_tags import SCENT_TAG_CHOICES
 from .views_analytics import DashboardOverviewView, AnalyticsView, AnalyticsProductsView, AnalyticsExportView
 from .views_notifications import NotificationListView, NotificationMarkReadView
 from .views_faq import FAQListCreateView, FAQDetailView
-from .views_post_rules import PostRuleListCreateView, PostRuleDetailView
+from .views_post_rules import PostRuleListCreateView, PostRuleDetailView, RecentPostsView
 
 urlpatterns = [
     # --- Page views ---
@@ -53,5 +53,6 @@ urlpatterns = [
 
     # --- Post Comment Rules API ---
     path("api/post-rules/", PostRuleListCreateView.as_view(), name="dashboard-api-post-rules"),
+    path("api/post-rules/recent/", RecentPostsView.as_view(), name="dashboard-api-post-rules-recent"),
     path("api/post-rules/<int:rule_id>/", PostRuleDetailView.as_view(), name="dashboard-api-post-rule-detail"),
 ]

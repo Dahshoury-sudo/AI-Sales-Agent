@@ -1,5 +1,5 @@
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const {intercept,base,ready,apiCalls,setEmpty,profile}=require('./check_layout.cjs');
+const {intercept,base,ready,apiCalls,setEmpty,profile,recentPosts}=require('./check_layout.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -61,10 +61,33 @@ const passed=[];
   await section('faq');await page.evaluate(()=>openFaqModal());await ready(page);
   await page.locator('#faq-question').fill('هل يوجد توصيل؟');await page.locator('#faq-answer').fill('نعم، لكل المحافظات.');await page.locator('#faq-keywords').fill('توصيل');
   since=apiCalls.length;await page.locator('#faq-modal button',{hasText:'حفظ'}).click();await posted(since,'/faqs/');
-  await section('post_rules');await page.evaluate(()=>openPostRuleModal());await ready(page);
+  await section('post_rules');
+  assert.match(await page.locator('#post-rules-tbody').innerText(),/مش هيشتغل/);
+  assert.equal(await page.locator('#post-rules-tbody tr').filter({hasText:'مش هيشتغل'}).count(),1);
+  // Pick a post from the list: its Meta ID is what gets saved, and the caption fills the label.
+  await page.evaluate(()=>openPostRuleModal());await ready(page);
+  const picked=page.locator('#post-rule-picker button[data-post-id="111_900"]');await picked.waitFor();
+  assert.ok(await page.locator('#post-rule-picker button[data-post-id="111_123456789"]').isDisabled(),'Already-blocked post is selectable');
+  await picked.click();assert.equal(await picked.getAttribute('aria-pressed'),'true');
+  const autoLabel=recentPosts.posts[0].text.slice(0,60);
+  assert.equal(await page.locator('#post-rule-label').inputValue(),autoLabel);
+  since=apiCalls.length;await page.locator('#post-rule-modal button',{hasText:'حفظ'}).click();
+  let ruleCall=await posted(since,'/post-rules/');assert.equal(ruleCall.method,'POST');
+  assert.deepEqual(JSON.parse(ruleCall.data),{platform:'facebook',post_id:'111_900',label:autoLabel});
+  // Pasting a link clears the picked post and is sent instead.
+  await page.evaluate(()=>openPostRuleModal());await ready(page);await picked.click();
   await page.locator('#post-rule-post-id').fill('123456789');await page.locator('#post-rule-label').fill('بوست تجريبي');
-  since=apiCalls.length;await page.locator('#post-rule-modal button',{hasText:'حفظ'}).click();await posted(since,'/post-rules/');
-  passed.push('FAQ and post-rule creation');
+  assert.equal(await picked.getAttribute('aria-pressed'),'false');
+  since=apiCalls.length;await page.locator('#post-rule-modal button',{hasText:'حفظ'}).click();
+  ruleCall=await posted(since,'/post-rules/');assert.equal(JSON.parse(ruleCall.data).post_id,'123456789');
+  // Listing failure: the reason shows and pasting is offered.
+  await page.route('**/dashboard/api/post-rules/recent/**',route=>route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'لازم تربط الـ Facebook Page ID والـ Access Token في إعدادات الستور الأول.'})}));
+  await page.evaluate(()=>openPostRuleModal());
+  await page.waitForFunction(()=>document.getElementById('post-rule-picker-status').textContent.includes('إعدادات الستور'));
+  assert.match(await page.locator('#post-rule-picker-status').innerText(),/تلصق رابط البوست/);
+  assert.equal(await page.locator('#post-rule-picker button').count(),0);
+  await page.keyboard.press('Escape');await page.unroute('**/dashboard/api/post-rules/recent/**');
+  passed.push('FAQ and post-rule creation: pick from recent posts, paste fallback, listing error, dead-rule warning');
 
   await section('settings');await page.locator('#setting-system-prompt').fill('تعليمات تجريبية');
   const promotionField=page.getByLabel('العروض والباندلز والخصومات الحالية',{exact:true});
