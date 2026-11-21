@@ -330,6 +330,23 @@ CELERY_TASK_ACKS_LATE = True
 
 # One retry attempt won't hog the worker — keep concurrency reasonable
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+# One queue per store, so a store with a flood of messages waits behind its own backlog
+# instead of every other store waiting behind it. The worker takes turns between queues
+# (kombu's Redis transport rotates the queue it just served to the back). A worker started
+# without -Q consumes every queue listed here; see products/task_routing.py.
+from kombu import Exchange, Queue  # noqa: E402
+from products.task_routing import DEFAULT_QUEUE, all_queue_names  # noqa: E402
+
+CELERY_TASK_DEFAULT_QUEUE = DEFAULT_QUEUE
+CELERY_TASK_DEFAULT_EXCHANGE = DEFAULT_QUEUE
+CELERY_TASK_DEFAULT_ROUTING_KEY = DEFAULT_QUEUE
+# Each queue needs its own routing key. A bare Queue(name) inherits the default key, which
+# binds every queue to the same key: a message for one queue is then dropped or copied
+# into all of them.
+CELERY_TASK_QUEUES = [Queue(name, Exchange(DEFAULT_QUEUE, type="direct"), routing_key=name)
+                      for name in all_queue_names()]
+CELERY_TASK_ROUTES = ("products.task_routing.route_store_task",)
 # Durable notification failures are retried independently of customer messages.
 CELERY_BEAT_SCHEDULE = {
     "retry-order-notifications": {

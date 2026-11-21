@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from products.models import Conversation, Store
-from products.throttles import ChatPollingThrottle, DashboardPollingThrottle
+from products.throttles import ChatPollingThrottle, ChatThrottle, DashboardPollingThrottle
 from products.views import signer
 
 
@@ -71,6 +71,16 @@ class RequestLimitTests(TestCase):
         self.assertEqual(self.poll(client, conversation).status_code, 200)
         self.clock.return_value += 61
         self.assertEqual(self.poll().status_code, 200)
+
+    def test_exhausted_chat_budget_does_not_block_another_stores_chat(self):
+        # Invalid bodies exercise admission without making any model calls: 400 = admitted.
+        for _ in range(ChatThrottle().num_requests):
+            self.assertEqual(self.web.post('/api/chat/', {}, format='json').status_code, 400)
+        self.assertEqual(self.web.post('/api/chat/', {}, format='json').status_code, 429)
+        other = Store.objects.create(name='Other chat store')
+        client = APIClient()
+        client.credentials(HTTP_X_API_KEY=other.api_key)
+        self.assertEqual(client.post('/api/chat/', {}, format='json').status_code, 400)
 
     def test_dashboard_readers_share_a_budget_separate_from_web_and_writes(self):
         self.exhaust(DashboardPollingThrottle)
