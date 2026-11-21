@@ -395,9 +395,10 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
         logger.info(f"Posted public reply on {platform} comment {comment_id}: '{public_reply}'")
 
         # ── 6. Send private DM with the AI answer ───────────────────────────
-        # Facebook comments reply via the Page ID. Instagram comments reply via the IG Account ID.
-        sender_id = store_settings.instagram_account_id if platform == "instagram" else store_settings.facebook_page_id
-        send_private_reply(sender_id, comment_id, ai_reply, token)
+        # Both platforms send through the Page: with a Page token, Meta's private-reply endpoint
+        # for an Instagram comment is POST /{PAGE_ID}/messages too, the same as Instagram DMs
+        # (send_instagram_message). Posting to the Instagram account ID is the Instagram-Login API.
+        send_private_reply(store_settings.facebook_page_id, comment_id, ai_reply, token)
         logger.info(f"Sent private reply for {platform} comment {comment_id}")
 
     except Exception as exc:

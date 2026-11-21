@@ -1,9 +1,11 @@
 import logging
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from products.models import StoreSettings
+from products.services.meta_connection import check_connection, page_token
 from .auth_backend import StoreOwnerAuthentication
 
 logger = logging.getLogger(__name__)
@@ -12,6 +14,18 @@ REPLY_SWITCHES = (
     "whatsapp_replies_enabled", "messenger_replies_enabled", "instagram_replies_enabled",
     "facebook_comment_replies_enabled", "instagram_comment_replies_enabled",
 )
+
+
+def meta_webhook_url(request):
+    """The Callback URL to paste into the Meta app's webhook settings.
+
+    Meta only calls HTTPS URLs, so a public host is always shown as https even when the
+    request reached Django as http behind a proxy that doesn't set X-Forwarded-Proto.
+    """
+    host = request.get_host()
+    local = host.split(":")[0] in ("localhost", "127.0.0.1")
+    scheme = request.scheme if local else "https"
+    return f"{scheme}://{host}{reverse('meta-webhook')}"
 
 
 class StoreSettingsView(APIView):
@@ -28,6 +42,7 @@ class StoreSettingsView(APIView):
         return Response({
             "system_prompt": settings.system_prompt,
             "whatsapp_number": settings.whatsapp_number,
+            "webhook_url": meta_webhook_url(request),
             "meta_verify_token": settings.meta_verify_token,
             "meta_access_token": "••••••••" if settings.meta_access_token else "",
             "messenger_access_token": "••••••••" if settings.messenger_access_token else "",
@@ -76,6 +91,27 @@ class StoreSettingsView(APIView):
 
         settings.save(update_fields=updated_fields)
         return Response({"message": "Settings updated successfully."})
+
+
+class MetaConnectionCheckView(APIView):
+    """Check the store's Facebook Page + Instagram connection against Meta and fix what it can."""
+    authentication_classes = [StoreOwnerAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        settings, _ = StoreSettings.objects.get_or_create(store=request.store)
+        if not page_token(settings):
+            return Response({"error": "حط توكن الصفحة (Page Token) واحفظ الإعدادات الأول."}, status=400)
+
+        checks, changed = check_connection(settings, fix=True)
+        if changed:
+            settings.save(update_fields=changed)
+        return Response({
+            "checks": checks,
+            "changed": changed,
+            "facebook_page_id": settings.facebook_page_id,
+            "instagram_account_id": settings.instagram_account_id,
+        })
 
 
 class StoreAPIKeyView(APIView):

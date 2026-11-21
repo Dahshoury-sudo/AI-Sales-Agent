@@ -290,6 +290,27 @@
                 <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
             </div>
 
+            <section class="settings-card settings-panel" aria-labelledby="meta-connection-heading">
+                <div class="settings-intro">
+                    <h3 id="meta-connection-heading"><i class="fas fa-plug" aria-hidden="true"></i> حالة الربط بفيسبوك وانستجرام</h3>
+                    <p>حط الرابط ده والـ Verify Token في إعدادات الـ Webhook في تطبيق Meta. بعد ما تحط توكن الصفحة والـ App Secret تحت، دوس "احفظ وافحص الربط" — هنفحص كل حاجة مع فيسبوك ونصلّح اللي ينفع يتصلّح لوحده.</p>
+                </div>
+                <div class="settings-fields">
+                    <div class="form-group">
+                        <label for="meta-webhook-url">Callback URL</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" id="meta-webhook-url" readonly dir="ltr" style="flex:1; min-width:0;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="copyWebhookUrl()">نسخ</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="meta-check-button" onclick="checkMetaConnection()">
+                        <i class="fas fa-stethoscope" aria-hidden="true"></i> احفظ وافحص الربط
+                    </button>
+                    <p id="meta-check-status" role="status" aria-live="polite" style="margin:10px 0 0; font-weight:600;"></p>
+                    <ul id="meta-check-results" style="list-style:none; padding:0; margin:6px 0 0;"></ul>
+                </div>
+            </section>
+
             <section class="settings-card settings-panel" aria-labelledby="reply-controls-heading">
                 <div class="settings-intro">
                     <h3 id="reply-controls-heading"><i class="fas fa-robot" aria-hidden="true"></i> الردود التلقائية</h3>
@@ -352,19 +373,23 @@
             </div></div>
 
             <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-shield-alt"></i> بيانات Meta API</h3><p>أدخل بيانات الربط الخاصة بتطبيقك وصفحاتك.</p></div><div class="settings-fields"><div class="form-group">
-                    <label>Verify Token (اختر كلمة سر للـ Webhook)</label>
-                    <input type="text" id="meta-verify-token" placeholder="my_secret_token_123">
+                    <label for="meta-verify-token">Verify Token (اختر كلمة سر للـ Webhook)</label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="meta-verify-token" placeholder="my_secret_token_123" dir="ltr" style="flex:1; min-width:0;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="generateVerifyToken()">توليد</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label><i class="fab fa-whatsapp" style="color:var(--ink);"></i> WhatsApp Access Token</label>
                     <input type="password" id="meta-access-token" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label><i class="fab fa-facebook-messenger" style="color:var(--ink);"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
-                    <input type="password" id="messenger-access-token" placeholder="••••••••">
+                    <label for="messenger-access-token"><i class="fab fa-facebook-messenger" style="color:var(--ink);"></i> Messenger &amp; Instagram Access Token (Page Token)</label>
+                    <input type="password" id="messenger-access-token" placeholder="••••••••" aria-describedby="messenger-token-help">
+                    <small id="messenger-token-help" style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">من تطبيق Meta: Messenger API Settings ← Generate access token للصفحة. لازم يكون توكن صفحة مش بيخلص.</small>
                 </div>
                 <div class="form-group">
-                    <label>App Secret</label>
+                    <label for="meta-app-secret">App Secret</label>
                     <input type="password" id="meta-app-secret" placeholder="••••••••">
                 </div>
             </div></div>
@@ -827,6 +852,7 @@ Check your DM, we replied!
                 if (!res) return;
                 const s = await res.json();
 
+                document.getElementById('meta-webhook-url').value = s.webhook_url || '';
                 document.getElementById('meta-wa-phone-id').value = s.whatsapp_phone_number_id || '';
                 document.getElementById('meta-wa-number').value = s.whatsapp_number || '';
                 document.getElementById('meta-fb-page-id').value = s.facebook_page_id || '';
@@ -842,7 +868,7 @@ Check your DM, we replied!
             }
         }
 
-        async function saveMetaSettings() {
+        async function saveMetaSettings({ quiet = false } = {}) {
             try {
                 const res = await authFetch(`${API_BASE}/settings/`, {
                     method: 'PUT',
@@ -858,9 +884,84 @@ Check your DM, we replied!
                         comment_reply_messages: document.getElementById('comment-reply-messages').value,
                     })
                 });
-                if (res && res.ok) showToast(' تم حفظ إعدادات المنصات');
+                if (res && res.ok && !quiet) showToast(' تم حفظ إعدادات المنصات');
+                return Boolean(res && res.ok);
             } catch (e) {
                 console.error('Error saving meta settings:', e);
+                return false;
+            }
+        }
+
+        function copyWebhookUrl() {
+            const field = document.getElementById('meta-webhook-url');
+            const copied = () => showToast('تم نسخ الرابط');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(field.value).then(copied, () => field.select());
+            } else {
+                field.select();
+            }
+        }
+
+        function generateVerifyToken() {
+            // getRandomValues works on plain http too, unlike crypto.randomUUID.
+            const bytes = crypto.getRandomValues(new Uint8Array(18));
+            document.getElementById('meta-verify-token').value =
+                'wv_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+            showToast('اتعمل Verify Token — احفظ وحط نفسه في إعدادات الـ Webhook في تطبيق Meta');
+        }
+
+        function metaCheckRow(check) {
+            const [icon, color, state] = check.ok === true ? ['fa-check-circle', 'var(--success)', 'تمام']
+                : check.ok === false ? ['fa-times-circle', 'var(--danger)', 'محتاج يتظبط']
+                : ['fa-minus-circle', 'var(--text-muted)', 'مقدرناش نفحصه'];
+            const row = textNode('li', null, 'display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);');
+            const mark = document.createElement('i');
+            mark.className = `fas ${icon}`;
+            mark.style.cssText = `color:${color};margin-top:4px;`;
+            mark.setAttribute('role', 'img');
+            mark.setAttribute('aria-label', state);
+            const body = textNode('span', null, 'flex:1;min-width:0;');
+            body.append(
+                textNode('strong', check.label, 'display:block;'),
+                textNode('span', check.detail, 'display:block;color:var(--text-muted);font-size:0.85rem;overflow-wrap:anywhere;'),
+            );
+            row.append(mark, body);
+            return row;
+        }
+
+        async function checkMetaConnection() {
+            const button = document.getElementById('meta-check-button');
+            const status = document.getElementById('meta-check-status');
+            const list = document.getElementById('meta-check-results');
+            button.disabled = true;
+            list.replaceChildren();
+            status.textContent = 'جاري الحفظ والفحص مع فيسبوك...';
+            try {
+                // Check what is on screen, not what was saved last time.
+                if (!await saveMetaSettings({ quiet: true })) {
+                    status.textContent = 'مقدرناش نحفظ الإعدادات، فمفحصناش الربط.';
+                    return;
+                }
+                const res = await authFetch(`${API_BASE}/meta/check/`, { method: 'POST', body: '{}', suppressError: true });
+                if (!res) return;
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    status.textContent = data.error || 'مقدرناش نفحص الربط. جرب تاني.';
+                    return;
+                }
+                // The check may have filled the Page / Instagram ID; keep the form in step so a later Save doesn't undo it.
+                document.getElementById('meta-fb-page-id').value = data.facebook_page_id || '';
+                document.getElementById('meta-ig-id').value = data.instagram_account_id || '';
+                const failing = (data.checks || []).filter(check => check.ok === false).length;
+                status.textContent = failing
+                    ? `فيه ${failing} ${failing === 1 ? 'حاجة محتاجة' : 'حاجات محتاجة'} تتظبط.`
+                    : 'كله تمام — البوت جاهز يرد على الرسائل والتعليقات.';
+                (data.checks || []).forEach(check => list.appendChild(metaCheckRow(check)));
+            } catch (e) {
+                console.error('Error checking Meta connection:', e);
+                status.textContent = 'مقدرناش نفحص الربط. جرب تاني.';
+            } finally {
+                button.disabled = false;
             }
         }
 

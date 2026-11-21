@@ -27,6 +27,8 @@ const {intercept,base,ready}=require('./check_layout.cjs');
   for(const [s,fn] of [['products','openEditModal(1)'],['faq','openFaqModal()'],['post_rules','openPostRuleModal()']]){
    await page.evaluate(s=>showSection(s),s);await ready(page);await page.evaluate(fn=>eval(fn),fn);await ready(page);await check(page,s+' dialog');await page.keyboard.press('Escape');
   }
+  await page.evaluate(()=>showSection('meta'));await ready(page);
+  await page.locator('#meta-check-button').click();await page.locator('#meta-check-results li').first().waitFor();await check(page,'meta connection results');
   await page.setViewportSize({width:375,height:900});await page.evaluate(()=>showSection('overview'));await check(page,'mobile overview');
   await page.locator('.mobile-toggle').click();await check(page,'mobile drawer');await page.keyboard.press('Escape');
   await page.evaluate(()=>showSection('handoff'));await ready(page);

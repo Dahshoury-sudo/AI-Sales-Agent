@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views_auth import RegisterView, LoginView, ProfileView, ForgotPasswordView, ResetPasswordView
-from .views_store import StoreSettingsView, StoreAPIKeyView
+from .views_store import StoreSettingsView, StoreAPIKeyView, MetaConnectionCheckView
 from .views_products import ProductListView, ProductDetailView, ProductCreateView
 from products.scent_tags import SCENT_TAG_CHOICES
 from .views_analytics import DashboardOverviewView, AnalyticsView, AnalyticsProductsView, AnalyticsExportView
@@ -31,6 +31,7 @@ urlpatterns = [
     # --- Store Settings API ---
     path("api/settings/", StoreSettingsView.as_view(), name="dashboard-api-settings"),
     path("api/settings/regenerate-key/", StoreAPIKeyView.as_view(), name="dashboard-api-regenerate-key"),
+    path("api/meta/check/", MetaConnectionCheckView.as_view(), name="dashboard-api-meta-check"),
 
     # --- Products API ---
     path("api/products/", ProductListView.as_view(), name="dashboard-api-products"),
