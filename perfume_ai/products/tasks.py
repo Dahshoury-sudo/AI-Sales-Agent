@@ -70,6 +70,23 @@ MAX_DEFERRALS = 3
 DEFERRAL_STAGGER_SECONDS = 5
 
 
+# Comments spend a model call each, like messages, and a post that goes viral can draw
+# them faster than any one customer types. Their buckets are separate from the message
+# buckets so a comment wave cannot use up the store's budget for direct messages.
+COMMENT_SENDER_PER_MINUTE = 5
+COMMENT_SENDER_PER_HOUR = 30
+COMMENT_STORE_PER_MINUTE = 30
+
+
+def _comment_rate_limit_buckets(store_id, platform, commenter_id):
+    commenter = f"{store_id}:{platform}:{commenter_id}"
+    return (
+        (f"comment-sender:{commenter}", COMMENT_SENDER_PER_MINUTE, 60),
+        (f"comment-sender-hour:{commenter}", COMMENT_SENDER_PER_HOUR, 3600),
+        (f"comment-store:{store_id}", COMMENT_STORE_PER_MINUTE, 60),
+    )
+
+
 def _rate_limit_buckets(store_id, platform, sender_id):
     sender = f"{store_id}:{platform}:{sender_id}"
     return (
@@ -267,8 +284,39 @@ def _attachment_route(text, history, store, conversation):
 COMMENT_REPLY_DELAY_RANGE = (5, 8)
 
 
+def _comment_admitted(store_id, platform, comment_id, commenter_id, comment_text, post_id, deferrals, retried):
+    """Count this comment against its limits; defer or drop it when over.
+
+    A deferred or retried comment was already counted on first entry, so it only checks
+    (`peek`) and is never charged twice. Returns True when the comment may proceed.
+    """
+    buckets = _comment_rate_limit_buckets(store_id, platform, commenter_id)
+    if deferrals or retried:
+        allowed, retry_after = rate_limit.peek(buckets)
+        exhausted = None if allowed else "still over limit"
+    else:
+        allowed, retry_after, exhausted = rate_limit.hit_all(buckets)
+    if allowed:
+        return True
+    if deferrals >= MAX_DEFERRALS:
+        logger.warning(
+            "Dropping comment %s after %d deferrals - store=%s platform=%s commenter=%s bucket=%s.",
+            comment_id, deferrals, store_id, platform, commenter_id, exhausted,
+        )
+        return False
+    countdown = retry_after + deferrals * DEFERRAL_STAGGER_SECONDS
+    logger.info("Comment rate limit hit (%s) - deferring comment %s %ds, attempt %d/%d, store=%s.",
+                exhausted, comment_id, countdown, deferrals + 1, MAX_DEFERRALS, store_id)
+    process_comment_task.apply_async(
+        args=[store_id, platform, comment_id, commenter_id, comment_text, post_id],
+        kwargs={"deferrals": deferrals + 1},
+        countdown=countdown,
+    )
+    return False
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=60 * 5)
-def process_comment_task(self, store_id, platform, comment_id, commenter_id, comment_text, post_id=""):
+def process_comment_task(self, store_id, platform, comment_id, commenter_id, comment_text, post_id="", deferrals=0):
     """
     Background task to process a Facebook or Instagram comment.
     Features:
@@ -293,6 +341,11 @@ def process_comment_task(self, store_id, platform, comment_id, commenter_id, com
 
         if not token:
             logger.warning(f"No Messenger token for store {store_id}, skipping comment reply.")
+            return
+
+        # Counted only once the comment would really be answered, and before any spend.
+        if not _comment_admitted(store_id, platform, comment_id, commenter_id, comment_text, post_id,
+                                 deferrals, bool(self.request.retries)):
             return
 
         # ── 2. Fetch post content for context ───────────────────────────────
