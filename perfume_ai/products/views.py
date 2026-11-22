@@ -410,6 +410,24 @@ class HandoffReadAPIView(APIView):
             return Response({"unread_count": conv.messages.filter(role="user", handoff_unread=True).count()})
 
 
+def _staff_reply_failure_text(conv, delivery_status):
+    """Why a dashboard reply didn't reach the customer, in the owner's words.
+
+    On Messenger and Instagram the usual reason is Meta's messaging window, so say
+    which limit was hit rather than suggesting a connection problem.
+    """
+    from .services.meta_service import HUMAN_AGENT_PLATFORMS, human_reply_window
+    if delivery_status == "failed" and conv.platform in HUMAN_AGENT_PLATFORMS:
+        window = human_reply_window(conv)
+        if window == "closed":
+            return ("الرسالة محفوظة لكن متبعتتش: آخر رسالة من العميل عدى عليها أكتر من 7 أيام، "
+                    "وميتا مش بتسمح بالرد بعد كده. لازم العميل يبعت الأول.")
+        if window == "human_agent":
+            return ("الرسالة محفوظة لكن ميتا رفضتها: آخر رسالة من العميل عدى عليها أكتر من 24 ساعة. "
+                    "الرد بعد 24 ساعة (لحد 7 أيام) محتاج موافقة ميتا على خاصية Human Agent.")
+    return "الرسالة محفوظة لكن التوصيل فشل أو مش مؤكد. راجع المحادثة قبل إعادة الإرسال."
+
+
 class HandoffReplyAPIView(APIView):
     authentication_classes = [StoreOwnerAuthentication]
     permission_classes = [IsAuthenticated]
@@ -432,7 +450,7 @@ class HandoffReplyAPIView(APIView):
             if conv.platform == "web":
                 return Response({"status": "Message sent", "message_id": saved.pk})
             try:
-                delivered = send_platform_message(conv, message, saved_message=saved)
+                delivered = send_platform_message(conv, message, saved_message=saved, human_reply=True)
                 saved.delivery_status = "failed" if delivered is False else "sent"
             except Exception:
                 logger.exception("Uncertain staff reply delivery: %s", saved.pk)
@@ -442,7 +460,7 @@ class HandoffReplyAPIView(APIView):
                 from .services.notification_service import notify_delivery_failure
                 notify_delivery_failure(conv)
                 return Response({"status": "not_delivered" if saved.delivery_status == "failed" else "uncertain",
-                    "error": "الرسالة محفوظة لكن التوصيل فشل أو مش مؤكد. راجع المحادثة قبل إعادة الإرسال."}, status=502)
+                    "error": _staff_reply_failure_text(conv, saved.delivery_status)}, status=502)
             return Response({"status": "Message sent", "message_id": saved.pk})
 
 class HandoffResolveAPIView(APIView):

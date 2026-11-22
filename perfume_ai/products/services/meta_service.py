@@ -1,7 +1,22 @@
 import logging
+from datetime import timedelta
+
 import requests
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+
+def _tagged(payload, tag):
+    """Add a Messenger/Instagram message tag to a Send API body.
+
+    Untagged bodies are left exactly as they were, so replies inside the 24-hour
+    window go out unchanged.
+    """
+    if tag:
+        payload["messaging_type"] = "MESSAGE_TAG"
+        payload["tag"] = tag
+    return payload
 
 
 def reply_to_comment(comment_id, message, token):
@@ -123,17 +138,17 @@ def send_whatsapp_message(phone_number_id, recipient_id, text, token):
             logger.error(f"Response: {e.response.text}")
         return None
 
-def send_messenger_message(page_id, recipient_id, text, token):
+def send_messenger_message(page_id, recipient_id, text, token, tag=None):
     url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    payload = {
+    payload = _tagged({
         "recipient": {"id": recipient_id},
         "message": {"text": text}
-    }
-    
+    }, tag)
+
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
@@ -146,7 +161,7 @@ def send_messenger_message(page_id, recipient_id, text, token):
             logger.error(f"Response: {e.response.text}")
         return None
 
-def send_instagram_message(page_id, recipient_id, text, token):
+def send_instagram_message(page_id, recipient_id, text, token, tag=None):
     """
     Send an Instagram DM via the Messenger Send API using the Facebook Page ID.
     Instagram Messaging API uses the Page ID (not Instagram Account ID) as sender.
@@ -156,11 +171,11 @@ def send_instagram_message(page_id, recipient_id, text, token):
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    payload = {
+    payload = _tagged({
         "recipient": {"id": recipient_id},
         "message": {"text": text}
-    }
-    
+    }, tag)
+
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
@@ -198,13 +213,13 @@ def send_whatsapp_image(phone_number_id, recipient_id, image_url, token):
             logger.error(f"Response: {e.response.text}")
         return None
 
-def send_messenger_image(page_id, recipient_id, image_url, token):
+def send_messenger_image(page_id, recipient_id, image_url, token, tag=None):
     url = f"https://graph.facebook.com/v19.0/{page_id}/messages"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    payload = {
+    payload = _tagged({
         "recipient": {"id": recipient_id},
         "message": {
             "attachment": {
@@ -212,7 +227,7 @@ def send_messenger_image(page_id, recipient_id, image_url, token):
                 "payload": {"url": image_url, "is_reusable": True}
             }
         }
-    }
+    }, tag)
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=10)
         response.raise_for_status()
@@ -256,10 +271,49 @@ def conversation_platform_for(source_platform):
     return _CONVERSATION_PLATFORM.get(source_platform, source_platform)
 
 
-def send_platform_message(conversation, text, saved_message=None):
+# Meta's messaging windows for Messenger and Instagram, both measured from the
+# customer's last message. Inside the standard window anything may be sent. The
+# HUMAN_AGENT tag stretches it to 7 days, but only for messages a person writes,
+# and only once Meta has approved the app's Human Agent feature (App Review +
+# Business Verification). After that nothing can be sent until the customer writes.
+STANDARD_WINDOW = timedelta(hours=24)
+HUMAN_AGENT_WINDOW = timedelta(days=7)
+HUMAN_AGENT_PLATFORMS = MESSENGER_PLATFORMS + ("instagram",)
+
+
+def human_reply_window(conversation, now=None):
+    """Which Meta window a staff reply to this conversation falls in.
+
+    Returns "standard" (send as usual), "human_agent" (needs the HUMAN_AGENT tag)
+    or "closed" (Meta will refuse it). Only the customer's own messages count. A
+    conversation with no customer message is "standard", so it is sent as before
+    and Meta decides.
+    """
+    last = (
+        conversation.messages.filter(role="user")
+        .order_by("-created_at")
+        .values_list("created_at", flat=True)
+        .first()
+    )
+    if last is None:
+        return "standard"
+    age = (now or timezone.now()) - last
+    if age <= STANDARD_WINDOW:
+        return "standard"
+    if age <= HUMAN_AGENT_WINDOW:
+        return "human_agent"
+    return "closed"
+
+
+def send_platform_message(conversation, text, saved_message=None, human_reply=False):
     """
     Unified function to send a message back to the user on whatever
     platform they're chatting from. Does nothing for web conversations.
+
+    human_reply marks a message a person wrote in the dashboard. On Messenger and
+    Instagram it is tagged HUMAN_AGENT once the 24-hour window has passed, and not
+    sent at all after 7 days (see human_reply_window). Bot replies never set it:
+    Meta allows the tag only for messages a person writes.
 
     Returns:
         True  — the platform accepted the message.
@@ -338,15 +392,27 @@ def send_platform_message(conversation, text, saved_message=None):
         saved_message.save(update_fields=["delivery_parts"])
         return result
 
+    tag = None
+    if human_reply and conversation.platform in HUMAN_AGENT_PLATFORMS:
+        window = human_reply_window(conversation)
+        if window == "closed":
+            logger.warning(
+                f"Not sending staff reply on conversation {conversation.id}: the customer's "
+                f"last message is older than Meta's 7-day Human Agent window"
+            )
+            return False
+        if window == "human_agent":
+            tag = "HUMAN_AGENT"
+
     if conversation.platform == "whatsapp":
         text_send = lambda: send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
         image_send = lambda: send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
     elif conversation.platform in MESSENGER_PLATFORMS:
-        text_send = lambda: send_messenger_message(store_settings.facebook_page_id, sender_id, text, token)
-        image_send = lambda: send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+        text_send = lambda: send_messenger_message(store_settings.facebook_page_id, sender_id, text, token, tag=tag)
+        image_send = lambda: send_messenger_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token, tag=tag)
     elif conversation.platform == "instagram":
-        text_send = lambda: send_instagram_message(store_settings.facebook_page_id, sender_id, text, token)
-        image_send = lambda: send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token)
+        text_send = lambda: send_instagram_message(store_settings.facebook_page_id, sender_id, text, token, tag=tag)
+        image_send = lambda: send_instagram_image(store_settings.facebook_page_id, sender_id, bottle_image_url, token, tag=tag)
     else:
         return False
     outcomes = []

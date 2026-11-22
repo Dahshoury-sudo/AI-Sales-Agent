@@ -219,17 +219,24 @@ async function sendMessage() {
     button.disabled = true;
     input.value = '';
     drafts.delete(id);
+    let reason;
     try {
+        // suppressError: a failed send shows the server's reason (e.g. Meta's
+        // 24-hour window) instead of the generic connection error.
         const res = await handoffFetch(`/api/handoff/conversations/${id}/reply/`, {
-            method: 'POST', body: JSON.stringify({message: text}),
+            method: 'POST', body: JSON.stringify({message: text}), suppressError: true,
         });
-        if (!res?.ok) throw new Error('Reply delivery failed');
+        if (!res?.ok) {
+            reason = await res?.json().then(data => data?.error, () => undefined);
+            throw new Error('Reply delivery failed');
+        }
         if (activeConversationId === id) await fetchMessages();
         await fetchConversations();
     } catch (_) {
         drafts.set(id, text);
         if (activeConversationId === id && !input.value) input.value = text;
-        window.WebVitasUI?.showError();
+        if (reason) window.WebVitasUI?.showError(reason);
+        else window.WebVitasUI?.showError();
     } finally { button.disabled = false; }
 }
 

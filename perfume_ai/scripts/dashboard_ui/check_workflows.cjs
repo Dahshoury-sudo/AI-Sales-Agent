@@ -142,10 +142,19 @@ const passed=[];
   for(const name of ['handoff','chat_history']){
    await section(name);const frame=await(await page.locator('#iframe-'+name).elementHandle()).contentFrame();await ready(frame);
    await frame.locator('.conv-item').first().focus();await page.keyboard.press('Enter');await frame.locator('#chat-area').waitFor();
+   // A refused reply shows the server's reason, not the generic connection error.
+   const reason='الرسالة محفوظة لكن ميتا رفضتها: آخر رسالة من العميل عدى عليها أكتر من 24 ساعة.';
+   const replyRoute='**/api/handoff/conversations/1/reply/';
+   await page.route(replyRoute,route=>route.fulfill({status:502,contentType:'application/json',body:JSON.stringify({status:'not_delivered',error:reason})}));
+   await frame.locator('#chat-input').fill('رد متأخر');await frame.locator('.btn-send').click();
+   await frame.locator('#wv-request-error').waitFor();
+   assert.equal(await frame.locator('#wv-request-error span').innerText(),reason);
+   await frame.evaluate(()=>document.getElementById('wv-request-error').remove());
+   await page.unroute(replyRoute);
    await frame.locator('#chat-input').fill('أهلاً، نقدر نساعدك.');since=apiCalls.length;await frame.locator('.btn-send').click();await posted(since,'/conversations/1/reply/');
    if(name==='handoff'){since=apiCalls.length;await frame.locator('#btn-resolve').click();await posted(since,'/conversations/1/resolve/');}
   }
-  passed.push('Conversation keyboard selection, replies, and handoff resolution');
+  passed.push('Conversation keyboard selection, replies, refused-reply reasons, and handoff resolution');
 
   await section('chat_demo');const demo=await(await page.locator('#iframe-chat_demo').elementHandle()).contentFrame();await ready(demo);
   await demo.locator('#chat-input').fill('عطر للشغل');since=apiCalls.length;await demo.locator('#send-btn').click();await posted(since,'/api/chat/');

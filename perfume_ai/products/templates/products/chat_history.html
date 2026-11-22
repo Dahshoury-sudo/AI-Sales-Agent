@@ -245,14 +245,22 @@
             msgContainer.scrollTop = msgContainer.scrollHeight;
 
             try {
-                await authFetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
+                // suppressError: a failed send shows the server's reason (e.g. Meta's
+                // 24-hour window) instead of the generic connection error.
+                const res = await authFetch(`/api/handoff/conversations/${activeConversationId}/reply/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify({ message: text }),
+                    suppressError: true,
                 });
-                
+                if (res && !res.ok) {
+                    const reason = await res.json().then(data => data?.error, () => undefined);
+                    if (reason) window.WebVitasUI?.showError(reason);
+                    else window.WebVitasUI?.showError();
+                }
+
                 // Reset JSON cache to force update on next fetch
                 lastMessagesJSON = "";
                 fetchMessages();
@@ -260,6 +268,7 @@
                 // Also update the conversations list to show "Needs Human" badge immediately
                 fetchConversations();
             } catch(e) {
+                if (e.name !== 'AbortError') window.WebVitasUI?.showError();
                 console.error("Error sending message", e);
             }
         }

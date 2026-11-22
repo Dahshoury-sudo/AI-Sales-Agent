@@ -179,9 +179,18 @@ step, watch the Railway worker logs. The web service only logs warnings and erro
 Facebook often posts as the Page, and the agent ignores the Page's own comments so it never replies to
 itself.
 
+**Replying from the dashboard (handoff):** Meta accepts a reply only within 24 hours of the customer's
+last message. The rules after that:
+- **24 hours to 7 days:** the dashboard sends the reply with Meta's Human Agent tag. Meta accepts it
+  only after it approves the app's Human Agent feature (step 9).
+- **After 7 days:** Meta blocks replies until the customer writes again, so the dashboard doesn't send.
+
+When a reply fails, the dashboard says which of these happened.
+
 ## 9. App Review (Advanced Access)
 
-Needed for every event that only arrives from accounts with a role on the app.
+Needed for every event that only arrives from accounts with a role on the app, and for dashboard
+replies sent more than 24 hours after the customer's last message.
 
 1. **Business Verification**: Meta Business Suite → Settings → **Security Center** →
    **Start verification**. Meta asks for the business's legal documents.
@@ -190,6 +199,9 @@ Needed for every event that only arrives from accounts with a role on the app.
    - Messenger: `pages_messaging`
    - Facebook comments: `pages_manage_metadata`, `pages_read_engagement`, `pages_manage_engagement`
    - Instagram: `instagram_manage_messages`, `instagram_manage_comments`
+   - Dashboard replies from 24 hours to 7 days: the **Human Agent** feature. It's listed with the
+     permissions. In the review, show a person replying from the dashboard to a conversation the agent
+     handed over.
 
    Then **Review → App Review → Submit for Review**, with:
    - a screencast of the agent replying to a DM and a comment;
