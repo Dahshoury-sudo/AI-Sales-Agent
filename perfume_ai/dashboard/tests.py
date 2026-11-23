@@ -195,16 +195,21 @@ class ReplySwitchMigrationTests(TransactionTestCase):
                         message_replies_enabled=combo[0], comment_replies_enabled=combo[1]).pk
                     for combo in combos}
 
-            MigrationExecutor(connection).migrate(new_target)
+            executor = MigrationExecutor(connection)
+            executor.migrate(new_target)
+            # The model as of 0047: the current model has columns later migrations add.
+            NewSettings = executor.loader.project_state(new_target).apps.get_model("products", "StoreSettings")
+            split = ("whatsapp_replies_enabled", "messenger_replies_enabled", "instagram_replies_enabled",
+                     "facebook_comment_replies_enabled", "instagram_comment_replies_enabled")
             for (messages, comments), pk in rows.items():
-                saved = StoreSettings.objects.get(pk=pk)
-                self.assertEqual({f: getattr(saved, f) for f in REPLY_SWITCHES}, {
+                saved = NewSettings.objects.get(pk=pk)
+                self.assertEqual({f: getattr(saved, f) for f in split}, {
                     "whatsapp_replies_enabled": messages, "messenger_replies_enabled": messages,
                     "instagram_replies_enabled": messages,
                     "facebook_comment_replies_enabled": comments, "instagram_comment_replies_enabled": comments,
                 })
             # One platform off is enough to keep its whole old group off after a rollback.
-            StoreSettings.objects.filter(pk=rows[(True, True)]).update(
+            NewSettings.objects.filter(pk=rows[(True, True)]).update(
                 instagram_replies_enabled=False, facebook_comment_replies_enabled=False)
 
             executor = MigrationExecutor(connection)

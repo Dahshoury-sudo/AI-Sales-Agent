@@ -26,6 +26,7 @@ class StoreSettings(models.Model):
     instagram_replies_enabled = models.BooleanField(default=True)
     facebook_comment_replies_enabled = models.BooleanField(default=True)
     instagram_comment_replies_enabled = models.BooleanField(default=True)
+    tiktok_replies_enabled = models.BooleanField(default=True)
     system_prompt = models.TextField(blank=True, help_text="Custom system prompt for this store's AI")
     website_ordering_enabled = models.BooleanField(
         default=False,
@@ -43,6 +44,19 @@ class StoreSettings(models.Model):
     facebook_page_id = models.CharField(max_length=100, blank=True, db_index=True)
     instagram_account_id = models.CharField(max_length=100, blank=True, db_index=True)
     whatsapp_phone_number_id = models.CharField(max_length=100, blank=True, db_index=True)
+
+    # TikTok DMs, connected by the owner through OAuth to the one WebVitas TikTok app
+    # (see products/services/tiktok_service.py and docs/tiktok-setup.md). TikTok access
+    # tokens last about a day, so they are refreshed on a schedule, never pasted in.
+    # The business id is plain text because the webhook looks the store up by it; a
+    # failed refresh clears the tokens but keeps the id, so customers' messages still
+    # reach the inbox while the owner reconnects.
+    tiktok_business_id = models.CharField(max_length=100, blank=True, default="")
+    tiktok_username = models.CharField(max_length=100, blank=True, default="")
+    tiktok_access_token = EncryptedTextField(blank=True, default="")
+    tiktok_refresh_token = EncryptedTextField(blank=True, default="")
+    tiktok_access_expires_at = models.DateTimeField(null=True, blank=True)
+    tiktok_refresh_expires_at = models.DateTimeField(null=True, blank=True)
 
     # Payment / deposit block appended to the order confirmation message.
     # Per-store because it carries the store's own payment account: the text used
@@ -106,6 +120,17 @@ class StoreSettings(models.Model):
         null=True, blank=True,
         help_text="الحد الشهري للرسائل اللي بتستهلك الـ AI. فاضي = بدون حد."
     )
+
+    class Meta:
+        constraints = [
+            # One TikTok account can feed one store only: the webhook picks the store
+            # by this id, so a duplicate would send one store's customers to another.
+            models.UniqueConstraint(
+                fields=["tiktok_business_id"],
+                condition=~models.Q(tiktok_business_id=""),
+                name="one_store_per_tiktok_account",
+            ),
+        ]
 
     def __str__(self):
         return f"Settings for {self.store.name}"
@@ -223,6 +248,9 @@ class Conversation(models.Model):
         # send_platform_message did not dispatch it either, so handoff replies to
         # Facebook commenters were silently dropped.
         ("facebook", "Facebook Comment"),
+        # platform_sender_id is TikTok's conversation_id: its send API addresses a
+        # conversation, not a user.
+        ("tiktok", "TikTok"),
     )
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="conversations", null=True, blank=True)
     platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, default="web")
@@ -482,6 +510,7 @@ class Notification(models.Model):
         ("low_stock", "Low Stock"),
         ("delivery_failed", "Reply Not Delivered"),
         ("usage_warning", "Approaching Monthly Limit"),
+        ("integration", "Platform Connection Problem"),
     )
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="notifications")
@@ -566,7 +595,8 @@ class AIUsageDaily(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, null=True, blank=True,
                               related_name="ai_usage")
     date = models.DateField()
-    # whatsapp, messenger, instagram, web, facebook_comment, instagram_comment, admin_evaluation
+    # whatsapp, messenger, instagram, tiktok, web, facebook_comment, instagram_comment,
+    # admin_evaluation
     channel = models.CharField(max_length=40)
     calls = models.PositiveIntegerField(default=0)
     # Calls that raised before a response: no usage to price.

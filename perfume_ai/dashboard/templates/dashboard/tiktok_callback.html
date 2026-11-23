@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>ربط تيك توك - WebVitas AI</title>
+    <link rel="stylesheet" href="{% static 'dashboard/pages/login.css' %}">
+    {% include 'dashboard/includes/theme_head.html' %}
+    {% include 'dashboard/includes/requests.html' %}
+</head>
+<body data-page="login" data-layout="auth">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <a class="wv-brand" href="/dashboard/" aria-label="WebVitas AI — لوحة التحكم"><img src="{% static 'dashboard/webvitas-mark.svg' %}" alt="" width="36" height="26"><span>webvitas<small>AI</small></span></a>
+                <h1><i class="fab fa-tiktok" aria-hidden="true"></i> ربط تيك توك</h1>
+                <p id="tiktok-callback-status" role="status" aria-live="polite">جاري إكمال الربط…</p>
+            </div>
+            <div class="auth-footer">
+                <a href="/dashboard/?section=meta">الرجوع لربط المنصات</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        // TikTok sends the owner back here with ?code=&state= (or ?error=). This page
+        // has the owner's dashboard login in localStorage, which TikTok's redirect
+        // cannot carry, so it finishes the connection with an authenticated request.
+        (async function completeTikTokConnection() {
+            const status = document.getElementById('tiktok-callback-status');
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const state = params.get('state');
+            // Keep the one-time code out of the history and out of any later Referer.
+            history.replaceState(null, '', window.location.pathname);
+            if (params.get('error') || !code || !state) {
+                status.textContent = 'الربط اتلغى أو تيك توك مرجعش الموافقة. ارجع لربط المنصات وجرّب تاني.';
+                return;
+            }
+            try {
+                const res = await window.WebVitasAuth.fetch('/dashboard/api/tiktok/complete/', {
+                    method: 'POST', body: JSON.stringify({code, state}), suppressError: true,
+                });
+                if (!res) return;  // Not signed in: auth.js is already sending the owner to login.
+                const data = await res.json().catch(() => ({}));
+                if (res.ok) {
+                    window.location.replace('/dashboard/?section=meta&tiktok=connected');
+                    return;
+                }
+                status.textContent = data.error || 'مقدرناش نكمّل الربط. جرّب تاني.';
+            } catch (e) {
+                status.textContent = 'مقدرناش نكمّل الربط. جرّب تاني.';
+            }
+        })();
+    </script>
+</body>
+</html>

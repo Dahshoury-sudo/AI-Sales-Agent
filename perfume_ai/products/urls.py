@@ -9,6 +9,7 @@ from .views import (
 )
 from .views_meta import MetaWebhookView
 from .views_scent_tags import ScentTagImportView
+from .views_tiktok import TikTokWebhookView
 
 urlpatterns = [
     path("products/", ProductListView.as_view()),
@@ -34,4 +35,5 @@ urlpatterns = [
     path("history/", ChatHistoryDashboardView.as_view(), name="chat-history-dashboard"),
     path("history/conversations/", ChatHistoryConversationsAPIView.as_view(), name="chat-history-conversations"),
     path("webhooks/meta/", MetaWebhookView.as_view(), name="meta-webhook"),
+    path("webhooks/tiktok/", TikTokWebhookView.as_view(), name="tiktok-webhook"),
 ]

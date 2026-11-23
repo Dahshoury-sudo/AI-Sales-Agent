@@ -8,6 +8,7 @@ MESSAGE_SWITCHES = {
     "messenger": "messenger_replies_enabled",
     "facebook": "messenger_replies_enabled",
     "instagram": "instagram_replies_enabled",
+    "tiktok": "tiktok_replies_enabled",
 }
 COMMENT_SWITCHES = {
     "facebook": "facebook_comment_replies_enabled",

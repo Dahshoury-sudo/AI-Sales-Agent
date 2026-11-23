@@ -10,6 +10,7 @@ from .views_analytics import DashboardOverviewView, AnalyticsView, AnalyticsProd
 from .views_notifications import NotificationListView, NotificationMarkReadView
 from .views_faq import FAQListCreateView, FAQDetailView
 from .views_post_rules import PostRuleListCreateView, PostRuleDetailView, RecentPostsView
+from .views_tiktok import TikTokCompleteView, TikTokConnectView, TikTokDisconnectView, TikTokStatusView
 
 urlpatterns = [
     # --- Page views ---
@@ -32,6 +33,15 @@ urlpatterns = [
     path("api/settings/", StoreSettingsView.as_view(), name="dashboard-api-settings"),
     path("api/settings/regenerate-key/", StoreAPIKeyView.as_view(), name="dashboard-api-regenerate-key"),
     path("api/meta/check/", MetaConnectionCheckView.as_view(), name="dashboard-api-meta-check"),
+
+    # --- TikTok connection (OAuth) ---
+    # TIKTOK_REDIRECT_URI points at this page; see dashboard/views_tiktok.py.
+    path("tiktok/callback/", TemplateView.as_view(template_name="dashboard/tiktok_callback.html"),
+         name="dashboard-tiktok-callback"),
+    path("api/tiktok/", TikTokStatusView.as_view(), name="dashboard-api-tiktok"),
+    path("api/tiktok/connect/", TikTokConnectView.as_view(), name="dashboard-api-tiktok-connect"),
+    path("api/tiktok/complete/", TikTokCompleteView.as_view(), name="dashboard-api-tiktok-complete"),
+    path("api/tiktok/disconnect/", TikTokDisconnectView.as_view(), name="dashboard-api-tiktok-disconnect"),
 
     # --- Products API ---
     path("api/products/", ProductListView.as_view(), name="dashboard-api-products"),

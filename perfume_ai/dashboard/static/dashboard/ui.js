@@ -53,7 +53,8 @@
             if (!container) return;
             const platforms = {
                 whatsapp: ['واتساب', 'fab fa-whatsapp'], messenger: ['ماسنجر', 'fab fa-facebook-messenger'],
-                instagram: ['انستجرام', 'fab fa-instagram'], web: ['ويب', 'fas fa-globe']
+                instagram: ['انستجرام', 'fab fa-instagram'], facebook: ['تعليقات فيسبوك', 'fab fa-facebook'],
+                tiktok: ['تيك توك', 'fab fa-tiktok'], web: ['ويب', 'fas fa-globe']
             };
             const entries = Object.entries(overview.platform_breakdown || {})
                 .map(([name, count]) => [name, Number.isFinite(Number(count)) ? Math.max(0, Number(count)) : 0])

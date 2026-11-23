@@ -9,6 +9,7 @@ const SWITCHES = [
     ['whatsapp_replies_enabled', 'whatsapp-replies-enabled', 'رسائل واتساب'],
     ['messenger_replies_enabled', 'messenger-replies-enabled', 'رسائل ماسنجر'],
     ['instagram_replies_enabled', 'instagram-replies-enabled', 'رسائل إنستجرام'],
+    ['tiktok_replies_enabled', 'tiktok-replies-enabled', 'رسائل تيك توك'],
     ['facebook_comment_replies_enabled', 'facebook-comment-replies-enabled', 'تعليقات فيسبوك'],
     ['instagram_comment_replies_enabled', 'instagram-comment-replies-enabled', 'تعليقات إنستجرام'],
 ];
@@ -50,7 +51,7 @@ const FIRST_ID = SWITCHES[0][1];
         for (const control of switches) assert.equal(await control.isDisabled(), true);
         releaseRead(); holdRead = null;
         await ready();
-        assert.deepEqual(await states(), [true, true, true, true, true]);
+        assert.deepEqual(await states(), SWITCHES.map(() => true));
 
         // First switch: pending state locks every switch and sends only its own field.
         holdWrite = new Promise(resolve => { releaseWrite = resolve; });
@@ -61,7 +62,7 @@ const FIRST_ID = SWITCHES[0][1];
         assert.deepEqual(writes, [{[SWITCHES[0][0]]: false}]);
         releaseWrite(); holdWrite = null;
         await ready();
-        assert.deepEqual(await states(), [false, true, true, true, true]);
+        assert.deepEqual(await states(), SWITCHES.map((_, j) => j !== 0));
         assert.equal(await switches[0].evaluate(el => document.activeElement === el), true);
 
         // Tab through the rest: each one saves only itself and leaves the others as they were.
@@ -78,7 +79,7 @@ const FIRST_ID = SWITCHES[0][1];
         failWrite = true;
         await switches[0].click();
         await page.waitForSelector('#reply-controls-status.is-error');
-        assert.deepEqual(await states(), [false, false, false, false, false]);
+        assert.deepEqual(await states(), SWITCHES.map(() => false));
         assert.equal(await switches[0].isDisabled(), false);
         failWrite = false;
 
@@ -89,7 +90,7 @@ const FIRST_ID = SWITCHES[0][1];
         failRead = false;
         await page.locator('#reply-controls-retry').click();
         await ready();
-        assert.deepEqual(await states(), [false, false, false, false, false]);
+        assert.deepEqual(await states(), SWITCHES.map(() => false));
 
         // Reload persists every state, and the separate credentials save omits all switches.
         await switches[2].click();
@@ -97,7 +98,7 @@ const FIRST_ID = SWITCHES[0][1];
         await page.reload({waitUntil: 'networkidle'});
         await page.evaluate(() => showSection('meta'));
         await ready();
-        assert.deepEqual(await states(), [false, false, true, false, false]);
+        assert.deepEqual(await states(), SWITCHES.map((_, j) => j === 2));
         await page.evaluate(() => saveMetaSettings());
         for (const [field] of SWITCHES) assert.equal(field in writes.at(-1), false);
 
@@ -111,7 +112,7 @@ const FIRST_ID = SWITCHES[0][1];
             await page.screenshot({path: path.join(out, `reply-controls-${width}.png`), fullPage: true});
         }
         assert.deepEqual(errors, []);
-        console.log('PASS: 5 per-platform switches: loading, keyboard order, independent autosave, pending state, failure recovery, reload, credentials isolation, and 3 responsive layouts');
+        console.log(`PASS: ${SWITCHES.length} per-platform switches: loading, keyboard order, independent autosave, pending state, failure recovery, reload, credentials isolation, and 3 responsive layouts`);
         console.log('Screenshots: ' + out);
     } finally {
         await browser.close();

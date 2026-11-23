@@ -125,6 +125,13 @@ class AnalyticsTests(TestCase):
         self.assertEqual(Decimal(rows["unknown"]["revenue"]), 0)
         self.assertEqual(rows["unattributed"]["orders"], 1)
 
+    def test_tiktok_is_its_own_channel(self):
+        self.order(conversation=self.conversation(platform="tiktok"))
+        rows = {r["platform"]: r for r in self.get().json()["channels"]}
+        self.assertEqual(rows["tiktok"]["conversations"], 1)
+        self.assertEqual(rows["tiktok"]["orders"], 1)
+        self.assertEqual(rows["unknown"]["conversations"], 0)
+
     def test_store_isolation_and_foreign_links(self):
         foreign = self.conversation(store=self.other, platform="instagram")
         self.order(store=self.other, conversation=foreign, total="9000", item=False)

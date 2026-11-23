@@ -16,6 +16,7 @@ const platformConfig = {
     messenger: {icon: 'fab fa-facebook-messenger', label: 'ماسنجر', css: 'messenger'},
     instagram: {icon: 'fab fa-instagram', label: 'انستجرام', css: 'instagram'},
     facebook: {icon: 'fab fa-facebook', label: 'تعليقات فيسبوك', css: 'messenger'},
+    tiktok: {icon: 'fab fa-tiktok', label: 'تيك توك', css: 'web'},
     web: {icon: 'fas fa-globe', label: 'ويب', css: 'web'},
 };
 
@@ -65,6 +66,8 @@ function buildSenderInfo(platform, senderId) {
     }
     if (platform === 'instagram') return `@${senderId}`;
     if (platform === 'messenger') return `fb: ${senderId}`;
+    // A TikTok conversation id, not a username: the tail is enough to tell threads apart.
+    if (platform === 'tiktok') return `tiktok: …${senderId.slice(-8)}`;
     return senderId;
 }
 

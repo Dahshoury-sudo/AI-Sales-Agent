@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{% static 'dashboard/pages/store_dashboard.css' %}?v=replies-20261121">
     {% include 'dashboard/includes/theme_head.html' %}
     <link rel="stylesheet" href="{% static 'dashboard/pages/analytics.css' %}?v=20261022">
-    <script src="{% static 'dashboard/analytics.js' %}?v=20261022" defer></script>
+    <script src="{% static 'dashboard/analytics.js' %}?v=tiktok-20261123" defer></script>
     {% include 'dashboard/includes/requests.html' %}
 </head>
 <body data-page="store_dashboard" data-layout="app">
@@ -287,7 +287,7 @@
         <div class="section" id="section-meta">
             <div class="page-header">
                 <h1> ربط المنصات</h1>
-                <p>اربط واتساب وماسنجر وانستجرام بالبوت</p>
+                <p>اربط واتساب وماسنجر وانستجرام وتيك توك بالبوت</p>
             </div>
 
             <section class="settings-card settings-panel" aria-labelledby="meta-connection-heading">
@@ -331,6 +331,10 @@
                             <label for="instagram-replies-enabled"><i class="fab fa-instagram" aria-hidden="true"></i> رسائل إنستجرام</label>
                             <input id="instagram-replies-enabled" type="checkbox" role="switch" data-reply-field="instagram_replies_enabled" aria-describedby="message-replies-help" disabled>
                         </div>
+                        <div class="reply-control">
+                            <label for="tiktok-replies-enabled"><i class="fab fa-tiktok" aria-hidden="true"></i> رسائل تيك توك</label>
+                            <input id="tiktok-replies-enabled" type="checkbox" role="switch" data-reply-field="tiktok_replies_enabled" aria-describedby="message-replies-help" disabled>
+                        </div>
                         <p class="reply-control-help" id="message-replies-help">عند إيقاف منصة، تُحفظ رسائلها وصورها في السجل بدون رد تلقائي، والمنصات الأخرى تكمل عادي. شات الموقع والردود اليدوية يظلان متاحين.</p>
                     </fieldset>
                     <fieldset class="reply-group">
@@ -371,6 +375,24 @@
                     <input type="text" id="meta-ig-id" placeholder="مثال: 1234567890">
                 </div>
             </div></div>
+
+            <section class="settings-card settings-panel" aria-labelledby="tiktok-heading">
+                <div class="settings-intro">
+                    <h3 id="tiktok-heading"><i class="fab fa-tiktok" aria-hidden="true"></i> تيك توك</h3>
+                    <p>البوت يرد على رسائل تيك توك الخاصة. لازم يكون حساب تيك توك Business Account. تيك توك بيسمح بالرد لحد 48 ساعة من آخر رسالة من العميل بس.</p>
+                </div>
+                <div class="settings-fields">
+                    <p id="tiktok-status" role="status" aria-live="polite" style="margin:0 0 10px; font-weight:600;">جاري تحميل حالة الربط…</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" id="tiktok-connect-button" onclick="connectTikTok()" hidden>
+                            <i class="fab fa-tiktok" aria-hidden="true"></i> ربط تيك توك
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="tiktok-disconnect-button" onclick="disconnectTikTok()" hidden>
+                            فصل تيك توك
+                        </button>
+                    </div>
+                </div>
+            </section>
 
             <div class="settings-card settings-panel"><div class="settings-intro"><h3><i class="fas fa-shield-alt"></i> بيانات Meta API</h3><p>أدخل بيانات الربط الخاصة بتطبيقك وصفحاتك.</p></div><div class="settings-fields"><div class="form-group">
                     <label for="meta-verify-token">Verify Token (اختر كلمة سر للـ Webhook)</label>
@@ -644,6 +666,7 @@ Check your DM, we replied!
             if (name === 'settings')   loadSettings();
             if (name === 'meta') {
                 loadMetaSettings();
+                loadTikTokStatus();
                 window.ReplyControls.load();
             }
             if (name === 'notifications') loadNotifications();
@@ -965,6 +988,78 @@ Check your DM, we replied!
             }
         }
 
+        // ===== TIKTOK =====
+        // Connecting goes through TikTok's own login page and comes back to
+        // /dashboard/tiktok/callback/, which finishes the connection and returns here
+        // with ?tiktok=connected.
+        function renderTikTokStatus(s) {
+            const status = document.getElementById('tiktok-status');
+            const connect = document.getElementById('tiktok-connect-button');
+            const disconnect = document.getElementById('tiktok-disconnect-button');
+            const name = s.username ? `@${s.username}` : 'حساب تيك توك';
+            if (!s.configured && !s.linked) {
+                status.textContent = 'ربط تيك توك لسه مش متاح على السيرفر ده.';
+            } else if (s.connected) {
+                status.textContent = `مربوط بـ ${name} — البوت بيرد على رسائل تيك توك.`;
+            } else if (s.needs_reconnect) {
+                status.textContent = `⚠️ صلاحية ربط ${name} انتهت. اضغط "ربط تيك توك" تاني عشان البوت يرجع يرد هناك.`;
+            } else if (s.linked) {
+                status.textContent = `مربوط بـ ${name}، وبنجدد الصلاحية دلوقتي.`;
+            } else {
+                status.textContent = 'مش مربوط.';
+            }
+            connect.hidden = !s.configured || s.connected;
+            disconnect.hidden = !s.linked;
+        }
+
+        async function loadTikTokStatus() {
+            try {
+                const res = await authFetch(`${API_BASE}/tiktok/`, { suppressError: true });
+                if (!res || !res.ok) {
+                    document.getElementById('tiktok-status').textContent = 'مقدرناش نحمّل حالة ربط تيك توك.';
+                    return;
+                }
+                renderTikTokStatus(await res.json());
+            } catch (e) {
+                console.error('Error loading TikTok status:', e);
+            }
+        }
+
+        async function connectTikTok() {
+            const button = document.getElementById('tiktok-connect-button');
+            button.disabled = true;
+            try {
+                const res = await authFetch(`${API_BASE}/tiktok/connect/`, { method: 'POST', body: '{}', suppressError: true });
+                if (!res) return;
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.authorize_url) {
+                    document.getElementById('tiktok-status').textContent = data.error || 'مقدرناش نبدأ الربط. جرب تاني.';
+                    return;
+                }
+                window.location.assign(data.authorize_url);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function disconnectTikTok() {
+            if (!confirm('البوت هيبطل يرد على رسائل تيك توك. متأكد؟')) return;
+            const res = await authFetch(`${API_BASE}/tiktok/disconnect/`, { method: 'POST', body: '{}' });
+            if (res && res.ok) {
+                renderTikTokStatus(await res.json());
+                showToast('تم فصل تيك توك');
+            }
+        }
+
+        (function announceTikTokResult() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('tiktok') !== 'connected') return;
+            params.delete('tiktok');
+            const query = params.toString();
+            history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : ''));
+            showToast('تم ربط تيك توك ✅');
+        })();
+
         // ═══════════════════════════════════════════════════════════════════
         // NOTIFICATIONS  —  polling + bell sound
         // ═══════════════════════════════════════════════════════════════════
@@ -1010,8 +1105,8 @@ Check your DM, we replied!
                 return;
             }
 
-            const typeIcons  = { handoff_message: 'fas fa-comment-dots', handoff: 'fas fa-headset', new_order: 'fas fa-shopping-cart', low_stock: 'fas fa-exclamation-triangle' };
-            const typeColors = { handoff_message: 'var(--danger)', handoff: 'var(--danger)', new_order: 'var(--success)', low_stock: 'var(--warning)' };
+            const typeIcons  = { handoff_message: 'fas fa-comment-dots', handoff: 'fas fa-headset', new_order: 'fas fa-shopping-cart', low_stock: 'fas fa-exclamation-triangle', integration: 'fas fa-plug' };
+            const typeColors = { handoff_message: 'var(--danger)', handoff: 'var(--danger)', new_order: 'var(--success)', low_stock: 'var(--warning)', integration: 'var(--warning)' };
 
             container.innerHTML = '';
             data.notifications.forEach(n => {

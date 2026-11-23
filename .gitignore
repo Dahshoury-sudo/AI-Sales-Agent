@@ -208,3 +208,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 staticfiles/
+
+# Disposable scent-label verification output
+/perfume_ai/artifacts/scent_labels/

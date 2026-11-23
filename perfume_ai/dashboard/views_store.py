@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 REPLY_SWITCHES = (
     "whatsapp_replies_enabled", "messenger_replies_enabled", "instagram_replies_enabled",
     "facebook_comment_replies_enabled", "instagram_comment_replies_enabled",
+    "tiktok_replies_enabled",
 )
 
 

@@ -222,6 +222,14 @@ def retry_order_notifications():
         deliver_order_notification(identifier)
 
 
+@shared_task(name="products.tasks.refresh_tiktok_tokens")
+def refresh_tiktok_tokens():
+    """Hourly (CELERY_BEAT_SCHEDULE). Runs on the default queue, not a store queue:
+    it touches every connected store and must not wait behind one store's backlog."""
+    from products.services.tiktok_service import refresh_expiring_tokens
+    return refresh_expiring_tokens()
+
+
 
 # ── Attachment (image) handling ─────────────────────────────────────────────
 #

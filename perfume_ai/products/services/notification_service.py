@@ -1,6 +1,22 @@
 from products.models import Notification
 
 
+# One label map for every owner alert. There used to be three copies, each missing
+# a different platform, so a Facebook commenter's handoff read "على facebook".
+PLATFORM_LABELS = {
+    "whatsapp": "واتساب",
+    "messenger": "ماسنجر",
+    "instagram": "انستجرام",
+    "facebook": "تعليقات فيسبوك",
+    "tiktok": "تيك توك",
+    "web": "الموقع",
+}
+
+
+def platform_label(platform):
+    return PLATFORM_LABELS.get(platform, platform or "غير معروف")
+
+
 def create_notification(store, notif_type, title, message):
     """Create a notification for a store owner."""
     Notification.objects.create(
@@ -13,13 +29,7 @@ def create_notification(store, notif_type, title, message):
 
 def notify_handoff(conversation):
     """Trigger a notification when a conversation is handed off to a human."""
-    platform_labels = {
-        "whatsapp": "واتساب",
-        "messenger": "ماسنجر",
-        "instagram": "انستجرام",
-        "web": "الموقع",
-    }
-    platform = platform_labels.get(conversation.platform, conversation.platform or "غير معروف")
+    platform = platform_label(conversation.platform)
     create_notification(
         store=conversation.store,
         notif_type="handoff",
@@ -59,14 +69,7 @@ def notify_new_order(order):
 
 def notify_delivery_failure(conversation):
     """Flag a failed or uncertain delivery once per saved message for staff review."""
-    platform_labels = {
-        "whatsapp": "واتساب",
-        "messenger": "ماسنجر",
-        "instagram": "انستجرام",
-        "facebook": "تعليقات فيسبوك",
-        "web": "الموقع",
-    }
-    platform = platform_labels.get(conversation.platform, conversation.platform or "غير معروف")
+    platform = platform_label(conversation.platform)
     latest = conversation.messages.filter(role__in=["assistant", "agent"]).order_by("-id").first()
     uncertain = latest is not None and latest.delivery_status == "uncertain"
     Notification.objects.get_or_create(
@@ -81,6 +84,18 @@ def notify_delivery_failure(conversation):
     )
 
 
+def notify_integration_problem(store, title, message, dedupe_key):
+    """Tell the owner a platform connection needs them, once per dedupe_key.
+
+    Used when a TikTok connection lapses: the bot cannot answer there until the owner
+    reconnects, and a repeating alert every hour would bury every other notification.
+    """
+    Notification.objects.get_or_create(
+        dedupe_key=dedupe_key[:100],
+        defaults=dict(store=store, type="integration", title=title, message=message),
+    )
+
+
 def notify_attachment_received(conversation):
     """Notify the store owner when a customer sends an image during a pending order.
 
@@ -88,13 +103,7 @@ def notify_attachment_received(conversation):
     and the customer sent a photo instead of text. The agent should open the
     handoff dashboard and verify it manually.
     """
-    platform_labels = {
-        "whatsapp": "واتساب",
-        "messenger": "ماسنجر",
-        "instagram": "انستجرام",
-        "web": "الموقع",
-    }
-    platform = platform_labels.get(conversation.platform, conversation.platform or "غير معروف")
+    platform = platform_label(conversation.platform)
     create_notification(
         store=conversation.store,
         notif_type="handoff",

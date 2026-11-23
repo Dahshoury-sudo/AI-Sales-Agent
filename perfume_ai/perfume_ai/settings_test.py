@@ -60,6 +60,15 @@ OPENAI_SMART_MODEL = None
 # with override_settings.
 OPENAI_RESOLVER_MODEL = None
 
+# Never reach TikTok from a test, whatever the developer's .env says: the .invalid
+# host cannot resolve, and the credentials are dummies.
+TIKTOK_APP_ID = 'test-tiktok-app'
+TIKTOK_APP_SECRET = 'test-tiktok-secret'
+TIKTOK_REDIRECT_URI = 'https://example.test/dashboard/tiktok/callback/'
+TIKTOK_API_BASE = 'https://tiktok.invalid/open_api/v1.3'
+TIKTOK_AUTH_URL = 'https://tiktok.invalid/v2/auth/authorize'
+TIKTOK_WEBHOOK_MAX_AGE = 0
+
 # Keep test output clean and fast.
 DEBUG = False
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

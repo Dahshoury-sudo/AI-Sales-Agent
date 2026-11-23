@@ -287,6 +287,27 @@ META_REQUIRE_WEBHOOK_SIGNATURE = os.environ.get(
 ).lower() in ('true', '1', 'yes')
 
 # ---------------------------------------------------------------------------
+# TikTok DMs (Business Messaging API)
+# ---------------------------------------------------------------------------
+# One TikTok app, owned by WebVitas, serves every store; each store connects its own
+# TikTok Business account through OAuth from the dashboard. The app secret also signs
+# every webhook, so it covers all stores. See docs/tiktok-setup.md.
+TIKTOK_APP_ID = os.environ.get('TIKTOK_APP_ID', '')
+TIKTOK_APP_SECRET = os.environ.get('TIKTOK_APP_SECRET', '')
+# Must match the redirect URI registered on the TikTok app exactly, so it is
+# configured rather than built from the request host.
+TIKTOK_REDIRECT_URI = os.environ.get('TIKTOK_REDIRECT_URI', '')
+TIKTOK_API_BASE = os.environ.get(
+    'TIKTOK_API_BASE', 'https://business-api.tiktok.com/open_api/v1.3'
+).rstrip('/')
+TIKTOK_AUTH_URL = os.environ.get('TIKTOK_AUTH_URL', 'https://www.tiktok.com/v2/auth/authorize')
+# Oldest webhook signature timestamp accepted, in seconds; 0 turns the check off.
+# Off by default: InboundEvent already makes a replayed message harmless, and if
+# TikTok's retries keep the original timestamp a tight window would drop real
+# messages. Turn it on once real retries have been seen.
+TIKTOK_WEBHOOK_MAX_AGE = int(os.environ.get('TIKTOK_WEBHOOK_MAX_AGE', '0') or 0)
+
+# ---------------------------------------------------------------------------
 # Cache
 # ---------------------------------------------------------------------------
 # REDIS_URL is automatically set by Railway when you add a Redis service.
@@ -353,5 +374,9 @@ CELERY_TASK_ROUTES = ("products.task_routing.route_store_task",)
 CELERY_BEAT_SCHEDULE = {
     "retry-order-notifications": {
         "task": "products.tasks.retry_order_notifications", "schedule": 60.0,
+    },
+    # TikTok access tokens last about a day; refresh them before they lapse.
+    "refresh-tiktok-tokens": {
+        "task": "products.tasks.refresh_tiktok_tokens", "schedule": 3600.0,
     },
 }

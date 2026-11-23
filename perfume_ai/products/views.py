@@ -414,9 +414,19 @@ def _staff_reply_failure_text(conv, delivery_status):
     """Why a dashboard reply didn't reach the customer, in the owner's words.
 
     On Messenger and Instagram the usual reason is Meta's messaging window, so say
-    which limit was hit rather than suggesting a connection problem.
+    which limit was hit rather than suggesting a connection problem. On TikTok it is
+    either TikTok's 48-hour window or a lapsed connection.
     """
     from .services.meta_service import HUMAN_AGENT_PLATFORMS, human_reply_window
+    if delivery_status == "failed" and conv.platform == "tiktok":
+        from .services import tiktok_service
+        if not tiktok_service.reply_window_open(conv):
+            return ("الرسالة محفوظة لكن متبعتتش: آخر رسالة من العميل عدى عليها أكتر من 48 ساعة، "
+                    "وتيك توك مش بيسمح بالرد بعد كده. لازم العميل يبعت الأول.")
+        settings_row = getattr(conv.store, "settings", None)
+        if settings_row is None or not tiktok_service.connection_status(settings_row)["connected"]:
+            return ("الرسالة محفوظة لكن متبعتتش: ربط تيك توك مش شغال. ادخل على ربط المنصات "
+                    "واضغط \"ربط تيك توك\" تاني.")
     if delivery_status == "failed" and conv.platform in HUMAN_AGENT_PLATFORMS:
         window = human_reply_window(conv)
         if window == "closed":

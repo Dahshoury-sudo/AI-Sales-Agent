@@ -5,7 +5,7 @@
     if (!root) return;
     const el = id => document.getElementById('analytics-' + id);
     const labels = { revenue: 'الإيرادات', orders: 'الطلبات', aov: 'متوسط قيمة الطلب', customers: 'العملاء الفريدون', conversations: 'المحادثات الجديدة', conversion: 'التحويل إلى طلب' };
-    const platforms = { web: 'الموقع', whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'إنستجرام', facebook: 'تعليقات فيسبوك', unknown: 'منصة غير معروفة', unattributed: 'غير منسوب' };
+    const platforms = { web: 'الموقع', whatsapp: 'واتساب', messenger: 'ماسنجر', instagram: 'إنستجرام', facebook: 'تعليقات فيسبوك', tiktok: 'تيك توك', unknown: 'منصة غير معروفة', unattributed: 'غير منسوب' };
     const statuses = { pending: 'قيد الانتظار', confirmed: 'مؤكد', delivered: 'تم التسليم', cancelled: 'ملغي', unknown: 'غير معروف' };
     const keys = ['preset', 'start', 'end', 'aggregation', 'search', 'sort', 'page', 'report'];
     const defaults = { preset: '30d', start: '', end: '', aggregation: 'daily', search: '', sort: '-revenue', page: '1', report: 'overview' };
@@ -194,7 +194,8 @@
         el('statuses-summary').textContent = statusRows.length ? statusRows.map(r => `${statuses[r.status]}: ${count(r.orders)}`).join(' · ') : 'لا توجد طلبات في هذه الفترة.';
         const chartStyle = getComputedStyle(root), c = token => chartStyle.getPropertyValue(token).trim();
         const statusColors = { pending: c('--chart-bronze'), confirmed: c('--chart-slate'), delivered: c('--success'), cancelled: c('--danger'), unknown: c('--muted') };
-        const platformColors = Object.fromEntries(Object.keys(platforms).map((key, i) => [key, ['--chart-bronze', '--success', '--chart-slate', '--chart-plum', '--warning', '--muted', '--danger'][i]]));
+        // Keyed by platform, not by position, so adding a platform never recolours the others.
+        const platformColors = { web: '--chart-bronze', whatsapp: '--success', messenger: '--chart-slate', instagram: '--chart-plum', facebook: '--warning', tiktok: '--ink', unknown: '--muted', unattributed: '--danger' };
         draw('statuses', 'doughnut', statusRows.map(r => statuses[r.status]), [{ label: 'الطلبات', data: statusRows.map(r => r.orders), backgroundColor: statusRows.map(r => statusColors[r.status]) }]);
         const conversationRows = result.channels.filter(r => r.conversations > 0);
         table('platforms-table', ['المنصة', 'المحادثات'], conversationRows.map(r => [platforms[r.platform], count(r.conversations)]));

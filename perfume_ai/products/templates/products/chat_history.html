@@ -60,6 +60,8 @@
             whatsapp:  { icon: 'fab fa-whatsapp',       label: 'واتساب',    css: 'whatsapp' },
             messenger: { icon: 'fab fa-facebook-messenger', label: 'ماسنجر', css: 'messenger' },
             instagram: { icon: 'fab fa-instagram',       label: 'انستجرام',  css: 'instagram' },
+            facebook:  { icon: 'fab fa-facebook',        label: 'تعليقات فيسبوك', css: 'messenger' },
+            tiktok:    { icon: 'fab fa-tiktok',          label: 'تيك توك',   css: 'web' },
             web:       { icon: 'fas fa-globe',           label: 'ويب',       css: 'web' },
         };
 
@@ -148,6 +150,7 @@
             if (platform === 'whatsapp')  return ` ${formatWhatsAppNumber(senderId)}`;
             if (platform === 'instagram') return ` @${senderId}`;
             if (platform === 'messenger') return ` fb: ${senderId}`;
+            if (platform === 'tiktok')    return ` tiktok: …${senderId.slice(-8)}`;
             return ` ${senderId}`;
         }
 

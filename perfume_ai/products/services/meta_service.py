@@ -281,6 +281,16 @@ HUMAN_AGENT_WINDOW = timedelta(days=7)
 HUMAN_AGENT_PLATFORMS = MESSENGER_PLATFORMS + ("instagram",)
 
 
+def last_customer_message_at(conversation):
+    """When the customer last wrote; every platform's reply window runs from here."""
+    return (
+        conversation.messages.filter(role="user")
+        .order_by("-created_at")
+        .values_list("created_at", flat=True)
+        .first()
+    )
+
+
 def human_reply_window(conversation, now=None):
     """Which Meta window a staff reply to this conversation falls in.
 
@@ -289,12 +299,7 @@ def human_reply_window(conversation, now=None):
     conversation with no customer message is "standard", so it is sent as before
     and Meta decides.
     """
-    last = (
-        conversation.messages.filter(role="user")
-        .order_by("-created_at")
-        .values_list("created_at", flat=True)
-        .first()
-    )
+    last = last_customer_message_at(conversation)
     if last is None:
         return "standard"
     age = (now or timezone.now()) - last
@@ -313,7 +318,8 @@ def send_platform_message(conversation, text, saved_message=None, human_reply=Fa
     human_reply marks a message a person wrote in the dashboard. On Messenger and
     Instagram it is tagged HUMAN_AGENT once the 24-hour window has passed, and not
     sent at all after 7 days (see human_reply_window). Bot replies never set it:
-    Meta allows the tag only for messages a person writes.
+    Meta allows the tag only for messages a person writes. TikTok has no such tag:
+    nothing is sent there more than 48 hours after the customer's last message.
 
     Returns:
         True  — the platform accepted the message.
@@ -340,7 +346,19 @@ def send_platform_message(conversation, text, saved_message=None, human_reply=Fa
     sender_id = conversation.platform_sender_id
 
     # ── Pick the right token per platform ───────────────────────────────────
-    if conversation.platform == "whatsapp":
+    if conversation.platform == "tiktok":
+        from products.services import tiktok_service
+        # Checked before anything else, bot or staff alike: TikTok refuses every send
+        # more than 48 hours after the customer's last message, and has no tag that
+        # stretches it.
+        if not tiktok_service.reply_window_open(conversation):
+            logger.warning(f"Not sending on TikTok conversation {conversation.id}: "
+                           f"the customer's last message is older than TikTok's 48-hour window")
+            return False
+        # Fetched here, not inside send_part: an exception there would mark the part
+        # "uncertain" for good, and a failed refresh has sent nothing.
+        token = tiktok_service.get_valid_token(store_settings)
+    elif conversation.platform == "whatsapp":
         token = store_settings.meta_access_token
     else:
         # Messenger & Instagram use the Page Access Token.
@@ -404,7 +422,11 @@ def send_platform_message(conversation, text, saved_message=None, human_reply=Fa
         if window == "human_agent":
             tag = "HUMAN_AGENT"
 
-    if conversation.platform == "whatsapp":
+    if conversation.platform == "tiktok":
+        business_id = store_settings.tiktok_business_id
+        text_send = lambda: tiktok_service.send_text(business_id, sender_id, text, token)
+        image_send = lambda: tiktok_service.send_image(business_id, sender_id, bottle_image_url, token)
+    elif conversation.platform == "whatsapp":
         text_send = lambda: send_whatsapp_message(store_settings.whatsapp_phone_number_id, sender_id, text, token)
         image_send = lambda: send_whatsapp_image(store_settings.whatsapp_phone_number_id, sender_id, bottle_image_url, token)
     elif conversation.platform in MESSENGER_PLATFORMS:
