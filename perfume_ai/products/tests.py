@@ -4172,10 +4172,14 @@ class NoProductDataGuardTests(TestCase):
 
     def test_configured_store_offers_can_still_be_relayed(self):
         """The promotion branch routes through here and must be able to quote the
-        store's real configured offer prices — only invented ones are banned."""
+        store's real configured offer prices — only invented ones are banned.
+
+        The permission is the persona's red line 4. The guard no longer repeats it: its "prices only
+        from the promotions section" made a store with no promotions refuse "اي الاسعار والانواع"
+        (conversation 1367)."""
         prompt = self._system_prompt_sent()
 
-        self.assertIn("مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً", prompt)
+        self.assertIn("تقدر توضح تفاصيل العروض المكتوبة في قسم «العروض والباندلز والخصومات الحالية» بس", prompt)
 
     def test_repetition_context_demands_a_different_move_not_new_wording(self):
         """Five "هاي" produced four rewordings of the same greeting move."""

@@ -11,8 +11,11 @@ from .sales import appreciation
 # the prohibition is restated here where it is the only thing that matters.
 #
 # Store promotion details and fulfilment fees can be known without product rows.
-# Offer prices come only from the dedicated promotions section; legacy facts and
-# custom instructions must not reintroduce stale offers in a general response.
+# Offer prices come only from the dedicated promotions section, which red line 4 of the persona
+# (prompts.py) already says. This guard used to repeat it as "prices only from the promotions
+# section", and a store with no promotions read that as "no price question is answerable": Misk
+# answered "اي الاسعار والانواع" with "مش قادر أأكدلك الأنواع والأسعار" (conversation 1367). In a
+# replay (2026-11-23) that was 5 refusals in 10, and none once the line was removed.
 #
 # The last bullet asks the customer to confirm the name rather than promising to check.
 # This branch runs with no product rows and no extractor call, so it is structurally the
@@ -24,7 +27,6 @@ NO_PRODUCT_DATA_GUARD = """
 
 🔴🔴 مفيش أي بيانات منتجات مبعوتة لك في الرسالة دي:
 - ❌ ممنوع تذكر سعر أو اسم عطر من ذاكرتك أو من دمك. ولا رقم واحد.
-- ✅ مسموح بس تنقل الأسعار أو العروض المكتوبة حرفياً في قسم «العروض والباندلز والخصومات الحالية» — بالنص وبدون تغيير. لو التفاصيل مش موجودة فيه، محتاجة تأكيد من خدمة العملاء؛ متاخدهاش من حقائق الستور أو التعليمات الخاصة أو الأسئلة الشائعة أو المحادثات القديمة.
 - مصاريف الشحن وشروط الدفع من معلومات الستور المخصصة ليها فقط، من غير اختراع أرقام.
 - أي سعر أو اسم عطر مش مكتوب فوق = ممنوع تقوله. لو العميل سأل عن سعر عطر معين، اسأله يتأكد من اسم العطر ويكتبه تاني. ❌ ومتقولوش إنه مش متوفر (إحنا مش شايفين الكتالوج هنا)، ❌ ومتوعدهوش إنك هتراجع وترد عليه (مفيش حد بيراجع بعد الرد ده).
 """
